@@ -185,7 +185,10 @@ class DecisionService(
                         setVariable("sendAddress", sendAddress)
                         setVariable("pageNumber", i + 1)
                         setVariable("isPartTimeDecision", isPartTimeDecision)
-                        setVariable("hideDaycareTime", decision.type == DecisionType.PRESCHOOL_DAYCARE)
+                        setVariable(
+                            "hideDaycareTime",
+                            decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB
+                        )
                     }
                 )
             }
@@ -197,47 +200,30 @@ class DecisionService(
         ): List<String> {
             return when (decision.type) {
                 DecisionType.CLUB -> listOf(
-                    "club/club-decision",
-                    "club/club-correction",
-                    "club/club-acceptance-form"
+                    "club/decision"
                 )
                 DecisionType.DAYCARE, DecisionType.PRESCHOOL_DAYCARE, DecisionType.DAYCARE_PART_TIME -> {
                     if (decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
                         listOf(
-                            "daycare/voucher/daycare-decision-page1",
-                            "daycare/voucher/daycare-decision-page2",
-                            "daycare/voucher/daycare-correction",
-                            "daycare/voucher/daycare-acceptance-form"
+                            "daycare/voucher/decision"
                         )
                     } else {
                         if (isTransferApplication) {
                             listOf(
-                                "daycare/transfer/daycare-decision-page1",
-                                "daycare/transfer/daycare-decision-page2",
-                                "daycare/transfer/daycare-correction",
-                                "daycare/transfer/daycare-acceptance-form"
+                                "daycare/transfer/decision"
                             )
                         } else {
                             listOf(
-                                "daycare/daycare-decision-page1",
-                                "daycare/daycare-decision-page2",
-                                "daycare/daycare-correction",
-                                "daycare/daycare-acceptance-form"
+                                "daycare/decision"
                             )
                         }
                     }
                 }
                 DecisionType.PRESCHOOL -> listOf(
-                    "preschool/preschool-decision-page1",
-                    "preschool/preschool-decision-page2",
-                    "preschool/preschool-correction",
-                    "preschool/preschool-acceptance-form"
+                    "preschool/decision"
                 )
                 DecisionType.PREPARATORY_EDUCATION -> listOf(
-                    "preparatory/preparatory-decision-page1",
-                    "preparatory/preparatory-decision-page2",
-                    "preparatory/preparatory-correction",
-                    "preparatory/preparatory-acceptance-form"
+                    "preparatory/decision"
                 )
             }
         }

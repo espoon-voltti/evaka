@@ -1,0 +1,81 @@
+<!--
+SPDX-FileCopyrightText: 2017-2021 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <style th:replace="~{shared/common.html :: css}"></style>
+</head>
+
+<body>
+
+<header th:replace="~{ shared/common :: header}"></header>
+
+<div class="page first-page">
+    <address th:replace="~{ shared/common :: address}"></address>
+
+    <h1 th:text="#{decision.title}"></h1>
+    <div class="child-details">
+        <p>
+            <span th:utext="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Lapsellenne</span>
+            <br/>
+            <span th:utext="#{decision.details.date}"></span>
+            <span th:replace="~{shared/common :: placement-dates}"></span>
+        </p>
+    </div>
+    <div class="decision-details-container">
+        <div class="decision-details">
+            <div class="strong" th:text="#{decision.placement.unit}"></div>
+            <div style="text-indent: 6em">
+                <div th:text="${decision.unit.preschoolDecisionName}"></div>
+                <div th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></div>
+            </div>
+        </div>
+
+        <div class="decision-details">
+            <div class="strong" th:text="#{decision.placement.unitsupervisor}"></div>
+            <div style="text-indent: 6em">
+                <div th:text="${manager.name}"></div>
+                <div th:text="${manager.phone}"></div>
+            </div>
+        </div>
+    </div>
+
+    <p th:utext="#{decision.instructions}"></p>
+
+</div>
+
+<div class="page">
+    <div th:replace="~{ shared/common :: decision-details }"></div>
+</div>
+
+<div class="page">
+    <div th:replace="~{shared/daycare-correction :: correction}"></div>
+</div>
+
+<div class="page">
+    <h1 th:text="#{decision.acceptance.title}"></h1>
+
+    <div class="accept-placement-wrapper">
+        <div th:replace="~{shared/acceptance-form :: preschool-unit-details}"></div>
+
+        <p>
+            <span th:text="#{decision.timeframe}"></span>
+            <span th:replace="~{shared/common :: placement-dates}"></span>
+        </p>
+
+        <p th:utext="#{decision.acceptance.instructions}"></p>
+
+
+        <div th:replace="~{shared/acceptance-form :: signatures}"></div>
+    </div>
+
+
+</div>
+
+</body>
+</html>

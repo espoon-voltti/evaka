@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.config.PDFConfig
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import java.io.File
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -201,7 +202,7 @@ class PdfServiceTest {
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
-        // File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
+        File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
 
         assertNotNull(pdfBytes)
     }

@@ -9,7 +9,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="correction">
-    <h4 class="page-title spacing-before-title" th:text="#{title}"></h4>
+    <h1 th:text="#{title}"></h1>
     <div th:if="${#locale.toString()} == 'fi'" class="correction-content">
         <p th:text="#{section.main.1}"></p>
         <p th:text="#{section.main.2}"></p>

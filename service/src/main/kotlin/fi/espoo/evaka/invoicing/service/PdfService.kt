@@ -84,9 +84,7 @@ class PDFService(
 
     fun generateFeeDecisionPdf(data: FeeDecisionPdfData): ByteArray {
         val templates = listOf(
-            "fee-decision/fee-decision-page1",
-            "fee-decision/fee-decision-page2",
-            "fee-decision/fee-decision-page3"
+            "fee-decision/decision"
         )
 
         val pages = templates.mapIndexed { i, template ->

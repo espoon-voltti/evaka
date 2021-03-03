@@ -94,7 +94,7 @@ private val guardian = PersonDTO(
     "Espoo",
     null
 )
-private val manager = DaycareManager("Maija Manageri", "maija.manageri@test.com", "0401231234")
+private val manager = DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
@@ -107,6 +107,7 @@ class PDFServiceTest {
 
     @Test
     fun createFinnishPDFs() {
+
         createPDF(daycareTransferDecision, true, "fi")
         createPDF(daycareDecision, false, "fi")
         createPDF(daycareDecisionPartTime, false, "fi")
@@ -119,6 +120,7 @@ class PDFServiceTest {
 
     @Test
     fun createSwedishPDFs() {
+
         createPDF(daycareTransferDecision, true, "sv")
         createPDF(daycareDecision, false, "sv")
         createPDF(daycareDecisionPartTime, false, "sv")
@@ -141,7 +143,8 @@ class PDFServiceTest {
                 manager
             )
 
-        val file = File.createTempFile(decision.id.toString(), ".pdf")
+        // val file = File.createTempFile(decision.id.toString(), ".pdf")
+        val file = File.createTempFile("decision_", ".pdf")
         FileOutputStream(file).use {
             it.write(decisionPdfByteArray)
         }
@@ -164,15 +167,15 @@ fun createValidDecision(
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     unit: DecisionUnit = DecisionUnit(
         UUID.randomUUID(),
-        "unit name",
-        "Daycare unit name",
-        "Preschool unit name",
-        "manager name",
-        "unit address",
-        "unit postal code",
+        "Kuusenkerkän päiväkoti",
+        "Kuusenkerkän päiväkoti",
+        "Kuusenkerkän päiväkodin esiopetus",
+        "Pirkko Päiväkodinjohtaja",
+        "Kuusernkerkänpolku 123",
+        "02200",
         "ESPOO",
-        "Handler",
-        "Handler address",
+        "Varhaiskasvatuksen palveluohjaus",
+        "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.MUNICIPAL
     ),
     applicationId: UUID = UUID.randomUUID(),
