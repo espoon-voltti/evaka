@@ -2,88 +2,45 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
+import React, { Fragment } from 'react'
 
-import { Result } from '@evaka/lib-common/src/api'
-import { AttendanceResponse } from '../../api/attendances'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import colors from '@evaka/lib-components/src/colors'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+
 import { useTranslation } from '../../state/i18n'
 import { AbsenceType, AbsenceTypes } from '../../types'
-import { CustomButton, Flex } from './components'
-
-const Actions = styled(Flex)`
-  width: 100%;
-`
 
 interface Props {
-  selectAbsenceType: (type: AbsenceType) => Promise<Result<AttendanceResponse>>
+  selectedAbsenceType: AbsenceType | undefined
+  setSelectedAbsenceType: React.Dispatch<
+    React.SetStateAction<AbsenceType | undefined>
+  >
 }
 
-export default function AbsenceSelector({ selectAbsenceType }: Props) {
-  const history = useHistory()
+export default function AbsenceSelector({
+  selectedAbsenceType,
+  setSelectedAbsenceType
+}: Props) {
   const { i18n } = useTranslation()
-  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
-  >(undefined)
 
   return (
     <Fragment>
-      <Flex>
+      <FixedSpaceColumn spacing={'s'}>
         {AbsenceTypes.filter(
           (absenceType) =>
             absenceType !== 'PRESENCE' &&
             absenceType !== 'PARENTLEAVE' &&
             absenceType !== 'FORCE_MAJEURE'
         ).map((absenceType) => (
-          <CustomButton
-            backgroundColor={
-              absenceType === selectedAbsenceType
-                ? colors.blues.medium
-                : colors.blues.light
-            }
-            borderColor={
-              absenceType === selectedAbsenceType
-                ? colors.blues.medium
-                : colors.blues.light
-            }
-            color={
-              absenceType === selectedAbsenceType
-                ? colors.greyscale.white
-                : colors.blues.dark
-            }
+          <Radio
             key={absenceType}
-            text={i18n.absences.absenceTypes[absenceType]}
-            onClick={() => setSelectedAbsenceType(absenceType)}
+            label={i18n.absences.absenceTypes[absenceType]}
+            onChange={() => setSelectedAbsenceType(absenceType)}
+            checked={selectedAbsenceType === absenceType}
             data-qa={`mark-absent-${absenceType}`}
           />
         ))}
-      </Flex>
-      {selectedAbsenceType && (
-        <Fragment>
-          <Actions>
-            <Button
-              text={i18n.common.cancel}
-              onClick={() => history.goBack()}
-            />
-            <AsyncButton
-              primary
-              text={i18n.common.confirm}
-              onClick={() =>
-                selectAbsenceType(selectedAbsenceType).then((result) => {
-                  if (result.isFailure) throw Error(result.message)
-                  return undefined
-                })
-              }
-              onSuccess={() => history.goBack()}
-              data-qa="mark-present"
-            />
-          </Actions>
-        </Fragment>
-      )}
+      </FixedSpaceColumn>
     </Fragment>
   )
 }
