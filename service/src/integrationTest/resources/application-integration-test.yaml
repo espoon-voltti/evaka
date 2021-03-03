@@ -109,5 +109,4 @@ application:
     name:
       fi: Test email sender fi
       sv: Test email sender sv
-enable_pending_decision_email_sending: true
 

@@ -600,7 +600,8 @@ fun insertApplication(
     maxFeeAccepted: Boolean = false,
     preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
     applicationId: UUID = UUID.randomUUID(),
-    status: ApplicationStatus = ApplicationStatus.CREATED
+    status: ApplicationStatus = ApplicationStatus.CREATED,
+    guardianEmail: String = "abc@espoo.fi"
 ): ApplicationDetails {
     insertTestApplication(
         h = h,
@@ -646,7 +647,7 @@ fun insertApplication(
                 address = addressOf(guardian),
                 futureAddress = null,
                 phoneNumber = "0501234567",
-                email = "abc@espoo.fi"
+                email = guardianEmail
             ),
             preferences = Preferences(
                 preferredUnits = listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
