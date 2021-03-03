@@ -1,7 +1,7 @@
-package fi.espoo.evaka.messaging
+package fi.espoo.evaka.messaging.daycarydailynote
 
+import java.time.Instant
 import java.time.LocalDate
-import java.util.Date
 import java.util.UUID
 
 data class DaycareDailyNote(
@@ -14,7 +14,7 @@ data class DaycareDailyNote(
     val sleepingNote: DaycareDailyNoteLevelInfo?,
     val reminders: List<DaycareDailyNoteReminder> = emptyList(),
     val reminderNote: String?,
-    val modifiedAt: Date? = null,
+    val modifiedAt: Instant? = null,
     val modifiedBy: String? = "evaka"
 )
 

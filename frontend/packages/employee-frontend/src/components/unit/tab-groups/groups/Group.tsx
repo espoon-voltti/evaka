@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
 
@@ -28,6 +28,8 @@ import {
   faCheck,
   faExchange,
   faPen,
+  farStickyNote,
+  faStickyNote,
   faTimes,
   faTrash,
   faUndo
@@ -35,6 +37,7 @@ import {
 import {
   deleteGroup,
   deletePlacement,
+  getGroupDaycareDailyNotes,
   OccupancyResponse
 } from '../../../../api/unit'
 import { Link } from 'react-router-dom'
@@ -61,6 +64,11 @@ import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { UIContext } from '../../../../state/ui'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { isPartDayPlacement } from '../../../../utils/placements'
+import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
+import { Loading, Result } from '@evaka/lib-common/src/api'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 
 interface Props {
   unit: Unit
@@ -90,6 +98,12 @@ function getMaxOccupancy(
   return maxOccupancy !== undefined ? formatPercentage(maxOccupancy) : undefined
 }
 
+const IconContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  font-size: 18px;
+`
+
 function getChildMinMaxHeadcounts(
   occupancyResponse?: OccupancyResponse
 ): { min: number; max: number } | undefined {
@@ -118,6 +132,13 @@ function Group({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
+  const [groupDaycareDailyNotes, setGroupDaycareDailyNotes] = useState<
+    Result<DaycareDailyNote[]>
+  >(Loading.of())
+
+  useEffect(() => {
+    void getGroupDaycareDailyNotes(group.id).then(setGroupDaycareDailyNotes)
+  }, [])
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
@@ -174,6 +195,11 @@ function Group({
   }
 
   const showServiceNeed = !unit.type.includes('CLUB') && canManageChildren
+
+  const noteExists = (childId: string): boolean =>
+    groupDaycareDailyNotes.isSuccess &&
+    groupDaycareDailyNotes.value.filter((note) => note.childId === childId)
+      .length > 0
 
   return (
     <DaycareGroup
@@ -312,6 +338,14 @@ function Group({
               <Table data-qa="table-of-group-placements" className="compact">
                 <Thead>
                   <Tr>
+                    <Th>
+                      <IconContainer>
+                        <FontAwesomeIcon
+                          icon={farStickyNote}
+                          color={colors.greyscale.dark}
+                        />
+                      </IconContainer>
+                    </Th>
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
                     <Th>{i18n.unit.groups.placementType}</Th>
@@ -334,6 +368,28 @@ function Group({
                         key={placement.id || ''}
                         data-qa="group-placement-row"
                       >
+                        <Td data-qa="daily-note">
+                          {groupDaycareDailyNotes.isLoading && (
+                            <SpinnerSegment />
+                          )}
+                          {groupDaycareDailyNotes.isFailure && (
+                            <ErrorSegment
+                              title={i18n.common.loadingFailed}
+                              compact
+                            />
+                          )}
+                          {groupDaycareDailyNotes.isSuccess && (
+                            <RoundIcon
+                              size="m"
+                              color={colors.blues.primary}
+                              content={
+                                noteExists(placement.child.id)
+                                  ? farStickyNote
+                                  : faStickyNote
+                              }
+                            />
+                          )}
+                        </Td>
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
                             {formatName(

@@ -1,4 +1,4 @@
-package fi.espoo.evaka.messaging
+package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-@RestController("/employee/daycare-daily-note")
+@RestController()
+@RequestMapping("/daycare-daily-note")
 class DaycareDailyNoteController {
 
     @GetMapping("/daycare/group/{groupId}")

@@ -40,8 +40,8 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.messaging.DaycareDailyNote
-import fi.espoo.evaka.messaging.upsertDaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.upsertDaycareDailyNote
 import fi.espoo.evaka.pairing.Pairing
 import fi.espoo.evaka.pairing.PairingsController
 import fi.espoo.evaka.pairing.challengePairing
