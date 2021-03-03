@@ -11,15 +11,15 @@ import {
   TIME_REGEXP,
   validate,
   validDate
-} from '~form-validation'
-import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
+} from '../../form-validation'
+import { ApplicationFormData } from '../../applications/editor/ApplicationFormData'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import {
   ApplicationStatus,
   ApplicationType
 } from '@evaka/lib-common/src/api-types/application/enums'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { DecisionType } from '~decisions/types'
+import { DecisionType } from '../../decisions/types'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>

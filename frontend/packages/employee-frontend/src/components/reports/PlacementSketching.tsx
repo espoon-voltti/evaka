@@ -20,25 +20,25 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { PlacementSketchingRow } from '~types/reports'
+import { PlacementSketchingRow } from '../../types/reports'
 import {
   getPlacementSketchingReport,
   PlacementSketchingReportFilters
-} from '~api/reports'
+} from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   RowCountInfo,
   TableScrollable
-} from '~components/reports/common'
+} from '../../components/reports/common'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { distinct } from 'utils'
+import { distinct } from '../../utils'
 import { faFileAlt } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 

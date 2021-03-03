@@ -6,17 +6,17 @@ import React from 'react'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
+import { ApplicationFormData } from '../../applications/editor/ApplicationFormData'
 import { H1 } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~localization'
-import BasicsSection from '~applications/editor/verification/BasicsSection'
+import { useTranslation } from '../../localization'
+import BasicsSection from '../../applications/editor/verification/BasicsSection'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
-import UnitPreferenceSection from '~applications/editor/verification/UnitPreferenceSection'
+import UnitPreferenceSection from '../../applications/editor/verification/UnitPreferenceSection'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ServiceNeedSection from '~applications/editor/verification/ServiceNeedSection'
-import ContactInfoSection from '~applications/editor/verification/ContactInfoSection'
-import AdditionalDetailsSection from '~applications/editor/verification/AdditionalDetailsSection'
+import ServiceNeedSection from '../../applications/editor/verification/ServiceNeedSection'
+import ContactInfoSection from '../../applications/editor/verification/ContactInfoSection'
+import AdditionalDetailsSection from '../../applications/editor/verification/AdditionalDetailsSection'
 
 type DaycareApplicationReadViewProps = {
   application: ApplicationDetails

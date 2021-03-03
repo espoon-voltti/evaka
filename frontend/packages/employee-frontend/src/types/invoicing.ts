@@ -4,9 +4,9 @@
 
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types'
-import { FeeAlterationType } from '~types/fee-alteration'
-import { Income, IncomeEffect } from '~types/income'
+import { UUID } from '../types'
+import { FeeAlterationType } from '../types/fee-alteration'
+import { Income, IncomeEffect } from '../types/income'
 
 // Enums
 

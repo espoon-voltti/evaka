@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../localization'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
-import { formatDate } from '~util'
-import { Status, applicationStatusIcon } from '~decisions/shared'
+import { formatDate } from '../util'
+import { Status, applicationStatusIcon } from '../decisions/shared'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -29,8 +29,8 @@ import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/e
 import { FixedSpaceFlexWrap } from '@evaka/lib-components/src/layout/flex-helpers'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
-import { removeUnprocessedApplication } from '~applications/api'
-import { OverlayContext } from '~overlay/state'
+import { removeUnprocessedApplication } from '../applications/api'
+import { OverlayContext } from '../overlay/state'
 import { isEqual } from 'date-fns'
 
 const StyledLink = styled(Link)`

@@ -8,10 +8,10 @@ import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~localization'
-import { errorToInputInfo } from '~form-validation'
+import { useTranslation } from '../../../localization'
+import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
-import { UnitPreferenceSectionCommonProps } from '~applications/editor/unit-preference/UnitPreferenceSection'
+import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 
 export default React.memo(function SiblingBasisSubSection({

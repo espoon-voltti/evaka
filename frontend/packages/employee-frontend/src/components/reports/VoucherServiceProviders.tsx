@@ -20,29 +20,29 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
-import { VoucherServiceProviderRow } from '~types/reports'
+import { VoucherServiceProviderRow } from '../../types/reports'
 import {
   getVoucherServiceProvidersReport,
   VoucherServiceProvidersFilters
-} from '~api/reports'
+} from '../../api/reports'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
-import { formatDate } from '~utils/date'
-import { SelectOptionProps } from '~components/common/Select'
+import ReportDownload from '../../components/reports/ReportDownload'
+import { formatDate } from '../../utils/date'
+import { SelectOptionProps } from '../../components/common/Select'
 import { fi } from 'date-fns/locale'
-import { CareArea } from '~types/unit'
-import { getAreas } from '~api/daycare'
+import { CareArea } from '../../types/unit'
+import { getAreas } from '../../api/daycare'
 import {
   FilterLabel,
   FilterRow,
   TableScrollable
-} from '~components/reports/common'
-import { FlexRow } from 'components/common/styled/containers'
-import { formatCents } from '~utils/money'
+} from '../../components/reports/common'
+import { FlexRow } from '../../components/common/styled/containers'
+import { formatCents } from '../../utils/money'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef } from 'react'
-import { useTranslation } from '~/state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { Loading } from '@evaka/lib-common/src/api'
-import { ChildContext } from '~/state/child'
+import { ChildContext } from '../../state/child'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { UUID } from '~/types'
+import { UUID } from '../../types'
 import AssistanceNeedRow from './assistance-need/AssistanceNeedRow'
-import AssistanceNeedForm from '~components/child-information/assistance-need/AssistanceNeedForm'
-import { UIContext } from '~state/ui'
+import AssistanceNeedForm from '../../components/child-information/assistance-need/AssistanceNeedForm'
+import { UIContext } from '../../state/ui'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import styled from 'styled-components'
-import { scrollToRef } from 'utils'
-import { getAssistanceNeeds } from 'api/child/assistance-needs'
+import { scrollToRef } from '../../utils'
+import { getAssistanceNeeds } from '../../api/child/assistance-needs'
 
 const TitleRow = styled.div`
   display: flex;

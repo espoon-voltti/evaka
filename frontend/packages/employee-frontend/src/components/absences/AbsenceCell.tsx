@@ -11,11 +11,11 @@ import {
   CellPart,
   billableCareTypes,
   AbsenceBackupCare
-} from 'types/absence'
-import { UUID } from '~types'
-import { AbsencesState, AbsencesContext } from '~state/absence'
-import Tooltip from '~components/common/Tooltip'
-import { useTranslation } from '~state/i18n'
+} from '../../types/absence'
+import { UUID } from '../../types'
+import { AbsencesState, AbsencesContext } from '../../state/absence'
+import Tooltip from '../../components/common/Tooltip'
+import { useTranslation } from '../../state/i18n'
 
 interface AbsenceCellPartProps {
   position: string

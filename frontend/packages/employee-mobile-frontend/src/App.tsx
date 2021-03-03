@@ -10,16 +10,16 @@ import {
   Redirect
 } from 'react-router-dom'
 import { idleTracker } from '@evaka/lib-common/src/utils/idleTracker'
-import ensureAuthenticated from '~components/ensureAuthenticated'
-import { AttendanceUIContextProvider } from '~state/attendance-ui'
-import { I18nContextProvider } from '~state/i18n'
-import { UserContextProvider } from '~state/user'
-import MobileLander from '~components/mobile/MobileLander'
-import PairingWizard from '~components/mobile/PairingWizard'
-import AttendancePageWrapper from '~components/attendances/AttendancePageWrapper'
-import AttendanceChildPage from '~components/attendances/AttendanceChildPage'
-import { getAuthStatus, AuthStatus } from '~api/auth'
-import { client } from '~api/client'
+import ensureAuthenticated from './components/ensureAuthenticated'
+import { AttendanceUIContextProvider } from './state/attendance-ui'
+import { I18nContextProvider } from './state/i18n'
+import { UserContextProvider } from './state/user'
+import MobileLander from './components/mobile/MobileLander'
+import PairingWizard from './components/mobile/PairingWizard'
+import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
+import AttendanceChildPage from './components/attendances/AttendanceChildPage'
+import { getAuthStatus, AuthStatus } from './api/auth'
+import { client } from './api/client'
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()

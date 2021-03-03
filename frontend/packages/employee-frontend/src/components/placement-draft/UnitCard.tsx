@@ -16,19 +16,19 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { getOccupancyRates, OccupancyResponse } from '~api/unit'
+import { getOccupancyRates, OccupancyResponse } from '../../api/unit'
 
 import colors from '@evaka/lib-components/src/colors'
 import UnderRowStatusIcon from '@evaka/lib-components/src/atoms/StatusIcon'
 import { faCheck } from '@evaka/lib-icons'
 
 import { formatPercentage } from '../utils'
-import { Occupancy } from '~types/unit'
-import { DaycarePlacementPlan } from '~types/placementdraft'
-import { Unit } from '~state/placementdraft'
-import { UUID } from '~types'
+import { Occupancy } from '../../types/unit'
+import { DaycarePlacementPlan } from '../../types/placementdraft'
+import { Unit } from '../../state/placementdraft'
+import { UUID } from '../../types'
 
 const MarginBox = styled.div`
   margin: 1rem;

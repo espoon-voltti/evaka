@@ -12,13 +12,13 @@ import {
   postPairing,
   postPairingResponse,
   putMobileDeviceName
-} from '~api/unit'
+} from '../../api/unit'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { faPlus } from '@evaka/lib-icons'
-import { useTranslation } from '~state/i18n'
-import { UUID } from '~types'
+import { useTranslation } from '../../state/i18n'
+import { UUID } from '../../types'
 
 interface Props {
   unitId: UUID

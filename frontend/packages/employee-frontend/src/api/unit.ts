@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from '~api/client'
+import { client } from '../api/client'
 import {
   Coordinate,
   DaycareGroup,
@@ -20,12 +20,12 @@ import {
   UnitManager,
   UnitTypes,
   VisitingAddress
-} from '~types/unit'
-import { UnitBackupCare } from '~types/child'
-import { AdRole, DayOfWeek, UUID } from '~types'
+} from '../types/unit'
+import { UnitBackupCare } from '../types/child'
+import { AdRole, DayOfWeek, UUID } from '../types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { PlacementType } from '~types/child'
+import { PlacementType } from '../types/child'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'
 import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'

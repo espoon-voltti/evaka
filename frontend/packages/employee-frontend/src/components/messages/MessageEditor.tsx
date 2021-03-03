@@ -14,7 +14,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { Bulletin, IdAndName } from './types'
 
 type Props = {

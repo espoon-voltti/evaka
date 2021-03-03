@@ -6,14 +6,14 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
-} from '~types/unit'
-import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
-import { formatName } from '~utils'
+} from '../../../types/unit'
+import { careTypesFromPlacementType } from '../../../components/common/CareTypeLabel'
+import { formatName } from '../../../utils'
 import styled from 'styled-components'
 import {
   FixedSpaceColumn,
@@ -21,7 +21,7 @@ import {
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { faFileAlt } from '@evaka/lib-icons'
-import { getEmployeeUrlPrefix } from '~constants'
+import { getEmployeeUrlPrefix } from '../../../constants'
 import CheckIconButton from '@evaka/lib-components/src/atoms/buttons/CheckIconButton'
 import CrossIconButton from '@evaka/lib-components/src/atoms/buttons/CrossIconButton'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
@@ -29,7 +29,7 @@ import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
-import { isPartDayPlacement } from '~utils/placements'
+import { isPartDayPlacement } from '../../../utils/placements'
 
 const CenteredDiv = styled.div`
   display: flex;

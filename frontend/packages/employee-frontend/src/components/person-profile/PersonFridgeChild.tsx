@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
+import { UUID } from '../../types'
+import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useContext } from 'react'
-import { PersonContext } from '~state/person'
-import { formatName } from '~utils'
+import { PersonContext } from '../../state/person'
+import { formatName } from '../../utils'
 import {
   Table,
   Tbody,
@@ -20,21 +20,21 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { Parentship } from '~types/fridge'
+import { Parentship } from '../../types/fridge'
 import * as _ from 'lodash'
 import { faChild, faQuestion } from '@evaka/lib-icons'
-import { UIContext } from '~state/ui'
-import FridgeChildModal from '~components/person-profile/person-fridge-child/FridgeChildModal'
+import { UIContext } from '../../state/ui'
+import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Link } from 'react-router-dom'
 import {
   getParentshipsByHeadOfChild,
   removeParentship,
   retryParentship
-} from '~api/parentships'
-import { ButtonsTd, DateTd, NameTd } from '~components/PersonProfile'
+} from '../../api/parentships'
+import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import Toolbar from '~components/common/Toolbar'
+import Toolbar from '../../components/common/Toolbar'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 interface Props {

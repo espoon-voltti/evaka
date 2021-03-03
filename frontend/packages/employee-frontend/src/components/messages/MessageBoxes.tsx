@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 
 export type MessageBoxType = 'SENT' | 'DRAFT'
 

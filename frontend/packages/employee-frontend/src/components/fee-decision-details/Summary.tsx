@@ -10,9 +10,9 @@ import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleS
 import { H4 } from '@evaka/lib-components/src/typography'
 import IncomeSection from './IncomeSection'
 import PartsSection from './PartsSection'
-import { useTranslation } from '~state/i18n'
-import { FeeDecisionDetailed } from '~types/invoicing'
-import { formatCents } from '~utils/money'
+import { useTranslation } from '../../state/i18n'
+import { FeeDecisionDetailed } from '../../types/invoicing'
+import { formatCents } from '../../utils/money'
 
 interface Props {
   decision: FeeDecisionDetailed

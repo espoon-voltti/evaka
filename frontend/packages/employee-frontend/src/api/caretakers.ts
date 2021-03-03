@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types'
-import { CaretakersResponse } from '~types/caretakers'
+import { UUID } from '../types'
+import { CaretakersResponse } from '../types/caretakers'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from '~api/client'
+import { client } from '../api/client'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

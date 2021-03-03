@@ -23,10 +23,10 @@ import {
   faList,
   fasMapMarkerAlt
 } from '@evaka/lib-icons'
-import { useTranslation } from '~localization'
-import { mapViewBreakpoint, MobileMode } from '~map/const'
-import SearchInput from '~map/SearchInput'
-import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
+import { useTranslation } from '../localization'
+import { mapViewBreakpoint, MobileMode } from '../map/const'
+import SearchInput from '../map/SearchInput'
+import { CareTypeOption, MapAddress, ProviderTypeOption } from '../map/MapView'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

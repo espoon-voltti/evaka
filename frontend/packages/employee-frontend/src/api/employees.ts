@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from '~api/client'
-import { Employee } from '~types/employee'
+import { client } from '../api/client'
+import { Employee } from '../types/employee'
 import { JsonOf } from '@evaka/lib-common/src/json'
-import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
+import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client

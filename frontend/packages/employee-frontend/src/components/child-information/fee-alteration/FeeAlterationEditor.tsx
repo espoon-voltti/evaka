@@ -9,16 +9,16 @@ import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import LabelValueList from '~components/common/LabelValueList'
-import DateRangeInput from '~components/common/DateRangeInput'
+import LabelValueList from '../../../components/common/LabelValueList'
+import DateRangeInput from '../../../components/common/DateRangeInput'
 import FeeAlterationRowInput from './FeeAlterationRowInput'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import {
   FeeAlteration,
   feeAlterationTypes,
   PartialFeeAlteration
-} from '~types/fee-alteration'
-import { UUID } from '~types'
+} from '../../../types/fee-alteration'
+import { UUID } from '../../../types'
 
 const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
   personId,

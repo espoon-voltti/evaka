@@ -20,24 +20,24 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { AssistanceNeedsAndActionsReportRow } from '~types/reports'
+import { AssistanceNeedsAndActionsReportRow } from '../../types/reports'
 import {
   AssistanceNeedsAndActionsReportFilters,
   getAssistanceNeedsAndActionsReport
-} from '~api/reports'
+} from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   FilterLabel,
   FilterRow,
   TableFooter,
   TableScrollable
-} from '~components/reports/common'
-import { distinct, reducePropertySum } from 'utils'
+} from '../../components/reports/common'
+import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
 interface DisplayFilters {

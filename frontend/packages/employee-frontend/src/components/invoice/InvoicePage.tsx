@@ -26,7 +26,7 @@ import {
   InvoiceRowDetailed
 } from '../../types/invoicing'
 import { totalPrice } from '../../utils/pricing'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 
 const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   const { id } = useParams<{ id: string }>()

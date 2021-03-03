@@ -9,19 +9,19 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H1 } from '@evaka/lib-components/src/typography'
 import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
-import LabelValueList from '~components/common/LabelValueList'
-import WarningLabel from '~components/common/WarningLabel'
-import { getFeeDecisionPdfUrl } from '~api/invoicing'
-import { useTranslation } from '~state/i18n'
+import LabelValueList from '../../components/common/LabelValueList'
+import WarningLabel from '../../components/common/WarningLabel'
+import { getFeeDecisionPdfUrl } from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
 import {
   FeeDecisionPartDetailed,
   FeeDecisionStatus,
   FeeDecisionType,
   PersonDetailed
-} from '~types/invoicing'
+} from '../../types/invoicing'
 import colors from '@evaka/lib-components/src/colors'
-import { formatDate } from '~utils/date'
-import { formatName } from '~utils'
+import { formatDate } from '../../utils/date'
+import { formatName } from '../../utils'
 
 interface TypeSelectProps {
   selected: string

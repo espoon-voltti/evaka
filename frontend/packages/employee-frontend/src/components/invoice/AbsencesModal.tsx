@@ -5,24 +5,24 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { getDay } from 'date-fns'
-import { formatName } from '~utils'
-import { getAbsencesByChild } from '~api/invoicing'
+import { formatName } from '../../utils'
+import { getAbsencesByChild } from '../../api/invoicing'
 import {
   Absence,
   AbsenceTypes,
   AbsenceType,
   billableCareTypes
-} from '~types/absence'
-import { UUID } from '~types'
-import ColourInfoItem from '~components/common/ColourInfoItem'
-import Tooltip from '~components/common/Tooltip'
-import PeriodPicker from '~components/absences/PeriodPicker'
+} from '../../types/absence'
+import { UUID } from '../../types'
+import ColourInfoItem from '../../components/common/ColourInfoItem'
+import Tooltip from '../../components/common/Tooltip'
+import PeriodPicker from '../../components/absences/PeriodPicker'
 import { faAbacus } from '@evaka/lib-icons'
 
 const Section = styled.section``

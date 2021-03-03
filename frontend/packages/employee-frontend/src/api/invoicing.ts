@@ -5,10 +5,10 @@
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Failure, Response, Result, Success } from '@evaka/lib-common/src/api'
-import { API_URL, client } from '~api/client'
-import { SearchOrder, UUID } from '~types'
-import { Absence, deserializeAbsence } from '~types/absence'
-import { deserializeIncome } from '~types/income'
+import { API_URL, client } from '../api/client'
+import { SearchOrder, UUID } from '../types'
+import { Absence, deserializeAbsence } from '../types/absence'
+import { deserializeIncome } from '../types/income'
 import {
   deserializePeriodic,
   deserializePersonBasic,
@@ -22,7 +22,7 @@ import {
   InvoiceCodes,
   InvoiceDetailed,
   InvoiceSearchResult
-} from '~types/invoicing'
+} from '../types/invoicing'
 
 export interface SearchParams {
   status?: string

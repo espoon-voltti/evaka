@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types/index'
+import { UUID } from '../types/index'
 
 export interface CaretakersResponse {
   unitName: string

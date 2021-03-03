@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UnitFiltersType } from 'types/unit'
+import { UnitFiltersType } from '../types/unit'
 
 export type FilterTimePeriod = '1 day' | '3 months' | '6 months' | '1 year'
 

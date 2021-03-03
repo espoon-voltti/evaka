@@ -4,8 +4,8 @@
 
 import { format } from 'date-fns'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { DATE_FORMAT_DEFAULT, MAX_DATE } from '~constants'
-import { StatusLabelType } from '~components/common/StatusLabel'
+import { DATE_FORMAT_DEFAULT, MAX_DATE } from '../constants'
+import { StatusLabelType } from '../components/common/StatusLabel'
 
 export function formatDate(
   date: Date | null | undefined,

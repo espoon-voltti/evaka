@@ -31,7 +31,7 @@ import {
 import { Loading } from '@evaka/lib-common/src/api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 
 export default React.memo(function ApplicationFilters() {
   const {

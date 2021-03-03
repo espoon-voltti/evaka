@@ -13,18 +13,21 @@ import {
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { ApplicationUnitType, getApplicationUnits } from '~applications/api'
+import {
+  ApplicationUnitType,
+  getApplicationUnits
+} from '../../../applications/api'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import PreferredUnitBox from '~applications/editor/unit-preference/PreferredUnitBox'
+import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
 import colors from '@evaka/lib-components/src/colors'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { UnitPreferenceSectionProps } from '~applications/editor/unit-preference/UnitPreferenceSection'
+import { UnitPreferenceSectionProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 
 const maxUnits = 3
 

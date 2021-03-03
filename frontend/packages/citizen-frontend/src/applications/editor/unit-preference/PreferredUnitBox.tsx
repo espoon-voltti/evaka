@@ -15,7 +15,7 @@ import { faArrowDown, faArrowUp, faTimes } from '@evaka/lib-icons'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { StaticChip } from '@evaka/lib-components/src/atoms/Chip'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 

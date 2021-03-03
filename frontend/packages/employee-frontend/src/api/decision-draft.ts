@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types'
+import { UUID } from '../types'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from '~api/client'
+import { client } from '../api/client'
 import {
   DecisionDraftGroup,
   DecisionDraftUpdate,
   DecisionUnit
-} from '~types/decision'
+} from '../types/decision'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

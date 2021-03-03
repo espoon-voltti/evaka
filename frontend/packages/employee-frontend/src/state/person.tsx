@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext } from 'react'
-import { PersonWithChildren, PersonDetails } from '~/types/person'
-import { Parentship, Partnership } from '~/types/fridge'
-import { Income } from '~/types/income'
+import { PersonWithChildren, PersonDetails } from '../types/person'
+import { Parentship, Partnership } from '../types/fridge'
+import { Income } from '../types/income'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { ApplicationSummary } from '~types/application'
-import { Decision } from '~types/decision'
-import { Invoice } from '~types/invoicing'
-import { FamilyOverview } from '~types/family-overview'
-import { getFamilyOverview } from '~api/family-overview'
+import { ApplicationSummary } from '../types/application'
+import { Decision } from '../types/decision'
+import { Invoice } from '../types/invoicing'
+import { FamilyOverview } from '../types/family-overview'
+import { getFamilyOverview } from '../api/family-overview'
 
 export interface PersonState {
   person: Result<PersonDetails>

@@ -4,27 +4,27 @@
 
 import React, { useState, useContext, useEffect } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import {
   allPropertiesTrue,
   isDateRangeValid
-} from '~utils/validation/validations'
+} from '../../../utils/validation/validations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@evaka/lib-icons'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { Parentship } from '~types/fridge'
-import { UUID } from '~types'
+import { Parentship } from '../../../types/fridge'
+import { UUID } from '../../../types'
 import { Result } from '@evaka/lib-common/src/api'
 import { faChild } from '@evaka/lib-icons'
-import { formatName } from '~utils'
-import PersonSearch from '~components/common/PersonSearch'
+import { formatName } from '../../../utils'
+import PersonSearch from '../../../components/common/PersonSearch'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { addParentship, updateParentship } from '~api/parentships'
-import { PersonDetails } from '~types/person'
+import { addParentship, updateParentship } from '../../../api/parentships'
+import { PersonDetails } from '../../../types/person'
 
 interface Props {
   headPersonId: UUID

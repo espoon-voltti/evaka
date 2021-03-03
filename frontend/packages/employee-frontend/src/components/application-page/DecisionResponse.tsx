@@ -4,17 +4,17 @@
 
 import React, { useState } from 'react'
 
-import { Decision } from 'types/decision'
+import { Decision } from '../../types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import { useTranslation } from 'state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { acceptDecision, rejectDecision } from 'api/applications'
-import { UUID } from 'types'
+import { acceptDecision, rejectDecision } from '../../api/applications'
+import { UUID } from '../../types'
 
 interface Props {
   applicationId: UUID

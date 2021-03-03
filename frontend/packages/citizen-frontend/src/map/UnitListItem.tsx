@@ -3,8 +3,8 @@ import styled from 'styled-components'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
-import { useTranslation } from '~localization'
-import { formatCareTypes } from '~map/format'
+import { useTranslation } from '../localization'
+import { formatCareTypes } from '../map/format'
 
 type Props = {
   unit: PublicUnit

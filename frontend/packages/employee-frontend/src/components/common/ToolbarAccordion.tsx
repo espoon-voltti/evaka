@@ -8,7 +8,9 @@ import { faChevronUp, faChevronDown } from '@evaka/lib-icons'
 import { H4 } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
+import StatusLabel, {
+  StatusLabelType
+} from '../../components/common/StatusLabel'
 
 interface Props {
   title?: string

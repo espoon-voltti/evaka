@@ -29,10 +29,14 @@ import AttendancePresentPage from './AttendancePresentPage'
 import AttendanceDepartedPage from './AttendanceDepartedPage'
 import AttendanceAbsentPage from './AttendanceAbsentPage'
 import AttendanceList from './AttendanceList'
-import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
-import { AttendanceUIContext } from '~state/attendance-ui'
-import { useTranslation } from '~state/i18n'
-import FreeTextSearch from '~components/common/FreeTextSearch'
+import {
+  AttendanceChild,
+  getDaycareAttendances,
+  Group
+} from '../../api/attendances'
+import { AttendanceUIContext } from '../../state/attendance-ui'
+import { useTranslation } from '../../state/i18n'
+import FreeTextSearch from '../../components/common/FreeTextSearch'
 import GroupSelector from './GroupSelector'
 
 export default React.memo(function AttendancePageWrapper() {

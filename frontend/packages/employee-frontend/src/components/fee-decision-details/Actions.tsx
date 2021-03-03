@@ -12,7 +12,7 @@ import {
   markFeeDecisionSent,
   setDecisionType
 } from '../../api/invoicing'
-import { ErrorMessage } from '~components/fee-decision-details/FeeDecisionDetailsPage'
+import { ErrorMessage } from '../../components/fee-decision-details/FeeDecisionDetailsPage'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { translations } from '~assets/i18n'
-import { DayOfWeek } from '~types'
+import { translations } from '../../assets/i18n'
+import { DayOfWeek } from '../../types'
 
 export function getRange(num: number) {
   const nums = []

@@ -5,40 +5,40 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~/state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import InfoBall from '~components/common/InfoBall'
+import InfoBall from '../../../components/common/InfoBall'
 import {
   AssistanceAction,
   AssistanceActionType,
   AssistanceMeasure
-} from '~types/child'
-import { UUID } from '~types'
+} from '../../../types/child'
+import { UUID } from '../../../types'
 
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   FormErrors,
   formHasErrors,
   isDateRangeInverted
-} from '~utils/validation/validations'
-import LabelValueList from '~components/common/LabelValueList'
+} from '../../../utils/validation/validations'
+import LabelValueList from '../../../components/common/LabelValueList'
 import {
   ASSISTANCE_ACTION_TYPE_LIST,
   ASSISTANCE_MEASURE_LIST
-} from '~constants'
-import FormActions from '~components/common/FormActions'
-import { ChildContext } from '~state'
-import { DateRange, rangeContainsDate } from '~utils/date'
+} from '../../../constants'
+import FormActions from '../../../components/common/FormActions'
+import { ChildContext } from '../../../state'
+import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { DivFitContent } from 'components/common/styled/containers'
+import { DivFitContent } from '../../../components/common/styled/containers'
 import {
   AssistanceActionRequest,
   createAssistanceAction,
   updateAssistanceAction
-} from 'api/child/assistance-actions'
+} from '../../../api/child/assistance-actions'
 
 const CheckboxRow = styled.div`
   display: flex;

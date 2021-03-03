@@ -16,12 +16,12 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
-import { Label, LabelText } from '~components/common/styled/common'
+import { Label, LabelText } from '../../../components/common/styled/common'
 import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable from './IncomeTable'
-import { useTranslation } from '~state/i18n'
-import { incomeEffects, Income, PartialIncome } from '~types/income'
-import { formatDate } from '~utils/date'
+import { useTranslation } from '../../../state/i18n'
+import { incomeEffects, Income, PartialIncome } from '../../../types/income'
+import { formatDate } from '../../../utils/date'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
 const ButtonsContainer = styled(FixedSpaceRow)`

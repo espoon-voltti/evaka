@@ -9,9 +9,9 @@ import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Label } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~state/i18n'
-import { FeeAlteration } from '~types/fee-alteration'
-import { UUID } from '~types'
+import { useTranslation } from '../../../state/i18n'
+import { FeeAlteration } from '../../../types/fee-alteration'
+import { UUID } from '../../../types'
 import FeeAlterationEditor from './FeeAlterationEditor'
 
 interface Props {

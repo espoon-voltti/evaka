@@ -1,5 +1,5 @@
 import { CareType } from '@evaka/lib-common/src/api-types/units/enums'
-import { Translations } from '~localization'
+import { Translations } from '../localization'
 
 export function formatCareType(t: Translations, type: CareType): string {
   switch (type) {

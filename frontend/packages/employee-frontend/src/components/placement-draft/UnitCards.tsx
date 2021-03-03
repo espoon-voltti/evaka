@@ -5,8 +5,11 @@
 import React, { Dispatch, SetStateAction, memo } from 'react'
 import MemoizedCard from './UnitCard'
 import styled from 'styled-components'
-import { Unit } from '~state/placementdraft'
-import { DaycarePlacementPlan, PlacementDraft } from '~types/placementdraft'
+import { Unit } from '../../state/placementdraft'
+import {
+  DaycarePlacementPlan,
+  PlacementDraft
+} from '../../types/placementdraft'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
 const FlexContainer = styled.div`

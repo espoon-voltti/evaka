@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, createContext } from 'react'
-import { User } from '~types'
+import { User } from '../types'
 
 export interface UserState {
   loggedIn: boolean

@@ -4,11 +4,11 @@ import { Result } from '@evaka/lib-common/src/api'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { UnitLanguage } from '@evaka/lib-common/src/api-types/units/enums'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import SearchSection from '~map/SearchSection'
-import UnitList from '~map/UnitList'
-import { mapViewBreakpoint, MobileMode } from '~map/const'
-import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
-import { UnitWithDistance } from '~map/distances'
+import SearchSection from '../map/SearchSection'
+import UnitList from '../map/UnitList'
+import { mapViewBreakpoint, MobileMode } from '../map/const'
+import { CareTypeOption, MapAddress, ProviderTypeOption } from '../map/MapView'
+import { UnitWithDistance } from '../map/distances'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

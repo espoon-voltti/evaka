@@ -18,7 +18,7 @@ import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePi
 import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { InvoicesActions, useInvoicesState } from './invoices-state'
 
 export default React.memo(function InvoicesPage() {

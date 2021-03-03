@@ -7,8 +7,8 @@ import { faFile } from '@evaka/lib-icons'
 import { Label } from '@evaka/lib-components/src/typography'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
-import { useTranslation } from '~state/i18n'
-import { formatDate } from '~utils/date'
+import { useTranslation } from '../../state/i18n'
+import { formatDate } from '../../utils/date'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 type Props = {

@@ -16,20 +16,20 @@ import {
 import Title from '@evaka/lib-components/src/atoms/Title'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faArrowRight } from '@evaka/lib-icons'
-import { useTranslation } from '~state/i18n'
-import { DaycareGroup } from '~types/unit'
-import GroupPlacementModal from '~components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
-import { UIContext } from '~state/ui'
-import { Translations } from '~assets/i18n'
+import { useTranslation } from '../../../state/i18n'
+import { DaycareGroup } from '../../../types/unit'
+import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
+import { UIContext } from '../../../state/ui'
+import { Translations } from '../../../assets/i18n'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType
-} from '~components/common/CareTypeLabel'
-import { UnitBackupCare } from '~types/child'
-import { formatName } from '~utils'
+} from '../../../components/common/CareTypeLabel'
+import { UnitBackupCare } from '../../../types/child'
+import { formatName } from '../../../utils'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
-import { MissingGroupPlacement } from '~api/unit'
-import { isPartDayPlacement } from '~utils/placements'
+import { MissingGroupPlacement } from '../../../api/unit'
+import { isPartDayPlacement } from '../../../utils/placements'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,

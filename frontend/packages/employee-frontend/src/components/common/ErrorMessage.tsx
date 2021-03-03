@@ -5,7 +5,7 @@
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
 import React, { useContext } from 'react'
-import { UIContext } from '~state/ui'
+import { UIContext } from '../../state/ui'
 import { errorModalZIndex } from '@evaka/lib-components/src/layout/z-helpers'
 
 function ErrorMessage() {

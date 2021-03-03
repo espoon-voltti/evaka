@@ -14,21 +14,21 @@ import {
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
-} from '~types/unit'
+} from '../../../types/unit'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import {
   acceptPlacementProposal,
   respondToPlacementProposal
-} from 'api/applications'
-import { UIContext } from 'state/ui'
-import PlacementProposalRow from '~components/unit/tab-placement-proposals/PlacementProposalRow'
-import { UUID } from '~types'
+} from '../../../api/applications'
+import { UIContext } from '../../../state/ui'
+import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
+import { UUID } from '../../../types'
 import { InfoBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 const ButtonRow = styled.div`

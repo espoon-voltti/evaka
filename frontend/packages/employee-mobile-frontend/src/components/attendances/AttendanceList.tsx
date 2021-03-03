@@ -13,7 +13,7 @@ import {
 } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
-import { AttendanceChild, AttendanceStatus } from '~api/attendances'
+import { AttendanceChild, AttendanceStatus } from '../../api/attendances'
 import colors from '@evaka/lib-components/src/colors'
 
 interface Props {

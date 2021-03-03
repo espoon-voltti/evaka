@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { Decision } from '~decisions/types'
-import { useLang, useTranslation } from '~localization'
+import { Decision } from '../../decisions/types'
+import { useLang, useTranslation } from '../../localization'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { OverlayContext } from '~overlay/state'
+import { OverlayContext } from '../../overlay/state'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
@@ -18,13 +18,13 @@ import {
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { acceptDecision, rejectDecision } from '~decisions/api'
-import { PdfLink } from '~decisions/PdfLink'
-import { Status, decisionStatusIcon } from '~decisions/shared'
+import { acceptDecision, rejectDecision } from '../../decisions/api'
+import { PdfLink } from '../../decisions/PdfLink'
+import { Status, decisionStatusIcon } from '../../decisions/shared'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faExclamation } from '@evaka/lib-icons'
 import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
-import { isValidDecisionStartDate } from '~applications/editor/validations'
+import { isValidDecisionStartDate } from '../../applications/editor/validations'
 
 interface SingleDecisionProps {
   decision: Decision

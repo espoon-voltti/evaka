@@ -3,23 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
-import { useTranslation } from '~/state/i18n'
-import { AssistanceAction } from '~types/child'
-import { UIContext } from '~state/ui'
-import AssistanceActionForm from '~components/child-information/assistance-action/AssistanceActionForm'
+import { useTranslation } from '../../../state/i18n'
+import { AssistanceAction } from '../../../types/child'
+import { UIContext } from '../../../state/ui'
+import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
 import { faQuestion } from '@evaka/lib-icons'
-import ToolbarAccordion from '~components/common/ToolbarAccordion'
-import { isActiveDateRange } from '~/utils/date'
+import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
+import { isActiveDateRange } from '../../../utils/date'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 
-import LabelValueList from '~components/common/LabelValueList'
+import LabelValueList from '../../../components/common/LabelValueList'
 import {
   ASSISTANCE_ACTION_TYPE_LIST,
   ASSISTANCE_MEASURE_LIST
-} from '~constants'
-import Toolbar from '~components/common/Toolbar'
-import { scrollToRef } from 'utils'
-import { removeAssistanceAction } from 'api/child/assistance-actions'
+} from '../../../constants'
+import Toolbar from '../../../components/common/Toolbar'
+import { scrollToRef } from '../../../utils'
+import { removeAssistanceAction } from '../../../api/child/assistance-actions'
 
 export interface Props {
   assistanceAction: AssistanceAction

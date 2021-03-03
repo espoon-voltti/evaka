@@ -11,7 +11,7 @@ import React, {
   useCallback
 } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Unit } from '~types/invoicing'
+import { Unit } from '../types/invoicing'
 import { Result, Loading } from '@evaka/lib-common/src/api'
 import {
   ApplicationDateType,
@@ -22,11 +22,11 @@ import {
   ApplicationSummaryStatusAllOptions,
   ApplicationDistinctions,
   TransferApplicationFilter
-} from '~components/common/Filters'
+} from '../components/common/Filters'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
-import { UUID } from '~types'
-import { CareArea } from '~types/unit'
-import { ApplicationsSearchResponse } from '~types/application'
+import { UUID } from '../types'
+import { CareArea } from '../types/unit'
+import { ApplicationsSearchResponse } from '../types/application'
 
 // Nothing in here yet. Filters will be added here in next PR.
 

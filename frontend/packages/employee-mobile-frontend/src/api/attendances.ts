@@ -4,8 +4,8 @@
 
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { AbsenceType, CareType } from '~types'
-import { PlacementType } from '~types'
+import { AbsenceType, CareType } from '../types'
+import { PlacementType } from '../types'
 import { client } from './client'
 
 export interface DepartureInfoResponse {

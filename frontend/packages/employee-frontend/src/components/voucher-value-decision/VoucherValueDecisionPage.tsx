@@ -15,10 +15,10 @@ import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
 import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { getVoucherValueDecision } from '~api/invoicing'
-import { useTranslation } from '~state/i18n'
-import { TitleContext, TitleState } from '~state/title'
-import { VoucherValueDecisionDetailed } from '~types/invoicing'
+import { getVoucherValueDecision } from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
+import { TitleContext, TitleState } from '../../state/title'
+import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import colors from '@evaka/lib-components/src/colors'
 
 export const ErrorMessage = styled.div`

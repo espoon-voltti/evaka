@@ -8,9 +8,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import StickyActionBar from '~components/common/StickyActionBar'
-import { markVoucherValueDecisionSent } from '~api/invoicing'
-import { VoucherValueDecisionDetailed } from '~types/invoicing'
+import StickyActionBar from '../../components/common/StickyActionBar'
+import { markVoucherValueDecisionSent } from '../../api/invoicing'
+import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

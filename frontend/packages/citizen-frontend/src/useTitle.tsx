@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Translations } from '~localization'
+import { Translations } from './localization'
 
 export default function useTitle(
   t: Translations,

@@ -5,9 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from '~state/i18n'
-import { CareTypeLabel } from '~types'
-import { PlacementType } from '~types/child'
+import { useTranslation } from '../../state/i18n'
+import { CareTypeLabel } from '../../types'
+import { PlacementType } from '../../types/child'
 import colors from '@evaka/lib-components/src/colors'
 
 export interface Props {

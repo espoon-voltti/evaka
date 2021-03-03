@@ -10,7 +10,7 @@ import EspooLogo from './EspooLogo'
 import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
-import { headerHeight } from '~header/const'
+import { headerHeight } from '../header/const'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)

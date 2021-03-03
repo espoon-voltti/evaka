@@ -6,13 +6,13 @@ import React, { useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
 
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 import {
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Stats,
   Unit
-} from '~types/unit'
+} from '../../../../types/unit'
 import {
   Table,
   Td,
@@ -32,31 +32,35 @@ import {
   faTrash,
   faUndo
 } from '@evaka/lib-icons'
-import { deleteGroup, deletePlacement, OccupancyResponse } from '~api/unit'
+import {
+  deleteGroup,
+  deletePlacement,
+  OccupancyResponse
+} from '../../../../api/unit'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType
-} from '~components/common/CareTypeLabel'
+} from '../../../../components/common/CareTypeLabel'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
-import { capitalizeFirstLetter, formatName } from '~utils'
-import { StatusIconContainer } from '~components/common/StatusIconContainer'
-import { UnitBackupCare } from '~types/child'
-import { updateBackupCare } from 'api/child/backup-care'
-import { formatPercentage } from 'components/utils'
-import { DataList } from 'components/common/DataList'
+import { capitalizeFirstLetter, formatName } from '../../../../utils'
+import { StatusIconContainer } from '../../../../components/common/StatusIconContainer'
+import { UnitBackupCare } from '../../../../types/child'
+import { updateBackupCare } from '../../../../api/child/backup-care'
+import { formatPercentage } from '../../../../components/utils'
+import { DataList } from '../../../../components/common/DataList'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { H3 } from '@evaka/lib-components/src/typography'
-import { UnitFilters } from '~utils/UnitFilters'
-import { rangesOverlap } from '~utils/date'
+import { UnitFilters } from '../../../../utils/UnitFilters'
+import { rangesOverlap } from '../../../../utils/date'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
-import { UIContext } from '~state/ui'
-import GroupUpdateModal from '~components/unit/tab-groups/groups/group/GroupUpdateModal'
-import { isPartDayPlacement } from '~utils/placements'
+import { UIContext } from '../../../../state/ui'
+import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
+import { isPartDayPlacement } from '../../../../utils/placements'
 
 interface Props {
   unit: Unit

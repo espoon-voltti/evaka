@@ -17,10 +17,10 @@ import {
   VoucherValueDecisionSearchParams,
   SortByVoucherValueDecisions,
   VoucherValueDecisionSearchResponse
-} from '~api/invoicing'
-import { InvoicingUiContext } from '~state/invoicing-ui'
-import { VoucherValueDecisionSummary } from '~types/invoicing'
-import { SearchOrder } from '~types'
+} from '../../api/invoicing'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { VoucherValueDecisionSummary } from '../../types/invoicing'
+import { SearchOrder } from '../../types'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
 const pageSize = 200

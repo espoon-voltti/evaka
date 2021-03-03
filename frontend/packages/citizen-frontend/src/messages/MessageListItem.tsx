@@ -8,8 +8,8 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { formatDate } from '~util'
-import { ReceivedBulletin } from '~messages/types'
+import { formatDate } from '../util'
+import { ReceivedBulletin } from '../messages/types'
 
 type Props = {
   bulletin: ReceivedBulletin

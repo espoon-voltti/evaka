@@ -13,9 +13,9 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import { fasMapMarkerAlt } from '@evaka/lib-icons'
-import { queryAutocomplete } from '~map/api'
-import { MapAddress } from '~map/MapView'
-import { useTranslation } from '~localization'
+import { queryAutocomplete } from '../map/api'
+import { MapAddress } from '../map/MapView'
+import { useTranslation } from '../localization'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 
 type Props = {

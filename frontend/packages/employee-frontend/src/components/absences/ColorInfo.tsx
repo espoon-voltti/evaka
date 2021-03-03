@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { AbsenceTypes } from '~types/absence'
-import ColourInfoItem from '~components/common/ColourInfoItem'
+import { AbsenceTypes } from '../../types/absence'
+import ColourInfoItem from '../../components/common/ColourInfoItem'
 
 export default React.memo(function ColorInfo() {
   return (

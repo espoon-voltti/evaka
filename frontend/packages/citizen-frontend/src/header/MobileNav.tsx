@@ -14,8 +14,8 @@ import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
-import { getLoginUri } from '~header/const'
-import { featureFlags } from '~config'
+import { getLoginUri } from '../header/const'
+import { featureFlags } from '../config'
 
 type Props = {
   showMenu: boolean

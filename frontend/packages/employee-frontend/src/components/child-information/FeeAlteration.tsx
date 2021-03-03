@@ -9,20 +9,20 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
-import { ChildContext } from '~state'
-import { UUID } from '~types'
-import { FeeAlteration, PartialFeeAlteration } from '~types/fee-alteration'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { ChildContext } from '../../state'
+import { UUID } from '../../types'
+import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   createFeeAlteration,
   deleteFeeAlteration,
   getFeeAlterations,
   updateFeeAlteration
-} from 'api/child/fee-alteration'
+} from '../../api/child/fee-alteration'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import { scrollToRef } from 'utils'
+import { scrollToRef } from '../../utils'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'

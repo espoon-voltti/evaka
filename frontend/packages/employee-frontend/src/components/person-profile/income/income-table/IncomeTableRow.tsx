@@ -7,16 +7,16 @@ import styled from 'styled-components'
 
 import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
-import EuroInput from '~components/common/EuroInput'
+import EuroInput from '../../../../components/common/EuroInput'
 import { TableIncomeState } from '../IncomeTable'
-import { Translations } from '~state/i18n'
+import { Translations } from '../../../../state/i18n'
 import {
   incomeCoefficients,
   incomeSubTypes,
   IncomeCoefficient,
   IncomeType
-} from '~types/income'
-import { formatCents, parseCents } from '~utils/money'
+} from '../../../../types/income'
+import { formatCents, parseCents } from '../../../../utils/money'
 
 type TypeLabelProps = { indent: boolean }
 

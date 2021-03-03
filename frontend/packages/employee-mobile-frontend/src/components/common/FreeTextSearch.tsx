@@ -8,8 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faTimes } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { AttendanceChild } from '~api/attendances'
-import { defaultMargins } from '~../../lib-components/src/white-space'
+import { AttendanceChild } from '../../api/attendances'
+import { defaultMargins } from '../../../../lib-components/src/white-space'
 
 const SearchInputContainer = styled.div`
   height: 60px;

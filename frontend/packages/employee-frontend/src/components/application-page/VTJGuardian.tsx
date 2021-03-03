@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { UUID } from 'types'
-import { getPersonDetails } from 'api/person'
+import { UUID } from '../../types'
+import { getPersonDetails } from '../../api/person'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { PersonDetails } from 'types/person'
+import { PersonDetails } from '../../types/person'
 import { Dimmed, H4, Label } from '@evaka/lib-components/src/typography'
-import { renderResult } from '~components/async-rendering'
+import { renderResult } from '../../components/async-rendering'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Link } from 'react-router-dom'
-import { formatName } from 'utils'
-import { useTranslation } from 'state/i18n'
+import { formatName } from '../../utils'
+import { useTranslation } from '../../state/i18n'
 
 interface VTJGuardianProps {
   guardianId: UUID | undefined | null

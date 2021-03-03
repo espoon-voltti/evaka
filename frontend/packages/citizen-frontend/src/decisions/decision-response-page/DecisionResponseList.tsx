@@ -5,17 +5,17 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { getApplicationDecisions } from '~decisions/api'
+import { getApplicationDecisions } from '../../decisions/api'
 import { UUID } from '@evaka/lib-common/src/types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { Decision } from '~decisions/types'
+import { Decision } from '../../decisions/types'
 import {
   Container,
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H1, P } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../localization'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
@@ -23,10 +23,10 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faChevronLeft, faExclamation } from '@evaka/lib-icons'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import DecisionResponse from './DecisionResponse'
-import { decisionOrderComparator } from '~decisions/shared'
+import { decisionOrderComparator } from '../../decisions/shared'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
-import Footer from '~Footer'
-import useTitle from '~useTitle'
+import Footer from '../../Footer'
+import useTitle from '../../useTitle'
 
 export default React.memo(function DecisionResponseList() {
   const { applicationId } = useParams<{ applicationId: UUID }>()

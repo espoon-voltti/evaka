@@ -8,9 +8,9 @@ import styled from 'styled-components'
 import { ChoiceChip } from '@evaka/lib-components/src/atoms/Chip'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
-import { AttendanceUIContext } from '~state/attendance-ui'
-import { useTranslation } from '~state/i18n'
-import { AttendanceResponse, Group } from '~api/attendances'
+import { AttendanceUIContext } from '../../state/attendance-ui'
+import { useTranslation } from '../../state/i18n'
+import { AttendanceResponse, Group } from '../../api/attendances'
 
 interface GroupSelectorProps {
   groupIdOrAll: string | 'all'

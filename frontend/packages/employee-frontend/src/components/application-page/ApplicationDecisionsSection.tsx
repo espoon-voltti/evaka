@@ -10,14 +10,14 @@ import { faFilePdf, faGavel, fasExclamationTriangle } from '@evaka/lib-icons'
 import { Label } from '@evaka/lib-components/src/typography'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
-import { useTranslation } from '~state/i18n'
-import { Decision } from 'types/decision'
+import { useTranslation } from '../../state/i18n'
+import { Decision } from '../../types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
-import DecisionResponse from 'components/application-page/DecisionResponse'
-import { UUID } from 'types'
+import DecisionResponse from '../../components/application-page/DecisionResponse'
+import { UUID } from '../../types'
 
 const isPending = (decision: Decision) => decision.status === 'PENDING'
 

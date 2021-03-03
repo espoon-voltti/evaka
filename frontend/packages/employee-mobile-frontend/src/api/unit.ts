@@ -4,7 +4,7 @@
 
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from '~api/client'
+import { client } from '../api/client'
 
 type PairingStatus =
   | 'WAITING_CHALLENGE'

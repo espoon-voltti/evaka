@@ -7,7 +7,10 @@ import styled from 'styled-components'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
 import colors from '@evaka/lib-components/src/colors'
-import { FeeAlterationType, PartialFeeAlteration } from '~types/fee-alteration'
+import {
+  FeeAlterationType,
+  PartialFeeAlteration
+} from '../../../types/fee-alteration'
 
 interface Props {
   edited: PartialFeeAlteration

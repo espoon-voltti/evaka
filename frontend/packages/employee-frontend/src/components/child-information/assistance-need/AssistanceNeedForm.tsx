@@ -5,36 +5,36 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~/state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField, {
   TextArea
 } from '@evaka/lib-components/src/atoms/form/InputField'
-import InfoBall from '~components/common/InfoBall'
-import { AssistanceBasis, AssistanceNeed } from '~types/child'
-import { UUID } from '~types'
-import { formatDecimal, textAreaRows } from '~components/utils'
+import InfoBall from '../../../components/common/InfoBall'
+import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
+import { UUID } from '../../../types'
+import { formatDecimal, textAreaRows } from '../../../components/utils'
 
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   FormErrors,
   formHasErrors,
   isDateRangeInverted
-} from '~utils/validation/validations'
-import LabelValueList from '~components/common/LabelValueList'
-import { ASSISTANCE_BASIS_LIST } from '~constants'
-import FormActions from '~components/common/FormActions'
-import { ChildContext } from '~state'
-import { DateRange, rangeContainsDate } from '~utils/date'
+} from '../../../utils/validation/validations'
+import LabelValueList from '../../../components/common/LabelValueList'
+import { ASSISTANCE_BASIS_LIST } from '../../../constants'
+import FormActions from '../../../components/common/FormActions'
+import { ChildContext } from '../../../state'
+import { DateRange, rangeContainsDate } from '../../../utils/date'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { DivFitContent } from 'components/common/styled/containers'
+import { DivFitContent } from '../../../components/common/styled/containers'
 import {
   AssistanceNeedRequest,
   createAssistanceNeed,
   updateAssistanceNeed
-} from 'api/child/assistance-needs'
+} from '../../../api/child/assistance-needs'
 
 const CheckboxRow = styled.div`
   display: flex;

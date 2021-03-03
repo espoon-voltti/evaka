@@ -9,11 +9,11 @@ import {
   PersonDetails,
   PersonWithChildren,
   SearchColumn
-} from '~/types/person'
-import { SearchOrder, UUID } from '~types'
-import { client } from '~/api/client'
-import { ApplicationSummary } from '~types/application'
-import { Decision } from '~types/decision'
+} from '../types/person'
+import { SearchOrder, UUID } from '../types'
+import { client } from '../api/client'
+import { ApplicationSummary } from '../types/application'
+import { Decision } from '../types/decision'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

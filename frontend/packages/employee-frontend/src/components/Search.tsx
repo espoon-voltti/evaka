@@ -9,8 +9,8 @@ import styled from 'styled-components'
 
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
-import { formatName } from '~/utils'
-import { triggerDvvBatch } from '~api/hidden'
+import { formatName } from '../utils'
+import { triggerDvvBatch } from '../api/hidden'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
@@ -28,12 +28,12 @@ import {
   SortableTh
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import AddVTJPersonModal from '~components/person-search/AddVTJPersonModal'
-import CreatePersonModal from '~components/person-search/CreatePersonModal'
-import { CHILD_AGE } from '~constants.ts'
-import { CustomersContext } from '~state/customers'
-import { useTranslation } from '~state/i18n'
-import { RequireRole } from '~utils/roles'
+import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
+import CreatePersonModal from '../components/person-search/CreatePersonModal'
+import { CHILD_AGE } from '../constants'
+import { CustomersContext } from '../state/customers'
+import { useTranslation } from '../state/i18n'
+import { RequireRole } from '../utils/roles'
 
 const TopBar = styled.div`
   display: flex;

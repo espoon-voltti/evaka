@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
-import { client } from '~api/client'
-import { UUID } from '~types'
+import { client } from '../../api/client'
+import { UUID } from '../../types'
 import {
   Bulletin,
   IdAndName,

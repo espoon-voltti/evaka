@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 
 export default React.memo(function ContactInfoSecondGuardianDaycare() {
   const t = useTranslation()

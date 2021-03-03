@@ -4,14 +4,14 @@
 
 import React, { useState, useContext } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../../../state/i18n'
+import { UIContext } from '../../../../../state/ui'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { faPen } from '@evaka/lib-icons'
-import { DaycareGroup } from '~types/unit'
+import { DaycareGroup } from '../../../../../types/unit'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { editGroup } from '~api/unit'
+import { editGroup } from '../../../../../api/unit'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
   DatePickerDeprecated,

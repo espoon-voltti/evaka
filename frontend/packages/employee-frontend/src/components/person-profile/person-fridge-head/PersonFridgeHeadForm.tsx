@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
+import { UUID } from '../../../types'
+import { useTranslation } from '../../../state/i18n'
 import { useEffect } from 'react'
 import { Result } from '@evaka/lib-common/src/api'
-import { fridgeHeadPerson, getPersonDetails } from '~api/person'
+import { fridgeHeadPerson, getPersonDetails } from '../../../api/person'
 import { useContext } from 'react'
-import { PersonContext, PersonState } from '~state/person'
+import { PersonContext, PersonState } from '../../../state/person'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { UIContext, UiState } from '~state/ui'
+import { UIContext, UiState } from '../../../state/ui'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
   isEmailValid,
   isPhoneValid,
   allPropertiesTrue
-} from '~utils/validation/validations'
-import { PersonContactInfo } from '~types/person'
+} from '../../../utils/validation/validations'
+import { PersonContactInfo } from '../../../types/person'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {

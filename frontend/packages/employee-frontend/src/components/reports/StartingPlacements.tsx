@@ -21,26 +21,26 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
+import { reactSelectStyles } from '../../components/common/Select'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   RowCountInfo,
   TableScrollable
-} from '~components/reports/common'
-import { useTranslation, Lang, Translations } from '~state/i18n'
+} from '../../components/reports/common'
+import { useTranslation, Lang, Translations } from '../../state/i18n'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import {
   getStartingPlacementsReport,
   PlacementsReportFilters
-} from '~api/reports'
-import { StartingPlacementsRow } from '~types/reports'
+} from '../../api/reports'
+import { StartingPlacementsRow } from '../../types/reports'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { FlexRow } from 'components/common/styled/containers'
+import { FlexRow } from '../../components/common/styled/containers'
 import _ from 'lodash'
-import { distinct } from '~utils'
+import { distinct } from '../../utils'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

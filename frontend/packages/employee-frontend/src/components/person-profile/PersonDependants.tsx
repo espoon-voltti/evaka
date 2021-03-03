@@ -7,12 +7,12 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { faChild } from '@evaka/lib-icons'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
+import { UUID } from '../../types'
+import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '@evaka/lib-common/src/api'
 import { useContext } from 'react'
-import { PersonContext } from '~state/person'
+import { PersonContext } from '../../state/person'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   Table,
@@ -23,10 +23,10 @@ import {
   Tr
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import { getPersonDependants } from '~api/person'
-import { DependantAddress, PersonWithChildren } from '~/types/person'
-import { formatName } from '~utils'
-import { NameTd } from '~components/PersonProfile'
+import { getPersonDependants } from '../../api/person'
+import { DependantAddress, PersonWithChildren } from '../../types/person'
+import { formatName } from '../../utils'
+import { NameTd } from '../../components/PersonProfile'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 interface Props {

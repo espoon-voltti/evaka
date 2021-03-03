@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { MutableRefObject } from 'react'
-import { Translations } from '~assets/i18n'
+import { Translations } from '../assets/i18n'
 
 export const key = Math.random().toString(36).substring(7)
 

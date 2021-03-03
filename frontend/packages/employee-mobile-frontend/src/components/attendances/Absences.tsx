@@ -5,12 +5,12 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AttendanceChild } from '~api/attendances'
+import { AttendanceChild } from '../../api/attendances'
 import colors from '@evaka/lib-components/src/colors'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Label } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~state/i18n'
-import { formatCareType } from '~types'
+import { useTranslation } from '../../state/i18n'
+import { formatCareType } from '../../types'
 
 const AttendanceItem = styled.div`
   display: flex;

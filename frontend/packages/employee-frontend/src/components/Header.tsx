@@ -7,13 +7,13 @@ import styled from 'styled-components'
 import { NavLink, RouteComponentProps, withRouter } from 'react-router-dom'
 import classNames from 'classnames'
 import colors from '@evaka/lib-components/src/colors'
-import { useTranslation } from '~state/i18n'
-import { UserContext } from '~state/user'
+import { useTranslation } from '../state/i18n'
+import { UserContext } from '../state/user'
 import EspooLogo from '../assets/EspooLogo.png'
-import { logoutUrl } from '~api/auth'
-import { RequireRole } from '~utils/roles'
+import { logoutUrl } from '../api/auth'
+import { RequireRole } from '../utils/roles'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { featureFlags } from '~config'
+import { featureFlags } from '../config'
 
 const Img = styled.img`
   color: #0050bb;

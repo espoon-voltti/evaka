@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -15,9 +15,9 @@ import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faTimes } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { errorToInputInfo } from '~form-validation'
+import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
-import { ContactInfoSectionProps } from '~applications/editor/contact-info/ContactInfoSection'
+import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 
 export default React.memo(function OtherChildrenSubSection({
   formData,

@@ -16,7 +16,7 @@ import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { InvoiceStatus, InvoiceDistinctiveDetails } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 
 function InvoiceFilters() {
   const {

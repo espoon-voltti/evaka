@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useRef, useState } from 'react'
-import { useTranslation } from '~/state/i18n'
-import { ServiceNeed } from '~types/child'
-import { UIContext } from '~state/ui'
-import ServiceNeedForm from '~components/child-information/service-need/ServiceNeedForm'
+import { useTranslation } from '../../../state/i18n'
+import { ServiceNeed } from '../../../types/child'
+import { UIContext } from '../../../state/ui'
+import ServiceNeedForm from '../../../components/child-information/service-need/ServiceNeedForm'
 import { faQuestion } from '@evaka/lib-icons'
-import ToolbarAccordion from '~components/common/ToolbarAccordion'
-import { formatDate, isActiveDateRange } from '~/utils/date'
+import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
+import { formatDate, isActiveDateRange } from '../../../utils/date'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import Toolbar from '~components/common/Toolbar'
-import LabelValueList from '~components/common/LabelValueList'
-import { capitalizeFirstLetter, scrollToRef } from 'utils'
-import { removeServiceNeed } from 'api/child/service-needs'
+import Toolbar from '../../../components/common/Toolbar'
+import LabelValueList from '../../../components/common/LabelValueList'
+import { capitalizeFirstLetter, scrollToRef } from '../../../utils'
+import { removeServiceNeed } from '../../../api/child/service-needs'
 
 export interface Props {
   serviceNeed: ServiceNeed

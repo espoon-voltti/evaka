@@ -12,14 +12,14 @@ import {
   getPairingStatus,
   PairingResponse,
   postPairingChallenge
-} from '~api/unit'
+} from '../../api/unit'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import colors from '@evaka/lib-components/src/colors'
 import { P } from '@evaka/lib-components/src/typography'
 import { faArrowRight } from '@evaka/lib-icons'
-import { useTranslation } from '~state/i18n'
-import { UserContext } from '~state/user'
+import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { FullHeightContainer, WideLinkButton } from './components'
 

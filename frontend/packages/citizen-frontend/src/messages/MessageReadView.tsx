@@ -9,8 +9,8 @@ import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { H3 } from '@evaka/lib-components/src/typography'
-import { formatDate } from '~util'
-import { ReceivedBulletin } from '~messages/types'
+import { formatDate } from '../util'
+import { ReceivedBulletin } from '../messages/types'
 
 type Props = {
   bulletin: ReceivedBulletin

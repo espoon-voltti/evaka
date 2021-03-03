@@ -8,15 +8,15 @@ import { Table, Tbody } from '@evaka/lib-components/src/layout/Table'
 import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'
 import IncomeSum from './income-table/IncomeSum'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../../state/i18n'
 import {
   Income,
   IncomeCoefficient,
   IncomeType,
   incomeTypes,
   expenseTypes
-} from '~types/income'
-import { formatCents, isValidCents, parseCents } from '~utils/money'
+} from '../../../types/income'
+import { formatCents, isValidCents, parseCents } from '../../../utils/money'
 
 const Container = styled.div`
   margin-bottom: 40px;

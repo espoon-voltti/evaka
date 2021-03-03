@@ -5,7 +5,7 @@
 import React, { useContext, useEffect } from 'react'
 import { Route } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
-import { TitleContext, TitleState } from '~state/title'
+import { TitleContext, TitleState } from '../state/title'
 
 interface Props<T> {
   title?: string

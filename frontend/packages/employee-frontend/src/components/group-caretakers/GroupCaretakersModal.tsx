@@ -4,18 +4,18 @@
 
 import React, { useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { CaretakerAmount } from '~types/caretakers'
+import { CaretakerAmount } from '../../types/caretakers'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faPen, faPlus } from '@evaka/lib-icons'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
-import { UUID } from '~types'
-import { postCaretakers, putCaretakers } from '~api/caretakers'
+import { UUID } from '../../types'
+import { postCaretakers, putCaretakers } from '../../api/caretakers'
 import { Result } from '@evaka/lib-common/src/api'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 

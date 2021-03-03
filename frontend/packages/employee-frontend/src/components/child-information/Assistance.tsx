@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useTranslation } from '~/state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { faHandHolding } from '@evaka/lib-icons'
-import { UUID } from '~/types'
-import AssistanceNeed from 'components/child-information/AssistanceNeed'
-import AssistanceAction from 'components/child-information/AssistanceAction'
+import { UUID } from '../../types'
+import AssistanceNeed from '../../components/child-information/AssistanceNeed'
+import AssistanceAction from '../../components/child-information/AssistanceAction'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 export interface Props {

@@ -16,15 +16,15 @@ import {
 import LocalDate from '@evaka/lib-common/src/local-date'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { DatePickerClearableDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus,
   VoucherValueDecisionStatus,
   InvoiceStatus,
   InvoiceDistinctiveDetails
-} from '~types/invoicing'
-import { ApplicationSummaryStatus } from '~types/application'
+} from '../../types/invoicing'
+import { ApplicationSummaryStatus } from '../../types/application'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -37,10 +37,10 @@ import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
 import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
-import Tooltip from '~components/common/Tooltip'
-import { CareArea } from '~types/unit'
-import { Label, LabelText } from '~components/common/styled/common'
-import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
+import Tooltip from '../../components/common/Tooltip'
+import { CareArea } from '../../types/unit'
+import { Label, LabelText } from '../../components/common/styled/common'
+import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 interface Props {

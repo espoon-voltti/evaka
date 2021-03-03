@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { AttendanceChild } from '~api/attendances'
+import { AttendanceChild } from '../../api/attendances'
 
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
@@ -14,8 +14,8 @@ import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import { faExclamation } from '@evaka/lib-icons'
-import { useTranslation } from '~state/i18n'
-import { CareType, formatCareType } from '~types'
+import { useTranslation } from '../../state/i18n'
+import { CareType, formatCareType } from '../../types'
 
 // TODO: Refactor all of these to actual components that show up in storybook
 export const WideButton = styled(Button)`

@@ -18,17 +18,17 @@ import {
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { getInvoiceReport, InvoiceReportFilters } from '~api/reports'
-import { InvoiceReport, InvoiceReportRow } from '~types/reports'
+import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
+import { InvoiceReport, InvoiceReportRow } from '../../types/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   TableScrollable
-} from '~components/reports/common'
+} from '../../components/reports/common'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

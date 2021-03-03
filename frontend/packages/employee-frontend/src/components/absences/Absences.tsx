@@ -6,7 +6,7 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { flatMap, partition } from 'lodash'
 import colors from '@evaka/lib-components/src/colors'
-import { Label, LabelText } from '~components/common/styled/common'
+import { Label, LabelText } from '../../components/common/styled/common'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
@@ -18,9 +18,9 @@ import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Loading } from '@evaka/lib-common/src/api'
-import { getGroupAbsences, postGroupAbsences } from '~api/absences'
-import { AbsencesContext, AbsencesState } from '~state/absence'
-import { useTranslation } from '~state/i18n'
+import { getGroupAbsences, postGroupAbsences } from '../../api/absences'
+import { AbsencesContext, AbsencesState } from '../../state/absence'
+import { useTranslation } from '../../state/i18n'
 import {
   AbsencePayload,
   defaultAbsenceType,
@@ -30,11 +30,11 @@ import {
   billableCareTypes,
   CellPart,
   defaultCareTypeCategory
-} from '~types/absence'
+} from '../../types/absence'
 import AbsenceTable from './AbsenceTable'
-import PeriodPicker from '~components/absences/PeriodPicker'
-import { TitleContext, TitleState } from '~state/title'
-import ColorInfo from '~components/absences/ColorInfo'
+import PeriodPicker from '../../components/absences/PeriodPicker'
+import { TitleContext, TitleState } from '../../state/title'
+import ColorInfo from '../../components/absences/ColorInfo'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import styled from 'styled-components'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'

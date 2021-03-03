@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { ChildContextProvider } from '~/state/child'
-import { PersonContextProvider } from '~/state/person'
-import { CustomersContextProvider } from '~/state/customers'
-import { UnitContextProvider } from '~/state/unit'
-import { UnitsContextProvider } from '~/state/units'
-import { UIContextProvider } from '~/state/ui'
-import { I18nContextProvider } from '~/state/i18n'
-import { InvoicingUIContextProvider } from '~/state/invoicing-ui'
-import { AbsencesContextProvider } from '~/state/absence'
-import { ApplicationUIContextProvider } from '~/state/application-ui'
+import { ChildContextProvider } from '../state/child'
+import { PersonContextProvider } from '../state/person'
+import { CustomersContextProvider } from '../state/customers'
+import { UnitContextProvider } from '../state/unit'
+import { UnitsContextProvider } from '../state/units'
+import { UIContextProvider } from '../state/ui'
+import { I18nContextProvider } from '../state/i18n'
+import { InvoicingUIContextProvider } from '../state/invoicing-ui'
+import { AbsencesContextProvider } from '../state/absence'
+import { ApplicationUIContextProvider } from '../state/application-ui'
 import {
   PlacementDraftContextProvider,
   UnitsContextProvider as PDUnitsContextProvider
-} from '~state/placementdraft'
-import { DecisionDraftContextProvider } from '~state/decision'
-import { TitleContextProvider } from '~state/title'
+} from '../state/placementdraft'
+import { DecisionDraftContextProvider } from '../state/decision'
+import { TitleContextProvider } from '../state/title'
 
 const StateProvider = React.memo(function StateProvider({
   children

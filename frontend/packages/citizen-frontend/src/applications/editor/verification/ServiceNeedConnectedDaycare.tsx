@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
+import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
-import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
+import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 
 type Props = {
   formData: ApplicationFormData

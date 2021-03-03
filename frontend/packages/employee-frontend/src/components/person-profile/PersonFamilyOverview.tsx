@@ -17,19 +17,19 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import LabelValueList from '~components/common/LabelValueList'
-import { Translations, useTranslation } from '~state/i18n'
-import { PersonContext } from '~state/person'
+import LabelValueList from '../../components/common/LabelValueList'
+import { Translations, useTranslation } from '../../state/i18n'
+import { PersonContext } from '../../state/person'
 import {
   FamilyOverview,
   FamilyOverviewPerson,
   FamilyOverviewRow,
   FamilyOverviewPersonRole
-} from '~types/family-overview'
-import { UUID } from '~types'
-import { formatCents } from '~utils/money'
+} from '../../types/family-overview'
+import { UUID } from '../../types'
+import { formatCents } from '../../utils/money'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 
 interface Props {
   id: UUID

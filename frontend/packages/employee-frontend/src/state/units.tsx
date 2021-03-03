@@ -10,8 +10,8 @@ import React, {
   useState
 } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { Unit } from '~types/unit'
-import { SearchOrder } from '~types'
+import { Unit } from '../types/unit'
+import { SearchOrder } from '../types'
 
 export interface UnitsState {
   units: Result<Unit[]>

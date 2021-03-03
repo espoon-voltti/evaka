@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types'
+import { UUID } from '../types'
 
 export type DecisionType =
   | 'CLUB'

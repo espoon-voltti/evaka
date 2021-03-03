@@ -4,14 +4,14 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import LabelValueList from '~components/common/LabelValueList'
+import LabelValueList from '../../components/common/LabelValueList'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H3, H5 } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~state/i18n'
-import { Income, IncomeType, incomeTypes } from '~types/income'
-import { VoucherValueDecisionDetailed } from '~types/invoicing'
-import { formatCents } from '~utils/money'
-import { formatName, formatPercent } from '~utils'
+import { useTranslation } from '../../state/i18n'
+import { Income, IncomeType, incomeTypes } from '../../types/income'
+import { VoucherValueDecisionDetailed } from '../../types/invoicing'
+import { formatCents } from '../../utils/money'
+import { formatName, formatPercent } from '../../utils'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

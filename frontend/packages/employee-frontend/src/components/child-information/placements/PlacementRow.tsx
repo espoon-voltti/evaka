@@ -3,32 +3,32 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { Placement } from '~types/child'
+import { Placement } from '../../../types/child'
 import ToolbarAccordion, {
   RestrictedToolbar
-} from '~components/common/ToolbarAccordion'
+} from '../../../components/common/ToolbarAccordion'
 import {
   DateRange,
   getStatusLabelByDateRange,
   isActiveDateRange
-} from '~utils/date'
-import { useTranslation } from '~state/i18n'
+} from '../../../utils/date'
+import { useTranslation } from '../../../state/i18n'
 import { faQuestion } from '@evaka/lib-icons'
 import styled from 'styled-components'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { UIContext, UiState } from '~state/ui'
+import { UIContext, UiState } from '../../../state/ui'
 import { Link } from 'react-router-dom'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import Toolbar from '~components/common/Toolbar'
+import Toolbar from '../../../components/common/Toolbar'
 import {
   deletePlacement,
   PlacementUpdate,
   updatePlacement
-} from 'api/child/placements'
-import { InputWarning } from '~components/common/InputWarning'
+} from '../../../api/child/placements'
+import { InputWarning } from '../../../components/common/InputWarning'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 

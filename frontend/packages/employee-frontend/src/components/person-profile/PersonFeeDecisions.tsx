@@ -9,9 +9,9 @@ import { Link } from 'react-router-dom'
 
 import { faChild, faPlus } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types'
-import { useTranslation, Translations } from '~state/i18n'
-import { UIContext } from '~state/ui'
+import { UUID } from '../../types'
+import { useTranslation, Translations } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
@@ -25,14 +25,14 @@ import {
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { formatDate } from '~utils/date'
+import { formatDate } from '../../utils/date'
 import {
   getPersonFeeDecisions,
   createRetroactiveDecisions
-} from '~api/invoicing'
-import { FeeDecision } from '~types/invoicing'
-import { DateTd, StatusTd } from '~components/PersonProfile'
-import { formatCents } from '~utils/money'
+} from '../../api/invoicing'
+import { FeeDecision } from '../../types/invoicing'
+import { DateTd, StatusTd } from '../../components/PersonProfile'
+import { formatCents } from '../../utils/money'
 import colors from '@evaka/lib-components/src/colors'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 

@@ -8,18 +8,18 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import IncomeList from './income/IncomeList'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
-import { PersonContext } from '~state/person'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
+import { PersonContext } from '../../state/person'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   getIncomes,
   createIncome,
   updateIncome,
   deleteIncome
-} from '~api/income'
-import { Income, PartialIncome, IncomeId } from '~types/income'
-import { UUID } from '~types'
+} from '../../api/income'
+import { Income, PartialIncome, IncomeId } from '../../types/income'
+import { UUID } from '../../types'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 

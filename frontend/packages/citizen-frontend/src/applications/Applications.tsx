@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useTranslation } from '~localization'
+import { useTranslation } from '../localization'
 import React, { useEffect, useState } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
@@ -13,12 +13,12 @@ import { getGuardianApplications } from './api'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H1 } from '@evaka/lib-components/src/typography'
 import _ from 'lodash'
-import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
+import ChildApplicationsBlock from '../applications/ChildApplicationsBlock'
 import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import Footer from '~Footer'
-import useTitle from '~useTitle'
+import Footer from '../Footer'
+import useTitle from '../useTitle'
 
 export default React.memo(function Applications() {
   const t = useTranslation()

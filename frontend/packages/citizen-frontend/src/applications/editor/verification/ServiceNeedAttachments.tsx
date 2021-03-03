@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
+import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { Label } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { faFile } from '@evaka/lib-icons'

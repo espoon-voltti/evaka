@@ -9,18 +9,18 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import FileUpload from '../FileUpload'
-import { deleteAttachment, saveAttachment } from '~applications/api'
+import { deleteAttachment, saveAttachment } from '../../../applications/api'
 import { Result } from '@evaka/lib-common/src/api'
 import { UUID } from '@evaka/lib-common/src/types'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { errorToInputInfo } from '~form-validation'
-import { ServiceNeedSectionProps } from '~applications/editor/service-need/ServiceNeedSection'
+import { errorToInputInfo } from '../../../form-validation'
+import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 
 const Hyphenbox = styled.div`

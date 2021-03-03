@@ -1,6 +1,6 @@
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { InputInfo } from '@evaka/lib-components/src/atoms/form/InputField'
-import { Translations } from '~localization'
+import { Translations } from './localization'
 import { parse } from 'date-fns'
 
 export const SSN_REGEXP = /^[0-9]{6}[+\-A][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/

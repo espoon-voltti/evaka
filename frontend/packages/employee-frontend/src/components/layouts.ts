@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AdRole } from '~types'
+import { AdRole } from '../types'
 
 type Layout<Components> = { component: keyof Components; open: boolean }[]
 type Layouts<Components> = {

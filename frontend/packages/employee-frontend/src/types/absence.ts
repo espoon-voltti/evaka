@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types'
+import { UUID } from '../types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { PlacementType } from './child'
-import { Translations } from '~state/i18n'
+import { Translations } from '../state/i18n'
 
 export type TableMode = 'MONTH'
 

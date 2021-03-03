@@ -6,7 +6,7 @@ import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../localization'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
@@ -27,7 +27,7 @@ import {
   FileObject
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { getFileAvailability, getFileBlob } from '~applications/api'
+import { getFileAvailability, getFileBlob } from '../../applications/api'
 
 export type FileUploadProps = {
   files: ApplicationAttachment[]

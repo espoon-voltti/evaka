@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import {
   ApplicationGuardianAgreementStatus,
   ApplicationType
 } from '@evaka/lib-common/src/api-types/application/enums'
-import { ContactInfoFormData } from '~applications/editor/ApplicationFormData'
-import { ApplicationFormDataErrors } from '~applications/editor/validations'
+import { ContactInfoFormData } from '../../../applications/editor/ApplicationFormData'
+import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { errorToInputInfo } from '~form-validation'
+import { errorToInputInfo } from '../../../form-validation'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
 
 type SecondGuardianSubSectionProps = {

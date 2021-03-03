@@ -25,25 +25,25 @@ import {
   UnitsState,
   UnitsContext,
   Unit
-} from '~state/placementdraft'
-import { useTranslation } from '~state/i18n'
-import { UUID } from '~types'
+} from '../../state/placementdraft'
+import { useTranslation } from '../../state/i18n'
+import { UUID } from '../../types'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
-import { getApplicationUnits } from '~api/daycare'
-import { formatName } from '~/utils'
+import { getApplicationUnits } from '../../api/daycare'
+import { formatName } from '../../utils'
 import {
   PlacementDraft,
   PlacementDraftPlacement,
   DaycarePlacementPlan
-} from '~types/placementdraft'
+} from '../../types/placementdraft'
 import UnitCards from './UnitCards'
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
-import { TitleContext, TitleState } from '~state/title'
-import { getPlacementDraft, createPlacementPlan } from 'api/applications'
+import { TitleContext, TitleState } from '../../state/title'
+import { getPlacementDraft, createPlacementPlan } from '../../api/applications'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
-import WarningLabel from '~components/common/WarningLabel'
-import Tooltip from '~components/common/Tooltip'
+import WarningLabel from '../../components/common/WarningLabel'
+import Tooltip from '../../components/common/Tooltip'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;
