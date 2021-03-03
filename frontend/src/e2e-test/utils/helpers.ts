@@ -19,7 +19,7 @@ export const waitUntilScrolled = ClientFunction(
     new Promise((resolve) => {
       const handler = () => {
         window.removeEventListener('scroll', handler)
-        resolve()
+        resolve(undefined)
       }
 
       window.addEventListener('scroll', handler)
