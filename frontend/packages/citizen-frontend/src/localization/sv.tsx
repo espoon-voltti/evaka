@@ -109,7 +109,7 @@ const sv: Translations = {
       list: 'Lista på enheter'
     },
     serviceVoucherLink:
-      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik'
+      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Bra_att_veta_om_smabarnspedagogik/Ansokan_om_plats_inom_smabarnspedagogik'
   },
   messages: {
     inboxTitle: 'Inkorg',
