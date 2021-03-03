@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
@@ -11,16 +11,39 @@ import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeight } from '../header/const'
+import { getUnreadBulletinsCount } from '../messages/api'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useUser } from '../auth'
+import { HeaderContext, HeaderState } from '../messages/state'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
+  const user = useUser()
+
+  const {
+    unreadBulletinsCount,
+    setUnreadBulletinsCount
+  } = useContext<HeaderState>(HeaderContext)
+
+  const loadUnreadBulletinsCount = useRestApi(
+    getUnreadBulletinsCount,
+    (result) => result.isSuccess && setUnreadBulletinsCount(result.value)
+  )
+
+  useEffect(() => {
+    if (user) loadUnreadBulletinsCount()
+  }, [user])
 
   return (
     <HeaderContainer fixed={showMenu}>
       <EspooLogo />
       <EvakaLogo />
-      <DesktopNav />
-      <MobileNav showMenu={showMenu} setShowMenu={setShowMenu} />
+      <DesktopNav unreadMessagesCount={unreadBulletinsCount ?? 0} />
+      <MobileNav
+        showMenu={showMenu}
+        setShowMenu={setShowMenu}
+        unreadMessagesCount={unreadBulletinsCount ?? 0}
+      />
     </HeaderContainer>
   )
 })

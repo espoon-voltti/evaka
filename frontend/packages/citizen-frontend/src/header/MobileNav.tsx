@@ -16,13 +16,19 @@ import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '../header/const'
 import { featureFlags } from '../config'
+import { CircledChar } from './DesktopNav'
 
 type Props = {
   showMenu: boolean
   setShowMenu: Dispatch<SetStateAction<boolean>>
+  unreadMessagesCount: number
 }
 
-export default React.memo(function MobileNav({ showMenu, setShowMenu }: Props) {
+export default React.memo(function MobileNav({
+  showMenu,
+  setShowMenu,
+  unreadMessagesCount
+}: Props) {
   const user = useUser()
   const t = useTranslation()
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
@@ -40,7 +46,7 @@ export default React.memo(function MobileNav({ showMenu, setShowMenu }: Props) {
         <MenuContainer>
           <LanguageMenu close={close} />
           <Gap size="s" />
-          <Navigation close={close} />
+          <Navigation close={close} unreadMessagesCount={unreadMessagesCount} />
           <Spacer />
           <UserContainer>
             <UserName>{`${user?.firstName ?? ''} ${
@@ -169,9 +175,11 @@ const LangButton = styled.button<{ active: boolean }>`
 `
 
 const Navigation = React.memo(function Navigation({
-  close
+  close,
+  unreadMessagesCount
 }: {
   close: () => void
+  unreadMessagesCount: number
 }) {
   const t = useTranslation()
   const user = useUser()
@@ -191,7 +199,12 @@ const Navigation = React.memo(function Navigation({
           </StyledNavLink>
           {featureFlags.messaging && (
             <StyledNavLink to="/messages" onClick={close}>
-              {t.header.nav.messages}
+              {t.header.nav.messages}{' '}
+              {unreadMessagesCount > 0 ? (
+                <FloatingCircledChar>{unreadMessagesCount}</FloatingCircledChar>
+              ) : (
+                ''
+              )}
             </StyledNavLink>
           )}
         </>
@@ -204,6 +217,10 @@ const Nav = styled.nav`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+`
+
+const FloatingCircledChar = styled(CircledChar)`
+  float: right;
 `
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

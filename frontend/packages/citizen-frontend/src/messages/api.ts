@@ -20,3 +20,10 @@ export async function getBulletins(): Promise<Result<ReceivedBulletin[]>> {
 export async function markBulletinRead(id: string): Promise<void> {
   return client.put(`/citizen/bulletins/${id}/read`)
 }
+
+export async function getUnreadBulletinsCount(): Promise<Result<number>> {
+  return client
+    .get(`/citizen/bulletins/unread/`)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

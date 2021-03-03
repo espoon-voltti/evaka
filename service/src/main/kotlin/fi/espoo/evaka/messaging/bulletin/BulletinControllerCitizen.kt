@@ -29,6 +29,19 @@ class BulletinControllerCitizen {
         }.let { ResponseEntity.ok(it) }
     }
 
+    @GetMapping("/unread")
+    fun getUnreadCount(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): ResponseEntity<Int> {
+        Audit.MessagingUnreadCountRead.log()
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        return db.read {
+            it.getUnreadBulletinCountByGuardian(user)
+        }.let { ResponseEntity.ok(it) }
+    }
+
     @PutMapping("/{id}/read")
     fun markBulletinRead(
         db: Database.Connection,

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { tabletMin } from '@evaka/lib-components/src/breakpoints'
@@ -14,6 +14,7 @@ import { getBulletins, markBulletinRead } from '../messages/api'
 import MessagesList from '../messages/MessagesList'
 import MessageReadView from '../messages/MessageReadView'
 import styled from 'styled-components'
+import { HeaderState, HeaderContext } from './state'
 
 export default React.memo(function MessagesPage() {
   const [bulletins, setBulletins] = useState<Result<ReceivedBulletin[]>>(
@@ -23,11 +24,25 @@ export default React.memo(function MessagesPage() {
     null
   )
 
+  const { setUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
+
   const loadBulletins = useRestApi(getBulletins, setBulletins)
   useEffect(() => loadBulletins(), [])
 
+  useEffect(
+    () =>
+      bulletins.isSuccess
+        ? setUnreadBulletinsCount(
+            bulletins.value.filter(({ isRead }) => !isRead).length
+          )
+        : undefined,
+    [bulletins]
+  )
+
   const openBulletin = (bulletin: ReceivedBulletin) => {
     setActiveBulletin(bulletin)
+
+    if (bulletin.isRead) return
 
     void markBulletinRead(bulletin.id).then(() => {
       setActiveBulletin((b) =>
