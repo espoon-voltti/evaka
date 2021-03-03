@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '@evaka/lib-common/src/json'
+import { JsonOf } from '@evaka/lib-common/json'
 import { UUID } from '../../types'
 
 export type Bulletin = {

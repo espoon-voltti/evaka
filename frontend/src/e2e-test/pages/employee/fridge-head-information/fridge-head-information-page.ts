@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { formatCents } from '@evaka/employee-frontend/src/utils/money'
+import { formatCents } from '@evaka/employee-frontend/utils/money'
 import { selectFirstOption, waitUntilScrolled } from '../../../utils/helpers'
 
 interface VerifyFamilyPersonOpts {

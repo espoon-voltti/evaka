@@ -10,21 +10,21 @@ import React, {
   useRef,
   useState
 } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
+import LocalDate from '@evaka/lib-common/local-date'
+import { Td, Tr } from '@evaka/lib-components/layout/Table'
 import { DisabledCell } from '../../components/absences/AbsenceCell'
 import { useTranslation } from '../../state/i18n'
 import { AbsencesContext } from '../../state/absence'
 import { StaffAttendance, StaffAttendanceGroup } from '../../types/absence'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
-import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
 import { formatDecimal } from '../../components/utils'
 import { faTimes } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '../../components/common/Tooltip'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 type Props = {
   groupId: string

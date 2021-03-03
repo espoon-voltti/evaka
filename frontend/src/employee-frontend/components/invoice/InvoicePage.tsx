@@ -8,12 +8,12 @@ import { Redirect, useParams } from 'react-router-dom'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import Title from '@evaka/lib-components/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
 import InvoiceRowsSection from './InvoiceRowsSection'
 import InvoiceDetailsSection from './InvoiceDetailsSection'

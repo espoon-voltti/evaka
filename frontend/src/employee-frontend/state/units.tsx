@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { Unit } from '../types/unit'
 import { SearchOrder } from '../types'
 

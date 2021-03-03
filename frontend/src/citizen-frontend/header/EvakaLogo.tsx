@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { desktopMin, desktopSmall } from '@evaka/lib-components/src/breakpoints'
+import { desktopMin, desktopSmall } from '@evaka/lib-components/breakpoints'
 
 export default React.memo(function Logo() {
   return (

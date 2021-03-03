@@ -20,11 +20,11 @@ import {
   ModalTitle,
   ModalSize,
   IconColour
-} from '@evaka/lib-components/src/molecules/modals/FormModal'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { P } from '@evaka/lib-components/src/typography'
+} from '@evaka/lib-components/molecules/modals/FormModal'
+import Title from '@evaka/lib-components/atoms/Title'
+import { Gap } from '@evaka/lib-components/white-space'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import { P } from '@evaka/lib-components/typography'
 
 interface SizeProps {
   size: ModalSize

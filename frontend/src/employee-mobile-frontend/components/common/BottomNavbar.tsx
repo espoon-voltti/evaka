@@ -1,9 +1,9 @@
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/src/white-space'
+} from '@evaka/lib-components/layout/flex-helpers'
+import { Gap } from '@evaka/lib-components/white-space'
 import { faChild, faComments, faUser } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'

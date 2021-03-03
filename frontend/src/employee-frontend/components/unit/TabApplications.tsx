@@ -7,12 +7,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useContext } from 'react'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import { ContentArea } from '@evaka/lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
-import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 import { useTranslation } from '../../state/i18n'
-import Title from '@evaka/lib-components/src/atoms/Title'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Table,
   Tbody,
@@ -20,9 +20,9 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { formatName } from '../../utils'
-import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
 import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
 import { isPartDayPlacement } from '../../utils/placements'
 

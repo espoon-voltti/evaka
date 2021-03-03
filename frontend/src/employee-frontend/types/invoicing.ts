@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '@evaka/lib-common/src/json'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { JsonOf } from '@evaka/lib-common/json'
+import LocalDate from '@evaka/lib-common/local-date'
 import { UUID } from '../types'
 import { FeeAlterationType } from '../types/fee-alteration'
 import { Income, IncomeEffect } from '../types/income'

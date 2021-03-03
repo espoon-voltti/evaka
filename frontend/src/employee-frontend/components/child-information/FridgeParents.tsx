@@ -15,13 +15,13 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 
 type Props = {
   open: boolean

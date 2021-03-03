@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useMemo, useState } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import LocalDate from '@evaka/lib-common/local-date'
+import { Loading, Result } from '@evaka/lib-common/api'
 import {
   TableMode,
   Group,

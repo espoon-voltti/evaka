@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '@evaka/lib-common/src/types'
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { JsonOf } from '@evaka/lib-common/src/json'
+import { UUID } from '@evaka/lib-common/types'
+import { Failure, Result, Success } from '@evaka/lib-common/api'
+import { JsonOf } from '@evaka/lib-common/json'
 import {
   ApplicationDecisions,
   Decision,
@@ -12,7 +12,7 @@ import {
   deserializeDecision
 } from '../decisions/types'
 import { client } from '../api-client'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 
 export async function getDecisions(): Promise<Result<ApplicationDecisions[]>> {
   return client

@@ -9,23 +9,23 @@ import styled from 'styled-components'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Link } from 'react-router-dom'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { FamilyConflictReportRow } from '../../types/reports'
 import { getFamilyConflictsReport } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,

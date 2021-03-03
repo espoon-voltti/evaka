@@ -24,7 +24,7 @@ import {
 } from '../../dev-api'
 import { seppoAdminRole } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()

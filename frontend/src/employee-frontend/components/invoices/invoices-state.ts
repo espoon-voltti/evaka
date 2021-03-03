@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { Paged, Result } from '@evaka/lib-common/src/api'
+import LocalDate from '@evaka/lib-common/local-date'
+import { Paged, Result } from '@evaka/lib-common/api'
 import {
   createInvoices,
   getInvoices,
@@ -16,7 +16,7 @@ import {
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
 import { InvoiceSummary } from '../../types/invoicing'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 
 const pageSize = 200
 

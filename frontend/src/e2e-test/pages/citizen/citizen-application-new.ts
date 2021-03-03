@@ -1,5 +1,5 @@
 import { Selector, t } from 'testcafe'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 
 export default class CitizenNewApplicationPage {
   readonly title = Selector('h1')

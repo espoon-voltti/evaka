@@ -5,16 +5,16 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import LocalDate from '@evaka/lib-common/local-date'
+import { Gap } from '@evaka/lib-components/white-space'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import { Label } from '@evaka/lib-components/src/typography'
-import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+} from '@evaka/lib-components/layout/Container'
+import { Label } from '@evaka/lib-components/typography'
+import { AsyncFormModal } from '@evaka/lib-components/molecules/modals/FormModal'
+import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'

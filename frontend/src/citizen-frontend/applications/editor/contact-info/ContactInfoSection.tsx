@@ -6,7 +6,7 @@ import React from 'react'
 import { useTranslation } from '../../../localization'
 import { ContactInfoFormData } from '../ApplicationFormData'
 import EditorSection from '../../../applications/editor/EditorSection'
-import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
+import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
 import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
 import { getErrorCount } from '../../../form-validation'
 import ChildSubSection from '../../../applications/editor/contact-info/ChildSubSection'
@@ -14,7 +14,7 @@ import GuardianSubSection from '../../../applications/editor/contact-info/Guardi
 import SecondGuardianSubSection from '../../../applications/editor/contact-info/SecondGuardianSubSection'
 import OtherPartnerSubSection from '../../../applications/editor/contact-info/OtherPartnerSubSection'
 import OtherChildrenSubSection from '../../../applications/editor/contact-info/OtherChildrenSubSection'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 
 export type ContactInfoSectionProps = {
   type: ApplicationType

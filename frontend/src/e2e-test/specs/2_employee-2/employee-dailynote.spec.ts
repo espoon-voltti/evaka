@@ -27,7 +27,7 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { DaycareDailyNote, DaycarePlacement } from '../../dev-api/types'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'
 

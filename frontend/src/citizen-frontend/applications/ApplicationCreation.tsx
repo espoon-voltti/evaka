@@ -8,18 +8,18 @@ import styled from 'styled-components'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import { H1, H2 } from '@evaka/lib-components/src/typography'
-import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
-import ButtonContainer from '@evaka/lib-components/src/layout/ButtonContainer'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+} from '@evaka/lib-components/layout/Container'
+import { H1, H2 } from '@evaka/lib-components/typography'
+import { Gap, defaultMargins } from '@evaka/lib-components/white-space'
+import ButtonContainer from '@evaka/lib-components/layout/ButtonContainer'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
 import {
   AlertBox,
   InfoBox
-} from '@evaka/lib-components/src/molecules/MessageBoxes'
+} from '@evaka/lib-components/molecules/MessageBoxes'
 import { useUser } from '../auth'
 import { useTranslation } from '../localization'
 import {
@@ -27,8 +27,8 @@ import {
   getActivePlacementsByApplicationType,
   getDuplicateApplications
 } from '../applications/api'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
-import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+import ExpandingInfo from '@evaka/lib-components/molecules/ExpandingInfo'
 import Footer from '../Footer'
 import useTitle from '../useTitle'
 

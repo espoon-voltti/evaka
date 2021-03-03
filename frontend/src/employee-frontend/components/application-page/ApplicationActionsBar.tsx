@@ -4,14 +4,14 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import StickyFooter from '@evaka/lib-components/src/layout/StickyFooter'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { Gap } from '@evaka/lib-components/white-space'
+import StickyFooter from '@evaka/lib-components/layout/StickyFooter'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { sendApplication, updateApplication } from '../../api/applications'
-import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
-import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationStatus } from '@evaka/lib-common/api-types/application/enums'
+import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
 
 type Props = {
   applicationStatus: ApplicationStatus

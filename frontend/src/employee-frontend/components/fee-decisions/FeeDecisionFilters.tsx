@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import {
   AreaFilter,
   Filters,
@@ -20,7 +20,7 @@ import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus
 } from '../../types/invoicing'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { useMemo } from 'react'
 

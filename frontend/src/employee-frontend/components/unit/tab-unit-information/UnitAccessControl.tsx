@@ -13,9 +13,9 @@ import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
 
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+import { ContentArea } from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Table,
   Th,
@@ -23,9 +23,9 @@ import {
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+} from '@evaka/lib-components/layout/Table'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import { Loading, Result } from '@evaka/lib-common/api'
 import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
@@ -43,21 +43,21 @@ import {
 import { getEmployees } from '../../../api/employees'
 import { Employee } from '../../../types/employee'
 import { UserContext } from '../../../state/user'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { RequireRole } from '../../../utils/roles'
 import { useTranslation } from '../../../state/i18n'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
-import { H2 } from '@evaka/lib-components/src/typography'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { H2 } from '@evaka/lib-components/typography'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { UUID } from '../../../types'
 import { UIContext } from '../../../state/ui'
 import { formatName } from '../../../utils'
-import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
+import { Gap } from '@evaka/lib-components/white-space'
 import MobilePairingModal from '../MobilePairingModal'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '../../../constants'
 import { AdRole } from '../../../types'
 

@@ -4,10 +4,10 @@
 
 import { UUID } from '../types'
 import { CaretakersResponse } from '../types/caretakers'
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Result, Success } from '@evaka/lib-common/api'
 import { client } from '../api/client'
-import { JsonOf } from '@evaka/lib-common/src/json'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { JsonOf } from '@evaka/lib-common/json'
+import LocalDate from '@evaka/lib-common/local-date'
 
 export async function getCaretakers(
   unitId: UUID,

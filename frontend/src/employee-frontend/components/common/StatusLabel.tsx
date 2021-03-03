@@ -6,7 +6,7 @@ import React from 'react'
 import { useTranslation } from '../../state/i18n'
 
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
 

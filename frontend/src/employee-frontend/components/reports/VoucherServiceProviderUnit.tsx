@@ -11,24 +11,24 @@ import { range } from 'lodash'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { VoucherServiceProviderUnitRow } from '../../types/reports'
 import {
   getVoucherServiceProviderUnitReport,
   VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
 } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
@@ -38,11 +38,11 @@ import {
 import { UUID } from '../../types'
 import { reactSelectStyles } from '../../components/common/Select'
 
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 
 import { formatCents } from '../../utils/money'
 import { capitalizeFirstLetter, formatName } from '../../utils'
-import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
+import Tooltip from '@evaka/lib-components/atoms/Tooltip'
 
 const Wrapper = styled.div`
   width: 100%;

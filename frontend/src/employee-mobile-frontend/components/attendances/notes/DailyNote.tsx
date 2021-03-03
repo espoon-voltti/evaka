@@ -5,11 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import colors from '@evaka/lib-components/src/colors'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { Label } from '@evaka/lib-components/src/typography'
+import colors from '@evaka/lib-components/colors'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import Title from '@evaka/lib-components/atoms/Title'
+import { Gap } from '@evaka/lib-components/white-space'
+import { Label } from '@evaka/lib-components/typography'
 
 import { AttendanceChild } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'

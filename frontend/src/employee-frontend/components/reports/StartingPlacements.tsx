@@ -11,18 +11,18 @@ import { Link } from 'react-router-dom'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
@@ -31,13 +31,13 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import { useTranslation, Lang, Translations } from '../../state/i18n'
-import { Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Loading, Result, Success } from '@evaka/lib-common/api'
 import {
   getStartingPlacementsReport,
   PlacementsReportFilters
 } from '../../api/reports'
 import { StartingPlacementsRow } from '../../types/reports'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
 import _ from 'lodash'
 import { distinct } from '../../utils'

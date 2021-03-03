@@ -3,30 +3,30 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../state/i18n'
 import { faFileAlt } from '@evaka/lib-icons'
 import { UIContext } from '../../state/ui'
 import { PersonDetails } from '../../types/person'
-import { Label } from '@evaka/lib-components/src/typography'
+import { Label } from '@evaka/lib-components/typography'
 import { formatName } from '../../utils'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
 import PersonSearch from '../../components/common/PersonSearch'
 import { UUID } from '../../types'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import LocalDate from '@evaka/lib-common/local-date'
 import Select from '../../components/common/Select'
 import {
   createPaperApplication,
   PaperApplicationRequest
 } from '../../api/applications'
 import { getEmployeeUrlPrefix } from '../../constants'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import VtjPersonSearch from '../../components/common/VtjPersonSearch'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import { CreatePersonBody } from '../../api/person'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 
 interface CreateApplicationModalProps {
   child: PersonDetails

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from './client'
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Result, Success } from '@evaka/lib-common/api'
 import { Unit } from '../types/invoicing'
 import { CareArea } from '../types/unit'
 import { PlacementType } from '../types/child'
-import { JsonOf } from '@evaka/lib-common/src/json'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { JsonOf } from '@evaka/lib-common/json'
+import LocalDate from '@evaka/lib-common/local-date'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
 
 export async function getUnits(
   areas: string[],

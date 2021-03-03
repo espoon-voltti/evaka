@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { Label } from '@evaka/lib-components/src/typography'
+import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import { Label } from '@evaka/lib-components/typography'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import { allPropertiesTrue } from '../../../../utils/validation/validations'
 import { createGroup } from '../../../../api/unit'
 import { EVAKA_START } from '../../../../constants'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import LocalDate from '@evaka/lib-common/local-date'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 
 interface Props {
   unitId: string

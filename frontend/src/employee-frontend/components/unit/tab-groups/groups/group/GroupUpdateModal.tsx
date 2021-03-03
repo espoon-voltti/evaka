@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useContext } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import { Gap } from '@evaka/lib-components/white-space'
 import { faPen } from '@evaka/lib-icons'
 import { DaycareGroup } from '../../../../../types/unit'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 import { editGroup } from '../../../../../api/unit'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { InfoBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+} from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 
 interface Props {
   group: DaycareGroup

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../types'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { JsonOf } from '@evaka/lib-common/src/json'
+import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from '@evaka/lib-common/json'
 import { PlacementType } from './child'
 import { Translations } from '../state/i18n'
 

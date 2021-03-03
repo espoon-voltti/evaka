@@ -4,8 +4,8 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
-import { desktopMin } from '@evaka/lib-components/src/breakpoints'
+import colors from '@evaka/lib-components/colors'
+import { desktopMin } from '@evaka/lib-components/breakpoints'
 import EspooLogo from './EspooLogo'
 import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'

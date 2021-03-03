@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 export const CheckedRowsInfo = styled.div`
   color: ${colors.greyscale.medium};

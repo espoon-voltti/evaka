@@ -1,12 +1,12 @@
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import {
   ApplicationAttachment,
   ApplicationDetails,
   ApplicationFormUpdate
-} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/src/api-types/application/enums'
+} from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/api-types/application/enums'
 import { User } from '../../auth/state'
-import { ApplicationAddress } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationAddress } from '@evaka/lib-common/api-types/application/ApplicationDetails'
 
 export type ServiceNeedFormData = {
   preferredStartDate: string

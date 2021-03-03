@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import DateRange from '@evaka/lib-common/src/date-range'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { JsonOf } from '@evaka/lib-common/src/json'
+import DateRange from '@evaka/lib-common/date-range'
+import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from '@evaka/lib-common/json'
 import {
   ApplicationOrigin,
   ApplicationStatus
-} from '@evaka/lib-common/src/api-types/application/enums'
+} from '@evaka/lib-common/api-types/application/enums'
 
 export type UUID = string
 type ISODate = string

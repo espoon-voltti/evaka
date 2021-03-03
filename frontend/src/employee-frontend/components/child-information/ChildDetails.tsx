@@ -4,13 +4,13 @@
 
 import React, { useContext } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Success } from '@evaka/lib-common/src/api'
+import { Success } from '@evaka/lib-common/api'
 import { faChild } from '@evaka/lib-icons'
 import { UUID } from '../../types'
 import AdditionalInformation from '../../components/child-information/person-details/AdditionalInformation'
 import { ChildContext, ChildState } from '../../state/child'
 import PersonDetails from '../../components/person-shared/PersonDetails'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 
 interface Props {
   id: UUID

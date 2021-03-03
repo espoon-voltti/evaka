@@ -4,9 +4,8 @@
 
 import React, { Fragment } from 'react'
 
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
 import { useTranslation } from '../../state/i18n'
 import { AbsenceType, AbsenceTypes } from '../../types'
 

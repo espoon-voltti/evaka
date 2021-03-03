@@ -5,11 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Result } from '@evaka/lib-common/src/api'
-import { downloadBlobAsFile } from '@evaka/lib-common/src/utils/file'
-import { Attachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { blueColors } from '@evaka/lib-components/src/colors'
-import { UUID } from '@evaka/lib-common/src/types'
+import { Result } from '@evaka/lib-common/api'
+import { downloadBlobAsFile } from '@evaka/lib-common/utils/file'
+import { Attachment } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { blueColors } from '@evaka/lib-components/colors'
+import { UUID } from '@evaka/lib-common/types'
 
 const DownloadButton = styled.button`
   background: none;

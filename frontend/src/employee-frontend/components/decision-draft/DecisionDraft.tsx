@@ -15,15 +15,15 @@ import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+} from '@evaka/lib-components/layout/Container'
+import Title from '@evaka/lib-components/atoms/Title'
+import { Gap } from '@evaka/lib-components/white-space'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import {
   getDecisionDrafts,
   getDecisionUnits,
@@ -32,8 +32,8 @@ import {
 import { DecisionDraftState, DecisionDraftContext } from '../../state/decision'
 import { useTranslation, Translations } from '../../state/i18n'
 import { UUID } from '../../types'
-import { Loading, Result } from '@evaka/lib-common/src/api'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import { Loading, Result } from '@evaka/lib-common/api'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import LabelValueList from '../../components/common/LabelValueList'
 import Select from '../../components/common/Select'
 import {
@@ -46,11 +46,11 @@ import { faEnvelope } from '@evaka/lib-icons'
 import {
   AlertBox,
   InfoBox
-} from '@evaka/lib-components/src/molecules/MessageBoxes'
+} from '@evaka/lib-components/molecules/MessageBoxes'
 import { TitleContext, TitleState } from '../../state/title'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import { formatName } from '../../utils'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 
 const ColumnTitle = styled.div`
   font-weight: 600;

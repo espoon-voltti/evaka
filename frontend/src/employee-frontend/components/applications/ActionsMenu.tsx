@@ -5,9 +5,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { faEllipsisVAlt } from '@evaka/lib-icons'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
-import colors from '@evaka/lib-components/src/colors'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import useCloseOnOutsideClick from '@evaka/lib-components/utils/useCloseOnOutsideClick'
+import colors from '@evaka/lib-components/colors'
 import { Action } from '../../components/applications/ApplicationActions'
 
 type Props = {

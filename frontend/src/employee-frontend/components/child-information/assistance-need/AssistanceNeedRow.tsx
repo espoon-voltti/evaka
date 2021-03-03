@@ -11,7 +11,7 @@ import AssistanceNeedForm from '../../../components/child-information/assistance
 import { faQuestion } from '@evaka/lib-icons'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { isActiveDateRange } from '../../../utils/date'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { formatDecimal } from '../../../components/utils'
 
 import { formatParagraphs } from '../../../utils/html-utils'

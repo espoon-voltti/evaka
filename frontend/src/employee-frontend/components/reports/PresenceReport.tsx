@@ -6,18 +6,18 @@ import React, { useEffect, useState } from 'react'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { PresenceReportRow } from '../../types/reports'
 import { getPresenceReport, PeriodFilters } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { FilterLabel, FilterRow } from '../../components/reports/common'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import LocalDate from '@evaka/lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
 
 function Presences() {

@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H4, Label, Dimmed } from '@evaka/lib-components/src/typography'
+import { H4, Label, Dimmed } from '@evaka/lib-components/typography'
 import { ApplicationResponse } from '../../types/application'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import {
   faChild,
   faFileAlt,
@@ -15,13 +15,13 @@ import {
   faUserFriends,
   faUsers
 } from '@evaka/lib-icons'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/white-space'
 import { formatName } from '../../utils'
 import { useTranslation } from '../../state/i18n'
-import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import ListGrid from '@evaka/lib-components/layout/ListGrid'
 import { Link } from 'react-router-dom'
 import { formatParagraphs } from '../../utils/html-utils'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
@@ -30,7 +30,7 @@ import Attachment from '../../components/common/Attachment'
 import {
   ApplicationAddress,
   ApplicationPersonBasics
-} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+} from '@evaka/lib-common/api-types/application/ApplicationDetails'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()

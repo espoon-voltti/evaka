@@ -9,19 +9,19 @@ import { faQuestion } from '@evaka/lib-icons'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+} from '@evaka/lib-components/layout/Container'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import Heading from './Heading'
 import ChildSection from './ChildSection'
 import Summary from './Summary'
 import Actions from './Actions'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { getFeeDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { FeeDecisionDetailed } from '../../types/invoicing'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 export const ErrorMessage = styled.div`
   color: ${colors.accents.red};

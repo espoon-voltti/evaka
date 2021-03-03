@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useContext, useEffect } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
@@ -12,17 +12,17 @@ import {
 } from '../../../utils/validation/validations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@evaka/lib-icons'
-import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
 import { Parentship } from '../../../types/fridge'
 import { UUID } from '../../../types'
-import { Result } from '@evaka/lib-common/src/api'
+import { Result } from '@evaka/lib-common/api'
 import { faChild } from '@evaka/lib-icons'
 import { formatName } from '../../../utils'
 import PersonSearch from '../../../components/common/PersonSearch'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+} from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { PersonDetails } from '../../../types/person'
 

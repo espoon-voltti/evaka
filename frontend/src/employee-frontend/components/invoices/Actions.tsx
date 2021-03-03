@@ -4,15 +4,15 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { Gap } from '@evaka/lib-components/white-space'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 import { deleteInvoices } from '../../api/invoicing'
 import { InvoiceStatus } from '../../types/invoicing'
 import { InvoicesActions } from './invoices-state'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 const ErrorMessage = styled.div`
   color: ${colors.accents.red};

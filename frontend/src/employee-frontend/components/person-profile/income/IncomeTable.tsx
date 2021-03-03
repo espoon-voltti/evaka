@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Table, Tbody } from '@evaka/lib-components/src/layout/Table'
+import { Table, Tbody } from '@evaka/lib-components/layout/Table'
 import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'
 import IncomeSum from './income-table/IncomeSum'

@@ -6,19 +6,19 @@ import React from 'react'
 import styled from 'styled-components'
 import { faExclamationTriangle } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import Title from '@evaka/lib-components/src/atoms/Title'
+import LocalDate from '@evaka/lib-common/local-date'
+import Title from '@evaka/lib-components/atoms/Title'
 
 import { useTranslation } from '../../state/i18n'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import {
   DaycarePlacementPlan,
   PlacementDraft,
   PlacementDraftPlacement
 } from '../../types/placementdraft'
 import { PlacementType } from '../../types/child'
-import colors from '@evaka/lib-components/src/colors'
-import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import colors from '@evaka/lib-components/colors'
+import FiniteDateRange from '@evaka/lib-common/finite-date-range'
 
 const DateRow = styled.div`
   display: flex;

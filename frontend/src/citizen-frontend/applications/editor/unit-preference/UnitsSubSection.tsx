@@ -4,29 +4,29 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { H3, Label, P } from '@evaka/lib-components/src/typography'
+import { H3, Label, P } from '@evaka/lib-components/typography'
 import {
   FixedSpaceColumn,
   FixedSpaceRow,
   FixedSpaceFlexWrap
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { Loading, Result, Success } from '@evaka/lib-common/src/api'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+} from '@evaka/lib-components/layout/flex-helpers'
+import { Gap } from '@evaka/lib-components/white-space'
+import { Loading, Result, Success } from '@evaka/lib-common/api'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import {
   ApplicationUnitType,
   getApplicationUnits
 } from '../../../applications/api'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
-import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
-import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
-import colors from '@evaka/lib-components/src/colors'
-import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
+import { SelectionChip } from '@evaka/lib-components/atoms/Chip'
+import MultiSelect from '@evaka/lib-components/atoms/form/MultiSelect'
+import colors from '@evaka/lib-components/colors'
+import ExternalLink from '@evaka/lib-components/atoms/ExternalLink'
 import { useTranslation } from '../../../localization'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
 import { UnitPreferenceSectionProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 
 const maxUnits = 3

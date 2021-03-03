@@ -6,7 +6,7 @@ import React from 'react'
 import { fi } from 'date-fns/locale'
 import { defaults, Line } from 'react-chartjs-2'
 import { OccupancyResponse } from '../../../../api/unit'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import { formatDate } from '../../../../utils/date'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

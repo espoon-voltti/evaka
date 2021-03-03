@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Loading, Paged, Result, Success } from '@evaka/lib-common/src/api'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { tabletMin } from '@evaka/lib-components/src/breakpoints'
-import Container from '@evaka/lib-components/src/layout/Container'
-import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Loading, Paged, Result, Success } from '@evaka/lib-common/api'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import { tabletMin } from '@evaka/lib-components/breakpoints'
+import Container from '@evaka/lib-components/layout/Container'
+import AdaptiveFlex from '@evaka/lib-components/layout/AdaptiveFlex'
+import { Gap } from '@evaka/lib-components/white-space'
 import { ReceivedBulletin } from '../messages/types'
 import { getBulletins, markBulletinRead } from '../messages/api'
 import MessagesList from '../messages/MessagesList'

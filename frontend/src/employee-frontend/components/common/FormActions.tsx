@@ -4,9 +4,9 @@
 
 import styled from 'styled-components'
 import React from 'react'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 
 const ButtonsContainer = styled.div`
   display: flex;

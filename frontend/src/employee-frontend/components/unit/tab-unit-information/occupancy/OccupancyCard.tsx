@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import { useTranslation } from '../../../../state/i18n'
-import Title from '@evaka/lib-components/src/atoms/Title'
+import Title from '@evaka/lib-components/atoms/Title'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowDown, faArrowUp, faEye, faEyeSlash } from '@evaka/lib-icons'
 import Tooltip from '../../../../components/common/Tooltip'

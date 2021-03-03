@@ -14,9 +14,9 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
@@ -28,7 +28,7 @@ import {
 } from '../../types/family-overview'
 import { UUID } from '../../types'
 import { formatCents } from '../../utils/money'
-import { getAge } from '@evaka/lib-common/src/utils/local-date'
+import { getAge } from '@evaka/lib-common/utils/local-date'
 import { formatName } from '../../utils'
 
 interface Props {

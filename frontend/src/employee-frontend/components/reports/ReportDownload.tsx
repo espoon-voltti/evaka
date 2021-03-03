@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileSpreadsheet } from '@evaka/lib-icons'
 import { LabelKeyObject } from 'react-csv/components/CommonPropTypes'
 import { useTranslation } from '../../state/i18n'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 const RowRightAligned = styled.div`
   display: flex;

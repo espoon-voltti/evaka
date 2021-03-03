@@ -12,9 +12,9 @@ import {
   Tr,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+} from '@evaka/lib-components/layout/Table'
+import Title from '@evaka/lib-components/atoms/Title'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
 import { faArrowRight } from '@evaka/lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { DaycareGroup } from '../../../types/unit'
@@ -27,7 +27,7 @@ import CareTypeLabel, {
 } from '../../../components/common/CareTypeLabel'
 import { UnitBackupCare } from '../../../types/child'
 import { formatName } from '../../../utils'
-import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
 import { MissingGroupPlacement } from '../../../api/unit'
 import { isPartDayPlacement } from '../../../utils/placements'
 

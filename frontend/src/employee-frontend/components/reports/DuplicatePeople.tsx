@@ -6,31 +6,31 @@ import React, { useContext, useEffect, useState } from 'react'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+} from '@evaka/lib-components/layout/Table'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../../state/i18n'
 import { Link } from 'react-router-dom'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { DuplicatePeopleReportRow } from '../../types/reports'
 import { getDuplicatePeopleReport } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import styled from 'styled-components'
 import { faQuestion } from '@evaka/lib-icons'
 import { deletePerson, mergePeople } from '../../api/person'
 import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
 import { CHILD_AGE } from '../../constants'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { TableScrollable } from '../../components/reports/common'
 
 interface RowProps {

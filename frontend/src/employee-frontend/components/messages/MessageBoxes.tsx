@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import colors from '@evaka/lib-components/colors'
+import { defaultMargins } from '@evaka/lib-components/white-space'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 
 export type MessageBoxType = 'SENT' | 'DRAFT'

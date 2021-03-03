@@ -8,7 +8,7 @@ import {
   defaultMargins,
   isSpacingSize,
   SpacingSize
-} from '@evaka/lib-components/src/white-space'
+} from '@evaka/lib-components/white-space'
 
 export const LabelText = styled.span`
   font-weight: 600;

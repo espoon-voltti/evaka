@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
 import {
@@ -17,10 +17,10 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { Partnership } from '../../types/fridge'
 import * as _ from 'lodash'
 import { UIContext } from '../../state/ui'
@@ -36,7 +36,7 @@ import {
 } from '../../api/partnerships'
 import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
 import Toolbar from '../../components/common/Toolbar'
-import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
 
 const TopBar = styled.div`
   display: flex;

@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { H1, H2 } from '@evaka/lib-components/src/typography'
+import { Gap } from '@evaka/lib-components/white-space'
+import { ContentArea } from '@evaka/lib-components/layout/Container'
+import { H1, H2 } from '@evaka/lib-components/typography'
 import { useTranslation } from '../../localization'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors
 } from '../../applications/editor/validations'
 import { getErrorCount } from '../../form-validation'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 
 type HeadingProps = {
   type: ApplicationType

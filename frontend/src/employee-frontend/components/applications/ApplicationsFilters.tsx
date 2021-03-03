@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
-import { Label } from '@evaka/lib-components/src/typography'
-import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import { Label } from '@evaka/lib-components/typography'
+import MultiSelect from '@evaka/lib-components/atoms/form/MultiSelect'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
 import {
   Filters,
   ApplicationDistinctionsFilter,
@@ -28,9 +28,9 @@ import {
   ApplicationUIContext,
   VoucherApplicationFilter
 } from '../../state/application-ui'
-import { Loading } from '@evaka/lib-common/src/api'
+import { Loading } from '@evaka/lib-common/api'
 import { getAreas, getUnits } from '../../api/daycare'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 
 export default React.memo(function ApplicationFilters() {

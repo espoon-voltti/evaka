@@ -10,7 +10,7 @@ import { faFileAlt } from '@evaka/lib-icons'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading } from '@evaka/lib-common/src/api'
+import { Loading } from '@evaka/lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
 import {
@@ -20,13 +20,13 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '../../api/person'
 import { ApplicationSummary } from '../../types/application'
 import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 
 interface Props {
   id: UUID

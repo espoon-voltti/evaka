@@ -12,16 +12,16 @@ import {
   Tr,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Table'
+import Title from '@evaka/lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '../../../types/unit'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { Gap } from '@evaka/lib-components/white-space'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import {
   acceptPlacementProposal,
   respondToPlacementProposal
@@ -29,7 +29,7 @@ import {
 import { UIContext } from '../../../state/ui'
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { UUID } from '../../../types'
-import { InfoBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 
 const ButtonRow = styled.div`
   display: flex;

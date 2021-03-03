@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/white-space'
 import IncomeItemHeader from './IncomeItemHeader'
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'
 import { useTranslation } from '../../../state/i18n'
 import { Income, PartialIncome, IncomeId } from '../../../types/income'
 import { UUID } from '../../../types'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { faQuestion } from '@evaka/lib-icons'
 
 interface Props {

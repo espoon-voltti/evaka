@@ -4,9 +4,8 @@
 import React, { Fragment, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/src/white-space'
-
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { Gap } from '@evaka/lib-components/white-space'
 import {
   AttendanceChild,
   getDaycareAttendances,

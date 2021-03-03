@@ -10,19 +10,19 @@ import React, {
   useState
 } from 'react'
 import _ from 'lodash'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { UUID } from '../../../types'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { ChildContext } from '../../../state'
 import { DateRange } from '../../../utils/date'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import { Loading, Result } from '@evaka/lib-common/api'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '../../../utils/validation/validations'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { getUnits } from '../../../api/daycare'
 import { Unit } from '../../../types/invoicing'
 import {
@@ -33,8 +33,8 @@ import {
 import ReactSelect, { createFilter, components } from 'react-select'
 import styled from 'styled-components'
 import { ChildBackupCare } from '../../../types/child'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import FiniteDateRange from '@evaka/lib-common/finite-date-range'
 
 export interface Props {
   childId: UUID

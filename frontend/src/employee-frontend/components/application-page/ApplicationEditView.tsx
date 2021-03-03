@@ -18,21 +18,21 @@ import {
   faUserFriends,
   faUsers
 } from '@evaka/lib-icons'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { Result } from '@evaka/lib-common/src/api'
-import { H4, Label } from '@evaka/lib-components/src/typography'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
-import colors from '@evaka/lib-components/src/colors'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import LocalDate from '@evaka/lib-common/local-date'
+import { Result } from '@evaka/lib-common/api'
+import { H4, Label } from '@evaka/lib-components/typography'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+import { Gap } from '@evaka/lib-components/white-space'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import ListGrid from '@evaka/lib-components/layout/ListGrid'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import { TextArea } from '@evaka/lib-components/atoms/form/InputField'
+import colors from '@evaka/lib-components/colors'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
 import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
@@ -45,8 +45,8 @@ import {
   ApplicationDetails,
   ApplicationFutureAddress,
   ApplicationPersonBasics
-} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+} from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails

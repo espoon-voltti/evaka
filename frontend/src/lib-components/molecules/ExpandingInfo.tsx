@@ -9,8 +9,8 @@ import colors from '../colors'
 import RoundIcon from '../atoms/RoundIcon'
 import Container, {
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+} from '@evaka/lib-components/layout/Container'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import IconButton from '../atoms/buttons/IconButton'

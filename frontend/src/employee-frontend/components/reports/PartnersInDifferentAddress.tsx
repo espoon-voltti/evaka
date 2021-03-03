@@ -10,20 +10,20 @@ import { Link } from 'react-router-dom'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from '@evaka/lib-common/src/api'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import { Loading, Result } from '@evaka/lib-common/api'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { PartnersInDifferentAddressReportRow } from '../../types/reports'
 import { getPartnersInDifferentAddressReport } from '../../api/reports'

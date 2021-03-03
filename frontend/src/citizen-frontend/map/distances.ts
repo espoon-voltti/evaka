@@ -1,5 +1,5 @@
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { Coordinate } from '@evaka/lib-common/src/api-types/units/Coordinate'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
+import { Coordinate } from '@evaka/lib-common/api-types/units/Coordinate'
 
 export type UnitWithStraightDistance = PublicUnit & {
   straightDistance: number | null

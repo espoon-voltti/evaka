@@ -5,7 +5,7 @@
 import React from 'react'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 
 interface Props {
   children: React.ReactNode

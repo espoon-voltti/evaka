@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
+} from '@evaka/lib-components/layout/Container'
 import {
   Table,
   Tbody,
@@ -15,14 +15,14 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '../types'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
 import { deleteCaretakers, getCaretakers } from '../api/caretakers'
 import { TitleContext, TitleState } from '../state/title'
@@ -32,10 +32,10 @@ import StatusLabel from '../components/common/StatusLabel'
 import styled from 'styled-components'
 import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
 import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakersModal'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../state/i18n'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 
 const NarrowContainer = styled.div`
   max-width: 900px;

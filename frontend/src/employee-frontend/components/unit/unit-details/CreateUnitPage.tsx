@@ -5,15 +5,15 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { CareArea } from '../../../types/unit'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { createDaycare, DaycareFields } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'

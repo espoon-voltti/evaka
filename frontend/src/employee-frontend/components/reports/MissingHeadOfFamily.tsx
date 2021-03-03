@@ -10,25 +10,25 @@ import { Link } from 'react-router-dom'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { MissingHeadOfFamilyReportRow } from '../../types/reports'
 import {
   getMissingHeadOfFamilyReport,
   MissingHeadOfFamilyReportFilters
 } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
@@ -39,8 +39,8 @@ import {
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import LocalDate from '@evaka/lib-common/src/local-date'
+} from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import LocalDate from '@evaka/lib-common/local-date'
 import { distinct } from '../../utils'
 
 interface DisplayFilters {

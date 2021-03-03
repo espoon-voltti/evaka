@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationStatus } from '@evaka/lib-common/api-types/application/enums'
 import { Checkbox } from '../../utils/helpers'
 
 export default class SearchFilter {

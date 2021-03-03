@@ -4,18 +4,18 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { Loading, Result } from '@evaka/lib-common/src/api'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import Container from '@evaka/lib-components/src/layout/Container'
-import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { Loading, Result } from '@evaka/lib-common/api'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import Container from '@evaka/lib-components/layout/Container'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 import {
   getApplication,
   saveApplicationDraft,
   sendApplication,
   updateApplication
 } from '../../applications/api'
-import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
 import { useTranslation } from '../../localization'
 import { useUser } from '../../auth'
 import { OverlayContext } from '../../overlay/state'
@@ -30,14 +30,14 @@ import {
   validateApplication
 } from '../../applications/editor/validations'
 import { faAngleLeft, faCheck, faExclamation } from '@evaka/lib-icons'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import ActionRow from '@evaka/lib-components/src/layout/ActionRow'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import ActionRow from '@evaka/lib-components/layout/ActionRow'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import ReturnButton, {
   ReturnButtonWrapper
-} from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+} from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
 import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
 import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
 import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'

@@ -4,9 +4,9 @@
 
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import LocalDate from '@evaka/lib-common/local-date'
+import { Gap } from '@evaka/lib-components/white-space'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
 
 type NullableEnd = {

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '@evaka/lib-common/src/json'
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { JsonOf } from '@evaka/lib-common/json'
+import { Failure, Result, Success } from '@evaka/lib-common/api'
 import { client } from '../api/client'
 
 type PairingStatus =

@@ -1,5 +1,5 @@
-import { ApplicationFormData } from '@evaka/citizen-frontend/src/applications/editor/ApplicationFormData'
-import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationFormData } from '@evaka/citizen-frontend/applications/editor/ApplicationFormData'
+import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
 
 function assertEquals<T>(expected: T, actual: T) {

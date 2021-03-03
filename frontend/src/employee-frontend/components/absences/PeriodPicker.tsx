@@ -4,12 +4,12 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { useTranslation } from '../../state/i18n'
-import { H3 } from '@evaka/lib-components/src/typography'
+import { H3 } from '@evaka/lib-components/typography'
 import { faChevronLeft, faChevronRight } from '@evaka/lib-icons'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import { Gap } from '@evaka/lib-components/white-space'
 
 interface Props {
   onChange: (date: LocalDate) => void

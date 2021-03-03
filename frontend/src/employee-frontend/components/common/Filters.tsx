@@ -13,9 +13,9 @@ import {
   faTrash,
   fasExclamationTriangle
 } from '@evaka/lib-icons'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { DatePickerClearableDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import LocalDate from '@evaka/lib-common/local-date'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import { DatePickerClearableDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
 import {
   DecisionDistinctiveDetails,
@@ -28,20 +28,20 @@ import { ApplicationSummaryStatus } from '../../types/application'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
+} from '@evaka/lib-components/layout/flex-helpers'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
+import { Gap, defaultMargins } from '@evaka/lib-components/white-space'
 import { FlexRow } from './styled/containers'
-import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import colors from '@evaka/lib-components/src/colors'
+import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import colors from '@evaka/lib-components/colors'
 import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
 import Tooltip from '../../components/common/Tooltip'
 import { CareArea } from '../../types/unit'
 import { Label, LabelText } from '../../components/common/styled/common'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 
 interface Props {
   freeText: string

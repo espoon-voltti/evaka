@@ -7,7 +7,7 @@ import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as icons from '@evaka/lib-icons'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 const Grid = styled.div`

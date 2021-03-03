@@ -7,16 +7,16 @@ import { useLang, useTranslation } from '../../../localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { H3, Label } from '@evaka/lib-components/src/typography'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/src/white-space'
+} from '@evaka/lib-components/layout/flex-helpers'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import { H3, Label } from '@evaka/lib-components/typography'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
+import { Gap } from '@evaka/lib-components/white-space'
 import { errorToInputInfo } from '../../../form-validation'
-import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
-import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
+import DatePicker from '@evaka/lib-components/molecules/date-picker/DatePicker'
+import AdaptiveFlex from '@evaka/lib-components/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
-import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
+import ExpandingInfo from '@evaka/lib-components/molecules/ExpandingInfo'
 
 export default React.memo(function GuardianSubSection({
   formData,

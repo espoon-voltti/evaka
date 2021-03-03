@@ -5,8 +5,8 @@
 import React, { Fragment, useContext } from 'react'
 import styled from 'styled-components'
 
-import { ChoiceChip } from '@evaka/lib-components/src/atoms/Chip'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { ChoiceChip } from '@evaka/lib-components/atoms/Chip'
+import { Gap } from '@evaka/lib-components/white-space'
 
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'

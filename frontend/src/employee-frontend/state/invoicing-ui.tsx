@@ -10,8 +10,8 @@ import React, {
   useState,
   createContext
 } from 'react'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
+import LocalDate from '@evaka/lib-common/local-date'
+import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus,
@@ -20,7 +20,7 @@ import {
   Unit,
   InvoiceDistinctiveDetails
 } from '../types/invoicing'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { CareArea } from '../types/unit'
 import { UUID } from '../types'
 

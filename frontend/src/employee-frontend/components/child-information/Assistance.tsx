@@ -8,7 +8,7 @@ import { faHandHolding } from '@evaka/lib-icons'
 import { UUID } from '../../types'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import AssistanceAction from '../../components/child-information/AssistanceAction'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 
 export interface Props {
   id: UUID

@@ -7,18 +7,18 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { getAge } from '@evaka/lib-common/src/utils/local-date'
+import { getAge } from '@evaka/lib-common/utils/local-date'
 
 import { formatName } from '../utils'
 import { triggerDvvBatch } from '../api/hidden'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import { Gap } from '@evaka/lib-components/white-space'
+import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
+} from '@evaka/lib-components/layout/Container'
 import {
   Table,
   Tr,
@@ -26,8 +26,8 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '../components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '../constants'

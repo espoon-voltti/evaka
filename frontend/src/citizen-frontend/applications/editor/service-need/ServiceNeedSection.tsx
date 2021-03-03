@@ -5,7 +5,7 @@
 import React from 'react'
 import { ServiceNeedFormData } from '../../../applications/editor/ApplicationFormData'
 import { useTranslation } from '../../../localization'
-import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
+import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
 import EditorSection from '../../../applications/editor/EditorSection'
 import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
 import { getErrorCount } from '../../../form-validation'
@@ -14,10 +14,10 @@ import AssistanceNeedSubSection from '../../../applications/editor/service-need/
 import {
   ApplicationStatus,
   ApplicationType
-} from '@evaka/lib-common/src/api-types/application/enums'
+} from '@evaka/lib-common/api-types/application/enums'
 import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus

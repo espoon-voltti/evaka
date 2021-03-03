@@ -4,12 +4,12 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H1, H2 } from '@evaka/lib-components/src/typography'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { greyscale } from '@evaka/lib-components/src/colors'
+import { H1, H2 } from '@evaka/lib-components/typography'
+import { defaultMargins } from '@evaka/lib-components/white-space'
+import { greyscale } from '@evaka/lib-components/colors'
 import { useTranslation } from '../../state/i18n'
 import { formatName } from '../../utils'
-import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
 
 type Props = {
   application: ApplicationDetails

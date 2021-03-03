@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext } from 'react'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { getUnreadBulletinsCount } from './api'
 
 export interface HeaderState {

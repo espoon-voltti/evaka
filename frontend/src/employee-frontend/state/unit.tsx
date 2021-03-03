@@ -10,10 +10,10 @@ import React, {
   Dispatch,
   SetStateAction
 } from 'react'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { UnitData, UnitResponse } from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 
 export interface UnitState {
   unitInformation: Result<UnitResponse>

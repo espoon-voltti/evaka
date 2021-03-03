@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import colors from '@evaka/lib-components/src/colors'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
+import { defaultMargins } from '@evaka/lib-components/white-space'
+import colors from '@evaka/lib-components/colors'
 import { useTranslation } from '../localization'
 import { formatCareTypes } from '../map/format'
 

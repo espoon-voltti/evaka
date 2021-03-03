@@ -8,17 +8,17 @@ import { groupBy, get } from 'lodash/fp'
 import styled from 'styled-components'
 
 import { faAbacus, faCoins } from '@evaka/lib-icons'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import {
   Table,
   Tbody,
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+} from '@evaka/lib-components/layout/Table'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import Title from '@evaka/lib-components/atoms/Title'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
 import Sum from './Sum'
 import { useTranslation } from '../../state/i18n'
@@ -28,7 +28,7 @@ import {
   InvoiceCodes,
   PersonDetailed
 } from '../../types/invoicing'
-import { Result } from '@evaka/lib-common/src/api'
+import { Result } from '@evaka/lib-common/api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'
 import { formatName } from '../../utils'

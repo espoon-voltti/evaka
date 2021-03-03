@@ -4,16 +4,16 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
-import { Loading } from '@evaka/lib-common/src/api'
+import { Loading } from '@evaka/lib-common/api'
 import {
   getAdditionalInformation,
   updateAdditionalInformation
 } from '../../../api/child/additional-information'
 import { ChildContext } from '../../../state/child'
-import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+import { TextArea } from '@evaka/lib-components/atoms/form/InputField'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { UUID } from '../../../types'
 import LabelValueList from '../../../components/common/LabelValueList'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
@@ -24,7 +24,7 @@ import { AdditionalInformation } from '../../../types/child'
 import { formatParagraphs } from '../../../utils/html-utils'
 import { textAreaRows } from '../../../components/utils'
 import { RequireRole } from '../../../utils/roles'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;

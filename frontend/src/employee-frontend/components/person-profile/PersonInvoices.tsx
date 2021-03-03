@@ -7,7 +7,7 @@ import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Loading } from '@evaka/lib-common/src/api'
+import { Loading } from '@evaka/lib-common/api'
 import { getPersonInvoices } from '../../api/invoicing'
 import { StatusTd } from '../../components/PersonProfile'
 import {
@@ -17,9 +17,9 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import { useTranslation } from '../../state/i18n'
 import { PersonContext } from '../../state/person'
 import { UUID } from '../../types'

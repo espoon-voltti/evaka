@@ -4,15 +4,15 @@
 
 import React, { useEffect, useState } from 'react'
 import { UUID } from '../../types'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { getFamilyContacts } from '../../api/family-overview'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { FamilyContact } from '../../types/family-overview'
-import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import { faUsers } from '@evaka/lib-icons'
 import { useTranslation } from '../../state/i18n'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 import {
   Table,
   Tbody,
@@ -20,9 +20,9 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { formatName } from '../../utils'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 
 interface FamilyContactsProps {
   id: UUID

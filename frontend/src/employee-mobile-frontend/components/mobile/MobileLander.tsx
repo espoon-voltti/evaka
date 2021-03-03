@@ -7,7 +7,7 @@ import { useContext } from 'react'
 import { Redirect } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { P } from '@evaka/lib-components/src/typography'
+import { P } from '@evaka/lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import EvakaLogo from '../../assets/EvakaLogo.svg'

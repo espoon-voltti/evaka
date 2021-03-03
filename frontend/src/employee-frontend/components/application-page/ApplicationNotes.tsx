@@ -4,20 +4,20 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 import { UUID } from '../../types'
-import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { ApplicationNote } from '../../types/application'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { getApplicationNotes } from '../../api/applications'
-import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 import ApplicationNoteBox from '../../components/application-page/ApplicationNoteBox'
 import { UserContext } from '../../state/user'
 import { requireRole } from '../../utils/roles'
 import styled from 'styled-components'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
 
 const Sticky = styled.div`
   position: sticky;

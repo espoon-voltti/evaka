@@ -10,8 +10,8 @@ import OccupancyCard from '../../../components/unit/tab-unit-information/occupan
 import OccupancyGraph from '../../../components/unit/tab-unit-information/occupancy/OccupancyGraph'
 import OccupancySingleDay from '../../../components/unit/tab-unit-information/occupancy/OccupancySingleDay'
 import { UnitFilters } from '../../../utils/UnitFilters'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 
 const Container = styled.div`
   display: flex;

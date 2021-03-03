@@ -4,7 +4,7 @@
 
 import React, { Fragment, useContext, useState } from 'react'
 import styled from 'styled-components'
-import Title from '@evaka/lib-components/src/atoms/Title'
+import Title from '@evaka/lib-components/atoms/Title'
 import { faChevronUp, fasExclamationTriangle } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -14,10 +14,10 @@ import {
   PlacementDraftState,
   PlacementDraftContext
 } from '../../state/placementdraft'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
 
 interface PlacementsContainerProps {
   open: boolean

@@ -7,17 +7,17 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import colors from '@evaka/lib-components/colors'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import { Gap } from '@evaka/lib-components/white-space'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+} from '@evaka/lib-components/layout/flex-helpers'
+import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 
 import {
   ContentAreaWithShadow,

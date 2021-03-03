@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Result, Success } from '@evaka/lib-common/api'
 import { client } from '../api/client'
 import {
   Coordinate,
@@ -23,12 +23,12 @@ import {
 } from '../types/unit'
 import { UnitBackupCare } from '../types/child'
 import { AdRole, DayOfWeek, UUID } from '../types'
-import { JsonOf } from '@evaka/lib-common/src/json'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { JsonOf } from '@evaka/lib-common/json'
+import LocalDate from '@evaka/lib-common/local-date'
 import { PlacementType } from '../types/child'
-import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
-import DateRange from '@evaka/lib-common/src/date-range'
-import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import FiniteDateRange from '@evaka/lib-common/finite-date-range'
+import DateRange from '@evaka/lib-common/date-range'
+import { ApplicationStatus } from '@evaka/lib-common/api-types/application/enums'
 import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {

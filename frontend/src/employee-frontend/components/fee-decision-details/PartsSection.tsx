@@ -4,8 +4,8 @@
 
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { H3, H4 } from '@evaka/lib-components/src/typography'
+import { Gap } from '@evaka/lib-components/white-space'
+import { H3, H4 } from '@evaka/lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from '../../utils/money'

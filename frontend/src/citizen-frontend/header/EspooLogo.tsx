@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { desktopMin } from '@evaka/lib-components/breakpoints'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 import EspooLogo from '../espoo-logo.svg'
 
 export default React.memo(function Logo() {

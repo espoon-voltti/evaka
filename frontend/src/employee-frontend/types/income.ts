@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../types'
-import { JsonOf } from '@evaka/lib-common/src/json'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { JsonOf } from '@evaka/lib-common/json'
+import LocalDate from '@evaka/lib-common/local-date'
 
 export type IncomeId = 'new' | UUID
 

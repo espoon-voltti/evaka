@@ -6,17 +6,17 @@ import React, { Fragment, useContext, useEffect } from 'react'
 import { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Loading } from '@evaka/lib-common/src/api'
+import { Result, Loading } from '@evaka/lib-common/api'
 import {
   authMobile,
   getPairingStatus,
   PairingResponse,
   postPairingChallenge
 } from '../../api/unit'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import colors from '@evaka/lib-components/src/colors'
-import { P } from '@evaka/lib-components/src/typography'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
+import colors from '@evaka/lib-components/colors'
+import { P } from '@evaka/lib-components/typography'
 import { faArrowRight } from '@evaka/lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'

@@ -7,30 +7,30 @@ import * as _ from 'lodash'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+} from '@evaka/lib-components/layout/Table'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
 import { InvoiceReport, InvoiceReportRow } from '../../types/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   TableScrollable
 } from '../../components/reports/common'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 
 function ReportInvoices() {
   const { i18n } = useTranslation()

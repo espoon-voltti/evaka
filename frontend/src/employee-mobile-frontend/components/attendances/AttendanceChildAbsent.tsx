@@ -8,7 +8,7 @@ import {
   getDaycareAttendances,
   returnToComing
 } from '../../api/attendances'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
 import Absences from './Absences'

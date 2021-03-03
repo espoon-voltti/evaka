@@ -13,20 +13,20 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/src/layout/Table'
-import { H1 } from '@evaka/lib-components/src/typography'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+} from '@evaka/lib-components/layout/Table'
+import { H1 } from '@evaka/lib-components/typography'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
-import { Result } from '@evaka/lib-common/src/api'
+import { Result } from '@evaka/lib-common/api'
 import { formatDate } from '../../utils/date'
 import { formatCents } from '../../utils/money'
 import { SortByVoucherValueDecisions } from '../../api/invoicing'
-import Pagination from '@evaka/lib-components/src/Pagination'
+import Pagination from '@evaka/lib-components/Pagination'
 
 const TitleRowContainer = styled.div`
   display: flex;

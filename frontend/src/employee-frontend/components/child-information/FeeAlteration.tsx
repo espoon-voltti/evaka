@@ -4,9 +4,9 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { faMoneyCheckEdit, faQuestion } from '@evaka/lib-icons'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import { Gap } from '@evaka/lib-components/white-space'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import { useTranslation } from '../../state/i18n'
@@ -14,16 +14,16 @@ import { UIContext } from '../../state/ui'
 import { ChildContext } from '../../state'
 import { UUID } from '../../types'
 import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import {
   createFeeAlteration,
   deleteFeeAlteration,
   getFeeAlterations,
   updateFeeAlteration
 } from '../../api/child/fee-alteration'
-import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

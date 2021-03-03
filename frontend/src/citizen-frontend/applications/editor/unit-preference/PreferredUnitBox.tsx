@@ -4,20 +4,20 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import { H4 } from '@evaka/lib-components/src/typography'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+} from '@evaka/lib-components/layout/flex-helpers'
+import { H4 } from '@evaka/lib-components/typography'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import { faArrowDown, faArrowUp, faTimes } from '@evaka/lib-icons'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { StaticChip } from '@evaka/lib-components/src/atoms/Chip'
+import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import { StaticChip } from '@evaka/lib-components/atoms/Chip'
 import { useTranslation } from '../../../localization'
-import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import ExternalLink from '@evaka/lib-components/atoms/ExternalLink'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
 
 export type PreferredUnitBoxProps = {
   unit: PublicUnit

@@ -5,13 +5,13 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import colors from '@evaka/lib-components/src/colors'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import colors from '@evaka/lib-components/colors'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+} from '@evaka/lib-components/layout/Container'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   height: 100%;

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { blueColors, greyscale } from '@evaka/lib-components/src/colors'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { blueColors, greyscale } from '@evaka/lib-components/colors'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 import { BaseProps } from './utils'
 
 type HeadingProps = BaseProps & {

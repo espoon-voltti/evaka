@@ -10,26 +10,26 @@ import { faFile } from '@evaka/lib-icons'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Loading, Result, Success } from '@evaka/lib-common/api'
 import { VoucherServiceProviderRow } from '../../types/reports'
 import {
   getVoucherServiceProvidersReport,
   VoucherServiceProvidersFilters
 } from '../../api/reports'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { formatDate } from '../../utils/date'
 import { SelectOptionProps } from '../../components/common/Select'

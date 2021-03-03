@@ -4,11 +4,11 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { tabletMin } from '@evaka/lib-components/src/breakpoints'
-import colors from '@evaka/lib-components/src/colors'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import { H3 } from '@evaka/lib-components/src/typography'
+import { tabletMin } from '@evaka/lib-components/breakpoints'
+import colors from '@evaka/lib-components/colors'
+import { defaultMargins } from '@evaka/lib-components/white-space'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import { H3 } from '@evaka/lib-components/typography'
 import { formatDate } from '../util'
 import { ReceivedBulletin } from '../messages/types'
 

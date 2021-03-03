@@ -6,7 +6,7 @@ import colors, {
   accentColors,
   blueColors,
   greyscale
-} from '@evaka/lib-components/src/colors'
+} from '@evaka/lib-components/colors'
 import {
   faGavel,
   faCheck,

@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { isValidCents } from '../../utils/money'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 
 type Props = {
   className?: string

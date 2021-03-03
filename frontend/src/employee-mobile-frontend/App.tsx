@@ -9,7 +9,7 @@ import {
   Switch,
   Redirect
 } from 'react-router-dom'
-import { idleTracker } from '@evaka/lib-common/src/utils/idleTracker'
+import { idleTracker } from '@evaka/lib-common/utils/idleTracker'
 import ensureAuthenticated from './components/ensureAuthenticated'
 import { AttendanceUIContextProvider } from './state/attendance-ui'
 import { I18nContextProvider } from './state/i18n'

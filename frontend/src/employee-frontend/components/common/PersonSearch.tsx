@@ -12,14 +12,14 @@ import {
   getOrCreatePersonBySsn,
   getPersonDetails
 } from '../../api/person'
-import { Result, Success } from '@evaka/lib-common/src/api'
+import { Result, Success } from '@evaka/lib-common/api'
 import { formatName } from '../../utils'
-import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
 import { isSsnValid } from '../../utils/validation/validations'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { CHILD_AGE } from '../../constants'
 import { PersonDetails } from '../../types/person'
-import { getAge } from '@evaka/lib-common/src/utils/local-date'
+import { getAge } from '@evaka/lib-common/utils/local-date'
 
 const Container = styled.div`
   margin: 10px 0;

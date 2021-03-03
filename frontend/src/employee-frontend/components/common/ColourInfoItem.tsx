@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { AbsenceType } from '../../types/absence'
 import { useTranslation } from '../../state/i18n'
-import { absenceColours } from '@evaka/lib-components/src/colors'
+import { absenceColours } from '@evaka/lib-components/colors'
 
 interface InfoBallProps {
   type: AbsenceType

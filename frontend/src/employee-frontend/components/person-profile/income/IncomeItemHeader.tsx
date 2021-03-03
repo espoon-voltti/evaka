@@ -5,10 +5,10 @@
 import React, { createRef, RefObject, useEffect } from 'react'
 import styled from 'styled-components'
 import { faChevronLeft, faChevronDown, faPen, faTrash } from '@evaka/lib-icons'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import colors from '@evaka/lib-components/src/colors'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import Title from '@evaka/lib-components/atoms/Title'
+import colors from '@evaka/lib-components/colors'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 
 const Container = styled.div`
   display: flex;

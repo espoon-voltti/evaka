@@ -7,10 +7,10 @@ import styled from 'styled-components'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 import { useTranslation } from '../../localization'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import colors from '@evaka/lib-components/src/colors'
-import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import { Gap } from '@evaka/lib-components/white-space'
+import colors from '@evaka/lib-components/colors'
+import FileDownloadButton from '@evaka/lib-components/molecules/FileDownloadButton'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import {
   faExclamationTriangle,
   faFile,
@@ -21,10 +21,10 @@ import {
   faTimes
 } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { UUID } from '@evaka/lib-common/src/types'
-import { Result } from '@evaka/lib-common/src/api'
-import { Attachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import { UUID } from '@evaka/lib-common/types'
+import { Result } from '@evaka/lib-common/api'
+import { Attachment } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { getAttachmentBlob } from '../../applications/api'
 
 export type FileUploadProps = {

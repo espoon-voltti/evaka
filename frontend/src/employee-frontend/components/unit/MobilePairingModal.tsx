@@ -4,8 +4,8 @@
 
 import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
-import { Result, Loading } from '@evaka/lib-common/src/api'
+import colors from '@evaka/lib-components/colors'
+import { Result, Loading } from '@evaka/lib-common/api'
 import {
   getPairingStatus,
   PairingResponse,
@@ -13,9 +13,9 @@ import {
   postPairingResponse,
   putMobileDeviceName
 } from '../../api/unit'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { faPlus } from '@evaka/lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'

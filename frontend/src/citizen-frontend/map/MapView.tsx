@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
-import { Failure, Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Loading, Result, Success } from '@evaka/lib-common/api'
 import {
   ProviderType,
   UnitLanguage
-} from '@evaka/lib-common/src/api-types/units/enums'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { Coordinate } from '@evaka/lib-common/src/api-types/units/Coordinate'
-import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
+} from '@evaka/lib-common/api-types/units/enums'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import { Coordinate } from '@evaka/lib-common/api-types/units/Coordinate'
+import AdaptiveFlex from '@evaka/lib-components/layout/AdaptiveFlex'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 import { headerHeight } from '../header/const'
@@ -23,7 +23,7 @@ import {
 } from '../map/distances'
 import { fetchUnits, queryDistances } from '../map/api'
 import UnitDetailsPanel from '../map/UnitDetailsPanel'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 
 export type MapAddress = {
   coordinates: Coordinate

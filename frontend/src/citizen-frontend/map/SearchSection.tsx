@@ -1,22 +1,22 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Result } from '@evaka/lib-common/src/api'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { UnitLanguage } from '@evaka/lib-common/src/api-types/units/enums'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import { Result } from '@evaka/lib-common/api'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
+import { UnitLanguage } from '@evaka/lib-common/api-types/units/enums'
+import { ContentArea } from '@evaka/lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
   FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import colors from '@evaka/lib-components/src/colors'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
-import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { H1, Label, P } from '@evaka/lib-components/src/typography'
+} from '@evaka/lib-components/layout/flex-helpers'
+import colors from '@evaka/lib-components/colors'
+import { Gap } from '@evaka/lib-components/white-space'
+import { SelectionChip } from '@evaka/lib-components/atoms/Chip'
+import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import { H1, Label, P } from '@evaka/lib-components/typography'
 import {
   faAngleDown,
   faAngleUp,

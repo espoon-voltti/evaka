@@ -5,9 +5,9 @@
 import React, { ReactElement } from 'react'
 import styled from 'styled-components'
 import { faChevronUp, faChevronDown } from '@evaka/lib-icons'
-import { H4 } from '@evaka/lib-components/src/typography'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import { H4 } from '@evaka/lib-components/typography'
+import { Gap } from '@evaka/lib-components/white-space'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import StatusLabel, {
   StatusLabelType
 } from '../../components/common/StatusLabel'

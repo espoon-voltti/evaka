@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '@evaka/lib-common/src/json'
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import LocalDate from '@evaka/lib-common/src/local-date'
-
+import { JsonOf } from '@evaka/lib-common/json'
+import { Failure, Result, Success } from '@evaka/lib-common/api'
+import LocalDate from '@evaka/lib-common/local-date'
 import { AbsenceType, CareType } from '../types'
 import { PlacementType } from '../types'
 import { client } from './client'

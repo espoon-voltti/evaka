@@ -8,12 +8,12 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { faChild, faPlus } from '@evaka/lib-icons'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { UUID } from '../../types'
 import { useTranslation, Translations } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { Loading, Result } from '@evaka/lib-common/src/api'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import { Loading, Result } from '@evaka/lib-common/api'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import {
   Table,
   Tbody,
@@ -21,10 +21,10 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import { AddButtonRow } from '@evaka/lib-components/atoms/buttons/AddButton'
+import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
 import { formatDate } from '../../utils/date'
 import {
   getPersonFeeDecisions,
@@ -33,8 +33,8 @@ import {
 import { FeeDecision } from '../../types/invoicing'
 import { DateTd, StatusTd } from '../../components/PersonProfile'
 import { formatCents } from '../../utils/money'
-import colors from '@evaka/lib-components/src/colors'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import colors from '@evaka/lib-components/colors'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 
 interface Props {
   id: UUID

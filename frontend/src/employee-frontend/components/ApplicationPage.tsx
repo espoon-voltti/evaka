@@ -4,9 +4,9 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import { UUID } from '../types'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/api'
 import { ApplicationResponse } from '../types/application'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
@@ -19,18 +19,18 @@ import { useTranslation, Translations } from '../state/i18n'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import { Gap } from '@evaka/lib-components/src/white-space'
+} from '@evaka/lib-components/layout/Container'
+import { Gap } from '@evaka/lib-components/white-space'
 import styled from 'styled-components'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ApplicationNotes from '../components/application-page/ApplicationNotes'
-import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 import { UserContext } from '../state/user'
 import { hasRole } from '../utils/roles'
-import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;

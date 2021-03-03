@@ -4,7 +4,7 @@
 
 import { client } from './client'
 import { AdRole, User } from '../types'
-import { JsonOf } from '@evaka/lib-common/src/json'
+import { JsonOf } from '@evaka/lib-common/json'
 
 export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
 

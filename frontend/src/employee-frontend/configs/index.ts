@@ -4,8 +4,8 @@
 
 import { createBrowserHistory } from 'history'
 import { defaultsDeep } from 'lodash'
-import { BaseAppConfig, DeepReadonly } from '@evaka/lib-common/src/types'
-import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
+import { BaseAppConfig, DeepReadonly } from '@evaka/lib-common/types'
+import { getEnvironment } from '@evaka/lib-common/utils/helpers'
 
 export const baseHistory = (refresh = true) => {
   return createBrowserHistory({

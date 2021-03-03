@@ -11,10 +11,10 @@ import React, {
 } from 'react'
 import { PersonDetails, SearchColumn } from '../types/person'
 import { SearchOrder } from '../types'
-import { Result, Success } from '@evaka/lib-common/src/api'
+import { Result, Success } from '@evaka/lib-common/api'
 import { findByNameOrAddress } from '../api/person'
-import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 
 export interface CustomersState {
   customers: Result<PersonDetails[]>

@@ -4,7 +4,7 @@
 
 import { t, Selector } from 'testcafe'
 import config from '../../config'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
 import { Checkbox, selectFirstOption } from '../../utils/helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'

@@ -5,7 +5,7 @@
 import { faExclamation } from '@evaka/lib-icons'
 import React, { useContext } from 'react'
 import { OverlayContext } from './state'
-import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
 
 function GlobalErrorDialog() {
   const { errorMessage, clearErrorMessage } = useContext(OverlayContext)

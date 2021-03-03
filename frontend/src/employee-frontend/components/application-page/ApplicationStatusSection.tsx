@@ -4,12 +4,12 @@
 
 import React from 'react'
 import { faFile } from '@evaka/lib-icons'
-import { Label } from '@evaka/lib-components/src/typography'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import { Label } from '@evaka/lib-components/typography'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+import ListGrid from '@evaka/lib-components/layout/ListGrid'
 import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
-import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
 
 type Props = {
   application: ApplicationDetails

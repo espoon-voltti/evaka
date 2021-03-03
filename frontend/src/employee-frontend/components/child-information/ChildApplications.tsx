@@ -10,7 +10,7 @@ import { faFileAlt } from '@evaka/lib-icons'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading } from '@evaka/lib-common/src/api'
+import { Loading } from '@evaka/lib-common/api'
 import { useContext } from 'react'
 import {
   Table,
@@ -19,16 +19,16 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/src/layout/Table'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+} from '@evaka/lib-components/layout/Table'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { getChildApplicationSummaries } from '../../api/person'
 import { ApplicationSummary } from '../../types/application'
 import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import { ChildContext } from '../../state'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import { RequireRole } from '../../utils/roles'
-import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/atoms/buttons/AddButton'
 import { UIContext } from '../../state/ui'
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
 import { inferApplicationType } from '../../components/person-profile/PersonApplications'

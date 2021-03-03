@@ -4,20 +4,20 @@
 
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { H3, Label, P } from '@evaka/lib-components/src/typography'
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { H3, Label, P } from '@evaka/lib-components/typography'
 import {
   ApplicationGuardianAgreementStatus,
   ApplicationType
-} from '@evaka/lib-common/src/api-types/application/enums'
+} from '@evaka/lib-common/api-types/application/enums'
 import { ContactInfoFormData } from '../../../applications/editor/ApplicationFormData'
 import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
+import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import { Gap } from '@evaka/lib-components/white-space'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import { errorToInputInfo } from '../../../form-validation'
-import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
+import AdaptiveFlex from '@evaka/lib-components/layout/AdaptiveFlex'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType

@@ -5,7 +5,7 @@
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { Label } from '@evaka/lib-components/src/typography'
+import { Label } from '@evaka/lib-components/typography'
 
 type Props = {
   formData: ApplicationFormData

@@ -20,7 +20,7 @@ import {
   Tr,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import {
   faAngleDown,
   faAngleUp,
@@ -45,30 +45,30 @@ import CareTypeLabel, {
   careTypesFromPlacementType
 } from '../../../../components/common/CareTypeLabel'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '@evaka/lib-components/colors'
 import { capitalizeFirstLetter, formatName } from '../../../../utils'
 import { StatusIconContainer } from '../../../../components/common/StatusIconContainer'
 import { UnitBackupCare } from '../../../../types/child'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { formatPercentage } from '../../../../components/utils'
 import { DataList } from '../../../../components/common/DataList'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { H3 } from '@evaka/lib-components/src/typography'
+import { Gap } from '@evaka/lib-components/white-space'
+import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import { H3 } from '@evaka/lib-components/typography'
 import { UnitFilters } from '../../../../utils/UnitFilters'
 import { rangesOverlap } from '../../../../utils/date'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
-import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
+import Tooltip from '@evaka/lib-components/atoms/Tooltip'
 import { UIContext } from '../../../../state/ui'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { isPartDayPlacement } from '../../../../utils/placements'
 import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
-import { Loading, Result } from '@evaka/lib-common/src/api'
-import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import { Loading, Result } from '@evaka/lib-common/api'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 
 interface Props {
   unit: Unit

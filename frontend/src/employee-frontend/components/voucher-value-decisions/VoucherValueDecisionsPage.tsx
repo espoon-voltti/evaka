@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/white-space'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
+} from '@evaka/lib-components/layout/Container'
 import VoucherValueDecisions from './VoucherValueDecisions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'
-import { Paged, Result } from '@evaka/lib-common/src/api'
+import { Paged, Result } from '@evaka/lib-common/api'
 import {
   getVoucherValueDecisions,
   VoucherValueDecisionSearchParams,
@@ -20,7 +20,7 @@ import {
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 
 const pageSize = 200
 

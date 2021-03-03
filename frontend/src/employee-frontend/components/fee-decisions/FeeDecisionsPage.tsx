@@ -3,23 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/white-space'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
+} from '@evaka/lib-components/layout/Container'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import Actions from './Actions'
 import GeneratorButton from './generation/GeneratorButton'
-import { Paged, Result } from '@evaka/lib-common/src/api'
+import { Paged, Result } from '@evaka/lib-common/api'
 import {
   getFeeDecisions,
   FeeDecisionSearchParams,
   SortByFeeDecisions
 } from '../../api/invoicing'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { FeeDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
 

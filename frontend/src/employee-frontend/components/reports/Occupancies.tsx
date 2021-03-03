@@ -10,26 +10,26 @@ import { Link } from 'react-router-dom'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
-import Title from '@evaka/lib-components/src/atoms/Title'
+} from '@evaka/lib-components/layout/Container'
+import Loader from '@evaka/lib-components/atoms/Loader'
+import Title from '@evaka/lib-components/atoms/Title'
 import {
   Th,
   Tr,
   Td,
   Thead,
   Tbody
-} from '@evaka/lib-components/src/layout/Table'
+} from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { Translations, useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Loading, Result, Success } from '@evaka/lib-common/api'
 import { OccupancyReportRow } from '../../types/reports'
 import {
   getOccupanciesReport,
   OccupancyReportFilters,
   OccupancyReportType
 } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import { formatDate } from '../../utils/date'

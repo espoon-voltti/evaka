@@ -4,12 +4,12 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
 import { InvoiceDetailed } from '../../types/invoicing'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import colors from '@evaka/lib-components/src/colors'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import colors from '@evaka/lib-components/colors'
 
 const ErrorMessage = styled.div`
   color: ${colors.accents.red};

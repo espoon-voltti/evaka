@@ -9,15 +9,15 @@ import styled from 'styled-components'
 import ReactSelect from 'react-select'
 import { faLink } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import LocalDate from '@evaka/lib-common/local-date'
 import {
   Container,
   ContentArea
-} from '@evaka/lib-components/src/layout/Container'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+} from '@evaka/lib-components/layout/Container'
+import Title from '@evaka/lib-components/atoms/Title'
+import { Gap } from '@evaka/lib-components/white-space'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/atoms/Loader'
 
 import {
   PlacementDraftState,
@@ -28,7 +28,7 @@ import {
 } from '../../state/placementdraft'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
-import { Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Loading, Result, Success } from '@evaka/lib-common/api'
 import { getApplicationUnits } from '../../api/daycare'
 import { formatName } from '../../utils'
 import {
@@ -41,7 +41,7 @@ import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
 import { TitleContext, TitleState } from '../../state/title'
 import { getPlacementDraft, createPlacementPlan } from '../../api/applications'
-import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import FiniteDateRange from '@evaka/lib-common/finite-date-range'
 import WarningLabel from '../../components/common/WarningLabel'
 import Tooltip from '../../components/common/Tooltip'
 

@@ -15,13 +15,13 @@ import {
 import { useTranslation } from '../../../state/i18n'
 import { faQuestion } from '@evaka/lib-icons'
 import styled from 'styled-components'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import { Gap } from '@evaka/lib-components/white-space'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { UIContext, UiState } from '../../../state/ui'
 import { Link } from 'react-router-dom'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import Toolbar from '../../../components/common/Toolbar'
 import {
   deletePlacement,
@@ -29,8 +29,8 @@ import {
   updatePlacement
 } from '../../../api/child/placements'
 import { InputWarning } from '../../../components/common/InputWarning'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import LocalDate from '@evaka/lib-common/local-date'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 
 interface Props {
   placement: Placement

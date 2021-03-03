@@ -4,19 +4,19 @@
 
 import React, { useContext, useEffect, useRef } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Loading } from '@evaka/lib-common/src/api'
+import { Loading } from '@evaka/lib-common/api'
 import { ChildContext } from '../../state/child'
 import { faClock } from '@evaka/lib-icons'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { UUID } from '../../types'
 import ServiceNeedRow from './service-need/ServiceNeedRow'
 import ServiceNeedForm from '../../components/child-information/service-need/ServiceNeedForm'
 import { UIContext } from '../../state/ui'
-import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
 import { getServiceNeeds } from '../../api/child/service-needs'
 import { getPlacements } from '../../api/child/placements'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import { RequireRole } from '../../utils/roles'
 
 export interface Props {

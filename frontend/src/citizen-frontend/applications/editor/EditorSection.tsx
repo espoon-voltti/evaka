@@ -4,11 +4,11 @@
 
 import React, { ReactNode, useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
-import { H2 } from '@evaka/lib-components/src/typography'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { CollapsibleContentArea } from '@evaka/lib-components/src/layout/Container'
-import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import colors from '@evaka/lib-components/colors'
+import { H2 } from '@evaka/lib-components/typography'
+import { defaultMargins } from '@evaka/lib-components/white-space'
+import { CollapsibleContentArea } from '@evaka/lib-components/layout/Container'
+import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 
 type Props = {
   title: string

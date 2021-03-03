@@ -1,5 +1,5 @@
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { InputInfo } from '@evaka/lib-components/src/atoms/form/InputField'
+import LocalDate from '@evaka/lib-common/local-date'
+import { InputInfo } from '@evaka/lib-components/atoms/form/InputField'
 import { Translations } from './localization'
 import { parse } from 'date-fns'
 

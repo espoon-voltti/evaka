@@ -4,9 +4,8 @@
 
 import React, { Fragment } from 'react'
 
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/src/white-space'
-
+import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { Gap } from '@evaka/lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { AttendanceChild } from '../../api/attendances'
 import { WideLinkButton } from '../../components/mobile/components'
