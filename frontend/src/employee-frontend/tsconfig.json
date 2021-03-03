@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@evaka/*": ["../*"]
+    },
+    "composite": true,
+    "jsx": "react",
+    "outDir": "../../dist/employee-frontend",
+    "types": ["jest"],
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true
+  },
+  "references": [
+    { "path": "../lib-common" },
+    { "path": "../lib-components" },
+    { "path": "../lib-icons" }
+  ]
+}

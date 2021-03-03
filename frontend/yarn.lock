@@ -1517,310 +1517,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@evaka/citizen-frontend@workspace:packages/citizen-frontend":
+"@evaka/citizen-frontend@link:src/citizen-frontend::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@evaka/citizen-frontend@workspace:packages/citizen-frontend"
-  dependencies:
-    "@evaka/lib-common": 1.0.0
-    "@evaka/lib-components": 1.0.0
-    "@evaka/lib-icons": 1.0.0
-    "@fortawesome/react-fontawesome": 0.1.11
-    "@sentry/browser": ^5.11.1
-    "@sentry/webpack-plugin": ^1.14.0
-    "@types/jest": ^24.0.23
-    "@types/leaflet": ^1.5.21
-    "@types/react": ^17.0.1
-    "@types/react-dom": ^17.0.0
-    "@types/react-router-dom": ^5.1.7
-    "@typescript-eslint/eslint-plugin": ^4.15.0
-    "@typescript-eslint/parser": ^4.15.0
-    axios: ^0.21.1
-    babel-loader: 8.2.2
-    css-loader: ^5.0.2
-    date-fns: ^2.17.0
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    eslint-plugin-react: ^7.22.0
-    eslint-plugin-react-hooks: ^4.2.0
-    html-webpack-plugin: ^5.0.0
-    jest: ^24.9.0
-    jest-junit: ^10.0.0
-    leaflet: ^1.7.1
-    lodash: ^4.17.15
-    postcss-loader: ^5.0.0
-    postcss-preset-env: ^6.7.0
-    react: ^17.0.1
-    react-dom: ^17.0.1
-    react-leaflet: ^3.1.0
-    react-router-dom: ^5.1.2
-    seamless-scroll-polyfill: 1.2.3
-    style-loader: ^2.0.0
-    styled-components: 5.2.1
-    ts-jest: ^24.2.0
-    ts-loader: ^8.0.16
-    typescript: ^4.1.3
-    webpack: ^5.21.2
-    webpack-cli: ^4.5.0
-    webpack-dev-server: ^3.11.2
-  languageName: unknown
+  resolution: "@evaka/citizen-frontend@link:src/citizen-frontend::locator=evaka-frontend%40workspace%3A."
+  languageName: node
   linkType: soft
 
-"@evaka/e2e-tests@workspace:e2e-test":
+"@evaka/employee-frontend@link:src/employee-frontend::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@evaka/e2e-tests@workspace:e2e-test"
-  dependencies:
-    "@evaka/eslint-plugin": 0.0.1
-    "@evaka/lib-common": 1.0.0
-    "@types/node": ^14.14.25
-    "@typescript-eslint/eslint-plugin": ^4.15.0
-    "@typescript-eslint/parser": ^4.15.0
-    axios: ^0.21.1
-    date-fns: ^2.17.0
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    eslint-plugin-promise: ^4.2.1
-    husky: ^5.0.9
-    make-error-cause: ^2.3.0
-    testcafe: ~1.9.4
-    testcafe-reporter-junit: 3.0.2
-  languageName: unknown
+  resolution: "@evaka/employee-frontend@link:src/employee-frontend::locator=evaka-frontend%40workspace%3A."
+  languageName: node
   linkType: soft
 
-"@evaka/employee-frontend@workspace:packages/employee-frontend":
+"@evaka/lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@evaka/employee-frontend@workspace:packages/employee-frontend"
-  dependencies:
-    "@evaka/lib-common": 1.0.0
-    "@evaka/lib-components": 1.0.0
-    "@evaka/lib-icons": 1.0.0
-    "@fortawesome/react-fontawesome": 0.1.11
-    "@sentry/browser": ^5.11.1
-    "@sentry/webpack-plugin": ^1.14.0
-    "@types/classnames": ^2.2.11
-    "@types/jest": ^24.0.23
-    "@types/lodash": ^4.14.168
-    "@types/react": ^17.0.1
-    "@types/react-csv": ^1.1.1
-    "@types/react-datepicker": 2.11.0
-    "@types/react-dom": ^17.0.0
-    "@types/react-router-dom": ^5.1.7
-    "@types/react-select": 3.0.22
-    "@types/react-tooltip": ^3.11.0
-    "@types/styled-components": ^5.1.7
-    "@typescript-eslint/eslint-plugin": ^4.15.0
-    "@typescript-eslint/parser": ^4.15.0
-    axios: ^0.21.1
-    babel-loader: 8.2.2
-    chart.js: ^2.9.4
-    chartjs-adapter-date-fns: ^1.0.0
-    classnames: ^2.2.6
-    core-js: ^3.8.3
-    css-loader: ^5.0.2
-    csstype: ^3.0.6
-    date-fns: ^2.17.0
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    eslint-plugin-react: ^7.22.0
-    eslint-plugin-react-hooks: ^4.2.0
-    focus-trap-react: ^8.4.2
-    history: ^4.9.0
-    html-webpack-plugin: ^5.0.0
-    husky: ^5.0.9
-    jest: ^24.9.0
-    jest-junit: ^10.0.0
-    lodash: ^4.17.15
-    postcss-loader: ^5.0.0
-    postcss-preset-env: ^6.7.0
-    react: ^17.0.1
-    react-autosize-textarea: ^7.0.0
-    react-chartjs-2: ^2.11.1
-    react-csv: ^2.0.1
-    react-datalist-input: ^1.2.12
-    react-datepicker: ^2.10.1
-    react-day-picker: ^7.4.0
-    react-dom: ^17.0.1
-    react-focus-lock: 2.5.0
-    react-meta-tags: 0.7.4
-    react-router-dom: ^5.1.2
-    react-select: ^3.0.8
-    react-spring: ^8.0.27
-    react-tooltip: ^4.2.13
-    seamless-scroll-polyfill: 1.2.3
-    style-loader: ^2.0.0
-    styled-components: 5.2.1
-    ts-jest: ^24.2.0
-    ts-loader: ^8.0.16
-    typescript: ^4.1.3
-    webpack: ^5.21.2
-    webpack-cli: ^4.5.0
-    webpack-dev-server: ^3.11.2
-  languageName: unknown
+  resolution: "@evaka/lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A."
+  languageName: node
   linkType: soft
 
-"@evaka/employee-mobile-frontend@workspace:packages/employee-mobile-frontend":
+"@evaka/lib-components@link:src/lib-components::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@evaka/employee-mobile-frontend@workspace:packages/employee-mobile-frontend"
-  dependencies:
-    "@evaka/lib-common": 1.0.0
-    "@evaka/lib-components": 1.0.0
-    "@evaka/lib-icons": 1.0.0
-    "@fortawesome/react-fontawesome": 0.1.11
-    "@sentry/browser": ^5.11.1
-    "@sentry/webpack-plugin": ^1.14.0
-    "@types/classnames": ^2.2.11
-    "@types/jest": ^24.0.23
-    "@types/lodash": ^4.14.168
-    "@types/react": ^17.0.1
-    "@types/react-csv": ^1.1.1
-    "@types/react-datepicker": 2.11.0
-    "@types/react-dom": ^17.0.0
-    "@types/react-router-dom": ^5.1.7
-    "@types/react-select": 3.0.22
-    "@types/react-tooltip": ^3.11.0
-    "@types/styled-components": ^5.1.7
-    "@typescript-eslint/eslint-plugin": ^4.15.0
-    "@typescript-eslint/parser": ^4.15.0
-    axios: ^0.21.1
-    babel-loader: 8.2.2
-    chart.js: ^2.9.4
-    chartjs-adapter-date-fns: ^1.0.0
-    classnames: ^2.2.6
-    core-js: ^3.8.3
-    css-loader: ^5.0.2
-    csstype: ^3.0.6
-    date-fns: ^2.17.0
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    eslint-plugin-react: ^7.22.0
-    eslint-plugin-react-hooks: ^4.2.0
-    history: ^4.9.0
-    html-webpack-plugin: ^5.0.0
-    lodash: ^4.17.15
-    postcss-loader: ^5.0.0
-    postcss-preset-env: ^6.7.0
-    react: ^17.0.1
-    react-autosize-textarea: ^7.0.0
-    react-chartjs-2: ^2.11.1
-    react-csv: ^2.0.1
-    react-datalist-input: ^1.2.12
-    react-datepicker: ^2.10.1
-    react-day-picker: ^7.4.0
-    react-dom: ^17.0.1
-    react-focus-lock: 2.5.0
-    react-router-dom: ^5.1.2
-    react-select: ^3.0.8
-    react-spring: ^8.0.27
-    react-tooltip: ^4.2.13
-    seamless-scroll-polyfill: 1.2.3
-    style-loader: ^2.0.0
-    styled-components: 5.2.1
-    ts-loader: ^8.0.16
-    typescript: ^4.1.3
-    webpack: ^5.21.2
-    webpack-cli: ^4.5.0
-    webpack-dev-server: ^3.11.2
-    webpack-pwa-manifest: ^4.3.0
-  languageName: unknown
+  resolution: "@evaka/lib-components@link:src/lib-components::locator=evaka-frontend%40workspace%3A."
+  languageName: node
   linkType: soft
 
-"@evaka/eslint-plugin@0.0.1, @evaka/eslint-plugin@workspace:eslint-plugin":
+"@evaka/lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@evaka/eslint-plugin@workspace:eslint-plugin"
-  dependencies:
-    eslint: ^7.19.0
-  languageName: unknown
-  linkType: soft
-
-"@evaka/lib-common@1.0.0, @evaka/lib-common@workspace:packages/lib-common":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-common@workspace:packages/lib-common"
-  dependencies:
-    "@types/jest": ^24.0.23
-    "@typescript-eslint/eslint-plugin": ^4.15.0
-    "@typescript-eslint/parser": ^4.15.0
-    date-fns: ^2.17.0
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    husky: ^5.0.9
-    jest: ^24.9.0
-    jest-junit: ^10.0.0
-    ts-jest: ^24.2.0
-    typescript: ^4.1.3
-  languageName: unknown
-  linkType: soft
-
-"@evaka/lib-components@1.0.0, @evaka/lib-components@workspace:packages/lib-components":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-components@workspace:packages/lib-components"
-  dependencies:
-    "@fortawesome/fontawesome-svg-core": 1.2.30
-    "@fortawesome/free-regular-svg-icons": 5.14.0
-    "@fortawesome/free-solid-svg-icons": 5.14.0
-    "@fortawesome/react-fontawesome": 0.1.11
-    "@storybook/addon-actions": ^6.1.17
-    "@storybook/react": ^6.1.17
-    "@types/react": ^17.0.1
-    "@types/react-datepicker": 2.11.0
-    "@types/react-select": 3.0.22
-    csstype: ^3.0.6
-    date-fns: ^2.17.0
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    eslint-plugin-react: ^7.22.0
-    eslint-plugin-react-hooks: ^4.2.0
-    polished: ^4.1.0
-    react: ^17.0.1
-    react-datepicker: ^2.10.1
-    react-day-picker: 7.4.8
-    react-router-dom: ^5.1.2
-    react-select: ^3.0.8
-    styled-components: 5.2.1
-    typescript: ^4.1.3
-  languageName: unknown
-  linkType: soft
-
-"@evaka/lib-icons@1.0.0, @evaka/lib-icons@workspace:packages/lib-icons":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-icons@workspace:packages/lib-icons"
-  dependencies:
-    "@fortawesome/fontawesome-svg-core": 1.2.30
-    "@fortawesome/free-regular-svg-icons": 5.14.0
-    "@fortawesome/free-solid-svg-icons": 5.14.0
-    "@fortawesome/react-fontawesome": 0.1.11
-    eslint: ^7.19.0
-    eslint-config-prettier: ^7.2.0
-    eslint-plugin-prettier: ^3.3.1
-    typescript: ^4.1.3
-  peerDependencies:
-    "@fortawesome/pro-light-svg-icons": ^5.14.0
-    "@fortawesome/pro-regular-svg-icons": ^5.14.0
-    "@fortawesome/pro-solid-svg-icons": ^5.14.0
-  peerDependenciesMeta:
-    "@fortawesome/pro-light-svg-icons":
-      optional: true
-    "@fortawesome/pro-regular-svg-icons":
-      optional: true
-    "@fortawesome/pro-solid-svg-icons":
-      optional: true
-  languageName: unknown
-  linkType: soft
-
-"@evaka/maintenance-page@workspace:packages/maintenance-page":
-  version: 0.0.0-use.local
-  resolution: "@evaka/maintenance-page@workspace:packages/maintenance-page"
-  dependencies:
-    bulma: 0.7.5
-    husky: ^5.0.9
-    parcel-bundler: ^1.12.4
-    postcss-preset-env: ^6.7.0
-    sass: ^1.32.6
-  languageName: unknown
+  resolution: "@evaka/lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A."
+  languageName: node
   linkType: soft
 
 "@fortawesome/fontawesome-common-types@npm:^0.2.30":
@@ -3407,6 +3131,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/json5@npm:^0.0.29":
+  version: 0.0.29
+  resolution: "@types/json5@npm:0.0.29"
+  checksum: 66e9ac0143ec521522c7bb670301e9836ee886207eeed1aab6d4854a1b19b404ab3a54cd8d449f9b1f13acc357f540be96f8ac2d1e86e301eab52ae0f9a4066f
+  languageName: node
+  linkType: hard
+
 "@types/leaflet@npm:^1.5.21":
   version: 1.5.21
   resolution: "@types/leaflet@npm:1.5.21"
@@ -3458,7 +3189,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^14.14.25":
+"@types/node@npm:*":
   version: 14.14.25
   resolution: "@types/node@npm:14.14.25"
   checksum: 64c42730f4169e49ec378870622ef06c5d820b31340e224cc1b45bf06c8b0cfa28daa587b4ae2b8ea1f712ef049bae4d9c92925b157ba9ba7cde3b22ff552513
@@ -3469,6 +3200,13 @@ __metadata:
   version: 10.17.51
   resolution: "@types/node@npm:10.17.51"
   checksum: 77ac931b8c360d8ceb735dd1ee6cefd52e54e62cd5275ca984e72cdc56e6a900bf9b79eb4e77de78144db5eea2cb5034ad3bc1e7fd64ac4b6b2d32b62a6edb54
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^14.14.31":
+  version: 14.14.32
+  resolution: "@types/node@npm:14.14.32"
+  checksum: ae73f3b668242da660b4f4f2047114fc047f5a6a92b8f9f4ab2f8ca1325c914c08cf13b6f90e6e88016fafb7a662d1963b075a6220d2208651a98a1cb3407221
   languageName: node
   linkType: hard
 
@@ -6331,7 +6069,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bluebird@npm:^3.3.5, bluebird@npm:^3.5.0, bluebird@npm:^3.5.1, bluebird@npm:^3.5.5":
+"bluebird@npm:^3.3.5, bluebird@npm:^3.5.0, bluebird@npm:^3.5.5":
   version: 3.7.2
   resolution: "bluebird@npm:3.7.2"
   checksum: 4f2288662f3d4eadbb82d4daa4a7d7976a28fa3c7eb4102c9b4033b03e5be4574ba123ac52a7c103cde4cb7b2d2afc1dbe41817ca15a29ff21ecd258d0286047
@@ -9542,8 +9280,105 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "evaka-frontend@workspace:."
   dependencies:
+    "@evaka/citizen-frontend": "link:src/citizen-frontend"
+    "@evaka/employee-frontend": "link:src/employee-frontend"
+    "@evaka/lib-common": "link:src/lib-common"
+    "@evaka/lib-components": "link:src/lib-components"
+    "@evaka/lib-icons": "link:src/lib-icons"
+    "@fortawesome/fontawesome-svg-core": 1.2.30
+    "@fortawesome/free-regular-svg-icons": 5.14.0
+    "@fortawesome/free-solid-svg-icons": 5.14.0
+    "@fortawesome/react-fontawesome": 0.1.11
+    "@sentry/browser": ^5.11.1
+    "@sentry/webpack-plugin": ^1.14.0
+    "@storybook/addon-actions": ^6.1.17
+    "@storybook/react": ^6.1.17
+    "@types/classnames": ^2.2.11
+    "@types/jest": ^24.0.23
+    "@types/leaflet": ^1.5.21
+    "@types/lodash": ^4.14.168
+    "@types/node": ^14.14.31
+    "@types/react": ^17.0.1
+    "@types/react-csv": ^1.1.1
+    "@types/react-datepicker": 2.11.0
+    "@types/react-dom": ^17.0.0
+    "@types/react-router-dom": ^5.1.7
+    "@types/react-select": 3.0.22
+    "@types/react-tooltip": ^3.11.0
+    "@types/styled-components": ^5.1.7
+    "@typescript-eslint/eslint-plugin": ^4.15.0
+    "@typescript-eslint/parser": ^4.15.0
+    axios: ^0.21.1
+    babel-loader: 8.2.2
+    bulma: 0.7.5
+    chart.js: ^2.9.4
+    chartjs-adapter-date-fns: ^1.0.0
+    classnames: ^2.2.6
+    core-js: ^3.8.3
+    css-loader: ^5.0.2
+    csstype: ^3.0.6
+    date-fns: ^2.17.0
+    eslint: ^7.19.0
+    eslint-config-prettier: ^7.2.0
+    eslint-plugin-prettier: ^3.3.1
+    eslint-plugin-promise: ^4.2.1
+    eslint-plugin-react: ^7.22.0
+    eslint-plugin-react-hooks: ^4.2.0
+    focus-trap-react: ^8.4.2
+    history: ^4.9.0
+    html-webpack-plugin: ^5.0.0
+    husky: ^5.0.9
+    jest: ^24.9.0
+    jest-junit: ^10.0.0
+    leaflet: ^1.7.1
+    lodash: ^4.17.15
+    make-error-cause: ^2.3.0
+    parcel-bundler: ^1.12.4
+    polished: ^4.1.0
+    postcss-loader: ^5.0.0
+    postcss-preset-env: ^6.7.0
     prettier: ^2.2.1
-    wsrun: ^5.2.0
+    react: ^17.0.1
+    react-autosize-textarea: ^7.0.0
+    react-chartjs-2: ^2.11.1
+    react-csv: ^2.0.1
+    react-datalist-input: ^1.2.12
+    react-datepicker: ^2.10.1
+    react-day-picker: 7.4.8
+    react-dom: ^17.0.1
+    react-focus-lock: 2.5.0
+    react-leaflet: ^3.1.0
+    react-meta-tags: 0.7.4
+    react-router-dom: ^5.1.2
+    react-select: ^3.0.8
+    react-spring: ^8.0.27
+    react-tooltip: ^4.2.13
+    sass: ^1.32.6
+    seamless-scroll-polyfill: 1.2.3
+    style-loader: ^2.0.0
+    styled-components: 5.2.1
+    testcafe: ~1.9.4
+    testcafe-reporter-junit: 3.0.2
+    ts-jest: ^24.2.0
+    ts-loader: ^8.0.16
+    tsconfig-paths-webpack-plugin: ^3.2.0
+    tslib: ^2.1.0
+    typescript: ^4.1.3
+    webpack: ^5.21.2
+    webpack-cli: ^4.5.0
+    webpack-dev-server: ^3.11.2
+    webpack-pwa-manifest: ^4.3.0
+  peerDependencies:
+    "@fortawesome/pro-light-svg-icons": ^5.14.0
+    "@fortawesome/pro-regular-svg-icons": ^5.14.0
+    "@fortawesome/pro-solid-svg-icons": ^5.14.0
+  peerDependenciesMeta:
+    "@fortawesome/pro-light-svg-icons":
+      optional: true
+    "@fortawesome/pro-regular-svg-icons":
+      optional: true
+    "@fortawesome/pro-solid-svg-icons":
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -16959,7 +16794,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:7.4.8, react-day-picker@npm:^7.4.0":
+"react-day-picker@npm:7.4.8":
   version: 7.4.8
   resolution: "react-day-picker@npm:7.4.8"
   dependencies:
@@ -18766,15 +18601,6 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"split@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "split@npm:1.0.1"
-  dependencies:
-    through: 2
-  checksum: ed6bb44fd1b46527ff4435b6b843fcfe46c3ffcf19d4f7bc936a7dbf38b42c9c171112452a94ba631d6e8e0be80c87c1e79fb24a3c67e016756e8b5da35a0e9a
-  languageName: node
-  linkType: hard
-
 "sprintf-js@npm:~1.0.2":
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
@@ -19698,7 +19524,7 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"throat@npm:^4.0.0, throat@npm:^4.1.0":
+"throat@npm:^4.0.0":
   version: 4.1.0
   resolution: "throat@npm:4.1.0"
   checksum: 91326ef6842bd3d8d39ac104fbcb8998c911deacc639ae2de8522bbb1e526e6db4263927ad1eec71f1d31e7cec111a501371f67514ec449f517f7357814eda55
@@ -19722,7 +19548,7 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"through@npm:2, through@npm:^2.3.6":
+"through@npm:^2.3.6":
   version: 2.3.8
   resolution: "through@npm:2.3.8"
   checksum: 918d9151680b5355990011eb8c4b02e8cb8cf6e9fb6ea3d3e5a1faa688343789e261634ae35de4ea9167ab029d1e7bac6af2fe61b843931768d405fdc3e8897c
@@ -20035,6 +19861,29 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
+"tsconfig-paths-webpack-plugin@npm:^3.2.0":
+  version: 3.3.0
+  resolution: "tsconfig-paths-webpack-plugin@npm:3.3.0"
+  dependencies:
+    chalk: ^2.3.0
+    enhanced-resolve: ^4.0.0
+    tsconfig-paths: ^3.4.0
+  checksum: 4ae21d85e211610c4f7246930ebc265135f37c53f63d32733ecb2e0a3c218ba9ee6e86cebf60b86f7b5e5c39ba5421d7319afbd7cc640b5d927ee4472bb7a1ab
+  languageName: node
+  linkType: hard
+
+"tsconfig-paths@npm:^3.4.0":
+  version: 3.9.0
+  resolution: "tsconfig-paths@npm:3.9.0"
+  dependencies:
+    "@types/json5": ^0.0.29
+    json5: ^1.0.1
+    minimist: ^1.2.0
+    strip-bom: ^3.0.0
+  checksum: 5383ba626b3ac70e08094b9dfd1e30ce82878407b6c8db8cd84279cc7c7340d5f53f67dbeb8174a233c082a068322a6b00ec8514b96d9a80a453e0476dc116d2
+  languageName: node
+  linkType: hard
+
 "tslib@npm:^1.8.1, tslib@npm:^1.9.0, tslib@npm:^1.9.3":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
@@ -20042,7 +19891,7 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0":
   version: 2.1.0
   resolution: "tslib@npm:2.1.0"
   checksum: d8f5bdd067611651c6b846c2388f4dc8ba1f5af124e66105f5263d1ad56da17f4b8c6566887ca2f205c5a9758451871ceca87d5d06087af2dca1699c5e33db69
@@ -21219,25 +21068,6 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"wsrun@npm:^5.2.0":
-  version: 5.2.4
-  resolution: "wsrun@npm:5.2.4"
-  dependencies:
-    bluebird: ^3.5.1
-    chalk: ^2.3.0
-    glob: ^7.1.2
-    jest-changed-files: ^24.9.0
-    lodash: ^4.17.4
-    minimatch: ^3.0.4
-    split: ^1.0.1
-    throat: ^4.1.0
-    yargs: ^13.0.0
-  bin:
-    wsrun: bin/wsrun.js
-  checksum: a559e486f67691bbf3193802ae57e8cbd4013c26cda9109b4333cce71c209f7d729e029ded83271f4a41872608d5589a5af45f3e2899e9e4a6d744fc2b682b8c
-  languageName: node
-  linkType: hard
-
 "xhr@npm:^2.0.1":
   version: 2.6.0
   resolution: "xhr@npm:2.6.0"
@@ -21349,7 +21179,7 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"yargs@npm:^13.0.0, yargs@npm:^13.3.0, yargs@npm:^13.3.2":
+"yargs@npm:^13.3.0, yargs@npm:^13.3.2":
   version: 13.3.2
   resolution: "yargs@npm:13.3.2"
   dependencies:

@@ -6,6 +6,6 @@
       "output": "test-results/junit.xml"
     }
   ],
-  "tsConfigPath": "./tsconfig.json",
-  "clientScripts": "./injected.js"
+  "tsConfigPath": "./src/e2e-test/tsconfig.json",
+  "clientScripts": "./src/e2e-test/injected.js"
 }
