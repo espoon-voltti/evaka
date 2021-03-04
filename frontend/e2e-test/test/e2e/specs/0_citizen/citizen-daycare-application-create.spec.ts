@@ -44,12 +44,6 @@ const logger = RequestLogger(
 
 const testFilePath = '../../assets/test_file.jpg'
 const testFileName = path.basename(testFilePath)
-const testFileDispositionRegex = new RegExp(
-  `attachment;\\s*filename=${testFileName.replace(
-    /[|\\{}()[\]^$+*?.]/g,
-    '\\$&' // Escape characters in filename to make a valid regular expression
-  )}`
-)
 
 const citizenHomePage = new CitizenHomePage()
 const citizenApplicationsPage = new CitizenApplicationsPage()
@@ -326,8 +320,8 @@ test.requestHooks(logger)(
         logger.contains(
           (r) =>
             r.response.statusCode === 200 &&
-            testFileDispositionRegex.test(
-              r.response.headers['content-disposition']
+            r.response.headers['content-disposition']?.includes(
+              `filename=${testFileName}`
             )
         )
       )
@@ -370,8 +364,8 @@ test.requestHooks(logger)(
         logger.contains(
           (r) =>
             r.response.statusCode === 200 &&
-            testFileDispositionRegex.test(
-              r.response.headers['content-disposition']
+            r.response.headers['content-disposition']?.includes(
+              `filename=${testFileName}`
             )
         )
       )
