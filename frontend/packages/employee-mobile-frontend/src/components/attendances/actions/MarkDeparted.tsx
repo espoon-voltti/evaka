@@ -191,7 +191,7 @@ export default React.memo(function MarkDeparted() {
                     primary
                     text={i18n.common.confirm}
                     onClick={() => markDeparted()}
-                    onSuccess={() => history.goBack()}
+                    onSuccess={() => history.go(-2)}
                     data-qa="mark-present"
                     disabled={timeError}
                   />

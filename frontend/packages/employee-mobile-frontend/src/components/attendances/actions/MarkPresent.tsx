@@ -106,7 +106,7 @@ export default React.memo(function MarkPresent() {
                   primary
                   text={i18n.common.confirm}
                   onClick={() => childArrives()}
-                  onSuccess={() => history.goBack()}
+                  onSuccess={() => history.go(-2)}
                   data-qa="mark-present"
                 />
               </FixedSpaceRow>
