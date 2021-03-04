@@ -57,7 +57,7 @@ export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
 `
 
 export const ContentAreaWithShadow = styled(ContentArea)<{ blue?: boolean }>`
-  box-shadow: 0px 4px 4px 0px #d9d9d9;
+  box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter};
   ${(p) =>
     p.blue ? `background-color: ${colors.brandEspoo.espooTurquoiseLight}` : ''}
 `
