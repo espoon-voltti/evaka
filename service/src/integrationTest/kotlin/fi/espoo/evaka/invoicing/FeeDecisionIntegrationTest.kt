@@ -8,7 +8,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.controller.FeeDecisionSearchResult
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
 import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
@@ -20,6 +19,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -182,7 +182,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun deserializeListResult(json: String) = objectMapper.readValue<FeeDecisionSearchResult>(json)
+    private fun deserializeListResult(json: String) = objectMapper.readValue<Paged<FeeDecisionSummary>>(json)
     private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<FeeDecisionDetailed>>(json)
 
     @BeforeEach

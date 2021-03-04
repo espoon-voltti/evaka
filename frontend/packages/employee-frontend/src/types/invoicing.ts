@@ -173,12 +173,6 @@ export interface InvoiceSummary extends Periodic {
   totalPrice: number
 }
 
-export interface InvoiceSearchResult {
-  data: InvoiceSummary[]
-  total: number
-  pages: number
-}
-
 export interface InvoiceRowDetailed extends Periodic {
   id: UUID | null
   child: PersonDetailed

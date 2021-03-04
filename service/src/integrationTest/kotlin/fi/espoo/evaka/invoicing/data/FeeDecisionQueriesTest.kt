@@ -416,9 +416,9 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
     }
 
     private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {
-        val result = jdbi.handle { h ->
+        val result = db.read { tx ->
             searchFeeDecisions(
-                h = h,
+                tx = tx,
                 searchTerms = searchTerms,
                 page = 0,
                 pageSize = 100,
@@ -433,7 +433,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
                 financeDecisionHandlerId = null
             )
         }
-        assertEquals(1, result.second.size)
-        assertEquals(expectedChildLastName, result.second.get(0).parts.get(0).child.lastName)
+        assertEquals(1, result.data.size)
+        assertEquals(expectedChildLastName, result.data.get(0).parts.get(0).child.lastName)
     }
 }

@@ -4,7 +4,7 @@
 
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Result } from '@evaka/lib-common/src/api'
+import { Paged, Result } from '@evaka/lib-common/src/api'
 import {
   createInvoices,
   getInvoices,
@@ -15,7 +15,7 @@ import {
 } from '../../api/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
-import { InvoiceSearchResult, InvoiceSummary } from '../../types/invoicing'
+import { InvoiceSummary } from '../../types/invoicing'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
 const pageSize = 200
@@ -109,7 +109,7 @@ export function useInvoicesState() {
   const actions = useActions(setState)
 
   const setInvoicesResult = useCallback(
-    (result: Result<InvoiceSearchResult>) => {
+    (result: Result<Paged<InvoiceSummary>>) => {
       setState((previousState) => ({
         ...previousState,
         invoices: {

@@ -13,12 +13,11 @@ import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import Actions from './Actions'
 import GeneratorButton from './generation/GeneratorButton'
-import { Result } from '@evaka/lib-common/src/api'
+import { Paged, Result } from '@evaka/lib-common/src/api'
 import {
   getFeeDecisions,
   FeeDecisionSearchParams,
-  SortByFeeDecisions,
-  FeeDecisionSearchResponse
+  SortByFeeDecisions
 } from '../../api/invoicing'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { FeeDecisionSummary } from '../../types/invoicing'
@@ -38,7 +37,7 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
   const [totalPages, setTotalPages] = useState<number>()
   const [decisions, setDecisions] = useState<PagedFeeDecisions>({})
   const setDecisionsResult = useCallback(
-    (result: Result<FeeDecisionSearchResponse>) => {
+    (result: Result<Paged<FeeDecisionSummary>>) => {
       setDecisions((prev) => ({
         ...prev,
         [page]: result.map((r) => r.data)

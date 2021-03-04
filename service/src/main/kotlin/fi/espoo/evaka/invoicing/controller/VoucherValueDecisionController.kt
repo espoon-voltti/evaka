@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -63,29 +64,27 @@ class VoucherValueDecisionController(
         @RequestParam(required = false) unit: String?,
         @RequestParam(required = false) searchTerms: String?,
         @RequestParam(required = false) financeDecisionHandlerId: UUID?
-    ): ResponseEntity<VoucherValueDecisionSearchResult> {
+    ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        val (total, valueDecisions) = db.read { tx ->
-            tx.handle.searchValueDecisions(
-                page,
-                pageSize,
-                sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                sortDirection ?: SortDirection.DESC,
-                status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
-                    ?: throw BadRequest("Status is a mandatory parameter"),
-                area?.split(",") ?: listOf(),
-                unit?.let { parseUUID(it) },
-                searchTerms ?: "",
-                financeDecisionHandlerId
-            )
-        }
-        val pages =
-            if (total % pageSize == 0) total / pageSize
-            else (total / pageSize) + 1
-        return ResponseEntity.ok(VoucherValueDecisionSearchResult(valueDecisions, total, pages))
+        return db
+            .read { tx ->
+                tx.searchValueDecisions(
+                    page,
+                    pageSize,
+                    sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                    sortDirection ?: SortDirection.DESC,
+                    status?.let { parseEnum<VoucherValueDecisionStatus>(it) }
+                        ?: throw BadRequest("Status is a mandatory parameter"),
+                    area?.split(",") ?: listOf(),
+                    unit?.let { parseUUID(it) },
+                    searchTerms ?: "",
+                    financeDecisionHandlerId
+                )
+            }
+            .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/{id}")
@@ -173,12 +172,6 @@ class VoucherValueDecisionController(
         asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
     }
 }
-
-data class VoucherValueDecisionSearchResult(
-    val data: List<VoucherValueDecisionSummary>,
-    val total: Int,
-    val pages: Int
-)
 
 enum class VoucherValueDecisionSortParam {
     HEAD_OF_FAMILY,

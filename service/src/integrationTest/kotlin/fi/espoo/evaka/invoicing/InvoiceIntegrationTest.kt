@@ -8,7 +8,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.controller.InvoiceSearchResult
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.Wrapper
@@ -31,6 +30,7 @@ import fi.espoo.evaka.invoicing.integration.fallbackPostOffice
 import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
 import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -69,7 +69,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun deserializeListResult(json: String) = objectMapper.readValue<InvoiceSearchResult>(json)
+    private fun deserializeListResult(json: String) = objectMapper.readValue<Paged<InvoiceSummary>>(json)
     private fun deserializeResult(json: String) = objectMapper.readValue<Wrapper<InvoiceSummary>>(json)
 
     private val testInvoices = listOf(
@@ -746,9 +746,9 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response.statusCode)
 
-        val drafts = jdbi.handle { h ->
+        val drafts = db.read { tx ->
             paginatedSearch(
-                h,
+                tx,
                 1,
                 50,
                 InvoiceSortParam.STATUS,
@@ -760,7 +760,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        assertEquals(1, drafts.second.size)
+        assertEquals(1, drafts.data.size)
     }
 
     @Test
@@ -773,9 +773,9 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response.statusCode)
 
-        val drafts = jdbi.handle { h ->
+        val drafts = db.read { tx ->
             paginatedSearch(
-                h,
+                tx,
                 1,
                 50,
                 InvoiceSortParam.STATUS,
@@ -787,7 +787,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        assertEquals(2, drafts.second.size)
+        assertEquals(2, drafts.data.size)
     }
 
     @Test
@@ -802,9 +802,9 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             assertEquals(204, response.statusCode)
         }
 
-        val drafts = jdbi.handle { h ->
+        val drafts = db.read { tx ->
             paginatedSearch(
-                h,
+                tx,
                 1,
                 50,
                 InvoiceSortParam.STATUS,
@@ -816,7 +816,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        assertEquals(1, drafts.second.size)
+        assertEquals(1, drafts.data.size)
     }
 
     @Test

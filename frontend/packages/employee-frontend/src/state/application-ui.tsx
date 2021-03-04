@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Unit } from '../types/invoicing'
-import { Result, Loading } from '@evaka/lib-common/src/api'
+import { Result, Loading, Paged } from '@evaka/lib-common/src/api'
 import {
   ApplicationDateType,
   ApplicationTypeToggle,
@@ -26,7 +26,7 @@ import {
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import { UUID } from '../types'
 import { CareArea } from '../types/unit'
-import { ApplicationsSearchResponse } from '../types/application'
+import { ApplicationListSummary } from '../types/application'
 
 // Nothing in here yet. Filters will be added here in next PR.
 
@@ -34,8 +34,8 @@ import { ApplicationsSearchResponse } from '../types/application'
 // when needed if it still belongs in context.
 
 interface UIState {
-  applicationsResult: Result<ApplicationsSearchResponse>
-  setApplicationsResult: (result: Result<ApplicationsSearchResponse>) => void
+  applicationsResult: Result<Paged<ApplicationListSummary>>
+  setApplicationsResult: (result: Result<Paged<ApplicationListSummary>>) => void
   area: string[]
   setArea: (areas: string[]) => void
   availableAreas: Result<CareArea[]>
@@ -132,7 +132,7 @@ export const ApplicationUIContextProvider = React.memo(
     children: JSX.Element
   }) {
     const [applicationsResult, setApplicationsResult] = useState<
-      Result<ApplicationsSearchResponse>
+      Result<Paged<ApplicationListSummary>>
     >(Loading.of())
     const [area, setArea] = useState<string[]>(defaultState.area)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(

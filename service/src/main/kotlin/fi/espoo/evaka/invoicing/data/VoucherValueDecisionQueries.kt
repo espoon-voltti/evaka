@@ -22,12 +22,15 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -277,7 +280,7 @@ fun Handle.deleteValueDecisions(ids: List<UUID>) {
         .execute()
 }
 
-fun Handle.searchValueDecisions(
+fun Database.Read.searchValueDecisions(
     page: Int,
     pageSize: Int,
     sortBy: VoucherValueDecisionSortParam,
@@ -287,7 +290,7 @@ fun Handle.searchValueDecisions(
     unit: UUID?,
     searchTerms: String = "",
     financeDecisionHandlerId: UUID?
-): Pair<Int, List<VoucherValueDecisionSummary>> {
+): Paged<VoucherValueDecisionSummary> {
     val sortColumn = when (sortBy) {
         VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
         VoucherValueDecisionSortParam.STATUS -> "decision.status"
@@ -382,15 +385,13 @@ fun Handle.searchValueDecisions(
         ORDER BY $sortColumn $sortDirection, decision.id, part.date_of_birth DESC
         """.trimIndent()
 
-    val result = this.createQuery(sql)
+    return this.createQuery(sql)
         .bindMap(params + freeTextParams)
         .map { rs, ctx ->
-            rs.getInt("count") to toVoucherValueDecisionSummary(rs, ctx)
+            WithCount(rs.getInt("count"), toVoucherValueDecisionSummary(rs, ctx))
         }
-        .toList()
-    val count = if (result.isEmpty()) 0 else result.first().first
-
-    return count to result.map { (_, decision) -> decision }.merge()
+        .let(mapToPaged(pageSize))
+        .let { it.copy(data = it.data.merge()) }
 }
 
 fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValueDecisionDetailed? {

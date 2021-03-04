@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.service.DecisionGenerator
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -59,12 +60,6 @@ enum class DistinctiveParams {
     RETROACTIVE
 }
 
-data class FeeDecisionSearchResult(
-    val data: List<FeeDecisionSummary>,
-    val total: Int,
-    val pages: Int
-)
-
 @RestController
 @RequestMapping(path = ["/fee-decisions", "/decisions"])
 class FeeDecisionController(
@@ -90,35 +85,33 @@ class FeeDecisionController(
         @RequestParam(required = false) endDate: String?,
         @RequestParam(required = false) searchByStartDate: Boolean = false,
         @RequestParam(required = false) financeDecisionHandlerId: UUID?
-    ): ResponseEntity<FeeDecisionSearchResult> {
+    ): ResponseEntity<Paged<FeeDecisionSummary>> {
         Audit.FeeDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (startDate != null && endDate != null && endDate < startDate)
             throw BadRequest("End date cannot be before start date")
-        val (total, feeDecisions) = db.read { tx ->
-            searchFeeDecisions(
-                tx.handle,
-                page,
-                pageSize,
-                sortBy ?: FeeDecisionSortParam.STATUS,
-                sortDirection ?: SortDirection.DESC,
-                status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
-                area?.split(",") ?: listOf(),
-                unit?.let { parseUUID(it) },
-                distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
-                searchTerms ?: "",
-                startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
-                endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
-                searchByStartDate,
-                financeDecisionHandlerId
-            )
-        }
-        val pages =
-            if (total % pageSize == 0) total / pageSize
-            else (total / pageSize) + 1
-        return ResponseEntity.ok(FeeDecisionSearchResult(feeDecisions, total, pages))
+        return db
+            .read { tx ->
+                searchFeeDecisions(
+                    tx,
+                    page,
+                    pageSize,
+                    sortBy ?: FeeDecisionSortParam.STATUS,
+                    sortDirection ?: SortDirection.DESC,
+                    status?.split(",")?.mapNotNull { parseEnum<FeeDecisionStatus>(it) } ?: listOf(),
+                    area?.split(",") ?: listOf(),
+                    unit?.let { parseUUID(it) },
+                    distinctions?.split(",")?.mapNotNull { parseEnum<DistinctiveParams>(it) } ?: listOf(),
+                    searchTerms ?: "",
+                    startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
+                    endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
+                    searchByStartDate,
+                    financeDecisionHandlerId
+                )
+            }
+            .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/confirm")

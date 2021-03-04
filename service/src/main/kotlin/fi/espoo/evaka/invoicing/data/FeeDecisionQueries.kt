@@ -24,10 +24,14 @@ import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.WithCount
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
@@ -284,7 +288,7 @@ fun deleteFeeDecisions(h: Handle, ids: List<UUID>) {
 }
 
 fun searchFeeDecisions(
-    h: Handle,
+    tx: Database.Read,
     page: Int,
     pageSize: Int,
     sortBy: FeeDecisionSortParam,
@@ -298,7 +302,7 @@ fun searchFeeDecisions(
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: UUID?
-): Pair<Int, List<FeeDecisionSummary>> {
+): Paged<FeeDecisionSummary> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
         FeeDecisionSortParam.VALIDITY -> "decision.valid_from"
@@ -423,16 +427,13 @@ fun searchFeeDecisions(
         ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.date_of_birth DESC
         """.trimIndent()
 
-    val result = h.createQuery(sql)
+    return tx.createQuery(sql)
         .bindMap(params + freeTextParams + numberParams)
         .map { rs, ctx ->
-            rs.getInt("count") to toFeeDecisionSummary(rs, ctx)
+            WithCount(rs.getInt("count"), toFeeDecisionSummary(rs, ctx))
         }
-        .toList()
-    val count = if (result.isEmpty()) 0 else result.first().first
-
-    return count to result.map { (_, decisions) -> decisions }
-        .merge()
+        .let(mapToPaged(pageSize))
+        .let { it.copy(data = it.data.merge()) }
 }
 
 fun getFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List<FeeDecision> {
