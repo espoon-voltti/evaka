@@ -56,10 +56,8 @@ export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
 
-export const ContentAreaWithShadow = styled(ContentArea)<{ active?: boolean }>`
+export const ContentAreaWithShadow = styled(ContentArea)<{ blue?: boolean }>`
   box-shadow: 0px 4px 4px 0px #d9d9d9;
   ${(p) =>
-    p.active
-      ? `background-color: ${colors.brandEspoo.espooTurquoiseLight}`
-      : ''}
+    p.blue ? `background-color: ${colors.brandEspoo.espooTurquoiseLight}` : ''}
 `

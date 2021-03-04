@@ -24,16 +24,16 @@ import { Result, Loading } from '@evaka/lib-common/src/api'
 import {
   ContentAreaWithShadow,
   TallContentArea
-} from '~components/mobile/components'
-import { AttendanceUIContext } from '~state/attendance-ui'
+} from '../../../components/mobile/components'
+import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   childDeparts,
   DepartureInfoResponse,
   getChildDeparture,
   getDaycareAttendances,
   postDeparture
-} from '~api/attendances'
-import { useTranslation } from '~state/i18n'
+} from '../../../api/attendances'
+import { useTranslation } from '../../../state/i18n'
 import { getCurrentTime } from '../AttendanceChildPage'
 import DailyNote from '../notes/DailyNote'
 import { isBefore, parse } from 'date-fns'
@@ -45,7 +45,7 @@ import {
   CustomTitle,
   DailyNotes
 } from '../components'
-import { AbsenceType } from '~types'
+import { AbsenceType } from '../../../types'
 
 export default React.memo(function MarkDeparted() {
   const history = useHistory()
@@ -204,7 +204,7 @@ export default React.memo(function MarkDeparted() {
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'s'}
-            active={child && child.dailyNote ? true : false}
+            blue
           >
             <DailyNotes>
               <span>

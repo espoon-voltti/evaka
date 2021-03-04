@@ -11,8 +11,8 @@ import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 
-import { AttendanceChild } from '~api/attendances'
-import { useTranslation } from '~state/i18n'
+import { AttendanceChild } from '../../../api/attendances'
+import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   child: AttendanceChild | undefined

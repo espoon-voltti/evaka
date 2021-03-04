@@ -22,12 +22,15 @@ import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   ContentAreaWithShadow,
   TallContentArea
-} from '~components/mobile/components'
-import { AttendanceUIContext } from '~state/attendance-ui'
-import { getDaycareAttendances, postFullDayAbsence } from '~api/attendances'
-import { useTranslation } from '~state/i18n'
+} from '../../../components/mobile/components'
+import { AttendanceUIContext } from '../../../state/attendance-ui'
+import {
+  getDaycareAttendances,
+  postFullDayAbsence
+} from '../../../api/attendances'
+import { useTranslation } from '../../../state/i18n'
 import DailyNote from '../notes/DailyNote'
-import { AbsenceType } from '~types'
+import { AbsenceType } from '../../../types'
 import AbsenceSelector from '../AbsenceSelector'
 import {
   CustomTitle,
@@ -127,7 +130,7 @@ export default React.memo(function MarkAbsent() {
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'s'}
-            active={child && child.dailyNote ? true : false}
+            blue
           >
             <DailyNotes>
               <span>
