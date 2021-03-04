@@ -41,7 +41,7 @@ storiesOf('evaka/molecules/FileDownloadButton', module)
   ))
   .add('fetch failed', () => (
     <>
-      <p>See console for uncaught error output</p>
+      <p>See the browser&apos;s console for uncaught error output</p>
       <FileDownloadButton
         file={file}
         fileFetchFn={mockFailedFetch}
