@@ -1015,7 +1015,7 @@ workflows:
             - e2e-test-employee
             - e2e-test-employee-2
             - e2e-test-mobile
-            - e2e-messaging
+            - e2e-test-messaging
             - apigw_push_image
             - proxy_build_and_push_image
             - service_push_image
