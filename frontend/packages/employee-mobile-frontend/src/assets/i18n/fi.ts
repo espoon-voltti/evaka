@@ -31,7 +31,8 @@ export const fi = {
     children: 'Lapset',
     staff: 'Henkilökunta',
     messages: 'Viestit',
-    back: 'Takaisin'
+    back: 'Takaisin',
+    hours: 'Tuntia'
   },
   absences: {
     title: 'Poissaolomerkinnät',
