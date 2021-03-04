@@ -271,7 +271,8 @@ function Group({
 
   return (
     <DaycareGroup
-      data-qa="daycare-group-collapsible"
+      className={'daycare-group-collapsible'}
+      data-qa={`daycare-group-collapsible-${group.id}`}
       data-status={open ? 'open' : 'closed'}
     >
       {uiMode === `update-group-${group.id}` && (
@@ -442,7 +443,8 @@ function Group({
                     return (
                       <Tr
                         key={placement.id || ''}
-                        data-qa="group-placement-row"
+                        className={'group-placement-row'}
+                        data-qa={`group-placement-row-${placement.child.id}`}
                       >
                         <Td data-qa="daily-note">
                           {renderDaycareDailyNote(placement.child.id)}
