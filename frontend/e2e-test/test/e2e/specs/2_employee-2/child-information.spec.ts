@@ -11,7 +11,8 @@ import {
 } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture
+  daycareGroupFixture,
+  uuidv4
 } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
@@ -38,6 +39,7 @@ fixture('Employee - Child Information')
 
     await insertDaycareGroupFixtures([daycareGroupFixture])
     daycarePlacementFixture = createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.familyWithTwoGuardians.children[0].id,
       fixtures.daycareFixture.id
     )

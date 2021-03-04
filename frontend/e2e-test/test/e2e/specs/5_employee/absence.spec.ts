@@ -4,7 +4,8 @@
 
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture
+  daycareGroupFixture,
+  uuidv4
 } from '../../dev-api/fixtures'
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
@@ -56,6 +57,7 @@ fixture('Employee - Absences')
     )
 
     daycarePlacementFixture = createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
@@ -117,6 +119,7 @@ test('User can find the child in the absence dialog', async (t) => {
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
@@ -140,6 +143,7 @@ test('User can add a sickleave to a child', async (t) => {
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
@@ -166,6 +170,7 @@ test('Adding another leave type will override the previous one', async (t) => {
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
@@ -196,6 +201,7 @@ test('User can clear an absence', async (t) => {
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
@@ -223,6 +229,7 @@ test('User can add a staff attendance', async (t) => {
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
@@ -235,6 +242,7 @@ test('User can add a staff attendance', async (t) => {
   await t.click(absencesPage.btnOpenAbsenceDiary)
   await absencesPage.tryToFindAnyChildWithinNext24Months(
     createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
