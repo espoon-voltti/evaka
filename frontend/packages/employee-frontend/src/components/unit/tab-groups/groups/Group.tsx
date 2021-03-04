@@ -196,10 +196,77 @@ function Group({
 
   const showServiceNeed = !unit.type.includes('CLUB') && canManageChildren
 
-  const noteExists = (childId: string): boolean =>
-    groupDaycareDailyNotes.isSuccess &&
-    groupDaycareDailyNotes.value.filter((note) => note.childId === childId)
-      .length > 0
+  const getChildNote = (childId: string): DaycareDailyNote | undefined =>
+    groupDaycareDailyNotes.isSuccess
+      ? groupDaycareDailyNotes.value.find((note) => note.childId === childId)
+      : undefined
+
+  const renderDaycareDailyNote = (childId: string) => {
+    const childNote = getChildNote(childId)
+    return (
+      <>
+        {groupDaycareDailyNotes.isLoading && <SpinnerSegment />}
+        {groupDaycareDailyNotes.isFailure && (
+          <ErrorSegment title={i18n.common.loadingFailed} compact />
+        )}
+        {groupDaycareDailyNotes.isSuccess && (
+          <Tooltip
+            tooltip={
+              !childNote ? (
+                <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
+              ) : (
+                <div>
+                  <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
+                  <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
+                  <p>{childNote.note}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
+                  <p>
+                    {childNote.feedingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.feedingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
+                  <p>
+                    {childNote.sleepingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.sleepingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
+                  <p>
+                    {childNote.reminders
+                      .map(
+                        (reminder) =>
+                          i18n.unit.groups.daycareDailyNote.reminderType[
+                            reminder
+                          ]
+                      )
+                      .join(',')}
+                  </p>
+                  <h5>
+                    {
+                      i18n.unit.groups.daycareDailyNote
+                        .otherThingsToRememberHeader
+                    }
+                  </h5>
+                  <p>{childNote.reminderNote}</p>
+                </div>
+              )
+            }
+          >
+            <RoundIcon
+              size="m"
+              color={colors.blues.primary}
+              content={childNote ? farStickyNote : faStickyNote}
+            />
+          </Tooltip>
+        )}
+      </>
+    )
+  }
 
   return (
     <DaycareGroup
@@ -340,10 +407,18 @@ function Group({
                   <Tr>
                     <Th>
                       <IconContainer>
-                        <FontAwesomeIcon
-                          icon={farStickyNote}
-                          color={colors.greyscale.dark}
-                        />
+                        <Tooltip
+                          tooltip={
+                            <span>
+                              {i18n.unit.groups.daycareDailyNote.header}
+                            </span>
+                          }
+                        >
+                          <FontAwesomeIcon
+                            icon={farStickyNote}
+                            color={colors.greyscale.dark}
+                          />
+                        </Tooltip>
                       </IconContainer>
                     </Th>
                     <Th>{i18n.unit.groups.name}</Th>
@@ -369,26 +444,7 @@ function Group({
                         data-qa="group-placement-row"
                       >
                         <Td data-qa="daily-note">
-                          {groupDaycareDailyNotes.isLoading && (
-                            <SpinnerSegment />
-                          )}
-                          {groupDaycareDailyNotes.isFailure && (
-                            <ErrorSegment
-                              title={i18n.common.loadingFailed}
-                              compact
-                            />
-                          )}
-                          {groupDaycareDailyNotes.isSuccess && (
-                            <RoundIcon
-                              size="m"
-                              color={colors.blues.primary}
-                              content={
-                                noteExists(placement.child.id)
-                                  ? farStickyNote
-                                  : faStickyNote
-                              }
-                            />
-                          )}
+                          {renderDaycareDailyNote(placement.child.id)}
                         </Td>
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
