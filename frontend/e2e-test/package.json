@@ -16,13 +16,15 @@
     "e2e-employee": "testcafe 'chrome --start-fullscreen' test/e2e/specs/5_employee/*.spec.ts",
     "e2e-employee-2": "testcafe 'chrome --start-fullscreen' test/e2e/specs/2_employee-2/*.spec.ts",
     "e2e-mobile": "testcafe 'chrome --start-fullscreen' test/e2e/specs/6_mobile/*.spec.ts",
+    "e2e-messaging": "testcafe 'chrome --start-fullscreen' test/e2e/specs/7_messaging/*.spec.ts",
     "e2e-ci": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/**/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-accessibility": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/**/*.spec.ts --fixture-meta subType=accessibility -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-citizen": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/specs/0_citizen/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-invoicing": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/specs/4_invoicing/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-employee": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/specs/5_employee/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-employee-2": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/specs/2_employee-2/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
-    "e2e-ci-mobile": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=375;height=667' test/e2e/specs/6_mobile/*.spec.ts -s takeOnFails=true --stop-on-first-fail"
+    "e2e-ci-mobile": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=375;height=667' test/e2e/specs/6_mobile/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
+    "e2e-ci-messaging": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' test/e2e/specs/7_messaging/*.spec.ts -s takeOnFails=true --stop-on-first-fail"
   },
   "dependencies": {
     "axios": "^0.21.1"

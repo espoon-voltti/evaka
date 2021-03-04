@@ -677,6 +677,13 @@ jobs:
           suite: e2e-ci-mobile
       - notify_slack
 
+  e2e-test-messaging:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-messaging
+      - notify_slack
+
   # DEPLOY JOBS
 
   services_deploy:
@@ -952,6 +959,12 @@ workflows:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
+      - e2e-test-messaging:
+          <<: *default_contexts
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
 
       - proxy_build_and_push_image:
           context:
@@ -1002,6 +1015,7 @@ workflows:
             - e2e-test-employee
             - e2e-test-employee-2
             - e2e-test-mobile
+            - e2e-messaging
             - apigw_push_image
             - proxy_build_and_push_image
             - service_push_image
