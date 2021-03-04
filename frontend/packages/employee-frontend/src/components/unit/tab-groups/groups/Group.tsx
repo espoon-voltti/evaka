@@ -211,6 +211,7 @@ function Group({
         )}
         {groupDaycareDailyNotes.isSuccess && (
           <Tooltip
+            up
             tooltip={
               !childNote ? (
                 <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
