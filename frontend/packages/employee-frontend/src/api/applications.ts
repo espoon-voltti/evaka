@@ -334,3 +334,15 @@ export async function updateNote(id: UUID, text: string): Promise<void> {
 export async function deleteNote(id: UUID): Promise<void> {
   return client.delete(`/note/${id}`)
 }
+
+export async function getAttachmentBlob(
+  attachmentId: UUID
+): Promise<Result<BlobPart>> {
+  return client({
+    url: `/attachments/${attachmentId}/download`,
+    method: 'GET',
+    responseType: 'blob'
+  })
+    .then((result) => Success.of(result.data))
+    .catch((e) => Failure.fromError(e))
+}

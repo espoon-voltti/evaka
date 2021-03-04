@@ -1144,10 +1144,11 @@ const en: Translations = {
         'PDF, JPEG/JPG, PNG and DOC/DOCX'
       ]
     },
-    modalHeader: 'Processing file',
-    modalMessage: 'File is being processed. Try again later',
-    modalConfirm: 'OK',
     deleteFile: 'Delete file'
+  },
+  fileDownload: {
+    modalHeader: 'Processing file',
+    modalMessage: 'File is being processed. Try again later'
   },
   validationErrors: {
     required: 'Value missing',

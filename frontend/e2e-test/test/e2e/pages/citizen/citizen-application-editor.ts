@@ -29,6 +29,14 @@ export default class CitizenApplicationEditor {
 
   readonly childStreetAddress = Selector('[data-qa="child-street-address"]')
 
+  readonly urgentAttachmentsUpload = Selector('[data-qa="urgent-file-upload"]')
+
+  readonly urgentAttachmentDownloadButton = (file: string) =>
+    this.urgentAttachmentsUpload
+      .find('[data-qa="uploaded-files"]')
+      .find('[data-qa="file-download-button"]')
+      .withText(file)
+
   async getApplicationId() {
     const location = await getWindowLocation()
     const urlParts = location.href.split('/')
@@ -171,6 +179,19 @@ export default class CitizenApplicationEditor {
     await t.typeText(this.preferredStartDateInput, format(date, 'dd.MM.yyyy'), {
       replace: true
     })
+  }
+
+  async uploadUrgentFile(file: string) {
+    await t.setFilesToUpload(
+      this.urgentAttachmentsUpload.find('[data-qa="btn-upload-file"]'),
+      [file]
+    )
+  }
+
+  async assertUrgentFileHasBeenUploaded(filename: string) {
+    await t
+      .expect(this.urgentAttachmentDownloadButton(filename).visible)
+      .ok({ timeout: 2000 }) // Uploading test files shouldn't take very long
   }
 
   async assertPreferredStartDateInputInfo(

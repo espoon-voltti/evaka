@@ -196,6 +196,7 @@ export default React.memo(function PreferredStartSubSection({
                   files={formData.urgencyAttachments}
                   onUpload={uploadUrgencyAttachment}
                   onDelete={deleteUrgencyAttachment}
+                  dataQa={'urgent-file-upload'}
                 />
               </>
             )}

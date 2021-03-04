@@ -2,17 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
+  faFile,
   faFileImage,
   faFilePdf,
-  faFileWord,
-  faFile
+  faFileWord
 } from '@fortawesome/free-solid-svg-icons'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import { ApplicationAttachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
+import { getAttachmentBlob } from '../../api/applications'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 
 const AttachmentContainer = styled.div`
   display: flex;
@@ -39,6 +44,9 @@ const contentTypeIcon = (contentType: string) => {
 }
 
 function Attachment({ attachment, dataQa }: Props) {
+  const { i18n } = useTranslation()
+  const { setErrorMessage } = useContext(UIContext)
+
   return (
     <AttachmentContainer className={`attachment`} data-qa={dataQa}>
       <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
@@ -47,13 +55,19 @@ function Attachment({ attachment, dataQa }: Props) {
           className={'attachment-icon'}
           color={'Dodgerblue'}
         />
-        <a
-          href={`/api/internal/attachments/${attachment.id}/download`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <span>{attachment.name}</span>
-        </a>
+        <FileDownloadButton
+          file={attachment}
+          fileFetchFn={getAttachmentBlob}
+          onFileUnavailable={() =>
+            setErrorMessage({
+              type: 'warning',
+              title: i18n.common.fileDownloadError.modalHeader,
+              text: i18n.common.fileDownloadError.modalMessage,
+              resolveLabel: i18n.common.ok
+            })
+          }
+          dataQa={'attachment-download'}
+        />
       </FixedSpaceRow>
     </AttachmentContainer>
   )

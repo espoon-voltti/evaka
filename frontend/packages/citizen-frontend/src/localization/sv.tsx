@@ -1090,10 +1090,11 @@ const sv: Translations = {
         'PDF, JPEG/JPG, PNG och DOC/DOCX'
       ]
     },
-    modalHeader: 'Behandling av filen pågår',
-    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
-    modalConfirm: 'OK',
     deleteFile: 'Radera fil'
+  },
+  fileDownload: {
+    modalHeader: 'Behandling av filen pågår',
+    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.'
   },
   validationErrors: {
     required: 'Värde saknas',

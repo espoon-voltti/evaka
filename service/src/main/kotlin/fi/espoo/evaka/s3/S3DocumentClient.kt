@@ -27,9 +27,6 @@ class S3DocumentClient(private val s3Client: AmazonS3) : DocumentService {
             get(bucketName = it.bucket, key = it.key)
         }
 
-    override fun headObject(bucketName: String, key: String): ObjectMetadata =
-        s3Client.getObjectMetadata(bucketName, key)
-
     override fun upload(bucketName: String, document: Document, contentType: String): DocumentLocation {
         val metadata = ObjectMetadata()
         metadata.contentType = contentType

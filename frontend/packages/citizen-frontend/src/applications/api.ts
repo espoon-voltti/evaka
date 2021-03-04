@@ -8,8 +8,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import {
   ApplicationDetails,
   ApplicationFormUpdate,
-  deserializeApplicationDetails,
-  FileObject
+  deserializeApplicationDetails
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import {
   ApplicationsOfChild,
@@ -189,24 +188,12 @@ export async function deleteAttachment(id: UUID): Promise<Result<void>> {
   }
 }
 
-export async function getFileAvailability(
-  file: FileObject
-): Promise<Result<{ fileAvailable: boolean }>> {
+export async function getAttachmentBlob(
+  attachmentId: UUID
+): Promise<Result<BlobPart>> {
   try {
     const result = await client({
-      url: `/attachments/${file.id}/pre-download`,
-      method: 'GET'
-    })
-    return Success.of(result.data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function getFileBlob(file: FileObject): Promise<Result<BlobPart>> {
-  try {
-    const result = await client({
-      url: `/attachments/${file.id}/download`,
+      url: `/attachments/${attachmentId}/download`,
       method: 'GET',
       responseType: 'blob'
     })

@@ -209,20 +209,13 @@ export interface ApplicationClubDetails {
   wasOnClubCare: boolean
 }
 
-export interface ApplicationAttachment {
-  id: string
+export interface Attachment {
+  id: UUID
   name: string
   contentType: string
-  updated: Date
-  type: AttachmentType
 }
 
-export interface FileObject {
-  id: UUID
-  key: number
-  file: File | undefined
-  name: string
-  contentType: string
-  error: 'FILE_TOO_LARGE' | 'SERVER_ERROR' | undefined
-  progress: number
+export interface ApplicationAttachment extends Attachment {
+  updated: Date
+  type: AttachmentType
 }

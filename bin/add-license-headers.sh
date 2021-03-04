@@ -8,6 +8,7 @@ set -euo pipefail
 
 # Configuration
 REUSE_VERSION=0.12.1
+REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
 
 if [ "${1:-X}" = '--help' ]; then
   echo 'Usage: ./bin/add-license-headers.sh [OPTIONS]'
@@ -28,7 +29,7 @@ function run_reuse() {
 function addheader() {
     local file="$1"
     shift
-    run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "2017-2020" "$@" "$file"
+    run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "$@" "$file"
 }
 
 set +e

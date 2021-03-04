@@ -2,15 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
-import React from 'react'
-import { useTranslation } from '../../../localization'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Label } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { faFile } from '@evaka/lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import styled from 'styled-components'
-import { espooBrandColors } from '@evaka/lib-components/src/colors'
+import { faFile, faInfo } from '@evaka/lib-icons'
+import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
+import { useTranslation } from '../../../localization'
+import { getAttachmentBlob } from '../../../applications/api'
 
 type Props = {
   formData: ApplicationFormData
@@ -22,15 +25,12 @@ export const AttachmentList = styled.ul`
   list-style: none;
 `
 
-export const AttachmentDownload = styled.a`
-  color: ${espooBrandColors.espooTurquoise};
-  text-decoration: none;
-`
-
 export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
   formData
 }: Props) {
   const t = useTranslation()
+
+  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(false)
 
   return (
     <>
@@ -46,6 +46,14 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
 
       {formData.serviceNeed.urgent && (
         <>
+          {errorModalVisible && (
+            <InfoModal
+              title={t.fileDownload.modalHeader}
+              text={t.fileDownload.modalMessage}
+              close={() => setErrorModalVisible(false)}
+              icon={faInfo}
+            />
+          )}
           <Label>
             {t.applications.editor.verification.serviceNeed.attachments.label}
           </Label>
@@ -58,13 +66,12 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                       <FontAwesomeIcon icon={faFile} />
                     </span>
                     <Gap horizontal size={'xs'} />
-                    <AttachmentDownload
-                      href={`/api/application/attachments/${file.id}/download`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {file.name}
-                    </AttachmentDownload>
+                    <FileDownloadButton
+                      file={file}
+                      fileFetchFn={getAttachmentBlob}
+                      onFileUnavailable={() => setErrorModalVisible(true)}
+                      dataQa={'service-need-urgency-attachment-download'}
+                    />
                   </li>
                 ))}
               </AttachmentList>
@@ -84,6 +91,8 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
 }: Props) {
   const t = useTranslation()
 
+  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(false)
+
   return (
     <>
       <Label>
@@ -99,6 +108,14 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
 
       {formData.serviceNeed.shiftCare && (
         <>
+          {errorModalVisible && (
+            <InfoModal
+              title={t.fileDownload.modalHeader}
+              text={t.fileDownload.modalMessage}
+              close={() => setErrorModalVisible(false)}
+              icon={faInfo}
+            />
+          )}
           <Label>
             {t.applications.editor.verification.serviceNeed.attachments.label}
           </Label>
@@ -111,13 +128,12 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
                       <FontAwesomeIcon icon={faFile} />
                     </span>
                     <Gap horizontal size={'xs'} />
-                    <AttachmentDownload
-                      href={`/api/application/attachments/${file.id}/download`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {file.name}
-                    </AttachmentDownload>
+                    <FileDownloadButton
+                      file={file}
+                      fileFetchFn={getAttachmentBlob}
+                      onFileUnavailable={() => setErrorModalVisible(true)}
+                      dataQa={'service-need-shift-care-attachment-download'}
+                    />
                   </li>
                 ))}
               </AttachmentList>

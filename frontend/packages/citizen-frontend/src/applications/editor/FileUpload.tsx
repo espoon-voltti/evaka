@@ -9,6 +9,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { useTranslation } from '../../localization'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
+import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import {
   faExclamationTriangle,
@@ -22,20 +23,25 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
-import {
-  ApplicationAttachment,
-  FileObject
-} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { Attachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { getFileAvailability, getFileBlob } from '../../applications/api'
+import { getAttachmentBlob } from '../../applications/api'
 
 export type FileUploadProps = {
-  files: ApplicationAttachment[]
+  files: Attachment[]
   onUpload: (
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+  dataQa?: string
+}
+
+interface FileObject extends Attachment {
+  key: number
+  file: File | undefined
+  error: 'FILE_TOO_LARGE' | 'SERVER_ERROR' | undefined
+  progress: number
 }
 
 const FileUploadContainer = styled.div`
@@ -133,14 +139,6 @@ const ProgressBar = styled.div<ProgressBarProps>`
   transition: width 0.5s ease-out;
   margin-bottom: 3px;
 `
-const FileDownloadButton = styled.button`
-  border: none;
-  background: none;
-  color: ${colors.blues.primary};
-  cursor: pointer;
-  text-align: left;
-  font-size: 15px;
-`
 
 const FileDeleteButton = styled(IconButton)`
   border: none;
@@ -176,7 +174,7 @@ const ProgressBarError = styled.div`
   }
 `
 
-const attachmentToFile = (attachment: ApplicationAttachment): FileObject => {
+const attachmentToFile = (attachment: Attachment): FileObject => {
   return {
     id: attachment.id,
     file: undefined,
@@ -209,7 +207,8 @@ const inProgress = (file: FileObject): boolean => file.progress !== 100
 export default React.memo(function FileUpload({
   files,
   onUpload,
-  onDelete
+  onDelete,
+  dataQa
 }: FileUploadProps) {
   const t = useTranslation()
 
@@ -248,30 +247,6 @@ export default React.memo(function FileUpload({
       })
     } catch (e) {
       console.error(e)
-    }
-  }
-
-  const getFileIfAvailable = async (file: FileObject) => {
-    const result = await getFileAvailability(file)
-    if (result.isSuccess) {
-      result.value.fileAvailable
-        ? void deliverBlob(file)
-        : setModalVisible(true)
-    }
-  }
-
-  const deliverBlob = async (file: FileObject) => {
-    const result = await getFileBlob(file)
-    if (result.isSuccess) {
-      const url = URL.createObjectURL(new Blob([result.value]))
-      const link = document.createElement('a')
-      link.href = url
-      link.target = '_blank'
-      link.setAttribute('download', `${file.name}`)
-      link.rel = 'noreferrer'
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
     }
   }
 
@@ -339,11 +314,11 @@ export default React.memo(function FileUpload({
   }
 
   return (
-    <FileUploadContainer>
+    <FileUploadContainer data-qa={dataQa}>
       {modalVisible && (
         <InfoModal
-          title={t.fileUpload.modalHeader}
-          text={t.fileUpload.modalMessage}
+          title={t.fileDownload.modalHeader}
+          text={t.fileDownload.modalMessage}
           close={() => setModalVisible(false)}
           icon={faInfo}
         />
@@ -368,18 +343,23 @@ export default React.memo(function FileUpload({
         </span>
       </FileInputLabel>
       <Gap horizontal size={'s'} />
-      <UploadedFiles>
+      <UploadedFiles data-qa={'uploaded-files'}>
         {uploadedFiles.map((file) => (
           <File key={file.key}>
             <FileIcon icon={fileIcon(file)} />
             <FileDetails>
               <FileHeader>
-                {!file.error ? (
-                  <FileDownloadButton onClick={() => getFileIfAvailable(file)}>
-                    {file.name}
-                  </FileDownloadButton>
+                {!inProgress(file) && !file.error ? (
+                  <FileDownloadButton
+                    file={file}
+                    fileFetchFn={getAttachmentBlob}
+                    onFileUnavailable={() => setModalVisible(true)}
+                    dataQa={'file-download-button'}
+                  />
                 ) : (
-                  <span>{file.name}</span>
+                  <span data-qa={'file-download-unavailable-text'}>
+                    {file.name}
+                  </span>
                 )}
                 <FileDeleteButton
                   icon={faTimes}
