@@ -12,6 +12,7 @@ data class DaycareDailyNote(
         val note: String?,
         val feedingNote: DaycareDailyNoteLevelInfo?,
         val sleepingNote: DaycareDailyNoteLevelInfo?,
+        val sleepingHours: Double?,
         val reminders: List<DaycareDailyNoteReminder> = emptyList(),
         val reminderNote: String?,
         val modifiedAt: Instant? = null,

@@ -65,6 +65,7 @@ interface DailyNote {
   note: string | null
   feedingNote: DaycareDailyNoteLevelInfo | null
   sleepingNote: DaycareDailyNoteLevelInfo | null
+  sleepingHours: number | null
   reminders: DaycareDailyNoteReminder[]
   reminderNote: string | null
   modifiedAt: Date | null

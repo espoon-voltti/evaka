@@ -46,6 +46,8 @@ export default React.memo(function DailyNote({ child }: Props) {
               <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
               <span>
                 {i18n.attendances.notes.values[child.dailyNote.sleepingNote]}
+                {child.dailyNote.sleepingHours &&
+                  `. ${child.dailyNote.sleepingHours} tuntia.`}
               </span>
             </FixedSpaceColumn>
           )}
