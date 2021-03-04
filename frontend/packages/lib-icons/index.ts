@@ -29,6 +29,7 @@ export interface IconSet {
   faClock: IconDefinition
   faCoins: IconDefinition
   faCopy: IconDefinition
+  faComments: IconDefinition
   faDatabase: IconDefinition
   faDiagnoses: IconDefinition
   faEnvelope: IconDefinition
@@ -122,6 +123,7 @@ export const faChild = iconSet.faChild
 export const faClock = iconSet.faClock
 export const faCoins = iconSet.faCoins
 export const faCopy = iconSet.faCopy
+export const faComments = iconSet.faComments
 export const faDatabase = iconSet.faDatabase
 export const faDiagnoses = iconSet.faDiagnoses
 export const faEnvelope = iconSet.faEnvelope

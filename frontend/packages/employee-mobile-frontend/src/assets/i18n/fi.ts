@@ -27,7 +27,10 @@ export const fi = {
       DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus',
       DAYCARE_5YO_PAID: 'Varhaiskasvatus (maksullinen)'
     },
-    code: 'Koodi'
+    code: 'Koodi',
+    children: 'Lapset',
+    staff: 'Henkilökunta',
+    messages: 'Viestit'
   },
   absences: {
     title: 'Poissaolot',

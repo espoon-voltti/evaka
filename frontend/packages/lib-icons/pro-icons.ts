@@ -74,7 +74,8 @@ import {
   faUser,
   faUserAltSlash,
   faUserFriends,
-  faUsers
+  faUsers,
+  faComments
 } from '@fortawesome/pro-light-svg-icons'
 
 import {
@@ -185,7 +186,8 @@ const icons: IconSet = {
   fasArrowDown,
   fasArrowUp,
   farStickyNote,
-  farUser: faUser
+  farUser: faUser,
+  faComments
 }
 
 export default icons
