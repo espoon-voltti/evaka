@@ -43,6 +43,7 @@ export default React.memo(function UnitsList({
             _.sortBy(units.value, (u) => u.name).map((unit) => (
               <Unit
                 key={unit.id}
+                data-qa={`unit-${unit.id}`}
                 onClick={() => selectUnit(unit)}
                 className={
                   activeUnit && unit.id === activeUnit.id ? 'active' : ''

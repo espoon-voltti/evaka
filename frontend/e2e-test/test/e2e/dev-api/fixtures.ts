@@ -23,7 +23,8 @@ import {
   PersonDetail,
   PlacementPlan,
   VoucherValueDecision,
-  UUID
+  UUID,
+  DaycareGroupPlacement
 } from './types'
 import {
   deleteCareAreaFixture,
@@ -730,6 +731,21 @@ export function createDaycarePlacementFixture(
     type: 'DAYCARE',
     childId,
     unitId: unitId,
+    startDate,
+    endDate
+  }
+}
+
+export function createDaycareGroupPlacementFixture(
+  placementId: string,
+  groupId: string,
+  startDate = '2020-05-01',
+  endDate = '2021-08-31'
+): DaycareGroupPlacement {
+  return {
+    id: '2e19e400-ca0c-4059-b872-cce8b5282a72',
+    daycareGroupId: groupId,
+    daycarePlacementId: placementId,
     startDate,
     endDate
   }

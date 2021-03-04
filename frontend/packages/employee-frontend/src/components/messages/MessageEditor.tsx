@@ -45,25 +45,30 @@ export default React.memo(function MessageEditor({
       <FormArea>
         <div>{i18n.messages.messageEditor.to.label}</div>
         <Gap size={'xs'} />
-        <ReactSelect
-          options={_.sortBy(groups, (g) => g.name.toLowerCase())}
-          getOptionLabel={(u) => u.name}
-          getOptionValue={(u) => u.id}
-          value={groups.find((group) => group.id === bulletin.groupId) ?? null}
-          onChange={(val) =>
-            onChange({
-              groupId: val
-                ? 'length' in val
-                  ? val.length > 0
-                    ? val[0].id
-                    : null
-                  : val.id
-                : null
-            })
-          }
-          noOptionsMessage={() => i18n.messages.messageEditor.to.noOptions}
-          placeholder={i18n.messages.messageEditor.to.placeholder}
-        />
+        <div data-qa="group-selector">
+          <ReactSelect
+            options={_.sortBy(groups, (g) => g.name.toLowerCase())}
+            getOptionLabel={(u) => u.name}
+            getOptionValue={(u) => u.id}
+            value={
+              groups.find((group) => group.id === bulletin.groupId) ?? null
+            }
+            onChange={(val) =>
+              onChange({
+                groupId: val
+                  ? 'length' in val
+                    ? val.length > 0
+                      ? val[0].id
+                      : null
+                    : val.id
+                  : null
+              })
+            }
+            noOptionsMessage={() => i18n.messages.messageEditor.to.noOptions}
+            placeholder={i18n.messages.messageEditor.to.placeholder}
+          />
+        </div>
+
         <Gap size={'s'} />
 
         <div>{i18n.messages.messageEditor.title}</div>
@@ -71,6 +76,7 @@ export default React.memo(function MessageEditor({
         <InputField
           value={bulletin.title}
           onChange={(title) => onChange({ title })}
+          data-qa={'input-title'}
         />
         <Gap size={'s'} />
 
@@ -81,6 +87,7 @@ export default React.memo(function MessageEditor({
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             onChange({ content: e.target.value })
           }
+          data-qa={'input-content'}
         />
         <Gap size={'s'} />
         <BottomRow>
@@ -97,6 +104,7 @@ export default React.memo(function MessageEditor({
               !bulletin.groupId ||
               !groups.find((group) => group.id === bulletin.groupId)
             }
+            data-qa="send-bulletin-btn"
           />
         </BottomRow>
       </FormArea>
