@@ -8,17 +8,18 @@ import styled from 'styled-components'
 import { Result } from '@evaka/lib-common/src/api'
 import { downloadBlobAsFile } from '@evaka/lib-common/src/utils/file'
 import { Attachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { espooBrandColors } from '@evaka/lib-components/src/colors'
+import { blueColors } from '@evaka/lib-components/src/colors'
 import { UUID } from '@evaka/lib-common/src/types'
 
 const DownloadButton = styled.button`
-  border: none;
-  text-align: start;
-  padding: 0;
   background: none;
-  color: ${espooBrandColors.espooTurquoise};
-  text-decoration: none;
+  border: none;
+  color: ${blueColors.medium};
   cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  text-align: start;
+  text-decoration: none;
 `
 
 interface FileDownloadButtonProps {
