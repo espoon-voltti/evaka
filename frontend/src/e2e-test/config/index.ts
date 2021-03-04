@@ -24,20 +24,20 @@ const adminAad = 'c50be1c1-304d-4d5a-86a0-1fad225c76cb'
 const config: Config = {
   env: process.env.TEST_ENV,
   adminUrl: `${
-    process.env.BASE_URL || 'http://localhost:9093'
+    process.env.BASE_URL || 'http://localhost:9099'
   }/employee/applications`,
-  employeeUrl: `${process.env.BASE_URL || 'http://localhost:9093'}/employee`,
+  employeeUrl: `${process.env.BASE_URL || 'http://localhost:9099'}/employee`,
   devApiGwUrl: `${
     process.env.BASE_URL || 'http://localhost:3020'
   }/api/internal/dev-api`,
-  enduserUrl: process.env.BASE_URL || 'http://localhost:9094',
+  enduserUrl: process.env.BASE_URL || 'http://localhost:9099',
   supervisorAad,
   supervisorExternalId: `espoo-ad:${supervisorAad}`,
   adminAad,
   adminExternalId: `espoo-ad:${adminAad}`,
-  mobileBaseUrl: `${process.env.BASE_URL || 'http://localhost:9095'}`,
+  mobileBaseUrl: `${process.env.BASE_URL || 'http://localhost:9099'}`,
   mobileUrl: `${
-    process.env.BASE_URL || 'http://localhost:9095'
+    process.env.BASE_URL || 'http://localhost:9099'
   }/employee/mobile`
 }
 
