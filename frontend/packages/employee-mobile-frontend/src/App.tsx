@@ -22,6 +22,7 @@ import { getAuthStatus, AuthStatus } from './api/auth'
 import { client } from './api/client'
 import MarkPresent from './components/attendances/actions/MarkPresent'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
+import MarkAbsent from './components/attendances/actions/MarkAbsent'
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()
