@@ -11,12 +11,11 @@ import {
 import VoucherValueDecisions from './VoucherValueDecisions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'
-import { Result } from '@evaka/lib-common/src/api'
+import { Paged, Result } from '@evaka/lib-common/src/api'
 import {
   getVoucherValueDecisions,
   VoucherValueDecisionSearchParams,
-  SortByVoucherValueDecisions,
-  VoucherValueDecisionSearchResponse
+  SortByVoucherValueDecisions
 } from '../../api/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
@@ -39,7 +38,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
   const [totalPages, setTotalPages] = useState<number>()
   const [decisions, setDecisions] = useState<PagedValueDecisions>({})
   const setDecisionsResult = useCallback(
-    (result: Result<VoucherValueDecisionSearchResponse>) => {
+    (result: Result<Paged<VoucherValueDecisionSummary>>) => {
       setDecisions((prev) => ({
         ...prev,
         [page]: result.map((r) => r.data)

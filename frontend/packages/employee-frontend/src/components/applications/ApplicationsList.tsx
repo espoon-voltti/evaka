@@ -5,6 +5,7 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { faCheck, fasArrowDown, fasArrowUp, faTimes } from '@evaka/lib-icons'
+import { Paged } from '@evaka/lib-common/src/api'
 import {
   Table,
   Tr,
@@ -15,10 +16,7 @@ import {
   SortableTh
 } from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from '../../state/i18n'
-import {
-  ApplicationListSummary,
-  ApplicationsSearchResponse
-} from '../../types/application'
+import { ApplicationListSummary } from '../../types/application'
 import { SearchOrder } from '../../types'
 import Pagination from '@evaka/lib-components/src/Pagination'
 import colors, { blueColors } from '@evaka/lib-components/src/colors'
@@ -107,7 +105,7 @@ const StatusColorTd = styled(Td)<{ color: string }>`
 `
 
 interface Props {
-  applicationsResult: ApplicationsSearchResponse
+  applicationsResult: Paged<ApplicationListSummary>
   currentPage: number
   setPage: (page: number) => void
   sortBy: SortByApplications
@@ -127,7 +125,7 @@ const ApplicationsList = React.memo(function Applications({
   setSortDirection,
   reloadApplications
 }: Props) {
-  const { data: applications, pages, totalCount } = applicationsResult
+  const { data: applications, pages, total } = applicationsResult
 
   const { i18n } = useTranslation()
   const { showCheckboxes, checkedIds, setCheckedIds, status } = useContext(
@@ -398,8 +396,8 @@ const ApplicationsList = React.memo(function Applications({
         </H1>
         <PaginationWrapper>
           <div>
-            {totalCount > 0
-              ? `${i18n.applications.list.resultCount}: ${totalCount}`
+            {total > 0
+              ? `${i18n.applications.list.resultCount}: ${total}`
               : i18n.applications.list.noResults}
           </div>
           <Pagination

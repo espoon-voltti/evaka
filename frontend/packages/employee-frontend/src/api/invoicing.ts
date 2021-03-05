@@ -4,7 +4,13 @@
 
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Failure, Response, Result, Success } from '@evaka/lib-common/src/api'
+import {
+  Failure,
+  Paged,
+  Response,
+  Result,
+  Success
+} from '@evaka/lib-common/src/api'
 import { API_URL, client } from '../api/client'
 import { SearchOrder, UUID } from '../types'
 import { Absence, deserializeAbsence } from '../types/absence'
@@ -16,12 +22,12 @@ import {
   FeeDecision,
   FeeDecisionDetailed,
   FeeDecisionSummary,
-  VoucherValueDecisionSummary,
   VoucherValueDecisionDetailed,
   Invoice,
   InvoiceCodes,
   InvoiceDetailed,
-  InvoiceSearchResult
+  VoucherValueDecisionSummary,
+  InvoiceSummary
 } from '../types/invoicing'
 
 export interface SearchParams {
@@ -189,13 +195,6 @@ export async function sendVoucherValueDecisions(ids: string[]): Promise<void> {
   return client.post<void>('/value-decisions/send', ids).then((res) => res.data)
 }
 
-export type FeeDecisionSearchResponse = {
-  data: FeeDecisionSummary[]
-  page: number
-  total: number
-  pages: number
-}
-
 export type SortByFeeDecisions =
   | 'HEAD_OF_FAMILY'
   | 'VALIDITY'
@@ -204,13 +203,6 @@ export type SortByFeeDecisions =
   | 'SENT'
   | 'STATUS'
   | 'FINAL_PRICE'
-
-export type VoucherValueDecisionSearchResponse = {
-  data: VoucherValueDecisionSummary[]
-  page: number
-  total: number
-  pages: number
-}
 
 export type SortByVoucherValueDecisions = 'HEAD_OF_FAMILY' | 'STATUS'
 
@@ -228,9 +220,9 @@ export async function getFeeDecisions(
   sortBy: SortByFeeDecisions,
   sortDirection: SearchOrder,
   params: FeeDecisionSearchParams
-): Promise<Result<FeeDecisionSearchResponse>> {
+): Promise<Result<Paged<FeeDecisionSummary>>> {
   return client
-    .get<JsonOf<FeeDecisionSearchResponse>>('/fee-decisions/search', {
+    .get<JsonOf<Paged<FeeDecisionSummary>>>('/fee-decisions/search', {
       params: { page: page - 1, pageSize, sortBy, sortDirection, ...params }
     })
     .then(({ data }) => ({
@@ -280,9 +272,9 @@ export async function getVoucherValueDecisions(
   sortBy: SortByVoucherValueDecisions,
   sortDirection: SearchOrder,
   params: VoucherValueDecisionSearchParams
-): Promise<Result<VoucherValueDecisionSearchResponse>> {
+): Promise<Result<Paged<VoucherValueDecisionSummary>>> {
   return client
-    .get<JsonOf<VoucherValueDecisionSearchResponse>>(
+    .get<JsonOf<Paged<VoucherValueDecisionSummary>>>(
       '/value-decisions/search',
       {
         params: { page: page - 1, pageSize, sortBy, sortDirection, ...params }
@@ -353,9 +345,9 @@ export async function getInvoices(
   sortBy: SortByInvoices,
   sortDirection: SearchOrder,
   params: InvoiceSearchParams
-): Promise<Result<InvoiceSearchResult>> {
+): Promise<Result<Paged<InvoiceSummary>>> {
   return client
-    .get<JsonOf<InvoiceSearchResult>>('/invoices/search', {
+    .get<JsonOf<Paged<InvoiceSummary>>>('/invoices/search', {
       params: { page, pageSize, sortBy, sortDirection, ...params }
     })
     .then(({ data }) => ({

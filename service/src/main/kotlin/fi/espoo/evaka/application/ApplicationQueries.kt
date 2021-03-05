@@ -16,6 +16,8 @@ import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -24,6 +26,7 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
+import fi.espoo.evaka.shared.mapToPaged
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -33,8 +36,6 @@ import org.postgresql.util.PGobject
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
-import kotlin.math.ceil
-import kotlin.math.max
 
 private val logger = KotlinLogging.logger {}
 
@@ -145,7 +146,7 @@ fun activePlacementExists(
 }
 
 fun fetchApplicationSummaries(
-    h: Handle,
+    tx: Database.Read,
     user: AuthenticatedUser,
     page: Int,
     pageSize: Int,
@@ -166,7 +167,7 @@ fun fetchApplicationSummaries(
     voucherApplications: VoucherApplicationFilter?,
     authorizedUnits: AclAuthorization,
     onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
-): ApplicationSummaries {
+): Paged<ApplicationSummary> {
 
     val params = mapOf(
         "page" to page,
@@ -322,60 +323,55 @@ fun fetchApplicationSummaries(
 
     val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
 
-    val applicationSummaries = h.createQuery(paginatedSql)
+    val applicationSummaries = tx.createQuery(paginatedSql)
         .bindMap(params + freeTextParams)
         .map { row ->
-            row.mapColumn<Int>("total") to ApplicationSummary(
-                id = row.mapColumn("id"),
-                firstName = row.mapColumn("first_name"),
-                lastName = row.mapColumn("last_name"),
-                socialSecurityNumber = row.mapColumn("social_security_number"),
-                dateOfBirth = row.mapColumn("date_of_birth"),
-                type = row.mapColumn("type"),
-                placementType = mapRequestedPlacementType(row, "document"),
-                dueDate = row.mapColumn("duedate"),
-                startDate = row.mapColumn("preferredStartDate"),
-                preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
-                    PreferredUnit(
-                        id = UUID.fromString(it),
-                        name = "" // filled afterwards
-                    )
-                },
-                origin = row.mapColumn("origin"),
-                checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                status = row.mapColumn("application_status"),
-                additionalInfo = row.mapColumn("additionalInfo"),
-                siblingBasis = row.mapColumn("siblingBasis"),
-                assistanceNeed = row.mapColumn("assistanceNeed"),
-                wasOnClubCare = row.mapColumn("wasOnClubCare"),
-                wasOnDaycare = row.mapColumn("wasOnDaycare"),
-                extendedCare = row.mapColumn("extendedCare"),
-                duplicateApplication = row.mapColumn("has_duplicates"),
-                transferApplication = row.mapColumn("transferapplication"),
-                additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
-                placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
-                    ?.let {
-                        PlacementProposalStatus(
-                            unitConfirmationStatus = it,
-                            unitRejectReason = row.mapColumn("unit_reject_reason"),
-                            unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
+            WithCount(
+                row.mapColumn<Int>("total"),
+                ApplicationSummary(
+                    id = row.mapColumn("id"),
+                    firstName = row.mapColumn("first_name"),
+                    lastName = row.mapColumn("last_name"),
+                    socialSecurityNumber = row.mapColumn("social_security_number"),
+                    dateOfBirth = row.mapColumn("date_of_birth"),
+                    type = row.mapColumn("type"),
+                    placementType = mapRequestedPlacementType(row, "document"),
+                    dueDate = row.mapColumn("duedate"),
+                    startDate = row.mapColumn("preferredStartDate"),
+                    preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
+                        PreferredUnit(
+                            id = UUID.fromString(it),
+                            name = "" // filled afterwards
                         )
                     },
-                placementProposalUnitName = row.mapColumn("unit_name"),
-                currentPlacementUnit = row.mapColumn<UUID?>("current_placement_unit_id")?.let {
-                    PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
-                }
+                    origin = row.mapColumn("origin"),
+                    checkedByAdmin = row.mapColumn("checkedbyadmin"),
+                    status = row.mapColumn("application_status"),
+                    additionalInfo = row.mapColumn("additionalInfo"),
+                    siblingBasis = row.mapColumn("siblingBasis"),
+                    assistanceNeed = row.mapColumn("assistanceNeed"),
+                    wasOnClubCare = row.mapColumn("wasOnClubCare"),
+                    wasOnDaycare = row.mapColumn("wasOnDaycare"),
+                    extendedCare = row.mapColumn("extendedCare"),
+                    duplicateApplication = row.mapColumn("has_duplicates"),
+                    transferApplication = row.mapColumn("transferapplication"),
+                    additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
+                    placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
+                        ?.let {
+                            PlacementProposalStatus(
+                                unitConfirmationStatus = it,
+                                unitRejectReason = row.mapColumn("unit_reject_reason"),
+                                unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
+                            )
+                        },
+                    placementProposalUnitName = row.mapColumn("unit_name"),
+                    currentPlacementUnit = row.mapColumn<UUID?>("current_placement_unit_id")?.let {
+                        PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
+                    }
+                )
             )
         }
-        .toList()
-        .let { pairs ->
-            ApplicationSummaries(
-                data = pairs.map { it.second },
-                totalCount = pairs.firstOrNull()?.first ?: 0,
-                pages = pairs.firstOrNull()?.first?.let { count -> max(1, ceil(1.0 * count / pageSize).toInt()) }
-                    ?: 1
-            )
-        }
+        .let(mapToPaged(pageSize))
 
     //language=sql
     val unitSql =
@@ -385,7 +381,7 @@ fun fetchApplicationSummaries(
         WHERE id = ANY(:unitIds)
         """.trimIndent()
     val unitIds = applicationSummaries.data.flatMap { summary -> summary.preferredUnits.map { unit -> unit.id } }
-    val unitMap = h.createQuery(unitSql)
+    val unitMap = tx.createQuery(unitSql)
         .bind("unitIds", unitIds.toTypedArray())
         .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
         .toMap()

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useState, useContext } from 'react'
-import { Result } from '@evaka/lib-common/src/api'
+import { Paged, Result } from '@evaka/lib-common/src/api'
 import { getApplications } from '../../api/applications'
 import {
-  ApplicationsSearchResponse,
+  ApplicationListSummary,
   ApplicationSearchParams
 } from '../../types/application'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
@@ -59,7 +59,7 @@ function ApplicationsPage() {
   } = useContext(ApplicationUIContext)
 
   const onApplicationsResponse = useCallback(
-    (result: Result<ApplicationsSearchResponse>) => {
+    (result: Result<Paged<ApplicationListSummary>>) => {
       setApplicationsResult(result)
 
       // ensure current page is within range

@@ -5,13 +5,12 @@
 import { UUID, SearchOrder } from '../types'
 import {
   ApplicationListSummary,
-  ApplicationsSearchResponse,
   SortByApplications,
   ApplicationSearchParams,
   ApplicationResponse,
   ApplicationNote
 } from '../types/application'
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Paged, Result, Success } from '@evaka/lib-common/src/api'
 import { client } from '../api/client'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
@@ -72,9 +71,9 @@ export async function getApplications(
   sortBy: SortByApplications,
   sortDir: SearchOrder,
   params: ApplicationSearchParams
-): Promise<Result<ApplicationsSearchResponse>> {
+): Promise<Result<Paged<ApplicationListSummary>>> {
   return client
-    .get<JsonOf<ApplicationsSearchResponse>>('v2/applications', {
+    .get<JsonOf<Paged<ApplicationListSummary>>>('v2/applications', {
       params: { page: page, pageSize, sortBy, sortDir, ...params }
     })
     .then(({ data }) => ({

@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Result } from '@evaka/lib-common/src/api'
+import useIntersectionObserver from '@evaka/lib-common/src/utils/useIntersectionObserver'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { H1, H3 } from '@evaka/lib-components/src/typography'
@@ -19,66 +20,75 @@ import { MessageBoxType } from './MessageBoxes'
 import { Bulletin, IdAndName } from './types'
 
 interface Props {
+  bulletins: Bulletin[]
+  nextPage: Result<void>
+  loadNextPage: () => void
   messageBoxType: MessageBoxType
-  messages: Result<Bulletin[]>
   groups: IdAndName[]
   selectMessage: (msg: Bulletin) => void
 }
 
 export default React.memo(function MessageList({
+  bulletins,
+  nextPage,
+  loadNextPage,
   messageBoxType,
-  messages,
   selectMessage,
   groups
 }: Props) {
   const { i18n } = useTranslation()
+
   return (
     <Container>
       <HeaderContainer>
         <H1 noMargin>{i18n.messages.messageList.titles[messageBoxType]}</H1>
       </HeaderContainer>
-      {messages.isLoading && <SpinnerSegment />}
-      {messages.isFailure && <ErrorSegment title={i18n.common.loadingFailed} />}
-      {messages.isSuccess && (
-        <>
-          {messages.value.map((msg) => (
-            <React.Fragment key={msg.id}>
-              <MessageListItem onClick={() => selectMessage(msg)}>
-                <MessageTopRow>
-                  <MessageTitle noMargin>
-                    {msg.title || `(${i18n.messages.noTitle})`}
-                  </MessageTitle>
-                  {msg.sentAt ? (
-                    <FixedSpaceRow>
-                      <span>
-                        {groups.find((g) => g.id === msg.groupId)?.name}
-                      </span>
-                      <span>
-                        {formatDate(
-                          msg.sentAt,
-                          LocalDate.fromSystemTzDate(msg.sentAt).isEqual(
-                            LocalDate.today()
-                          )
-                            ? 'HH:mm'
-                            : 'd.M.'
-                        )}
-                      </span>
-                    </FixedSpaceRow>
-                  ) : (
-                    <span>{i18n.messages.notSent}</span>
-                  )}
-                </MessageTopRow>
-                <MessageSummary>
-                  {msg.content.substring(0, 200).replace('\n', ' ')}
-                </MessageSummary>
-              </MessageListItem>
-              <StyledHr />
-            </React.Fragment>
-          ))}
-        </>
-      )}
+      {bulletins.map((msg) => (
+        <React.Fragment key={msg.id}>
+          <MessageListItem onClick={() => selectMessage(msg)}>
+            <MessageTopRow>
+              <MessageTitle noMargin>
+                {msg.title || `(${i18n.messages.noTitle})`}
+              </MessageTitle>
+              {msg.sentAt ? (
+                <FixedSpaceRow>
+                  <span>{groups.find((g) => g.id === msg.groupId)?.name}</span>
+                  <span>
+                    {formatDate(
+                      msg.sentAt,
+                      LocalDate.fromSystemTzDate(msg.sentAt).isEqual(
+                        LocalDate.today()
+                      )
+                        ? 'HH:mm'
+                        : 'd.M.'
+                    )}
+                  </span>
+                </FixedSpaceRow>
+              ) : (
+                <span>{i18n.messages.notSent}</span>
+              )}
+            </MessageTopRow>
+            <MessageSummary>
+              {msg.content.substring(0, 200).replace('\n', ' ')}
+            </MessageSummary>
+          </MessageListItem>
+          <StyledHr />
+        </React.Fragment>
+      ))}
+      {nextPage.isSuccess && <OnEnterView onEnter={loadNextPage} />}
+      {nextPage.isLoading && <SpinnerSegment />}
+      {nextPage.isFailure && <ErrorSegment title={i18n.common.loadingFailed} />}
     </Container>
   )
+})
+
+const OnEnterView = React.memo(function IsInView({
+  onEnter
+}: {
+  onEnter: () => void
+}) {
+  const ref = useIntersectionObserver<HTMLDivElement>(onEnter)
+  return <div ref={ref} />
 })
 
 const Container = styled.div`

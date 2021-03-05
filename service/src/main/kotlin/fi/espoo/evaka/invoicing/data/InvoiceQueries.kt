@@ -16,10 +16,14 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
+import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.WithCount
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.mapToPaged
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -164,7 +168,7 @@ fun getInvoiceIdsByDates(h: Handle, from: LocalDate, to: LocalDate, areas: List<
 }
 
 fun paginatedSearch(
-    h: Handle,
+    tx: Database.Read,
     page: Int = 1,
     pageSize: Int = 200,
     sortBy: InvoiceSortParam = InvoiceSortParam.STATUS,
@@ -176,7 +180,7 @@ fun paginatedSearch(
     searchTerms: String = "",
     periodStart: LocalDate? = null,
     periodEnd: LocalDate? = null
-): Pair<Int, List<InvoiceSummary>> {
+): Paged<InvoiceSummary> {
     val sortColumn = when (sortBy) {
         InvoiceSortParam.HEAD_OF_FAMILY -> Pair("max(head.last_name)", "head.last_name")
         InvoiceSortParam.CHILDREN -> Pair("max(child.last_name)", "child.last_name")
@@ -258,15 +262,14 @@ fun paginatedSearch(
             LEFT JOIN person as child ON row.child = child.id
         ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
         """.trimIndent()
-    val result = h.createQuery(sql)
+
+    return tx.createQuery(sql)
         .bindMap(params + freeTextParams)
         .map { rs, ctx ->
-            rs.getInt("count") to toInvoiceSummary(rs, ctx)
+            WithCount(rs.getInt("count"), toInvoiceSummary(rs, ctx))
         }
-        .toList()
-    val count = if (result.isEmpty()) 0 else result.first().first
-
-    return count to flattenSummary(result.map { (_, invoices) -> invoices })
+        .let(mapToPaged(pageSize))
+        .let { it.copy(data = flattenSummary(it.data)) }
 }
 
 fun searchInvoices(

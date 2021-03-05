@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Result } from '@evaka/lib-common/src/api'
+import useIntersectionObserver from '@evaka/lib-common/src/utils/useIntersectionObserver'
 import { faArrowLeft } from '@evaka/lib-icons'
 import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import colors from '@evaka/lib-components/src/colors'
@@ -18,17 +19,21 @@ import { ReceivedBulletin } from '../messages/types'
 import MessageListItem from '../messages/MessageListItem'
 
 type Props = {
-  bulletins: Result<ReceivedBulletin[]>
+  bulletins: ReceivedBulletin[]
+  nextPage: Result<void>
   activeBulletin: ReceivedBulletin | null
   onClickBulletin: (target: ReceivedBulletin) => void
   onReturn: () => void
+  loadNextPage: () => void
 }
 
 export default React.memo(function MessagesList({
   bulletins,
+  nextPage,
   activeBulletin,
   onClickBulletin,
-  onReturn
+  onReturn,
+  loadNextPage
 }: Props) {
   const t = useTranslation()
 
@@ -46,24 +51,24 @@ export default React.memo(function MessagesList({
       <Container className={activeBulletin ? 'desktop-only' : undefined}>
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
-          {bulletins.isSuccess && bulletins.value.length === 0 && (
+          {nextPage.isSuccess && bulletins.length === 0 && (
             <span>{t.messages.noMessages}</span>
           )}
         </HeaderContainer>
 
-        {bulletins.isLoading && <SpinnerSegment />}
-        {bulletins.isFailure && (
+        {bulletins.map((bulletin) => (
+          <MessageListItem
+            key={bulletin.id}
+            bulletin={bulletin}
+            onClick={() => onClickBulletin(bulletin)}
+            active={activeBulletin?.id === bulletin.id}
+          />
+        ))}
+        {nextPage.isFailure && (
           <ErrorSegment title={t.common.errors.genericGetError} />
         )}
-        {bulletins.isSuccess &&
-          bulletins.value.map((bulletin) => (
-            <MessageListItem
-              key={bulletin.id}
-              bulletin={bulletin}
-              onClick={() => onClickBulletin(bulletin)}
-              active={activeBulletin?.id === bulletin.id}
-            />
-          ))}
+        {nextPage.isLoading && <SpinnerSegment />}
+        {nextPage.isSuccess && <OnEnterView onEnter={loadNextPage} />}
       </Container>
     </>
   )
@@ -106,3 +111,12 @@ const Container = styled.div`
 const HeaderContainer = styled.div`
   padding: ${defaultMargins.m};
 `
+
+const OnEnterView = React.memo(function IsInView({
+  onEnter
+}: {
+  onEnter: () => void
+}) {
+  const ref = useIntersectionObserver<HTMLDivElement>(onEnter)
+  return <div ref={ref} />
+})

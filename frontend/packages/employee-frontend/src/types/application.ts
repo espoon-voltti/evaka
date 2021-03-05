@@ -52,12 +52,6 @@ export type SortByApplications =
   | 'START_DATE'
   | 'STATUS'
 
-export interface ApplicationsSearchResponse {
-  data: ApplicationListSummary[]
-  pages: number
-  totalCount: number
-}
-
 export interface ApplicationListSummary {
   id: UUID
   firstName: string

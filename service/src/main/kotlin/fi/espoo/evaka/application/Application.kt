@@ -66,12 +66,6 @@ data class PersonApplicationSummary(
     val preparatoryEducation: Boolean = false
 )
 
-data class ApplicationSummaries(
-    val data: List<ApplicationSummary>,
-    val pages: Int,
-    val totalCount: Int
-)
-
 data class ApplicationDetails(
     val id: UUID,
     val type: ApplicationType,

@@ -3,15 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext } from 'react'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { getUnreadBulletinsCount } from './api'
 
 export interface HeaderState {
   unreadBulletinsCount: number | null
-  setUnreadBulletinsCount: (value: number) => void
+  refreshUnreadBulletinsCount: () => void
 }
 
 const defaultState = {
   unreadBulletinsCount: null,
-  setUnreadBulletinsCount: () => undefined
+  refreshUnreadBulletinsCount: () => undefined
 }
 
 export const HeaderContext = createContext<HeaderState>(defaultState)
@@ -25,12 +27,17 @@ export const HeaderContextProvider = React.memo(function HeaderContextProvider({
     number | null
   >(null)
 
+  const refreshUnreadBulletinsCount = useRestApi(
+    getUnreadBulletinsCount,
+    (result) => result.isSuccess && setUnreadBulletinsCount(result.value)
+  )
+
   const value = useMemo(
     () => ({
       unreadBulletinsCount,
-      setUnreadBulletinsCount
+      refreshUnreadBulletinsCount
     }),
-    [unreadBulletinsCount, setUnreadBulletinsCount]
+    [unreadBulletinsCount, refreshUnreadBulletinsCount]
   )
 
   return (

@@ -23,6 +23,7 @@ import fi.espoo.evaka.placement.PlacementPlanDraft
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -186,7 +187,7 @@ class ApplicationControllerV2(
         @RequestParam(required = false) searchTerms: String?,
         @RequestParam(required = false) transferApplications: TransferApplicationFilter?,
         @RequestParam(required = false) voucherApplications: VoucherApplicationFilter?
-    ): ResponseEntity<ApplicationSummaries> {
+    ): ResponseEntity<Paged<ApplicationSummary>> {
         Audit.ApplicationSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
@@ -194,7 +195,7 @@ class ApplicationControllerV2(
 
         return db.read { tx ->
             fetchApplicationSummaries(
-                h = tx.handle,
+                tx = tx,
                 user = user,
                 page = page ?: 1,
                 pageSize = pageSize ?: 100,

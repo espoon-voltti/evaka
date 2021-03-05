@@ -1,9 +1,12 @@
 package fi.espoo.evaka.messaging.bulletin
 
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -119,22 +122,27 @@ fun Database.Transaction.sendBulletin(
 }
 
 fun Database.Read.getSentBulletinsByUnit(
-    unitId: UUID
-): List<Bulletin> {
+    unitId: UUID,
+    page: Int,
+    pageSize: Int
+): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT COUNT(b.*) OVER (), b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
         JOIN employee e on b.created_by_employee = e.id
         JOIN daycare_group dg ON b.group_id = dg.id
         WHERE dg.daycare_id = :unitId AND b.sent_at IS NOT NULL
         ORDER BY b.sent_at DESC
+        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("unitId", unitId)
-        .mapTo<Bulletin>()
-        .list()
+        .bind("page", page)
+        .bind("pageSize", pageSize)
+        .map(withCountMapper<Bulletin>())
+        .let(mapToPaged(pageSize))
 }
 
 fun Database.Read.getBulletin(
@@ -158,42 +166,52 @@ fun Database.Read.getBulletin(
 
 fun Database.Read.getOwnBulletinDrafts(
     user: AuthenticatedUser,
-    unitId: UUID
-): List<Bulletin> {
+    unitId: UUID,
+    page: Int,
+    pageSize: Int
+): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT COUNT(b.*) OVER (), b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
         JOIN employee e on b.created_by_employee = e.id
         LEFT JOIN daycare_group dg ON b.group_id = dg.id
         WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND b.unit_id = :unitId 
         ORDER BY b.updated DESC
+        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("userId", user.id)
         .bind("unitId", unitId)
-        .mapTo<Bulletin>()
-        .list()
+        .bind("page", page)
+        .bind("pageSize", pageSize)
+        .map(withCountMapper<Bulletin>())
+        .let(mapToPaged(pageSize))
 }
 
 fun Database.Read.getReceivedBulletinsByGuardian(
-    user: AuthenticatedUser
-): List<ReceivedBulletin> {
+    user: AuthenticatedUser,
+    page: Int,
+    pageSize: Int
+): Paged<ReceivedBulletin> {
     // language=sql
     val sql = """
-        SELECT DISTINCT b.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
-        FROM bulletin b
-        JOIN bulletin_instance bi ON b.id = bi.bulletin_id
+        SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
+        FROM bulletin_instance bi
+        JOIN bulletin b ON bi.bulletin_id = b.id
         JOIN daycare_group dg on b.group_id = dg.id
         WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
+        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("userId", user.id)
-        .mapTo<ReceivedBulletin>()
-        .list()
+        .bind("page", page)
+        .bind("pageSize", pageSize)
+        .map(withCountMapper<ReceivedBulletin>())
+        .let(mapToPaged(pageSize))
 }
 
 fun Database.Read.getUnreadBulletinCountByGuardian(
@@ -201,10 +219,9 @@ fun Database.Read.getUnreadBulletinCountByGuardian(
 ): Int {
     // language=sql
     val sql = """
-        SELECT count(distinct b.id) AS count
-        FROM bulletin b
-        JOIN bulletin_instance bi ON b.id = bi.bulletin_id
-        WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL AND bi.read_at IS NULL
+        SELECT count(distinct bi.id) AS count
+        FROM bulletin_instance bi
+        WHERE bi.receiver_id = :userId AND bi.read_at IS NULL
     """.trimIndent()
 
     return this.createQuery(sql)
@@ -221,7 +238,7 @@ fun Database.Transaction.markBulletinRead(
     val sql = """
         UPDATE bulletin_instance
         SET read_at = :readAt
-        WHERE bulletin_id = :id AND receiver_id = :userId AND read_at IS NULL 
+        WHERE id = :id AND receiver_id = :userId AND read_at IS NULL
     """.trimIndent()
 
     this.createUpdate(sql)

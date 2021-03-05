@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceService
 import fi.espoo.evaka.invoicing.service.createAllDraftInvoices
 import fi.espoo.evaka.invoicing.service.getInvoiceCodes
 import fi.espoo.evaka.invoicing.service.markManuallySent
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -52,12 +53,6 @@ enum class InvoiceSortParam {
     STATUS
 }
 
-data class InvoiceSearchResult(
-    val data: List<InvoiceSummary>,
-    val total: Int,
-    val pages: Int
-)
-
 @RestController
 @RequestMapping("/invoices")
 class InvoiceController(
@@ -79,31 +74,29 @@ class InvoiceController(
         @RequestParam(required = false) searchTerms: String?,
         @RequestParam(required = false) periodStart: String?,
         @RequestParam(required = false) periodEnd: String?
-    ): ResponseEntity<InvoiceSearchResult> {
+    ): ResponseEntity<Paged<InvoiceSummary>> {
         Audit.InvoicesSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        val (total, invoices) = db.read { tx ->
-            paginatedSearch(
-                tx.handle,
-                page,
-                pageSize,
-                sortBy ?: InvoiceSortParam.STATUS,
-                sortDirection ?: SortDirection.DESC,
-                status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
-                area?.split(",") ?: listOf(),
-                unit?.let { parseUUID(it) },
-                distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
-                searchTerms ?: "",
-                periodStart?.let { LocalDate.parse(periodStart, DateTimeFormatter.ISO_DATE) },
-                periodEnd?.let { LocalDate.parse(periodEnd, DateTimeFormatter.ISO_DATE) }
-            )
-        }
-        val pages =
-            if (total % pageSize == 0) total / pageSize
-            else (total / pageSize) + 1
-        return ResponseEntity.ok(InvoiceSearchResult(invoices, total, pages))
+        return db
+            .read { tx ->
+                paginatedSearch(
+                    tx,
+                    page,
+                    pageSize,
+                    sortBy ?: InvoiceSortParam.STATUS,
+                    sortDirection ?: SortDirection.DESC,
+                    status?.split(",")?.mapNotNull { parseEnum<InvoiceStatus>(it) } ?: listOf(),
+                    area?.split(",") ?: listOf(),
+                    unit?.let { parseUUID(it) },
+                    distinctions?.split(",")?.mapNotNull { parseEnum<InvoiceDistinctiveParams>(it) } ?: listOf(),
+                    searchTerms ?: "",
+                    periodStart?.let { LocalDate.parse(periodStart, DateTimeFormatter.ISO_DATE) },
+                    periodEnd?.let { LocalDate.parse(periodEnd, DateTimeFormatter.ISO_DATE) }
+                )
+            }
+            .let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/create-drafts")

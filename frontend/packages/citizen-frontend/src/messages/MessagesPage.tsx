@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { Loading, Paged, Result, Success } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import Container from '@evaka/lib-components/src/layout/Container'
@@ -17,27 +17,54 @@ import styled from 'styled-components'
 import { HeaderState, HeaderContext } from './state'
 
 export default React.memo(function MessagesPage() {
-  const [bulletins, setBulletins] = useState<Result<ReceivedBulletin[]>>(
-    Loading.of()
+  const { refreshUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
+  const [bulletinsState, setBulletinsState] = useState<BulletinsState>(
+    initialState
   )
   const [activeBulletin, setActiveBulletin] = useState<ReceivedBulletin | null>(
     null
   )
+  const setBulletinsResult = useCallback(
+    (result: Result<Paged<ReceivedBulletin>>) =>
+      setBulletinsState((state) => {
+        if (result.isSuccess) {
+          return {
+            ...state,
+            bulletins: [...state.bulletins, ...result.value.data],
+            nextPage: Success.of(undefined),
+            total: result.value.total,
+            pages: result.value.pages
+          }
+        }
 
-  const { setUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
+        if (result.isFailure) {
+          return {
+            ...state,
+            nextPage: result.map(() => undefined)
+          }
+        }
 
-  const loadBulletins = useRestApi(getBulletins, setBulletins)
-  useEffect(() => loadBulletins(), [])
-
-  useEffect(
-    () =>
-      bulletins.isSuccess
-        ? setUnreadBulletinsCount(
-            bulletins.value.filter(({ isRead }) => !isRead).length
-          )
-        : undefined,
-    [bulletins]
+        return state
+      }),
+    [setBulletinsState]
   )
+
+  const loadBulletins = useRestApi(getBulletins, setBulletinsResult)
+  useEffect(() => {
+    setBulletinsState((state) => ({ ...state, nextPage: Loading.of() }))
+    loadBulletins(bulletinsState.currentPage)
+  }, [bulletinsState.currentPage])
+
+  const loadNextPage = () =>
+    setBulletinsState((state) => {
+      if (state.currentPage < state.pages) {
+        return {
+          ...state,
+          currentPage: state.currentPage + 1
+        }
+      }
+      return state
+    })
 
   const openBulletin = (bulletin: ReceivedBulletin) => {
     setActiveBulletin(bulletin)
@@ -45,15 +72,17 @@ export default React.memo(function MessagesPage() {
     if (bulletin.isRead) return
 
     void markBulletinRead(bulletin.id).then(() => {
+      refreshUnreadBulletinsCount()
       setActiveBulletin((b) =>
         b?.id === bulletin.id ? { ...b, isRead: true } : b
       )
 
-      setBulletins(
-        bulletins.map((values) =>
-          values.map((b) => (b.id === bulletin.id ? { ...b, isRead: true } : b))
+      setBulletinsState(({ bulletins, ...state }) => ({
+        ...state,
+        bulletins: bulletins.map((b) =>
+          b.id === bulletin.id ? { ...b, isRead: true } : b
         )
-      )
+      }))
     })
   }
 
@@ -62,16 +91,33 @@ export default React.memo(function MessagesPage() {
       <Gap size="s" />
       <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
         <MessagesList
-          bulletins={bulletins}
+          bulletins={bulletinsState.bulletins}
+          nextPage={bulletinsState.nextPage}
           activeBulletin={activeBulletin}
           onClickBulletin={openBulletin}
           onReturn={() => setActiveBulletin(null)}
+          loadNextPage={loadNextPage}
         />
         {activeBulletin && <MessageReadView bulletin={activeBulletin} />}
       </StyledFlex>
     </Container>
   )
 })
+
+interface BulletinsState {
+  bulletins: ReceivedBulletin[]
+  nextPage: Result<void>
+  currentPage: number
+  pages: number
+  total?: number
+}
+
+const initialState: BulletinsState = {
+  bulletins: [],
+  nextPage: Loading.of(),
+  currentPage: 1,
+  pages: 0
+}
 
 const StyledFlex = styled(AdaptiveFlex)`
   align-items: stretch;

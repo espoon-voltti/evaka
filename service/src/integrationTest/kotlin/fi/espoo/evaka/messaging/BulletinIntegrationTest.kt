@@ -9,6 +9,7 @@ import fi.espoo.evaka.messaging.bulletin.BulletinControllerEmployee
 import fi.espoo.evaka.messaging.bulletin.ReceivedBulletin
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -104,13 +105,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
                 content = msgContent
             )
         )
-        getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.size) }
+        getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.total) }
         sendBulletin(supervisor, bulletinId)
 
-        getBulletinsAsGuardian(guardian)
+        val guardianBulletin = getBulletinsAsGuardian(guardian)
             .let {
-                assertEquals(1, it.size)
-                it.first()
+                assertEquals(1, it.data.size)
+                assertEquals(1, it.total)
+                assertEquals(1, it.pages)
+                it.data.first()
             }
             .also {
                 assertEquals(msgTitle, it.title)
@@ -118,16 +121,16 @@ class BulletinIntegrationTest : FullApplicationTest() {
                 assertFalse(it.isRead)
                 assertEquals(groupName, it.sender)
             }
-        markBulletinRead(guardian, bulletinId)
-        assertTrue(getBulletinsAsGuardian(guardian).first().isRead)
+        markBulletinRead(guardian, guardianBulletin.id)
+        assertTrue(getBulletinsAsGuardian(guardian).data.first().isRead)
 
         getSentBulletinsByUnit(supervisor, testDaycare.id).also {
-            assertEquals(msgContent, it.first().content)
+            assertEquals(msgContent, it.data.first().content)
         }
         getSentBulletinsByUnit(staffMember, testDaycare.id).also {
-            assertEquals(msgContent, it.first().content)
+            assertEquals(msgContent, it.data.first().content)
         }
-        getDraftBulletins(supervisor, unitId).also { assertTrue(it.isEmpty()) }
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
     }
 
     @Test
@@ -135,7 +138,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
         val unitId = testDaycare.id
         val bulletinId = initBulletin(supervisor, unitId)
         deleteDraftBulletin(supervisor, bulletinId)
-        getDraftBulletins(supervisor, unitId).also { assertTrue(it.isEmpty()) }
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
     }
 
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
@@ -173,28 +176,28 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun getDraftBulletins(user: AuthenticatedUser, unitId: UUID): List<Bulletin> {
-        val (_, res, result) = http.get("/bulletins/draft?unitId=$unitId")
+    private fun getDraftBulletins(user: AuthenticatedUser, unitId: UUID): Paged<Bulletin> {
+        val (_, res, result) = http.get("/bulletins/draft?unitId=$unitId", listOf("page" to 1, "pageSize" to 50))
             .asUser(user)
-            .responseObject<List<Bulletin>>(objectMapper)
+            .responseObject<Paged<Bulletin>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun getSentBulletinsByUnit(user: AuthenticatedUser, unitId: UUID): List<Bulletin> {
-        val (_, res, result) = http.get("/bulletins/sent?unitId=$unitId")
+    private fun getSentBulletinsByUnit(user: AuthenticatedUser, unitId: UUID): Paged<Bulletin> {
+        val (_, res, result) = http.get("/bulletins/sent?unitId=$unitId", listOf("page" to 1, "pageSize" to 50))
             .asUser(user)
-            .responseObject<List<Bulletin>>(objectMapper)
+            .responseObject<Paged<Bulletin>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun getBulletinsAsGuardian(user: AuthenticatedUser): List<ReceivedBulletin> {
-        val (_, res, result) = http.get("/citizen/bulletins")
+    private fun getBulletinsAsGuardian(user: AuthenticatedUser): Paged<ReceivedBulletin> {
+        val (_, res, result) = http.get("/citizen/bulletins", listOf("page" to 1, "pageSize" to 50))
             .asUser(user)
-            .responseObject<List<ReceivedBulletin>>(objectMapper)
+            .responseObject<Paged<ReceivedBulletin>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
