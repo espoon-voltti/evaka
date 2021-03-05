@@ -8,6 +8,7 @@ import * as _ from 'lodash'
 
 import { useTranslation } from '../../../../state/i18n'
 import {
+  DaycareDailyNote,
   DaycareGroupPlacementDetailed,
   DaycareGroupWithPlacements,
   Stats,
@@ -64,7 +65,6 @@ import Tooltip from '@evaka/lib-components/atoms/Tooltip'
 import { UIContext } from '../../../../state/ui'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { isPartDayPlacement } from '../../../../utils/placements'
-import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
 import { Loading, Result } from '@evaka/lib-common/api'
 import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'

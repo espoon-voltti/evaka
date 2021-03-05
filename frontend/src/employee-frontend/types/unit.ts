@@ -226,12 +226,12 @@ export interface DaycareDailyNote {
   id?: UUID
   childId?: UUID
   groupId?: UUID
-  date?: LocalDate
+  date: LocalDate | null
   note?: string
   feedingNote?: DaycareDailyNoteLevelInfo
   sleepingNote?: DaycareDailyNoteLevelInfo
-  reminders?: DaycareDailyNoteReminder[]
+  reminders: DaycareDailyNoteReminder[]
   reminderNote?: string
-  modifiedAt?: Date
+  modifiedAt: Date | null
   modifiedBy?: string
 }

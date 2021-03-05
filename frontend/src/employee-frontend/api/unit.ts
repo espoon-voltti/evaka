@@ -6,6 +6,7 @@ import { Failure, Result, Success } from '@evaka/lib-common/api'
 import { client } from '../api/client'
 import {
   Coordinate,
+  DaycareDailyNote,
   DaycareGroup,
   DaycarePlacement,
   DaycarePlacementPlan,
@@ -29,7 +30,6 @@ import { PlacementType } from '../types/child'
 import FiniteDateRange from '@evaka/lib-common/finite-date-range'
 import DateRange from '@evaka/lib-common/date-range'
 import { ApplicationStatus } from '@evaka/lib-common/api-types/application/enums'
-import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
