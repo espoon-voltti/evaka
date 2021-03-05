@@ -15,6 +15,7 @@ import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { AttendanceChild, AttendanceStatus } from '../../api/attendances'
 import colors from '@evaka/lib-components/src/colors'
+import { useTranslation } from '../../state/i18n'
 
 interface Props {
   attendanceChildren: AttendanceChild[]
@@ -22,11 +23,18 @@ interface Props {
   showAll?: boolean
 }
 
+const NoChildrenOnList = styled.div`
+  text-align: center;
+  margin-top: 40px;
+`
+
 export default React.memo(function AttendanceList({
   attendanceChildren,
   type,
   showAll
 }: Props) {
+  const { i18n } = useTranslation()
+
   const { unitId, groupId: groupIdOrAll } = useParams<{
     unitId: string
     groupId: string | 'all'
@@ -45,16 +53,24 @@ export default React.memo(function AttendanceList({
   return (
     <FixedSpaceColumn>
       <OrderedList spacing={'zero'}>
-        {attendanceChildren.map((ac) => (
-          <Li key={ac.id}>
-            <ChildListItem
-              type={ac.status}
-              key={ac.id}
-              attendanceChild={ac}
-              childAttendanceUrl={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
-            />
-          </Li>
-        ))}
+        {attendanceChildren.length > 0 ? (
+          attendanceChildren.map((ac) => (
+            <Li key={ac.id}>
+              <ChildListItem
+                type={ac.status}
+                key={ac.id}
+                attendanceChild={ac}
+                childAttendanceUrl={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
+              />
+            </Li>
+          ))
+        ) : (
+          <NoChildrenOnList>
+            {i18n.mobile.emptyList.no}{' '}
+            {i18n.mobile.emptyList.status[type || 'ABSENT']}{' '}
+            {i18n.mobile.emptyList.children}
+          </NoChildrenOnList>
+        )}
       </OrderedList>
     </FixedSpaceColumn>
   )
