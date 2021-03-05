@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as React from 'react'
 import { addDecorator, addParameters } from '@storybook/react'
-import { Container, ContentArea } from '@evaka/lib-components/src/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 
 const storyWrapper = (story) => (
   <Container>
