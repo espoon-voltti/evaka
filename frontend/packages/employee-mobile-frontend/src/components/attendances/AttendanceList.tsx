@@ -65,7 +65,7 @@ export default React.memo(function AttendanceList({
             </Li>
           ))
         ) : (
-          <NoChildrenOnList>
+          <NoChildrenOnList data-qa={'no-children-indicator'}>
             {i18n.mobile.emptyList.no}{' '}
             {i18n.mobile.emptyList.status[type || 'ABSENT']}{' '}
             {i18n.mobile.emptyList.children}
