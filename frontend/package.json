@@ -141,6 +141,30 @@
     "singleQuote": true,
     "trailingComma": "none"
   },
+  "jest": {
+    "preset": "ts-jest",
+    "reporters": [
+      "default",
+      "jest-junit"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/dist/",
+      "<rootDir>/src/e2e-test"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js",
+      "^@evaka/(.*)$": "<rootDir>/src/$1"
+    },
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
+  },
+  "jest-junit": {
+    "outputDirectory": "test-results/"
+  },
   "postcss": {
     "plugins": {
       "postcss-preset-env": true
