@@ -15,7 +15,9 @@
     "storybook": "start-storybook -p 9001 -c src/lib-components/.storybook",
     "build-storybook": "build-storybook -c src/lib-components/.storybook -o storybook-build",
     "test": "jest",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "build-maintenance-page": "parcel build src/maintenance-page/index.html --public-url ./ --out-dir dist/maintenance-page",
+    "dev-maintenance-page": "parcel src/maintenance-page/index.html"
   },
   "dependencies": {
     "@evaka/citizen-frontend": "link:src/citizen-frontend",
