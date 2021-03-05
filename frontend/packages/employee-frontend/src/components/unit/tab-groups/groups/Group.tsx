@@ -211,6 +211,7 @@ function Group({
         )}
         {groupDaycareDailyNotes.isSuccess && (
           <Tooltip
+            dataQa={`daycare-daily-note-hover-${childId}`}
             up
             tooltip={
               !childNote ? (
@@ -259,6 +260,7 @@ function Group({
             }
           >
             <RoundIcon
+              dataQa={`daycare-daily-note-icon-${childId}`}
               size="m"
               color={colors.blues.primary}
               content={childNote ? farStickyNote : faStickyNote}
@@ -410,6 +412,7 @@ function Group({
                     <Th>
                       <IconContainer>
                         <Tooltip
+                          up
                           tooltip={
                             <span>
                               {i18n.unit.groups.daycareDailyNote.header}

@@ -51,16 +51,14 @@ fixture('Mobile daily notes')
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
 
-    await Promise.all([
-      insertEmployeeFixture({
-        id: employeeId,
-        externalId: `espooad: ${employeeId}`,
-        firstName: 'Yrjö',
-        lastName: 'Yksikkö',
-        email: 'yy@example.com',
-        roles: ['MOBILE']
-      })
-    ])
+    await insertEmployeeFixture({
+      id: employeeId,
+      externalId: `espooad: ${employeeId}`,
+      firstName: 'Yrjö',
+      lastName: 'Yksikkö',
+      email: 'yy@example.com',
+      roles: ['MOBILE']
+    })
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()
@@ -132,6 +130,7 @@ test('Daycare daily note indicators are shown on group view', async (t) => {
   await unitPage.openGroups()
 
   await t.click(unitPage.group(daycareGroup.data.id))
+
   await t
     .expect(
       unitPage
@@ -139,4 +138,12 @@ test('Daycare daily note indicators are shown on group view', async (t) => {
         .find('[data-qa="daily-note"]').visible
     )
     .ok()
+
+  await t
+    .hover(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+    .expect(
+      unitPage.childDaycareDailyNoteHover(enduserChildFixtureJari.id)
+        .textContent
+    )
+    .contains(daycareDailyNote.note || 'expected text not found')
 })

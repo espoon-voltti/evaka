@@ -9,6 +9,7 @@ import { fasCaretDown, fasCaretUp } from '@evaka/lib-icons'
 import { greyscale } from '../colors'
 import { defaultMargins } from '../white-space'
 import classNames from 'classnames'
+import { BaseProps } from '../utils'
 
 const TooltipWrapper = styled.div`
   position: relative;
@@ -66,19 +67,24 @@ const Beak = styled.div`
   }
 `
 
-type TooltipProps = {
+type TooltipProps = BaseProps & {
   children: React.ReactNode
   tooltip: JSX.Element
   up?: boolean
 }
 
-export default function Tooltip({ children, tooltip, up }: TooltipProps) {
+export default function Tooltip({
+  children,
+  tooltip,
+  up,
+  dataQa
+}: TooltipProps) {
   return (
     <TooltipWrapper>
       <div>{children}</div>
 
       <TooltipPositioner className={classNames('tooltip', { up })}>
-        <TooltipDiv>
+        <TooltipDiv data-qa={dataQa}>
           <Beak className={classNames({ up })}>
             <FontAwesomeIcon
               icon={up ? fasCaretDown : fasCaretUp}

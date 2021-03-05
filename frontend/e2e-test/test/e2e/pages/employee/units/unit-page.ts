@@ -21,6 +21,12 @@ export default class UnitPage {
   readonly childInGroup = (childId: string) =>
     Selector(`[data-qa="group-placement-row-${childId}"]`)
 
+  readonly childDaycareDailyNoteHover = (childId: string) =>
+    Selector(`[data-qa="daycare-daily-note-hover-${childId}"]`)
+
+  readonly childDaycareDailyNoteIcon = (childId: string) =>
+    Selector(`[data-qa="daycare-daily-note-icon-${childId}"]`)
+
   readonly groupUpdateModal = {
     nameInput: Selector(
       '[data-qa="group-update-modal"] [data-qa="name-input"]'
