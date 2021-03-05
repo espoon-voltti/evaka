@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import styled from 'styled-components'
 import FocusTrap from 'focus-trap-react'
-import { Loading, Result } from '@evaka/lib-common/src/api'
+import { Loading, Paged, Result, Success } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
@@ -29,75 +29,66 @@ import MessageList from './MessageList'
 import MessageReadView from './MessageReadView'
 
 export default React.memo(function MessagesPage() {
-  const [units, setUnits] = useState<Result<IdAndName[]>>(Loading.of())
-  const [groups, setGroups] = useState<Result<IdAndName[]> | null>(null)
-  const [messageCounts, setMessageCounts] = useState<
-    Record<MessageBoxType, number>
-  >(initialMessageCounts)
-  const [messageOpen, setMessageOpen] = useState<Bulletin | null>()
-  const [messageUnderEdit, setMessageUnderEdit] = useState<Bulletin | null>()
+  const { units, groups, selectedUnit, setSelectedUnit } = useUnitsState()
+  const { messageCounts, reloadMessageCounts } = useMessageCountState(
+    selectedUnit?.id
+  )
   const [activeMessageBox, setActiveMessageBox] = useState<MessageBoxType>(
     'SENT'
   )
+  const {
+    bulletins,
+    nextPage,
+    loadNextPage,
+    setMessagesState,
+    resetMessagesState
+  } = useMessagesState(activeMessageBox, selectedUnit?.id)
+  const [messageOpen, setMessageOpen] = useState<Bulletin | null>()
+  const [messageUnderEdit, setMessageUnderEdit] = useState<Bulletin | null>()
   const debouncedMessage = useDebounce(messageUnderEdit, 2000)
 
-  const [unit, setUnit] = useState<IdAndName | null>(null)
   const selectUnit = (unit: IdAndName) => {
-    setMessageCounts(initialMessageCounts)
     setActiveMessageBox('SENT')
-    setUnit(unit)
+    setSelectedUnit(unit)
   }
 
-  const loadUnits = useRestApi(getUnits, setUnits)
-  useEffect(() => loadUnits(), [])
-
-  const loadGroups = useRestApi(getGroups, setGroups)
-  useEffect(() => {
-    if (unit) loadGroups(unit.id)
-  }, [unit])
-
-  const setMessageCountResult = useCallback(
-    (result: Result<Record<MessageBoxType, number>>) =>
-      result.isSuccess ? setMessageCounts(result.value) : undefined,
-    [setMessageCounts]
-  )
-  const loadMessageCounts = useRestApi(
-    (unitId: string) =>
-      Promise.all([
-        getDraftBulletins(unitId, 1, 1),
-        getSentBulletins(unitId, 1, 1)
-      ]).then(([drafts, sent]) =>
-        drafts.chain((ds) =>
-          sent.map((ss) => ({ SENT: ss.total, DRAFT: ds.total }))
-        )
-      ),
-    setMessageCountResult
-  )
-
-  useEffect(() => {
-    if (unit) loadMessageCounts(unit.id)
-  }, [unit])
-
   const onCreateNew = () => {
-    if (!unit || messageUnderEdit) return
+    if (!selectedUnit || messageUnderEdit) return
 
-    void initNewBulletin(unit.id)
+    void initNewBulletin(selectedUnit.id)
       .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
-      .then(() => loadMessageCounts(unit.id))
+      .then(() => {
+        reloadMessageCounts()
+        if (activeMessageBox === 'DRAFT') {
+          resetMessagesState()
+        }
+      })
   }
 
   useEffect(() => {
     if (debouncedMessage) {
       const { id, groupId, title, content } = debouncedMessage
-      void updateDraftBulletin(id, groupId, title, content)
+      void updateDraftBulletin(id, groupId, title, content).then(() => {
+        if (activeMessageBox === 'DRAFT') {
+          setMessagesState((state) => ({
+            ...state,
+            bulletins: state.bulletins.map((bulletin) =>
+              bulletin.id === id
+                ? { ...bulletin, groupId, title, content }
+                : bulletin
+            )
+          }))
+        }
+      })
     }
   }, [debouncedMessage])
 
   const resetUI = () => {
     setMessageUnderEdit(null)
     setMessageOpen(null)
-    if (unit) {
-      loadMessageCounts(unit.id)
+    if (selectedUnit) {
+      reloadMessageCounts()
+      resetMessagesState()
     }
   }
 
@@ -120,15 +111,21 @@ export default React.memo(function MessagesPage() {
     if (!messageUnderEdit) return
 
     const { id, groupId, title, content } = messageUnderEdit
-    void updateDraftBulletin(id, groupId, title, content).then(resetUI)
+    void updateDraftBulletin(id, groupId, title, content).then(() =>
+      setMessageUnderEdit(null)
+    )
   }
 
   return (
     <Container>
       <StyledFlex spacing="L" tabIndex={messageUnderEdit ? -1 : undefined}>
-        <UnitsList units={units} activeUnit={unit} selectUnit={selectUnit} />
+        <UnitsList
+          units={units}
+          activeUnit={selectedUnit}
+          selectUnit={selectUnit}
+        />
 
-        {unit && (
+        {selectedUnit && (
           <>
             <MessageBoxes
               activeMessageBox={activeMessageBox}
@@ -138,7 +135,7 @@ export default React.memo(function MessagesPage() {
               }}
               messageCounts={messageCounts}
               onCreateNew={onCreateNew}
-              createNewDisabled={!unit || groups?.isSuccess !== true}
+              createNewDisabled={!selectUnit || groups?.isSuccess !== true}
             />
 
             {messageOpen ? (
@@ -151,7 +148,9 @@ export default React.memo(function MessagesPage() {
               />
             ) : (
               <MessageList
-                unitId={unit.id}
+                bulletins={bulletins}
+                nextPage={nextPage}
+                loadNextPage={loadNextPage}
                 messageBoxType={activeMessageBox}
                 selectMessage={setMessageOpen}
                 groups={groups?.isSuccess === true ? groups.value : []}
@@ -186,7 +185,162 @@ export default React.memo(function MessagesPage() {
   )
 })
 
+const useUnitsState = () => {
+  const [units, setUnits] = useState<Result<IdAndName[]>>(Loading.of())
+  const [groups, setGroups] = useState<Result<IdAndName[]>>(Loading.of())
+  const [selectedUnit, setSelectedUnit] = useState<IdAndName | null>(null)
+
+  const loadUnits = useRestApi(getUnits, setUnits)
+  useEffect(() => loadUnits(), [])
+
+  useEffect(() => {
+    if (units.isSuccess && !selectedUnit) {
+      setSelectedUnit(units.value[0])
+    }
+  }, [units])
+
+  const loadGroups = useRestApi(getGroups, setGroups)
+  useEffect(() => {
+    if (selectedUnit) loadGroups(selectedUnit.id)
+  }, [selectedUnit])
+
+  return { units, groups, selectedUnit, setSelectedUnit }
+}
+
 const initialMessageCounts = { SENT: 0, DRAFT: 0 }
+
+const useMessageCountState = (unitId?: string) => {
+  const [messageCounts, setMessageCounts] = useState<
+    Record<MessageBoxType, number>
+  >(initialMessageCounts)
+
+  const setMessageCountResult = useCallback(
+    (result: Result<Record<MessageBoxType, number>>) =>
+      result.isSuccess ? setMessageCounts(result.value) : undefined,
+    [setMessageCounts]
+  )
+
+  const loadMessageCounts = useRestApi(
+    (unitId: string) =>
+      Promise.all([
+        getDraftBulletins(unitId, 1, 1),
+        getSentBulletins(unitId, 1, 1)
+      ]).then(([drafts, sent]) =>
+        drafts.chain((ds) =>
+          sent.map((ss) => ({ SENT: ss.total, DRAFT: ds.total }))
+        )
+      ),
+    setMessageCountResult
+  )
+
+  const reloadMessageCounts = () => {
+    if (unitId) {
+      setMessageCounts(initialMessageCounts)
+      loadMessageCounts(unitId)
+    }
+  }
+
+  useLayoutEffect(() => {
+    reloadMessageCounts()
+  }, [unitId])
+
+  return { messageCounts, reloadMessageCounts }
+}
+
+interface MessagesState {
+  bulletins: Bulletin[]
+  nextPage: Result<void>
+  currentPage: number
+  pages: number
+  total?: number
+}
+
+const initialMessagesState: MessagesState = {
+  bulletins: [],
+  nextPage: Loading.of(),
+  currentPage: 1,
+  pages: 0
+}
+
+const useMessagesState = (type: MessageBoxType, unitId?: string) => {
+  const [messagesState, setMessagesState] = useState<MessagesState>(
+    initialMessagesState
+  )
+
+  const setMessagesResult = useCallback(
+    (result: Result<Paged<Bulletin>>) =>
+      setMessagesState((state) => {
+        if (result.isSuccess) {
+          return {
+            ...state,
+            bulletins: [...state.bulletins, ...result.value.data],
+            nextPage: Success.of(undefined),
+            total: result.value.total,
+            pages: result.value.pages
+          }
+        }
+
+        if (result.isFailure) {
+          return {
+            ...state,
+            nextPage: result.map(() => undefined)
+          }
+        }
+
+        return state
+      }),
+    [setMessagesState]
+  )
+
+  const loadMessages = useRestApi(
+    (unit: string, type: MessageBoxType, page: number) => {
+      switch (type) {
+        case 'SENT':
+          return getSentBulletins(unit, page)
+        case 'DRAFT':
+          return getDraftBulletins(unit, page)
+      }
+    },
+    setMessagesResult
+  )
+
+  const resetMessagesState = () => {
+    if (unitId) {
+      setMessagesState(initialMessagesState)
+      loadMessages(unitId, type, initialMessagesState.currentPage)
+    }
+  }
+
+  useEffect(() => {
+    resetMessagesState()
+  }, [unitId, type])
+
+  useEffect(() => {
+    if (unitId) {
+      setMessagesState((state) => ({ ...state, nextPage: Loading.of() }))
+      loadMessages(unitId, type, messagesState.currentPage)
+    }
+  }, [messagesState.currentPage])
+
+  const loadNextPage = () =>
+    setMessagesState((state) => {
+      if (state.currentPage < state.pages) {
+        return {
+          ...state,
+          currentPage: state.currentPage + 1
+        }
+      }
+      return state
+    })
+
+  return {
+    bulletins: messagesState.bulletins,
+    nextPage: messagesState.nextPage,
+    loadNextPage,
+    setMessagesState,
+    resetMessagesState
+  }
+}
 
 const StyledFlex = styled(FixedSpaceRow)`
   align-items: stretch;
