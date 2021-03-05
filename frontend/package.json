@@ -6,8 +6,16 @@
   "license": "LGPL-2.1-or-later",
   "scripts": {
     "clean": "rm -rf dist/",
+    "dev": "tsc -b . && node dev-server.js",
     "lint": "eslint --ext .ts,.tsx src",
-    "lint:fix": "yarn lint --fix"
+    "lint:fix": "yarn lint --fix",
+    "type-check": "tsc -b .",
+    "build": "webpack --mode production",
+    "build:dev": "webpack",
+    "storybook": "start-storybook -p 9001 -c src/lib-components/.storybook",
+    "build-storybook": "build-storybook -c src/lib-components/.storybook -o storybook-build",
+    "test": "jest",
+    "test:watch": "jest --watchAll"
   },
   "dependencies": {
     "@evaka/citizen-frontend": "link:src/citizen-frontend",
