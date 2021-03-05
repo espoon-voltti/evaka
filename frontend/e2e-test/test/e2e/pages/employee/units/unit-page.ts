@@ -14,7 +14,18 @@ export default class UnitPage {
   readonly unitName = Selector('[data-qa="unit-name"]')
   readonly visitingAddress = Selector('[data-qa="unit-visiting-address"]')
   readonly missingPlacementRows = Selector('[data-qa="missing-placement-row"]')
-  readonly groups = Selector('[data-qa="daycare-group-collapsible"]')
+  readonly groups = Selector('.daycare-group-collapsible')
+  readonly group = (groupId: string) =>
+    Selector(`[data-qa="daycare-group-collapsible-${groupId}"]`)
+
+  readonly childInGroup = (childId: string) =>
+    Selector(`[data-qa="group-placement-row-${childId}"]`)
+
+  readonly childDaycareDailyNoteHover = (childId: string) =>
+    Selector(`[data-qa="daycare-daily-note-hover-${childId}"]`)
+
+  readonly childDaycareDailyNoteIcon = (childId: string) =>
+    Selector(`[data-qa="daycare-daily-note-icon-${childId}"]`)
 
   readonly groupUpdateModal = {
     nameInput: Selector(
@@ -236,7 +247,7 @@ export const daycareGroupElement = (root: Selector) => ({
   groupStartDate: root.find('[data-qa="group-start-date"]'),
   groupEndDate: root.find('[data-qa="group-end-date"]'),
   noChildrenPlaceholder: root.find('[data-qa="no-children-placeholder"]'),
-  groupPlacementRows: root.find('[data-qa="group-placement-row"]'),
+  groupPlacementRows: root.find('.group-placement-row'),
   groupUpdateBtn: root.find('[data-qa="btn-update-group"]')
 })
 

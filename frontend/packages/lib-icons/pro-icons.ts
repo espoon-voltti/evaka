@@ -87,6 +87,7 @@ import {
 
 import {
   faCaretUp as fasCaretUp,
+  faCaretDown as fasCaretDown,
   faCheckCircle as fasCheckCircle,
   faChevronDown as fasChevronDown,
   faChevronUp as fasChevronUp,
@@ -177,6 +178,7 @@ const icons: IconSet = {
   farGavel,
   farMap,
   fasCaretUp,
+  fasCaretDown,
   fasCheckCircle,
   fasChevronDown,
   fasChevronUp,

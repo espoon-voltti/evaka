@@ -720,13 +720,14 @@ export function createChildFixture(childId: string): Child {
 }
 
 export function createDaycarePlacementFixture(
+  id = uuidv4(),
   childId: string,
   unitId: string,
   startDate = '2020-05-01',
   endDate = '2021-08-31'
 ): DaycarePlacement {
   return {
-    id: '2226ce62-4fac-42df-b18f-6400a3a9105e',
+    id,
     type: 'DAYCARE',
     childId,
     unitId: unitId,

@@ -12,7 +12,8 @@ import {
   createDaycarePlacementFixture,
   feeDecisionsFixture,
   invoiceFixture,
-  adultFixtureWihtoutSSN
+  adultFixtureWihtoutSSN,
+  uuidv4
 } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import EmployeeHome from '../../pages/employee/home'
@@ -60,6 +61,7 @@ fixture('Invoicing - invoices')
     await insertFeeDecisionFixtures([feeDecision])
     await insertDaycarePlacementFixtures([
       createDaycarePlacementFixture(
+        uuidv4(),
         fixtures.enduserChildFixtureKaarina.id,
         fixtures.daycareFixture.id,
         feeDecision.validFrom,

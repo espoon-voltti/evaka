@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
 
@@ -28,6 +28,8 @@ import {
   faCheck,
   faExchange,
   faPen,
+  farStickyNote,
+  faStickyNote,
   faTimes,
   faTrash,
   faUndo
@@ -35,6 +37,7 @@ import {
 import {
   deleteGroup,
   deletePlacement,
+  getGroupDaycareDailyNotes,
   OccupancyResponse
 } from '../../../../api/unit'
 import { Link } from 'react-router-dom'
@@ -61,6 +64,11 @@ import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { UIContext } from '../../../../state/ui'
 import GroupUpdateModal from '../../../../components/unit/tab-groups/groups/group/GroupUpdateModal'
 import { isPartDayPlacement } from '../../../../utils/placements'
+import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
+import { Loading, Result } from '@evaka/lib-common/src/api'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 
 interface Props {
   unit: Unit
@@ -90,6 +98,12 @@ function getMaxOccupancy(
   return maxOccupancy !== undefined ? formatPercentage(maxOccupancy) : undefined
 }
 
+const IconContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  font-size: 18px;
+`
+
 function getChildMinMaxHeadcounts(
   occupancyResponse?: OccupancyResponse
 ): { min: number; max: number } | undefined {
@@ -118,6 +132,13 @@ function Group({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
+  const [groupDaycareDailyNotes, setGroupDaycareDailyNotes] = useState<
+    Result<DaycareDailyNote[]>
+  >(Loading.of())
+
+  useEffect(() => {
+    void getGroupDaycareDailyNotes(group.id).then(setGroupDaycareDailyNotes)
+  }, [])
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
@@ -175,9 +196,85 @@ function Group({
 
   const showServiceNeed = !unit.type.includes('CLUB') && canManageChildren
 
+  const getChildNote = (childId: string): DaycareDailyNote | undefined =>
+    groupDaycareDailyNotes.isSuccess
+      ? groupDaycareDailyNotes.value.find((note) => note.childId === childId)
+      : undefined
+
+  const renderDaycareDailyNote = (childId: string) => {
+    const childNote = getChildNote(childId)
+    return (
+      <>
+        {groupDaycareDailyNotes.isLoading && <SpinnerSegment />}
+        {groupDaycareDailyNotes.isFailure && (
+          <ErrorSegment title={i18n.common.loadingFailed} compact />
+        )}
+        {groupDaycareDailyNotes.isSuccess && (
+          <Tooltip
+            dataQa={`daycare-daily-note-hover-${childId}`}
+            up
+            tooltip={
+              !childNote ? (
+                <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
+              ) : (
+                <div>
+                  <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
+                  <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
+                  <p>{childNote.note}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
+                  <p>
+                    {childNote.feedingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.feedingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
+                  <p>
+                    {childNote.sleepingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.sleepingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
+                  <p>
+                    {childNote.reminders
+                      .map(
+                        (reminder) =>
+                          i18n.unit.groups.daycareDailyNote.reminderType[
+                            reminder
+                          ]
+                      )
+                      .join(',')}
+                  </p>
+                  <h5>
+                    {
+                      i18n.unit.groups.daycareDailyNote
+                        .otherThingsToRememberHeader
+                    }
+                  </h5>
+                  <p>{childNote.reminderNote}</p>
+                </div>
+              )
+            }
+          >
+            <RoundIcon
+              dataQa={`daycare-daily-note-icon-${childId}`}
+              size="m"
+              color={colors.blues.primary}
+              content={childNote ? farStickyNote : faStickyNote}
+            />
+          </Tooltip>
+        )}
+      </>
+    )
+  }
+
   return (
     <DaycareGroup
-      data-qa="daycare-group-collapsible"
+      className={'daycare-group-collapsible'}
+      data-qa={`daycare-group-collapsible-${group.id}`}
       data-status={open ? 'open' : 'closed'}
     >
       {uiMode === `update-group-${group.id}` && (
@@ -312,6 +409,23 @@ function Group({
               <Table data-qa="table-of-group-placements" className="compact">
                 <Thead>
                   <Tr>
+                    <Th>
+                      <IconContainer>
+                        <Tooltip
+                          up
+                          tooltip={
+                            <span>
+                              {i18n.unit.groups.daycareDailyNote.header}
+                            </span>
+                          }
+                        >
+                          <FontAwesomeIcon
+                            icon={farStickyNote}
+                            color={colors.greyscale.dark}
+                          />
+                        </Tooltip>
+                      </IconContainer>
+                    </Th>
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
                     <Th>{i18n.unit.groups.placementType}</Th>
@@ -332,8 +446,12 @@ function Group({
                     return (
                       <Tr
                         key={placement.id || ''}
-                        data-qa="group-placement-row"
+                        className={'group-placement-row'}
+                        data-qa={`group-placement-row-${placement.child.id}`}
                       >
+                        <Td data-qa="daily-note">
+                          {renderDaycareDailyNote(placement.child.id)}
+                        </Td>
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
                             {formatName(

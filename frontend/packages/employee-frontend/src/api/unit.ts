@@ -29,6 +29,7 @@ import { PlacementType } from '../types/child'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'
 import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import { DaycareDailyNote } from '@evaka/e2e-tests/test/e2e/dev-api/types'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -641,5 +642,23 @@ export async function updateDaycare(
   return client
     .put<JsonOf<Unit>>(`/daycares/${encodeURIComponent(id)}`, fields)
     .then(({ data }) => Success.of(convertUnitJson(data)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getGroupDaycareDailyNotes(
+  groupId: UUID
+): Promise<Result<DaycareDailyNote[]>> {
+  return client
+    .get<JsonOf<DaycareDailyNote[]>>(
+      `/daycare-daily-note/daycare/group/${groupId}`
+    )
+    .then((res) =>
+      res.data.map((data) => ({
+        ...data,
+        date: LocalDate.parseNullableIso(data.date),
+        modifiedAt: data.modifiedAt ? new Date(data.modifiedAt) : null
+      }))
+    )
+    .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

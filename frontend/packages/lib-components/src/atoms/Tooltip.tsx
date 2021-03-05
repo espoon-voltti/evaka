@@ -5,14 +5,15 @@
 import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCaretUp } from '@evaka/lib-icons'
+import { fasCaretDown, fasCaretUp } from '@evaka/lib-icons'
 import { greyscale } from '../colors'
 import { defaultMargins } from '../white-space'
+import classNames from 'classnames'
+import { BaseProps } from '../utils'
 
 const TooltipWrapper = styled.div`
   position: relative;
   display: inline-block;
-
   &:not(:hover) {
     .tooltip {
       display: none;
@@ -28,6 +29,11 @@ const TooltipPositioner = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &.up {
+    top: auto;
+    bottom: calc(100% + ${defaultMargins.xs});
+  }
 `
 
 const TooltipDiv = styled.div`
@@ -54,22 +60,36 @@ const Beak = styled.div`
   justify-content: center;
   align-items: center;
   color: ${greyscale.dark};
+
+  &.up {
+    top: auto;
+    bottom: -24px;
+  }
 `
 
-type TooltipProps = {
+type TooltipProps = BaseProps & {
   children: React.ReactNode
   tooltip: JSX.Element
+  up?: boolean
 }
 
-export default function Tooltip({ children, tooltip }: TooltipProps) {
+export default function Tooltip({
+  children,
+  tooltip,
+  up,
+  dataQa
+}: TooltipProps) {
   return (
     <TooltipWrapper>
       <div>{children}</div>
 
-      <TooltipPositioner className={'tooltip'}>
-        <TooltipDiv>
-          <Beak>
-            <FontAwesomeIcon icon={fasCaretUp} size={'3x'} />
+      <TooltipPositioner className={classNames('tooltip', { up })}>
+        <TooltipDiv data-qa={dataQa}>
+          <Beak className={classNames({ up })}>
+            <FontAwesomeIcon
+              icon={up ? fasCaretDown : fasCaretUp}
+              size={'3x'}
+            />
           </Beak>
           <div>{tooltip}</div>
         </TooltipDiv>

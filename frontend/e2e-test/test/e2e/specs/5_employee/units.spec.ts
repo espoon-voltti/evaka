@@ -18,7 +18,8 @@ import {
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
-  Fixture
+  Fixture,
+  uuidv4
 } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { Child, DaycarePlacement } from '../../dev-api/types'
@@ -49,6 +50,7 @@ fixture('Employee - Units')
     await insertDaycareGroupFixtures([daycareGroupFixture])
     childFixture = fixtures.familyWithTwoGuardians.children[0]
     daycarePlacementFixture = createDaycarePlacementFixture(
+      uuidv4(),
       childFixture.id,
       fixtures.daycareFixture.id
     )

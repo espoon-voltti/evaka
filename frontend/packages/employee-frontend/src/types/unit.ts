@@ -218,3 +218,20 @@ export interface Occupancy {
   caretakers?: number
   percentage?: number
 }
+
+type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
+type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
+
+export interface DaycareDailyNote {
+  id?: UUID
+  childId?: UUID
+  groupId?: UUID
+  date?: LocalDate
+  note?: string
+  feedingNote?: DaycareDailyNoteLevelInfo
+  sleepingNote?: DaycareDailyNoteLevelInfo
+  reminders?: DaycareDailyNoteReminder[]
+  reminderNote?: string
+  modifiedAt?: Date
+  modifiedBy?: string
+}

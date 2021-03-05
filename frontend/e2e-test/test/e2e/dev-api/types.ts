@@ -539,14 +539,14 @@ export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
 
 export interface DaycareDailyNote {
   id: UUID
-  date: LocalDate
+  date: LocalDate | null
   childId?: UUID
   groupId?: UUID
-  note?: string
-  feedingNote?: DaycareDailyNoteLevel
-  sleepingNote?: DaycareDailyNoteLevel
-  reminders?: DaycareDailyNoteReminder[]
-  reminderNote?: string
-  modifiedAt?: Date
-  modifiedBy?: string
+  note?: string | null
+  feedingNote: DaycareDailyNoteLevel | null
+  sleepingNote: DaycareDailyNoteLevel | null
+  reminders: DaycareDailyNoteReminder[]
+  reminderNote: string | null
+  modifiedAt?: Date | null
+  modifiedBy: string | null
 }

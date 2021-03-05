@@ -10,15 +10,12 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeById,
-  deleteMobileDevice,
-  deletePairing,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  postDaycareDailyNote,
-  postMobileDevice
+  postDaycareDailyNote
 } from '../../dev-api'
-import { mobileAutoSignInRole } from '../../config/users'
+import { seppoAdminRole } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
@@ -29,23 +26,24 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import { DaycareDailyNote, DaycarePlacement } from '../../dev-api/types'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import EmployeeHome from '../../pages/employee/home'
+import UnitPage from '../../pages/employee/units/unit-page'
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
 
 const employeeId = uuidv4()
-const mobileDeviceId = employeeId
-const mobileLongTermToken = uuidv4()
-const pairingId = uuidv4()
-const daycareGroupPlacementId = uuidv4()
 
-let daycarePlacementFixture: DaycarePlacement
+let daycarePlacementFixtureJari: DaycarePlacement
+let daycarePlacementFixtureKaarina: DaycarePlacement
+
 let daycareGroup: DaycareGroupBuilder
 let daycare: DaycareBuilder
 let careArea: CareAreaBuilder
+
+const employeeHome = new EmployeeHome()
 
 fixture('Mobile daily notes')
   .meta({ type: 'regression', subType: 'mobile' })
@@ -53,59 +51,65 @@ fixture('Mobile daily notes')
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
 
-    await Promise.all([
-      insertEmployeeFixture({
-        id: employeeId,
-        externalId: `espooad: ${employeeId}`,
-        firstName: 'Yrjö',
-        lastName: 'Yksikkö',
-        email: 'yy@example.com',
-        roles: ['MOBILE']
-      })
-    ])
+    await insertEmployeeFixture({
+      id: employeeId,
+      externalId: `espooad: ${employeeId}`,
+      firstName: 'Yrjö',
+      lastName: 'Yksikkö',
+      email: 'yy@example.com',
+      roles: ['MOBILE']
+    })
 
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()
     daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
-    daycarePlacementFixture = createDaycarePlacementFixture(
+    daycarePlacementFixtureJari = createDaycarePlacementFixture(
       uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       daycare.data.id
     )
 
-    await insertDaycarePlacementFixtures([daycarePlacementFixture])
+    daycarePlacementFixtureKaarina = createDaycarePlacementFixture(
+      uuidv4(),
+      fixtures.enduserChildFixtureKaarina.id,
+      daycare.data.id
+    )
+
+    await insertDaycarePlacementFixtures([
+      daycarePlacementFixtureJari,
+      daycarePlacementFixtureKaarina
+    ])
     await insertDaycareGroupPlacementFixtures([
       {
-        id: daycareGroupPlacementId,
+        id: uuidv4(),
         daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: daycarePlacementFixture.id,
-        startDate: daycarePlacementFixture.startDate,
-        endDate: daycarePlacementFixture.endDate
+        daycarePlacementId: daycarePlacementFixtureJari.id,
+        startDate: daycarePlacementFixtureJari.startDate,
+        endDate: daycarePlacementFixtureJari.endDate
+      },
+      {
+        id: uuidv4(),
+        daycareGroupId: daycareGroup.data.id,
+        daycarePlacementId: daycarePlacementFixtureKaarina.id,
+        startDate: daycarePlacementFixtureKaarina.startDate,
+        endDate: daycarePlacementFixtureKaarina.endDate
       }
     ])
-
-    await postMobileDevice({
-      id: mobileDeviceId,
-      unitId: daycare.data.id,
-      name: 'testMobileDevice',
-      deleted: false,
-      longTermToken: mobileLongTermToken
-    })
   })
   .beforeEach(async () => {
-    await t.useRole(mobileAutoSignInRole(mobileLongTermToken))
+    await t.useRole(seppoAdminRole)
+    await employeeHome.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
-    await deletePairing(pairingId)
-    await deleteMobileDevice(mobileDeviceId)
     await cleanUp()
     await deleteEmployeeById(employeeId)
+    await Fixture.cleanup()
   })
 
-const mobileGroupsPage = new MobileGroupsPage()
+const unitPage = new UnitPage()
 
-test('Daycare groups are shown', async (t) => {
+test('Daycare daily note indicators are shown on group view', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
     groupId: daycareGroup.data.id,
@@ -121,26 +125,25 @@ test('Daycare groups are shown', async (t) => {
 
   await postDaycareDailyNote(daycareDailyNote)
 
-  await t
-    .expect(
-      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
-    .eql(
-      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
-    )
+  await unitPage.navigateHere(daycare.data.id)
+  await unitPage.openTabGroups()
+  await unitPage.openGroups()
+
+  await t.click(unitPage.group(daycareGroup.data.id))
 
   await t
     .expect(
-      mobileGroupsPage.childStatus(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
-    .contains('Tulossa')
-
-  await t
-    .expect(
-      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
-        .visible
+      unitPage
+        .childInGroup(enduserChildFixtureJari.id)
+        .find('[data-qa="daily-note"]').visible
     )
     .ok()
+
+  await t
+    .hover(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+    .expect(
+      unitPage.childDaycareDailyNoteHover(enduserChildFixtureJari.id)
+        .textContent
+    )
+    .contains(daycareDailyNote.note || 'expected text not found')
 })

@@ -1,4 +1,4 @@
-package fi.espoo.evaka.messaging
+package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
@@ -28,8 +28,8 @@ fun Database.Read.getGroupDaycareDailyNotes(groupId: UUID): List<DaycareDailyNot
 fun Database.Transaction.upsertDaycareDailyNote(note: DaycareDailyNote) {
     createUpdate(
         """
-INSERT INTO daycare_daily_note (child_id, group_id, date, note, feeding_note, sleeping_note, reminders, reminder_note, modified_by)
-VALUES(:childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy)
+INSERT INTO daycare_daily_note (child_id, group_id, date, note, feeding_note, sleeping_note, reminders, reminder_note, modified_by, modified_at)
+VALUES(:childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy, now())
 ON CONFLICT(child_id, group_id, date)
     DO UPDATE SET 
         child_id = :childId, 

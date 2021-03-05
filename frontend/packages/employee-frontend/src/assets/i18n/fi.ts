@@ -1196,7 +1196,27 @@ export const fi = {
       transferBtn: 'Siirrä',
       diaryButton: 'Avaa päiväkirja',
       deleteGroup: 'Poista ryhmä',
-      update: 'Muokkaa tietoja'
+      update: 'Muokkaa tietoja',
+      daycareDailyNote: {
+        header: 'Päivän muistiinpanot',
+        notesHeader: 'Muistiinpanot',
+        feedingHeader: 'Lapsi söi tänään',
+        sleepingHeader: 'Lapsi nukkui tänään',
+        reminderHeader: 'Muistettavia asioita',
+        otherThingsToRememberHeader: 'Muita muistettavia asioita',
+        groupRemindersHeader: 'Koko ryhmää koskeva muistiinpano',
+        edit: 'Lisää/muokkaa päivän muistiinpanoa',
+        level: {
+          GOOD: 'Hyvin',
+          MEDIUM: 'Kohtalaisesti',
+          NONE: 'Ei yhtään'
+        },
+        reminderType: {
+          DIAPERS: 'Lisää vaippoja',
+          CLOTHES: 'Lisää vaatteita',
+          LAUNDRY: 'Pyykit'
+        }
+      }
     },
     backupCares: {
       title: 'Varasijoituslapset',

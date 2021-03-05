@@ -119,6 +119,7 @@ test('Placed child shows on report', async (t) => {
   const currentUnit = preferredUnit
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
+    uuidv4(),
     createdApplication.childId,
     preferredUnit.id,
     format(placementStartDate, 'yyyy-MM-dd')

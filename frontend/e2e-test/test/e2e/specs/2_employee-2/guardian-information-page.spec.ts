@@ -9,7 +9,7 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from '../../dev-api/data-init'
-import { supervisor } from '../../dev-api/fixtures'
+import { supervisor, uuidv4 } from '../../dev-api/fixtures'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
@@ -54,6 +54,7 @@ fixture('Employee - Guardian Information')
     supervisorId = await insertEmployeeFixture(supervisor)
 
     daycarePlacementFixture = createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       daycareFixture.id
     )
