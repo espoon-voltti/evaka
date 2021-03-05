@@ -201,10 +201,9 @@ fun Database.Read.getUnreadBulletinCountByGuardian(
 ): Int {
     // language=sql
     val sql = """
-        SELECT count(distinct b.id) AS count
-        FROM bulletin b
-        JOIN bulletin_instance bi ON b.id = bi.bulletin_id
-        WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL AND bi.read_at IS NULL
+        SELECT count(distinct bi.id) AS count
+        FROM bulletin_instance bi
+        WHERE bi.receiver_id = :userId AND bi.read_at IS NULL
     """.trimIndent()
 
     return this.createQuery(sql)

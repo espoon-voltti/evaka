@@ -24,20 +24,10 @@ export default React.memo(function MessagesPage() {
     null
   )
 
-  const { setUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
+  const { refreshUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
 
   const loadBulletins = useRestApi(getBulletins, setBulletins)
   useEffect(() => loadBulletins(), [])
-
-  useEffect(
-    () =>
-      bulletins.isSuccess
-        ? setUnreadBulletinsCount(
-            bulletins.value.filter(({ isRead }) => !isRead).length
-          )
-        : undefined,
-    [bulletins]
-  )
 
   const openBulletin = (bulletin: ReceivedBulletin) => {
     setActiveBulletin(bulletin)
@@ -45,6 +35,7 @@ export default React.memo(function MessagesPage() {
     if (bulletin.isRead) return
 
     void markBulletinRead(bulletin.id).then(() => {
+      refreshUnreadBulletinsCount()
       setActiveBulletin((b) =>
         b?.id === bulletin.id ? { ...b, isRead: true } : b
       )

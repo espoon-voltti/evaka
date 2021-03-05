@@ -11,8 +11,6 @@ import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeight } from '../header/const'
-import { getUnreadBulletinsCount } from '../messages/api'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useUser } from '../auth'
 import { HeaderContext, HeaderState } from '../messages/state'
 
@@ -22,16 +20,11 @@ export default React.memo(function Header() {
 
   const {
     unreadBulletinsCount,
-    setUnreadBulletinsCount
+    refreshUnreadBulletinsCount
   } = useContext<HeaderState>(HeaderContext)
 
-  const loadUnreadBulletinsCount = useRestApi(
-    getUnreadBulletinsCount,
-    (result) => result.isSuccess && setUnreadBulletinsCount(result.value)
-  )
-
   useEffect(() => {
-    if (user) loadUnreadBulletinsCount()
+    if (user) refreshUnreadBulletinsCount()
   }, [user])
 
   return (
