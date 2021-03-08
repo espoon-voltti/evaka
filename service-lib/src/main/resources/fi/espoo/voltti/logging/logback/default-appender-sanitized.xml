@@ -14,7 +14,7 @@ Sanitized default appender logback configuration provided for import
   <conversionRule
     conversionWord="stacktrace"
     converterClass="net.logstash.logback.stacktrace.ShortenedThrowableConverter" />
-  
+
   <appender name="VOLTTI_DEFAULT_APPENDER_SANITIZED" class="ch.qos.logback.core.ConsoleAppender">
     <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
       <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
@@ -26,6 +26,10 @@ Sanitized default appender logback configuration provided for import
     </filter>
     <!-- With a Composite encoder, desired fields need to be explicitly defined -->
     <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+        <!--Hide social security numbers from logs-->
+        <valueMasker class="fi.espoo.voltti.logging.SsnMasker" />
+      </jsonGeneratorDecorator>
       <providers>
         <logLevel><fieldName>logLevel</fieldName></logLevel>
         <throwableClassName><fieldName>exception</fieldName></throwableClassName>
@@ -38,9 +42,8 @@ Sanitized default appender logback configuration provided for import
           <omitEmptyFields>true</omitEmptyFields>
           <pattern>
             {
-            <!--Hide social security numbers in message and in stack trace-->
-            "message": "%replace(%message){'(?&lt;!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-z](?!-)', 'REDACTED-SSN'}",
-            "stackTrace": "%replace(%stacktrace{60,40,32000,rootFirst,inlineHash}){'(?&lt;!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-z](?!-)', 'REDACTED-SSN'}",
+            "message": "%message",
+            "stackTrace": "%stacktrace",
             "type": "app-misc",
             "appBuild": "${APP_BUILD}",
             "appCommit": "${APP_COMMIT}",

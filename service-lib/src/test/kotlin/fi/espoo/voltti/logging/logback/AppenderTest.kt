@@ -4,6 +4,7 @@
 
 package fi.espoo.voltti.logging.logback
 
+import fi.espoo.voltti.logging.loggers.info
 import mu.KLogger
 import mu.KMarkerFactory
 import mu.KotlinLogging
@@ -90,19 +91,22 @@ class AppenderTest {
             it.withLatestSanitized { actual -> defaultInfoAssertions(actual) }
 
             testSSNs.forEach { ssn ->
-                logger.info { "Accidental SSN logging: $ssn}" }
+                logger.info(mapOf("body" to """{"ssn": "$ssn"}""")) { "Accidental SSN logging: $ssn}" }
                 it.withLatestSanitized { actual ->
-                    defaultInfoAssertions(actual)
                     assertThat(actual["message"] as String).doesNotContain(ssn)
                     assertThat(actual["message"] as String).contains(redactedSSN)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).doesNotContain(ssn)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).contains(redactedSSN)
                 }
             }
 
             UUIDWithSSNs.forEach { uuid ->
-                logger.info { "UUID has SSN in it: $uuid" }
+                logger.info(mapOf("body" to """{"id": "$uuid"}""")) { "UUID has SSN in it: $uuid" }
                 it.withLatestSanitized { actual ->
                     assertThat(actual["message"] as String).contains(uuid)
                     assertThat(actual["message"] as String).doesNotContain(redactedSSN)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).contains(uuid)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).doesNotContain(redactedSSN)
                 }
             }
 
