@@ -76,6 +76,8 @@ import {
   faUserFriends,
   faUsers,
   faComments
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
 } from '@fortawesome/pro-light-svg-icons'
 
 import {
@@ -83,6 +85,8 @@ import {
   faGavel as farGavel,
   faMap as farMap,
   faStickyNote as farStickyNote
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
 } from '@fortawesome/pro-regular-svg-icons'
 
 import {

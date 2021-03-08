@@ -4,6 +4,5 @@
     "rootDir": ".",
     "composite": true,
     "outDir": "../../dist/icons"
-  },
-  "exclude": ["pro-icons.ts"]
+  }
 }
