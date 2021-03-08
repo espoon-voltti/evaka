@@ -42,7 +42,7 @@ const logger = RequestLogger(
   { logResponseHeaders: true }
 )
 
-const testFilePath = '../../assets/test_file.jpg'
+const testFilePath = '../../assets/test_file.png'
 const testFileName = path.basename(testFilePath)
 
 const citizenHomePage = new CitizenHomePage()
