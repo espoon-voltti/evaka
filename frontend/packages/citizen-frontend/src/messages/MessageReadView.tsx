@@ -19,17 +19,19 @@ export default React.memo(function MessageReadView({ bulletin }: Props) {
   return (
     <Container>
       <Header>
-        <Title noMargin>{bulletin.title}</Title>
+        <Title noMargin data-qa="message-reader-title">
+          {bulletin.title}
+        </Title>
         <FixedSpaceRow spacing="s">
-          <span>{bulletin.sender}</span>
+          <span data-qa="message-reader-sender">{bulletin.sender}</span>
           <span>{formatDate(bulletin.sentAt)}</span>
         </FixedSpaceRow>
       </Header>
       {bulletin.content.split('\n').map((text, i) => (
-        <React.Fragment key={i}>
+        <div key={i} data-qa="message-reader-content">
           <span>{text}</span>
           <br />
-        </React.Fragment>
+        </div>
       ))}
     </Container>
   )

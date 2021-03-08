@@ -781,6 +781,15 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     @PutMapping("/digitransit/autocomplete")
     fun putDigitransitAutocomplete(@RequestBody mockResponse: MockDigitransit.Autocomplete) =
         digitransit.setAutocomplete(mockResponse)
+
+    @DeleteMapping("/bulletins")
+    fun deleteBulletins(db: Database): ResponseEntity<Unit> {
+        db.transaction {
+            it.createUpdate("DELETE FROM bulletin_instance").execute()
+            it.createUpdate("DELETE FROM bulletin").execute()
+        }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {

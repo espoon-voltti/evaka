@@ -23,7 +23,12 @@ export default React.memo(function MessageListItem({
   onClick
 }: Props) {
   return (
-    <Container isRead={bulletin.isRead} active={active} onClick={onClick}>
+    <Container
+      isRead={bulletin.isRead}
+      active={active}
+      onClick={onClick}
+      data-qa="bulletin-list-item"
+    >
       <FixedSpaceColumn>
         <Header>
           <span>{bulletin.sender}</span>

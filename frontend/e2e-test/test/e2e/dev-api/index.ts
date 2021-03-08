@@ -821,3 +821,11 @@ export async function postDaycareDailyNote(
     throw new DevApiError(e)
   }
 }
+
+export async function clearBulletins(): Promise<void> {
+  try {
+    await devClient.delete(`/bulletins`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

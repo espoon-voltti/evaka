@@ -17,6 +17,7 @@ export default class EmployeeHome {
   readonly personSearchNav = Selector('[data-qa="search-nav"]')
   readonly addVTJPersonButton = Selector('[data-qa="add-vtj-person-button"]')
   readonly createPersonButton = Selector('[data-qa="create-person-button"]')
+  readonly messagesNav = Selector('[data-qa="messages-nav"]')
 
   readonly createPersonModal = {
     firstNameInput: Selector('[data-qa="first-name-input"]'),
@@ -63,5 +64,9 @@ export default class EmployeeHome {
 
   async navigateToGuardianInformation(personId: string) {
     await t.navigateTo(this.url + '/profile/' + personId)
+  }
+
+  async navigateToMessages() {
+    await t.click(this.messagesNav)
   }
 }
