@@ -14,6 +14,7 @@ import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.placement.deletePlacementPlans
+import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.db.Database
@@ -104,6 +105,12 @@ class ScheduledOperationController(
     @PostMapping("/send-pending-decision-reminder-emails")
     fun sendPendingDecisionReminderEmails(db: Database.Connection): ResponseEntity<Unit> {
         pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/freeze-voucher-value-reports")
+    fun freezeVoucherValueReports(db: Database.Connection): ResponseEntity<Unit> {
+        db.transaction { freezeVoucherValueReportRows(it) }
         return ResponseEntity.noContent().build()
     }
 }

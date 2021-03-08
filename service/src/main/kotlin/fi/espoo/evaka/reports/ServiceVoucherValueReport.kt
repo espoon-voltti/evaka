@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.reports
 
+import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -96,6 +97,49 @@ class ServiceVoucherValueReportController {
     }
 }
 
+fun freezeVoucherValueReportRows(tx: Database.Transaction) {
+    val currentMonthPeriod = currentDateInFinland().withDayOfMonth(1).let { firstDayOfMonth ->
+        val lastDayOfMonth = firstDayOfMonth.plusMonths(1).minusDays(1)
+        FiniteDateRange(firstDayOfMonth, lastDayOfMonth)
+    }
+
+    val rows = tx.getServiceVoucherValues(currentMonthPeriod)
+        .map { row ->
+            row.copy(
+                derivatives = realizedMonthlyAmount(
+                    row.serviceVoucherValue - row.serviceVoucherCoPayment,
+                    row.serviceVoucherPeriod,
+                    currentMonthPeriod
+                )
+            )
+        }
+
+    val voucherValueReportSnapshotId = tx.createUpdate("INSERT INTO voucher_value_report_snapshot (month, year) VALUES (:month, :year) RETURNING id")
+        .bind("month", currentMonthPeriod.start.monthValue)
+        .bind("year", currentMonthPeriod.start.year)
+        .executeAndReturnGeneratedKeys("id")
+        .mapTo<UUID>()
+        .first()
+
+    val batch = tx.prepareBatch(
+        """
+INSERT INTO voucher_value_report_decision_part (voucher_value_report_snapshot_id, decision_part_id, realized_amount, realized_period)
+VALUES (:voucherValueReportSnapshotId, :decisionPartId, :realizedAmount, :realizedPeriod)
+"""
+    )
+
+    rows.forEach { row ->
+        batch
+            .bind("voucherValueReportSnapshotId", voucherValueReportSnapshotId)
+            .bind("decisionPartId", row.serviceVoucherPartId)
+            .bind("realizedAmount", row.derivatives!!.realizedAmount)
+            .bind("realizedPeriod", row.derivatives.realizedPeriod)
+            .add()
+    }
+
+    batch.execute()
+}
+
 data class ServiceVoucherValueUnitAggregate(
     val unit: UnitData,
     val childCount: Int,
@@ -120,6 +164,7 @@ data class ServiceVoucherValueRow(
     val areaId: UUID,
     val areaName: String,
     val serviceVoucherPeriod: DateRange,
+    val serviceVoucherPartId: UUID,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
     val serviceVoucherServiceCoefficient: Int,
@@ -130,7 +175,7 @@ data class ServiceVoucherValueRow(
 data class ValueRowDerivatives(
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
-    val numberOfDays: Long
+    val numberOfDays: Int
 )
 
 private fun realizedMonthlyAmount(value: Int, decisionPeriod: DateRange, monthPeriod: FiniteDateRange): ValueRowDerivatives {
@@ -139,7 +184,7 @@ private fun realizedMonthlyAmount(value: Int, decisionPeriod: DateRange, monthPe
         minOf(decisionPeriod.end ?: monthPeriod.end, monthPeriod.end)
     )
 
-    val numberOfDays = realizedPeriod.durationInDays()
+    val numberOfDays = realizedPeriod.durationInDays().toInt()
     val coefficient = BigDecimal(numberOfDays).divide(BigDecimal(monthPeriod.durationInDays()), 10, RoundingMode.HALF_UP)
     val realizedAmount = (BigDecimal(value) * coefficient).setScale(0, RoundingMode.HALF_UP).toInt()
 
@@ -165,6 +210,7 @@ private fun Database.Read.getServiceVoucherValues(
             area.id AS area_id,
             area.name AS area_name,
             daterange(decision.valid_from, decision.valid_to, '[]') AS service_voucher_period,
+            part.id AS service_voucher_part_id,
             part.voucher_value AS service_voucher_value,
             part.co_payment AS service_voucher_co_payment,
             part.service_coefficient AS service_voucher_service_coefficient,
