@@ -8,19 +8,10 @@ import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { range } from 'lodash'
 
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
-import {
-  Th,
-  Tr,
-  Td,
-  Thead,
-  Tbody
-} from '@evaka/lib-components/layout/Table'
+import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/api'
 import { VoucherServiceProviderUnitRow } from '../../types/reports'

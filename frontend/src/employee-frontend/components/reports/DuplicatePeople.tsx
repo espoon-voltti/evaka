@@ -3,20 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
-import {
-  Th,
-  Tr,
-  Td,
-  Thead,
-  Tbody
-} from '@evaka/lib-components/layout/Table'
+import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
 import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../../state/i18n'
 import { Link } from 'react-router-dom'

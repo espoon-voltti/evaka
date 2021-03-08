@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Container, {
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import Container, { ContentArea } from '@evaka/lib-components/layout/Container'
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import { H1, P } from '@evaka/lib-components/typography'
 import { useTranslation } from '../../../localization'

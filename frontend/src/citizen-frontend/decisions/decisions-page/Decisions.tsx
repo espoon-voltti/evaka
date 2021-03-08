@@ -4,9 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { ApplicationDecisions } from '../../decisions/types'
-import Container, {
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import Container, { ContentArea } from '@evaka/lib-components/layout/Container'
 import { H1 } from '@evaka/lib-components/typography'
 import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import { Gap } from '@evaka/lib-components/white-space'

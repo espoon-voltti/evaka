@@ -6,10 +6,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { faQuestion } from '@evaka/lib-icons'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
 import Heading from './Heading'

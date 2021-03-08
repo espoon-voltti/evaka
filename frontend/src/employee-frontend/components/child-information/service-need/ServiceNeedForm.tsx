@@ -20,10 +20,7 @@ import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from '@evaka/lib-components/molecules/DatePickerDeprecated'
-import {
-  AlertBox,
-  InfoBox
-} from '@evaka/lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import styled from 'styled-components'

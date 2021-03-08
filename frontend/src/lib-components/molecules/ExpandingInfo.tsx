@@ -7,9 +7,7 @@ import React, { ReactNode, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../colors'
 import RoundIcon from '../atoms/RoundIcon'
-import Container, {
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import Container, { ContentArea } from '@evaka/lib-components/layout/Container'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'

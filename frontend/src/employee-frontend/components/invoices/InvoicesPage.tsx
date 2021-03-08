@@ -7,10 +7,7 @@ import styled from 'styled-components'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import LocalDate from '@evaka/lib-common/local-date'
 import { Gap } from '@evaka/lib-components/white-space'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import { Label } from '@evaka/lib-components/typography'
 import { AsyncFormModal } from '@evaka/lib-components/molecules/modals/FormModal'
 import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'

@@ -6,13 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import _ from 'lodash'
 import styled from 'styled-components'
 
-import {
-  Table,
-  Th,
-  Tr,
-  Thead,
-  Tbody
-} from '@evaka/lib-components/layout/Table'
+import { Table, Th, Tr, Thead, Tbody } from '@evaka/lib-components/layout/Table'
 import Title from '@evaka/lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import {

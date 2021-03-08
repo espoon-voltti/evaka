@@ -16,10 +16,7 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Title from '@evaka/lib-components/atoms/Title'
 import { Gap } from '@evaka/lib-components/white-space'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
@@ -43,10 +40,7 @@ import {
   DecisionUnit
 } from '../../types/decision'
 import { faEnvelope } from '@evaka/lib-icons'
-import {
-  AlertBox,
-  InfoBox
-} from '@evaka/lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import { TitleContext, TitleState } from '../../state/title'
 import colors from '@evaka/lib-components/colors'
 import { formatName } from '../../utils'

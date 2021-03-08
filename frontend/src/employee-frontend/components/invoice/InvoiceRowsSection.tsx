@@ -9,13 +9,7 @@ import styled from 'styled-components'
 
 import { faAbacus, faCoins } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/local-date'
-import {
-  Table,
-  Tbody,
-  Th,
-  Thead,
-  Tr
-} from '@evaka/lib-components/layout/Table'
+import { Table, Tbody, Th, Thead, Tr } from '@evaka/lib-components/layout/Table'
 import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
 import Title from '@evaka/lib-components/atoms/Title'
 import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'

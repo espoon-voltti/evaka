@@ -4,10 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import {
   Table,
   Tbody,

@@ -11,10 +11,7 @@ import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/atoms/form/InputField'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import {
   Table,
   Tr,

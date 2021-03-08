@@ -5,10 +5,7 @@
 import React, { Fragment, useContext, useMemo } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '../types'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Title from '@evaka/lib-components/atoms/Title'
 import { Td } from '@evaka/lib-components/layout/Table'
 import PersonFridgePartner from '../components/person-profile/PersonFridgePartner'

@@ -9,10 +9,7 @@ import { getApplicationDecisions } from '../../decisions/api'
 import { UUID } from '@evaka/lib-common/types'
 import { Loading, Result } from '@evaka/lib-common/api'
 import { Decision } from '../../decisions/types'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import { Gap } from '@evaka/lib-components/white-space'
 import { H1, P } from '@evaka/lib-components/typography'
 import { useTranslation } from '../../localization'

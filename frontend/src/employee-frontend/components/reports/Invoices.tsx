@@ -4,19 +4,10 @@
 
 import React, { useEffect, useState } from 'react'
 import * as _ from 'lodash'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
-import {
-  Th,
-  Tr,
-  Td,
-  Thead,
-  Tbody
-} from '@evaka/lib-components/layout/Table'
+import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
 import { Loading, Result } from '@evaka/lib-common/api'
 import { getInvoiceReport, InvoiceReportFilters } from '../../api/reports'
 import { InvoiceReport, InvoiceReportRow } from '../../types/reports'

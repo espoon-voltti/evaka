@@ -11,10 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { faUsers } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/local-date'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Title from '@evaka/lib-components/atoms/Title'
 import { Gap } from '@evaka/lib-components/white-space'
 import ChildDetails from '../components/child-information/ChildDetails'

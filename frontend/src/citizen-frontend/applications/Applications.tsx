@@ -6,9 +6,7 @@ import { useTranslation } from '../localization'
 import React, { useEffect, useState } from 'react'
 import { Loading, Result } from '@evaka/lib-common/api'
 import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import Container, {
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import Container, { ContentArea } from '@evaka/lib-components/layout/Container'
 import { getGuardianApplications } from './api'
 import { Gap } from '@evaka/lib-components/white-space'
 import { H1 } from '@evaka/lib-components/typography'

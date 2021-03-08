@@ -16,10 +16,7 @@ import { getApplicationUnits } from '../api/daycare'
 import { renderResult } from '../components/async-rendering'
 import { TitleContext, TitleState } from '../state/title'
 import { useTranslation, Translations } from '../state/i18n'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import { Gap } from '@evaka/lib-components/white-space'
 import styled from 'styled-components'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'

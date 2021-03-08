@@ -15,10 +15,7 @@ import { Gap } from '@evaka/lib-components/white-space'
 import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
 import InputField from '@evaka/lib-components/atoms/form/InputField'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import {
   Table,
   Tr,

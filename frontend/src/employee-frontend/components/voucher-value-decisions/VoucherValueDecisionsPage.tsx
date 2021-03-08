@@ -4,10 +4,7 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Gap } from '@evaka/lib-components/white-space'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import VoucherValueDecisions from './VoucherValueDecisions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'

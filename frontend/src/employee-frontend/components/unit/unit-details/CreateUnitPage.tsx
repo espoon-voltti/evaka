@@ -9,10 +9,7 @@ import { Loading, Result } from '@evaka/lib-common/api'
 import { CareArea } from '../../../types/unit'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import { createDaycare, DaycareFields } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'

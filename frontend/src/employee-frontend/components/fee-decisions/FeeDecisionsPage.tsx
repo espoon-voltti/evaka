@@ -4,10 +4,7 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Gap } from '@evaka/lib-components/white-space'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'

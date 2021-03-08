@@ -7,10 +7,7 @@ import styled from 'styled-components'
 
 import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/colors'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import { defaultMargins } from '@evaka/lib-components/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`

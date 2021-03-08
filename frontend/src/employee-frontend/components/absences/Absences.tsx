@@ -10,10 +10,7 @@ import { Label, LabelText } from '../../components/common/styled/common'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
 import Radio from '@evaka/lib-components/atoms/form/Radio'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
 import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'

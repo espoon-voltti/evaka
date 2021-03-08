@@ -8,19 +8,10 @@ import { fi } from 'date-fns/locale'
 import ReactSelect from 'react-select'
 import { Link } from 'react-router-dom'
 
-import {
-  Container,
-  ContentArea
-} from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
-import {
-  Th,
-  Tr,
-  Td,
-  Thead,
-  Tbody
-} from '@evaka/lib-components/layout/Table'
+import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
