@@ -235,6 +235,7 @@
           "varsIgnorePattern": "^_"
         }
       ],
+      "@typescript-eslint/no-floating-promises": "error",
       "react/prop-types": 0,
       "react-hooks/rules-of-hooks": "error"
     }
