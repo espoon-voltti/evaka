@@ -721,7 +721,7 @@ export function createChildFixture(childId: string): Child {
 }
 
 export function createDaycarePlacementFixture(
-  id = uuidv4(),
+  id: string,
   childId: string,
   unitId: string,
   startDate = '2020-05-01',
@@ -731,7 +731,7 @@ export function createDaycarePlacementFixture(
     id,
     type: 'DAYCARE',
     childId,
-    unitId: unitId,
+    unitId,
     startDate,
     endDate
   }
