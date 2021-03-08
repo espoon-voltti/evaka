@@ -127,7 +127,8 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
     },
     performance: {
       hints: false
-    }
+    },
+    cache: isDevServer ? { type: 'filesystem' } : false
   }
 }
 
