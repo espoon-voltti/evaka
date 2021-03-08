@@ -5,7 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.daycare.service.CareType
-import fi.espoo.evaka.messaging.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
 import java.time.Instant
 import java.time.LocalDate

@@ -7,7 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
-import fi.espoo.evaka.messaging.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
