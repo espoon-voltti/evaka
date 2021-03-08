@@ -146,9 +146,16 @@ class ParentshipController(
         @PathVariable(value = "id") id: UUID
     ): ResponseEntity<Unit> {
         Audit.ParentShipsDelete.log(targetId = id)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { parentshipService.deleteParentship(it, id) }
+        db.transaction {
+            if (it.handle.getParentship(id)?.conflict == false) {
+                user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+            }
+
+            parentshipService.deleteParentship(it, id)
+        }
+
         asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
