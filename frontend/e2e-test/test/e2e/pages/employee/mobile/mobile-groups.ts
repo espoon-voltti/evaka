@@ -17,4 +17,11 @@ export default class MobileGroupsPage {
 
   readonly childDailyNoteLink = (childId: string) =>
     this.childRow(childId).find('[data-qa="link-child-daycare-daily-note"]')
+
+  readonly comingTab = Selector('[data-qa="coming-tab"]')
+  readonly presentTab = Selector('[data-qa="present-tab"]')
+  readonly departedTab = Selector('[data-qa="departed-tab"]')
+  readonly absentTab = Selector('[data-qa="absent-tab"]')
+
+  readonly noChildrenIndicator = Selector('[data-qa="no-children-indicator"]')
 }

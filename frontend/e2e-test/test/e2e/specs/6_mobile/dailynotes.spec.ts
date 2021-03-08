@@ -144,3 +144,14 @@ test('Daycare groups are shown', async (t) => {
     )
     .ok()
 })
+
+test('Daycare group empty list indicator is shown', async (t) => {
+  await t.click(mobileGroupsPage.presentTab)
+  await t.expect(mobileGroupsPage.noChildrenIndicator.visible).ok()
+
+  await t.click(mobileGroupsPage.comingTab)
+  await t.expect(mobileGroupsPage.noChildrenIndicator.visible).ok()
+
+  await t.click(mobileGroupsPage.departedTab)
+  await t.expect(mobileGroupsPage.noChildrenIndicator.visible).ok()
+})
