@@ -78,7 +78,7 @@ done
 # so some ugly parsing is necessary.
 # TODO: Remove excludes when we have reuse-compatible licensing info for them
 NONCOMPLIANT_FILES=$(echo "$REUSE_OUTPUT" \
-    | awk '/^$/ {next} /following/ {next} /resources\/wsdl/ {next} /espoo-logo/ {next} /MISSING COPYRIGHT AND LICENSING INFORMATION/{flag=1; next} /SUMMARY/{flag=0} flag' \
+    | awk '/^$/ {next} /following/ {next} /resources\/wsdl/ {next} /espoo-logo/ {next} /EspooLogo/ {next} /MISSING COPYRIGHT AND LICENSING INFORMATION/{flag=1; next} /SUMMARY/{flag=0} flag' \
     | cut -d' ' -f2
 )
 
