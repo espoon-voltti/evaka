@@ -22,7 +22,8 @@ import MessagesPage from '../../pages/employee/messaging/messages-page'
 import {
   createDaycareGroupPlacementFixture,
   createDaycarePlacementFixture,
-  daycareGroupFixture
+  daycareGroupFixture,
+  uuidv4
 } from '../../dev-api/fixtures'
 import { DaycareGroupPlacement, DaycarePlacement } from '../../dev-api/types'
 import { enduserRole } from '../../config/users'
@@ -58,6 +59,7 @@ fixture('Sending and receiving bulletins')
     await insertDaycareGroupFixtures([daycareGroupFixture])
 
     daycarePlacementFixture = createDaycarePlacementFixture(
+      uuidv4(),
       fixtures.enduserChildFixtureJari.id,
       fixtures.daycareFixture.id
     )
