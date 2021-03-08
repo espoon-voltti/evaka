@@ -296,6 +296,10 @@ server {
     proxy_set_header X-Forwarded-Proto "https";
 
     proxy_pass $authUrl;
+
+    proxy_buffer_size 32k;
+    proxy_buffers 8 32k;
+    proxy_busy_buffers_size 64k;
   }
   <% end %>
 
