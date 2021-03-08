@@ -3,14 +3,14 @@
 if [ "$1" = "up" ]; then
     S3_DIR=s3-mount/
     mkdir -p "$S3_DIR"
-    LOCAL_DIR=../frontend/packages
+    LOCAL_DIR=../frontend
 
     rm -rf "$S3_DIR/employee"
     rm -rf "$S3_DIR/employee/mobile"
     rm -rf "$S3_DIR/citizen"
-    cp -r "$LOCAL_DIR/employee-frontend/dist" "$S3_DIR/employee"
-    cp -r "$LOCAL_DIR/employee-mobile-frontend/dist" "$S3_DIR/employee/mobile"
-    cp -r "$LOCAL_DIR/citizen-frontend/dist" "$S3_DIR/citizen"
+    cp -r "$LOCAL_DIR/dist/bundle/employee-frontend" "$S3_DIR/employee"
+    cp -r "$LOCAL_DIR/dist/bundle/employee-mobile-frontend" "$S3_DIR/employee/mobile"
+    cp -r "$LOCAL_DIR/dist/bundle/citizen-frontend" "$S3_DIR/citizen"
 fi
 
 if [ "${E2E_KEYCLOAK:-false}" = "true" ]; then
