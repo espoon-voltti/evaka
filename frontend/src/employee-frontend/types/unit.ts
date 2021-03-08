@@ -121,7 +121,7 @@ export interface DaycarePlacement {
   endDate: LocalDate
 }
 
-interface ChildBasics {
+export interface ChildBasics {
   id: UUID
   socialSecurityNumber: string | null
   firstName: string | null
@@ -219,8 +219,8 @@ export interface Occupancy {
   percentage?: number
 }
 
-type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
-type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
+export type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
+export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
 
 export interface DaycareDailyNote {
   id?: UUID

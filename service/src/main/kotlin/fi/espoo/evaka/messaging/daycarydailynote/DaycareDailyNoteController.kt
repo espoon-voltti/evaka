@@ -5,12 +5,17 @@
 package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -18,7 +23,9 @@ import java.util.UUID
 
 @RestController()
 @RequestMapping("/daycare-daily-note")
-class DaycareDailyNoteController {
+class DaycareDailyNoteController(
+    private val acl: AccessControlList
+) {
 
     @GetMapping("/daycare/group/{groupId}")
     fun getDaycareDailyNotesForGroup(
@@ -27,7 +34,7 @@ class DaycareDailyNoteController {
         @PathVariable groupId: UUID
     ): ResponseEntity<List<DaycareDailyNote>> {
         Audit.DaycareDailyNoteRead.log(user.id)
-        return db.read { it.getGroupDaycareDailyNotes(groupId) }.let { ResponseEntity.ok(it) }
+        return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/child/{childId}")
@@ -40,13 +47,44 @@ class DaycareDailyNoteController {
         return db.read { it.getChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok(it) }
     }
 
-    @PostMapping("/child")
-    fun createOrUpdateDaycareDailyNoteForChild(
+    @PostMapping("/child/{childId}")
+    fun createDailyNoteForChild(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable childId: UUID,
         @RequestBody body: DaycareDailyNote
-    ) {
+    ): ResponseEntity<UUID> {
         Audit.DaycareDailyNoteCreate.log(user.id)
-        return db.transaction { it.upsertDaycareDailyNote(body) }.let { ResponseEntity.ok() }
+        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
+            throw Forbidden("Permission denied")
+        }
+        return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(childId = childId))) }
+    }
+
+    @PutMapping("/child/{childId}")
+    fun updateDailyNoteForChild(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID,
+        @RequestBody body: DaycareDailyNote
+    ): ResponseEntity<DaycareDailyNote> {
+        Audit.DaycareDailyNoteUpdate.log(user.id)
+        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
+            throw Forbidden("Permission denied")
+        }
+        return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(childId = childId))) }
+    }
+
+    @DeleteMapping("/child/{childId}")
+    fun deleteDailyNoteForChild(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID
+    ) {
+        Audit.DaycareDailyNoteDelete.log(user.id)
+        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
+            throw Forbidden("Permission denied")
+        }
+        return db.transaction { it.deleteChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok() }
     }
 }

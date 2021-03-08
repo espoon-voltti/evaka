@@ -109,10 +109,10 @@ fixture('Mobile daily notes')
 
 const unitPage = new UnitPage()
 
-test('Daycare daily note indicators are shown on group view', async (t) => {
+test('Child daycare daily note indicators are shown on group view', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
-    groupId: daycareGroup.data.id,
+    groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',

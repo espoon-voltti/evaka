@@ -41,7 +41,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
-import fi.espoo.evaka.messaging.daycarydailynote.upsertDaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.pairing.Pairing
 import fi.espoo.evaka.pairing.PairingsController
 import fi.espoo.evaka.pairing.challengePairing
@@ -766,7 +766,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db: Database.Connection,
         @RequestBody body: DaycareDailyNote
     ): ResponseEntity<Unit> {
-        return db.transaction { it.upsertDaycareDailyNote(body) }.let { ResponseEntity.noContent().build() }
+        return db.transaction { it.createDaycareDailyNote(body) }.let { ResponseEntity.noContent().build() }
     }
 
     @DeleteMapping("/mobile/devices/{id}")

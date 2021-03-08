@@ -7,6 +7,8 @@ import { client } from '../api/client'
 import {
   Coordinate,
   DaycareDailyNote,
+  DaycareDailyNoteLevelInfo,
+  DaycareDailyNoteReminder,
   DaycareGroup,
   DaycarePlacement,
   DaycarePlacementPlan,
@@ -661,4 +663,31 @@ export async function getGroupDaycareDailyNotes(
     )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
+}
+
+export async function upsertChildDaycareDailyNote(
+  childId: string,
+  daycareDailyNote: DaycareDailyNoteFormData
+): Promise<Result<Unit>> {
+  const url = `/daycare-daily-note/child/{childId}`
+  return (daycareDailyNote.id
+    ? client.put(url, daycareDailyNote)
+    : client.post(url, daycareDailyNote)
+  )
+    .then(({ data }) => Success.of(convertUnitJson(data)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface DaycareDailyNoteFormData {
+  id?: UUID
+  childId: UUID | null
+  groupId: UUID | null
+  date: LocalDate | null
+  note?: string
+  feedingNote?: DaycareDailyNoteLevelInfo
+  sleepingNote?: DaycareDailyNoteLevelInfo
+  reminders: DaycareDailyNoteReminder[]
+  reminderNote?: string
+  modifiedAt?: Date | null
+  modifiedBy?: string
 }

@@ -29,7 +29,6 @@ import {
   faCheck,
   faExchange,
   faPen,
-  farStickyNote,
   faStickyNote,
   faTimes,
   faTrash,
@@ -68,6 +67,8 @@ import { isPartDayPlacement } from '../../../../utils/placements'
 import { Loading, Result } from '@evaka/lib-common/api'
 import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 
 interface Props {
@@ -116,6 +117,14 @@ function getChildMinMaxHeadcounts(
     : undefined
 }
 
+interface DaycareDailyNoteAndChildInfo {
+  daycareDailyNote: DaycareDailyNote | null
+  childId: string | null
+  groupId: string | null
+  childFirstName: string
+  childLastName: string
+}
+
 function Group({
   unit,
   filters,
@@ -131,14 +140,27 @@ function Group({
   toggleOpen
 }: Props) {
   const { i18n } = useTranslation()
-  const { uiMode, toggleUiMode } = useContext(UIContext)
+  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+  const [
+    selectedDaycareDailyNote,
+    setSelectedDaycareDailyNote
+  ] = useState<DaycareDailyNoteAndChildInfo>({
+    daycareDailyNote: null,
+    childId: null,
+    groupId: null,
+    childFirstName: '',
+    childLastName: ''
+  })
   const [groupDaycareDailyNotes, setGroupDaycareDailyNotes] = useState<
     Result<DaycareDailyNote[]>
   >(Loading.of())
 
-  useEffect(() => {
-    void getGroupDaycareDailyNotes(group.id).then(setGroupDaycareDailyNotes)
-  }, [])
+  const loadGroupDaycareDailyNotes = useRestApi(
+    () => getGroupDaycareDailyNotes(group.id),
+    setGroupDaycareDailyNotes
+  )
+
+  useEffect(loadGroupDaycareDailyNotes, [loadGroupDaycareDailyNotes])
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
@@ -201,8 +223,10 @@ function Group({
       ? groupDaycareDailyNotes.value.find((note) => note.childId === childId)
       : undefined
 
-  const renderDaycareDailyNote = (childId: string) => {
-    const childNote = getChildNote(childId)
+  const renderDaycareDailyNote = (
+    placement: DaycareGroupPlacementDetailed | UnitBackupCare
+  ) => {
+    const childNote = getChildNote(placement.child.id)
     return (
       <>
         {groupDaycareDailyNotes.isLoading && <SpinnerSegment />}
@@ -211,7 +235,7 @@ function Group({
         )}
         {groupDaycareDailyNotes.isSuccess && (
           <Tooltip
-            dataQa={`daycare-daily-note-hover-${childId}`}
+            dataQa={`daycare-daily-note-hover-${placement.child.id}`}
             up
             tooltip={
               !childNote ? (
@@ -260,10 +284,21 @@ function Group({
             }
           >
             <RoundIcon
-              dataQa={`daycare-daily-note-icon-${childId}`}
-              size="m"
+              active={childNote != null}
+              dataQa={`daycare-daily-note-icon-${placement.child.id}`}
+              content={faStickyNote}
               color={colors.blues.primary}
-              content={childNote ? farStickyNote : faStickyNote}
+              size="m"
+              onClick={() => {
+                setSelectedDaycareDailyNote({
+                  daycareDailyNote: childNote || null,
+                  groupId: null,
+                  childId: placement.child.id,
+                  childFirstName: placement.child.firstName || '',
+                  childLastName: placement.child.lastName || ''
+                })
+                toggleUiMode(`daycare-daily-note-edit-${group.id}`)
+              }}
             />
           </Tooltip>
         )}
@@ -279,6 +314,17 @@ function Group({
     >
       {uiMode === `update-group-${group.id}` && (
         <GroupUpdateModal group={group} reload={reload} />
+      )}
+      {uiMode === `daycare-daily-note-edit-${group.id}` && (
+        <DaycareDailyNoteModal
+          note={selectedDaycareDailyNote.daycareDailyNote}
+          childId={selectedDaycareDailyNote.childId}
+          groupId={selectedDaycareDailyNote.groupId}
+          childFirstName={selectedDaycareDailyNote.childFirstName}
+          childLastName={selectedDaycareDailyNote.childLastName}
+          onClose={() => clearUiMode()}
+          reload={() => loadGroupDaycareDailyNotes()}
+        />
       )}
       <TitleBar>
         <TitleContainer onClick={toggleOpen}>
@@ -420,7 +466,7 @@ function Group({
                           }
                         >
                           <FontAwesomeIcon
-                            icon={farStickyNote}
+                            icon={faStickyNote}
                             color={colors.greyscale.dark}
                           />
                         </Tooltip>
@@ -450,7 +496,7 @@ function Group({
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
                         <Td data-qa="daily-note">
-                          {renderDaycareDailyNote(placement.child.id)}
+                          {renderDaycareDailyNote(placement)}
                         </Td>
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
