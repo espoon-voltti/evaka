@@ -16,7 +16,6 @@ aliases:
   - &workspace_evaka_base /home/circleci/repo/evaka-base
   - &workspace_apigw /home/circleci/repo/apigw
   - &workspace_frontend /home/circleci/repo/frontend
-  - &workspace_e2e /home/circleci/repo/frontend/e2e-test
   - &workspace_proxy /home/circleci/repo/proxy
   - &workspace_service /home/circleci/repo/service
   - &workspace_message_service /home/circleci/repo/message-service
@@ -85,20 +84,14 @@ aliases:
   - &restore_frontend_node_modules
     restore_cache:
       keys:
-        - node-modules-frontend-v3-{{ checksum "frontend/yarn.lock" }}
-        - node-modules-frontend-v3-
+        - node-modules-frontend-v4-{{ checksum "frontend/yarn.lock" }}
+        - node-modules-frontend-v4-
         - node-modules-frontend-
 
   - &store_frontend_node_modules
     save_cache:
-      key: node-modules-frontend-v3-{{ checksum "frontend/yarn.lock" }}
+      key: node-modules-frontend-v4-{{ checksum "frontend/yarn.lock" }}
       paths:
-        - frontend/packages/citizen-frontend/node_modules
-        - frontend/packages/employee-frontend/node_modules
-        - frontend/packages/employee-mobile-frontend/node_modules
-        - frontend/packages/lib-common/node_modules
-        - frontend/packages/maintenance-page/node_modules
-        - frontend/e2e-test/node_modules
         - frontend/node_modules
 
   - &restore_service_gradle
@@ -187,13 +180,10 @@ commands:
       - login_docker_hub
 
   build_frontend:
-    parameters:
-      dir:
-        type: string
     steps:
       - run:
-          name: yarn build << parameters.dir >>
-          working_directory: << parameters.dir >>
+          name: yarn build
+          working_directory: *workspace_frontend
           environment:
             SENTRY_NO_PROGRESS_BAR: "1"
           command: |
@@ -202,13 +192,20 @@ commands:
             fi
 
             ICONS=pro yarn build
-            ls -lRa ./dist
+            ls -lRa ./dist/bundle
+
+  build_maintenance_page:
+    steps:
+      - run:
+          name: yarn build-maintenance-page
+          working_directory: *workspace_frontend
+          command: yarn build-maintenance-page
 
   build_storybook:
     steps:
       - run:
-          name: yarn build-storybook /home/circleci/repo/frontend/packages/lib-components
-          working_directory: /home/circleci/repo/frontend/packages/lib-components
+          name: yarn build-storybook
+          working_directory: *workspace_frontend
           environment:
             SENTRY_NO_PROGRESS_BAR: "1"
           command: |
@@ -235,7 +232,7 @@ commands:
           name: Start up compose stack
           working_directory: *workspace_compose
           command: |
-            CI=true LOCAL_DIR='../frontend/packages' ./compose-e2e up -d
+            CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
       - run:
           name: Install Node.js and yarn
           command: |
@@ -269,7 +266,7 @@ commands:
       - *restore_frontend_node_modules
       - run:
           name: Run e2e tests against compose
-          working_directory: *workspace_e2e
+          working_directory: *workspace_frontend
           command: |
             nvm use
             ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
@@ -284,10 +281,10 @@ commands:
           path: /tmp/docker-compose-logs.txt
           destination: docker-compose-logs.txt
       - store_artifacts:
-          path: frontend/e2e-test/screenshots
+          path: frontend/screenshots
           destination: screenshots
       - store_test_results:
-          path: frontend/e2e-test/test-results
+          path: frontend/test-results
 
   deploy_frontend:
     parameters:
@@ -300,19 +297,19 @@ commands:
           command: replace-credentials
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/packages/citizen-frontend
+          from: frontend/dist/bundle/citizen-frontend
           to: citizen
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/packages/employee-frontend
+          from: frontend/dist/bundle/employee-frontend
           to: employee
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/packages/employee-mobile-frontend
+          from: frontend/dist/bundle/employee-mobile-frontend
           to: employee/mobile
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/packages/maintenance-page
+          from: frontend/dist/maintenance-page
           to: maintenance-page
       - storybook_to_s3:
           target_env: << parameters.target_env >>
@@ -330,7 +327,7 @@ commands:
           name: Deploy (<< parameters.from >>)
           working_directory: /home/circleci/repo/<< parameters.from >>
           command: |
-            aws s3 cp dist/index.html s3://evaka-static-<< parameters.target_env >>/<< parameters.to >>/index.html \
+            aws s3 cp ./index.html s3://evaka-static-<< parameters.target_env >>/<< parameters.to >>/index.html \
               --acl public-read \
               --profile voltti-<< parameters.target_env >>
 
@@ -341,7 +338,7 @@ commands:
               )
             fi
 
-            aws s3 sync dist s3://evaka-static-<< parameters.target_env >>/<< parameters.to >> \
+            aws s3 sync . s3://evaka-static-<< parameters.target_env >>/<< parameters.to >> \
               --acl public-read \
               --exact-timestamps \
               --exclude "*index.html" \
@@ -355,7 +352,7 @@ commands:
     steps:
       - run:
           name: Deploy Storybook
-          working_directory: /home/circleci/repo/frontend/packages/lib-components
+          working_directory: /home/circleci/repo/frontend
           command: |
             if [ "<< parameters.target_env >>" = "dev" ]; then
               aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read
@@ -605,25 +602,14 @@ jobs:
           working_directory: *workspace_frontend
           command: yarn install --immutable
       - *store_frontend_node_modules
-      - build_frontend:
-          dir: /home/circleci/repo/frontend/packages/employee-frontend
-      - build_frontend:
-          dir: /home/circleci/repo/frontend/packages/employee-mobile-frontend
-      - build_frontend:
-          dir: /home/circleci/repo/frontend/packages/citizen-frontend
-      - build_frontend:
-          dir: /home/circleci/repo/frontend/packages/maintenance-page
+      - build_frontend
+      - build_maintenance_page
       - build_storybook
       - persist_to_workspace:
           root: *workspace_root
           paths:
-            - frontend/packages/citizen-frontend/dist
-            - frontend/packages/employee-frontend/dist
-            - frontend/packages/employee-mobile-frontend/dist
-            - frontend/packages/maintenance-page/dist
-            - frontend/packages/lib-components/storybook-build
-            - frontend/e2e-test/dist
-            - frontend/e2e-test/scripts
+            - frontend/dist
+            - frontend/storybook-build
             - *yarn_cache
       - run:
           working_directory: *workspace_frontend
@@ -635,9 +621,7 @@ jobs:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
       - store_test_results:
-          path: /home/circleci/repo/frontend/packages/lib-common/test-results
-      - store_test_results:
-          path: /home/circleci/repo/frontend/packages/employee-frontend/test-results
+          path: /home/circleci/repo/frontend/test-results
       - notify_slack
 
   # E2E JOBS
