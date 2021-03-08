@@ -20,6 +20,9 @@ import AttendancePageWrapper from './components/attendances/AttendancePageWrappe
 import AttendanceChildPage from './components/attendances/AttendanceChildPage'
 import { getAuthStatus, AuthStatus } from './api/auth'
 import { client } from './api/client'
+import MarkPresent from './components/attendances/actions/MarkPresent'
+import MarkDeparted from './components/attendances/actions/MarkDeparted'
+import MarkAbsent from './components/attendances/actions/MarkAbsent'
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()
@@ -42,6 +45,18 @@ export default function App() {
               <Route
                 path="/units/:unitId/attendance/:groupId"
                 component={ensureAuthenticated(AttendancePageWrapper)}
+              />
+              <Route
+                path="/units/:unitId/groups/:groupId/childattendance/:childId/markpresent"
+                component={ensureAuthenticated(MarkPresent)}
+              />
+              <Route
+                path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsent"
+                component={ensureAuthenticated(MarkAbsent)}
+              />
+              <Route
+                path="/units/:unitId/groups/:groupId/childattendance/:childId/markdeparted"
+                component={ensureAuthenticated(MarkDeparted)}
               />
               <Route
                 path="/units/:unitId/groups/:groupId/childattendance/:childId"

@@ -2,115 +2,46 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import React, { Fragment } from 'react'
 
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
-import {
-  AttendanceChild,
-  childArrivesPOST,
-  Group,
-  postFullDayAbsence
-} from '../../api/attendances'
 import { useTranslation } from '../../state/i18n'
-import { AbsenceType } from '../../types'
-import AbsenceSelector from './AbsenceSelector'
-import { getCurrentTime } from './AttendanceChildPage'
-import {
-  BigWideButton,
-  BigWideInlineButton,
-  WideAsyncButton,
-  FlexLabel
-} from './components'
+import { AttendanceChild } from '../../api/attendances'
+import { WideLinkButton } from '../../components/mobile/components'
 
 interface Props {
   unitId: string
   child: AttendanceChild
-  group: Group
+  groupIdOrAll: string | 'all'
 }
 
 export default React.memo(function AttendanceChildComing({
   unitId,
   child,
-  group
+  groupIdOrAll
 }: Props) {
-  const history = useHistory()
   const { i18n } = useTranslation()
-
-  const [time, setTime] = useState<string>(getCurrentTime())
-  const [markAbsence, setMarkAbsence] = useState<boolean>(false)
-  const [markPresent, setMarkPresent] = useState<boolean>(false)
-
-  async function selectAbsenceType(absenceType: AbsenceType) {
-    return postFullDayAbsence(unitId, child.id, absenceType)
-  }
-
-  function childArrives() {
-    return childArrivesPOST(unitId, child.id, time)
-  }
 
   return (
     <Fragment>
-      {markAbsence &&
-        (child && group ? (
-          <Fragment>
-            <Gap size={'s'} />
+      <FixedSpaceColumn>
+        <WideLinkButton
+          $primary
+          data-qa="mark-present"
+          to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markpresent`}
+        >
+          {i18n.attendances.actions.markPresent}
+        </WideLinkButton>
 
-            <AbsenceSelector selectAbsenceType={selectAbsenceType} />
-          </Fragment>
-        ) : (
-          <Loader />
-        ))}
-
-      {!markAbsence && !markPresent && (
-        <Fragment>
-          <FixedSpaceColumn>
-            <BigWideButton
-              primary
-              text={i18n.attendances.actions.markPresent}
-              onClick={() => {
-                setTime(getCurrentTime())
-                setMarkPresent(true)
-              }}
-              data-qa="mark-present"
-            />
-
-            <BigWideInlineButton
-              text={i18n.attendances.actions.markAbsent}
-              onClick={() => setMarkAbsence(true)}
-            />
-          </FixedSpaceColumn>
-        </Fragment>
-      )}
-
-      {markPresent && (
-        <Fragment>
-          <FixedSpaceColumn>
-            <FlexLabel>
-              <span>{i18n.attendances.arrivalTime}</span>
-              <InputField
-                onChange={setTime}
-                value={time}
-                width="s"
-                type="time"
-                data-qa="set-time"
-              />
-            </FlexLabel>
-
-            <WideAsyncButton
-              primary
-              text={i18n.common.confirm}
-              onClick={() => childArrives()}
-              onSuccess={() => history.goBack()}
-              data-qa="mark-present"
-            />
-          </FixedSpaceColumn>
-        </Fragment>
-      )}
+        <WideLinkButton
+          to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markabsent`}
+        >
+          {i18n.attendances.actions.markAbsent}
+        </WideLinkButton>
+      </FixedSpaceColumn>
+      <Gap size={'L'} />
     </Fragment>
   )
 })

@@ -355,6 +355,7 @@ const GroupSelectorWrapper = animated(styled.div`
   flex-direction: column;
   overflow-y: hidden;
   min-height: 48px;
+  width: 100%;
 `)
 
 const NoMarginTitle = styled(Title)`

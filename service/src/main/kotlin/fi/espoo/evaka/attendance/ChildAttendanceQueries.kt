@@ -7,6 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -218,11 +219,11 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
         .list()
 }
 
-fun Database.Read.fetchChildDaycareDailyNotes(unitId: UUID): List<ChildDaycareDailyNote> {
+fun Database.Read.fetchChildDaycareDailyNotes(unitId: UUID): List<DaycareDailyNote> {
     // language=sql
     val sql =
         """
-        SELECT note.child_id, note.id
+        SELECT note.* 
         FROM daycare_daily_note note LEFT JOIN daycare_group ON note.group_id = daycare_group.id
         WHERE note.date = :today AND daycare_group.daycare_id = :unitId
         """.trimIndent()
@@ -230,7 +231,7 @@ fun Database.Read.fetchChildDaycareDailyNotes(unitId: UUID): List<ChildDaycareDa
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("today", LocalDate.now(zoneId))
-        .mapTo<ChildDaycareDailyNote>()
+        .mapTo<DaycareDailyNote>()
         .list()
 }
 

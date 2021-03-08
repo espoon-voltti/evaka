@@ -341,7 +341,7 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
             attendance = attendance,
             absences = absences,
             entitledToFreeFiveYearsOldDaycare = isEntitledToFreeFiveYearsOldDaycare(child.dateOfBirth),
-            dailyNoteId = daycareDailyNote?.id
+            dailyNote = daycareDailyNote
         )
     }
 

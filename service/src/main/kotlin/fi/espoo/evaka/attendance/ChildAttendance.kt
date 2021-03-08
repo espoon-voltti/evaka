@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
 import java.time.Instant
 import java.time.LocalDate
@@ -49,7 +50,7 @@ data class Child(
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>,
     val entitledToFreeFiveYearsOldDaycare: Boolean,
-    val dailyNoteId: UUID?
+    val dailyNote: DaycareDailyNote?
 )
 
 enum class AttendanceStatus {

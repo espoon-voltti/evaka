@@ -5,8 +5,12 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
-import { Container } from '@evaka/lib-components/src/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
@@ -18,7 +22,7 @@ export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
 
-export const WideLinkButton = styled(Link)`
+export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
   min-height: 45px;
   outline: none;
   cursor: pointer;
@@ -30,9 +34,30 @@ export const WideLinkButton = styled(Link)`
   white-space: nowrap;
   letter-spacing: 0.2px;
   width: 100%;
-  color: ${colors.greyscale.white};
-  background: ${colors.blues.primary};
+
   display: flex;
   justify-content: center;
   align-items: center;
+  background: ${(p) =>
+    p.$primary ? colors.blues.primary : colors.greyscale.white};
+  color: ${(p) => (p.$primary ? colors.greyscale.white : colors.blues.primary)};
+`
+
+export const BackButton = styled(IconButton)`
+  color: ${colors.blues.dark};
+  position: absolute;
+`
+
+export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
+`
+
+export const ContentAreaWithShadow = styled(ContentArea)<{ blue?: boolean }>`
+  box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter};
+  ${(p) =>
+    p.blue ? `background-color: ${colors.brandEspoo.espooTurquoiseLight}` : ''}
 `
