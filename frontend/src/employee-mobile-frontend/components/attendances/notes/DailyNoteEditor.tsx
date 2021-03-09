@@ -4,14 +4,26 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
+import styled from 'styled-components'
 
-import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Loader from '@evaka/lib-components/atoms/Loader'
 import { faArrowLeft } from '@evaka/lib-icons'
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import colors from '@evaka/lib-components/src/colors'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import colors from '@evaka/lib-components/colors'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import Title from '@evaka/lib-components/atoms/Title'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '@evaka/lib-components/layout/flex-helpers'
+import { Label } from '@evaka/lib-components/typography'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
+import LocalDate from '@evaka/lib-common/local-date'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/atoms/buttons/Button'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 
 import {
   createOrUpdateDaycareDailyNoteForChild,
@@ -23,18 +35,6 @@ import {
 import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import { TallContentArea, ContentAreaWithShadow } from '../../mobile/components'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import styled from 'styled-components'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import { Label } from '@evaka/lib-components/src/typography'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { Actions } from '../components'
 
 interface DailyNoteEdited {
