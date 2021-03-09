@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger { }
 
@@ -109,8 +110,11 @@ class ScheduledOperationController(
     }
 
     @PostMapping("/freeze-voucher-value-reports")
-    fun freezeVoucherValueReports(db: Database.Connection): ResponseEntity<Unit> {
-        db.transaction { freezeVoucherValueReportRows(it) }
+    fun freezeVoucherValueReports(
+        db: Database.Connection
+    ): ResponseEntity<Unit> {
+        val currentDate = LocalDate.now()
+        db.transaction { freezeVoucherValueReportRows(it, currentDate.year, currentDate.monthValue) }
         return ResponseEntity.noContent().build()
     }
 }
