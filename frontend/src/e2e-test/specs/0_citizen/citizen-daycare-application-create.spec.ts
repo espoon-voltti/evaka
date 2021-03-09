@@ -31,7 +31,7 @@ import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
-import { add, sub } from 'date-fns'
+import { add, sub, parse } from 'date-fns'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
 import path from 'path'
@@ -240,25 +240,43 @@ test('A validation warning is shown if preferred start date is not valid', async
   )
 
   await citizenApplicationEditor.setPreferredStartDate(
-    add(new Date(), { months: 4 })
+    parse(
+      fullDaycareForm.form.serviceNeed.preferredStartDate,
+      'dd.MM.yyyy',
+      new Date()
+    )
   )
+
   await citizenApplicationEditor.assertPreferredStartDateProcessingWarningIsShown(
     false
   )
-
   await citizenApplicationEditor.assertPreferredStartDateInputInfo(false)
+})
 
-  const validDate = add(new Date(), { months: 6 })
+test('Citizen cannot move preferred start date before a previously selected date', async (t) => {
+  await t.useRole(enduserRole)
+  await t.click(citizenHomePage.nav.applications)
+  await citizenApplicationsPage.createApplication(
+    fixtures.enduserChildFixtureJari.id
+  )
+  await citizenNewApplicationPage.createApplication('DAYCARE')
+  applicationId = await citizenApplicationEditor.getApplicationId()
 
-  await citizenApplicationEditor.setPreferredStartDate(validDate)
-
+  await citizenApplicationEditor.fillData(fullDaycareForm.form)
   await citizenApplicationEditor.verifyAndSend()
   await citizenApplicationEditor.acknowledgeSendSuccess()
 
   await citizenApplicationsPage.openApplication(applicationId)
 
   await citizenApplicationEditor.setPreferredStartDate(
-    sub(validDate, { days: 1 })
+    sub(
+      parse(
+        fullDaycareForm.form.serviceNeed.preferredStartDate,
+        'dd.MM.yyyy',
+        new Date()
+      ),
+      { days: 1 }
+    )
   )
 
   // The validation text is not shown in the test browser without this
@@ -281,10 +299,6 @@ test('Application can be made for restricted child', async (t) => {
   applicationId = await citizenApplicationEditor.getApplicationId()
 
   await citizenApplicationEditor.fillData(fullDaycareForm.form)
-  await citizenApplicationEditor.setPreferredStartDate(
-    add(new Date(), { months: 6 })
-  )
-
   await citizenApplicationEditor.assertChildStreetAddress(null)
 
   await citizenApplicationEditor.verifyAndSend()
