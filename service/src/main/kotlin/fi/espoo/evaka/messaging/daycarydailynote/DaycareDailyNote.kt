@@ -5,7 +5,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class DaycareDailyNote(
-    val id: UUID,
+    val id: UUID?,
     val childId: UUID?,
     val groupId: UUID?,
     val date: LocalDate,
