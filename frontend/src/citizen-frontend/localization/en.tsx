@@ -131,7 +131,7 @@ const en: Translations = {
       title: 'Selection of application type',
       daycareLabel: 'Application for early childhood education',
       daycareInfo:
-        'The application for early childhood education is used to apply for a municipal early childhood education place at a day-care centre, family day-care provider and group family day-care provider.',
+        'The application for early childhood education is used to apply for a municipal early childhood education place at a day-care centre, family day-care provider and group family day-care provider. You can also use the same application to apply for a service voucher for early childhood education. Under Preferred units, select the service voucher unit to which you want to apply.',
       preschoolLabel:
         'Enrolment to pre-primary education and/or preparatory education',
       preschoolInfo:
