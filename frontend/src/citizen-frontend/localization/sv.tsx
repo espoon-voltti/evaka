@@ -132,7 +132,7 @@ const sv: Translations = {
       title: 'Val av ansökningsblankett',
       daycareLabel: 'Ansökan till småbarnspedagogik',
       daycareInfo:
-        'Med en ansökan till småbarnspedagogisk verksamhet ansöker du om en plats i småbarnspedagogisk verksamhet i ett daghem, hos en familjedagvårdare eller i ett gruppfamiljedaghem.',
+        'Med en ansökan till småbarnspedagogisk verksamhet ansöker du om en plats i småbarnspedagogisk verksamhet i ett daghem, hos en familjedagvårdare eller i ett gruppfamiljedaghem. Med samma ansökan kan du också ansöka om servicesedel inom småbarnspedagogiken, genom att vid alternativet Ansökningsönskemål välja den servicesedelenhet som du vill söka till.',
       preschoolLabel:
         'Anmälan till förskoleundervisning och/eller förberedande undervisning',
       preschoolInfo:
