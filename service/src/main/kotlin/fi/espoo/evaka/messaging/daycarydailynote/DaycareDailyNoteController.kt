@@ -36,7 +36,7 @@ class DaycareDailyNoteController {
         return db.read { it.getChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok(it) }
     }
 
-    @PostMapping("/child/{childId")
+    @PostMapping("/child")
     fun createOrUpdateDaycareDailyNoteForChild(
         db: Database.Connection,
         user: AuthenticatedUser,
