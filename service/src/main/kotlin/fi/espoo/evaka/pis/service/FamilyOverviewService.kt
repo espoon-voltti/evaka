@@ -31,7 +31,10 @@ WITH adult_ids AS
     
     SELECT fp2.person_id AS id 
     FROM fridge_partner fp1
-    JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.person_id != fp2.person_id
+    JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id 
+        AND fp1.person_id != fp2.person_id 
+        AND fp1.conflict = false 
+        AND fp2.conflict = false
     WHERE fp1.person_id = :id AND daterange(fp1.start_date, fp1.end_date, '[]') @> current_date
 )
 SELECT 
