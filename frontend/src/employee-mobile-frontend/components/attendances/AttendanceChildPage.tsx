@@ -3,18 +3,27 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
-import { faArrowLeft, farUser } from '@evaka/lib-icons'
+import {
+  faArrowLeft,
+  faComments,
+  faInfo,
+  farStickyNote,
+  farUser
+} from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/colors'
-import { Gap } from '@evaka/lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '@evaka/lib-components/layout/flex-helpers'
 import { StaticChip } from '@evaka/lib-components/atoms/Chip'
+
 import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'
 import AttendanceChildDeparted from './AttendanceChildDeparted'
@@ -53,13 +62,19 @@ const GroupName = styled.div`
   color: ${colors.greyscale.dark};
 `
 
+const IconWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+`
+
 export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitId, childId, groupId: groupIdOrAll } = useParams<{
+  const { unitId, childId, groupId } = useParams<{
     unitId: string
-    groupId: string | 'all'
+    groupId: string
     childId: string
   }>()
 
@@ -115,22 +130,48 @@ export default React.memo(function AttendanceChildPage() {
                   {i18n.attendances.types[child.status]}
                 </StaticChip>
               </ChildStatus>
+              <IconWrapper>
+                <FixedSpaceRow spacing={'m'}>
+                  <RoundIcon
+                    content={faComments}
+                    color={colors.brandEspoo.espooTurquoise}
+                    size="L"
+                    active={false}
+                  />
+                  <Link
+                    to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/note`}
+                    data-qa={'link-child-daycare-daily-note'}
+                  >
+                    <RoundIcon
+                      content={farStickyNote}
+                      color={colors.accents.petrol}
+                      size="L"
+                      active={child && child.dailyNote ? true : false}
+                    />
+                  </Link>
+                  <RoundIcon
+                    content={faInfo}
+                    color={colors.blues.medium}
+                    size="L"
+                    active={false}
+                  />
+                </FixedSpaceRow>
+              </IconWrapper>
             </FixedSpaceColumn>
 
-            <Gap size={'s'} />
             <FlexColumn>
               {child.status === 'COMING' && (
                 <AttendanceChildComing
                   unitId={unitId}
                   child={child}
-                  groupIdOrAll={groupIdOrAll}
+                  groupIdOrAll={groupId}
                 />
               )}
               {child.status === 'PRESENT' && (
                 <AttendanceChildPresent
                   child={child}
                   unitId={unitId}
-                  groupIdOrAll={groupIdOrAll}
+                  groupIdOrAll={groupId}
                 />
               )}
               {child.status === 'DEPARTED' && (
