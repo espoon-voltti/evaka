@@ -17,19 +17,9 @@ module.exports = {
     cwd: path.resolve(__dirname, '../apigw'),
     ...defaults
   }, {
-    name: 'citizen',
+    name: 'frontend',
     script: useProIcons ? 'yarn install && ICONS=pro yarn dev' : 'yarn install && yarn dev',
-    cwd: path.resolve(__dirname, '../frontend/packages/citizen-frontend'),
-    ...defaults
-  }, {
-    name: 'employee',
-    script: useProIcons ? 'yarn install && ICONS=pro yarn dev' : 'yarn install && yarn dev',
-    cwd: path.resolve(__dirname, '../frontend/packages/employee-frontend'),
-    ...defaults
-  }, {
-    name: 'employee-mobile',
-    script: useProIcons ? 'yarn install && ICONS=pro yarn dev' : 'yarn install && yarn dev',
-    cwd: path.resolve(__dirname, '../frontend/packages/employee-mobile-frontend'),
+    cwd: path.resolve(__dirname, '../frontend'),
     ...defaults
   }, {
     name: 'service',

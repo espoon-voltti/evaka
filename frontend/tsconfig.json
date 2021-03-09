@@ -1,29 +1,16 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "lib": [
-      "esnext",
-      "dom"
-    ],
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "resolveJsonModule": true,
-    "sourceMap": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true
+    "noEmit": true
   },
-  "exclude": [
-    "node_modules",
-    "dist"
+  "files": [],
+  "references": [
+    { "path": "./src/citizen-frontend" },
+    { "path": "./src/lib-common" },
+    { "path": "./src/lib-components" },
+    { "path": "./src/e2e-test" },
+    { "path": "./src/employee-frontend" },
+    { "path": "./src/employee-mobile-frontend" },
+    { "path": "./src/lib-icons" }
   ]
 }

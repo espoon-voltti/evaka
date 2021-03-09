@@ -1,0 +1,11 @@
+{
+  "reporter": [
+    { "name": "spec" },
+    {
+      "name": "junit",
+      "output": "test-results/junit.xml"
+    }
+  ],
+  "tsConfigPath": "./src/e2e-test/tsconfig.json",
+  "clientScripts": "./src/e2e-test/injected.js"
+}

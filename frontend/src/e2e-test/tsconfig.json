@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "node",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@evaka/*": ["../*"]
+    },
+    "composite": true,
+    "outDir": "../../dist/e2e-test",
+    "types": ["testcafe"],
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "esModuleInterop": true
+  },
+  "references": [
+    { "path": "../citizen-frontend" },
+    { "path": "../lib-common" },
+    { "path": "../employee-frontend" }
+  ]
+}
