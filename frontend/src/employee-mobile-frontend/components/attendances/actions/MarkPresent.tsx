@@ -31,6 +31,7 @@ import {
 import { useTranslation } from '../../../state/i18n'
 import { getCurrentTime } from '../AttendanceChildPage'
 import DailyNote from '../notes/DailyNote'
+import { Actions } from '../components'
 
 export default React.memo(function MarkPresent() {
   const history = useHistory()
@@ -158,15 +159,6 @@ const TimeWrapper = styled.div`
     font-family: Montserrat, sans-serif;
     font-weight: 300;
     border-bottom: none;
-  }
-`
-
-const Actions = styled.div`
-  width: 100%;
-  display: flex;
-
-  * > button {
-    width: 50%;
   }
 `
 
