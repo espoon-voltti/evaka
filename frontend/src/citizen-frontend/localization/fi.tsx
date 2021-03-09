@@ -770,14 +770,15 @@ export default {
           DAYCARE: function FeeInfoTextDaycare() {
             return (
               <P>
-                Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
-                prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat
-                perheen koon ja tulojen sekä varhaiskasvatusajan mukaan
-                maksuttomasta varhaiskasvatuksesta enintään 288 euron
-                kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen
-                bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden
-                viikon kuluessa siitä, kun lapsi on aloittanut
-                varhaiskasvatuksessa.
+                Kunnallisen varhaiskasvatuksen asiakasmaksut ja palvelusetelin
+                omavastuuosuus määräytyvät prosenttiosuutena perheen
+                bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä
+                varhaiskasvatusajan mukaan maksuttomasta varhaiskasvatuksesta
+                enintään 288 euron kuukausimaksuun lasta kohden.
+                Palveluseteliyksiköissä voidaan kuitenkin periä 0-50€/kk/lapsi
+                lisämaksu. Perhe toimittaa tuloselvityksen bruttotuloistaan
+                tuloselvityslomakkeella, viimeistään kahden viikon kuluessa
+                siitä, kun lapsi on aloittanut varhaiskasvatuksessa.
               </P>
             )
           },
@@ -809,8 +810,8 @@ export default {
         links: function FeeLinksText() {
           return (
             <P>
-              Lisätietoa varhaiskasvatuksen maksuista ja tuloselvityslomakeen
-              löydät Espoon kaupungin sivuilta:
+              Lisätietoa varhaiskasvatuksen maksuista, palvelusetelin
+              lisämaksusta ja tuloselvityslomakkeen löydät täältä:
               <br />
               <a
                 href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa"

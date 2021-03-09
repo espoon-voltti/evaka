@@ -771,12 +771,14 @@ const sv: Translations = {
           DAYCARE: function FeeInfoTextDaycare() {
             return (
               <P>
-                Klientavgiften inom den kommunala småbarnspedagogiken är en
-                procentandel av familjens bruttoinkomster. Avgiften varierar
-                från avgiftsfri småbarnspedagogik till högst till 288 euro i
-                månaden, beronden på familjens storlek , familjens inkomster och
-                barnets vårdtid för familjens första barn. Familjen ska lämna in
-                en utredning över sina bruttoinkomster på en särskild blankett,
+                Klientavgiften inom den kommunala småbarnspedagogiken och för
+                servicesedelns självriskandel är en procentandel av familjens
+                bruttoinkomster. Avgiften varierar från avgiftsfri
+                småbarnspedagogik till högst 288 euro i månaden, beroende på
+                familjens storlek, familjens inkomster och barnets vårdtid för
+                familjens första barn. Servicesedel enheterna kan dock ta ut
+                tilläggspris mellan 0-50€/mån/barn. Familjen ska lämna in en
+                utredning över sina bruttoinkomster på en särskild blankett,
                 senast inom två veckor från det att barnet har inlett
               </P>
             )
@@ -810,8 +812,8 @@ const sv: Translations = {
         links: function FeeLinksText() {
           return (
             <P>
-              Mer information om småbarnspedagogikens avgifter och blanketten
-              för inkomstutredning finns här:
+              Mer information om småbarnspedagogikens avgifter, servicesedelns
+              tilläggspris och blanketten för inkomstutredning finns här:
               <br />
               <a
                 href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik"
