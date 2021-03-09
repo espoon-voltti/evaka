@@ -6,7 +6,7 @@ import org.jdbi.v3.core.mapper.RowMapper
 data class Paged<T>(val data: List<T>, val total: Int, val pages: Int)
 
 fun <T> mapToPaged(pageSize: Int): (Iterable<WithCount<T>>) -> Paged<T> = { rows ->
-    if (rows.firstOrNull() == null) Paged(listOf(), 0, 0)
+    if (rows.firstOrNull() == null) Paged(listOf(), 0, 1)
     else {
         val count = rows.first().count
         Paged(
