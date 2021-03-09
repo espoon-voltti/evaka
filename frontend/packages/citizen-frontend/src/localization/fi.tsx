@@ -131,7 +131,7 @@ export default {
       title: 'Valitse hakemustyyppi',
       daycareLabel: 'Varhaiskasvatushakemus',
       daycareInfo:
-        'Varhaiskasvatushakemuksella haetaan kunnallista varhaiskasvatuspaikkaa päiväkotiin, perhepäivähoitoon tai ryhmäperhepäiväkotiin.',
+        'Varhaiskasvatushakemuksella haetaan kunnallista varhaiskasvatuspaikkaa päiväkotiin, perhepäivähoitoon tai ryhmäperhepäiväkotiin. Samalla hakemuksella voi hakea myös varhaiskasvatuksen palveluseteliä, valitsemalla Hakutoiveet-kohtaan palveluseteliyksikkö, johon halutaan hakea.',
       preschoolLabel:
         'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen',
       preschoolInfo:
