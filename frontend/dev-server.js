@@ -1,3 +1,4 @@
+const { trimEnd } = require('lodash')
 const assert = require('assert')
 const webpack = require('webpack')
 const devMiddleware = require('webpack-dev-middleware')
@@ -5,7 +6,7 @@ const proxy = require('express-http-proxy')
 
 const rawConfigs = require('./webpack.config.js')({ DEV_SERVER: true }, {})
 const express = require('express')
-const publicPaths = ['/employee/mobile', '/employee', '/']
+const publicPaths = ['/employee/mobile/', '/employee/', '/']
 
 const contexts = Object.fromEntries(
   rawConfigs.map((config) => {
@@ -30,18 +31,19 @@ app.use(
   })
 )
 for (const publicPath of publicPaths) {
-  const ctx = contexts[publicPath] ?? contexts[`${publicPath}/`]
+  const ctx = contexts[publicPath]
+  const pathPrefix = trimEnd(publicPath, '/')
   assert(ctx)
   app.use(ctx.middleware)
-  app.get(`${publicPath}/*`, (req, res, next) => {
-    req.url = `${publicPath}/index.html`
+  app.get(`${pathPrefix}/*`, (req, res, next) => {
+    req.url = `${pathPrefix}/index.html`
     next()
   })
-  app.get(publicPath, (req, res, next) => {
-    req.url = `${publicPath}/index.html`
+  app.get(pathPrefix, (req, res, next) => {
+    req.url = `${pathPrefix}/index.html`
     next()
   })
-  app.get(`${publicPath}/index.html`, ctx.middleware)
+  app.get(`${pathPrefix}/index.html`, ctx.middleware)
 }
 
 const port = 9099
