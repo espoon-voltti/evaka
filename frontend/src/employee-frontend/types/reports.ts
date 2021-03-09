@@ -332,6 +332,7 @@ export interface VoucherServiceProviderUnitRow {
   childDateOfBirth: LocalDate
   childGroupName: string
   serviceVoucherPeriod: FiniteDateRange
+  serviceVoucherPartId: string
   serviceVoucherValue: number
   serviceVoucherCoPayment: number
   serviceVoucherServiceCoefficient: number
@@ -340,10 +341,6 @@ export interface VoucherServiceProviderUnitRow {
   unitName: string
   areaId: UUID
   areaName: string
-  derivatives: VoucherServiceProviderUnitRowDerivatives
-}
-
-export interface VoucherServiceProviderUnitRowDerivatives {
   realizedAmount: number
   realizedPeriod: FiniteDateRange
   numberOfDays: number

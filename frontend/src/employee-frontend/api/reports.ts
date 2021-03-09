@@ -378,13 +378,9 @@ export function getVoucherServiceProviderUnitReport(
           serviceVoucherPeriod: FiniteDateRange.parseJson(
             row.serviceVoucherPeriod
           ),
-          derivatives: {
-            realizedAmount: row.derivatives.realizedAmount,
-            realizedPeriod: FiniteDateRange.parseJson(
-              row.derivatives.realizedPeriod
-            ),
-            numberOfDays: row.derivatives.numberOfDays
-          }
+          realizedAmount: row.realizedAmount,
+          realizedPeriod: FiniteDateRange.parseJson(row.realizedPeriod),
+          numberOfDays: row.numberOfDays
         }))
       )
     )

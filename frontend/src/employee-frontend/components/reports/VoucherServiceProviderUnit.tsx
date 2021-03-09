@@ -147,7 +147,7 @@ function VoucherServiceProviderUnit() {
                 },
                 {
                   label: i18n.reports.voucherServiceProviderUnit.numberOfDays,
-                  key: 'derivatives.numberOfDays'
+                  key: 'numberOfDays'
                 },
                 {
                   label:
@@ -164,7 +164,7 @@ function VoucherServiceProviderUnit() {
                   label:
                     i18n.reports.voucherServiceProviderUnit
                       .serviceVoucherRealizedValue,
-                  key: 'derivatives.realizedAmount'
+                  key: 'realizedAmount'
                 },
                 {
                   label: i18n.reports.voucherServiceProviderUnit.coefficient,
@@ -205,7 +205,7 @@ function VoucherServiceProviderUnit() {
               </Thead>
               <Tbody>
                 {rows.value.map((row: VoucherServiceProviderUnitRow) => (
-                  <Tr key={`${row.childId}`}>
+                  <Tr key={row.serviceVoucherPartId}>
                     <Td>
                       <Link to={`/child-information/${row.childId}`}>
                         {formatName(
@@ -222,17 +222,17 @@ function VoucherServiceProviderUnit() {
                       <Tooltip
                         tooltip={
                           <div>
-                            {row.derivatives.realizedPeriod.start.format()} -{' '}
-                            {row.derivatives.realizedPeriod.end.format()}
+                            {row.realizedPeriod.start.format()} -{' '}
+                            {row.realizedPeriod.end.format()}
                           </div>
                         }
                       >
-                        {row.derivatives.numberOfDays}
+                        {row.numberOfDays}
                       </Tooltip>
                     </Td>
                     <Td>{formatCents(row.serviceVoucherValue)}</Td>
                     <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
-                    <Td>{formatCents(row.derivatives.realizedAmount)}</Td>
+                    <Td>{formatCents(row.realizedAmount)}</Td>
                     <Td>{row.serviceVoucherServiceCoefficient}</Td>
                     <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
                   </Tr>
