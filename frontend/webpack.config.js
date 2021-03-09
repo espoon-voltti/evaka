@@ -28,6 +28,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
       new SentryWebpackPlugin({
         project: `evaka-${name}`,
         include: path.resolve(__dirname, `dist/bundle/${name}`),
+        urlPrefix: `~${publicPath}`,
         setCommits: {
           repo: 'espoon-voltti/evaka',
           auto: true
