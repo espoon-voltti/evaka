@@ -81,8 +81,8 @@
   },
   "devDependencies": {
     "@sentry/webpack-plugin": "^1.14.1",
-    "@storybook/addon-actions": "^6.1.17",
-    "@storybook/react": "^6.1.17",
+    "@storybook/addon-actions": "^6.1.21",
+    "@storybook/react": "^6.1.21",
     "@types/classnames": "^2.2.11",
     "@types/jest": "^26.0.20",
     "@types/leaflet": "^1.5.21",
