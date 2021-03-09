@@ -56,8 +56,8 @@ interface Absence {
   id: string
 }
 
-interface DailyNote {
-  id: string
+export interface DailyNote {
+  id: string | null
   childId: string | null
   groupId: string | null
   date: LocalDate
@@ -71,9 +71,9 @@ interface DailyNote {
   modifiedBy: string
 }
 
-type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
+export type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
 
-type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
+export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
 
 interface ArrivalInfoResponse {
   absentFromPreschool: boolean
@@ -219,6 +219,15 @@ export async function postDeparture(
     )
     .then((res) => deserializeAttendanceResponse(res.data))
     .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function createOrUpdateDaycareDailyNoteForChild(
+  dailyNote: DailyNote
+): Promise<Result<void>> {
+  return client
+    .post<void>(`/daycare-daily-note/child`, dailyNote)
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 
