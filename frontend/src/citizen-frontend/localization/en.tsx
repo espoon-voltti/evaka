@@ -820,11 +820,16 @@ const en: Translations = {
           DAYCARE: function FeeInfoTextDaycare() {
             return (
               <P>
-                The client fees for municipal early childhood education are
-                calculated as a percentage of the family’s gross income. Each
-                family must provide information about their gross income using
-                the income statement form, no later than two weeks after their
-                child’s early childhood education has started.
+                The client fees for municipal early childhood education and the
+                client charges for service voucher users are calculated as a
+                percentage of the family’s gross income. Depending on the
+                family’s size and income and the hours of early childhood
+                education, the fees vary from free early childhood education to
+                a maximum monthly fee of EUR 288 per child. Service voucher
+                units may, however, charge an additional monthly fee of EUR 0–50
+                per child. Each family must provide information about their
+                gross income using the income statement form, no later than two
+                weeks after their child’s early childhood education has started.
               </P>
             )
           },
@@ -857,7 +862,8 @@ const en: Translations = {
           return (
             <P>
               You can find further information about early childhood education
-              fees and the income statement form here:
+              fees, additional fees for service voucher users and the income
+              statement form here:
               <br />
               <a
                 href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees"
