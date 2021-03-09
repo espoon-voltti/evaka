@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -24,13 +25,14 @@ class FamilyOverviewService(private val objectMapper: ObjectMapper) {
             """
 WITH adult_ids AS
 (
-    SELECT :id id
+    SELECT :id AS id
+    
     UNION
-    SELECT DISTINCT fp2.person_id id 
+    
+    SELECT fp2.person_id AS id 
     FROM fridge_partner fp1
-    JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id
-    WHERE fp1.person_id = :id
-    AND now() BETWEEN fp1.start_date AND fp1.end_date
+    JOIN fridge_partner fp2 ON fp1.partnership_id = fp2.partnership_id AND fp1.person_id != fp2.person_id
+    WHERE fp1.person_id = :id AND daterange(fp1.start_date, fp1.end_date, '[]') @> current_date
 )
 SELECT 
     p.id,
@@ -48,7 +50,9 @@ SELECT
 FROM person p 
 JOIN adult_ids a on p.id = a.id
 LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> current_date
+
 UNION
+
 SELECT
     p.id, 
     p.first_name, 
@@ -66,7 +70,7 @@ FROM fridge_child fc
 JOIN adult_ids a ON fc.head_of_child = a.id 
 JOIN person p ON fc.child_id = p.id
 LEFT JOIN income i on p.id = i.person_id AND daterange(i.valid_from, i.valid_to, '[]') @> current_date
-WHERE tsrange(fc.start_date, fc.end_date) @> localtimestamp
+WHERE daterange(fc.start_date, fc.end_date, '[]') @> current_date
 AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
@@ -75,8 +79,8 @@ ORDER BY date_of_birth ASC
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 
-        if (adults.isEmpty() && children.isNotEmpty()) {
-            throw IllegalStateException("No adults found for children")
+        if (adults.isEmpty()) {
+            throw NotFound("No adult found")
         }
 
         val headOfFamily = adults.find { adult -> children.any { it.headOfChild == adult.personId } } ?: adults.first()
