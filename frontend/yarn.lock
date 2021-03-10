@@ -1588,6 +1588,12 @@ __metadata:
   languageName: node
   linkType: soft
 
+"@evaka/eslint-plugin@link:eslint-plugin::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@evaka/eslint-plugin@link:eslint-plugin::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
 "@evaka/lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "@evaka/lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A."
@@ -9387,6 +9393,7 @@ __metadata:
   dependencies:
     "@evaka/citizen-frontend": "link:src/citizen-frontend"
     "@evaka/employee-frontend": "link:src/employee-frontend"
+    "@evaka/eslint-plugin": "link:eslint-plugin"
     "@evaka/lib-common": "link:src/lib-common"
     "@evaka/lib-components": "link:src/lib-components"
     "@evaka/lib-icons": "link:src/lib-icons"
