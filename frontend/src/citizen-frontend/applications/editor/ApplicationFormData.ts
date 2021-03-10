@@ -281,7 +281,7 @@ export function formDataToApiData(
             street: form.contactInfo.childFutureStreet,
             postalCode: form.contactInfo.childFuturePostalCode,
             postOffice: form.contactInfo.childFuturePostOffice,
-            movingDate: LocalDate.parseFi(form.contactInfo.childMoveDate)
+            movingDate: LocalDate.parseFiOrNull(form.contactInfo.childMoveDate)
           }
         : null,
       allergies: type !== 'CLUB' ? form.additionalDetails.allergies : '',
@@ -295,7 +295,9 @@ export function formDataToApiData(
             street: form.contactInfo.guardianFutureStreet,
             postalCode: form.contactInfo.guardianFuturePostalCode,
             postOffice: form.contactInfo.guardianFuturePostOffice,
-            movingDate: LocalDate.parseFi(form.contactInfo.guardianMoveDate)
+            movingDate: LocalDate.parseFiOrNull(
+              form.contactInfo.guardianMoveDate
+            )
           }
         : null,
       phoneNumber: form.contactInfo.guardianPhone,
