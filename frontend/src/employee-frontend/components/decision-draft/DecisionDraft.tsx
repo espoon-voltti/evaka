@@ -45,6 +45,7 @@ import { TitleContext, TitleState } from '../../state/title'
 import colors from '@evaka/lib-components/colors'
 import { formatName } from '../../utils'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
 
 const ColumnTitle = styled.div`
   font-weight: 600;
@@ -162,7 +163,6 @@ const Decision = memo(function Decision({
   const [decisions, setDecisions] = useState<DecisionDraft[]>([])
   const [selectedUnit, setSelectedUnit] = useState<DecisionUnit>()
   const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading.of())
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     setDecisionDraftGroup(Loading.of())
@@ -531,14 +531,11 @@ const Decision = memo(function Decision({
                   onClick={RedirectToMainPage}
                   text={i18n.common.cancel}
                 />
-                <Button
+                <AsyncButton
                   primary
-                  dataQa="save-decisions-button"
-                  disabled={
-                    !unitDataIsComplete || noDecisionsPlanned || submitting
-                  }
+                  data-qa="save-decisions-button"
+                  disabled={!unitDataIsComplete || noDecisionsPlanned}
                   onClick={() => {
-                    setSubmitting(true)
                     const updatedDrafts: DecisionDraftUpdate[] = decisions.map(
                       (decisionDraft) => ({
                         id: decisionDraft.id,
@@ -548,10 +545,9 @@ const Decision = memo(function Decision({
                         planned: decisionDraft.planned
                       })
                     )
-                    void updateDecisionDrafts(applicationId, updatedDrafts)
-                      .then(RedirectToMainPage)
-                      .catch(() => setSubmitting(false))
+                    return updateDecisionDrafts(applicationId, updatedDrafts)
                   }}
+                  onSuccess={RedirectToMainPage}
                   text={i18n.common.save}
                 />
               </FixedSpaceRow>

@@ -13,7 +13,6 @@ import LocalDate from '@evaka/lib-common/local-date'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Title from '@evaka/lib-components/atoms/Title'
 import { Gap } from '@evaka/lib-components/white-space'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
 import Loader from '@evaka/lib-components/atoms/Loader'
 
 import {
@@ -41,6 +40,7 @@ import { getPlacementDraft, createPlacementPlan } from '../../api/applications'
 import FiniteDateRange from '@evaka/lib-common/finite-date-range'
 import WarningLabel from '../../components/common/WarningLabel'
 import Tooltip from '../../components/common/Tooltip'
+import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;
@@ -365,17 +365,14 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
               selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
             />
             <SendButtonContainer>
-              <Button
+              <AsyncButton
                 primary
                 disabled={
                   placement.unitId === undefined || selectedUnitIsGhostUnit
                 }
-                dataQa="send-placement-button"
-                onClick={() => {
-                  void createPlacementPlan(id, placement).then(() =>
-                    redirectToMainPage()
-                  )
-                }}
+                data-qa="send-placement-button"
+                onClick={() => createPlacementPlan(id, placement)}
+                onSuccess={redirectToMainPage}
                 text={i18n.placementDraft.createPlacementDraft}
               />
             </SendButtonContainer>
