@@ -68,14 +68,26 @@ export default function App() {
   const [authStatus, setAuthStatus] = useState<AuthStatus>()
 
   useEffect(() => {
-    void getAuthStatus().then(setAuthStatus)
+    void getAuthStatus()
+      .then(setAuthStatus)
+      .catch(() =>
+        setAuthStatus({ loggedIn: false, user: undefined, roles: undefined })
+      )
   }, [])
 
   useEffect(() => {
     return idleTracker(
       client,
       () => {
-        void getAuthStatus().then(setAuthStatus)
+        void getAuthStatus()
+          .then(setAuthStatus)
+          .catch(() =>
+            setAuthStatus({
+              loggedIn: false,
+              user: undefined,
+              roles: undefined
+            })
+          )
       },
       { thresholdInMinutes: 20 }
     )
