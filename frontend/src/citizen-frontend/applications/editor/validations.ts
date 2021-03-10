@@ -92,12 +92,16 @@ export const isValidDecisionStartDate = (
   startDate: string,
   type: DecisionType
 ): boolean => {
-  return date !== null
-    ? date.isEqualOrAfter(LocalDate.parseFi(startDate)) &&
-        date.isEqualOrBefore(
-          maxDecisionStartDate(LocalDate.parseFi(startDate), type)
-        )
-    : false
+  try {
+    return date !== null
+      ? date.isEqualOrAfter(LocalDate.parseFi(startDate)) &&
+          date.isEqualOrBefore(
+            maxDecisionStartDate(LocalDate.parseFi(startDate), type)
+          )
+      : false
+  } catch (e) {
+    return false
+  }
 }
 
 const preferredStartDateValidator = (
