@@ -357,6 +357,7 @@ export async function getVoucherServiceProvidersReport(
       }
     )
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getVoucherServiceProviderUnitReport(

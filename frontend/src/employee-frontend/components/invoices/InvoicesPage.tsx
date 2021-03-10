@@ -17,6 +17,7 @@ import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'
 import { useTranslation } from '../../state/i18n'
 import { InvoicesActions, useInvoicesState } from './invoices-state'
+import { Result } from '@evaka/lib-common/api'
 
 export default React.memo(function InvoicesPage() {
   const {
@@ -94,7 +95,7 @@ const Modal = React.memo(function Modal({
   sendInvoices: (args: {
     invoiceDate: LocalDate
     dueDate: LocalDate
-  }) => Promise<void>
+  }) => Promise<Result<void>>
   allInvoicesToggle: boolean
 }) {
   const { i18n } = useTranslation()

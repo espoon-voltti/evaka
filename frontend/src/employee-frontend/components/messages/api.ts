@@ -52,6 +52,7 @@ export async function getGroups(unitId: UUID): Promise<Result<IdAndName[]>> {
   return client
     .get<JsonOf<IdAndName[]>>(`/daycares/${unitId}/groups`)
     .then((res) => Success.of(res.data.map(({ id, name }) => ({ id, name }))))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getSentBulletins(

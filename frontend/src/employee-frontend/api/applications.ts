@@ -92,14 +92,15 @@ export async function updateApplication(
 
 export async function createPaperApplication(
   request: PaperApplicationRequest
-): Promise<UUID> {
+): Promise<Result<UUID>> {
   return client
     .post<UUID>('v2/applications', {
       ...request,
       type: request.type,
       sentDate: request.sentDate.formatIso()
     })
-    .then((res) => res.data)
+    .then((v) => Success.of(v.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface PaperApplicationRequest {
