@@ -37,9 +37,15 @@ export async function acceptDecision(
   decisionId: UUID,
   requestedStartDate: string
 ): Promise<Result<void>> {
+  let date
+  try {
+    date = LocalDate.parseFi(requestedStartDate)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
   const body = {
     decisionId,
-    requestedStartDate: LocalDate.parseFi(requestedStartDate).formatIso()
+    requestedStartDate: date
   }
   return client
     .post<void>(
