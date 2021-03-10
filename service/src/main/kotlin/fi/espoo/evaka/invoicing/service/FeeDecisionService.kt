@@ -19,7 +19,7 @@ import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionType
 import fi.espoo.evaka.invoicing.data.setFeeDecisionWaitingForManualSending
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
-import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
+import fi.espoo.evaka.invoicing.data.updateFeeDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -77,7 +77,7 @@ class FeeDecisionService(
             .filter { !ids.contains(it.id) }
 
         val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
-        upsertFeeDecisions(tx.handle, objectMapper, updatedConflicts)
+        tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
         val (emptyDecisions, validDecisions) = decisions
             .partition { it.parts.isEmpty() }

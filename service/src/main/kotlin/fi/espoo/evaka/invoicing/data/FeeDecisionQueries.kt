@@ -584,6 +584,21 @@ fun setFeeDecisionSent(h: Handle, ids: List<UUID>) {
     batch.execute()
 }
 
+fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<FeeDecision>) {
+    prepareBatch("UPDATE fee_decision SET status = :status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+        .also { batch ->
+            updatedDecisions.forEach { decision ->
+                batch
+                    .bind("id", decision.id)
+                    .bind("status", decision.status)
+                    .bind("validFrom", decision.validFrom)
+                    .bind("validTo", decision.validTo)
+                    .add()
+            }
+        }
+        .execute()
+}
+
 fun updateFeeDecisionDocumentKey(h: Handle, id: UUID, key: String) {
     val sql =
         """

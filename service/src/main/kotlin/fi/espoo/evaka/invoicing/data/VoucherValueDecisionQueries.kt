@@ -544,6 +544,21 @@ fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<UUID>, now: Ins
         .execute()
 }
 
+fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisions: List<VoucherValueDecision>) {
+    prepareBatch("UPDATE voucher_value_decision SET status = :status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+        .also { batch ->
+            updatedDecisions.forEach { decision ->
+                batch
+                    .bind("id", decision.id)
+                    .bind("status", decision.status)
+                    .bind("validFrom", decision.validFrom)
+                    .bind("validTo", decision.validTo)
+                    .add()
+            }
+        }
+        .execute()
+}
+
 fun Handle.lockValueDecisionsForHeadOfFamily(headOfFamily: UUID) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
