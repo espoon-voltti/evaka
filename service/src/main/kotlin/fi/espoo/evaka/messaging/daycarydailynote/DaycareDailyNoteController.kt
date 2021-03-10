@@ -75,6 +75,19 @@ class DaycareDailyNoteController(
         return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(childId = childId))) }
     }
 
+    @DeleteMapping("/{noteId}")
+    fun deleteDailyNote(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable noteId: UUID
+    ) {
+        Audit.DaycareDailyNoteDelete.log(user.id)
+        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
+            throw Forbidden("Permission denied")
+        }
+        return db.transaction { it.deleteDaycareDailyNote(noteId) }.let { ResponseEntity.ok() }
+    }
+
     @DeleteMapping("/child/{childId}")
     fun deleteDailyNoteForChild(
         db: Database.Connection,

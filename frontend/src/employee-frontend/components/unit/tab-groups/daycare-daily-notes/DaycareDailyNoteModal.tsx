@@ -6,6 +6,7 @@ import { formatName } from '../../../../utils'
 import LocalDate from '@evaka/lib-common/local-date'
 import {
   DaycareDailyNoteFormData,
+  deleteDaycareDailyNote,
   upsertChildDaycareDailyNote
 } from '../../../../api/unit'
 import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
@@ -72,6 +73,13 @@ export default React.memo(function DaycareDailyNoteModal({
     }
   }
 
+  const deleteNote = async (event: React.MouseEvent) => {
+    event.preventDefault()
+    if (note?.id) await deleteDaycareDailyNote(note.id)
+    onClose()
+    reload()
+  }
+
   return (
     <FormModal
       data-qa={'daycare-daily-note-modal'}
@@ -101,7 +109,7 @@ export default React.memo(function DaycareDailyNoteModal({
           justifyContent={'flex-end'}
           spacing={'s'}
         >
-          <IconButton icon={faTrash} />
+          <IconButton icon={faTrash} onClick={deleteNote} />
           <span>{i18n.common.remove}</span>
         </FixedSpaceRow>
         <FixedSpaceColumn>

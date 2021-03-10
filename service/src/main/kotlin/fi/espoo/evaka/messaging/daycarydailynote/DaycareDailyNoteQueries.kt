@@ -98,6 +98,12 @@ RETURNING *
         .first()
 }
 
+fun Database.Transaction.deleteDaycareDailyNote(noteId: UUID) {
+    createUpdate("DELETE from daycare_daily_note WHERE id = :noteId")
+        .bind("noteId", noteId)
+        .execute()
+}
+
 fun Database.Transaction.deleteChildDaycareDailyNotes(childId: UUID) {
     createUpdate("DELETE from daycare_daily_note WHERE childId = :id")
         .bind("id", childId)

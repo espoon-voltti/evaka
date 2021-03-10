@@ -146,4 +146,9 @@ test('Child daycare daily note indicators are shown on group view', async (t) =>
         .textContent
     )
     .contains(daycareDailyNote.note || 'expected text not found')
+
+  await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t
+    .expect(unitPage.daycareDailyNoteModal.noteInput.value)
+    .eql(daycareDailyNote.note)
 })
