@@ -17,16 +17,15 @@ const contexts = Object.fromEntries(
 )
 
 const app = express()
-
 app.use(
   '/api/internal',
-  proxy('http://localhost:3020', {
+  proxy(process.env.API_PROXY_URL ?? 'http://localhost:3020', {
     proxyReqPathResolver: ({ originalUrl }) => originalUrl
   })
 )
 app.use(
   '/api/application',
-  proxy('http://localhost:3010', {
+  proxy(process.env.API_PROXY_URL ?? 'http://localhost:3010', {
     proxyReqPathResolver: ({ originalUrl }) => originalUrl
   })
 )
