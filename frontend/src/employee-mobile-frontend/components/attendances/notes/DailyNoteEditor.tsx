@@ -175,7 +175,7 @@ export default React.memo(function DailyNoteEditor() {
                         setDailyNote({ ...dailyNote, sleepingNote: levelInfo })
                       }
                       checked={dailyNote.sleepingNote === levelInfo}
-                      data-qa={`feeding-note-${levelInfo}`}
+                      data-qa={`sleeping-note-${levelInfo}`}
                     />
                   ))}
                 </FixedSpaceColumn>
@@ -202,7 +202,7 @@ export default React.memo(function DailyNoteEditor() {
                             })
                       }}
                       checked={dailyNote.reminders.includes(reminder)}
-                      data-qa={`feeding-note-${reminder}`}
+                      data-qa={`reminders-${reminder}`}
                     />
                   ))}
                   <InputField
@@ -213,6 +213,7 @@ export default React.memo(function DailyNoteEditor() {
                     placeholder={
                       i18n.attendances.notes.placeholders.reminderNote
                     }
+                    data-qa="reminder-note"
                   />
                 </FixedSpaceColumn>
               </FixedSpaceColumn>
