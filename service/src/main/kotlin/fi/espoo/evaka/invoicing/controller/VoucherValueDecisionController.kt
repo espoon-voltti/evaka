@@ -13,8 +13,8 @@ import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
-import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -117,7 +118,7 @@ class VoucherValueDecisionController(
             val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
             if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
                 throw BadRequest("Voucher value decision cannot be marked sent")
-            tx.updateVoucherValueDecisionStatus(ids, VoucherValueDecisionStatus.SENT)
+            tx.markVoucherValueDecisionsSent(ids, Instant.now())
         }
         return ResponseEntity.noContent().build()
     }
