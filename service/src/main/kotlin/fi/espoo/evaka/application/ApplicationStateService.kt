@@ -502,42 +502,38 @@ class ApplicationStateService(
     }
 
     private fun validateApplication(tx: Database.Read, type: ApplicationType, application: ApplicationForm, strict: Boolean) {
-        val result = ValidationResult()
-
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
             val canApplyForPreferredDate = tx.getActivePreschoolTermAt(preferredStartDate)
                 ?.isApplicationAccepted(LocalDate.now(zoneId))
                 ?: false
             if (!canApplyForPreferredDate) {
-                result.add(ValidationError("form.preferences.preferredStartDate", "Cannot apply to preschool on $preferredStartDate at the moment"))
+                throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")
             }
         }
 
         val unitIds = application.preferences.preferredUnits.map { it.id }
 
         if (unitIds.isEmpty()) {
-            result.add(ValidationError("form.preferences.preferredUnits", "Must have at least one preferred unit"))
+            throw BadRequest("Must have at least one preferred unit")
         } else {
             val daycares = tx.handle.getUnitApplyPeriods(unitIds.toSet())
             if (daycares.size < unitIds.toSet().size) {
-                result.add(ValidationError("form.preferences.preferredUnits", "Some unit was not found"))
+                throw BadRequest("Some unit was not found")
             }
             if (strict) {
                 if (preferredStartDate != null) {
                     for (daycare in daycares) {
                         if (type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))
-                            result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for daycare in ${daycare.id}"))
+                            throw BadRequest("Cannot apply for daycare in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})")
                         if (type == ApplicationType.PRESCHOOL && (daycare.preschoolApplyPeriod == null || !daycare.preschoolApplyPeriod.includes(preferredStartDate)))
-                            result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for preschool in ${daycare.id}"))
+                            throw BadRequest("Cannot apply for preschool in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})")
                         if (type == ApplicationType.CLUB && (daycare.clubApplyPeriod == null || !daycare.clubApplyPeriod.includes(preferredStartDate)))
-                            result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for club in ${daycare.id}"))
+                            throw BadRequest("Cannot apply for club in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})")
                     }
                 }
             }
         }
-
-        if (!result.isValid()) throw ValidationException(result)
     }
 
     private fun calculateDueDate(

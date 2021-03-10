@@ -64,6 +64,16 @@ export default React.memo(function UnitsSubSection({
     }
   }, [applicationType, preparatory, preferredStartDate?.formatIso(), shiftCare])
 
+  useEffect(() => {
+    if (units.isSuccess) {
+      updateFormData({
+        preferredUnits: formData.preferredUnits.filter(({ id }) =>
+          units.value.some((unit) => unit.id === id)
+        )
+      })
+    }
+  }, [units])
+
   return (
     <>
       <H3>{t.applications.editor.unitPreference.units.title}</H3>
