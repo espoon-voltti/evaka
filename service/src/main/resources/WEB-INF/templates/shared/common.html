@@ -77,6 +77,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             position: running(headerLeft);
             display: inline-block;
             width: 60mm;
+            top: 0;
         }
 
         .headerRight {
@@ -92,17 +93,20 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         }
 
         .left-column {
-            width: 55%;
-
+            width: 65%;
             display: inline-block;
+            margin: 0;
+            padding: 0;
         }
 
         .right-column {
             float: right;
-            width: 40%;
+            width: 32%;
             right: 0;
             display: inline-block;
             text-align: right;
+            margin: 0;
+            padding: 0;
         }
 
         .row .column {
@@ -125,7 +129,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 
         .logo {
-            margin-top: 10mm;
+            top: 0;
+            vertical-align: top;
+            margin-top: 5mm;
             margin-left: 10mm;
             height: 77px;
             width: 150px;
@@ -221,8 +227,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="left-column">
                 <div th:text="#{header.1}">PÄÄTÖS</div>
                 <div th:text="#{header.2}"></div>
-                <div><br/></div>
-                <span th:replace="~{shared/common :: decision-date}"></span>
+                <div><span th:replace="~{shared/common :: decision-date}"></span></div>
             </div>
             <div class="right-column">
                 <div><span th:text="#{header.pageNumber}"></span> <span class="page-number"></span></div>
@@ -309,12 +314,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <p>
             <strong th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
         </p>
-        <div th:text="${decision.createdBy}"></div>
-        <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
-        <div th:text="#{decision.approver.title}">Varhaiskasvatuksen palveluohjaaja</div>
-        <div th:text="#{decision.approver.unit}">Varhaiskasvatuksen palveluohjaus</div>
-        <div th:text="#{decision.approver.address}"></div>
-        <div th:text="#{decision.approver.phoneNumber}"></div>
+        <div th:utext="${decision.createdBy}"></div>
+        <div th:utext="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
+        <div th:ute xt="#{decision.approver.title}">Varhaiskasvatuksen palveluohjaaja</div>
+        <div th:utext="#{decision.approver.unit}">Varhaiskasvatuksen palveluohjaus</div>
+        <div th:utext="#{decision.approver.address}"></div>
+        <div th:utext="#{decision.approver.phoneNumber}"></div>
         <div>
             <span th:text="#{decision.approver.email.heading}"></span>
             <a th:href="'mailto:' + #{decision.approver.email.email}"

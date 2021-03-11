@@ -45,7 +45,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
     </div>
 
-    <p th:utext="#{decision.instructions}"></p>
+    <div th:utext="#{decision.instructions}"></div>
 
 </div>
 
@@ -69,13 +69,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <span th:replace="~{shared/common :: placement-dates}"></span>
         </p>
 
-        <p th:utext="#{decision.acceptance.instructions}"></p>
+        <div th:utext="#{decision.acceptance.instructions}"></div>
 
 
         <div th:replace="~{shared/acceptance-form :: signatures}"></div>
     </div>
-
-
 </div>
 
 </body>
