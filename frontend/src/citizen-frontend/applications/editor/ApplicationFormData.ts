@@ -264,7 +264,8 @@ export function formDataToApiData(
     otherGuardianId,
     otherGuardianLivesInSameAddress
   }: ApplicationDetails,
-  form: ApplicationFormData
+  form: ApplicationFormData,
+  isDraft = false
 ): ApplicationFormUpdate {
   const fullFamily =
     type === 'DAYCARE' ||
@@ -281,7 +282,9 @@ export function formDataToApiData(
             street: form.contactInfo.childFutureStreet,
             postalCode: form.contactInfo.childFuturePostalCode,
             postOffice: form.contactInfo.childFuturePostOffice,
-            movingDate: LocalDate.parseFiOrNull(form.contactInfo.childMoveDate)
+            movingDate: isDraft
+              ? LocalDate.parseFiOrNull(form.contactInfo.childMoveDate)
+              : LocalDate.parseFiOrThrow(form.contactInfo.childMoveDate)
           }
         : null,
       allergies: type !== 'CLUB' ? form.additionalDetails.allergies : '',
@@ -295,9 +298,9 @@ export function formDataToApiData(
             street: form.contactInfo.guardianFutureStreet,
             postalCode: form.contactInfo.guardianFuturePostalCode,
             postOffice: form.contactInfo.guardianFuturePostOffice,
-            movingDate: LocalDate.parseFiOrNull(
-              form.contactInfo.guardianMoveDate
-            )
+            movingDate: isDraft
+              ? LocalDate.parseFiOrNull(form.contactInfo.guardianMoveDate)
+              : LocalDate.parseFiOrThrow(form.contactInfo.guardianMoveDate)
           }
         : null,
       phoneNumber: form.contactInfo.guardianPhone,

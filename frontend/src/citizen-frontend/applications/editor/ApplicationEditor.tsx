@@ -103,7 +103,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSaveDraft = () => {
-    const reqBody = formDataToApiData(apiData, formData)
+    const reqBody = formDataToApiData(apiData, formData, true)
     setSubmitting(true)
     void saveApplicationDraft(apiData.id, reqBody).then((res) => {
       setSubmitting(false)
