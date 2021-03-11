@@ -20,6 +20,7 @@ import {
 import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
 import InputField from '@evaka/lib-components/atoms/form/InputField'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import Radio from '@evaka/lib-components/atoms/form/Radio'
 
 interface Props {
   note: DaycareDailyNote | null
@@ -138,6 +139,24 @@ export default React.memo(function DaycareDailyNoteModal({
           <div className="bold">
             {i18n.unit.groups.daycareDailyNote.sleepingHeader}
           </div>
+          <Radio
+            checked={form.sleepingNote == 'GOOD'}
+            label={i18n.unit.groups.daycareDailyNote.level.GOOD}
+            onChange={() => updateForm({ sleepingNote: 'GOOD' })}
+            dataQa={'sleeping-level-good'}
+          />
+          <Radio
+            checked={form.sleepingNote == 'MEDIUM'}
+            label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
+            onChange={() => updateForm({ sleepingNote: 'MEDIUM' })}
+            dataQa={'sleeping-level-medium'}
+          />
+          <Radio
+            checked={form.sleepingNote == 'NONE'}
+            label={i18n.unit.groups.daycareDailyNote.level.NONE}
+            onChange={() => updateForm({ sleepingNote: 'NONE' })}
+            dataQa={'sleeping-level-none'}
+          />
           <FixedSpaceRow
             fullWidth={true}
             justifyContent={'flex-start'}
