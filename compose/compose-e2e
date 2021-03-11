@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 if [ "$1" = "up" ]; then
     S3_DIR=s3-mount/
     mkdir -p "$S3_DIR"

@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017-2021 City of Espoo
+--
+-- SPDX-License-Identifier: LGPL-2.1-or-later
+
 SELECT DATE_PART('year', fee_decision_part.date_of_birth)::int AS birth_year, COUNT(fee_decision_part.child) AS count
 FROM fee_decision
 JOIN fee_decision_part ON fee_decision.id = fee_decision_part.fee_decision_id

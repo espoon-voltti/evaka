@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
 import { Coordinate } from '@evaka/lib-common/api-types/units/Coordinate'
 

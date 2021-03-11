@@ -49,7 +49,7 @@ Lint with auto-fix
 
 ```bash
 yarn lint
-yarn lint-fix
+yarn lint:fix
 ```
 
 ### Google Maps API key

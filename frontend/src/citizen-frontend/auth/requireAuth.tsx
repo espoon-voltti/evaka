@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React, { useContext } from 'react'
 import { AuthContext } from '../auth/state'
 import { RouteComponentProps } from 'react-router'
