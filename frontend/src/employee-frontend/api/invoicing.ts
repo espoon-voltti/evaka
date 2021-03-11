@@ -65,27 +65,34 @@ interface AbsenceParams {
 
 export async function confirmFeeDecisions(
   feeDecisionIds: string[]
-): Promise<void> {
+): Promise<Result<void>> {
   return client
     .post<void>('/fee-decisions/confirm', feeDecisionIds)
-    .then((res) => res.data)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
-export async function createInvoices(): Promise<void> {
-  return client.post<void>('/invoices/create-drafts').then((res) => res.data)
+export async function createInvoices(): Promise<Result<void>> {
+  return client
+    .post<void>('/invoices/create-drafts')
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
-export async function deleteInvoices(invoiceIds: string[]): Promise<void> {
+export async function deleteInvoices(
+  invoiceIds: string[]
+): Promise<Result<void>> {
   return client
     .post<void>('/invoices/delete-drafts', invoiceIds)
-    .then((res) => res.data)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function sendInvoices(
   invoiceIds: string[],
   invoiceDate: LocalDate,
   dueDate: LocalDate
-): Promise<void> {
+): Promise<Result<void>> {
   return client
     .post<void>('/invoices/send', invoiceIds, {
       params: {
@@ -93,7 +100,8 @@ export async function sendInvoices(
         dueDate: dueDate.formatIso()
       }
     })
-    .then((res) => res.data)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function sendInvoicesByDate(
@@ -103,7 +111,7 @@ export async function sendInvoicesByDate(
   periodStart: LocalDate | undefined,
   periodEnd: LocalDate | undefined,
   useCustomDatesForInvoiceSending: boolean
-): Promise<void> {
+): Promise<Result<void>> {
   return client
     .post<void>('/invoices/send/by-date', {
       from:
@@ -118,12 +126,17 @@ export async function sendInvoicesByDate(
       invoiceDate: invoiceDate,
       dueDate: dueDate
     })
-    .then((res) => res.data)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
-export async function markInvoiceSent(invoiceIds: string[]): Promise<void> {
-  const request = await client.post<void>('/invoices/mark-sent', invoiceIds)
-  return request.data
+export async function markInvoiceSent(
+  invoiceIds: string[]
+): Promise<Result<void>> {
+  return client
+    .post<void>('/invoices/mark-sent', invoiceIds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getFeeDecision(
@@ -191,8 +204,13 @@ export async function getVoucherValueDecision(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function sendVoucherValueDecisions(ids: string[]): Promise<void> {
-  return client.post<void>('/value-decisions/send', ids).then((res) => res.data)
+export async function sendVoucherValueDecisions(
+  ids: string[]
+): Promise<Result<void>> {
+  return client
+    .post<void>('/value-decisions/send', ids)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export type SortByFeeDecisions =
@@ -368,10 +386,13 @@ export async function getInvoices(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function updateInvoice(invoice: InvoiceDetailed): Promise<void> {
+export async function updateInvoice(
+  invoice: InvoiceDetailed
+): Promise<Result<void>> {
   return client
     .put<void>(`/invoices/${invoice.id}`, invoice)
-    .then((res) => res.data)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getInvoiceCodes(): Promise<Result<InvoiceCodes>> {
@@ -391,16 +412,22 @@ export async function generateFeeDecisions(
   })
 }
 
-export async function markFeeDecisionSent(ids: string[]): Promise<void> {
-  const request = await client.post<void>('/fee-decisions/mark-sent', ids)
-  return request.data
+export async function markFeeDecisionSent(
+  ids: string[]
+): Promise<Result<void>> {
+  return client
+    .post<void>('/fee-decisions/mark-sent', ids)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function markVoucherValueDecisionSent(
   ids: string[]
-): Promise<void> {
-  const request = await client.post<void>('/value-decisions/mark-sent', ids)
-  return request.data
+): Promise<Result<void>> {
+  return client
+    .post<void>('/value-decisions/mark-sent', ids)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getFeeDecisionPdfUrl(decisionId: string): string {
@@ -414,14 +441,13 @@ export function getVoucherValueDecisionPdfUrl(decisionId: string): string {
 export async function setDecisionType(
   decisionId: string,
   type: string
-): Promise<void> {
-  const request = await client.post<void>(
-    `/fee-decisions/set-type/${decisionId}`,
-    {
+): Promise<Result<void>> {
+  return client
+    .post<void>(`/fee-decisions/set-type/${decisionId}`, {
       type: type
-    }
-  )
-  return request.data
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getAbsencesByChild(
@@ -451,12 +477,11 @@ export async function getAbsencesByChild(
 export async function createRetroactiveDecisions(
   headOfFamily: UUID,
   date: LocalDate
-): Promise<void> {
-  await client.post(
-    `/fee-decisions/head-of-family/${headOfFamily}/create-retroactive`,
-    {
+): Promise<Result<void>> {
+  return client
+    .post(`/fee-decisions/head-of-family/${headOfFamily}/create-retroactive`, {
       from: date
-    }
-  )
-  return void undefined
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
