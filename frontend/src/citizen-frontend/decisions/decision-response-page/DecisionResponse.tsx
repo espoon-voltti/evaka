@@ -57,6 +57,7 @@ export default React.memo(function DecisionResponse({
   const [requestedStartDate, setRequestedStartDate] = useState<string>(
     startDate
   )
+  const [parsedDate, setParsedDate] = useState<LocalDate | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [displayCascadeWarning, setDisplayCascadeWarning] = useState<boolean>(
     false
@@ -78,33 +79,42 @@ export default React.memo(function DecisionResponse({
   }
 
   const onSubmit = async () => {
+    if (parsedDate === null) throw new Error('Parsed date was null')
     setSubmitting(true)
     return (acceptChecked
-      ? acceptDecision(applicationId, decisionId, requestedStartDate)
+      ? acceptDecision(applicationId, decisionId, parsedDate)
       : rejectDecision(applicationId, decisionId)
-    ).finally(() => {
-      setSubmitting(false)
-      refreshDecisionList()
-    })
+    )
+      .then((res) => {
+        if (res.isFailure) {
+          setErrorMessage({
+            type: 'error',
+            title: t.decisions.applicationDecisions.errors.submitFailure,
+            resolveLabel: t.common.ok
+          })
+        }
+      })
+      .finally(() => {
+        setSubmitting(false)
+        refreshDecisionList()
+      })
   }
 
   useEffect(() => {
-    if (LocalDate.parseFiOrNull(requestedStartDate) === null) {
+    setParsedDate(LocalDate.parseFiOrNull(requestedStartDate))
+  }, [requestedStartDate])
+
+  useEffect(() => {
+    if (parsedDate === null) {
       setDateErrorMessage(t.validationErrors.validDate)
     } else {
-      if (
-        isValidDecisionStartDate(
-          LocalDate.parseFi(requestedStartDate),
-          startDate,
-          decisionType
-        )
-      ) {
+      if (isValidDecisionStartDate(parsedDate, startDate, decisionType)) {
         setDateErrorMessage('')
       } else {
         setDateErrorMessage(t.validationErrors.preferredStartDate)
       }
     }
-  }, [requestedStartDate])
+  }, [parsedDate])
 
   return (
     <div data-qa={`decision-${decision.id}`}>
@@ -222,16 +232,7 @@ export default React.memo(function DecisionResponse({
                 if (!acceptChecked && rejectCascade) {
                   setDisplayCascadeWarning(true)
                 } else {
-                  void onSubmit().then((res) => {
-                    if (res.isFailure) {
-                      setErrorMessage({
-                        type: 'error',
-                        title:
-                          t.decisions.applicationDecisions.errors.submitFailure,
-                        resolveLabel: t.common.ok
-                      })
-                    }
-                  })
+                  void onSubmit()
                 }
               }}
               disabled={

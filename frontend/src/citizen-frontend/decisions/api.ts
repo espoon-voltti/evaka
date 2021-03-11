@@ -35,22 +35,15 @@ export async function getApplicationDecisions(
 export async function acceptDecision(
   applicationId: UUID,
   decisionId: UUID,
-  requestedStartDate: string
+  requestedStartDate: LocalDate
 ): Promise<Result<void>> {
-  let date
-  try {
-    date = LocalDate.parseFi(requestedStartDate)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-  const body = {
-    decisionId,
-    requestedStartDate: date
-  }
   return client
     .post<void>(
       `/citizen/applications/${applicationId}/actions/accept-decision`,
-      body
+      {
+        decisionId,
+        requestedStartDate
+      }
     )
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
