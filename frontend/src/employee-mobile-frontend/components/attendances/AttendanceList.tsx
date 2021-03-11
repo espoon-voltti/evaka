@@ -50,6 +50,11 @@ export default React.memo(function AttendanceList({
     )
   }
 
+  function getGroupIdByChild(child: AttendanceChild) {
+    return attendanceChildren.find((ac) => ac.groupId === child.groupId)
+      ?.groupId
+  }
+
   return (
     <FixedSpaceColumn>
       <OrderedList spacing={'zero'}>
@@ -60,7 +65,9 @@ export default React.memo(function AttendanceList({
                 type={ac.status}
                 key={ac.id}
                 attendanceChild={ac}
-                childAttendanceUrl={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
+                childAttendanceUrl={`/units/${unitId}/groups/${
+                  getGroupIdByChild(ac) ?? 'all'
+                }/childattendance/${ac.id}`}
               />
             </Li>
           ))

@@ -161,9 +161,9 @@ export default React.memo(function ChildListItem({
         </ChildBoxInfo>
       </AttendanceLinkBox>
       <ToolsColumn>
-        {attendanceChild.dailyNote && (
+        {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
           <Link
-            to={`attendance/daily-note/${attendanceChild.dailyNote.id}`}
+            to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
             data-qa={'link-child-daycare-daily-note'}
           >
             <RoundIcon

@@ -96,8 +96,18 @@ export const fi = {
       },
       values: {
         GOOD: 'Hyvin',
-        MEDIUM: 'Kohtalaisesti',
+        MEDIUM: 'Vähän',
         NONE: 'Ei ollenkaan'
+      },
+      reminders: {
+        DIAPERS: 'Lisää vaippoja',
+        CLOTHES: 'Lisää varavaatteita',
+        LAUNDRY: 'Repussa pyykkiä'
+      },
+      placeholders: {
+        note: 'Kirjoita muistiinpano (Ei terveystietoja).',
+        reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
+        sleepingTime: 'Esim 1,5'
       },
       noNotes: 'Ei merkintöjä tälle päivälle'
     },
