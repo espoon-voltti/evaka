@@ -136,6 +136,29 @@ export default React.memo(function DaycareDailyNoteModal({
             onChange={(value) => updateForm({ note: value })}
             data-qa="note-input"
           />
+
+          <div className="bold">
+            {i18n.unit.groups.daycareDailyNote.feedingHeader}
+          </div>
+          <Radio
+            checked={form.feedingNote == 'GOOD'}
+            label={i18n.unit.groups.daycareDailyNote.level.GOOD}
+            onChange={() => updateForm({ feedingNote: 'GOOD' })}
+            dataQa={'feeding-level-good'}
+          />
+          <Radio
+            checked={form.feedingNote == 'MEDIUM'}
+            label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
+            onChange={() => updateForm({ feedingNote: 'MEDIUM' })}
+            dataQa={'feeding-level-medium'}
+          />
+          <Radio
+            checked={form.feedingNote == 'NONE'}
+            label={i18n.unit.groups.daycareDailyNote.level.NONE}
+            onChange={() => updateForm({ feedingNote: 'NONE' })}
+            dataQa={'feeding-level-none'}
+          />
+
           <div className="bold">
             {i18n.unit.groups.daycareDailyNote.sleepingHeader}
           </div>
@@ -157,6 +180,7 @@ export default React.memo(function DaycareDailyNoteModal({
             onChange={() => updateForm({ sleepingNote: 'NONE' })}
             dataQa={'sleeping-level-none'}
           />
+
           <FixedSpaceRow
             fullWidth={true}
             justifyContent={'flex-start'}
