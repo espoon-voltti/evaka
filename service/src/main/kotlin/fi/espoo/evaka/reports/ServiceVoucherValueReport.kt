@@ -120,7 +120,7 @@ data class ServiceVoucherValueUnitAggregate(
     )
 }
 
-enum class RowType {
+enum class VoucherReportRowType {
     ORIGINAL,
     REFUND,
     CORRECTION
@@ -144,7 +144,7 @@ data class ServiceVoucherValueRow(
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
-    val type: RowType
+    val type: VoucherReportRowType
 )
 
 private fun Database.Read.getServiceVoucherValues(

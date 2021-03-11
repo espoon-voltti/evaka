@@ -1,0 +1,174 @@
+package fi.espoo.evaka.reports
+
+import com.github.kittinunf.fuel.jackson.objectBody
+import com.github.kittinunf.fuel.jackson.responseObject
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
+import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
+import fi.espoo.evaka.invoicing.data.upsertValueDecisions
+import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea2Id
+import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDecisionMaker_1
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
+import java.util.UUID
+
+class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
+    @Autowired
+    private lateinit var asyncJobRunner: AsyncJobRunner
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { insertGeneralTestFixtures(it.handle) }
+    }
+
+    @AfterEach
+    fun afterEach() {
+        db.transaction { it.resetDatabase() }
+    }
+
+    private val janFirst = LocalDate.of(2020, 1, 1)
+    private val febFirst = LocalDate.of(2020, 2, 1)
+
+    @Test
+    fun `unfrozen area voucher report includes value decisions that begin in the beginning of reports month`() {
+        val sum = createTestSetOfDecisions()
+
+        val janReport = getAreaReport(testAreaId, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReport.size)
+        janReport.assertContainsSum(testDaycare.id, sum)
+    }
+
+    @Test
+    fun `frozen area voucher report includes value decisions that begin in the beginning of reports month`() {
+        val sum = createTestSetOfDecisions()
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue) }
+
+        val janReport = getAreaReport(testAreaId, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReport.size)
+        janReport.assertContainsSum(testDaycare.id, sum)
+    }
+
+    @Test
+    fun `area voucher report includes corrections and refunds`() {
+        val sum = createTestSetOfDecisions()
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue) }
+        // co payment is dropped from 28800 to 0
+        createVoucherDecision(janFirst, testDaycare.id, 87000, 0, testAdult_1.id, testChild_1)
+
+        val febReport = getAreaReport(testAreaId, febFirst.year, febFirst.monthValue)
+        assertEquals(1, febReport.size)
+        febReport.assertContainsSum(testDaycare.id, sum + 2 * 28800)
+    }
+
+    @Test
+    fun `area voucher report includes refunds in old area and corrections in new`() {
+        val sum = createTestSetOfDecisions()
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue) }
+        // child is placed into another area
+        createVoucherDecision(janFirst, testDaycare2.id, 87000, 28800, testAdult_1.id, testChild_1)
+
+        val febReportOldArea = getAreaReport(testAreaId, febFirst.year, febFirst.monthValue)
+        assertEquals(1, febReportOldArea.size)
+        febReportOldArea.assertContainsSum(testDaycare.id, sum - 2 * 58200)
+
+        val febReportNewArea = getAreaReport(testArea2Id, febFirst.year, febFirst.monthValue)
+        assertEquals(1, febReportNewArea.size)
+        febReportNewArea.assertContainsSum(testDaycare2.id, 2 * 58200)
+    }
+
+    private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(unitId: UUID, sum: Int) {
+        val row = this.find { it.unit.id == unitId }
+        assertNotNull(row)
+        assertEquals(sum, row!!.monthlyPaymentSum)
+    }
+
+    private val adminUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
+
+    private fun getAreaReport(areaId: UUID, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
+        val (_, response, data) = http.get(
+            "/reports/service-voucher-value/units",
+            listOf("areaId" to areaId, "year" to year, "month" to month)
+        )
+            .asUser(adminUser)
+            .responseObject<List<ServiceVoucherValueUnitAggregate>>(objectMapper)
+        assertEquals(200, response.statusCode)
+
+        return data.get()
+    }
+
+    private fun createTestSetOfDecisions(): Int {
+        return listOf(
+            createVoucherDecision(janFirst, testDaycare.id, 87000, 28800, testAdult_1.id, testChild_1),
+            createVoucherDecision(janFirst, testDaycare.id, 52200, 28800, testAdult_2.id, testChild_2),
+            createVoucherDecision(janFirst, testDaycare.id, 134850, 0, testAdult_3.id, testChild_3)
+        ).sumBy { decision ->
+            decision.parts.sumBy { part ->
+                part.value - part.coPayment
+            }
+        }
+    }
+
+    private val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+
+    private fun createVoucherDecision(
+        validFrom: LocalDate,
+        unitId: UUID,
+        value: Int,
+        coPayment: Int,
+        adultId: UUID,
+        child: PersonData.Detailed
+    ): VoucherValueDecision {
+        val decision = db.transaction {
+            val parts = listOf(
+                createVoucherValueDecisionPartFixture(
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = unitId,
+                    value = value,
+                    coPayment = coPayment
+                )
+            )
+            val decision = createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = validFrom,
+                validTo = null,
+                headOfFamilyId = adultId,
+                parts = parts
+            )
+            it.handle.upsertValueDecisions(objectMapper, listOf(decision))
+            decision
+        }
+
+        val (_, response, _) = http.post("/value-decisions/send")
+            .asUser(financeUser)
+            .objectBody(listOf(decision.id), mapper = objectMapper)
+            .response()
+        assertEquals(204, response.statusCode)
+        asyncJobRunner.runPendingJobsSync()
+
+        return decision
+    }
+}
