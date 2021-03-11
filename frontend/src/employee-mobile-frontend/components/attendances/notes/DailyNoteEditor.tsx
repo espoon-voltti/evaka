@@ -93,8 +93,6 @@ export default React.memo(function DailyNoteEditor() {
         attendanceResponse.isSuccess &&
         attendanceResponse.value.children.find((ac) => ac.id === childId)
       if (child && child.dailyNote) {
-        console.log(child.dailyNote)
-        console.log(dailyNoteToDailyNoteEdited(child.dailyNote))
         setDailyNote(dailyNoteToDailyNoteEdited(child.dailyNote))
       }
     }
