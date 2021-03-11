@@ -1199,11 +1199,14 @@ export const fi = {
       update: 'Muokkaa tietoja',
       daycareDailyNote: {
         header: 'Päivän muistiinpanot',
-        notesHeader: 'Muistiinpanot',
+        notesHeader: 'Päivän tapahtumia',
+        notesHint: 'Kirjoita muistiinpano (ei terveystietoja)',
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
+        sleepingHint: 'esim 1,5h',
+        sleepingHours: 'tuntia',
         reminderHeader: 'Muistettavia asioita',
-        otherThingsToRememberHeader: 'Muita muistettavia asioita',
+        otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
         groupRemindersHeader: 'Koko ryhmää koskeva muistiinpano',
         edit: 'Lisää/muokkaa päivän muistiinpanoa',
         level: {

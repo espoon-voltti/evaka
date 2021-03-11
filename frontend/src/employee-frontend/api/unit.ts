@@ -695,6 +695,7 @@ export interface DaycareDailyNoteFormData {
   note?: string
   feedingNote?: DaycareDailyNoteLevelInfo
   sleepingNote?: DaycareDailyNoteLevelInfo
+  sleepingHours?: string
   reminders: DaycareDailyNoteReminder[]
   reminderNote?: string
   modifiedAt?: Date | null
