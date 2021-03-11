@@ -38,6 +38,7 @@ ON CONFLICT(child_id, group_id, date)
         note = :note, 
         feeding_note = :feedingNote, 
         sleeping_note = :sleepingNote,
+        sleeping_hours = :sleepingHours,
         reminders = :reminders::daycare_daily_note_reminder[],
         reminder_note = :reminderNote,
         modified_by = :modifiedBy,
@@ -50,6 +51,7 @@ ON CONFLICT(child_id, group_id, date)
         .bind("note", note.note)
         .bind("feedingNote", note.feedingNote)
         .bind("sleepingNote", note.sleepingNote)
+        .bind("sleepingHours", note.sleepingHours)
         .bind("reminders", note.reminders.map { it.name }.toTypedArray())
         .bind("reminderNote", note.reminderNote)
         .bind("modifiedBy", note.modifiedBy)

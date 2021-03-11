@@ -106,7 +106,8 @@ export const fi = {
       },
       placeholders: {
         note: 'Kirjoita muistiinpano (Ei terveystietoja).',
-        reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.'
+        reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
+        sleepingTime: 'Esim 1,5'
       },
       noNotes: 'Ei merkintöjä tälle päivälle'
     },

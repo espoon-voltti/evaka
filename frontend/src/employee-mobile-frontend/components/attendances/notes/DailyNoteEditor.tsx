@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -24,6 +24,7 @@ import LocalDate from '@evaka/lib-common/local-date'
 import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { defaultMargins } from '@evaka/lib-components/white-space'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 
 import {
   createOrUpdateDaycareDailyNoteForChild,
@@ -92,6 +93,8 @@ export default React.memo(function DailyNoteEditor() {
         attendanceResponse.isSuccess &&
         attendanceResponse.value.children.find((ac) => ac.id === childId)
       if (child && child.dailyNote) {
+        console.log(child.dailyNote)
+        console.log(dailyNoteToDailyNoteEdited(child.dailyNote))
         setDailyNote(dailyNoteToDailyNoteEdited(child.dailyNote))
       }
     }
@@ -116,6 +119,7 @@ export default React.memo(function DailyNoteEditor() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && child && (
         <TallContentArea
           opaque={false}
@@ -180,6 +184,27 @@ export default React.memo(function DailyNoteEditor() {
                   ))}
                 </FixedSpaceColumn>
               </FixedSpaceColumn>
+
+              <Time>
+                <InputField
+                  value={
+                    dailyNote.sleepingHours
+                      ? dailyNote.sleepingHours.toString()
+                      : ''
+                  }
+                  onChange={(value) =>
+                    setDailyNote({
+                      ...dailyNote,
+                      sleepingHours: parseFloat(value)
+                    })
+                  }
+                  placeholder={i18n.attendances.notes.placeholders.sleepingTime}
+                  data-qa="sleeping-time"
+                  width={'s'}
+                  type={'number'}
+                />
+                <span>{i18n.common.hours}</span>
+              </Time>
 
               <FixedSpaceColumn spacing={'s'}>
                 <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
@@ -285,4 +310,13 @@ const BackButton = styled(InlineButton)`
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
   margin-bottom: ${defaultMargins.s};
+`
+
+const Time = styled.div`
+  display: flex;
+  align-items: center;
+
+  span {
+    margin-left: ${defaultMargins.xs};
+  }
 `
