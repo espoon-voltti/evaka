@@ -213,17 +213,17 @@ export default React.memo(function DailyNoteEditor() {
                     <Checkbox
                       key={reminder}
                       label={i18n.attendances.notes.reminders[reminder]}
-                      onChange={() => {
-                        dailyNote.reminders.includes(reminder)
+                      onChange={(checked) => {
+                        checked
                           ? setDailyNote({
+                              ...dailyNote,
+                              reminders: [...dailyNote.reminders, reminder]
+                            })
+                          : setDailyNote({
                               ...dailyNote,
                               reminders: dailyNote.reminders.filter(
                                 (v) => v !== reminder
                               )
-                            })
-                          : setDailyNote({
-                              ...dailyNote,
-                              reminders: [...dailyNote.reminders, reminder]
                             })
                       }}
                       checked={dailyNote.reminders.includes(reminder)}
