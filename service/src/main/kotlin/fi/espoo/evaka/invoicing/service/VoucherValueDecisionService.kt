@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
+import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
@@ -90,7 +91,7 @@ class VoucherValueDecisionService(
             )
         )
 
-        tx.updateVoucherValueDecisionStatus(listOf(decision.id), VoucherValueDecisionStatus.SENT)
+        tx.markVoucherValueDecisionsSent(listOf(decision.id), Instant.now())
     }
 
     private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =

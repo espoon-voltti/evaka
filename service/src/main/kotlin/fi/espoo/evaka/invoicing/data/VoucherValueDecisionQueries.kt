@@ -36,6 +36,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
+import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
 
@@ -532,6 +533,29 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<UUID>, statu
     createUpdate(sql)
         .bind("ids", ids.toTypedArray())
         .bind("status", status)
+        .execute()
+}
+
+fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<UUID>, now: Instant) {
+    createUpdate("UPDATE voucher_value_decision SET status = :sent, sent_at = :now WHERE id = ANY(:ids)")
+        .bind("ids", ids.toTypedArray())
+        .bind("sent", VoucherValueDecisionStatus.SENT)
+        .bind("now", now)
+        .execute()
+}
+
+fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisions: List<VoucherValueDecision>) {
+    prepareBatch("UPDATE voucher_value_decision SET status = :status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+        .also { batch ->
+            updatedDecisions.forEach { decision ->
+                batch
+                    .bind("id", decision.id)
+                    .bind("status", decision.status)
+                    .bind("validFrom", decision.validFrom)
+                    .bind("validTo", decision.validTo)
+                    .add()
+            }
+        }
         .execute()
 }
 

@@ -103,6 +103,12 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
 
     fun overlaps(other: DateRange) = this.start <= orMax(other.end) && other.start <= orMax(this.end)
     fun overlaps(other: FiniteDateRange) = overlaps(other.asDateRange())
+
+    fun intersection(other: DateRange): DateRange? {
+        val start = maxOf(this.start, other.start)
+        val end = if (this.end == null || other.end == null) null else minOf(this.end, other.end)
+        return if (start <= end) DateRange(start, end) else null
+    }
 }
 
 private fun periodsCanMerge(first: DateRange, second: DateRange): Boolean =
