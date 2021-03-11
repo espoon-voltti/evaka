@@ -92,7 +92,7 @@ export const isValidDecisionStartDate = (
 ): boolean => {
   let parsedDate: LocalDate
   try {
-    parsedDate = LocalDate.parseFi(startDate)
+    parsedDate = LocalDate.parseFiOrThrow(startDate)
   } catch (e) {
     if (e instanceof RangeError) {
       return false

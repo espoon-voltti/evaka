@@ -30,7 +30,7 @@ function DatePickerDay({
 
   function convertToDate(date: string) {
     try {
-      return LocalDate.parseFi(date).toSystemTzDate()
+      return LocalDate.parseFiOrThrow(date).toSystemTzDate()
     } catch (e) {
       return undefined
     }

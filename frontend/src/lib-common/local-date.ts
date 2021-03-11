@@ -153,7 +153,7 @@ export default class LocalDate {
     }
     return result
   }
-  static parseFi(value: string): LocalDate {
+  static parseFiOrThrow(value: string): LocalDate {
     const parts = fiPattern.exec(value)
     if (!parts) {
       throw new RangeError(`Invalid FI date ${value}`)
@@ -170,7 +170,7 @@ export default class LocalDate {
   }
   static parseFiOrNull(value: string): LocalDate | null {
     try {
-      return this.parseFi(value)
+      return this.parseFiOrThrow(value)
     } catch (e) {
       return null
     }
