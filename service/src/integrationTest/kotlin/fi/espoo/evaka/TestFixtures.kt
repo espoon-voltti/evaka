@@ -180,7 +180,8 @@ val testAdult_2 = PersonData.Detailed(
     streetAddress = "Kamreerintie 2",
     postalCode = "02770",
     postOffice = "Espoo",
-    restrictedDetailsEnabled = false
+    restrictedDetailsEnabled = false,
+    email = "joan.doe@example.com"
 )
 
 val testAdult_3 = PersonData.Detailed(
@@ -192,7 +193,8 @@ val testAdult_3 = PersonData.Detailed(
     streetAddress = "",
     postalCode = "",
     postOffice = "",
-    restrictedDetailsEnabled = false
+    restrictedDetailsEnabled = false,
+    email = "mark.foo@example.com"
 )
 
 val testAdult_4 = PersonData.Detailed(
@@ -204,7 +206,8 @@ val testAdult_4 = PersonData.Detailed(
     streetAddress = "Muutie 66",
     postalCode = "02230",
     postOffice = "Espoo",
-    restrictedDetailsEnabled = false
+    restrictedDetailsEnabled = false,
+    email = "dork.aman@example.com"
 )
 
 // Matches VTJ mock person Johannes Karhula

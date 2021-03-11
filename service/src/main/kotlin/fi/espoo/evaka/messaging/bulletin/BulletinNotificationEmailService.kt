@@ -35,7 +35,7 @@ class BulletinNotificationEmailService(
         val id: UUID,
         val receiverId: UUID,
         val receiverEmail: String,
-        val language: String?
+        val language: Language
     )
 
     fun getBulletinNotificationReceivers(tx: Database.Transaction, bulletinId: UUID): List<BulletinReceiver> {
@@ -45,7 +45,7 @@ class BulletinNotificationEmailService(
                 bi.id,
                 bi.receiver_id,
                 g.email receiver_email,
-                g.language
+                coalesce(lower(g.language), 'fi') as language
             FROM bulletin_instance bi
             JOIN person g ON bi.receiver_id = g.id
             WHERE bi.bulletin_id = :bulletinId
@@ -85,15 +85,13 @@ class BulletinNotificationEmailService(
 
     fun sendBulletinNotification(db: Database, msg: SendUnreadBulletinNotificationEmail) {
         db.transaction { tx ->
-            val lang = getLanguage(msg.language)
-
             emailClient.sendEmail(
                 traceId = msg.id.toString(),
                 toAddress = msg.receiverEmail,
                 fromAddress = fromAddress,
-                getSubject(lang),
-                getHtml(lang),
-                getText(lang)
+                getSubject(msg.language),
+                getHtml(msg.language),
+                getText(msg.language)
             )
 
             // Mark as sent
@@ -110,19 +108,13 @@ class BulletinNotificationEmailService(
         }
     }
 
-    private fun getLanguage(languageStr: String?): Language = when (languageStr) {
-        "sv", "SV" -> Language.sv
-        "en", "EN" -> Language.en
-        else -> Language.fi
-    }
-
     private fun getSubject(language: Language): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
         return when (language) {
-            Language.en -> "Uusi tiedote eVakassa$postfix"
-            Language.sv -> "Uusi tiedote eVakassa$postfix"
-            else -> "New bulletin in eVaka$postfix"
+            Language.en -> "New bulletin in eVaka$postfix"
+            Language.sv -> "Ny$postfix"
+            else -> "Uusi tiedote eVakassa$postfix"
         }
     }
 

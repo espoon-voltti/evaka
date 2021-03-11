@@ -3,6 +3,7 @@ package fi.espoo.evaka.messaging
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -17,6 +18,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -24,8 +26,14 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -63,6 +71,25 @@ class BulletinIntegrationTest : FullApplicationTest() {
         Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
         Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     """.trimIndent()
+
+    private fun insertChildToGroup(tx: Database.Transaction, childId: UUID, guardianId: UUID) {
+        val daycarePlacementId = tx.handle.insertTestPlacement(
+            DevPlacement(
+                childId = childId,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+        )
+        insertTestDaycareGroupPlacement(
+            h = tx.handle,
+            daycarePlacementId = daycarePlacementId,
+            groupId = groupId,
+            startDate = placementStart,
+            endDate = placementEnd
+        )
+        insertGuardian(tx.handle, guardianId, childId)
+    }
 
     @BeforeEach
     fun beforeEach() {
@@ -175,7 +202,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
             sentMails.first(),
             guardianPerson.email!!,
             "no-reply.evaka@espoo.fi",
-            "New bulletin in eVaka [${System.getenv("VOLTTI_ENV")}]"
+            "Uusi tiedote eVakassa [${System.getenv("VOLTTI_ENV")}]"
         )
     }
 
@@ -201,6 +228,54 @@ class BulletinIntegrationTest : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
 
         assertEquals(1, MockEmailClient.emails.size)
+    }
+
+    @Test
+    fun `Notification language is parsed right`() {
+        val unitId = unitId
+        val bulletinId = initBulletin(supervisor, unitId)
+        updateBulletin(
+            supervisor, bulletinId,
+            BulletinControllerEmployee.BulletinUpdate(
+                groupId = groupId,
+                title = msgTitle,
+                content = msgContent
+            )
+        )
+
+        db.transaction { tx ->
+            updatePersonLanguage(tx, guardianPerson.id, Language.en)
+            insertChildToGroup(tx, testChild_2.id, testAdult_2.id)
+            updatePersonLanguage(tx, testAdult_2.id, Language.fi)
+            insertChildToGroup(tx, testChild_3.id, testAdult_3.id)
+            updatePersonLanguage(tx, testAdult_3.id, Language.sv)
+            insertChildToGroup(tx, testChild_4.id, testAdult_4.id)
+            updatePersonLanguage(tx, testAdult_4.id, null)
+        }
+
+        sendBulletin(supervisor, bulletinId)
+
+        asyncJobRunner.runPendingJobsSync()
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(4, sentMails.size)
+
+        assertEquals(
+            "New bulletin in eVaka [${System.getenv("VOLTTI_ENV")}]",
+            sentMails.find { it.toAddress == guardianPerson.email }!!.subject
+        )
+        assertEquals(
+            "Uusi tiedote eVakassa [${System.getenv("VOLTTI_ENV")}]",
+            sentMails.find { it.toAddress == testAdult_2.email }!!.subject
+        )
+        assertEquals(
+            "Ny [${System.getenv("VOLTTI_ENV")}]",
+            sentMails.find { it.toAddress == testAdult_3.email }!!.subject
+        )
+        assertEquals(
+            "Uusi tiedote eVakassa [${System.getenv("VOLTTI_ENV")}]",
+            sentMails.find { it.toAddress == testAdult_4.email }!!.subject
+        )
     }
 
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
@@ -273,15 +348,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun markBulletinsRead() {
-        db.transaction {
-            it.createUpdate(
-                """
-                UPDATE bulletin_instance SET read_at = now()
-                """.trimIndent()
-            )
-                .execute()
-        }
+    private fun updatePersonLanguage(tx: Database.Transaction, id: UUID, lang: Language?) {
+        tx.createUpdate(
+            """
+                UPDATE person SET language = :language WHERE id = :id
+            """.trimIndent()
+        )
+            .bind("id", id)
+            .bind("language", lang)
+            .execute()
     }
 
     private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String) {
@@ -289,17 +364,5 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(expectedToAddress, email?.toAddress)
         assertEquals(expectedFromAddress, email?.fromAddress)
         assertEquals(expectedSubject, email?.subject)
-    }
-
-    private fun runBulletinNotificationEmailAsyncJobs(): Int {
-        val (_, res, _) = http.post("/scheduled/send-bulletin-notification-emails")
-            .asUser(AuthenticatedUser.machineUser)
-            .response()
-
-        assertEquals(204, res.statusCode)
-        val jobCount = asyncJobRunner.getPendingJobCount()
-        asyncJobRunner.runPendingJobsSync()
-
-        return jobCount
     }
 }

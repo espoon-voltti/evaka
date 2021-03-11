@@ -57,7 +57,7 @@ data class SendPendingDecisionEmail(val guardianId: UUID, val email: String, val
     override val user: AuthenticatedUser? = null
 }
 
-data class SendUnreadBulletinNotificationEmail(val id: UUID, val receiverId: UUID, val receiverEmail: String, val language: String?) : AsyncJobPayload {
+data class SendUnreadBulletinNotificationEmail(val id: UUID, val receiverId: UUID, val receiverEmail: String, val language: Language) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_UNREAD_BULLETIN_NOTIFICATION
     override val user: AuthenticatedUser? = null
 }
