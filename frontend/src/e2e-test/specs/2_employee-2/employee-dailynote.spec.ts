@@ -117,6 +117,7 @@ test('Child daycare daily note indicators are shown on group view', async (t) =>
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
+    sleepingHours: '2',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
@@ -151,4 +152,8 @@ test('Child daycare daily note indicators are shown on group view', async (t) =>
   await t
     .expect(unitPage.daycareDailyNoteModal.noteInput.value)
     .eql(daycareDailyNote.note)
+    .expect(unitPage.daycareDailyNoteModal.sleepingHoursInput.value)
+    .eql(daycareDailyNote.sleepingHours)
+    .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
+    .eql(daycareDailyNote.reminderNote)
 })

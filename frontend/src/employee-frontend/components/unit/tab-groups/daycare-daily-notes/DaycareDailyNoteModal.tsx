@@ -126,60 +126,66 @@ export default React.memo(function DaycareDailyNoteModal({
             <span>{i18n.common.remove}</span>
           </FixedSpaceRow>
         </FixedSpaceColumn>
-        <FixedSpaceColumn alignItems={'left'} fullWidth={true}>
-          <div className="bold">
-            {i18n.unit.groups.daycareDailyNote.notesHeader}
-          </div>
-          <InputField
-            value={form.note || ''}
-            placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
-            onChange={(value) => updateForm({ note: value })}
-            data-qa="note-input"
-          />
+        <FixedSpaceColumn alignItems={'left'} fullWidth={true} spacing={'L'}>
+          <FixedSpaceColumn>
+            <div className="bold">
+              {i18n.unit.groups.daycareDailyNote.notesHeader}
+            </div>
+            <InputField
+              value={form.note || ''}
+              placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
+              onChange={(value) => updateForm({ note: value })}
+              data-qa="note-input"
+            />
+          </FixedSpaceColumn>
 
-          <div className="bold">
-            {i18n.unit.groups.daycareDailyNote.feedingHeader}
-          </div>
-          <Radio
-            checked={form.feedingNote == 'GOOD'}
-            label={i18n.unit.groups.daycareDailyNote.level.GOOD}
-            onChange={() => updateForm({ feedingNote: 'GOOD' })}
-            dataQa={'feeding-level-good'}
-          />
-          <Radio
-            checked={form.feedingNote == 'MEDIUM'}
-            label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
-            onChange={() => updateForm({ feedingNote: 'MEDIUM' })}
-            dataQa={'feeding-level-medium'}
-          />
-          <Radio
-            checked={form.feedingNote == 'NONE'}
-            label={i18n.unit.groups.daycareDailyNote.level.NONE}
-            onChange={() => updateForm({ feedingNote: 'NONE' })}
-            dataQa={'feeding-level-none'}
-          />
+          <FixedSpaceColumn>
+            <div className="bold">
+              {i18n.unit.groups.daycareDailyNote.feedingHeader}
+            </div>
+            <Radio
+              checked={form.feedingNote == 'GOOD'}
+              label={i18n.unit.groups.daycareDailyNote.level.GOOD}
+              onChange={() => updateForm({ feedingNote: 'GOOD' })}
+              dataQa={'feeding-level-good'}
+            />
+            <Radio
+              checked={form.feedingNote == 'MEDIUM'}
+              label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
+              onChange={() => updateForm({ feedingNote: 'MEDIUM' })}
+              dataQa={'feeding-level-medium'}
+            />
+            <Radio
+              checked={form.feedingNote == 'NONE'}
+              label={i18n.unit.groups.daycareDailyNote.level.NONE}
+              onChange={() => updateForm({ feedingNote: 'NONE' })}
+              dataQa={'feeding-level-none'}
+            />
+          </FixedSpaceColumn>
 
-          <div className="bold">
-            {i18n.unit.groups.daycareDailyNote.sleepingHeader}
-          </div>
-          <Radio
-            checked={form.sleepingNote == 'GOOD'}
-            label={i18n.unit.groups.daycareDailyNote.level.GOOD}
-            onChange={() => updateForm({ sleepingNote: 'GOOD' })}
-            dataQa={'sleeping-level-good'}
-          />
-          <Radio
-            checked={form.sleepingNote == 'MEDIUM'}
-            label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
-            onChange={() => updateForm({ sleepingNote: 'MEDIUM' })}
-            dataQa={'sleeping-level-medium'}
-          />
-          <Radio
-            checked={form.sleepingNote == 'NONE'}
-            label={i18n.unit.groups.daycareDailyNote.level.NONE}
-            onChange={() => updateForm({ sleepingNote: 'NONE' })}
-            dataQa={'sleeping-level-none'}
-          />
+          <FixedSpaceColumn>
+            <div className="bold">
+              {i18n.unit.groups.daycareDailyNote.sleepingHeader}
+            </div>
+            <Radio
+              checked={form.sleepingNote == 'GOOD'}
+              label={i18n.unit.groups.daycareDailyNote.level.GOOD}
+              onChange={() => updateForm({ sleepingNote: 'GOOD' })}
+              dataQa={'sleeping-level-good'}
+            />
+            <Radio
+              checked={form.sleepingNote == 'MEDIUM'}
+              label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
+              onChange={() => updateForm({ sleepingNote: 'MEDIUM' })}
+              dataQa={'sleeping-level-medium'}
+            />
+            <Radio
+              checked={form.sleepingNote == 'NONE'}
+              label={i18n.unit.groups.daycareDailyNote.level.NONE}
+              onChange={() => updateForm({ sleepingNote: 'NONE' })}
+              dataQa={'sleeping-level-none'}
+            />
+          </FixedSpaceColumn>
 
           <FixedSpaceRow
             fullWidth={true}
@@ -195,6 +201,7 @@ export default React.memo(function DaycareDailyNoteModal({
             />
             <span>{i18n.unit.groups.daycareDailyNote.sleepingHours}</span>
           </FixedSpaceRow>
+
           <FixedSpaceColumn>
             <div className="bold">
               {i18n.unit.groups.daycareDailyNote.reminderHeader}
@@ -227,6 +234,7 @@ export default React.memo(function DaycareDailyNoteModal({
               dataQa="checkbox-laundry"
             />
           </FixedSpaceColumn>
+
           <InputField
             type={'text'}
             placeholder={
