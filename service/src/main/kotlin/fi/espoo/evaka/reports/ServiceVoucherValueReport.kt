@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
@@ -137,7 +136,6 @@ data class ServiceVoucherValueRow(
     val unitName: String,
     val areaId: UUID,
     val areaName: String,
-    val serviceVoucherPeriod: DateRange,
     val serviceVoucherPartId: UUID,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
@@ -242,7 +240,6 @@ SELECT
     unit.name AS unit_name,
     area.id AS area_id,
     area.name AS area_name,
-    daterange(decision.valid_from, decision.valid_to, '[]') AS service_voucher_period,
     part.id AS service_voucher_part_id,
     part.voucher_value AS service_voucher_value,
     part.co_payment AS service_voucher_co_payment,
@@ -257,7 +254,6 @@ SELECT
     row.type
 FROM report_rows row
 JOIN voucher_value_decision_part part ON row.part_id = part.id
-JOIN voucher_value_decision decision ON decision.id = part.voucher_value_decision_id
 JOIN person child ON part.child = child.id
 JOIN daycare unit ON part.placement_unit = unit.id
 JOIN care_area area ON unit.care_area_id = area.id
@@ -266,7 +262,7 @@ LEFT JOIN LATERAL (
     FROM placement p
     JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
     JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-    WHERE daterange(decision.valid_from, decision.valid_to, '[]') && daterange(dgp.start_date, dgp.end_date, '[]')
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') && row.realized_period
       AND p.unit_id = part.placement_unit
     GROUP BY p.child_id
 ) child_group ON child.id = child_group.child_id
@@ -311,7 +307,6 @@ private fun Database.Read.getSnapshotVoucherValues(
             unit.name AS unit_name,
             area.id AS area_id,
             area.name AS area_name,
-            daterange(decision.valid_from, decision.valid_to, '[]') AS service_voucher_period,
             part.id AS service_voucher_part_id,
             part.voucher_value AS service_voucher_value,
             part.co_payment AS service_voucher_co_payment,
@@ -324,7 +319,6 @@ private fun Database.Read.getSnapshotVoucherValues(
         FROM voucher_value_report_snapshot sn
         JOIN voucher_value_report_decision_part sn_part ON sn.id = sn_part.voucher_value_report_snapshot_id
         JOIN voucher_value_decision_part part ON part.id = sn_part.decision_part_id
-        JOIN voucher_value_decision decision ON decision.id = part.voucher_value_decision_id
         JOIN person child ON part.child = child.id
         JOIN daycare unit ON part.placement_unit = unit.id
         JOIN care_area area ON unit.care_area_id = area.id
@@ -333,7 +327,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             FROM placement p
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-            WHERE daterange(decision.valid_from, decision.valid_to, '[]') && daterange(dgp.start_date, dgp.end_date, '[]')
+            WHERE daterange(dgp.start_date, dgp.end_date, '[]') && sn_part.realized_period
             AND p.unit_id = part.placement_unit
             GROUP BY p.child_id
         ) child_group ON child.id = child_group.child_id

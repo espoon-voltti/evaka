@@ -375,9 +375,6 @@ export function getVoucherServiceProviderUnitReport(
         res.data.map((row) => ({
           ...row,
           childDateOfBirth: LocalDate.parseIso(row.childDateOfBirth),
-          serviceVoucherPeriod: FiniteDateRange.parseJson(
-            row.serviceVoucherPeriod
-          ),
           realizedAmount: row.realizedAmount,
           realizedPeriod: FiniteDateRange.parseJson(row.realizedPeriod),
           numberOfDays: row.numberOfDays
