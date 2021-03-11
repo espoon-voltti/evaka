@@ -212,7 +212,7 @@ const Decision = memo(function Decision({
     [decisionDraftGroup, units, setSelectedUnit]
   )
 
-  function RedirectToMainPage() {
+  function redirectToMainPage() {
     history.push('/applications')
     return null
   }
@@ -528,7 +528,7 @@ const Decision = memo(function Decision({
               <FixedSpaceRow>
                 <Button
                   dataQa="cancel-decisions-button"
-                  onClick={RedirectToMainPage}
+                  onClick={redirectToMainPage}
                   text={i18n.common.cancel}
                 />
                 <AsyncButton
@@ -547,7 +547,7 @@ const Decision = memo(function Decision({
                     )
                     return updateDecisionDrafts(applicationId, updatedDrafts)
                   }}
-                  onSuccess={RedirectToMainPage}
+                  onSuccess={redirectToMainPage}
                   text={i18n.common.save}
                 />
               </FixedSpaceRow>
