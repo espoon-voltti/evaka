@@ -51,9 +51,7 @@ export default React.memo(function AttendanceList({
   }
 
   function getGroupIdByChild(child: AttendanceChild) {
-    return attendanceChildren
-      .map((ac) => ac.groupId)
-      .find((gId) => gId === child.groupId)
+    return attendanceChildren.find((ac) => ac.groupId === child.groupId)?.groupId
   }
 
   return (
