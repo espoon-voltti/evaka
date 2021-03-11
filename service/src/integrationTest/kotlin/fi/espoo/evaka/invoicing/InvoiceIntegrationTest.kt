@@ -64,7 +64,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     private fun assertEqualEnough(expected: List<InvoiceSummary>, actual: List<InvoiceSummary>) {
         assertEquals(
-            expected.map { it.copy(sentAt = null) }.toSet(),
+            expected.map { it.copy(sentAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }.toSet(),
             actual.map { it.copy(sentAt = null) }.toSet()
         )
     }
