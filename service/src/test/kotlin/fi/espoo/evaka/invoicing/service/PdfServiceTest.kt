@@ -202,7 +202,7 @@ class PdfServiceTest {
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
-        File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
+        //File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
 
         assertNotNull(pdfBytes)
     }

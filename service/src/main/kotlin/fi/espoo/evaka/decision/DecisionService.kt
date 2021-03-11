@@ -160,10 +160,11 @@ class DecisionService(
                 sendAddress,
                 isPartTimeDecision
             )
+
             return pdfService.render(pages)
         }
 
-        fun generateDecisionPages(
+        private fun generateDecisionPages(
             templates: List<String>,
             lang: String,
             decision: Decision,
@@ -194,7 +195,7 @@ class DecisionService(
             }
         }
 
-        fun createTemplates(
+        private fun createTemplates(
             decision: Decision,
             isTransferApplication: Boolean
         ): List<String> {
