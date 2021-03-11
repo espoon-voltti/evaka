@@ -33,7 +33,8 @@ enum class AsyncJobType {
     SEND_APPLICATION_EMAIL,
     GARBAGE_COLLECT_PAIRING,
     VARDA_UPDATE,
-    SEND_PENDING_DECISION_EMAIL
+    SEND_PENDING_DECISION_EMAIL,
+    SEND_UNREAD_BULLETIN_NOTIFICATION
 }
 
 interface AsyncJobPayload {
@@ -53,6 +54,11 @@ data class SendApplicationEmail(val guardianId: UUID, val language: Language) : 
 
 data class SendPendingDecisionEmail(val guardianId: UUID, val email: String, val language: String?, val decisionIds: List<UUID>) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_PENDING_DECISION_EMAIL
+    override val user: AuthenticatedUser? = null
+}
+
+data class SendUnreadBulletinNotificationEmail(val id: UUID, val receiverId: UUID, val receiverEmail: String, val language: Language) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.SEND_UNREAD_BULLETIN_NOTIFICATION
     override val user: AuthenticatedUser? = null
 }
 

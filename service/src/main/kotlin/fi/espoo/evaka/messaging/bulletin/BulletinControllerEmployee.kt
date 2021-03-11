@@ -27,7 +27,8 @@ import java.util.UUID
 @RestController
 @RequestMapping("/bulletins")
 class BulletinControllerEmployee(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val bulletinNotificationEmailService: BulletinNotificationEmailService
 ) {
 
     data class CreateBulletinRequest(
@@ -145,6 +146,7 @@ class BulletinControllerEmployee(
                 } else throw BadRequest("Must select group before sending")
             }
             tx.sendBulletin(user, id)
+            bulletinNotificationEmailService.scheduleSendingBulletinNotifications(tx, id)
         }
 
         return ResponseEntity.noContent().build()

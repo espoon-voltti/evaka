@@ -625,7 +625,7 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
         decisions.first().let { decision ->
             assertEquals(23100 + 11600, decision.totalFee())
             assertEquals(2, decision.parts.size)
-            decision.parts.first().let { part ->
+            decision.parts.sortedBy { it.siblingDiscount }.first().let { part ->
                 assertEquals(28900, part.baseFee)
                 assertEquals(PlacementType.PREPARATORY_WITH_DAYCARE, part.placement.type)
                 assertEquals(ServiceNeed.GTE_25, part.placement.serviceNeed)
@@ -633,7 +633,7 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(23100, part.fee)
                 assertEquals(23100, part.finalFee())
             }
-            decision.parts.last().let { part ->
+            decision.parts.sortedBy { it.siblingDiscount }.last().let { part ->
                 assertEquals(28900, part.baseFee)
                 assertEquals(PlacementType.PREPARATORY_WITH_DAYCARE, part.placement.type)
                 assertEquals(ServiceNeed.GTE_25, part.placement.serviceNeed)

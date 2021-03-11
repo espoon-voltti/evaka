@@ -177,7 +177,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     private fun assertEqualEnough(expected: FeeDecisionDetailed, actual: FeeDecisionDetailed) {
         assertEquals(
-            expected.copy(approvedAt = null, sentAt = null),
+            expected.copy(approvedAt = null, sentAt = null, headOfFamily = expected.headOfFamily.copy(email = null)),
             actual.copy(approvedAt = null, sentAt = null)
         )
     }

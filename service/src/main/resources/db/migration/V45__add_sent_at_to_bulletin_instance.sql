@@ -1,0 +1,1 @@
+ALTER TABLE bulletin_instance ADD COLUMN notification_sent_at timestamp;
