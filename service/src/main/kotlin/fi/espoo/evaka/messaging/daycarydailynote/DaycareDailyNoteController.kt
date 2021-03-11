@@ -34,6 +34,10 @@ class DaycareDailyNoteController(
         @PathVariable groupId: UUID
     ): ResponseEntity<List<DaycareDailyNote>> {
         Audit.DaycareDailyNoteRead.log(user.id)
+
+        acl.getRolesForUnitGroup(user, groupId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
     }
 
@@ -44,6 +48,10 @@ class DaycareDailyNoteController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<DaycareDailyNote>> {
         Audit.DaycareDailyNoteRead.log(user.id)
+
+        acl.getRolesForChild(user, childId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         return db.read { it.getChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok(it) }
     }
 
@@ -55,9 +63,10 @@ class DaycareDailyNoteController(
         @RequestBody body: DaycareDailyNote
     ): ResponseEntity<UUID> {
         Audit.DaycareDailyNoteCreate.log(user.id)
-        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
-            throw Forbidden("Permission denied")
-        }
+
+        acl.getRolesForChild(user, childId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(childId = childId))) }
     }
 
@@ -69,9 +78,10 @@ class DaycareDailyNoteController(
         @RequestBody body: DaycareDailyNote
     ): ResponseEntity<DaycareDailyNote> {
         Audit.DaycareDailyNoteUpdate.log(user.id)
-        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
-            throw Forbidden("Permission denied")
-        }
+
+        acl.getRolesForChild(user, childId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(childId = childId))) }
     }
 
@@ -82,9 +92,11 @@ class DaycareDailyNoteController(
         @PathVariable noteId: UUID
     ) {
         Audit.DaycareDailyNoteDelete.log(user.id)
-        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
+
+        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)) {
             throw Forbidden("Permission denied")
         }
+
         return db.transaction { it.deleteDaycareDailyNote(noteId) }.let { ResponseEntity.ok() }
     }
 
@@ -95,9 +107,10 @@ class DaycareDailyNoteController(
         @PathVariable childId: UUID
     ) {
         Audit.DaycareDailyNoteDelete.log(user.id)
-        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
-            throw Forbidden("Permission denied")
-        }
+
+        acl.getRolesForChild(user, childId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         return db.transaction { it.deleteChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok() }
     }
 }

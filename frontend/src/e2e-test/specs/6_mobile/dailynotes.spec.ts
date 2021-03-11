@@ -113,6 +113,7 @@ test('Daycare groups are shown', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
+    sleepingHours: '',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
