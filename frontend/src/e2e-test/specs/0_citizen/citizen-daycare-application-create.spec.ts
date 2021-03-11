@@ -31,7 +31,7 @@ import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
-import { add, sub, parse } from 'date-fns'
+import { sub, parse } from 'date-fns'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
 import path from 'path'

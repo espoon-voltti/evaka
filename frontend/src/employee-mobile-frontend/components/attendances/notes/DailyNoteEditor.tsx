@@ -251,6 +251,7 @@ export default React.memo(function DailyNoteEditor() {
                     text={i18n.common.confirm}
                     onClick={() =>
                       createOrUpdateDaycareDailyNoteForChild(
+                        childId,
                         dailyNoteEditedToDailyNote(dailyNote)
                       )
                     }

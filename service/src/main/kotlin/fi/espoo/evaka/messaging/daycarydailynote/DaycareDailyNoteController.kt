@@ -36,7 +36,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteRead.log(user.id)
 
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
 
         return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
     }
@@ -50,7 +50,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteRead.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
 
         return db.read { it.getChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok(it) }
     }
@@ -65,7 +65,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
 
         return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(childId = childId))) }
     }
@@ -80,7 +80,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteUpdate.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
 
         return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(childId = childId))) }
     }
@@ -93,7 +93,7 @@ class DaycareDailyNoteController(
     ) {
         Audit.DaycareDailyNoteDelete.log(user.id)
 
-        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)) {
+        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)) {
             throw Forbidden("Permission denied")
         }
 
@@ -109,7 +109,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteDelete.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
 
         return db.transaction { it.deleteChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok() }
     }
