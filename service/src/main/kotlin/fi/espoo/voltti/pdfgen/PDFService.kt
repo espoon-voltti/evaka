@@ -19,26 +19,17 @@ fun ITemplateEngine.process(page: Page): String = this.process(page.template.val
 @Component
 class PDFService(private val templateEngine: ITemplateEngine) {
 
-    fun render(pages: List<Page>): ByteArray {
+    fun render(page: Page): ByteArray {
         val os = ByteArrayOutputStream()
-        renderHtmlPages(pages.map(templateEngine::process), os)
+        renderHtmlPageToPDF(templateEngine.process(page), os)
         return os.toByteArray()
     }
 
-    private fun renderHtmlPages(pages: List<String>, os: OutputStream) {
+    private fun renderHtmlPageToPDF(pages: String, os: OutputStream) {
         with(ITextRenderer()) {
-            val head = pages.first()
-            val tail = pages.drop(1)
-            // First page
-            setDocumentFromString(head)
+            setDocumentFromString(pages)
             layout()
             createPDF(os, false)
-            // Rest of the pages
-            tail.forEach { page ->
-                setDocumentFromString(page)
-                layout()
-                writeNextDocument()
-            }
             finishPDF()
         }
     }

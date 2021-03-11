@@ -147,11 +147,11 @@ class DecisionService(
             unitManager: DaycareManager
         ): ByteArray {
             val sendAddress = getSendAddress(guardian, lang)
-            val templates = createTemplates(decision, isTransferApplication)
+            val template = createTemplate(decision, isTransferApplication)
             val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
 
             val pages = generateDecisionPages(
-                templates,
+                template,
                 lang,
                 decision,
                 child,
@@ -165,7 +165,7 @@ class DecisionService(
         }
 
         private fun generateDecisionPages(
-            templates: List<String>,
+            template: String,
             lang: String,
             decision: Decision,
             child: PersonDTO,
@@ -173,59 +173,49 @@ class DecisionService(
             manager: DaycareManager,
             sendAddress: DecisionSendAddress,
             isPartTimeDecision: Boolean
-        ): List<Page> {
-            return templates.mapIndexed { i, template ->
-                Page(
-                    Template(template),
-                    Context().apply {
-                        locale = Locale.Builder().setLanguage(lang).build()
-                        setVariable("decision", decision)
-                        setVariable("child", child)
-                        setVariable("guardian", guardian)
-                        setVariable("manager", manager)
-                        setVariable("sendAddress", sendAddress)
-                        setVariable("pageNumber", i + 1)
-                        setVariable("isPartTimeDecision", isPartTimeDecision)
-                        setVariable(
-                            "hideDaycareTime",
-                            decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB
-                        )
-                    }
-                )
-            }
+        ): Page {
+            return Page(
+                Template(template),
+                Context().apply {
+                    locale = Locale.Builder().setLanguage(lang).build()
+                    setVariable("decision", decision)
+                    setVariable("child", child)
+                    setVariable("guardian", guardian)
+                    setVariable("manager", manager)
+                    setVariable("sendAddress", sendAddress)
+                    setVariable("isPartTimeDecision", isPartTimeDecision)
+                    setVariable(
+                        "hideDaycareTime",
+                        decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB
+                    )
+                }
+            )
         }
 
-        private fun createTemplates(
+        private fun createTemplate(
             decision: Decision,
             isTransferApplication: Boolean
-        ): List<String> {
+        ): String {
             return when (decision.type) {
-                DecisionType.CLUB -> listOf(
-                    "club/decision"
-                )
+                DecisionType.CLUB -> "club/decision"
+
                 DecisionType.DAYCARE, DecisionType.PRESCHOOL_DAYCARE, DecisionType.DAYCARE_PART_TIME -> {
                     if (decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                        listOf(
-                            "daycare/voucher/decision"
-                        )
+                        "daycare/voucher/decision"
                     } else {
                         if (isTransferApplication) {
-                            listOf(
-                                "daycare/transfer/decision"
-                            )
+                            "daycare/transfer/decision"
                         } else {
-                            listOf(
-                                "daycare/decision"
-                            )
+
+                            "daycare/decision"
                         }
                     }
                 }
-                DecisionType.PRESCHOOL -> listOf(
+                DecisionType.PRESCHOOL ->
                     "preschool/decision"
-                )
-                DecisionType.PREPARATORY_EDUCATION -> listOf(
+
+                DecisionType.PREPARATORY_EDUCATION ->
                     "preparatory/decision"
-                )
             }
         }
     }
