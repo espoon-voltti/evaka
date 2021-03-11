@@ -17,15 +17,13 @@ export const getLayout = <Components>(
   layouts: LayoutsWithDefault<Components>,
   roles: AdRole[]
 ): Layout<Components> => {
-  return (
-    (roles.includes('ADMIN')
-      ? layouts['ADMIN']
-      : roles.includes('FINANCE_ADMIN')
-      ? layouts['FINANCE_ADMIN']
-      : roles.includes('STAFF')
-      ? layouts['STAFF']
-      : roles.includes('SPECIAL_EDUCATION_TEACHER')
-      ? layouts['SPECIAL_EDUCATION_TEACHER']
-      : layouts.default) ?? layouts.default
+  // Compute the layout as union of all component names the user may have access to.
+  // For example if the user is both FINANCE_ADMIN and SPECIAL_EDUCATION teacher, we display
+  // components accessible by either role.
+  const unionOfComponentNames = new Set(
+    roles.flatMap((role) => layouts[role]?.map((part) => part.component) || [])
+  )
+  return (layouts['ADMIN'] || layouts['default']).filter((layout) =>
+    unionOfComponentNames.has(layout.component)
   )
 }
