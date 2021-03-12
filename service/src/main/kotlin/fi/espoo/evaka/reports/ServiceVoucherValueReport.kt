@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -76,13 +77,14 @@ class ServiceVoucherValueReportController {
     }
 }
 
-fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int) {
+fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int, takenAt: Instant) {
     val rows = tx.getServiceVoucherValues(year, month)
 
     val voucherValueReportSnapshotId =
-        tx.createUpdate("INSERT INTO voucher_value_report_snapshot (month, year) VALUES (:month, :year) RETURNING id")
+        tx.createUpdate("INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (:month, :year, :takenAt) RETURNING id")
             .bind("year", year)
             .bind("month", month)
+            .bind("takenAt", takenAt)
             .executeAndReturnGeneratedKeys("id")
             .mapTo<UUID>()
             .first()
@@ -177,7 +179,7 @@ WITH min_voucher_decision_date AS (
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part on decision.id = part.voucher_value_decision_id
     WHERE decision.status = ANY(:effective)
-      AND decision.approved_at > (SELECT coalesce(max(created), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
+      AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
       AND lower(p.period) < :reportDate
 ), refund_months AS (
     SELECT DISTINCT c.child, c.year, c.month, c.period FROM corrections c

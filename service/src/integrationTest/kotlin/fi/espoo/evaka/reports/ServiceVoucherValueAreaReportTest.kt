@@ -3,6 +3,7 @@ package fi.espoo.evaka.reports
 import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
@@ -64,7 +65,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Test
     fun `frozen area voucher report includes value decisions that begin in the beginning of reports month`() {
         val sum = createTestSetOfDecisions()
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
 
         val janReport = getAreaReport(testAreaId, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
@@ -74,7 +75,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Test
     fun `area voucher report includes corrections and refunds`() {
         val sum = createTestSetOfDecisions()
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
         // co payment is dropped from 28800 to 0
         createVoucherDecision(janFirst, testDaycare.id, 87000, 0, testAdult_1.id, testChild_1)
 
@@ -86,7 +87,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Test
     fun `area voucher report includes refunds in old area and corrections in new`() {
         val sum = createTestSetOfDecisions()
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
         // child is placed into another area
         createVoucherDecision(janFirst, testDaycare2.id, 87000, 28800, testAdult_1.id, testChild_1)
 
@@ -104,6 +105,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         assertNotNull(row)
         assertEquals(sum, row!!.monthlyPaymentSum)
     }
+
+    private fun LocalDate.toInstant() = this.atStartOfDay(helsinkiZone).toInstant()
 
     private val adminUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
