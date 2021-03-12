@@ -78,7 +78,7 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (acceptChecked) {
       return handleAcceptDecision()
     } else {
@@ -86,7 +86,7 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const handleAcceptDecision = () => {
+  const handleAcceptDecision = async () => {
     if (parsedDate === null) throw new Error('Parsed date was null')
     setSubmitting(true)
     return acceptDecision(applicationId, decisionId, parsedDate)
@@ -105,7 +105,7 @@ export default React.memo(function DecisionResponse({
       })
   }
 
-  const handleRejectDecision = () => {
+  const handleRejectDecision = async () => {
     setSubmitting(true)
     return rejectDecision(applicationId, decisionId)
       .then((res) => {
