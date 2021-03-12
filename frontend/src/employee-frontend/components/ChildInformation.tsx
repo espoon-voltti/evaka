@@ -29,7 +29,7 @@ import FridgeParents from '../components/child-information/FridgeParents'
 import { getParentshipsByChild } from '../api/parentships'
 import { UserContext } from '../state/user'
 import { TitleContext, TitleState } from '../state/title'
-import { getLayout, LayoutsWithDefault } from './layouts'
+import { getLayout, Layouts } from './layouts'
 import BackupCare from '../components/child-information/BackupCare'
 import Guardians from '../components/child-information/Guardians'
 import FamilyContacts from '../components/child-information/FamilyContacts'
@@ -82,15 +82,7 @@ const components = {
   applications: ChildApplications
 }
 
-const layouts: LayoutsWithDefault<typeof components> = {
-  ['FINANCE_ADMIN']: [
-    { component: 'fee-alterations', open: true },
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'service-need', open: false }
-  ],
+const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
     { component: 'guardians', open: false },
@@ -101,6 +93,32 @@ const layouts: LayoutsWithDefault<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
+  ],
+  ['SERVICE_WORKER']: [
+    { component: 'guardians', open: false },
+    { component: 'parents', open: false },
+    { component: 'placements', open: false },
+    { component: 'backup-care', open: false },
+    { component: 'service-need', open: false },
+    { component: 'assistance', open: false },
+    { component: 'applications', open: false }
+  ],
+  ['FINANCE_ADMIN']: [
+    { component: 'fee-alterations', open: true },
+    { component: 'guardians', open: false },
+    { component: 'parents', open: false },
+    { component: 'placements', open: false },
+    { component: 'backup-care', open: false },
+    { component: 'service-need', open: false }
+  ],
+  ['UNIT_SUPERVISOR']: [
+    { component: 'guardians', open: false },
+    { component: 'parents', open: false },
+    { component: 'placements', open: false },
+    { component: 'backup-care', open: false },
+    { component: 'service-need', open: false },
+    { component: 'assistance', open: false },
+    { component: 'applications', open: false }
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
@@ -114,15 +132,6 @@ const layouts: LayoutsWithDefault<typeof components> = {
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
     { component: 'assistance', open: false }
-  ],
-  default: [
-    { component: 'guardians', open: false },
-    { component: 'parents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
-    { component: 'assistance', open: false },
-    { component: 'applications', open: false }
   ]
 }
 

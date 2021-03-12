@@ -5,16 +5,12 @@
 import { AdRole } from '../types'
 
 type Layout<Components> = { component: keyof Components; open: boolean }[]
-type Layouts<Components> = {
+export type Layouts<Components> = {
   [k in AdRole]?: Layout<Components>
 }
 
-export type LayoutsWithDefault<Components> = Layouts<Components> & {
-  default: Layout<Components>
-}
-
 export const getLayout = <Components>(
-  layouts: LayoutsWithDefault<Components>,
+  layouts: Layouts<Components>,
   roles: AdRole[]
 ): Layout<Components> => {
   // Compute the layout as union of all component names the user may have access to.
@@ -23,7 +19,8 @@ export const getLayout = <Components>(
   const unionOfComponentNames = new Set(
     roles.flatMap((role) => layouts[role]?.map((part) => part.component) || [])
   )
-  return (layouts['ADMIN'] || layouts['default']).filter((layout) =>
+  const allLayouts = layouts['ADMIN'] ?? []
+  return allLayouts.filter((layout) =>
     unionOfComponentNames.has(layout.component)
   )
 }
