@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -76,13 +77,14 @@ class ServiceVoucherValueReportController {
     }
 }
 
-fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int) {
+fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int, takenAt: Instant) {
     val rows = tx.getServiceVoucherValues(year, month)
 
     val voucherValueReportSnapshotId =
-        tx.createUpdate("INSERT INTO voucher_value_report_snapshot (month, year) VALUES (:month, :year) RETURNING id")
+        tx.createUpdate("INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (:month, :year, :takenAt) RETURNING id")
             .bind("year", year)
             .bind("month", month)
+            .bind("takenAt", takenAt)
             .executeAndReturnGeneratedKeys("id")
             .mapTo<UUID>()
             .first()
@@ -120,7 +122,7 @@ data class ServiceVoucherValueUnitAggregate(
     )
 }
 
-enum class RowType {
+enum class VoucherReportRowType {
     ORIGINAL,
     REFUND,
     CORRECTION
@@ -144,7 +146,7 @@ data class ServiceVoucherValueRow(
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
-    val type: RowType
+    val type: VoucherReportRowType
 )
 
 private fun Database.Read.getServiceVoucherValues(
@@ -156,7 +158,7 @@ private fun Database.Read.getServiceVoucherValues(
     // language=sql
     val sql = """
 WITH min_voucher_decision_date AS (
-    SELECT coalesce(min(valid_from), :reportDate) AS min_date FROM voucher_value_decision WHERE status = :sent
+    SELECT coalesce(min(valid_from), :reportDate) AS min_date FROM voucher_value_decision WHERE status = ANY(:effective)
 ), min_change_month AS (
     SELECT make_date(extract(year from min_date)::int, extract(month from min_date)::int, 1) AS month FROM min_voucher_decision_date
 ), month_periods AS (
@@ -170,14 +172,14 @@ WITH min_voucher_decision_date AS (
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
-    WHERE decision.status = :sent AND lower(p.period) = :reportDate
+    WHERE decision.status = ANY(:effective) AND lower(p.period) = :reportDate
 ), corrections AS (
     SELECT part.child, p.*, part.id AS part_id, daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part on decision.id = part.voucher_value_decision_id
-    WHERE decision.status = 'SENT'
-      AND decision.sent_at > (SELECT coalesce(max(created), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
+    WHERE decision.status = ANY(:effective)
+      AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
       AND lower(p.period) < :reportDate
 ), refund_months AS (
     SELECT DISTINCT c.child, c.year, c.month, c.period FROM corrections c
@@ -271,7 +273,7 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 """
 
     return createQuery(sql)
-        .bind("sent", VoucherValueDecisionStatus.SENT)
+        .bind("effective", VoucherValueDecisionStatus.effective)
         .bind("reportDate", LocalDate.of(year, month, 1))
         .bindNullable("areaId", areaId)
         .bindNullable("unitId", unitId)

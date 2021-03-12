@@ -82,7 +82,14 @@ enum class FeeDecisionStatus {
     WAITING_FOR_SENDING,
     WAITING_FOR_MANUAL_SENDING,
     SENT,
-    ANNULLED
+    ANNULLED;
+
+    companion object {
+        /**
+         *  list of statuses that have an overlap exclusion constraint at the database level and that signal that a decision is in effect
+         */
+        val effective = arrayOf(SENT, WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING)
+    }
 }
 
 enum class FeeDecisionType {

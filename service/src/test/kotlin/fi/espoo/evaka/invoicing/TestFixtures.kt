@@ -19,11 +19,15 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.PermanentPlacement
+import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPart
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.service.DaycareCodes
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
@@ -283,6 +287,54 @@ fun createFeeDecisionFixture(
     partnerIncome = null,
     familySize = parts.size + 1,
     pricing = pricing,
+    parts = parts
+)
+
+fun createVoucherValueDecisionPartFixture(
+    childId: UUID,
+    dateOfBirth: LocalDate,
+    unitId: UUID,
+    placementType: PlacementType = PlacementType.DAYCARE,
+    serviceNeed: ServiceNeed = ServiceNeed.MISSING,
+    hoursPerWeek: Double? = null,
+    baseValue: Int = 87000,
+    ageCoefficient: Int = 100,
+    serviceCoefficient: Int = 100,
+    value: Int = 87000,
+    baseCoPayment: Int = 28900,
+    siblingDiscount: Int = 0,
+    coPayment: Int = 28900,
+    feeAlterations: List<FeeAlterationWithEffect> = listOf()
+) = VoucherValueDecisionPart(
+    child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    placement = PermanentPlacementWithHours(unitId, placementType, serviceNeed, hoursPerWeek),
+    baseValue = baseValue,
+    ageCoefficient = ageCoefficient,
+    serviceCoefficient = serviceCoefficient,
+    value = value,
+    baseCoPayment = baseCoPayment,
+    siblingDiscount = siblingDiscount,
+    coPayment = coPayment,
+    feeAlterations = feeAlterations
+)
+
+fun createVoucherValueDecisionFixture(
+    status: VoucherValueDecisionStatus,
+    validFrom: LocalDate,
+    validTo: LocalDate?,
+    headOfFamilyId: UUID,
+    parts: List<VoucherValueDecisionPart>
+) = VoucherValueDecision(
+    id = UUID.randomUUID(),
+    status = status,
+    validFrom = validFrom,
+    validTo = validTo,
+    headOfFamily = PersonData.JustId(headOfFamilyId),
+    partner = null,
+    headOfFamilyIncome = null,
+    partnerIncome = null,
+    familySize = parts.size + 1,
+    pricing = testPricing,
     parts = parts
 )
 

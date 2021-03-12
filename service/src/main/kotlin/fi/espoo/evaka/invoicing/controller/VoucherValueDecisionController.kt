@@ -135,7 +135,7 @@ class VoucherValueDecisionController(
         return ResponseEntity(pdf, headers, HttpStatus.OK)
     }
 
-    private fun sendVoucherValueDecisions(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>) {
+    fun sendVoucherValueDecisions(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>) {
         tx.handle.lockValueDecisions(ids)
         val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
         if (decisions.isEmpty()) return

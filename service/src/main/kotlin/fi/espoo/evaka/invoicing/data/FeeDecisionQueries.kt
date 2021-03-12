@@ -345,7 +345,7 @@ fun searchFeeDecisions(
         if (unit != null) "part.placement_unit = :unit" else null,
         if (withNullHours) "part.service_need = :missingServiceNeed" else null,
         if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice" else null,
-        if (retroactiveOnly) "decision.valid_from < date_trunc('month', COALESCE(decision.sent_at, now()))" else null,
+        if (retroactiveOnly) "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, now()))" else null,
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
