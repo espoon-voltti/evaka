@@ -13,7 +13,7 @@ import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from '@evaka/lib-common/api'
-import {VoucherServiceProviderReport} from '../../types/reports'
+import { VoucherServiceProviderReport } from '../../types/reports'
 import {
   getVoucherServiceProvidersReport,
   VoucherServiceProvidersFilters
@@ -32,14 +32,14 @@ import {
 } from '../../components/reports/common'
 import { FlexRow } from '../../components/common/styled/containers'
 import { formatCents } from '../../utils/money'
-import LocalDate from "@evaka/lib-common/local-date";
-import {InfoBox} from "@evaka/lib-components/molecules/MessageBoxes";
-import {defaultMargins, Gap} from '@evaka/lib-components/white-space'
-import {FixedSpaceRow} from "@evaka/lib-components/layout/flex-helpers";
-import colors from "@evaka/lib-components/colors";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faLockAlt} from "@evaka/lib-icons";
-import HorizontalLine from "@evaka/lib-components/atoms/HorizontalLine";
+import LocalDate from '@evaka/lib-common/local-date'
+import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import colors from '@evaka/lib-components/colors'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLockAlt } from '@evaka/lib-icons'
+import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -95,8 +95,9 @@ function VoucherServiceProviders() {
     areaId: ''
   })
 
-  const futureSelected = LocalDate.of(filters.year, filters.month, 1)
-    .isAfter(LocalDate.today().withDate(1))
+  const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
+    LocalDate.today().withDate(1)
+  )
 
   useEffect(() => {
     void getAreas().then((res) => res.isSuccess && setAreas(res.value))
@@ -182,23 +183,30 @@ function VoucherServiceProviders() {
           </FilterWrapper>
         </FilterRow>
 
-        { report.isSuccess && report.value.locked && (
-          <LockedDate spacing='xs' alignItems='center'>
-            <FontAwesomeIcon icon={faLockAlt}/>
+        {report.isSuccess && report.value.locked && (
+          <LockedDate spacing="xs" alignItems="center">
+            <FontAwesomeIcon icon={faLockAlt} />
             <span>
-              {`${i18n.reports.voucherServiceProviders.locked}: ${report.value.locked.format()}`}
+              {`${
+                i18n.reports.voucherServiceProviders.locked
+              }: ${report.value.locked.format()}`}
             </span>
           </LockedDate>
         )}
 
-        <HorizontalLine slim/>
+        <HorizontalLine slim />
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {futureSelected && <>
-          <Gap />
-          <InfoBox wide message={i18n.reports.voucherServiceProviders.filters.noFuture}/>
-        </>}
+        {futureSelected && (
+          <>
+            <Gap />
+            <InfoBox
+              wide
+              message={i18n.reports.voucherServiceProviders.filters.noFuture}
+            />
+          </>
+        )}
         {!futureSelected && mappedData && filters.areaId && (
           <>
             <ReportDownload
@@ -206,8 +214,14 @@ function VoucherServiceProviders() {
               headers={[
                 { label: i18n.reports.common.careAreaName, key: 'areaName' },
                 { label: i18n.reports.common.unitName, key: 'unitName' },
-                { label: i18n.reports.voucherServiceProviders.childCount, key: 'childCount' },
-                { label: i18n.reports.voucherServiceProviders.unitVoucherSum, key: 'sum' }
+                {
+                  label: i18n.reports.voucherServiceProviders.childCount,
+                  key: 'childCount'
+                },
+                {
+                  label: i18n.reports.voucherServiceProviders.unitVoucherSum,
+                  key: 'sum'
+                }
               ]}
               filename={getFilename(
                 filters.year,
@@ -234,7 +248,11 @@ function VoucherServiceProviders() {
                   >
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
-                      <Link to={`/reports/voucher-service-providers/${row.unitId}`}>{row.unitName}</Link>
+                      <Link
+                        to={`/reports/voucher-service-providers/${row.unitId}`}
+                      >
+                        {row.unitName}
+                      </Link>
                     </StyledTd>
                     <StyledTd data-qa={'child-count'}>
                       {row.childCount}

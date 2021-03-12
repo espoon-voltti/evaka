@@ -33,18 +33,18 @@ import {
 import { UUID } from '../../types'
 import { reactSelectStyles } from '../../components/common/Select'
 
-import {defaultMargins, Gap} from '@evaka/lib-components/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
 
 import { formatCents } from '../../utils/money'
 import { capitalizeFirstLetter, formatName } from '../../utils'
 import Tooltip from '@evaka/lib-components/atoms/Tooltip'
-import LocalDate from "@evaka/lib-common/local-date";
-import {InfoBox} from "@evaka/lib-components/molecules/MessageBoxes";
-import colors from "@evaka/lib-components/colors";
-import HorizontalLine from "@evaka/lib-components/atoms/HorizontalLine";
-import {FixedSpaceRow} from "@evaka/lib-components/layout/flex-helpers";
+import LocalDate from '@evaka/lib-common/local-date'
+import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import colors from '@evaka/lib-components/colors'
+import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
+import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faLockAlt} from "@evaka/lib-icons";
+import { faLockAlt } from '@evaka/lib-icons'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -65,11 +65,16 @@ const SumRow = styled.div`
 `
 
 const StyledTd = styled(Td)<{ type: VoucherReportRowType }>`
-  ${p => p.type === 'REFUND' ? `
+  ${(p) =>
+    p.type === 'REFUND'
+      ? `
     border-left: 6px solid ${colors.accents.orange};
-  `: p.type === 'CORRECTION' ? `
+  `
+      : p.type === 'CORRECTION'
+      ? `
     border-left: 6px solid ${colors.accents.yellow};
-  ` : `
+  `
+      : `
     border-left: 6px solid ${colors.greyscale.white};
   `}
 `
@@ -77,9 +82,9 @@ const StyledTd = styled(Td)<{ type: VoucherReportRowType }>`
 function VoucherServiceProviderUnit() {
   const { i18n } = useTranslation()
   const { unitId } = useParams<{ unitId: UUID }>()
-  const [report, setReport] = useState<Result<VoucherServiceProviderUnitReport>>(
-    Loading.of()
-  )
+  const [report, setReport] = useState<
+    Result<VoucherServiceProviderUnitReport>
+  >(Loading.of())
   const [unitName, setUnitName] = useState<string>('')
 
   const now = new Date()
@@ -89,21 +94,20 @@ function VoucherServiceProviderUnit() {
     year: now.getFullYear()
   })
 
-  const futureSelected = LocalDate.of(filters.year, filters.month, 1)
-    .isAfter(LocalDate.today().withDate(1))
+  const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
+    LocalDate.today().withDate(1)
+  )
 
   useEffect(() => {
-    if(futureSelected) return
+    if (futureSelected) return
 
     setReport(Loading.of())
-    void getVoucherServiceProviderUnitReport(unitId, filters).then(
-      (res) => {
-        setReport(res)
-        if (res.isSuccess && res.value.rows.length > 0) {
-          setUnitName(res.value.rows[0].unitName)
-        }
+    void getVoucherServiceProviderUnitReport(unitId, filters).then((res) => {
+      setReport(res)
+      if (res.isSuccess && res.value.rows.length > 0) {
+        setUnitName(res.value.rows[0].unitName)
       }
-    )
+    })
   }, [filters])
 
   const monthOptions = range(0, 12).map((num) => ({
@@ -165,23 +169,30 @@ function VoucherServiceProviderUnit() {
           </FilterWrapper>
         </FilterRow>
 
-        { report.isSuccess && report.value.locked && (
-          <LockedDate spacing='xs' alignItems='center'>
-            <FontAwesomeIcon icon={faLockAlt}/>
+        {report.isSuccess && report.value.locked && (
+          <LockedDate spacing="xs" alignItems="center">
+            <FontAwesomeIcon icon={faLockAlt} />
             <span>
-              {`${i18n.reports.voucherServiceProviders.locked}: ${report.value.locked.format()}`}
+              {`${
+                i18n.reports.voucherServiceProviders.locked
+              }: ${report.value.locked.format()}`}
             </span>
           </LockedDate>
         )}
 
-        <HorizontalLine slim/>
+        <HorizontalLine slim />
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {futureSelected && <>
-          <Gap />
-          <InfoBox wide message={i18n.reports.voucherServiceProviders.filters.noFuture}/>
-        </>}
+        {futureSelected && (
+          <>
+            <Gap />
+            <InfoBox
+              wide
+              message={i18n.reports.voucherServiceProviders.filters.noFuture}
+            />
+          </>
+        )}
         {!futureSelected && report.isSuccess && (
           <>
             <SumRow>
@@ -192,14 +203,23 @@ function VoucherServiceProviderUnit() {
 
               <ReportDownload
                 data={[
-                  ...report.value.rows.map(r => ({
+                  ...report.value.rows.map((r) => ({
                     ...r,
                     start: r.realizedPeriod.start.format(),
                     end: r.realizedPeriod.end.format(),
-                    note: r.type === 'REFUND' ? 'Hyvitys' : r.type === 'CORRECTION' ? 'Korjaus' : '',
-                    serviceVoucherServiceCoefficient: formatCents(r.serviceVoucherServiceCoefficient),
+                    note:
+                      r.type === 'REFUND'
+                        ? 'Hyvitys'
+                        : r.type === 'CORRECTION'
+                        ? 'Korjaus'
+                        : '',
+                    serviceVoucherServiceCoefficient: formatCents(
+                      r.serviceVoucherServiceCoefficient
+                    ),
                     serviceVoucherValue: formatCents(r.serviceVoucherValue),
-                    serviceVoucherCoPayment: formatCents(r.serviceVoucherCoPayment),
+                    serviceVoucherCoPayment: formatCents(
+                      r.serviceVoucherCoPayment
+                    ),
                     realizedAmount: formatCents(r.realizedAmount)
                   })),
                   {
@@ -209,11 +229,13 @@ function VoucherServiceProviderUnit() {
                 ]}
                 headers={[
                   {
-                    label: i18n.reports.voucherServiceProviderUnit.childFirstName,
+                    label:
+                      i18n.reports.voucherServiceProviderUnit.childFirstName,
                     key: 'childFirstName'
                   },
                   {
-                    label: i18n.reports.voucherServiceProviderUnit.childLastName,
+                    label:
+                      i18n.reports.voucherServiceProviderUnit.childLastName,
                     key: 'childLastName'
                   },
                   {
@@ -238,7 +260,8 @@ function VoucherServiceProviderUnit() {
                   },
                   {
                     label:
-                    i18n.reports.voucherServiceProviderUnit.serviceVoucherValue,
+                      i18n.reports.voucherServiceProviderUnit
+                        .serviceVoucherValue,
                     key: 'serviceVoucherValue'
                   },
                   {
@@ -251,14 +274,14 @@ function VoucherServiceProviderUnit() {
                   },
                   {
                     label:
-                    i18n.reports.voucherServiceProviderUnit
-                      .serviceVoucherCoPayment,
+                      i18n.reports.voucherServiceProviderUnit
+                        .serviceVoucherCoPayment,
                     key: 'serviceVoucherCoPayment'
                   },
                   {
                     label:
-                    i18n.reports.voucherServiceProviderUnit
-                      .serviceVoucherRealizedValue,
+                      i18n.reports.voucherServiceProviderUnit
+                        .serviceVoucherRealizedValue,
                     key: 'realizedAmount'
                   }
                 ]}
@@ -298,7 +321,11 @@ function VoucherServiceProviderUnit() {
               </Thead>
               <Tbody>
                 {report.value.rows.map((row: VoucherServiceProviderUnitRow) => (
-                  <Tr key={`${row.serviceVoucherPartId}:${row.realizedPeriod.start.formatIso()}`}>
+                  <Tr
+                    key={`${
+                      row.serviceVoucherPartId
+                    }:${row.realizedPeriod.start.formatIso()}`}
+                  >
                     <StyledTd type={row.type}>
                       <Link to={`/child-information/${row.childId}`}>
                         {formatName(

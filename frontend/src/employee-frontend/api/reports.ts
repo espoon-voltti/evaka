@@ -22,7 +22,9 @@ import {
   RawReportRow,
   FamilyContactsReportRow,
   PlacementSketchingRow,
-  AssistanceNeedsAndActionsReportRow, VoucherServiceProviderUnitReport, VoucherServiceProviderReport
+  AssistanceNeedsAndActionsReportRow,
+  VoucherServiceProviderUnitReport,
+  VoucherServiceProviderReport
 } from '../types/reports'
 import { UUID } from '../types'
 import { JsonOf } from '@evaka/lib-common/json'
@@ -354,10 +356,12 @@ export async function getVoucherServiceProvidersReport(
         }
       }
     )
-    .then((res) => Success.of({
-      locked: LocalDate.parseNullableIso(res.data.locked),
-      rows: res.data.rows
-    }))
+    .then((res) =>
+      Success.of({
+        locked: LocalDate.parseNullableIso(res.data.locked),
+        rows: res.data.rows
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 

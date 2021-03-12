@@ -315,7 +315,7 @@ export interface StartingPlacementsRow {
 }
 
 export interface VoucherServiceProviderReport {
-  locked: LocalDate | null,
+  locked: LocalDate | null
   rows: VoucherServiceProviderRow[]
 }
 
@@ -333,8 +333,8 @@ export interface VoucherServiceProviderRow {
 export type VoucherReportRowType = 'ORIGINAL' | 'REFUND' | 'CORRECTION'
 
 export interface VoucherServiceProviderUnitReport {
-  locked: LocalDate | null,
-  voucherTotal: number,
+  locked: LocalDate | null
+  voucherTotal: number
   rows: VoucherServiceProviderUnitRow[]
 }
 

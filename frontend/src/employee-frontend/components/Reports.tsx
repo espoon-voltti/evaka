@@ -23,7 +23,8 @@ import {
   faCopy,
   faFileAlt,
   faDiagnoses,
-  faDatabase, faMoneyBillWave
+  faDatabase,
+  faMoneyBillWave
 } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/colors'
 import { RequireRole } from '../utils/roles'
