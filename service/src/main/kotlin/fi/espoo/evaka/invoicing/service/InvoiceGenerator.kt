@@ -48,11 +48,11 @@ import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
 fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: DateRange = getPreviousMonthRange()) {
-    val sentDecisions = getInvoiceableFeeDecisions(h, objectMapper, period).groupBy { it.headOfFamily.id }
+    val effectiveDecisions = getInvoiceableFeeDecisions(h, objectMapper, period).groupBy { it.headOfFamily.id }
     val placements = getInvoiceablePlacements(h, period).groupBy { it.headOfFamily.id }
     val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(h, period)
 
-    val unhandledDecisions = sentDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
+    val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val daycareCodes = getDaycareCodes(h)
     val operationalDays = operationalDays(h, period.start.year, period.start.month)
@@ -494,7 +494,7 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Da
             WHERE
                 decision.valid_from <= :period_end
                 AND (decision.valid_to IS NULL OR decision.valid_to >= :period_start)
-                AND decision.status = :status
+                AND decision.status = ANY(:effective)
                 ${
         /* delete this when these kinds of fee decisions stop existing */
         "AND (decision.valid_from <= decision.valid_to OR decision.valid_to IS NULL)"
@@ -504,7 +504,7 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Da
     return h.createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
-        .bind("status", FeeDecisionStatus.SENT.toString())
+        .bind("effective", FeeDecisionStatus.effective)
         .map(toFeeDecision(objectMapper))
         .let { it.merge() }
 }

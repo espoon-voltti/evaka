@@ -158,10 +158,10 @@ private fun getChildrenWithOutdatedFeeData(tx: Database.Read): List<Pair<UUID, L
 SELECT varda_child.person_id, varda_child.varda_child_id
 FROM varda_child
 JOIN LATERAL (
-    SELECT MAX(fd.sent_at) sent_at
+    SELECT MAX(fd.approved_at) approved_at
     FROM fee_decision fd
     JOIN fee_decision_part p ON fd.id = p.fee_decision_id AND p.child = varda_child.person_id
-    WHERE fd.status = :sent
+    WHERE fd.status = ANY(:effective)
 ) latest_fee_decision ON true
 JOIN LATERAL (
     SELECT MAX(uploaded_at) uploaded_at
@@ -169,10 +169,10 @@ JOIN LATERAL (
     WHERE varda_child_id = varda_child.id
 ) latest_fee_data ON true
 WHERE varda_child.varda_child_id IS NOT NULL
-AND COALESCE(latest_fee_data.uploaded_at <= COALESCE(latest_fee_decision.sent_at, '-infinity'), true)
+AND COALESCE(latest_fee_data.uploaded_at <= COALESCE(latest_fee_decision.approved_at, '-infinity'), true)
 """
     )
-        .bind("sent", FeeDecisionStatus.SENT)
+        .bind("effective", FeeDecisionStatus.effective)
         .map { rs, _ -> rs.getUUID("person_id") to rs.getLong("varda_child_id") }
         .toList()
 }
@@ -209,7 +209,7 @@ SELECT
     p.placement_type AS placement_type
 FROM varda_child vc
 JOIN fee_decision_part p ON vc.person_id = p.child
-JOIN fee_decision d ON p.fee_decision_id = d.id AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod AND d.status = :sent
+JOIN fee_decision d ON p.fee_decision_id = d.id AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod AND d.status = ANY(:effective)
 LEFT JOIN (
     SELECT fee_decision_part.id, SUM(effects.effect) sum
     FROM fee_decision_part
@@ -229,7 +229,7 @@ WHERE vc.varda_child_id = :childVardaId
         .bind("decisionStartDate", decisionPeriod.alkamis_pvm)
         .bind("decisionEndDate", decisionPeriod.paattymis_pvm)
         .bind("decisionPeriod", FiniteDateRange(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
-        .bind("sent", FeeDecisionStatus.SENT)
+        .bind("effective", FeeDecisionStatus.effective)
         .mapTo<VardaFeeDataBase>()
         .toList()
 }
