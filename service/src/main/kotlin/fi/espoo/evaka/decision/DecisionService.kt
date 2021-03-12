@@ -71,15 +71,14 @@ class DecisionService(
             ?: error("Guardian not found with id: ${application.guardianId}")
         val child = personService.getUpToDatePerson(tx, user, application.childId)
             ?: error("Child not found with id: ${application.childId}")
-        val unitManager = (
-            tx.handle.getUnitManager(decision.unit.id)
-                ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
-            )
+        val unitManager = tx.handle.getUnitManager(decision.unit.id)
+            ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
+        val guardianDecisionURI = createAndUploadDecision(
+            decision, application, guardian, child, decisionLanguage, guardian, unitManager
+        )
+
         updateDecisionGuardianDocumentUri(
-            tx.handle, decisionId,
-            createAndUploadDecision(
-                decision, application, guardian, child, decisionLanguage, guardian, unitManager
-            )
+            tx.handle, decisionId, guardianDecisionURI
         )
 
         if (application.otherGuardianId != null &&
@@ -88,12 +87,13 @@ class DecisionService(
             val otherGuardian = personService.getUpToDatePerson(tx, user, application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
+            val otherGuardianDecisionURI = createAndUploadDecision(
+                decision, application, otherGuardian, child, decisionLanguage, guardian, unitManager
+            )
             updateDecisionOtherGuardianDocumentUri(
                 tx.handle,
                 decisionId,
-                createAndUploadDecision(
-                    decision, application, otherGuardian, child, decisionLanguage, guardian, unitManager
-                )
+                otherGuardianDecisionURI
             )
         }
     }
@@ -135,90 +135,6 @@ class DecisionService(
             application.guardianId,
             application.otherGuardianId
         )
-
-    companion object {
-        fun createDecisionPdf(
-            pdfService: PDFService,
-            decision: Decision,
-            guardian: PersonDTO,
-            child: PersonDTO,
-            isTransferApplication: Boolean,
-            lang: String,
-            unitManager: DaycareManager
-        ): ByteArray {
-            val sendAddress = getSendAddress(guardian, lang)
-            val template = createTemplate(decision, isTransferApplication)
-            val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
-
-            val pages = generateDecisionPages(
-                template,
-                lang,
-                decision,
-                child,
-                guardian,
-                unitManager,
-                sendAddress,
-                isPartTimeDecision
-            )
-
-            return pdfService.render(pages)
-        }
-
-        private fun generateDecisionPages(
-            template: String,
-            lang: String,
-            decision: Decision,
-            child: PersonDTO,
-            guardian: PersonDTO,
-            manager: DaycareManager,
-            sendAddress: DecisionSendAddress,
-            isPartTimeDecision: Boolean
-        ): Page {
-            return Page(
-                Template(template),
-                Context().apply {
-                    locale = Locale.Builder().setLanguage(lang).build()
-                    setVariable("decision", decision)
-                    setVariable("child", child)
-                    setVariable("guardian", guardian)
-                    setVariable("manager", manager)
-                    setVariable("sendAddress", sendAddress)
-                    setVariable("isPartTimeDecision", isPartTimeDecision)
-                    setVariable(
-                        "hideDaycareTime",
-                        decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB
-                    )
-                }
-            )
-        }
-
-        private fun createTemplate(
-            decision: Decision,
-            isTransferApplication: Boolean
-        ): String {
-            return when (decision.type) {
-                DecisionType.CLUB -> "club/decision"
-
-                DecisionType.DAYCARE, DecisionType.PRESCHOOL_DAYCARE, DecisionType.DAYCARE_PART_TIME -> {
-                    if (decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                        "daycare/voucher/decision"
-                    } else {
-                        if (isTransferApplication) {
-                            "daycare/transfer/decision"
-                        } else {
-
-                            "daycare/decision"
-                        }
-                    }
-                }
-                DecisionType.PRESCHOOL ->
-                    "preschool/decision"
-
-                DecisionType.PREPARATORY_EDUCATION ->
-                    "preparatory/decision"
-            }
-        }
-    }
 
     private fun determineDecisionLanguage(
         decision: Decision,
@@ -381,4 +297,86 @@ Vårdnadshavaren, som har gjort ansökan om plats inom småbarnspedagogik, kan g
 
 Vänligen observera att du ska ge ditt svar till beslutet inom två veckor."""
     )
+}
+
+fun createDecisionPdf(
+    pdfService: PDFService,
+    decision: Decision,
+    guardian: PersonDTO,
+    child: PersonDTO,
+    isTransferApplication: Boolean,
+    lang: String,
+    unitManager: DaycareManager
+): ByteArray {
+    val sendAddress = getSendAddress(guardian, lang)
+    val template = createTemplate(decision, isTransferApplication)
+    val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
+
+    val pages = generateDecisionPages(
+        template,
+        lang,
+        decision,
+        child,
+        guardian,
+        unitManager,
+        sendAddress,
+        isPartTimeDecision
+    )
+
+    return pdfService.render(pages)
+}
+
+private fun generateDecisionPages(
+    template: String,
+    lang: String,
+    decision: Decision,
+    child: PersonDTO,
+    guardian: PersonDTO,
+    manager: DaycareManager,
+    sendAddress: DecisionSendAddress,
+    isPartTimeDecision: Boolean
+): Page {
+    return Page(
+        Template(template),
+        Context().apply {
+            locale = Locale.Builder().setLanguage(lang).build()
+            setVariable("decision", decision)
+            setVariable("child", child)
+            setVariable("guardian", guardian)
+            setVariable("manager", manager)
+            setVariable("sendAddress", sendAddress)
+            setVariable("isPartTimeDecision", isPartTimeDecision)
+            setVariable(
+                "hideDaycareTime",
+                decision.type == DecisionType.PRESCHOOL_DAYCARE || decision.type == DecisionType.CLUB || decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
+            )
+        }
+    )
+}
+
+private fun createTemplate(
+    decision: Decision,
+    isTransferApplication: Boolean
+): String {
+    return when (decision.type) {
+        DecisionType.CLUB -> "club/decision"
+
+        DecisionType.DAYCARE, DecisionType.PRESCHOOL_DAYCARE, DecisionType.DAYCARE_PART_TIME -> {
+            if (decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
+                "daycare/voucher/decision"
+            } else {
+                if (isTransferApplication) {
+                    "daycare/transfer/decision"
+                } else {
+
+                    "daycare/decision"
+                }
+            }
+        }
+        DecisionType.PRESCHOOL ->
+            "preschool/decision"
+
+        DecisionType.PREPARATORY_EDUCATION ->
+            "preparatory/decision"
+    }
 }

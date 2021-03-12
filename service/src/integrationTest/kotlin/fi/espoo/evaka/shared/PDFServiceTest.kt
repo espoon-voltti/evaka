@@ -7,10 +7,10 @@ package fi.espoo.evaka.shared
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.decision.Decision
-import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
+import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.config.PDFConfig
@@ -18,6 +18,7 @@ import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.voltti.pdfgen.PDFService
+import junit.framework.Assert.assertNotNull
 import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,6 +48,7 @@ private val preparatoryDecision =
 private val clubDecision = createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
 
 private val voucherDecision = daycareDecision.copy(
+    endDate = LocalDate.of(2019, 7, 31),
     unit = DecisionUnit(
         UUID.randomUUID(),
         "Suomenniemen palvelusetelipäiväkoti",
@@ -133,7 +135,7 @@ class PDFServiceTest {
 
     private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String) {
         val decisionPdfByteArray =
-            DecisionService.createDecisionPdf(
+            createDecisionPdf(
                 pdfService,
                 decision,
                 guardian,
@@ -143,19 +145,14 @@ class PDFServiceTest {
                 manager
             )
 
-        // val file = File.createTempFile(decision.id.toString(), ".pdf")
         val file = File.createTempFile("decision_", ".pdf")
+        assertNotNull(decisionPdfByteArray)
+
         FileOutputStream(file).use {
             it.write(decisionPdfByteArray)
         }
 
         logger.debug { "Generated $lang ${decision.type} (${decision.unit.providerType}${if (isTransferApplication) ", transfer application" else ""}) decision PDF to ${file.absolutePath}" }
-
-        // if there is no property for a key used in template, template prints ??key??
-        // pages.forEach {
-        //    val string = templateEngine.process(it)
-        //    assertEquals(false, string.contains("??"))
-        // }
     }
 }
 
