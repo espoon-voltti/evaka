@@ -16,7 +16,7 @@ import PersonApplications from '../components/person-profile/PersonApplications'
 import PersonDependants from '../components/person-profile/PersonDependants'
 import PersonDecisions from '../components/person-profile/PersonDecisions'
 import WarningLabel from '../components/common/WarningLabel'
-import { getLayout, LayoutsWithDefault } from './layouts'
+import { getLayout, Layouts } from './layouts'
 import { UserContext } from '../state/user'
 import { PersonContext } from '../state/person'
 import PersonFeeDecisions from '../components/person-profile/PersonFeeDecisions'
@@ -68,16 +68,7 @@ const components = {
   decisions: PersonDecisions
 }
 
-const layouts: LayoutsWithDefault<typeof components> = {
-  ['FINANCE_ADMIN']: [
-    { component: 'family-overview', open: true },
-    { component: 'income', open: true },
-    { component: 'fee-decisions', open: false },
-    { component: 'invoices', open: false },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false }
-  ],
+const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-overview', open: true },
     { component: 'partners', open: false },
@@ -89,7 +80,23 @@ const layouts: LayoutsWithDefault<typeof components> = {
     { component: 'fee-decisions', open: false },
     { component: 'invoices', open: false }
   ],
-  default: [
+  ['FINANCE_ADMIN']: [
+    { component: 'family-overview', open: true },
+    { component: 'income', open: true },
+    { component: 'fee-decisions', open: false },
+    { component: 'invoices', open: false },
+    { component: 'partners', open: false },
+    { component: 'fridge-children', open: false },
+    { component: 'dependants', open: false }
+  ],
+  ['SERVICE_WORKER']: [
+    { component: 'partners', open: false },
+    { component: 'fridge-children', open: false },
+    { component: 'dependants', open: false },
+    { component: 'applications', open: false },
+    { component: 'decisions', open: false }
+  ],
+  ['UNIT_SUPERVISOR']: [
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
