@@ -109,7 +109,7 @@ fixture('Mobile daily notes')
 
 const unitPage = new UnitPage()
 
-test('Child daycare daily note indicators are shown on group view', async (t) => {
+test('Child daycare daily note indicators are shown on group view and can be edited', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
     groupId: null,
@@ -156,4 +156,16 @@ test('Child daycare daily note indicators are shown on group view', async (t) =>
     .eql(daycareDailyNote.sleepingHours)
     .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
     .eql(daycareDailyNote.reminderNote)
+
+  await t.typeText(
+    unitPage.daycareDailyNoteModal.reminderNoteInput,
+    'aardvark',
+    { replace: true }
+  )
+  await t.click(unitPage.daycareDailyNoteModal.submit)
+
+  await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t
+    .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
+    .eql('aardvark')
 })

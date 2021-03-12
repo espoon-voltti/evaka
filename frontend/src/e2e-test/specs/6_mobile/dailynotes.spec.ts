@@ -16,8 +16,7 @@ import {
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   postDaycareDailyNote,
-  postMobileDevice,
-  setAclForDaycares
+  postMobileDevice
 } from '../../dev-api'
 import { mobileAutoSignInRole } from '../../config/users'
 import { t } from 'testcafe'
@@ -73,8 +72,6 @@ fixture('Mobile daily notes')
       fixtures.enduserChildFixtureJari.id,
       daycare.data.id
     )
-
-    await setAclForDaycares(`espooad: ${employeeId}`, daycare.data.id)
 
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
     await insertDaycareGroupPlacementFixtures([

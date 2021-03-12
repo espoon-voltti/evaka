@@ -30,7 +30,8 @@ export default class UnitPage {
   readonly daycareDailyNoteModal = {
     noteInput: Selector('[data-qa="note-input"]'),
     sleepingHoursInput: Selector('[data-qa="sleeping-hours-input"]'),
-    reminderNoteInput: Selector('[data-qa="reminder-note-input"]')
+    reminderNoteInput: Selector('[data-qa="reminder-note-input"]'),
+    submit: Selector('[data-qa="modal-okBtn"]')
   }
 
   readonly groupUpdateModal = {
