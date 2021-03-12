@@ -80,16 +80,16 @@ export default React.memo(function DecisionResponse({
 
   const onSubmit = () => {
     if (acceptChecked) {
-      handleAcceptDecision()
+      return handleAcceptDecision()
     } else {
-      handleRejectDecision()
+      return handleRejectDecision()
     }
   }
 
   const handleAcceptDecision = () => {
     if (parsedDate === null) throw new Error('Parsed date was null')
     setSubmitting(true)
-    acceptDecision(applicationId, decisionId, parsedDate)
+    return acceptDecision(applicationId, decisionId, parsedDate)
       .then((res) => {
         if (res.isFailure) {
           setErrorMessage({
@@ -107,7 +107,7 @@ export default React.memo(function DecisionResponse({
 
   const handleRejectDecision = () => {
     setSubmitting(true)
-    rejectDecision(applicationId, decisionId)
+    return rejectDecision(applicationId, decisionId)
       .then((res) => {
         if (res.isFailure) {
           setErrorMessage({
