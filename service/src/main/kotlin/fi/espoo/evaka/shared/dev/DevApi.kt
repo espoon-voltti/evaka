@@ -1108,7 +1108,7 @@ data class DevEmployee(
 )
 
 data class DevMobileDevice(
-    val id: UUID?,
+    val id: UUID = UUID.randomUUID(),
     val unitId: UUID,
     val name: String = "Laite",
     val deleted: Boolean = false,
