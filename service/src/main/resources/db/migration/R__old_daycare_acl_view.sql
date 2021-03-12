@@ -1,6 +1,6 @@
-DROP VIEW IF EXISTS daycare_acl_view;
+DROP VIEW IF EXISTS old_daycare_acl_view;
 
-CREATE OR REPLACE VIEW daycare_acl_view (
+CREATE OR REPLACE VIEW old_daycare_acl_view (
     "unit_name",
     "manager_email",
     "authorized_person_email",
