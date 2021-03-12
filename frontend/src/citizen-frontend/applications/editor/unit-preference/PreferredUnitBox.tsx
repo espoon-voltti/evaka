@@ -73,7 +73,9 @@ export default React.memo(function PreferredUnitBox({
             <span>{unit.streetAddress}</span>
             {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
               <ExternalLink
-                href={'https://fi.wikipedia.org/wiki/Palveluseteli'}
+                href={
+                  t.applications.editor.unitPreference.units.serviceVoucherLink
+                }
                 text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
                 newTab
               />
