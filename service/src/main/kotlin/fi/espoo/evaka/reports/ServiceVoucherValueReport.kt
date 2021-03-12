@@ -306,7 +306,7 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 }
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
-    return createQuery("SELECT created FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month")
+    return createQuery("SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month")
         .bind("year", year)
         .bind("month", month)
         .mapTo<Instant>()
