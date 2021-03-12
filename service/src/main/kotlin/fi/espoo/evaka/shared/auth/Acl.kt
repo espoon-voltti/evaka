@@ -45,14 +45,8 @@ class AccessControlList(private val jdbi: Jdbi) {
                 // language=SQL
                 """
 SELECT role
-FROM daycare_acl
+FROM daycare_acl_view
 WHERE employee_id = :userId AND daycare_id = :daycareId
-
-UNION ALL 
-
-SELECT 'MOBILE'
-FROM mobile_device
-WHERE id = :userId AND unit_id = :daycareId AND deleted = false
                 """.trimIndent()
             ).bind("userId", user.id).bind("daycareId", daycareId).mapTo<UserRole>().toSet()
         }
@@ -77,7 +71,7 @@ WHERE application_id = :applicationId AND latest IS TRUE;
 SELECT role
 FROM application_view av
 LEFT JOIN placement_plan pp ON pp.application_id = av.id
-JOIN daycare_acl acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
+JOIN daycare_acl_view acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
 WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
                 """.trimIndent()
             ).bind("userId", user.id).bind("applicationId", applicationId)
@@ -94,7 +88,7 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 """
 SELECT role
 FROM daycare_group
-JOIN daycare_acl USING (daycare_id)
+JOIN daycare_acl_view USING (daycare_id)
 WHERE employee_id = :userId AND daycare_group.id = :groupId
                 """.trimIndent()
             ).bind("userId", user.id).bind("groupId", groupId).mapTo<UserRole>().toSet()
@@ -108,7 +102,7 @@ WHERE employee_id = :userId AND daycare_group.id = :groupId
                 """
 SELECT role
 FROM placement
-JOIN daycare_acl ON placement.unit_id = daycare_acl.daycare_id
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
 WHERE employee_id = :userId AND placement.id = :placementId
                 """.trimIndent()
             ).bind("userId", user.id).bind("placementId", placementId).mapTo<UserRole>().toSet()
@@ -135,7 +129,7 @@ WHERE employee_id = :userId AND child_id = :childId
                 """
 SELECT role
 FROM decision
-JOIN daycare_acl ON decision.unit_id = daycare_acl.daycare_id
+JOIN daycare_acl_view ON decision.unit_id = daycare_acl_view.daycare_id
 WHERE employee_id = :userId AND decision.id = :decisionId
                 """.trimIndent()
             ).bind("userId", user.id).bind("decisionId", decisionId).mapTo<UserRole>().toSet()
@@ -204,7 +198,7 @@ WHERE sn.id = :serviceNeedId AND acl.employee_id = :userId
                 // language=SQL
                 """
 SELECT role
-FROM daycare_acl
+FROM daycare_acl_view
 JOIN pairing p ON daycare_id = p.unit_id
 WHERE employee_id = :userId AND p.id = :pairingId
                 """.trimIndent()
@@ -218,7 +212,7 @@ WHERE employee_id = :userId AND p.id = :pairingId
                 // language=SQL
                 """
 SELECT role
-FROM daycare_acl
+FROM daycare_acl_view
 JOIN mobile_device d ON daycare_id = d.unit_id
 WHERE employee_id = :userId AND d.id = :deviceId
                 """.trimIndent()
@@ -229,5 +223,5 @@ WHERE employee_id = :userId AND d.id = :deviceId
 
 private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser): Set<UUID> = createQuery(
     // language=SQL
-    "SELECT daycare_id FROM daycare_acl WHERE employee_id = :userId"
+    "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId"
 ).bind("userId", user.id).mapTo<UUID>().toSet()

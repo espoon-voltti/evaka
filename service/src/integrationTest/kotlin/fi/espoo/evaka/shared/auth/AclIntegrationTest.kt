@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevMobileDevice
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -21,11 +22,13 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestMobileDevice
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import java.time.LocalDate
@@ -39,20 +42,21 @@ class AclIntegrationTest : PureJdbiTest() {
     private lateinit var applicationId: UUID
     private lateinit var decisionId: UUID
     private lateinit var placementId: UUID
+    private lateinit var mobileId: UUID
 
     private lateinit var acl: AccessControlList
 
     @BeforeAll
     fun before() {
-        jdbi.handle {
-            employeeId = it.insertTestEmployee(DevEmployee())
-            val areaId = it.insertTestCareArea(DevCareArea(name = "Test area"))
-            daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
-            groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
-            childId = it.insertTestPerson(DevPerson())
-            it.insertTestChild(DevChild(id = childId))
-            applicationId = insertTestApplication(it, childId = childId)
-            decisionId = it.insertTestDecision(
+        db.transaction {
+            employeeId = it.handle.insertTestEmployee(DevEmployee())
+            val areaId = it.handle.insertTestCareArea(DevCareArea(name = "Test area"))
+            daycareId = it.handle.insertTestDaycare(DevDaycare(areaId = areaId))
+            groupId = it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
+            childId = it.handle.insertTestPerson(DevPerson())
+            it.handle.insertTestChild(DevChild(id = childId))
+            applicationId = insertTestApplication(it.handle, childId = childId)
+            decisionId = it.handle.insertTestDecision(
                 TestDecision(
                     createdBy = employeeId,
                     unitId = daycareId,
@@ -62,7 +66,9 @@ class AclIntegrationTest : PureJdbiTest() {
                     endDate = LocalDate.of(2100, 1, 1)
                 )
             )
-            placementId = insertTestPlacement(it, childId = childId, unitId = daycareId)
+            placementId = insertTestPlacement(it.handle, childId = childId, unitId = daycareId)
+            mobileId = it.handle.insertTestEmployee(DevEmployee())
+            it.insertTestMobileDevice(DevMobileDevice(id = mobileId, unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
     }
@@ -112,5 +118,20 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(positiveAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(positiveAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(positiveAclRoles, acl.getRolesForUnitGroup(user, groupId))
+    }
+
+    @Test
+    fun testMobileAclRoleAuthorization() {
+        val user = AuthenticatedUser(mobileId, setOf(UserRole.MOBILE))
+
+        val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
+        val expectedAclRoles = AclAppliedRoles(setOf(UserRole.MOBILE))
+
+        assertEquals(expectedAclAuth, acl.getAuthorizedDaycares(user))
+        assertEquals(expectedAclAuth, acl.getAuthorizedUnits(user))
+        assertEquals(expectedAclRoles, acl.getRolesForUnit(user, daycareId))
+        assertEquals(expectedAclRoles, acl.getRolesForDecision(user, decisionId))
+        assertEquals(expectedAclRoles, acl.getRolesForPlacement(user, placementId))
+        assertEquals(expectedAclRoles, acl.getRolesForUnitGroup(user, groupId))
     }
 }
