@@ -223,10 +223,14 @@ export async function postDeparture(
 }
 
 export async function createOrUpdateDaycareDailyNoteForChild(
-  dailyNote: DailyNote
+  childId: string,
+  daycareDailyNote: DailyNote
 ): Promise<Result<void>> {
-  return client
-    .post<void>(`/daycare-daily-note/child`, dailyNote)
+  const url = `/daycare-daily-note/child/${childId}`
+  return (daycareDailyNote.id
+    ? client.put(url, daycareDailyNote)
+    : client.post(url, daycareDailyNote)
+  )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

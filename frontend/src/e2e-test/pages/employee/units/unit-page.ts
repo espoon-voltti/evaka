@@ -27,6 +27,13 @@ export default class UnitPage {
   readonly childDaycareDailyNoteIcon = (childId: string) =>
     Selector(`[data-qa="daycare-daily-note-icon-${childId}"]`)
 
+  readonly daycareDailyNoteModal = {
+    noteInput: Selector('[data-qa="note-input"]'),
+    sleepingHoursInput: Selector('[data-qa="sleeping-hours-input"]'),
+    reminderNoteInput: Selector('[data-qa="reminder-note-input"]'),
+    submit: Selector('[data-qa="modal-okBtn"]')
+  }
+
   readonly groupUpdateModal = {
     nameInput: Selector(
       '[data-qa="group-update-modal"] [data-qa="name-input"]'

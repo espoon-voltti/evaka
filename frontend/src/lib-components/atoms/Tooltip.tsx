@@ -52,6 +52,7 @@ const TooltipDiv = styled.div`
 `
 
 const Beak = styled.div`
+  pointer-events: none;
   position: absolute;
   top: -24px;
   left: 0;

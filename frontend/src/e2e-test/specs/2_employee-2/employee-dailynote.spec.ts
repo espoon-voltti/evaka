@@ -109,14 +109,15 @@ fixture('Mobile daily notes')
 
 const unitPage = new UnitPage()
 
-test('Daycare daily note indicators are shown on group view', async (t) => {
+test('Child daycare daily note indicators are shown on group view and can be edited', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
-    groupId: daycareGroup.data.id,
+    groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
+    sleepingHours: '2',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
@@ -146,4 +147,25 @@ test('Daycare daily note indicators are shown on group view', async (t) => {
         .textContent
     )
     .contains(daycareDailyNote.note || 'expected text not found')
+
+  await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t
+    .expect(unitPage.daycareDailyNoteModal.noteInput.value)
+    .eql(daycareDailyNote.note)
+    .expect(unitPage.daycareDailyNoteModal.sleepingHoursInput.value)
+    .eql(daycareDailyNote.sleepingHours)
+    .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
+    .eql(daycareDailyNote.reminderNote)
+
+  await t.typeText(
+    unitPage.daycareDailyNoteModal.reminderNoteInput,
+    'aardvark',
+    { replace: true }
+  )
+  await t.click(unitPage.daycareDailyNoteModal.submit)
+
+  await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t
+    .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
+    .eql('aardvark')
 })
