@@ -11,13 +11,23 @@ export const langs = ['fi', 'sv', 'en'] as const
 
 export type Lang = typeof langs[number]
 
+const getDefaultLanguage: () => Lang = () => {
+  const language =
+    (window.navigator['userLanguage'] as string) || window.navigator.language
+  if (language === 'fi' || language === 'sv') {
+    return language as Lang
+  } else {
+    return 'fi' as const
+  }
+}
+
 type LocalizationState = {
   lang: Lang
   setLang: (lang: Lang) => void
 }
 
 const defaultState = {
-  lang: 'fi' as const,
+  lang: getDefaultLanguage(),
   setLang: () => undefined
 }
 
