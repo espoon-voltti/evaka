@@ -509,7 +509,7 @@ fun findFeeDecisionsForHeadOfFamily(
         .let { it.merge() }
 }
 
-fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID) {
+fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID, approvedAt: LocalDate, isRetroactive: Boolean = false) {
     val sql =
         """
         WITH youngest_child AS (
@@ -526,11 +526,12 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
             decision_number = nextval('fee_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = CASE
+                WHEN :isRetroactive = true THEN :approvedBy
                 WHEN youngest_child.finance_decision_handler_id IS NOT NULL AND fd.decision_type = 'NORMAL'
                     THEN youngest_child.finance_decision_handler_id
                 ELSE :approvedBy
             END,
-            approved_at = NOW()
+            approved_at = :approvedAt
         FROM fee_decision AS fd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
         WHERE fd.id = :id AND fee_decision.id = fd.id
@@ -542,6 +543,8 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
             .bind("id", id)
             .bind("status", FeeDecisionStatus.WAITING_FOR_SENDING.toString())
             .bind("approvedBy", approvedBy)
+            .bind("isRetroactive", isRetroactive)
+            .bind("approvedAt", approvedAt)
             .add()
     }
     batch.execute()
