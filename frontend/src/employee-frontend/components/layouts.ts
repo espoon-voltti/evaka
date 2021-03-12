@@ -13,6 +13,10 @@ export const getLayout = <Components>(
   layouts: Layouts<Components>,
   roles: AdRole[]
 ): Layout<Components> => {
+  if (roles.length === 1) {
+    return layouts[roles[0]] ?? []
+  }
+
   // Compute the layout as union of all component names the user may have access to.
   // For example if the user is both FINANCE_ADMIN and SPECIAL_EDUCATION teacher, we display
   // components accessible by either role.
