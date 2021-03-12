@@ -43,6 +43,7 @@
     "@evaka/eslint-plugin": "link:eslint-plugin",
     "@evaka/lib-common": "link:src/lib-common",
     "@evaka/lib-components": "link:src/lib-components",
+    "@evaka/lib-customizations": "link:src/lib-customizations",
     "@evaka/lib-icons": "link:src/lib-icons",
     "@fortawesome/fontawesome-svg-core": "1.2.30",
     "@fortawesome/free-regular-svg-icons": "5.14.0",

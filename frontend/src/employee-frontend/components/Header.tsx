@@ -9,7 +9,7 @@ import classNames from 'classnames'
 import colors from '@evaka/lib-components/colors'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
-import EspooLogo from '../assets/EspooLogo.png'
+import { cityLogo } from '@evaka/lib-customizations/employee'
 import { logoutUrl } from '../api/auth'
 import { RequireRole } from '../utils/roles'
 import Title from '@evaka/lib-components/atoms/Title'
@@ -84,8 +84,8 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           logo={
             <Img
               data-qa="espoo-logo"
-              src={EspooLogo}
-              alt="Espoo"
+              src={cityLogo.src}
+              alt={cityLogo.alt}
               className="logo"
             />
           }

@@ -24,3 +24,9 @@ yalc.lock
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+
+src/lib-customizations/**/*
+!src/lib-customizations/espoo/**/*
+!src/lib-customizations/*.ts
+!src/lib-customizations/*.json
+!src/lib-customizations/*.tsx

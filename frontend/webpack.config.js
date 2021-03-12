@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+const webpack = require('webpack')
 const path = require('path')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -10,11 +11,37 @@ const WebpackPwaManifest = require('webpack-pwa-manifest')
 const TsConfigPaths = require('tsconfig-paths-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
+function resolveCustomizations() {
+  const customizations = process.env.EVAKA_CUSTOMIZATIONS
+  if (customizations) {
+    const customizationsPath = path.resolve(
+      __dirname,
+      'src/lib-customizations',
+      customizations
+    )
+    console.info(`Using customizations from ${customizationsPath}`)
+    return customizations
+  } else {
+    return 'espoo'
+  }
+}
+
+const customizationsModule = resolveCustomizations()
+
 function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
   const plugins = [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, `src/${name}/index.html`)
-    })
+    }),
+    new webpack.NormalModuleReplacementPlugin(
+      /@evaka\/customizations\/(.*)/,
+      (resource) => {
+        resource.request = resource.request.replace(
+          /@evaka\/customizations/,
+          `@evaka/lib-customizations/${customizationsModule}`
+        )
+      }
+    )
   ]
 
   if (isDevServer) {
@@ -53,6 +80,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+      symlinks: false,
       alias: {
         Icons:
           process.env.ICONS === 'pro'

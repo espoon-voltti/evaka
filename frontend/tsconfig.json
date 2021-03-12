@@ -11,6 +11,7 @@
     { "path": "./src/e2e-test" },
     { "path": "./src/employee-frontend" },
     { "path": "./src/employee-mobile-frontend" },
-    { "path": "./src/lib-icons" }
+    { "path": "./src/lib-icons" },
+    { "path": "./src/lib-customizations" }
   ]
 }

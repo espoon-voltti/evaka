@@ -1606,6 +1606,12 @@ __metadata:
   languageName: node
   linkType: soft
 
+"@evaka/lib-customizations@link:src/lib-customizations::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@evaka/lib-customizations@link:src/lib-customizations::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
 "@evaka/lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "@evaka/lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A."
@@ -9396,6 +9402,7 @@ __metadata:
     "@evaka/eslint-plugin": "link:eslint-plugin"
     "@evaka/lib-common": "link:src/lib-common"
     "@evaka/lib-components": "link:src/lib-components"
+    "@evaka/lib-customizations": "link:src/lib-customizations"
     "@evaka/lib-icons": "link:src/lib-icons"
     "@fortawesome/fontawesome-svg-core": 1.2.30
     "@fortawesome/free-regular-svg-icons": 5.14.0

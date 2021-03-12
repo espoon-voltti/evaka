@@ -6,12 +6,12 @@ import React from 'react'
 import styled from 'styled-components'
 import { desktopMin } from '@evaka/lib-components/breakpoints'
 import { defaultMargins } from '@evaka/lib-components/white-space'
-import EspooLogo from '../espoo-logo.svg'
+import { cityLogo } from '@evaka/lib-customizations/citizen'
 
 export default React.memo(function Logo() {
   return (
     <Container>
-      <Img src={EspooLogo} alt="Espoo logo" />
+      <Img src={cityLogo.src} alt={cityLogo.alt} />
     </Container>
   )
 })
