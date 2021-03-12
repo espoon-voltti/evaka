@@ -197,7 +197,7 @@ function VoucherServiceProviderUnit() {
                     start: r.realizedPeriod.start.format(),
                     end: r.realizedPeriod.end.format(),
                     note: r.type === 'REFUND' ? 'Hyvitys' : r.type === 'CORRECTION' ? 'Korjaus' : '',
-                    serviceVoucherServiceCoefficient: (r.serviceVoucherServiceCoefficient / 100.0).toFixed(2).replace('.', ','),
+                    serviceVoucherServiceCoefficient: formatCents(r.serviceVoucherServiceCoefficient),
                     serviceVoucherValue: formatCents(r.serviceVoucherValue),
                     serviceVoucherCoPayment: formatCents(r.serviceVoucherCoPayment),
                     realizedAmount: formatCents(r.realizedAmount)
@@ -325,7 +325,7 @@ function VoucherServiceProviderUnit() {
                     </Td>
                     <Td>{formatCents(row.serviceVoucherValue)}</Td>
                     <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
-                    <Td>{(row.serviceVoucherServiceCoefficient / 100.0).toFixed(2).replace('.', ',')}</Td>
+                    <Td>{formatCents(row.serviceVoucherServiceCoefficient)}</Td>
                     <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
                     <Td>{formatCents(row.realizedAmount)}</Td>
                   </Tr>
