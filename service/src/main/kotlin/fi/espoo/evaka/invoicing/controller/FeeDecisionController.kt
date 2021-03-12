@@ -119,7 +119,7 @@ class FeeDecisionController(
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
-            val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds)
+            val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, LocalDate.now())
             asyncJobRunner.plan(tx, confirmedDecisions.map { NotifyFeeDecisionApproved(it) })
         }
         asyncJobRunner.scheduleImmediateRun()

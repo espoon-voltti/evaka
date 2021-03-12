@@ -689,9 +689,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `confirmDrafts picks decision handler from unit when decision is not a relief decision`() {
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, testDecisions) }
+    fun `confirmDrafts picks decision handler from unit when decision is not a relief decision nor retroactive`() {
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
+            .copy(validFrom = LocalDate.now().withDayOfMonth(1), validTo = LocalDate.now().plusMonths(1))
+        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(draft)) }
         jdbi.handle {
             it.execute(
                 "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
@@ -753,6 +754,46 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         )
 
         val (_, _, result) = http.get("/decisions/${draft.id}")
+            .asUser(user)
+            .responseString()
+
+        assertEqualEnough(
+            activated.let(::toDetailed),
+            deserializeResult(result.get()).data
+        )
+    }
+
+    @Test
+    fun `confirmDrafts uses approver as decision handler when decision is retroactive`() {
+        val now = LocalDate.now()
+        val oldDecision = testDecisions.first().copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
+
+        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(oldDecision)) }
+
+        jdbi.handle {
+            it.execute(
+                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
+                testDecisionMaker_2.id,
+                oldDecision.parts.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unit
+            )
+        }
+
+        http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(objectMapper.writeValueAsString(listOf(oldDecision.id)))
+            .responseString()
+
+        asyncJobRunner.runPendingJobsSync(2)
+
+        val activated = oldDecision.copy(
+            decisionNumber = 1,
+            status = FeeDecisionStatus.SENT,
+            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            documentKey = "feedecision_${oldDecision.id}_fi.pdf"
+        )
+
+        val (_, _, result) = http.get("/decisions/${oldDecision.id}")
             .asUser(user)
             .responseString()
 

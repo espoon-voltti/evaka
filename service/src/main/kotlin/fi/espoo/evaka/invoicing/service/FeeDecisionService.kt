@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.MailAddress
+import fi.espoo.evaka.invoicing.domain.isRetroactive
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -47,7 +48,7 @@ class FeeDecisionService(
     private val s3Client: S3DocumentClient,
     private val evakaMessageClient: IEvakaMessageClient
 ) {
-    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>): List<UUID> {
+    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: LocalDate): List<UUID> {
         tx.handle.lockFeeDecisions(ids)
         val decisions = getFeeDecisionsByIds(tx.handle, objectMapper, ids)
         if (decisions.isEmpty()) return listOf()
@@ -57,7 +58,7 @@ class FeeDecisionService(
             throw BadRequest("Some fee decisions were not drafts")
         }
 
-        val notYetValidDecisions = decisions.filter { it.validFrom > LocalDate.now() }
+        val notYetValidDecisions = decisions.filter { it.validFrom > now }
         if (notYetValidDecisions.isNotEmpty()) {
             throw BadRequest("Some of the fee decisions are not valid yet")
         }
@@ -84,10 +85,12 @@ class FeeDecisionService(
 
         deleteFeeDecisions(tx.handle, emptyDecisions.map { it.id })
 
-        val validIds = validDecisions.map { it.id }
+        val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition { isRetroactive(it.validFrom, now) }
 
-        approveFeeDecisionDraftsForSending(tx.handle, validIds, user.id)
-        return validIds
+        approveFeeDecisionDraftsForSending(tx.handle, retroactiveDecisions.map { it.id }, approvedBy = user.id, isRetroactive = true, approvedAt = now)
+        approveFeeDecisionDraftsForSending(tx.handle, otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = now)
+
+        return validDecisions.map { it.id }
     }
 
     private fun getDecisionLanguage(decision: FeeDecisionDetailed): String {

@@ -150,8 +150,7 @@ data class FeeDecisionDetailed(
     @JsonProperty("isRetroactive")
     fun isRetroactive(): Boolean {
         val sentAtLocalDate = sentAt?.atZone(ZoneId.of("UTC"))
-        val retroThreshold = LocalDate.from(sentAtLocalDate ?: LocalDate.now()).withDayOfMonth(1)
-        return this.validFrom.isBefore(retroThreshold)
+        return isRetroactive(this.validFrom, LocalDate.from(sentAtLocalDate ?: LocalDate.now()))
     }
 
     @JsonProperty("minThreshold")
@@ -159,6 +158,11 @@ data class FeeDecisionDetailed(
 
     @JsonProperty("feePercent")
     fun feePercent(): BigDecimal = pricing.multiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
+}
+
+fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {
+    val retroThreshold = sentAt.withDayOfMonth(1)
+    return decisionValidFrom.isBefore(retroThreshold)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
