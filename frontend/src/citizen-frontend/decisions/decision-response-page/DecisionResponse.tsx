@@ -78,13 +78,36 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const onSubmit = async () => {
+  const onSubmit = () => {
+    if (acceptChecked) {
+      handleAcceptDecision()
+    } else {
+      handleRejectDecision()
+    }
+  }
+
+  const handleAcceptDecision = () => {
     if (parsedDate === null) throw new Error('Parsed date was null')
     setSubmitting(true)
-    return (acceptChecked
-      ? acceptDecision(applicationId, decisionId, parsedDate)
-      : rejectDecision(applicationId, decisionId)
-    )
+    acceptDecision(applicationId, decisionId, parsedDate)
+      .then((res) => {
+        if (res.isFailure) {
+          setErrorMessage({
+            type: 'error',
+            title: t.decisions.applicationDecisions.errors.submitFailure,
+            resolveLabel: t.common.ok
+          })
+        }
+      })
+      .finally(() => {
+        setSubmitting(false)
+        refreshDecisionList()
+      })
+  }
+
+  const handleRejectDecision = () => {
+    setSubmitting(true)
+    rejectDecision(applicationId, decisionId)
       .then((res) => {
         if (res.isFailure) {
           setErrorMessage({
