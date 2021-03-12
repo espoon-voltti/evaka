@@ -71,8 +71,6 @@ export const isValidPreferredStartDate = (
   status: ApplicationStatus,
   type: ApplicationType
 ): boolean => {
-  if (date === null) return false
-
   if (
     date.isBefore(
       minPreferredStartDate(status, type, originalPreferredStartDate)
@@ -96,12 +94,20 @@ export const isValidDecisionStartDate = (
   startDate: string,
   type: DecisionType
 ): boolean => {
-  return date !== null
-    ? date.isEqualOrAfter(LocalDate.parseFi(startDate)) &&
-        date.isEqualOrBefore(
-          maxDecisionStartDate(LocalDate.parseFi(startDate), type)
-        )
-    : false
+  let parsedDate: LocalDate
+  try {
+    parsedDate = LocalDate.parseFiOrThrow(startDate)
+  } catch (e) {
+    if (e instanceof RangeError) {
+      return false
+    }
+    // Unexpected
+    throw e
+  }
+  return (
+    date.isEqualOrAfter(parsedDate) &&
+    date.isEqualOrBefore(maxDecisionStartDate(parsedDate, type))
+  )
 }
 
 const preferredStartDateValidator = (
