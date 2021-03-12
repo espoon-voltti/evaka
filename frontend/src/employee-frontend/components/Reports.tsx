@@ -23,7 +23,7 @@ import {
   faCopy,
   faFileAlt,
   faDiagnoses,
-  faDatabase
+  faDatabase, faMoneyBillWave
 } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/colors'
 import { RequireRole } from '../utils/roles'
@@ -367,7 +367,7 @@ function Reports() {
                   <RoundIcon
                     size="L"
                     color={colors.primary}
-                    content={faDiagnoses}
+                    content={faMoneyBillWave}
                   />
                   <LinkTitle
                     data-qa={'report-voucher-service-providers'}

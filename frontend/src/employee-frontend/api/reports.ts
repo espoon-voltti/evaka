@@ -21,10 +21,8 @@ import {
   ServiceNeedReportRow,
   RawReportRow,
   FamilyContactsReportRow,
-  VoucherServiceProviderRow,
-  VoucherServiceProviderUnitRow,
   PlacementSketchingRow,
-  AssistanceNeedsAndActionsReportRow
+  AssistanceNeedsAndActionsReportRow, VoucherServiceProviderUnitReport, VoucherServiceProviderReport
 } from '../types/reports'
 import { UUID } from '../types'
 import { JsonOf } from '@evaka/lib-common/json'
@@ -346,9 +344,9 @@ export interface VoucherServiceProvidersFilters {
 
 export async function getVoucherServiceProvidersReport(
   filters: VoucherServiceProvidersFilters
-): Promise<Result<VoucherServiceProviderRow[]>> {
+): Promise<Result<VoucherServiceProviderReport>> {
   return client
-    .get<JsonOf<VoucherServiceProviderRow[]>>(
+    .get<JsonOf<VoucherServiceProviderReport>>(
       `/reports/service-voucher-value/units`,
       {
         params: {
@@ -356,31 +354,36 @@ export async function getVoucherServiceProvidersReport(
         }
       }
     )
-    .then((res) => Success.of(res.data))
+    .then((res) => Success.of({
+      locked: LocalDate.parseNullableIso(res.data.locked),
+      rows: res.data.rows
+    }))
     .catch((e) => Failure.fromError(e))
 }
 
 export function getVoucherServiceProviderUnitReport(
   unitId: UUID,
   params: VoucherProviderChildrenReportFilters
-): Promise<Result<VoucherServiceProviderUnitRow[]>> {
+): Promise<Result<VoucherServiceProviderUnitReport>> {
   return client
-    .get<JsonOf<VoucherServiceProviderUnitRow[]>>(
+    .get<JsonOf<VoucherServiceProviderUnitReport>>(
       `/reports/service-voucher-value/units/${unitId}`,
       {
         params
       }
     )
     .then((res) =>
-      Success.of(
-        res.data.map((row) => ({
+      Success.of({
+        ...res.data,
+        locked: LocalDate.parseNullableIso(res.data.locked),
+        rows: res.data.rows.map((row) => ({
           ...row,
           childDateOfBirth: LocalDate.parseIso(row.childDateOfBirth),
           realizedAmount: row.realizedAmount,
           realizedPeriod: FiniteDateRange.parseJson(row.realizedPeriod),
           numberOfDays: row.numberOfDays
         }))
-      )
+      })
     )
     .catch((e) => Failure.fromError(e))
 }

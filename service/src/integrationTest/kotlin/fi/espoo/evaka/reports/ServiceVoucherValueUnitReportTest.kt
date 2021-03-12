@@ -217,10 +217,10 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
             listOf("year" to year, "month" to month)
         )
             .asUser(adminUser)
-            .responseObject<List<ServiceVoucherValueRow>>(objectMapper)
+            .responseObject<ServiceVoucherValueReportController.ServiceVoucherUnitReport>(objectMapper)
         assertEquals(200, response.statusCode)
 
-        return data.get()
+        return data.get().rows
     }
 
     private val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))

@@ -52,7 +52,7 @@ export const TableFooter = styled.tfoot`
 
 export const FilterRow = styled.div`
   display: flex;
-  width: 450px;
+  width: 500px;
   align-items: center;
   margin-bottom: 6px;
 `

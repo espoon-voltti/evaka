@@ -18,6 +18,7 @@ import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.varda.VardaUpdateService
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
@@ -112,10 +113,18 @@ class ScheduledOperationController(
 
     @PostMapping("/freeze-voucher-value-reports")
     fun freezeVoucherValueReports(
-        db: Database.Connection
+        db: Database.Connection,
+        @RequestParam(required = false) year: Int?,
+        @RequestParam(required = false) month: Int?
     ): ResponseEntity<Unit> {
-        val currentDate = LocalDate.now()
-        db.transaction { freezeVoucherValueReportRows(it, currentDate.year, currentDate.monthValue, Instant.now()) }
+        db.transaction {
+            freezeVoucherValueReportRows(
+                it,
+                year ?: LocalDate.now(zoneId).year,
+                month ?: LocalDate.now(zoneId).monthValue,
+                Instant.now()
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 }
