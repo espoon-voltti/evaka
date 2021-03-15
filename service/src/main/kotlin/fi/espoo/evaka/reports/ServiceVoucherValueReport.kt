@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -24,12 +25,13 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-class ServiceVoucherValueReportController {
+class ServiceVoucherValueReportController(private val acl: AccessControlList) {
 
     data class ServiceVoucherReport(
         val locked: LocalDate?,
         val rows: List<ServiceVoucherValueUnitAggregate>
     )
+
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
         db: Database,
@@ -38,14 +40,14 @@ class ServiceVoucherValueReportController {
         @RequestParam month: Int,
         @RequestParam areaId: UUID
     ): ResponseEntity<ServiceVoucherReport> {
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.read { tx ->
             val snapshotTime = tx.getSnapshotDate(year, month)
             val rows = if (snapshotTime != null) {
-                tx.getSnapshotVoucherValues(year, month, areaId = areaId)
+                tx.getSnapshotVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)
             } else {
-                tx.getServiceVoucherValues(year, month, areaId = areaId)
+                tx.getServiceVoucherValues(year, month, areaId = areaId, unitIds = authorization.ids)
             }
 
             val aggregates = rows
@@ -80,14 +82,15 @@ class ServiceVoucherValueReportController {
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ResponseEntity<ServiceVoucherUnitReport> {
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        acl.getRolesForUnit(user, unitId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.read { tx ->
             val snapshotTime = tx.getSnapshotDate(year, month)
             val rows = if (snapshotTime != null) {
-                tx.getSnapshotVoucherValues(year, month, unitId = unitId)
+                tx.getSnapshotVoucherValues(year, month, unitIds = setOf(unitId))
             } else {
-                tx.getServiceVoucherValues(year, month, unitId = unitId)
+                tx.getServiceVoucherValues(year, month, unitIds = setOf(unitId))
             }
 
             ResponseEntity.ok(
@@ -177,7 +180,7 @@ private fun Database.Read.getServiceVoucherValues(
     year: Int,
     month: Int,
     areaId: UUID? = null,
-    unitId: UUID? = null
+    unitIds: Set<UUID>? = null
 ): List<ServiceVoucherValueRow> {
     // language=sql
     val sql = """
@@ -292,7 +295,7 @@ LEFT JOIN LATERAL (
       AND p.unit_id = part.placement_unit
     GROUP BY p.child_id
 ) child_group ON child.id = child_group.child_id
-WHERE (:areaId::uuid IS NULL OR area.id = :areaId) AND (:unitId::uuid IS NULL OR unit.id = :unitId)
+WHERE (:areaId::uuid IS NULL OR area.id = :areaId) AND (:unitIds::uuid[] IS NULL OR unit.id = ANY(:unitIds))
 ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 """
 
@@ -300,7 +303,7 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
         .bind("effective", VoucherValueDecisionStatus.effective)
         .bind("reportDate", LocalDate.of(year, month, 1))
         .bindNullable("areaId", areaId)
-        .bindNullable("unitId", unitId)
+        .bindNullable("unitIds", unitIds?.toTypedArray())
         .mapTo<ServiceVoucherValueRow>()
         .toList()
 }
@@ -318,7 +321,7 @@ private fun Database.Read.getSnapshotVoucherValues(
     year: Int,
     month: Int,
     areaId: UUID? = null,
-    unitId: UUID? = null
+    unitIds: Set<UUID>? = null
 ): List<ServiceVoucherValueRow> {
     // language=sql
     val sql =
@@ -359,7 +362,7 @@ private fun Database.Read.getSnapshotVoucherValues(
         ) child_group ON child.id = child_group.child_id
         WHERE sn.year = :year AND sn.month = :month
         AND (:areaId::uuid IS NULL OR area.id = :areaId)
-        AND (:unitId::uuid IS NULL OR unit.id = :unitId)
+        AND (:unitIds::uuid[] IS NULL OR unit.id = ANY(:unitIds))
         """.trimIndent()
 
     return createQuery(sql)
@@ -367,7 +370,7 @@ private fun Database.Read.getSnapshotVoucherValues(
         .bind("year", year)
         .bind("month", month)
         .bindNullable("areaId", areaId)
-        .bindNullable("unitId", unitId)
+        .bindNullable("unitIds", unitIds?.toTypedArray())
         .mapTo<ServiceVoucherValueRow>()
         .toList()
 }
