@@ -4,16 +4,13 @@
 
 package fi.espoo.evaka.shared
 
-import fi.espoo.evaka.application.ApplicationDetails
-import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.decision.Decision
-import fi.espoo.evaka.decision.DecisionSendAddress
-import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
+import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.config.PDFConfig
@@ -21,25 +18,23 @@ import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.voltti.pdfgen.PDFService
-import fi.espoo.voltti.pdfgen.Page
-import fi.espoo.voltti.pdfgen.Template
-import fi.espoo.voltti.pdfgen.process
-import org.junit.jupiter.api.Assertions.assertEquals
+import junit.framework.Assert.assertNotNull
+import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.thymeleaf.ITemplateEngine
-import org.thymeleaf.context.Context
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
-import java.util.Locale
 import java.util.UUID
+
+val logger = KotlinLogging.logger { }
 
 private val application = validPreschoolApplication
 private val transferApplication = application.copy(
     transferApplication = true
 )
+
 private val daycareTransferDecision =
     createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
 private val daycareDecision = createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE)
@@ -50,158 +45,114 @@ private val daycareDecisionPartTime =
 private val preschoolDecision = createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
 private val preparatoryDecision =
     createValidDecision(applicationId = application.id, type = DecisionType.PREPARATORY_EDUCATION)
+private val clubDecision = createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
+
+private val voucherDecision = daycareDecision.copy(
+    endDate = LocalDate.of(2019, 7, 31),
+    unit = DecisionUnit(
+        UUID.randomUUID(),
+        "Suomenniemen palvelusetelipäiväkoti",
+        "Suomenniemen palvelusetelipäiväkoti",
+        "Suomenniemen palvelusetelipäiväkodin esiopetus",
+        "Pirkko Sanelma Ullanlinna",
+        "Hyväntoivonniementie 13 B",
+        "02200",
+        "ESPOO",
+        "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
+        "Kartanonkujanpää 565, 02210 Espoo",
+        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
+    )
+)
+
 private val child = PersonDTO(
     testChild_1.id,
     ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
     null,
-    null,
-    null,
+    "Kullervo Kyöstinpoika",
+    "Pöysti",
     null,
     null,
     null,
     testChild_1.dateOfBirth,
     null,
-    null,
-    null,
-    null,
+    "Kuusikallionrinne 26 A 4",
+    "02270",
+    "Espoo",
     null
 )
 private val guardian = PersonDTO(
     testAdult_1.id,
     ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
     null,
-    "John Jonathan",
-    "Doe",
-    null,
-    null,
+    "Kyösti Taavetinpoika",
+    "Pöysti",
+    "kyostipoysti@example.com",
+    "+358914822",
     null,
     testAdult_1.dateOfBirth,
     null,
-    null,
-    null,
-    null,
+    "Kuusikallionrinne 26 A 4",
+    "02270",
+    "Espoo",
     null
 )
-private val manager = DaycareManager("Maija Manageri", "maija.manageri@test.com", "0401231234")
-private val sendAddress = DecisionSendAddress("Kamreerintie 2", "02770", "Espoo", "Kamreerintie 2", "02770 Espoo", "")
+private val manager = DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [PDFConfig::class, PDFService::class])
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.NONE,
+    classes = [PDFConfig::class, PDFService::class]
+)
 class PDFServiceTest {
-    @Autowired
-    lateinit var templateEngine: ITemplateEngine
 
     @Autowired
     lateinit var pdfService: PDFService
 
     @Test
     fun createFinnishPDFs() {
-        render(daycareTransferDecision, transferApplication, "fi")
-        render(daycareDecision, application, "fi")
-        render(daycareDecisionPartTime, application, "fi")
-        render(preschoolDaycareDecision, application, "fi")
-        render(preschoolDecision, application, "fi")
-        render(preparatoryDecision, application, "fi")
+
+        createPDF(daycareTransferDecision, true, "fi")
+        createPDF(daycareDecision, false, "fi")
+        createPDF(daycareDecisionPartTime, false, "fi")
+        createPDF(preschoolDaycareDecision, false, "fi")
+        createPDF(preschoolDecision, false, "fi")
+        createPDF(preparatoryDecision, false, "fi")
+        createPDF(voucherDecision, false, "fi")
+        createPDF(clubDecision, false, "fi")
     }
 
     @Test
     fun createSwedishPDFs() {
-        render(daycareTransferDecision, transferApplication, "sv")
-        render(daycareDecision, application, "sv")
-        render(daycareDecisionPartTime, application, "sv")
-        render(preschoolDaycareDecision, application, "sv")
-        render(preschoolDecision, application, "sv")
-        render(preparatoryDecision, application, "sv")
+
+        createPDF(daycareTransferDecision, true, "sv")
+        createPDF(daycareDecision, false, "sv")
+        createPDF(daycareDecisionPartTime, false, "sv")
+        createPDF(preschoolDaycareDecision, false, "sv")
+        createPDF(preschoolDecision, false, "sv")
+        createPDF(preparatoryDecision, false, "sv")
+        createPDF(voucherDecision, false, "sv")
+        createPDF(clubDecision, false, "sv")
     }
 
-    fun render(decision: Decision, application: ApplicationDetails, lang: String) {
-        val templates = when (decision.type) {
-            DecisionType.DAYCARE, DecisionType.PRESCHOOL_DAYCARE, DecisionType.DAYCARE_PART_TIME -> {
-                if (application.transferApplication) {
-                    listOf(
-                        "daycare/transfer/daycare-decision-page1",
-                        "daycare/transfer/daycare-decision-page2",
-                        "daycare/transfer/daycare-correction",
-                        "daycare/transfer/daycare-acceptance-form"
-                    )
-                } else {
-                    listOf(
-                        "daycare/daycare-decision-page1",
-                        "daycare/daycare-decision-page2",
-                        "daycare/daycare-correction",
-                        "daycare/daycare-acceptance-form"
-                    )
-                }
-            }
-            DecisionType.PRESCHOOL -> listOf(
-                "preschool/preschool-decision-page1",
-                "preschool/preschool-decision-page2",
-                "preschool/preschool-correction",
-                "preschool/preschool-acceptance-form"
+    private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String) {
+        val decisionPdfByteArray =
+            createDecisionPdf(
+                pdfService,
+                decision,
+                guardian,
+                child,
+                isTransferApplication,
+                lang,
+                manager
             )
-            DecisionType.PREPARATORY_EDUCATION -> listOf(
-                "preparatory/preparatory-decision-page1",
-                "preparatory/preparatory-decision-page2",
-                "preparatory/preparatory-correction",
-                "preparatory/preparatory-acceptance-form"
-            )
-            else -> error("Daycare decision had a decision type of CLUB_DECISION.")
-        }
-        val pages = templates.mapIndexed { i, template ->
-            Page(Template(template), createContext(lang, decision, application, child, guardian, manager, sendAddress, i + 1))
-        }
 
-        val documentBytes = pdfService.render(pages)
+        val file = File.createTempFile("decision_", ".pdf")
+        assertNotNull(decisionPdfByteArray)
 
-        val file = if (System.getProperty("os.name")?.contains("windows", true) == true) {
-            File("C:/Temp/${decision.type}-$lang-transfer=${application.transferApplication}.pdf")
-        } else {
-            File("/tmp/${decision.type}-$lang-transfer=${application.transferApplication}.pdf")
-        }
-        writeTofile(documentBytes, file)
-
-        // if there is no property for a key used in template, template prints ??key??
-        pages.forEach {
-            val string = templateEngine.process(it)
-            assertEquals(false, string.contains("??"))
-        }
-    }
-
-    private fun writeTofile(documentBytes: ByteArray, file: File) {
         FileOutputStream(file).use {
-            it.write(documentBytes)
+            it.write(decisionPdfByteArray)
         }
-    }
 
-    private fun createContext(
-        lang: String,
-        decision: Decision,
-        application: ApplicationDetails,
-        child: PersonDTO,
-        guardian: PersonDTO,
-        manager: DaycareManager,
-        sendAddress: DecisionSendAddress,
-        pageNumber: Int
-    ): Context {
-        val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
-
-        val legacyApplication = DecisionService.PdfTemplateApplication(
-            form = DaycareFormV0.fromForm2(application.form, application.type, false, false),
-            childDateOfBirth = child.dateOfBirth
-        )
-        return Context().apply {
-            locale = createTemplateLocale(lang)
-            setVariable("decision", decision)
-            setVariable("application", legacyApplication)
-            setVariable("guardian", guardian)
-            setVariable("manager", manager)
-            setVariable("sendAddress", sendAddress)
-            setVariable("pageNumber", pageNumber)
-            setVariable("isPartTimeDecision", isPartTimeDecision)
-        }
-    }
-
-    private fun createTemplateLocale(lang: String): Locale {
-        return Locale.Builder().setLanguage(lang).build()
+        logger.debug { "Generated $lang ${decision.type} (${decision.unit.providerType}${if (isTransferApplication) ", transfer application" else ""}) decision PDF to ${file.absolutePath}" }
     }
 }
 
@@ -213,15 +164,15 @@ fun createValidDecision(
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     unit: DecisionUnit = DecisionUnit(
         UUID.randomUUID(),
-        "unit name",
-        "Daycare unit name",
-        "Preschool unit name",
-        "manager name",
-        "unit address",
-        "unit postal code",
+        "Kuusenkerkän päiväkoti",
+        "Kuusenkerkän päiväkoti",
+        "Kuusenkerkän päiväkodin esiopetus",
+        "Pirkko Päiväkodinjohtaja",
+        "Kuusernkerkänpolku 123",
+        "02200",
         "ESPOO",
-        "Handler",
-        "Handler address",
+        "Varhaiskasvatuksen palveluohjaus",
+        "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.MUNICIPAL
     ),
     applicationId: UUID = UUID.randomUUID(),

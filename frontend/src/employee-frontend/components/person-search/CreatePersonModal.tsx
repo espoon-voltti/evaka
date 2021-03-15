@@ -158,7 +158,6 @@ export default React.memo(function CreatePersonModal({
 
 const ModalContent = styled.div`
   align-items: center;
-  padding: 0 2em;
   width: auto;
 `
 

@@ -21,11 +21,27 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testVoucherDaycare
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-val validDaycareApplication = ApplicationDetails(
+val validDaycareApplication = applicationDetails(
+    PreferredUnit(
+        id = testDaycare.id,
+        name = testDaycare.name
+    )
+)
+
+val validVoucherApplication =
+    applicationDetails(
+        PreferredUnit(
+            id = testVoucherDaycare.id,
+            name = testVoucherDaycare.name
+        )
+    )
+
+private fun applicationDetails(vararg preferredUnits: PreferredUnit) = ApplicationDetails(
     id = UUID.randomUUID(),
     type = ApplicationType.DAYCARE,
     status = ApplicationStatus.WAITING_DECISION,
@@ -66,7 +82,7 @@ val validDaycareApplication = ApplicationDetails(
             allergies = "allergies",
             diet = "diet",
             assistanceNeeded = true,
-            assistanceDescription = "hjelppiväh!"
+            assistanceDescription = "This is a description for assistance."
         ),
         guardian = Guardian(
             person = PersonBasics(
@@ -87,12 +103,7 @@ val validDaycareApplication = ApplicationDetails(
         otherPartner = null,
         otherChildren = emptyList(),
         preferences = Preferences(
-            preferredUnits = listOf(
-                PreferredUnit(
-                    id = testDaycare.id,
-                    name = testDaycare.name
-                )
-            ),
+            preferredUnits = preferredUnits.asList(),
             preferredStartDate = LocalDate.now().plusMonths(4),
             serviceNeed = ServiceNeed(
                 startTime = "08:00",

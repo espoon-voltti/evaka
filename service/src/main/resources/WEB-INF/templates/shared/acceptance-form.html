@@ -29,7 +29,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div class="details-section">
         <span class="strong" th:text="#{signature}"></span><span> ________________________________</span>
     </div>
-
+</th:block>
+<th:block th:fragment="return-section">
     <div class="return-section">
         <div th:text="#{text.return} + ': '"></div>
         <div th:text="${decision.unit.decisionHandler}"></div>
@@ -40,15 +41,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <th:block th:fragment="preschool-unit-details">
     <div class="details-section accept-details">
         <p>
-            <span class="detail-label strong" th:text="#{childName} + ':'"></span>
-            <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName}"></span>
+            <strong class="detail-label" th:text="#{decision.acceptance.child.name} + ':'"></strong>
+            <span th:text="${child.firstName} + ' ' + ${child.lastName}"></span>
         </p>
         <p>
-            <span class="detail-label strong" th:text="#{unitName} + ':'"></span>
+            <strong class="detail-label" th:text="#{decision.acceptance.unit.name} + ':'"></strong>
             <span th:text="${decision.unit.preschoolDecisionName}"></span>
         </p>
         <p>
-            <span class="detail-label strong"></span>
+            <strong class="detail-label"></strong>
             <span th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></span>
         </p>
     </div>
@@ -57,15 +58,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <th:block th:fragment="daycare-unit-details">
     <div class="details-section accept-details">
         <p>
-            <span class="detail-label strong" th:text="#{childName} + ':'"></span>
-            <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName}"></span>
+            <strong class="detail-label" th:text="#{decision.acceptance.child.name}"></strong>
+            <span th:text="${child.firstName} + ' ' + ${child.lastName}"></span>
         </p>
         <p>
-            <span class="detail-label strong" th:text="#{unitName} + ':'"></span>
+            <strong class="detail-label" th:text="#{decision.acceptance.unit.name}"></strong>
             <span th:text="${decision.unit.daycareDecisionName}"></span>
         </p>
         <p>
-            <span class="detail-label strong"></span>
+            <strong class="detail-label"></strong>
             <span th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></span>
         </p>
     </div>
