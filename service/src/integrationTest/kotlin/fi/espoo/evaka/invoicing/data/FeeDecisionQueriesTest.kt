@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -302,7 +303,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
         jdbi.handle { h ->
             val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
             upsertFeeDecisions(h, objectMapper, listOf(draft))
-            approveFeeDecisionDraftsForSending(h, listOf(draft.id), testDecisionMaker_1.id, approvedAt = LocalDate.now())
+            approveFeeDecisionDraftsForSending(h, listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now())
 
             val result = getFeeDecision(h, objectMapper, testDecisions[0].id)!!
             assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
@@ -325,7 +326,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
             )
             upsertFeeDecisions(h, objectMapper, decisions)
 
-            approveFeeDecisionDraftsForSending(h, decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = LocalDate.now())
+            approveFeeDecisionDraftsForSending(h, decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now())
 
             val result = getFeeDecisionsByIds(h, objectMapper, decisions.map { it.id }).sortedBy { it.decisionNumber }
             with(result[0]) {

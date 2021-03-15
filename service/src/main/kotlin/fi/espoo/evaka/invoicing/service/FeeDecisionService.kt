@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
@@ -36,6 +37,7 @@ import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -48,7 +50,7 @@ class FeeDecisionService(
     private val s3Client: S3DocumentClient,
     private val evakaMessageClient: IEvakaMessageClient
 ) {
-    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: LocalDate): List<UUID> {
+    fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: Instant): List<UUID> {
         tx.handle.lockFeeDecisions(ids)
         val decisions = getFeeDecisionsByIds(tx.handle, objectMapper, ids)
         if (decisions.isEmpty()) return listOf()
@@ -58,7 +60,8 @@ class FeeDecisionService(
             throw BadRequest("Some fee decisions were not drafts")
         }
 
-        val notYetValidDecisions = decisions.filter { it.validFrom > now }
+        val nowDate = LocalDate.from(now.atZone(helsinkiZone))
+        val notYetValidDecisions = decisions.filter { it.validFrom > nowDate }
         if (notYetValidDecisions.isNotEmpty()) {
             throw BadRequest("Some of the fee decisions are not valid yet")
         }
@@ -85,7 +88,9 @@ class FeeDecisionService(
 
         deleteFeeDecisions(tx.handle, emptyDecisions.map { it.id })
 
-        val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition { isRetroactive(it.validFrom, now) }
+        val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition {
+            isRetroactive(it.validFrom, nowDate)
+        }
 
         approveFeeDecisionDraftsForSending(tx.handle, retroactiveDecisions.map { it.id }, approvedBy = user.id, isRetroactive = true, approvedAt = now)
         approveFeeDecisionDraftsForSending(tx.handle, otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = now)
