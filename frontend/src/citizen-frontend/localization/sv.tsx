@@ -710,6 +710,10 @@ const sv: Translations = {
                     alternativ. Du kan se var enheterna är belägna, genom att
                     välja <i>Enheter på kartan</i>.
                   </P>
+                  <P>
+                    När familjen ansöker till en servicesedel enhet får även
+                    ledaren inom småbarnspedagogik informationen.
+                  </P>
                 </>
               )
             },
@@ -722,6 +726,10 @@ const sv: Translations = {
                     möjligheterna att få en önskad plats ökar om du anger flera
                     alternativ. Du kan se var enheterna är belägna, genom att
                     välja <i>Enheter på kartan</i>.
+                  </P>
+                  <P>
+                    När familjen ansöker till en servicesedel enhet får även
+                    ledaren inom småbarnspedagogik informationen.
                   </P>
                 </>
               )
