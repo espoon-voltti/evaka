@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
@@ -26,17 +27,15 @@ sealed class AclAuthorization {
 
 class AccessControlList(private val jdbi: Jdbi) {
     fun getAuthorizedDaycares(user: AuthenticatedUser): AclAuthorization =
-        if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)) {
-            AclAuthorization.All
-        } else {
-            AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user) })
-        }
+        getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
 
-    fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization =
+    fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization = getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
+
+    fun getAuthorizedUnits(user: AuthenticatedUser, roles: Set<UserRole>): AclAuthorization =
         if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)) {
             AclAuthorization.All
         } else {
-            AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user) })
+            AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user, roles) })
         }
 
     fun getRolesForUnit(user: AuthenticatedUser, daycareId: UUID): AclAppliedRoles = AclAppliedRoles(
@@ -221,7 +220,11 @@ WHERE employee_id = :userId AND d.id = :deviceId
     )
 }
 
-private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser): Set<UUID> = createQuery(
-    // language=SQL
-    "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId"
-).bind("userId", user.id).mapTo<UUID>().toSet()
+private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<UUID> =
+    createQuery(
+        "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
+    )
+        .bind("userId", user.id)
+        .bindNullable("roles", roles?.toTypedArray())
+        .mapTo<UUID>()
+        .toSet()
