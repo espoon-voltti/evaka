@@ -134,7 +134,7 @@ export default React.memo(function AttendanceChildPage() {
                 <FixedSpaceRow spacing={'m'}>
                   <RoundIcon
                     content={faComments}
-                    color={colors.brandEspoo.espooTurquoise}
+                    color={colors.greyscale.medium}
                     size="L"
                     active={false}
                   />
@@ -151,7 +151,7 @@ export default React.memo(function AttendanceChildPage() {
                   </Link>
                   <RoundIcon
                     content={faInfo}
-                    color={colors.blues.medium}
+                    color={colors.greyscale.medium}
                     size="L"
                     active={false}
                   />
