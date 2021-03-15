@@ -40,6 +40,7 @@
   "dependencies": {
     "@evaka/citizen-frontend": "link:src/citizen-frontend",
     "@evaka/employee-frontend": "link:src/employee-frontend",
+    "@evaka/eslint-plugin": "link:eslint-plugin",
     "@evaka/lib-common": "link:src/lib-common",
     "@evaka/lib-components": "link:src/lib-components",
     "@evaka/lib-icons": "link:src/lib-icons",
@@ -197,7 +198,8 @@
       "plugin:@typescript-eslint/eslint-recommended",
       "plugin:@typescript-eslint/recommended",
       "plugin:@typescript-eslint/recommended-requiring-type-checking",
-      "plugin:prettier/recommended"
+      "plugin:prettier/recommended",
+      "plugin:@evaka/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
