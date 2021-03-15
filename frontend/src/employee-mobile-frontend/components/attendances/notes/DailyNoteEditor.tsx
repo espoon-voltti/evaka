@@ -39,8 +39,8 @@ import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import { TallContentArea, ContentAreaWithShadow } from '../../mobile/components'
 import { Actions } from '../components'
-import { UserContext } from 'state/user'
-import { User } from 'types'
+import { UserContext } from '../../../state/user'
+import { User } from '../../../types/index'
 
 interface DailyNoteEdited {
   id: string | undefined
