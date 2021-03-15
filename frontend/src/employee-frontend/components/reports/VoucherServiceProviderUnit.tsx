@@ -64,19 +64,19 @@ const SumRow = styled.div`
   align-items: center;
 `
 
-const StyledTd = styled(Td)<{ type: VoucherReportRowType }>`
-  ${(p) =>
-    p.type === 'REFUND'
-      ? `
-    border-left: 6px solid ${colors.accents.orange};
-  `
-      : p.type === 'CORRECTION'
-      ? `
-    border-left: 6px solid ${colors.accents.yellow};
-  `
-      : `
-    border-left: 6px solid ${colors.greyscale.white};
-  `}
+const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
+  ${(p) => {
+    const color =
+      p.type === 'REFUND'
+        ? colors.accents.orange
+        : p.type === 'CORRECTION'
+        ? colors.accents.yellow
+        : p.type === 'NEW'
+        ? colors.blues.primary
+        : colors.greyscale.white
+
+    return `border-left: 6px solid ${color};`
+  }}
 `
 
 function VoucherServiceProviderUnit() {
@@ -326,7 +326,11 @@ function VoucherServiceProviderUnit() {
                       row.serviceVoucherPartId
                     }:${row.realizedPeriod.start.formatIso()}`}
                   >
-                    <StyledTd type={row.type}>
+                    <StyledTd
+                      type={
+                        row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
+                      }
+                    >
                       <Link to={`/child-information/${row.childId}`}>
                         {formatName(
                           row.childFirstName,

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.reports
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -173,7 +174,9 @@ data class ServiceVoucherValueRow(
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
-    val type: VoucherReportRowType
+    val type: VoucherReportRowType,
+    @get:JsonProperty("isNew")
+    val isNew: Boolean
 )
 
 private fun Database.Read.getServiceVoucherValues(
@@ -284,7 +287,11 @@ SELECT
     ) AS realized_amount,
     row.realized_period,
     row.number_of_days,
-    row.type
+    row.type,
+    NOT EXISTS (
+        SELECT 1 FROM voucher_value_report_decision_part old_snapshot_part
+        WHERE old_snapshot_part.decision_part_id = part.id
+    ) AS is_new
 FROM report_rows row
 JOIN voucher_value_decision_part part ON row.part_id = part.id
 JOIN person child ON part.child = child.id
@@ -348,7 +355,13 @@ private fun Database.Read.getSnapshotVoucherValues(
             sn_part.realized_amount,
             sn_part.realized_period,
             upper(sn_part.realized_period) - lower(sn_part.realized_period) AS number_of_days,
-            sn_part.type
+            sn_part.type,
+            NOT EXISTS (
+                SELECT 1 FROM voucher_value_report_decision_part old_snapshot_part
+                JOIN voucher_value_report_snapshot old_snapshot ON old_snapshot_part.voucher_value_report_snapshot_id = old_snapshot.id
+                WHERE old_snapshot_part.decision_part_id = part.id
+                AND make_date(old_snapshot.year, old_snapshot.month, 1) < make_date(:year, :month, 1)
+            ) AS is_new
         FROM voucher_value_report_snapshot sn
         JOIN voucher_value_report_decision_part sn_part ON sn.id = sn_part.voucher_value_report_snapshot_id
         JOIN voucher_value_decision_part part ON part.id = sn_part.decision_part_id

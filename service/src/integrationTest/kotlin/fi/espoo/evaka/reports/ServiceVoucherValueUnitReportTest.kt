@@ -26,7 +26,9 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -210,6 +212,33 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 39290)
         febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 28800, 31916)
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 28800, 58200)
+    }
+
+    @Test
+    fun `isNew property is properly deduced for frozen and unfrozen rows`() {
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
+
+        val janReportBeforeFreeze = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReportBeforeFreeze.size)
+        assertTrue(janReportBeforeFreeze.first().isNew)
+
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        val janReportAfterFreeze = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReportAfterFreeze.size)
+        assertTrue(janReportAfterFreeze.first().isNew)
+
+        val febReportBeforeFreeze = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
+        assertEquals(1, febReportBeforeFreeze.size)
+        assertFalse(febReportBeforeFreeze.first().isNew)
+
+        db.transaction { freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze) }
+        val febReportAfterFreeze = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
+        assertEquals(1, febReportAfterFreeze.size)
+        assertFalse(febReportAfterFreeze.first().isNew)
+
+        val janReportAfterFebFreeze = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
+        assertEquals(1, janReportAfterFebFreeze.size)
+        assertTrue(janReportAfterFebFreeze.first().isNew)
     }
 
     private fun List<ServiceVoucherValueRow>.assertContainsRow(

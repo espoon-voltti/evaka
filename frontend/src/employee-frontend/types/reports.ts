@@ -357,6 +357,7 @@ export interface VoucherServiceProviderUnitRow {
   realizedPeriod: FiniteDateRange
   numberOfDays: number
   type: VoucherReportRowType
+  isNew: boolean
 }
 
 export interface PlacementSketchingRow {
