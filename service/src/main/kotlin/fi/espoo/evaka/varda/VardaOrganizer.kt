@@ -28,7 +28,7 @@ fun getStaleOrganizer(tx: Database.Read, organizerName: String): VardaOrganizer?
     //language=SQL
     val sql =
         """
-        SELECT id, varda_organizer_id, varda_organizer_oid, url, email, phone, iban, municipality_code
+        SELECT id, varda_organizer_id, varda_organizer_oid, url, email, phone, municipality_code
         FROM varda_organizer
         WHERE organizer = :organizer
         AND (updated_at > uploaded_at OR uploaded_at IS NULL)
@@ -62,11 +62,10 @@ data class VardaOrganizer(
     val url: String?,
     val email: String?,
     val phone: String?,
-    val iban: String?,
     val municipalityCode: String?,
     val uploadedAt: Instant? = null
 ) {
-    fun toUpdateObject(): VardaUpdateOrganizer = VardaUpdateOrganizer(vardaOrganizerId, email, phone, iban)
+    fun toUpdateObject(): VardaUpdateOrganizer = VardaUpdateOrganizer(vardaOrganizerId, email, phone)
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -90,7 +89,5 @@ data class VardaUpdateOrganizer(
     @JsonProperty("sahkopostiosoite")
     val email: String?,
     @JsonProperty("puhelinnumero")
-    val phone: String?,
-    @JsonProperty("tilinumero")
-    val iban: String?
+    val phone: String?
 )

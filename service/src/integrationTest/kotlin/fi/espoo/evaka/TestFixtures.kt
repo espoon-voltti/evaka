@@ -574,8 +574,8 @@ fun insertTestVardaOrganizer(h: Handle) {
     //language=SQL
     val sql =
         """
-            INSERT INTO varda_organizer (organizer, email, phone, iban, varda_organizer_id, varda_organizer_oid, url, municipality_code)
-            VALUES (:organizer, :email, :phone, :iban, :varda_organizer_id, :varda_organizer_oid, :url, :municipality_code)
+            INSERT INTO varda_organizer (organizer, email, phone, varda_organizer_id, varda_organizer_oid, url, municipality_code)
+            VALUES (:organizer, :email, :phone, :varda_organizer_id, :varda_organizer_oid, :url, :municipality_code)
         """.trimIndent()
 
     h.createUpdate(sql)
@@ -584,7 +584,6 @@ fun insertTestVardaOrganizer(h: Handle) {
                 "organizer" to "Espoo",
                 "email" to "test@espoo.fi",
                 "phone" to "+358000000000",
-                "iban" to "FI123456677555",
                 "varda_organizer_id" to 1233,
                 "varda_organizer_oid" to defaultMunicipalOrganizerOid,
                 "url" to "http://path.to.organizer",

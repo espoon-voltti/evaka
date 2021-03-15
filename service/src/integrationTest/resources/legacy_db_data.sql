@@ -80,8 +80,8 @@ VALUES ('ff4fbaad-d02f-4f7a-9f7f-4c4e0f2a2b21',
         '2017-02-20',
         '2022-12-31');
 
-INSERT INTO varda_organizer (organizer, email, phone, iban)
-VALUES ('Espoo', 'test@espoo.fi', '+358981624', 'FI1680001370795552');
+INSERT INTO varda_organizer (organizer, email, phone)
+VALUES ('Espoo', 'test@espoo.fi', '+358981624');
 
 INSERT INTO employee(id, first_name, last_name, external_id, email)
 VALUES('00000000-0000-0000-0000-000000000000', 'Ally', 'Aardvark', 'espoo-ad:2014e23e-17c2-482f-ba4d-f8b9edc9d5c9', 'ally.aardvark@espoo.fi');
