@@ -13,6 +13,7 @@ import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.koski.KoskiSearchParams
+import fi.espoo.evaka.messaging.daycarydailynote.deleteExpiredDaycareDailyNotes
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -125,6 +126,13 @@ class ScheduledOperationController(
                 Instant.now()
             )
         }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/clear-old-daycare-daily-notes")
+    fun removeOldDaycareDailyNotes(db: Database.Connection): ResponseEntity<Unit> {
+        Audit.DaycareDailyNoteDelete.log()
+        db.transaction { it.deleteExpiredDaycareDailyNotes(Instant.now()) }
         return ResponseEntity.noContent().build()
     }
 }

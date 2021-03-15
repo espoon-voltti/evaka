@@ -2,6 +2,7 @@ package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.Instant
 import java.util.UUID
 
 fun Database.Read.getDaycareDailyNote(noteId: UUID): DaycareDailyNote? {
@@ -107,5 +108,28 @@ fun Database.Transaction.deleteDaycareDailyNote(noteId: UUID) {
 fun Database.Transaction.deleteChildDaycareDailyNotes(childId: UUID) {
     createUpdate("DELETE from daycare_daily_note WHERE childId = :id")
         .bind("id", childId)
+        .execute()
+}
+
+fun Database.Transaction.deleteExpiredDaycareDailyNotes(now: Instant) {
+    createUpdate(
+        """
+WITH expired_child_notes AS (
+    SELECT id, child_id
+    FROM daycare_daily_note
+    WHERE child_id IS NOT null
+        AND modified_at < :now - INTERVAL '12 hours'
+)
+DELETE FROM daycare_daily_note
+WHERE id IN (
+  SELECT note.id
+  FROM expired_child_notes note
+    LEFT JOIN placement p on p.child_id = note.child_id
+    LEFT JOIN daycare d ON d.id = p.unit_id
+  WHERE
+    d.round_the_clock IS NOT TRUE);    
+        """.trimIndent()
+    )
+        .bind("now", now)
         .execute()
 }
