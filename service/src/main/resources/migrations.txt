@@ -44,3 +44,4 @@ V43__rename_bulletin_guardian_id.sql
 V44__voucher_value_report_snapshot.sql
 V45__add_sent_at_to_bulletin_instance.sql
 V46__voucher_value_report_snapshot_taken.sql
+V47__drop_iban_from_varda_organizer.sql

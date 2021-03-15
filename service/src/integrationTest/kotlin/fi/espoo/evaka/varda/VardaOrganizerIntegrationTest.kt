@@ -65,7 +65,7 @@ class VardaOrganizerIntegrationTest : FullApplicationTest() {
         //language=SQL
         val sql =
             """
-            SELECT id, varda_organizer_id, varda_organizer_oid, url, email, phone, iban, municipality_code, created_at, updated_at, uploaded_at
+            SELECT id, varda_organizer_id, varda_organizer_oid, url, email, phone, municipality_code, created_at, updated_at, uploaded_at
             FROM varda_organizer
             """.trimIndent()
 
