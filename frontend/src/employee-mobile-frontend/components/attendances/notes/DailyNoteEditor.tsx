@@ -19,7 +19,9 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/layout/flex-helpers'
 import { Label } from '@evaka/lib-components/typography'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
+import InputField, {
+  TextArea
+} from '@evaka/lib-components/atoms/form/InputField'
 import LocalDate from '@evaka/lib-common/local-date'
 import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
@@ -37,6 +39,8 @@ import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import { TallContentArea, ContentAreaWithShadow } from '../../mobile/components'
 import { Actions } from '../components'
+import { UserContext } from 'state/user'
+import { User } from 'types'
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -54,6 +58,7 @@ interface DailyNoteEdited {
 export default React.memo(function DailyNoteEditor() {
   const { i18n } = useTranslation()
   const history = useHistory()
+  const { user } = useContext(UserContext)
 
   const { childId, unitId, groupId } = useParams<{
     unitId: string
@@ -140,10 +145,10 @@ export default React.memo(function DailyNoteEditor() {
             <FixedSpaceColumn spacing={'m'}>
               <FixedSpaceColumn spacing={'xxs'}>
                 <Label>{i18n.attendances.notes.labels.note}</Label>
-                <InputField
+                <TextArea
                   value={dailyNote.note}
-                  onChange={(value) =>
-                    setDailyNote({ ...dailyNote, note: value })
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setDailyNote({ ...dailyNote, note: e.target.value })
                   }
                   placeholder={i18n.attendances.notes.placeholders.note}
                 />
@@ -228,10 +233,13 @@ export default React.memo(function DailyNoteEditor() {
                       data-qa={`reminders-${reminder}`}
                     />
                   ))}
-                  <InputField
+                  <TextArea
                     value={dailyNote.reminderNote}
-                    onChange={(value) =>
-                      setDailyNote({ ...dailyNote, reminderNote: value })
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setDailyNote({
+                        ...dailyNote,
+                        reminderNote: e.target.value
+                      })
                     }
                     placeholder={
                       i18n.attendances.notes.placeholders.reminderNote
@@ -252,7 +260,7 @@ export default React.memo(function DailyNoteEditor() {
                     onClick={() =>
                       createOrUpdateDaycareDailyNoteForChild(
                         childId,
-                        dailyNoteEditedToDailyNote(dailyNote)
+                        dailyNoteEditedToDailyNote(dailyNote, user)
                       )
                     }
                     onSuccess={() => history.goBack()}
@@ -269,7 +277,8 @@ export default React.memo(function DailyNoteEditor() {
 })
 
 function dailyNoteEditedToDailyNote(
-  dailyNoteEdited: DailyNoteEdited
+  dailyNoteEdited: DailyNoteEdited,
+  user: User | undefined
 ): DailyNote {
   return {
     ...dailyNoteEdited,
@@ -285,7 +294,7 @@ function dailyNoteEditedToDailyNote(
     sleepingHours: dailyNoteEdited.sleepingHours
       ? dailyNoteEdited.sleepingHours
       : null,
-    modifiedBy: '???',
+    modifiedBy: user?.id ?? 'unknown user',
     modifiedAt: null
   }
 }
