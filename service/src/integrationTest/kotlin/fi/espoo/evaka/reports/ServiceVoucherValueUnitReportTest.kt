@@ -113,6 +113,23 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     }
 
     @Test
+    fun `if there is a change on part of the month, the whole month gets refunded and corrected`() {
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
+        val middleOfMonth = janFirst.plusDays(15)
+        createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 10000)
+
+        val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
+        assertEquals(4, febReport.size)
+        febReport.assertContainsRow(REFUND, janFirst, janFirst.toEndOfMonth(), 87000, 0, -87000)
+        // 15 days -> (15/31) * 87000 = ~42097
+        febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 42097)
+        // 16 days -> (16/31) * 77000 = ~39742
+        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 39742)
+        febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 10000, 77000)
+    }
+
+    @Test
     fun `new value decisions to a different unit cause refunds in the old unit but corrections in the new unit`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
