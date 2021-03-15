@@ -23,6 +23,7 @@ import colors from '@evaka/lib-components/colors'
 import { faAngleDown, faAngleUp, faSearch, faTimes } from '@evaka/lib-icons'
 import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
 import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import Loader from '@evaka/lib-components/atoms/Loader'
 
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'
@@ -221,6 +222,8 @@ export default React.memo(function AttendancePageWrapper() {
 
   return (
     <Fragment>
+      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {attendanceResponse.isLoading && <Loader />}
       {attendanceResponse.isSuccess && (
         <Fragment>
           <SearchBar
