@@ -469,7 +469,7 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
         .singleOrNull()
 }
 
-fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID) {
+fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, sentAt: Instant) {
     // language=sql
     val sql =
         """
@@ -489,7 +489,7 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
                 WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
                 ELSE :approvedBy
                 END,
-            approved_at = NOW()
+            approved_at = :sentAt
         FROM voucher_value_decision AS vd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
         WHERE vd.id = :id AND voucher_value_decision.id = vd.id
@@ -500,6 +500,7 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
         batch
             .bind("status", VoucherValueDecisionStatus.WAITING_FOR_SENDING)
             .bind("approvedBy", approvedBy)
+            .bind("sentAt", sentAt)
             .bind("id", id)
             .add()
     }
