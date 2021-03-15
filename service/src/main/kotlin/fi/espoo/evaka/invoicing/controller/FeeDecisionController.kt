@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -119,7 +120,7 @@ class FeeDecisionController(
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
-            val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, LocalDate.now())
+            val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds, Instant.now())
             asyncJobRunner.plan(tx, confirmedDecisions.map { NotifyFeeDecisionApproved(it) })
         }
         asyncJobRunner.scheduleImmediateRun()

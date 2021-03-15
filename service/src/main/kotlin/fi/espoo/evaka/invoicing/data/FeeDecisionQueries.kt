@@ -37,6 +37,7 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
@@ -509,7 +510,7 @@ fun findFeeDecisionsForHeadOfFamily(
         .let { it.merge() }
 }
 
-fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID, approvedAt: LocalDate, isRetroactive: Boolean = false) {
+fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
     val sql =
         """
         WITH youngest_child AS (
