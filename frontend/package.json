@@ -14,8 +14,8 @@
     "build:dev": "webpack",
     "storybook": "start-storybook -p 9001 -c src/lib-components/.storybook",
     "build-storybook": "build-storybook -c src/lib-components/.storybook -o storybook-build",
-    "test": "jest",
-    "test:watch": "jest --watchAll",
+    "test": "jest src/*-frontend src/lib-*",
+    "test:watch": "jest --watchAll src/*-frontend src/lib-*",
     "build-maintenance-page": "parcel build src/maintenance-page/index.html --public-url ./ --out-dir dist/maintenance-page",
     "dev-maintenance-page": "parcel src/maintenance-page/index.html",
     "e2e": "testcafe 'chrome --start-fullscreen' src/e2e-test/**/*.spec.ts",
@@ -28,6 +28,7 @@
     "e2e-employee-2": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/2_employee-2/*.spec.ts",
     "e2e-mobile": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/6_mobile/*.spec.ts",
     "e2e-messaging": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/7_messaging/*.spec.ts",
+    "e2e-playwright": "HEADLESS=false jest src/e2e-playwright/specs",
     "e2e-ci": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/**/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-accessibility": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/**/*.spec.ts --fixture-meta subType=accessibility -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-citizen": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/specs/0_citizen/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
@@ -35,7 +36,8 @@
     "e2e-ci-employee": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/specs/5_employee/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-employee-2": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/specs/2_employee-2/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-mobile": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=375;height=667' src/e2e-test/specs/6_mobile/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
-    "e2e-ci-messaging": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/specs/7_messaging/*.spec.ts -s takeOnFails=true --stop-on-first-fail"
+    "e2e-ci-messaging": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/specs/7_messaging/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
+    "e2e-ci-playwright": "BASE_URL=http://localhost:9999 jest src/e2e-playwright/specs --bail 1"
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",
@@ -121,6 +123,7 @@
     "jest-junit": "^12.0.0",
     "make-error-cause": "^2.3.0",
     "parcel-bundler": "^1.12.4",
+    "playwright": "^1.9.2",
     "postcss-loader": "^5.2.0",
     "postcss-preset-env": "^6.7.0",
     "prettier": "^2.2.1",

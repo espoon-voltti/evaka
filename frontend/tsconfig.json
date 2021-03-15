@@ -10,6 +10,7 @@
     { "path": "./src/lib-common" },
     { "path": "./src/lib-components" },
     { "path": "./src/e2e-test" },
+    { "path": "./src/e2e-playwright" },
     { "path": "./src/employee-frontend" },
     { "path": "./src/employee-mobile-frontend" },
     { "path": "./src/lib-icons" },
