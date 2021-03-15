@@ -116,10 +116,10 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
             listOf("areaId" to areaId, "year" to year, "month" to month)
         )
             .asUser(adminUser)
-            .responseObject<List<ServiceVoucherValueUnitAggregate>>(objectMapper)
+            .responseObject<ServiceVoucherValueReportController.ServiceVoucherReport>(objectMapper)
         assertEquals(200, response.statusCode)
 
-        return data.get()
+        return data.get().rows
     }
 
     private fun createTestSetOfDecisions(): Int {

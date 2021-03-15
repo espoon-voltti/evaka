@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,6 +25,11 @@ import java.util.UUID
 @RestController
 @RequestMapping("/reports/service-voucher-value")
 class ServiceVoucherValueReportController {
+
+    data class ServiceVoucherReport(
+        val locked: LocalDate?,
+        val rows: List<ServiceVoucherValueUnitAggregate>
+    )
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
         db: Database,
@@ -31,11 +37,12 @@ class ServiceVoucherValueReportController {
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam areaId: UUID
-    ): ResponseEntity<List<ServiceVoucherValueUnitAggregate>> {
+    ): ResponseEntity<ServiceVoucherReport> {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return db.read { tx ->
-            val rows = if (tx.snapshotExists(year, month)) {
+            val snapshotTime = tx.getSnapshotDate(year, month)
+            val rows = if (snapshotTime != null) {
                 tx.getSnapshotVoucherValues(year, month, areaId = areaId)
             } else {
                 tx.getServiceVoucherValues(year, month, areaId = areaId)
@@ -51,10 +58,20 @@ class ServiceVoucherValueReportController {
                     )
                 }
 
-            ResponseEntity.ok(aggregates)
+            ResponseEntity.ok(
+                ServiceVoucherReport(
+                    locked = snapshotTime,
+                    rows = aggregates
+                )
+            )
         }
     }
 
+    data class ServiceVoucherUnitReport(
+        val locked: LocalDate?,
+        val rows: List<ServiceVoucherValueRow>,
+        val voucherTotal: Int
+    )
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
         db: Database,
@@ -62,17 +79,24 @@ class ServiceVoucherValueReportController {
         @PathVariable("unitId") unitId: UUID,
         @RequestParam year: Int,
         @RequestParam month: Int
-    ): ResponseEntity<List<ServiceVoucherValueRow>> {
+    ): ResponseEntity<ServiceVoucherUnitReport> {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return db.read { tx ->
-            val rows = if (tx.snapshotExists(year, month)) {
+            val snapshotTime = tx.getSnapshotDate(year, month)
+            val rows = if (snapshotTime != null) {
                 tx.getSnapshotVoucherValues(year, month, unitId = unitId)
             } else {
                 tx.getServiceVoucherValues(year, month, unitId = unitId)
             }
 
-            ResponseEntity.ok(rows)
+            ResponseEntity.ok(
+                ServiceVoucherUnitReport(
+                    locked = snapshotTime,
+                    rows = rows,
+                    voucherTotal = rows.sumBy { it.realizedAmount }
+                )
+            )
         }
     }
 }
@@ -189,7 +213,7 @@ WITH min_voucher_decision_date AS (
         part.id AS part_id,
         sn_part.realized_amount,
         sn_part.realized_period,
-        rank() OVER (PARTITION BY part.child ORDER BY sn.year desc, sn.month desc)
+        rank() OVER (PARTITION BY part.child ORDER BY sn.year desc, sn.month desc) AS rank
     FROM refund_months rm
     JOIN voucher_value_report_decision_part sn_part ON extract(year from lower(sn_part.realized_period)) = rm.year AND extract(month from lower(sn_part.realized_period)) = rm.month
     JOIN voucher_value_decision_part part on part.id = sn_part.decision_part_id AND part.child = rm.child
@@ -281,13 +305,13 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
         .toList()
 }
 
-private fun Database.Read.snapshotExists(year: Int, month: Int): Boolean {
-    return createQuery("SELECT 1 FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month")
+private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
+    return createQuery("SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month")
         .bind("year", year)
         .bind("month", month)
-        .mapTo<Int>()
-        .findFirst()
-        .isPresent
+        .mapTo<Instant>()
+        .firstOrNull()
+        ?.let { LocalDate.ofInstant(it, zoneId) }
 }
 
 private fun Database.Read.getSnapshotVoucherValues(

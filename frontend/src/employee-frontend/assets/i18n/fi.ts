@@ -2012,27 +2012,31 @@ export const fi = {
       reportFileName: 'alkavat_sijoitukset'
     },
     voucherServiceProviders: {
-      title: 'Palveluseteliyksiköt',
+      title: 'Palveluseteli',
       description:
-        'Raportti tarjoaa tiedot palveluseteliyksiköiden laskutuksesta.',
+        'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
       filters: {
-        areaPlaceholder: 'Valitse palvelualue'
+        areaPlaceholder: 'Valitse palvelualue',
+        noFuture: 'Tulevien kuukausien katselu ei ole mahdollista'
       },
-      childCount: 'PS lasten lkm',
+      locked: 'Raportti lukittu',
+      childCount: 'PS-lasten lkm',
       unitVoucherSum: 'PS summa / kk',
-      detailsLink: 'Näytä erittely',
       average: 'Keskiarvo',
       breakdown: 'Erittely'
     },
     voucherServiceProviderUnit: {
       title: 'Palvelusetelilapset yksikössä',
       month: 'Kuukausi',
-      description: '',
+      total: 'Palvelusetelien summa valittuna kuukautena',
       child: 'Lapsen nimi / synt. aika',
       childFirstName: 'Etunimi',
       childLastName: 'Sukunimi',
+      note: 'Huomio',
       numberOfDays: 'Päivät',
-      serviceVoucherValue: 'Ps kokonaisarvo',
+      start: 'Alkaen',
+      end: 'Päättyen',
+      serviceVoucherValue: 'Ps korkein arvo',
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       coefficient: 'Kerroin',

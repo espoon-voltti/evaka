@@ -314,6 +314,11 @@ export interface StartingPlacementsRow {
   careAreaName: string
 }
 
+export interface VoucherServiceProviderReport {
+  locked: LocalDate | null
+  rows: VoucherServiceProviderRow[]
+}
+
 export interface VoucherServiceProviderRow {
   unit: {
     id: UUID
@@ -323,6 +328,14 @@ export interface VoucherServiceProviderRow {
   }
   childCount: number
   monthlyPaymentSum: number
+}
+
+export type VoucherReportRowType = 'ORIGINAL' | 'REFUND' | 'CORRECTION'
+
+export interface VoucherServiceProviderUnitReport {
+  locked: LocalDate | null
+  voucherTotal: number
+  rows: VoucherServiceProviderUnitRow[]
 }
 
 export interface VoucherServiceProviderUnitRow {
@@ -343,6 +356,7 @@ export interface VoucherServiceProviderUnitRow {
   realizedAmount: number
   realizedPeriod: FiniteDateRange
   numberOfDays: number
+  type: VoucherReportRowType
 }
 
 export interface PlacementSketchingRow {
