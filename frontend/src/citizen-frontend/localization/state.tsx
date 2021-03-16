@@ -12,12 +12,18 @@ export const langs = ['fi', 'sv', 'en'] as const
 export type Lang = typeof langs[number]
 
 const getDefaultLanguage: () => Lang = () => {
-  const language =
-    (window.navigator['userLanguage'] as string) || window.navigator.language
-  if (language === 'fi' || language === 'sv') {
-    return language as Lang
+  const params = new URLSearchParams(window.location.search)
+  const lang = params.get('lang')
+  if (lang && ['fi', 'sv', 'en'].includes(lang)) {
+    return lang as Lang
   } else {
-    return 'fi' as const
+    const language =
+      (window.navigator['userLanguage'] as string) || window.navigator.language
+    if (language === 'fi' || language === 'sv') {
+      return language as Lang
+    } else {
+      return 'fi' as const
+    }
   }
 }
 
