@@ -14,20 +14,20 @@ import GroupPlacementModal from '../../pages/employee/units/group-placement-moda
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   Fixture,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import { Child, DaycarePlacement } from '../../dev-api/types'
+import { Child, DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   insertDaycareCaretakerFixtures,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
 

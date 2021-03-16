@@ -7,14 +7,14 @@ import InvoicingPage from '../../pages/invoicing'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   feeDecisionsFixture,
   invoiceFixture,
   adultFixtureWihtoutSSN,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import EmployeeHome from '../../pages/employee/home'
 import GuardianPage from '../../pages/employee/guardian-page'
@@ -26,7 +26,7 @@ import {
   insertInvoiceFixtures,
   insertParentshipFixtures,
   insertPersonFixture
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 
 const page = new InvoicingPage()

@@ -15,6 +15,7 @@
   "references": [
     { "path": "../citizen-frontend" },
     { "path": "../lib-common" },
+    { "path": "../e2e-test-common" },
     { "path": "../employee-frontend" }
   ]
 }

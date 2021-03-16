@@ -6,7 +6,7 @@
 
 import { Role } from 'testcafe'
 import Home from '../pages/home'
-import config from './index'
+import config from 'e2e-test-common/config'
 
 const home = new Home()
 

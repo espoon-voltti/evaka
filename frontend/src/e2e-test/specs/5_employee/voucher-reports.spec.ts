@@ -6,18 +6,18 @@ import InvoicingPage from '../../pages/invoicing'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   careArea2Fixture,
   daycare2Fixture,
   daycareFixture,
   Fixture,
   voucherValueDecisionsFixture
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import {
   cleanUpInvoicingDatabase,
   insertVoucherValueDecisionFixtures
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
 import { seppoAdminRole } from '../../config/users'
 import ReportsPage from '../../pages/reports'

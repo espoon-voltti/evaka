@@ -9,11 +9,14 @@ import {
   daycare2Fixture,
   Fixture,
   preschoolFixture
-} from '../../dev-api/fixtures'
-import config from '../../config'
+} from '@evaka/e2e-test-common/dev-api/fixtures'
+import config from '@evaka/e2e-test-common/config'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
-import { Daycare } from '../../dev-api/types'
-import { DigitransitFeature, putDigitransitAutocomplete } from '../../dev-api'
+import { Daycare } from '@evaka/e2e-test-common/dev-api/types'
+import {
+  DigitransitFeature,
+  putDigitransitAutocomplete
+} from '@evaka/e2e-test-common/dev-api'
 
 const mapPage = new CitizenMapPage()
 

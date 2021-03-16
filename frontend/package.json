@@ -54,6 +54,7 @@
     "core-js": "^3.8.3",
     "csstype": "^3.0.6",
     "date-fns": "^2.17.0",
+    "e2e-test-common": "link:src/e2e-test-common",
     "employee-frontend": "link:src/employee-frontend",
     "focus-trap-react": "^8.4.2",
     "history": "^4.9.0",
@@ -190,7 +191,9 @@
       "<rootDir>/src/e2e-test"
     ],
     "moduleNameMapper": {
-      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js"
+      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js",
+      "^e2e-playwright/(.*)$": "<rootDir>/src/e2e-playwright/$1",
+      "^e2e-test-common/(.*)$": "<rootDir>/src/e2e-test-common/$1"
     },
     "globals": {
       "ts-jest": {

@@ -4,7 +4,7 @@
 
 // Home model to handle page url, login and logout actions
 import { Selector, t } from 'testcafe'
-import config from '../config'
+import config from 'e2e-test-common/config'
 import { Idp } from '../config/idp'
 import DevLoginForm from './dev-login-form'
 

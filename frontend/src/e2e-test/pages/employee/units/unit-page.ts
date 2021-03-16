@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ClientFunction, Selector, t } from 'testcafe'
-import config from '../../../config'
-import { postPairingChallenge } from '../../../dev-api'
-import { UUID } from '../../../dev-api/types'
+import config from 'e2e-test-common/config'
+import { postPairingChallenge } from 'e2e-test-common/dev-api'
+import { UUID } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 export default class UnitPage {

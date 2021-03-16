@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeById,
@@ -14,7 +14,7 @@ import {
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   postDaycareDailyNote
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import { t } from 'testcafe'
 import {
@@ -26,8 +26,11 @@ import {
   enduserChildFixtureKaarina,
   Fixture,
   uuidv4
-} from '../../dev-api/fixtures'
-import { DaycareDailyNote, DaycarePlacement } from '../../dev-api/types'
+} from 'e2e-test-common/dev-api/fixtures'
+import {
+  DaycareDailyNote,
+  DaycarePlacement
+} from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'

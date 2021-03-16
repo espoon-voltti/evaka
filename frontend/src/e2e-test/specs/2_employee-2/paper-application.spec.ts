@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import EmployeeHome from '../../pages/employee/home'
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
-import { supervisor } from '../../dev-api/fixtures'
-import { daycareGroupFixture } from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/data-init'
+import { supervisor } from 'e2e-test-common/dev-api/fixtures'
+import { daycareGroupFixture } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
 import {
@@ -17,11 +17,11 @@ import {
   deleteEmployeeFixture,
   insertDaycareGroupFixtures,
   insertEmployeeFixture
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import ApplicationEditView from '../../pages/employee/applications/application-edit-view'
-import { ApplicationPersonDetail } from '../../dev-api/types'
+import { ApplicationPersonDetail } from 'e2e-test-common/dev-api/types'
 
 const employeeHome = new EmployeeHome()
 const childInforationPage = new ChildInformationPage()

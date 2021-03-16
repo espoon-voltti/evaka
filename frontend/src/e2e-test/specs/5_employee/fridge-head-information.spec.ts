@@ -9,17 +9,17 @@ import ChildInformationPage from '../../pages/employee/child-information/child-i
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   clearPricing,
   deletePricing,
   insertPricing,
   runPendingAsyncJobs
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { t } from 'testcafe'
 import { seppoAdminRole } from '../../config/users'
-import { PersonDetail } from '../../dev-api/types'
+import { PersonDetail } from 'e2e-test-common/dev-api/types'
 
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()

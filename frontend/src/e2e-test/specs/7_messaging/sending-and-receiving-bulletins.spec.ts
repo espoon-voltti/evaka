@@ -5,9 +5,9 @@
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import {
   clearBulletins,
   deleteEmployeeFixture,
@@ -16,7 +16,7 @@ import {
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   setAclForDaycares
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import EmployeeHome from '../../pages/employee/home'
 import MessagesPage from '../../pages/employee/messaging/messages-page'
 import {
@@ -24,8 +24,11 @@ import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   uuidv4
-} from '../../dev-api/fixtures'
-import { DaycareGroupPlacement, DaycarePlacement } from '../../dev-api/types'
+} from 'e2e-test-common/dev-api/fixtures'
+import {
+  DaycareGroupPlacement,
+  DaycarePlacement
+} from 'e2e-test-common/dev-api/types'
 import { enduserRole, seppoAdminRole } from '../../config/users'
 import CitizenHomepage from '../../pages/citizen/citizen-homepage'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'

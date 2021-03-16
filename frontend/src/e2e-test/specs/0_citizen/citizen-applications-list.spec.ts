@@ -8,18 +8,18 @@ import CitizenHomePage from '../../pages/citizen/citizen-homepage'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   deleteApplication,
   execSimpleApplicationActions,
   insertApplications,
   runPendingAsyncJobs
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import {
   applicationFixture,
   Fixture,
   daycareFixture
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { format } from 'date-fns'
 

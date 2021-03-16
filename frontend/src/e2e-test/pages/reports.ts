@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ClientFunction, Selector, t } from 'testcafe'
-import config from '../config'
+import config from 'e2e-test-common/config'
 import { format } from 'date-fns'
 
 export default class ReportsPage {

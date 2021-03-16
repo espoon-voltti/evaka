@@ -8,19 +8,19 @@ import ChildInformationPage from '../../pages/employee/child-information/child-i
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
-import { DaycarePlacement } from '../../dev-api/types'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 
 const adminHome = new AdminHome()

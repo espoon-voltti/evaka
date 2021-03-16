@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../dev-api/types'
+import { UUID } from '@evaka/lib-common/types'
 
 interface Config {
   env: string | undefined

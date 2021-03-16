@@ -5,9 +5,9 @@
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
-import { daycareGroupFixture } from '../../dev-api/fixtures'
-import { createBackupCareFixture } from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/data-init'
+import { daycareGroupFixture } from 'e2e-test-common/dev-api/fixtures'
+import { createBackupCareFixture } from 'e2e-test-common/dev-api/fixtures'
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage, {
@@ -17,11 +17,14 @@ import UnitPage, {
 } from '../../pages/employee/units/unit-page'
 import { logConsoleMessages } from '../../utils/fixture'
 import GroupPlacementModal from '../../pages/employee/units/group-placement-modal'
-import { ApplicationPersonDetail, BackupCare } from '../../dev-api/types'
+import {
+  ApplicationPersonDetail,
+  BackupCare
+} from 'e2e-test-common/dev-api/types'
 import {
   insertBackupCareFixtures,
   insertDaycareGroupFixtures
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
 import LocalDate from 'lib-common/local-date'

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { Daycare } from '../../dev-api/types'
+import { Daycare } from '@evaka/e2e-test-common/dev-api/types'
 import { SelectionChip } from '../../utils/helpers'
 
 export default class CitizenMapPage {

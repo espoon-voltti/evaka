@@ -6,15 +6,15 @@ import Home from '../../pages/home'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
   Fixture,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import { deleteApplication, insertApplications } from '../../dev-api'
+import { deleteApplication, insertApplications } from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 

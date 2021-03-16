@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { t, Selector } from 'testcafe'
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { Checkbox, selectFirstOption } from '../../utils/helpers'
 

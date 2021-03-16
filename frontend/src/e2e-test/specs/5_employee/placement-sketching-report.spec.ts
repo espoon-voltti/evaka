@@ -5,22 +5,22 @@
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteApplication,
   insertApplications,
   insertDaycarePlacementFixtures
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
   daycareFixture,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import Home from '../../pages/home'
 import { format, sub } from 'date-fns'
-import { OtherGuardianAgreementStatus } from '../../dev-api/types'
+import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 import ReportsPage from '../../pages/reports'
 import { seppoAdminRole } from '../../config/users'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'

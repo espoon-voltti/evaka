@@ -5,8 +5,8 @@
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
 import CitizenHomePage from '../../pages/citizen/citizen-homepage'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 
 const citizenHomePage = new CitizenHomePage()
 
