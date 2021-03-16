@@ -28,7 +28,7 @@
     "e2e-employee-2": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/2_employee-2/*.spec.ts",
     "e2e-mobile": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/6_mobile/*.spec.ts",
     "e2e-messaging": "testcafe 'chrome --start-fullscreen' src/e2e-test/specs/7_messaging/*.spec.ts",
-    "e2e-playwright": "HEADLESS=false jest src/e2e-playwright/specs",
+    "e2e-playwright": "HEADLESS=false jest --testTimeout 60000 src/e2e-playwright/specs",
     "e2e-ci": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/**/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-accessibility": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/**/*.spec.ts --fixture-meta subType=accessibility -s takeOnFails=true --stop-on-first-fail",
     "e2e-ci-citizen": "BASE_URL=http://localhost:9999 testcafe 'chrome:headless:emulation:width=1920;height=1080' src/e2e-test/specs/0_citizen/*.spec.ts -s takeOnFails=true --stop-on-first-fail",
@@ -185,6 +185,7 @@
       "default",
       "jest-junit"
     ],
+    "testEnvironment": "node",
     "modulePathIgnorePatterns": [
       "<rootDir>/node_modules/",
       "<rootDir>/dist/",
