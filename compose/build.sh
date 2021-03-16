@@ -10,8 +10,5 @@ set -euo pipefail
 (cd ../apigw && ./build-docker.sh)
 (cd ../service && ./build-docker.sh)
 (cd ../message-service && ./build-docker.sh)
-if [ "${ICONS:-X}" = "pro" ]; then
-    (cd ../frontend && ICONS=pro yarn install --immutable)
-else
-    (cd ../frontend && yarn install --immutable)
-fi
+(cd ../frontend && yarn install --immutable)
+(cd ../frontend && yarn build:dev)
