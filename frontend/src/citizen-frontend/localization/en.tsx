@@ -752,6 +752,10 @@ const en: Translations = {
                     You can display the unit locations by choosing {"'"}Unit map
                     view{"'"}.
                   </P>
+                  <P>
+                    When applying to a service voucher unit, the unit’s
+                    supervisor will also be informed of the application.
+                  </P>
                 </>
               )
             },
@@ -767,6 +771,10 @@ const en: Translations = {
                   <P>
                     You can display the unit locations by choosing {"'"}Unit map
                     view{"'"}.
+                  </P>
+                  <P>
+                    When applying to a service voucher unit, the unit’s
+                    supervisor will also be informed of the application.
                   </P>
                 </>
               )

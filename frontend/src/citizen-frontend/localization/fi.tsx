@@ -704,6 +704,10 @@ export default {
                     Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla
                     ‘Yksiköt kartalla’.
                   </P>
+                  <P>
+                    Palveluseteliyksikköön haettaessa myös yksikön esimies saa
+                    tiedon hakemuksesta.
+                  </P>
                 </>
               )
             },
@@ -719,6 +723,10 @@ export default {
                   <P>
                     Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt
                     kartalla’.
+                  </P>
+                  <P>
+                    Palveluseteliyksikköön haettaessa myös yksikön esimies saa
+                    tiedon hakemuksesta.
                   </P>
                 </>
               )
