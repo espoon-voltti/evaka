@@ -7,6 +7,7 @@ import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { Link, useLocation } from 'react-router-dom'
 import { range } from 'lodash'
+import { faSearch } from '@evaka/lib-icons'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
@@ -20,6 +21,7 @@ import {
   VoucherServiceProvidersFilters
 } from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { formatDate } from '../../utils/date'
 import { SelectOptionProps } from '../../components/common/Select'
@@ -96,14 +98,20 @@ function VoucherServiceProviders() {
       areaId: queryParams.get('areaId') ?? ''
     }
   })
+  const [unitFilter, setUnitFilter] = useState<string>(() => {
+    const { search } = location
+    const queryParams = new URLSearchParams(search)
+    return queryParams.get('unit') ?? ''
+  })
 
   const memoizedFilters = useMemo(
     () => ({
       year: filters.year.toString(),
       month: filters.month.toString(),
-      areaId: filters.areaId
+      areaId: filters.areaId,
+      unit: unitFilter
     }),
-    [filters]
+    [filters, unitFilter]
   )
   useSyncQueryParams(memoizedFilters)
   const query = new URLSearchParams(memoizedFilters).toString()
@@ -128,13 +136,17 @@ function VoucherServiceProviders() {
 
   const mappedData = report
     .map((rs) =>
-      rs.rows.map(({ unit, childCount, monthlyPaymentSum }) => ({
-        unitId: unit.id,
-        unitName: unit.name,
-        areaName: unit.areaName,
-        childCount: childCount,
-        sum: formatCents(monthlyPaymentSum)
-      }))
+      rs.rows
+        .filter(({ unit }) =>
+          unit.name.toLowerCase().includes(unitFilter.toLowerCase())
+        )
+        .map(({ unit, childCount, monthlyPaymentSum }) => ({
+          unitId: unit.id,
+          unitName: unit.name,
+          areaName: unit.areaName,
+          childCount: childCount,
+          sum: formatCents(monthlyPaymentSum)
+        }))
     )
     .getOrElse(undefined)
 
@@ -197,6 +209,19 @@ function VoucherServiceProviders() {
               }}
               styles={reactSelectStyles}
               placeholder={i18n.reports.common.careAreaName}
+            />
+          </FilterWrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterWrapper data-qa="unit-name-input">
+            <InputField
+              value={unitFilter}
+              onChange={(value) => setUnitFilter(value)}
+              placeholder={
+                i18n.reports.voucherServiceProviders.filters.unitPlaceholder
+              }
+              icon={faSearch}
             />
           </FilterWrapper>
         </FilterRow>
