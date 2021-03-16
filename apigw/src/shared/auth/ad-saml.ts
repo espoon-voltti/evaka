@@ -9,7 +9,7 @@ import {
 } from 'passport-saml'
 import DevPassportStrategy from './dev-passport-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
-import { devLoginEnabled, eadConfig } from '../config'
+import { devLoginEnabled, adConfig, adExternalIdPrefix } from '../config'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { upsertEmployee } from '../dev-api'
@@ -43,7 +43,7 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
   const aad = profile[AD_USER_ID_KEY]
   if (!aad) throw Error('No user ID in SAML data')
   const person = await getOrCreateEmployee({
-    externalId: `espoo-ad:${aad}`,
+    externalId: `${adExternalIdPrefix}:${aad}`,
     firstName: profile[AD_GIVEN_NAME_KEY],
     lastName: profile[AD_FAMILY_NAME_KEY],
     email: profile[AD_EMAIL_KEY]
@@ -83,7 +83,7 @@ export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
         firstName,
         lastName,
         email,
-        externalId: `espoo-ad:${userId}`,
+        externalId: `${adExternalIdPrefix}:${userId}`,
         roles: roles as UserRole[]
       })
       return verifyProfile({
@@ -97,19 +97,17 @@ export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
 
     return new DevPassportStrategy(getter, upserter)
   } else {
-    if (!eadConfig) throw Error('Missing AD SAML configuration')
+    if (!adConfig) throw Error('Missing AD SAML configuration')
     return new SamlStrategy(
       {
-        callbackUrl: eadConfig.callbackUrl,
-        entryPoint:
-          'https://login.microsoftonline.com/6bb04228-cfa5-4213-9f39-172454d82584/saml2',
-        logoutUrl:
-          'https://login.microsoftonline.com/6bb04228-cfa5-4213-9f39-172454d82584/saml2',
-        issuer: eadConfig.issuer,
-        cert: eadConfig.publicCert.map(
+        callbackUrl: adConfig.callbackUrl,
+        entryPoint: adConfig.entryPointUrl,
+        logoutUrl: adConfig.logoutUrl,
+        issuer: adConfig.issuer,
+        cert: adConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
         ),
-        privateCert: readFileSync(eadConfig.privateCert, {
+        privateCert: readFileSync(adConfig.privateCert, {
           encoding: 'utf8'
         }),
         identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
