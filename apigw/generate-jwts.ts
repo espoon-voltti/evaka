@@ -5,7 +5,7 @@
 import { createJwt } from './src/shared/auth/jwt'
 
 const token = createJwt({
-  kind: 'EspooAD',
+  kind: 'AD',
   // user UUID
   sub: '70c93dbc-217d-11ea-84c9-1bc36b5e1f74',
   // list of roles that are added to the user separated by space
