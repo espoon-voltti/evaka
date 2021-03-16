@@ -29,7 +29,9 @@ class BulletinNotificationEmailService(
         asyncJobRunner.sendBulletinNotificationEmail = ::sendBulletinNotification
     }
 
-    val fromAddress = env.getRequiredProperty("mail_reply_to_address")
+    val senderAddress: String = env.getRequiredProperty("mail_reply_to_address")
+    val senderName: String = env.getRequiredProperty("mail_sender_name")
+    val fromAddress = "$senderName <$senderAddress>"
 
     data class BulletinReceiver(
         val id: UUID,

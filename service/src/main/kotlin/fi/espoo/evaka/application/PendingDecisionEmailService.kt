@@ -30,7 +30,9 @@ class PendingDecisionEmailService(
         asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
     }
 
-    val fromAddress = env.getRequiredProperty("mail_reply_to_address")
+    val senderAddress: String = env.getRequiredProperty("mail_reply_to_address")
+    val senderName: String = env.getRequiredProperty("mail_sender_name")
+    val fromAddress = "$senderName <$senderAddress>"
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")

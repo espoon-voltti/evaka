@@ -53,3 +53,4 @@ fi:
         url: "http://s3.lvh.me:9876"
 fee_decision_min_date: "2020-03-01"
 mail_reply_to_address: "no-reply.evaka@espoo.fi"
+mail_sender_name: "Espoon Varhaiskasvatus"

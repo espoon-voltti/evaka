@@ -205,7 +205,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEmail(
             sentMails.first(),
             guardianPerson.email!!,
-            "no-reply.evaka@espoo.fi",
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Uusi tiedote eVakassa [${System.getenv("VOLTTI_ENV")}]"
         )
     }
