@@ -7,5 +7,5 @@
     }
   ],
   "tsConfigPath": "./src/e2e-test/tsconfig.json",
-  "clientScripts": "./src/e2e-test/injected.js"
+  "clientScripts": "./src/e2e-test-common/injected.js"
 }

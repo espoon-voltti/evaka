@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Browser, chromium } from 'playwright'
+import fs from 'fs'
+import path from 'path'
+import {
+  Browser,
+  BrowserContext,
+  BrowserContextOptions,
+  chromium
+} from 'playwright'
 
 function envBoolean(name: string): boolean | undefined {
   switch (process.env[name]) {
@@ -33,4 +40,15 @@ afterAll(async () => {
   await browser?.close()
 })
 
-export { browser }
+const injected = fs.readFileSync(
+  path.resolve(__dirname, '../e2e-test-common/injected.js'),
+  'utf-8'
+)
+
+export async function newBrowserContext(
+  options?: BrowserContextOptions
+): Promise<BrowserContext> {
+  const ctx = await browser.newContext(options)
+  await ctx.addInitScript({ content: injected })
+  return ctx
+}
