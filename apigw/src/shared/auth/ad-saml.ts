@@ -15,38 +15,38 @@ import { readFileSync } from 'fs'
 import { upsertEmployee } from '../dev-api'
 import { getOrCreateEmployee, UserRole } from '../service-client'
 
-const ESPOO_AD_USER_ID_KEY =
+const AD_USER_ID_KEY =
   'http://schemas.microsoft.com/identity/claims/objectidentifier'
-const ESPOO_AD_ROLES_KEY =
+const AD_ROLES_KEY =
   'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
-const ESPOO_AD_GIVEN_NAME_KEY =
+const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
-const ESPOO_AD_FAMILY_NAME_KEY =
+const AD_FAMILY_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'
-const ESPOO_AD_EMAIL_KEY =
+const AD_EMAIL_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'
 
-interface EspooAdProfile {
+interface AdProfile {
   nameID?: Profile['nameID']
   nameIDFormat?: Profile['nameIDFormat']
   nameQualifier?: Profile['nameQualifier']
   spNameQualifier?: Profile['spNameQualifier']
   sessionIndex?: Profile['sessionIndex']
-  [ESPOO_AD_USER_ID_KEY]: string
-  [ESPOO_AD_ROLES_KEY]: string | string[]
-  [ESPOO_AD_GIVEN_NAME_KEY]: string
-  [ESPOO_AD_FAMILY_NAME_KEY]: string
-  [ESPOO_AD_EMAIL_KEY]: string
+  [AD_USER_ID_KEY]: string
+  [AD_ROLES_KEY]: string | string[]
+  [AD_GIVEN_NAME_KEY]: string
+  [AD_FAMILY_NAME_KEY]: string
+  [AD_EMAIL_KEY]: string
 }
 
-async function verifyProfile(profile: EspooAdProfile): Promise<SamlUser> {
-  const aad = profile[ESPOO_AD_USER_ID_KEY]
+async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
+  const aad = profile[AD_USER_ID_KEY]
   if (!aad) throw Error('No user ID in SAML data')
   const person = await getOrCreateEmployee({
     externalId: `espoo-ad:${aad}`,
-    firstName: profile[ESPOO_AD_GIVEN_NAME_KEY],
-    lastName: profile[ESPOO_AD_FAMILY_NAME_KEY],
-    email: profile[ESPOO_AD_EMAIL_KEY]
+    firstName: profile[AD_GIVEN_NAME_KEY],
+    lastName: profile[AD_FAMILY_NAME_KEY],
+    email: profile[AD_EMAIL_KEY]
   })
   return {
     id: person.id,
@@ -60,17 +60,15 @@ async function verifyProfile(profile: EspooAdProfile): Promise<SamlUser> {
   }
 }
 
-export default function createEspooAdStrategy():
-  | SamlStrategy
-  | DevPassportStrategy {
+export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
   if (devLoginEnabled) {
     const getter = async (userId: string) =>
       verifyProfile({
-        [ESPOO_AD_USER_ID_KEY]: userId,
-        [ESPOO_AD_ROLES_KEY]: [],
-        [ESPOO_AD_GIVEN_NAME_KEY]: '',
-        [ESPOO_AD_FAMILY_NAME_KEY]: '',
-        [ESPOO_AD_EMAIL_KEY]: ''
+        [AD_USER_ID_KEY]: userId,
+        [AD_ROLES_KEY]: [],
+        [AD_GIVEN_NAME_KEY]: '',
+        [AD_FAMILY_NAME_KEY]: '',
+        [AD_EMAIL_KEY]: ''
       })
 
     const upserter = async (
@@ -89,17 +87,17 @@ export default function createEspooAdStrategy():
         roles: roles as UserRole[]
       })
       return verifyProfile({
-        [ESPOO_AD_USER_ID_KEY]: userId,
-        [ESPOO_AD_ROLES_KEY]: roles,
-        [ESPOO_AD_GIVEN_NAME_KEY]: firstName,
-        [ESPOO_AD_FAMILY_NAME_KEY]: lastName,
-        [ESPOO_AD_EMAIL_KEY]: email
+        [AD_USER_ID_KEY]: userId,
+        [AD_ROLES_KEY]: roles,
+        [AD_GIVEN_NAME_KEY]: firstName,
+        [AD_FAMILY_NAME_KEY]: lastName,
+        [AD_EMAIL_KEY]: email
       })
     }
 
     return new DevPassportStrategy(getter, upserter)
   } else {
-    if (!eadConfig) throw Error('Missing Espoo AD SAML configuration')
+    if (!eadConfig) throw Error('Missing AD SAML configuration')
     return new SamlStrategy(
       {
         callbackUrl: eadConfig.callbackUrl,
@@ -121,7 +119,7 @@ export default function createEspooAdStrategy():
       },
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        verifyProfile((profile as any) as EspooAdProfile)
+        verifyProfile((profile as any) as AdProfile)
           .then((user) => done(null, user))
           .catch(done)
       }

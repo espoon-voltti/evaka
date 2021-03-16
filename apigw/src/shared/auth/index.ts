@@ -32,7 +32,7 @@ export function requireAuthentication(
 
 export function createAuthHeader(user: SamlUser): string {
   const token = createJwt({
-    kind: gatewayRole === 'enduser' ? 'SuomiFI' : 'EspooAD',
+    kind: gatewayRole === 'enduser' ? 'SuomiFI' : 'AD',
     sub: user.id,
     scope: user.roles
       .map((role) => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))
