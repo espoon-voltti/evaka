@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.parseEnum
+import fi.espoo.evaka.shared.utils.zoneId
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @RestController
@@ -105,7 +107,16 @@ class VoucherValueDecisionController(
     fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { sendVoucherValueDecisions(it, user, decisionIds) }
+        db.transaction {
+            sendVoucherValueDecisions(
+                tx = it,
+                objectMapper = objectMapper,
+                asyncJobRunner = asyncJobRunner,
+                user = user,
+                now = ZonedDateTime.now(zoneId).toInstant(),
+                ids = decisionIds
+            )
+        }
         asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
@@ -134,44 +145,51 @@ class VoucherValueDecisionController(
         }
         return ResponseEntity(pdf, headers, HttpStatus.OK)
     }
+}
 
-    fun sendVoucherValueDecisions(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>) {
-        tx.handle.lockValueDecisions(ids)
-        val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
-        if (decisions.isEmpty()) return
+fun sendVoucherValueDecisions(
+    tx: Database.Transaction,
+    objectMapper: ObjectMapper,
+    asyncJobRunner: AsyncJobRunner,
+    user: AuthenticatedUser,
+    now: Instant,
+    ids: List<UUID>
+) {
+    tx.handle.lockValueDecisions(ids)
+    val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
+    if (decisions.isEmpty()) return
 
-        if (decisions.any { it.status != VoucherValueDecisionStatus.DRAFT }) {
-            throw BadRequest("Some voucher value decisions were not drafts")
-        }
-
-        if (decisions.any { it.validFrom > LocalDate.now() }) {
-            throw BadRequest("Some of the voucher value decisions are not valid yet")
-        }
-
-        val conflicts = decisions
-            .flatMap {
-                tx.handle.lockValueDecisionsForHeadOfFamily(it.headOfFamily.id)
-                tx.handle.findValueDecisionsForHeadOfFamily(
-                    objectMapper,
-                    it.headOfFamily.id,
-                    DateRange(it.validFrom, it.validTo),
-                    listOf(VoucherValueDecisionStatus.SENT)
-                )
-            }
-            .distinctBy { it.id }
-            .filter { !ids.contains(it.id) }
-
-        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
-        tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
-
-        val (emptyDecisions, validDecisions) = decisions
-            .partition { it.parts.isEmpty() }
-        tx.handle.deleteValueDecisions(emptyDecisions.map { it.id })
-
-        val validIds = validDecisions.map { it.id }
-        tx.handle.approveValueDecisionDraftsForSending(validIds, user.id)
-        asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
+    if (decisions.any { it.status != VoucherValueDecisionStatus.DRAFT }) {
+        throw BadRequest("Some voucher value decisions were not drafts")
     }
+
+    if (decisions.any { it.validFrom > LocalDate.now() }) {
+        throw BadRequest("Some of the voucher value decisions are not valid yet")
+    }
+
+    val conflicts = decisions
+        .flatMap {
+            tx.handle.lockValueDecisionsForHeadOfFamily(it.headOfFamily.id)
+            tx.handle.findValueDecisionsForHeadOfFamily(
+                objectMapper,
+                it.headOfFamily.id,
+                DateRange(it.validFrom, it.validTo),
+                listOf(VoucherValueDecisionStatus.SENT)
+            )
+        }
+        .distinctBy { it.id }
+        .filter { !ids.contains(it.id) }
+
+    val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
+    tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
+
+    val (emptyDecisions, validDecisions) = decisions
+        .partition { it.parts.isEmpty() }
+    tx.handle.deleteValueDecisions(emptyDecisions.map { it.id })
+
+    val validIds = validDecisions.map { it.id }
+    tx.handle.approveValueDecisionDraftsForSending(validIds, user.id, now)
+    asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
 }
 
 enum class VoucherValueDecisionSortParam {

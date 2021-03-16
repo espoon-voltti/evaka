@@ -1,10 +1,9 @@
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -16,6 +15,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -33,7 +33,11 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
@@ -53,6 +57,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val febFirst = LocalDate.of(2020, 2, 1)
 
+    private val janFreeze = ZonedDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0), zoneId).toInstant()
+
     @Test
     fun `unfrozen area voucher report includes value decisions that begin in the beginning of reports month`() {
         val sum = createTestSetOfDecisions()
@@ -65,7 +71,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Test
     fun `frozen area voucher report includes value decisions that begin in the beginning of reports month`() {
         val sum = createTestSetOfDecisions()
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
 
         val janReport = getAreaReport(testAreaId, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
@@ -75,9 +81,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Test
     fun `area voucher report includes corrections and refunds`() {
         val sum = createTestSetOfDecisions()
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
         // co payment is dropped from 28800 to 0
-        createVoucherDecision(janFirst, testDaycare.id, 87000, 0, testAdult_1.id, testChild_1)
+        createVoucherDecision(janFirst, testDaycare.id, 87000, 0, testAdult_1.id, testChild_1, janFreeze.plusSeconds(3600))
 
         val febReport = getAreaReport(testAreaId, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReport.size)
@@ -87,9 +93,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     @Test
     fun `area voucher report includes refunds in old area and corrections in new`() {
         val sum = createTestSetOfDecisions()
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
         // child is placed into another area
-        createVoucherDecision(janFirst, testDaycare2.id, 87000, 28800, testAdult_1.id, testChild_1)
+        createVoucherDecision(janFirst, testDaycare2.id, 87000, 28800, testAdult_1.id, testChild_1, janFreeze.plusSeconds(3600))
 
         val febReportOldArea = getAreaReport(testAreaId, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReportOldArea.size)
@@ -105,8 +111,6 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         assertNotNull(row)
         assertEquals(sum, row!!.monthlyPaymentSum)
     }
-
-    private fun LocalDate.toInstant() = this.atStartOfDay(helsinkiZone).toInstant()
 
     private val adminUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
@@ -142,7 +146,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         value: Int,
         coPayment: Int,
         adultId: UUID,
-        child: PersonData.Detailed
+        child: PersonData.Detailed,
+        approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), zoneId).toInstant()
     ): VoucherValueDecision {
         val decision = db.transaction {
             val parts = listOf(
@@ -162,14 +167,19 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
                 parts = parts
             )
             it.handle.upsertValueDecisions(objectMapper, listOf(decision))
+
+            sendVoucherValueDecisions(
+                tx = it,
+                objectMapper = objectMapper,
+                asyncJobRunner = asyncJobRunner,
+                user = financeUser,
+                now = approvedAt,
+                ids = listOf(decision.id)
+            )
+
             decision
         }
 
-        val (_, response, _) = http.post("/value-decisions/send")
-            .asUser(financeUser)
-            .objectBody(listOf(decision.id), mapper = objectMapper)
-            .response()
-        assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
 
         return decision

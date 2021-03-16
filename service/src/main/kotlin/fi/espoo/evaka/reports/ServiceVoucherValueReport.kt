@@ -200,26 +200,30 @@ WITH min_voucher_decision_date AS (
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
     WHERE decision.status = ANY(:effective) AND lower(p.period) = :reportDate
-), corrections AS (
-    SELECT part.child, p.*, part.id AS part_id, daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period
+), correction_targets AS (
+    SELECT DISTINCT part.child, p.year, p.month, p.period
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part on decision.id = part.voucher_value_decision_id
     WHERE decision.status = ANY(:effective)
       AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
       AND lower(p.period) < :reportDate
-), refund_months AS (
-    SELECT DISTINCT c.child, c.year, c.month, c.period FROM corrections c
+), corrections AS (
+    SELECT ct.*, part.id AS part_id, daterange(decision.valid_from, decision.valid_to, '[]') * ct.period AS realized_period
+    FROM correction_targets ct
+    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && ct.period
+    JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id AND part.child = ct.child
+    WHERE decision.status = ANY(:effective)
 ), refunds AS (
     SELECT
-        rm.period,
+        ct.period,
         part.id AS part_id,
         sn_part.realized_amount,
         sn_part.realized_period,
         rank() OVER (PARTITION BY part.child ORDER BY sn.year desc, sn.month desc) AS rank
-    FROM refund_months rm
-    JOIN voucher_value_report_decision_part sn_part ON extract(year from lower(sn_part.realized_period)) = rm.year AND extract(month from lower(sn_part.realized_period)) = rm.month
-    JOIN voucher_value_decision_part part on part.id = sn_part.decision_part_id AND part.child = rm.child
+    FROM correction_targets ct
+    JOIN voucher_value_report_decision_part sn_part ON extract(year from lower(sn_part.realized_period)) = ct.year AND extract(month from lower(sn_part.realized_period)) = ct.month
+    JOIN voucher_value_decision_part part on part.id = sn_part.decision_part_id AND part.child = ct.child
     JOIN voucher_value_report_snapshot sn on sn_part.voucher_value_report_snapshot_id = sn.id
     JOIN voucher_value_decision vvd on part.voucher_value_decision_id = vvd.id
     WHERE sn_part.type != 'REFUND'

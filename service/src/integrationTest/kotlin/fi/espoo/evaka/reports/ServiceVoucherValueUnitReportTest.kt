@@ -1,10 +1,10 @@
 package fi.espoo.evaka.reports
 
-import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -29,7 +30,11 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
@@ -49,6 +54,9 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val febFirst = LocalDate.of(2020, 2, 1)
     private val marFirst = LocalDate.of(2020, 3, 1)
+
+    private val janFreeze = ZonedDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0), zoneId).toInstant()
+    private val febFreeze = ZonedDateTime.of(LocalDateTime.of(2020, 2, 21, 22, 0), zoneId).toInstant()
 
     @Test
     fun `unfrozen service voucher report includes value decisions that begin in the beginning of reports month`() {
@@ -81,7 +89,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Test
     fun `frozen service voucher report includes value decisions that begin in the beginning of reports month`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
 
         val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
@@ -91,7 +99,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Test
     fun `frozen service voucher report keeps previously frozen rows intact`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
 
         val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
@@ -102,8 +110,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Test
     fun `new value decisions appear as corrections in next months report after freezing`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
-        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(3, febReport.size)
@@ -113,10 +121,27 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     }
 
     @Test
+    fun `if there is a change on part of the month, the whole month gets refunded and corrected`() {
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        val middleOfMonth = janFirst.plusDays(15)
+        createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
+
+        val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
+        assertEquals(4, febReport.size)
+        febReport.assertContainsRow(REFUND, janFirst, janFirst.toEndOfMonth(), 87000, 0, -87000)
+        // 15 days -> (15/31) * 87000 = ~42097
+        febReport.assertContainsRow(CORRECTION, janFirst, middleOfMonth.minusDays(1), 87000, 0, 42097)
+        // 16 days -> (16/31) * 77000 = ~39742
+        febReport.assertContainsRow(CORRECTION, middleOfMonth, middleOfMonth.toEndOfMonth(), 87000, 10000, 39742)
+        febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 10000, 77000)
+    }
+
+    @Test
     fun `new value decisions to a different unit cause refunds in the old unit but corrections in the new unit`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
-        createVoucherDecision(janFirst, unitId = testDaycare2.id, value = 87000, coPayment = 10000)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        createVoucherDecision(janFirst, unitId = testDaycare2.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReportInOldUnit = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReportInOldUnit.size)
@@ -131,10 +156,10 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Test
     fun `value decision double corrections refund the latest corrected value`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
-        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
-        db.transaction { freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFirst.toInstant()) }
-        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 5000)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
+        db.transaction { freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze) }
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 5000, approvedAt = febFreeze.plusSeconds(3600))
 
         val marchReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
         assertEquals(5, marchReport.size)
@@ -160,8 +185,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
         val middleOfMonth = LocalDate.of(2020, 1, 15)
         createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 28800)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
-        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(4, febReport.size)
@@ -174,10 +199,10 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     @Test
     fun `split new decisions are both corrected`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 10000)
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFirst.toInstant()) }
-        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 0, approvedAt = janFreeze.plusSeconds(3600))
         val middleOfMonth = LocalDate.of(2020, 1, 15)
-        createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 28800)
+        createVoucherDecision(middleOfMonth, unitId = testDaycare.id, value = 87000, coPayment = 28800, approvedAt = janFreeze.plusSeconds(3600))
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
         assertEquals(4, febReport.size)
@@ -229,7 +254,8 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         validFrom: LocalDate,
         unitId: UUID,
         value: Int,
-        coPayment: Int
+        coPayment: Int,
+        approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), zoneId).toInstant()
     ): VoucherValueDecision {
         val decision = db.transaction {
             val parts = listOf(
@@ -249,14 +275,19 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
                 parts = parts
             )
             it.handle.upsertValueDecisions(objectMapper, listOf(decision))
+
+            sendVoucherValueDecisions(
+                tx = it,
+                objectMapper = objectMapper,
+                asyncJobRunner = asyncJobRunner,
+                user = financeUser,
+                now = approvedAt,
+                ids = listOf(decision.id)
+            )
+
             decision
         }
 
-        val (_, response, _) = http.post("/value-decisions/send")
-            .asUser(financeUser)
-            .objectBody(listOf(decision.id), mapper = objectMapper)
-            .response()
-        assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
 
         return decision
