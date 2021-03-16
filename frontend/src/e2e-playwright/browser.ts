@@ -4,29 +4,18 @@
 
 import fs from 'fs'
 import path from 'path'
-import {
+import playwright, {
   Browser,
   BrowserContext,
-  BrowserContextOptions,
-  chromium
+  BrowserContextOptions
 } from 'playwright'
-
-function envBoolean(name: string): boolean | undefined {
-  switch (process.env[name]) {
-    case 'true':
-      return true
-    case 'false':
-      return false
-    default:
-      return undefined
-  }
-}
+import config from 'e2e-test-common/config'
 
 let browser: Browser
 
 beforeAll(async () => {
-  browser = await chromium.launch({
-    headless: envBoolean('HEADLESS')
+  browser = await playwright[config.playwright.browser].launch({
+    headless: config.playwright.headless
   })
 })
 

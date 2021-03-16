@@ -2,43 +2,66 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '@evaka/lib-common/types'
+const booleans: Record<string, boolean> = {
+  1: true,
+  0: false,
+  true: true,
+  false: false
+}
 
-interface Config {
-  env: string | undefined
-  adminUrl: string
-  employeeUrl: string
-  devApiGwUrl: string
-  enduserUrl: string
-  supervisorAad: UUID
-  supervisorExternalId: string
-  adminAad: UUID
-  adminExternalId: string
-  mobileBaseUrl: string
-  mobileUrl: string
+function parseBoolean(value: string): boolean {
+  if (value in booleans) return booleans[value]
+  throw new Error('Invalid boolean')
+}
+
+function parseEnum<T extends string>(
+  variants: readonly T[]
+): (value: string) => T {
+  return (value) => {
+    for (const variant of variants) {
+      if (value === variant) return variant
+    }
+    throw new Error(`Invalid enum (expected one of ${variants.toString()})`)
+  }
+}
+
+function env<T>(key: string, parser: (value: string) => T): T | undefined {
+  const value = process.env[key]
+  if (value === undefined || value === '') return undefined
+  try {
+    return parser(value)
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(`${err.message}: ${key}=${value}`)
+    } else {
+      throw new Error(`${String(err)}: ${key}=${value}`)
+    }
+  }
 }
 
 const supervisorAad = '123dc92c-278b-4cea-9e54-2cc7e41555f3'
 const adminAad = 'c50be1c1-304d-4d5a-86a0-1fad225c76cb'
 
-const config: Config = {
-  env: process.env.TEST_ENV,
-  adminUrl: `${
-    process.env.BASE_URL || 'http://localhost:9099'
-  }/employee/applications`,
-  employeeUrl: `${process.env.BASE_URL || 'http://localhost:9099'}/employee`,
-  devApiGwUrl: `${
-    process.env.BASE_URL || 'http://localhost:3020'
-  }/api/internal/dev-api`,
-  enduserUrl: process.env.BASE_URL || 'http://localhost:9099',
+const baseUrl = env('BASE_URL', (url) => url)
+const browserUrl = baseUrl ?? 'http://localhost:9099'
+
+const config = {
+  playwright: {
+    headless: env('HEADLESS', parseBoolean) ?? true,
+    browser:
+      env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
+      'chromium'
+  },
+  adminUrl: `${browserUrl}/employee/applications`,
+  employeeUrl: `${browserUrl}/employee`,
+  devApiGwUrl: `${baseUrl ?? 'http://localhost:3020'}/api/internal/dev-api`,
+  enduserUrl: browserUrl,
   supervisorAad,
   supervisorExternalId: `espoo-ad:${supervisorAad}`,
   adminAad,
   adminExternalId: `espoo-ad:${adminAad}`,
-  mobileBaseUrl: `${process.env.BASE_URL || 'http://localhost:9099'}`,
-  mobileUrl: `${
-    process.env.BASE_URL || 'http://localhost:9099'
-  }/employee/mobile`
+  mobileBaseUrl: browserUrl,
+  mobileUrl: `${browserUrl}/employee/mobile`
 }
 
 export default config
