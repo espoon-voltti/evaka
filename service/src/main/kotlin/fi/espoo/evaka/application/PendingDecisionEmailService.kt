@@ -30,8 +30,8 @@ class PendingDecisionEmailService(
         asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
     }
 
-    val senderAddress: String = env.getRequiredProperty("mail_reply_to_address")
-    val senderName: String = env.getRequiredProperty("mail_sender_name")
+    val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
+    val senderName: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name")
     val fromAddress = "$senderName <$senderAddress>"
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
