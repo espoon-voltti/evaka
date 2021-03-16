@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Request } from 'express'
 import { parse } from 'fast-xml-parser'
 import { logDebug, logError } from '../../../logging'
 import {
@@ -37,10 +38,11 @@ function parseErrorMessage(status: StatusObject): string {
 }
 
 export function parseDescriptionFromSamlError(
-  error: PassportSamlError
+  error: PassportSamlError,
+  req: Request
 ): string | undefined {
   if (!error.statusXml) {
-    logDebug('No statusXml found from SAML error', undefined, { error })
+    logDebug('No statusXml found from SAML error', req, { error })
     return
   }
 
@@ -52,7 +54,7 @@ export function parseDescriptionFromSamlError(
   if (!statusObject) {
     logError(
       'Failed to parse status object from XML',
-      undefined,
+      req,
       undefined,
       new Error('Failed to parse status object from XML')
     )
