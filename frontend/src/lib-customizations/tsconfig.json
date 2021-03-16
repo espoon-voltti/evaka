@@ -8,14 +8,10 @@
     },
     "composite": true,
     "jsx": "react",
-    "outDir": "../../dist/citizen-frontend",
-    "types": ["jest"],
+    "outDir": "../../dist/lib-customizations",
     "suppressImplicitAnyIndexErrors": true
   },
   "references": [
-    { "path": "../lib-common" },
-    { "path": "../lib-components" },
-    { "path": "../lib-customizations" },
-    { "path": "../lib-icons" }
+    { "path": "../lib-components" }
   ]
 }

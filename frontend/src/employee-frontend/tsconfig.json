@@ -16,6 +16,7 @@
   "references": [
     { "path": "../lib-common" },
     { "path": "../lib-components" },
+    { "path": "../lib-customizations" },
     { "path": "../lib-icons" }
   ]
 }
