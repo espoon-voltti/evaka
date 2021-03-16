@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { range } from 'lodash'
-
+import { fi } from 'date-fns/locale'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
@@ -31,12 +31,16 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import { UUID } from '../../types'
-import { reactSelectStyles } from '../../components/common/Select'
+import {
+  reactSelectStyles,
+  SelectOptionProps
+} from '../../components/common/Select'
 
 import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
 
 import { formatCents } from '../../utils/money'
-import { capitalizeFirstLetter, formatName } from '../../utils'
+import { formatName } from '../../utils'
+import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import Tooltip from '@evaka/lib-components/atoms/Tooltip'
 import LocalDate from '@evaka/lib-common/local-date'
 import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
@@ -79,7 +83,22 @@ const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
   }}
 `
 
+const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+  value: String(num + 1),
+  label: String(fi.localize?.month(num))
+}))
+
+const minYear = new Date().getFullYear() - 4
+const maxYear = new Date().getFullYear()
+const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+  (num) => ({
+    value: String(num),
+    label: String(num)
+  })
+)
+
 function VoucherServiceProviderUnit() {
+  const location = useLocation()
   const { i18n } = useTranslation()
   const { unitId } = useParams<{ unitId: UUID }>()
   const [report, setReport] = useState<
@@ -87,12 +106,29 @@ function VoucherServiceProviderUnit() {
   >(Loading.of())
   const [unitName, setUnitName] = useState<string>('')
 
-  const now = new Date()
+  const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>(
+    () => {
+      const { search } = location
+      const queryParams = new URLSearchParams(search)
+      const year = Number(queryParams.get('year'))
+      const month = Number(queryParams.get('month'))
 
-  const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>({
-    month: now.getMonth() + 1,
-    year: now.getFullYear()
-  })
+      return {
+        year:
+          year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
+        month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1
+      }
+    }
+  )
+
+  const memoizedFilters = useMemo(
+    () => ({
+      year: filters.year.toString(),
+      month: filters.month.toString()
+    }),
+    [filters]
+  )
+  useSyncQueryParams(memoizedFilters)
 
   const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
     LocalDate.today().withDate(1)
@@ -110,16 +146,6 @@ function VoucherServiceProviderUnit() {
     })
   }, [filters])
 
-  const monthOptions = range(0, 12).map((num) => ({
-    value: num + 1,
-    label: capitalizeFirstLetter(i18n.datePicker.months[num])
-  }))
-
-  const yearOptions = range(2019, now.getFullYear() + 10).map((num) => ({
-    value: num,
-    label: num
-  }))
-
   const formatServiceNeed = (amount: number) =>
     `${amount} ${i18n.reports.voucherServiceProviderUnit.serviceNeedType}`
 
@@ -136,14 +162,14 @@ function VoucherServiceProviderUnit() {
           <FilterWrapper>
             <ReactSelect
               options={monthOptions}
-              defaultValue={monthOptions.find(
-                ({ value }) => value === filters.month
+              value={monthOptions.find(
+                ({ value }) => Number(value) === filters.month
               )}
               onChange={(option) =>
                 option && 'value' in option
                   ? setFilters({
                       ...filters,
-                      month: option.value
+                      month: Number(option.value)
                     })
                   : undefined
               }
@@ -153,14 +179,14 @@ function VoucherServiceProviderUnit() {
           <FilterWrapper>
             <ReactSelect
               options={yearOptions}
-              defaultValue={yearOptions.find(
-                ({ value }) => value === filters.year
+              value={yearOptions.find(
+                ({ value }) => Number(value) === filters.year
               )}
               onChange={(option) =>
                 option && 'value' in option
                   ? setFilters({
                       ...filters,
-                      year: option.value
+                      year: Number(option.value)
                     })
                   : undefined
               }

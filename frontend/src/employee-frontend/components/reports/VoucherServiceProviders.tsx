@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { range } from 'lodash'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
@@ -32,6 +33,7 @@ import {
 } from '../../components/reports/common'
 import { FlexRow } from '../../components/common/styled/containers'
 import { formatCents } from '../../utils/money'
+import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import LocalDate from '@evaka/lib-common/local-date'
 import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
@@ -55,28 +57,19 @@ const LockedDate = styled(FixedSpaceRow)`
   margin-bottom: ${defaultMargins.xs};
 `
 
-function monthOptions(): SelectOptionProps[] {
-  const monthOptions = []
-  for (let i = 1; i <= 12; i++) {
-    monthOptions.push({
-      value: i.toString(),
-      label: String(fi.localize?.month(i - 1))
-    })
-  }
-  return monthOptions
-}
+const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+  value: String(num + 1),
+  label: String(fi.localize?.month(num))
+}))
 
-function yearOptions(): SelectOptionProps[] {
-  const currentYear = new Date().getFullYear()
-  const yearOptions = []
-  for (let year = currentYear; year > currentYear - 5; year--) {
-    yearOptions.push({
-      value: year.toString(),
-      label: year.toString()
-    })
-  }
-  return yearOptions
-}
+const minYear = new Date().getFullYear() - 4
+const maxYear = new Date().getFullYear()
+const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+  (num) => ({
+    value: String(num),
+    label: String(num)
+  })
+)
 
 function getFilename(year: number, month: number, areaName: string) {
   const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
@@ -84,16 +77,36 @@ function getFilename(year: number, month: number, areaName: string) {
 }
 
 function VoucherServiceProviders() {
+  const location = useLocation()
   const { i18n } = useTranslation()
   const [report, setReport] = useState<Result<VoucherServiceProviderReport>>(
     Success.of({ locked: null, rows: [] })
   )
   const [areas, setAreas] = useState<CareArea[]>([])
-  const [filters, setFilters] = useState<VoucherServiceProvidersFilters>({
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
-    areaId: ''
+  const [filters, setFilters] = useState<VoucherServiceProvidersFilters>(() => {
+    const { search } = location
+    const queryParams = new URLSearchParams(search)
+    const year = Number(queryParams.get('year'))
+    const month = Number(queryParams.get('month'))
+
+    return {
+      year:
+        year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
+      month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1,
+      areaId: queryParams.get('areaId') ?? ''
+    }
   })
+
+  const memoizedFilters = useMemo(
+    () => ({
+      year: filters.year.toString(),
+      month: filters.month.toString(),
+      areaId: filters.areaId
+    }),
+    [filters]
+  )
+  useSyncQueryParams(memoizedFilters)
+  const query = new URLSearchParams(memoizedFilters).toString()
 
   const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
     LocalDate.today().withDate(1)
@@ -110,8 +123,8 @@ function VoucherServiceProviders() {
     void getVoucherServiceProvidersReport(filters).then(setReport)
   }, [filters])
 
-  const months = monthOptions()
-  const years = yearOptions()
+  const months = monthOptions
+  const years = yearOptions
 
   const mappedData = report
     .map((rs) =>
@@ -172,6 +185,11 @@ function VoucherServiceProviders() {
               options={[
                 ...areas.map((area) => ({ value: area.id, label: area.name }))
               ]}
+              value={
+                areas
+                  .filter(({ id }) => id === filters.areaId)
+                  .map((area) => ({ value: area.id, label: area.name }))[0]
+              }
               onChange={(value) => {
                 if (value && 'value' in value) {
                   setFilters({ ...filters, areaId: value.value })
@@ -249,7 +267,7 @@ function VoucherServiceProviders() {
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link
-                        to={`/reports/voucher-service-providers/${row.unitId}`}
+                        to={`/reports/voucher-service-providers/${row.unitId}?${query}`}
                       >
                         {row.unitName}
                       </Link>
