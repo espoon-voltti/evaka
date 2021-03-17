@@ -15,13 +15,10 @@ Voltti IDP (dev/test):
 suomi.fi production environment:
 
 - 2021: `saml-signing.idp.tunnistautuminen.suomi.fi.pem`
-- 2020 (for transitioning to the new production environment): `idp.tunnistaminen.suomi.fi.pem`
-- 2019: `idp.tunnistus.suomi.fi.pem`
 
 suomi.fi test environment:
 
 - 2020: `saml-signing-testi.apro.tunnistus.fi.pem`
-- 2019: `testi.apro.tunnistus.fi.pem`
 
 ## Update list of trusted IdP certificates
 
