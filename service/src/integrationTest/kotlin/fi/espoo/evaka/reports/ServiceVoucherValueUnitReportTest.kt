@@ -241,6 +241,15 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         assertTrue(janReportAfterFebFreeze.first().isNew)
     }
 
+    fun `future service voucher report does not include unfrozen months as corrections`() {
+        createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800)
+        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+
+        val marchReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
+        assertEquals(1, marchReport.size)
+        marchReport.assertContainsRow(ORIGINAL, marFirst, marFirst.toEndOfMonth(), 87000, 28800, 58200)
+    }
+
     private fun List<ServiceVoucherValueRow>.assertContainsRow(
         type: VoucherReportRowType,
         periodStart: LocalDate,

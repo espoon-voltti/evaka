@@ -2017,8 +2017,7 @@ export const fi = {
         'Palveluseteliyksiköihin kohdistuvat palvelusetelisummat sekä lapsikohtaiset maksut.',
       filters: {
         areaPlaceholder: 'Valitse palvelualue',
-        unitPlaceholder: 'Hae yksikön nimellä',
-        noFuture: 'Tulevien kuukausien katselu ei ole mahdollista'
+        unitPlaceholder: 'Hae yksikön nimellä'
       },
       locked: 'Raportti lukittu',
       childCount: 'PS-lasten lkm',

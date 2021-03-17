@@ -191,12 +191,19 @@ WITH min_voucher_decision_date AS (
     SELECT coalesce(min(valid_from), :reportDate) AS min_date FROM voucher_value_decision WHERE status = ANY(:effective)
 ), min_change_month AS (
     SELECT make_date(extract(year from min_date)::int, extract(month from min_date)::int, 1) AS month FROM min_voucher_decision_date
+), include_corrections AS (
+    SELECT NOT EXISTS (SELECT 1 FROM voucher_value_report_snapshot) OR EXISTS (
+        SELECT 1 FROM voucher_value_report_snapshot
+        WHERE month = extract(month from (:reportDate - interval '1 month'))
+        AND year = extract(year from (:reportDate - interval '1 month'))
+    ) AS should_include
 ), month_periods AS (
     SELECT
         extract(year from t) AS year,
         extract(month from t) AS month,
         daterange(t::date, (t + interval '1 month')::date) AS period
     FROM generate_series((SELECT month FROM min_change_month), :reportDate, '1 month') t
+    JOIN include_corrections ON should_include OR t = :reportDate
 ), original AS (
     SELECT p.period, daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period, part.id AS part_id
     FROM month_periods p

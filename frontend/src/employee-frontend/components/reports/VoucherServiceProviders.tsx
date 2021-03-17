@@ -36,9 +36,7 @@ import {
 import { FlexRow } from '../../components/common/styled/containers'
 import { formatCents } from '../../utils/money'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
-import LocalDate from '@evaka/lib-common/local-date'
-import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import colors from '@evaka/lib-components/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -65,7 +63,8 @@ const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
 }))
 
 const minYear = new Date().getFullYear() - 4
-const maxYear = new Date().getFullYear()
+// Max year is next year if current date is in December and current year otherwise
+const maxYear = new Date().getFullYear() + (new Date().getMonth() == 11 ? 1 : 0)
 const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
   (num) => ({
     value: String(num),
@@ -116,16 +115,12 @@ function VoucherServiceProviders() {
   useSyncQueryParams(memoizedFilters)
   const query = new URLSearchParams(memoizedFilters).toString()
 
-  const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
-    LocalDate.today().withDate(1)
-  )
-
   useEffect(() => {
     void getAreas().then((res) => res.isSuccess && setAreas(res.value))
   }, [])
 
   useEffect(() => {
-    if (filters.areaId == '' || futureSelected) return
+    if (filters.areaId == '') return
 
     setReport(Loading.of())
     void getVoucherServiceProvidersReport(filters).then(setReport)
@@ -241,16 +236,7 @@ function VoucherServiceProviders() {
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {futureSelected && (
-          <>
-            <Gap />
-            <InfoBox
-              wide
-              message={i18n.reports.voucherServiceProviders.filters.noFuture}
-            />
-          </>
-        )}
-        {!futureSelected && mappedData && filters.areaId && (
+        {mappedData && filters.areaId && (
           <>
             <ReportDownload
               data={mappedData}

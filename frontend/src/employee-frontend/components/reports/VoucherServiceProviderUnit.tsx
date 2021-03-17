@@ -36,14 +36,12 @@ import {
   SelectOptionProps
 } from '../../components/common/Select'
 
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 
 import { formatCents } from '../../utils/money'
 import { formatName } from '../../utils'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import Tooltip from '@evaka/lib-components/atoms/Tooltip'
-import LocalDate from '@evaka/lib-common/local-date'
-import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import colors from '@evaka/lib-components/colors'
 import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
@@ -130,13 +128,7 @@ function VoucherServiceProviderUnit() {
   )
   useSyncQueryParams(memoizedFilters)
 
-  const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
-    LocalDate.today().withDate(1)
-  )
-
   useEffect(() => {
-    if (futureSelected) return
-
     setReport(Loading.of())
     void getVoucherServiceProviderUnitReport(unitId, filters).then((res) => {
       setReport(res)
@@ -210,16 +202,7 @@ function VoucherServiceProviderUnit() {
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {futureSelected && (
-          <>
-            <Gap />
-            <InfoBox
-              wide
-              message={i18n.reports.voucherServiceProviders.filters.noFuture}
-            />
-          </>
-        )}
-        {!futureSelected && report.isSuccess && (
+        {report.isSuccess && (
           <>
             <SumRow>
               <FixedSpaceRow>
