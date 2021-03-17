@@ -528,20 +528,24 @@ data class AbsenceStub(
     val absenceType: AbsenceType
 )
 
+// PRESENCE is used to "remove" an absence leaving a mark when the absence was removed in the database
+// PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
+private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PRESENCE, AbsenceType.PLANNED_ABSENCE)
+
 fun getAbsenceStubs(h: Handle, spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, care_type, absence_type
         FROM absence
-        WHERE date BETWEEN :startDate AND :endDate
-        AND absence_type != 'PRESENCE'
-        AND care_type IN (<careTypes>);
-    """
+        WHERE :period @> date
+        AND NOT absence_type = ANY(:absenceTypes)
+        AND care_type = ANY(:careTypes)
+        """
 
     return h.createQuery(sql)
-        .bind("startDate", spanningPeriod.start)
-        .bind("endDate", spanningPeriod.end)
-        .bindList("careTypes", careTypes.map { it.toString() })
+        .bind("period", spanningPeriod)
+        .bind("absenceTypes", absenceTypesWithNoEffectOnInvoices)
+        .bind("careTypes", careTypes.toTypedArray())
         .map { rs, _ ->
             AbsenceStub(
                 childId = rs.getUUID("child_id"),
@@ -550,7 +554,7 @@ fun getAbsenceStubs(h: Handle, spanningPeriod: DateRange, careTypes: List<CareTy
                 absenceType = rs.getEnum("absence_type")
             )
         }
-        .list()
+        .toList()
 }
 
 sealed class PlacementStub(open val unit: UUID) {

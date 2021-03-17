@@ -1336,6 +1336,33 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `planned absences do not generate a discount on invoices`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+
+        val absenceDays = generateSequence(period.start) { it.plusDays(1) }
+            .takeWhile { it <= period.end }
+            .map { it to AbsenceType.PLANNED_ABSENCE }
+            .toMap()
+
+        initDataForAbsences(listOf(period), absenceDays)
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with some parentleave absences for a too old child`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
