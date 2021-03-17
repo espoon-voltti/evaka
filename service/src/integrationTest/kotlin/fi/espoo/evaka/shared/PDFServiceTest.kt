@@ -18,8 +18,8 @@ import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.voltti.pdfgen.PDFService
-import junit.framework.Assert.assertNotNull
 import mu.KotlinLogging
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
