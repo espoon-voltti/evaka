@@ -295,10 +295,6 @@ function VoucherServiceProviderUnit() {
                     key: 'serviceVoucherHoursPerWeek'
                   },
                   {
-                    label: i18n.reports.voucherServiceProviderUnit.coefficient,
-                    key: 'serviceVoucherServiceCoefficient'
-                  },
-                  {
                     label:
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherCoPayment,
@@ -330,7 +326,6 @@ function VoucherServiceProviderUnit() {
                     }
                   </Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.coefficient}</Th>
                   <Th>
                     {
                       i18n.reports.voucherServiceProviderUnit
@@ -382,7 +377,6 @@ function VoucherServiceProviderUnit() {
                     </Td>
                     <Td>{formatCents(row.serviceVoucherValue)}</Td>
                     <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
-                    <Td>{formatCents(row.serviceVoucherServiceCoefficient)}</Td>
                     <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
                     <Td>{formatCents(row.realizedAmount)}</Td>
                   </Tr>
