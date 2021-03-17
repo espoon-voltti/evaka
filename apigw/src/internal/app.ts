@@ -25,7 +25,7 @@ import mobileDeviceSession, {
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
 import createSamlRouter from '../shared/routes/auth/saml'
-import createEspooAdSamlStrategy from '../shared/auth/espoo-ad-saml'
+import createAdSamlStrategy from '../shared/auth/ad-saml'
 import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
 
 const app = express()
@@ -73,7 +73,7 @@ function internalApiRouter() {
   router.use(
     createSamlRouter({
       strategyName: 'ead',
-      strategy: createEspooAdSamlStrategy(),
+      strategy: createAdSamlStrategy(),
       sessionType: 'employee',
       pathIdentifier: 'saml'
     })
