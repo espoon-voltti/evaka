@@ -74,7 +74,8 @@ function createLoginHandler({
       (err: any, user: SamlUser | undefined) => {
         if (err || !user) {
           const description =
-            parseDescriptionFromSamlError(err) || 'Could not parse SAML error'
+            parseDescriptionFromSamlError(err, req) ||
+            'Could not parse SAML error'
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in_failed`,
             req,
@@ -130,12 +131,13 @@ function createLogoutHandler({
         const redirectUrl = await fromCallback<string>((cb) =>
           strategy.logout(req, cb)
         )
-        logDebug('Logging user out from passport.')
+        logDebug('Logging user out from passport.', req)
         await logoutExpress(req, res, sessionType)
         return res.redirect(redirectUrl)
       } catch (err) {
         const description =
-          parseDescriptionFromSamlError(err) || 'Could not parse SAML error.'
+          parseDescriptionFromSamlError(err, req) ||
+          'Could not parse SAML error.'
         logAuditEvent(
           `evaka.saml.${strategyName}.sign_out_failed`,
           req,
@@ -149,7 +151,7 @@ function createLogoutHandler({
         req,
         'User signed out'
       )
-      logDebug('Logging user out from passport.')
+      logDebug('Logging user out from passport.', req)
       await logoutExpress(req, res, sessionType)
       res.redirect(getRedirectUrl(req))
     }

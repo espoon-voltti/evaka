@@ -42,6 +42,7 @@ export const validPinoAccessLogMessage: PinoAccessLog = {
     },
     remoteAddress: '::ffff:172.19.0.1',
     remotePort: 43768,
+    parentSpanId: '6692ad9c54ff94f9',
     spanId: '8e26717c418d7b8b',
     traceId: '181b7fe0c99486593ad9c545794f97f3',
     userIdHash:
@@ -83,6 +84,9 @@ export const validPinoAppAuditLogMessage: PinoAppAuditLog = {
   securityLevel: 'low',
   securityEvent: true,
   type: 'app-audit-events',
+  parentSpanId: '6692ad9c54ff94f9',
+  spanId: '8e26717c418d7b8b',
+  traceId: '181b7fe0c99486593ad9c545794f97f3',
   userId: '26e43b70-d0b4-4549-b14e-7532c6c47c06',
   userIdHash:
     'af8dcd13ce05e32f4aeb2f18f10231ff8dfaf055066155fd985a3e46a484f855',
@@ -104,6 +108,9 @@ export const validPinoMiscLogMessage: PinoMiscLog = {
   },
   message: 'User signed in',
   type: 'app-misc',
+  parentSpanId: '6692ad9c54ff94f9',
+  spanId: '8e26717c418d7b8b',
+  traceId: '181b7fe0c99486593ad9c545794f97f3',
   userIdHash:
     'af8dcd13ce05e32f4aeb2f18f10231ff8dfaf055066155fd985a3e46a484f855',
   version: 1
@@ -123,6 +130,9 @@ export const validPinoMiscLogMessageWithError: PinoMiscLog = {
   },
   message: 'User signed in',
   type: 'app-misc',
+  parentSpanId: '6692ad9c54ff94f9',
+  spanId: '8e26717c418d7b8b',
+  traceId: '181b7fe0c99486593ad9c545794f97f3',
   exception: 'ValidTestException',
   stackTrace: `Valid test exception
 multiline
@@ -153,6 +163,7 @@ export const expected: Expected = {
     path: validPinoAccessLogMessage.req.path,
     queryString: validPinoAccessLogMessage.req.queryString,
     responseTime: validPinoAccessLogMessage.responseTime,
+    parentSpanId: validPinoAccessLogMessage.req.parentSpanId,
     spanId: validPinoAccessLogMessage.req.spanId,
     statusCode: `${validPinoAccessLogMessage.res.statusCode}`,
     traceId: validPinoAccessLogMessage.req.traceId,
@@ -174,6 +185,9 @@ export const expected: Expected = {
     targetId: validPinoAppAuditLogMessage.targetId,
     objectId: validPinoAppAuditLogMessage.objectId,
     type: validPinoAppAuditLogMessage.type,
+    parentSpanId: validPinoAppAuditLogMessage.parentSpanId,
+    spanId: validPinoAppAuditLogMessage.spanId,
+    traceId: validPinoAppAuditLogMessage.traceId,
     userId: validPinoAppAuditLogMessage.userId,
     userIdHash: validPinoAppAuditLogMessage.userIdHash,
     userIp: validPinoAppAuditLogMessage.userIp,
@@ -195,6 +209,9 @@ export const expected: Expected = {
       /* eslint-enable @typescript-eslint/no-non-null-assertion */
     },
     type: validPinoMiscLogMessage.type,
+    parentSpanId: validPinoAppAuditLogMessage.parentSpanId,
+    spanId: validPinoAppAuditLogMessage.spanId,
+    traceId: validPinoAppAuditLogMessage.traceId,
     userIdHash: validPinoMiscLogMessage.userIdHash,
     version: validPinoMiscLogMessage.version
   },
@@ -216,6 +233,9 @@ export const expected: Expected = {
     },
     stackTrace: validPinoMiscLogMessageWithError.stackTrace,
     type: validPinoMiscLogMessage.type,
+    parentSpanId: validPinoAppAuditLogMessage.parentSpanId,
+    spanId: validPinoAppAuditLogMessage.spanId,
+    traceId: validPinoAppAuditLogMessage.traceId,
     userIdHash: validPinoMiscLogMessage.userIdHash,
     version: validPinoMiscLogMessage.version
   }

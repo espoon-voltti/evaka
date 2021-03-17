@@ -15,6 +15,9 @@ export interface BaseLog {
   appName: string
   env: string
   hostIp: string
+  parentSpanId?: string
+  spanId?: string
+  traceId?: string
 }
 
 export interface AccessLog extends BaseLog {
@@ -24,9 +27,7 @@ export interface AccessLog extends BaseLog {
   path: string
   queryString: string
   responseTime: number
-  spanId?: string
   statusCode: string
-  traceId?: string
   type: 'app-requests-received'
   userIdHash: string
   version: number
@@ -61,18 +62,22 @@ export interface MiscLog extends BaseLog {
 }
 
 export interface PinoBaseLog {
-  level: string
   '@timestamp': string
-  message?: string
-  appName: string
   appBuild: string
   appCommit: string
+  appName: string
   env: string
   hostIp: string
+  level: string
+  message?: string
+  parentSpanId?: string
+  spanId?: string
+  traceId?: string
 }
 
 export interface PinoAccessLog extends PinoBaseLog {
   req: Omit<SerializedRequest, 'raw'> & {
+    parentSpanId?: string
     path: string
     queryString: string
     spanId?: string
@@ -88,10 +93,10 @@ export interface PinoAccessLog extends PinoBaseLog {
 export interface PinoAppAuditLog extends PinoBaseLog {
   description: string
   eventCode: string
-  targetId: string | string[]
   objectId?: string
-  securityLevel: string
   securityEvent: boolean
+  securityLevel: string
+  targetId: string | string[]
   type: 'app-audit-events'
   userId: string
   userIdHash: string
@@ -130,7 +135,10 @@ const mapPinoBaseLogToBaseLog = (obj: PinoBaseLog): BaseLog => ({
   appCommit: obj.appCommit || '',
   appName: obj.appName,
   env: obj.env,
-  hostIp: obj.hostIp || ''
+  hostIp: obj.hostIp || '',
+  parentSpanId: obj.parentSpanId || '',
+  spanId: obj.spanId || '',
+  traceId: obj.traceId || ''
 })
 
 const mapPinoLogToAccessLog = (obj: PinoAccessLog): AccessLog => ({
@@ -145,6 +153,7 @@ const mapPinoLogToAccessLog = (obj: PinoAccessLog): AccessLog => ({
   queryString: obj.req.queryString || '',
   responseTime: obj.responseTime || -1,
   statusCode: (obj.res.statusCode && `${obj.res.statusCode}`) || '',
+  parentSpanId: obj.req.parentSpanId || '',
   spanId: obj.req.spanId || '',
   traceId: obj.req.traceId || '',
   type: 'app-requests-received',

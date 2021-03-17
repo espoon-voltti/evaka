@@ -368,6 +368,24 @@ describe('transport', () => {
       })
     })
 
+    describe('given a log message with a missing parentSpanId field', () => {
+      test('returns a valid log message in proper format with the parentSpanId field set to an empty string', () => {
+        const invalidPinoAccessLogMessage = deepCopyObj(
+          validPinoAccessLogMessage
+        )
+        delete invalidPinoAccessLogMessage.req.parentSpanId
+        const logMessage = deepCopyObj(expected.validAccessLogMessage)
+        logMessage.parentSpanId = ''
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoAccessLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
+
     describe('given a log message with a missing spanId field', () => {
       test('returns a valid log message in proper format with the spanId field set to an empty string', () => {
         const invalidPinoAccessLogMessage = deepCopyObj(
@@ -706,6 +724,60 @@ describe('transport', () => {
         expect(cli.status).toEqual(0)
       })
     })
+
+    describe('given a log message with a missing parentSpanId field', () => {
+      test('returns a valid log message in proper format without the parentSpanId field set to an empty string', () => {
+        const invalidPinoAppAuditLogMessage = deepCopyObj(
+          validPinoAppAuditLogMessage
+        )
+        delete invalidPinoAppAuditLogMessage.parentSpanId
+        const logMessage = deepCopyObj(expected.validAuditLogMessage)
+        logMessage.parentSpanId = ''
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoAppAuditLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
+
+    describe('given a log message with a missing spanId field', () => {
+      test('returns a valid log message in proper format without the spanId field set to an empty string', () => {
+        const invalidPinoAppAuditLogMessage = deepCopyObj(
+          validPinoAppAuditLogMessage
+        )
+        delete invalidPinoAppAuditLogMessage.spanId
+        const logMessage = deepCopyObj(expected.validAuditLogMessage)
+        logMessage.spanId = ''
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoAppAuditLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
+
+    describe('given a log message with a missing traceId field', () => {
+      test('returns a valid log message in proper format without the traceId field set to an empty string', () => {
+        const invalidPinoAppAuditLogMessage = deepCopyObj(
+          validPinoAppAuditLogMessage
+        )
+        delete invalidPinoAppAuditLogMessage.traceId
+        const logMessage = deepCopyObj(expected.validAuditLogMessage)
+        logMessage.traceId = ''
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoAppAuditLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
   })
 
   describe('pino misc log', () => {
@@ -937,6 +1009,54 @@ describe('transport', () => {
         delete invalidPinoMiscLogMessage.version
         const logMessage = deepCopyObj(expected.validMiscLogMessage)
         delete logMessage.version
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoMiscLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
+
+    describe('given a log message with a missing parentSpanId field', () => {
+      test('returns a valid log message in proper format with the parentSpanId field set to an empty string', () => {
+        const invalidPinoMiscLogMessage = deepCopyObj(validPinoMiscLogMessage)
+        delete invalidPinoMiscLogMessage.parentSpanId
+        const logMessage = deepCopyObj(expected.validMiscLogMessage)
+        logMessage.parentSpanId = ''
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoMiscLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
+
+    describe('given a log message with a missing spanId field', () => {
+      test('returns a valid log message in proper format with the spanId field set to an empty string', () => {
+        const invalidPinoMiscLogMessage = deepCopyObj(validPinoMiscLogMessage)
+        delete invalidPinoMiscLogMessage.spanId
+        const logMessage = deepCopyObj(expected.validMiscLogMessage)
+        logMessage.spanId = ''
+
+        const cli = spawnSync(process.argv[0], [cliPath], {
+          input: objToLogMessage(invalidPinoMiscLogMessage)
+        })
+
+        expect(logMessageToObj(cli.stdout)).toEqual(logMessage)
+        expect(cli.status).toEqual(0)
+      })
+    })
+
+    describe('given a log message with a missing traceId field', () => {
+      test('returns a valid log message in proper format with the traceId field set to an empty string', () => {
+        const invalidPinoMiscLogMessage = deepCopyObj(validPinoMiscLogMessage)
+        delete invalidPinoMiscLogMessage.traceId
+        const logMessage = deepCopyObj(expected.validMiscLogMessage)
+        logMessage.traceId = ''
 
         const cli = spawnSync(process.argv[0], [cliPath], {
           input: objToLogMessage(invalidPinoMiscLogMessage)
