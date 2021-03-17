@@ -55,4 +55,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <filePath regex="true">.*/guava-29\.0-jre\.jar</filePath>
         <cve>CVE-2020-8908</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Not relevant for us as we do not use velocity templates.
+        ]]></notes>
+        <cve>CVE-2020-13936</cve>
+    </suppress>
 </suppressions>
