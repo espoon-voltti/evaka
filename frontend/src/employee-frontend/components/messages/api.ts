@@ -10,7 +10,9 @@ import {
   IdAndName,
   deserializeBulletin,
   SentBulletin,
-  deserializeSentBulletin
+  deserializeSentBulletin,
+  deserializeReceiverChild,
+  ReceiverGroup
 } from './types'
 
 export async function initNewBulletin(unitId: UUID): Promise<Result<Bulletin>> {
@@ -87,6 +89,26 @@ export async function getDraftBulletins(
         ...res.data,
         data: res.data.data.map(deserializeBulletin)
       })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getReceivers(
+  unitId: UUID
+): Promise<Result<ReceiverGroup[]>> {
+  return client
+    .get<JsonOf<ReceiverGroup[]>>('/bulletins/receivers', {
+      params: { unitId }
+    })
+    .then((res) =>
+      Success.of(
+        res.data.map((receiverGroup) => ({
+          ...receiverGroup,
+          receiverChildren: receiverGroup.receiverChildren.map(
+            deserializeReceiverChild
+          )
+        }))
+      )
     )
     .catch((e) => Failure.fromError(e))
 }

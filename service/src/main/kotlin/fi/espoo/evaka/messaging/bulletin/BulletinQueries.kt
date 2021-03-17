@@ -228,6 +228,85 @@ fun Database.Read.getOwnBulletinDrafts(
         .let(mapToPaged(pageSize))
 }
 
+data class BulletinReceiversResult(
+    val childId: UUID,
+    val groupId: UUID,
+    val groupName: String,
+    val childFirstName: String,
+    val childLastName: String,
+    val childDateOfBirth: LocalDate,
+    val receiverId: UUID,
+    val receiverFirstName: String,
+    val receiverLastName: String
+)
+fun Database.Read.getReceiversForNewBulletin(
+    user: AuthenticatedUser,
+    unitId: UUID
+): List<BulletinControllerEmployee.BulletinReceiversResponse> {
+    // language=sql
+    val sql = """
+        WITH children AS (
+            SELECT pl.child_id, dg.id group_id, dg.name group_name
+            FROM daycare_group dg
+            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
+            JOIN placement pl ON gpl.daycare_placement_id = pl.id
+        ), receivers AS (
+            SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
+            FROM children c
+            JOIN guardian g ON g.child_id = c.child_id
+            
+            UNION DISTINCT
+            
+            SELECT c.child_id, c.group_id, c.group_name, fc.head_of_child AS receiver_id
+            FROM children c
+            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+        )
+        SELECT
+            r.receiver_id,
+            r.group_id,
+            r.group_name,
+            p.first_name receiver_first_name,
+            p.last_name receiver_last_name,
+            r.child_id,
+            c.first_name child_first_name,
+            c.last_name child_last_name,
+            c.date_of_birth child_date_of_birth
+        FROM receivers r
+        JOIN person p ON r.receiver_id = p.id
+        JOIN person c ON r.child_id = c.id
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("date", LocalDate.now(zoneId))
+        .bind("userId", user.id)
+        .bind("unitId", unitId)
+        .mapTo<BulletinReceiversResult>()
+        .toList()
+        .groupBy { it.groupId }
+        .map { (groupId, receiverChildren) ->
+            BulletinControllerEmployee.BulletinReceiversResponse(
+                groupId = groupId,
+                groupName = receiverChildren.first().groupName,
+                receivers = receiverChildren.groupBy { it.childId }
+                    .map { (childId, receivers) ->
+                        BulletinControllerEmployee.BulletinReceiver(
+                            childId = childId,
+                            childFirstName = receivers.first().childFirstName,
+                            childLastName = receivers.first().childLastName,
+                            childDateOfBirth = receivers.first().childDateOfBirth,
+                            receiverPersons = receivers.map { it ->
+                                BulletinControllerEmployee.BulletinReceiverPerson(
+                                    receiverId = it.receiverId,
+                                    receiverFirstName = it.receiverFirstName,
+                                    receiverLastName = it.receiverLastName
+                                )
+                            }
+                        )
+                    }
+            )
+        }
+}
+
 fun Database.Read.getReceivedBulletinsByGuardian(
     user: AuthenticatedUser,
     page: Int,

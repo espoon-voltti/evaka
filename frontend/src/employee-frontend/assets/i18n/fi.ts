@@ -2213,6 +2213,7 @@ export const fi = {
         SENT: 'Lähetetyt',
         DRAFT: 'Luonnokset'
       },
+      receivers: 'Vastaanottajat',
       newBulletin: 'Uusi tiedote'
     },
     messageList: {
@@ -2220,6 +2221,13 @@ export const fi = {
         SENT: 'Lähetetyt viestit',
         DRAFT: 'Luonnokset'
       }
+    },
+    receiverSelection: {
+      title: 'Vastaanottajat',
+      childName: 'Nimi',
+      childDob: 'Syntymäaika',
+      receivers: 'Vastaanottajat',
+      confirmText: 'Lähetä viesti valituille'
     },
     messageEditor: {
       newBulletin: 'Uusi tiedote',

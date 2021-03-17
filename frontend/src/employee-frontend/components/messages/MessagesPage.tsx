@@ -27,6 +27,7 @@ import UnitsList from './UnitsList'
 import MessageBoxes, { MessageBoxType } from './MessageBoxes'
 import MessageList from './MessageList'
 import MessageReadView from './MessageReadView'
+import ReceiverSelection from './ReceiverSelection'
 
 export default React.memo(function MessagesPage() {
   const { units, groups, selectedUnit, setSelectedUnit } = useUnitsState()
@@ -45,6 +46,9 @@ export default React.memo(function MessagesPage() {
   } = useMessagesState(activeMessageBox, selectedUnit?.id)
   const [messageOpen, setMessageOpen] = useState<Bulletin | null>()
   const [messageUnderEdit, setMessageUnderEdit] = useState<Bulletin | null>()
+  const [receiverSelectionShown, setReceiverSelectionShown] = useState<boolean>(
+    false
+  )
   const debouncedMessage = useDebounce(messageUnderEdit, 2000)
 
   const selectUnit = (unit: IdAndName) => {
@@ -132,13 +136,22 @@ export default React.memo(function MessagesPage() {
               selectMessageBox={(box) => {
                 setActiveMessageBox(box)
                 setMessageOpen(null)
+                setReceiverSelectionShown(false)
               }}
               messageCounts={messageCounts}
               onCreateNew={onCreateNew}
               createNewDisabled={!selectUnit || groups?.isSuccess !== true}
+              showReceiverSelection={() => {
+                setReceiverSelectionShown(true)
+              }}
+              receiverSelectionShown={receiverSelectionShown}
             />
 
-            {messageOpen ? (
+            {}
+
+            {receiverSelectionShown ? (
+              <ReceiverSelection unitId={selectedUnit.id} />
+            ) : messageOpen ? (
               <MessageReadView
                 message={messageOpen}
                 onEdit={() => {

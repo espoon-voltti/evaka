@@ -17,6 +17,8 @@ interface Props {
   messageCounts: Record<MessageBoxType, number>
   onCreateNew: () => void
   createNewDisabled: boolean
+  showReceiverSelection: () => void
+  receiverSelectionShown: boolean
 }
 
 export default React.memo(function MessageBoxes({
@@ -24,7 +26,9 @@ export default React.memo(function MessageBoxes({
   selectMessageBox,
   messageCounts,
   onCreateNew,
-  createNewDisabled
+  createNewDisabled,
+  showReceiverSelection,
+  receiverSelectionShown
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -34,13 +38,23 @@ export default React.memo(function MessageBoxes({
         {(['SENT', 'DRAFT'] as MessageBoxType[]).map((type) => (
           <MessageBox
             key={type}
-            className={activeMessageBox === type ? 'selected-message-box' : ''}
+            className={
+              !receiverSelectionShown && activeMessageBox === type
+                ? 'selected-message-box'
+                : ''
+            }
             onClick={() => selectMessageBox(type)}
           >
             {i18n.messages.messageBoxes.names[type]}
             {messageCounts[type] > 0 ? ` (${messageCounts[type]})` : ''}
           </MessageBox>
         ))}
+        <MessageBox
+          className={receiverSelectionShown ? 'selected-message-box' : ''}
+          onClick={showReceiverSelection}
+        >
+          {i18n.messages.messageBoxes.receivers}
+        </MessageBox>
       </MessageBoxList>
 
       <BottomWrapper>

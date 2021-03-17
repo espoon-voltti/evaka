@@ -14,6 +14,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.bulletin.Bulletin
 import fi.espoo.evaka.messaging.bulletin.BulletinControllerEmployee
 import fi.espoo.evaka.messaging.bulletin.ReceivedBulletin
+import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
@@ -280,6 +281,27 @@ class BulletinIntegrationTest : FullApplicationTest() {
             "Uusi tiedote eVakassa [${System.getenv("VOLTTI_ENV")}]",
             sentMails.find { it.toAddress == testAdult_4.email }!!.subject
         )
+    }
+
+    @Test
+    fun `Bulletin receiver endpoint works`() {
+        val unitId = unitId
+
+        db.transaction {
+            it.handle.createParentship(childId, testAdult_2.id, placementStart, placementEnd)
+        }
+
+        val (_, res, result) = http.get("/bulletins/receivers?unitId=$unitId")
+            .asUser(supervisor)
+            .responseObject<List<BulletinControllerEmployee.BulletinReceiversResponse>>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+
+        val receivers = result.get()
+
+        assertEquals(1, receivers.size)
+        assertEquals(1, receivers.first().receivers.size)
+        assertEquals(2, receivers.first().receivers.first().receiverPersons.size)
     }
 
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {

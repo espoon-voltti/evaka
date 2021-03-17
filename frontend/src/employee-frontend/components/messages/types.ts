@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
 
 export type Bulletin = {
@@ -46,4 +47,28 @@ export const deserializeSentBulletin = (
 ): SentBulletin => ({
   ...json,
   sentAt: new Date(json.sentAt)
+})
+
+export interface ReceiverChild {
+  childId: UUID
+  childFirstName: string
+  childLastName: string
+  childDateOfBirth: LocalDate
+  receivers: {
+    receiverId: UUID
+    receiverFirstName: string
+    receiverLastName: string
+  }[]
+}
+
+export interface ReceiverGroup {
+  groupId: UUID
+  groupName: string
+  receiverChildren: ReceiverChild[]
+}
+export const deserializeReceiverChild = (
+  json: JsonOf<ReceiverChild>
+): ReceiverChild => ({
+  ...json,
+  childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
 })

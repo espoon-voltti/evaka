@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.util.UUID
 
 @RestController
@@ -82,6 +83,37 @@ class BulletinControllerEmployee(
 
         return db.transaction { tx ->
             tx.getOwnBulletinDrafts(user, unitId, page, pageSize)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    data class BulletinReceiverPerson(
+        val receiverId: UUID,
+        val receiverFirstName: String,
+        val receiverLastName: String
+    )
+    data class BulletinReceiver(
+        val childId: UUID,
+        val childFirstName: String,
+        val childLastName: String,
+        val childDateOfBirth: LocalDate,
+        val receiverPersons: List<BulletinReceiverPerson>
+    )
+    data class BulletinReceiversResponse(
+        val groupId: UUID,
+        val groupName: String,
+        val receivers: List<BulletinReceiver>
+    )
+    @GetMapping("/receivers")
+    fun getReceiversForNewBulletin(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestParam unitId: UUID
+    ): ResponseEntity<List<BulletinReceiversResponse>> {
+        Audit.MessagingBulletinReceiversRead.log(unitId)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
+        return db.transaction { tx ->
+            tx.getReceiversForNewBulletin(user, unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
