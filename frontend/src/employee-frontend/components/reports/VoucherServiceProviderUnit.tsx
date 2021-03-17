@@ -6,12 +6,19 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
-import { range } from 'lodash'
+import { range, sortBy } from 'lodash'
 import { fi } from 'date-fns/locale'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
+import {
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody,
+  SortableTh
+} from '@evaka/lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/api'
 import {
@@ -102,8 +109,19 @@ function VoucherServiceProviderUnit() {
   const [report, setReport] = useState<
     Result<VoucherServiceProviderUnitReport>
   >(Loading.of())
-  const [unitName, setUnitName] = useState<string>('')
+  const [sort, setSort] = useState<'child' | 'group'>('child')
 
+  const sortOnClick = (prop: 'child' | 'group') => () => {
+    if (sort !== prop) {
+      setSort(prop)
+    }
+  }
+
+  const sortedReport = report.map((rs) =>
+    sort === 'group' ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') } : rs
+  )
+
+  const [unitName, setUnitName] = useState<string>('')
   const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>(
     () => {
       const { search } = location
@@ -145,7 +163,7 @@ function VoucherServiceProviderUnit() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {report.isSuccess && <Title size={1}>{unitName}</Title>}
+        {sortedReport.isSuccess && <Title size={1}>{unitName}</Title>}
         <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>
         <FilterRow>
           <FilterLabel>
@@ -187,32 +205,32 @@ function VoucherServiceProviderUnit() {
           </FilterWrapper>
         </FilterRow>
 
-        {report.isSuccess && report.value.locked && (
+        {sortedReport.isSuccess && sortedReport.value.locked && (
           <LockedDate spacing="xs" alignItems="center">
             <FontAwesomeIcon icon={faLockAlt} />
             <span>
               {`${
                 i18n.reports.voucherServiceProviders.locked
-              }: ${report.value.locked.format()}`}
+              }: ${sortedReport.value.locked.format()}`}
             </span>
           </LockedDate>
         )}
 
         <HorizontalLine slim />
 
-        {report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {report.isSuccess && (
+        {sortedReport.isLoading && <Loader />}
+        {sortedReport.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {sortedReport.isSuccess && (
           <>
             <SumRow>
               <FixedSpaceRow>
                 <strong>{`${i18n.reports.voucherServiceProviderUnit.total}`}</strong>
-                <strong>{formatCents(report.value.voucherTotal)}</strong>
+                <strong>{formatCents(sortedReport.value.voucherTotal)}</strong>
               </FixedSpaceRow>
 
               <ReportDownload
                 data={[
-                  ...report.value.rows.map((r) => ({
+                  ...sortedReport.value.rows.map((r) => ({
                     ...r,
                     start: r.realizedPeriod.start.format(),
                     end: r.realizedPeriod.end.format(),
@@ -233,7 +251,7 @@ function VoucherServiceProviderUnit() {
                   })),
                   {
                     childFirstName: 'Yhteensä',
-                    realizedAmount: formatCents(report.value.voucherTotal)
+                    realizedAmount: formatCents(sortedReport.value.voucherTotal)
                   }
                 ]}
                 headers={[
@@ -297,8 +315,18 @@ function VoucherServiceProviderUnit() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.child}</Th>
-                  <Th>{i18n.reports.common.groupName}</Th>
+                  <SortableTh
+                    sorted={sort === 'child' ? 'ASC' : undefined}
+                    onClick={sortOnClick('child')}
+                  >
+                    {i18n.reports.voucherServiceProviderUnit.child}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={sort === 'group' ? 'ASC' : undefined}
+                    onClick={sortOnClick('group')}
+                  >
+                    {i18n.reports.common.groupName}
+                  </SortableTh>
                   <Th>
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </Th>
@@ -324,46 +352,52 @@ function VoucherServiceProviderUnit() {
                 </Tr>
               </Thead>
               <Tbody>
-                {report.value.rows.map((row: VoucherServiceProviderUnitRow) => (
-                  <Tr
-                    key={`${
-                      row.serviceVoucherPartId
-                    }:${row.realizedPeriod.start.formatIso()}`}
-                  >
-                    <StyledTd
-                      type={
-                        row.isNew && row.type === 'ORIGINAL' ? 'NEW' : row.type
-                      }
+                {sortedReport.value.rows.map(
+                  (row: VoucherServiceProviderUnitRow) => (
+                    <Tr
+                      key={`${
+                        row.serviceVoucherPartId
+                      }:${row.realizedPeriod.start.formatIso()}`}
                     >
-                      <Link to={`/child-information/${row.childId}`}>
-                        {formatName(
-                          row.childFirstName,
-                          row.childLastName,
-                          i18n
-                        )}
-                      </Link>
-                      <br />
-                      {row.childDateOfBirth.format()}
-                    </StyledTd>
-                    <Td>{row.childGroupName}</Td>
-                    <Td>
-                      <Tooltip
-                        up
-                        tooltip={
-                          <div>
-                            {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}
-                          </div>
+                      <StyledTd
+                        type={
+                          row.isNew && row.type === 'ORIGINAL'
+                            ? 'NEW'
+                            : row.type
                         }
                       >
-                        {row.numberOfDays}
-                      </Tooltip>
-                    </Td>
-                    <Td>{formatCents(row.serviceVoucherValue)}</Td>
-                    <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
-                    <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
-                    <Td>{formatCents(row.realizedAmount)}</Td>
-                  </Tr>
-                ))}
+                        <Link to={`/child-information/${row.childId}`}>
+                          {formatName(
+                            row.childFirstName,
+                            row.childLastName,
+                            i18n
+                          )}
+                        </Link>
+                        <br />
+                        {row.childDateOfBirth.format()}
+                      </StyledTd>
+                      <Td>{row.childGroupName}</Td>
+                      <Td>
+                        <Tooltip
+                          up
+                          tooltip={
+                            <div>
+                              {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}
+                            </div>
+                          }
+                        >
+                          {row.numberOfDays}
+                        </Tooltip>
+                      </Td>
+                      <Td>{formatCents(row.serviceVoucherValue)}</Td>
+                      <Td>
+                        {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
+                      </Td>
+                      <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
+                      <Td>{formatCents(row.realizedAmount)}</Td>
+                    </Tr>
+                  )
+                )}
               </Tbody>
             </TableScrollable>
           </>
