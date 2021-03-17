@@ -21,7 +21,11 @@ export async function getUnits(
         areas.length > 0 ? `&area=${areas.join(',')}` : ''
       }`
     )
-    .then((res) => Success.of(res.data))
+    .then((res) =>
+      Success.of(
+        res.data.sort((unitA, unitB) => unitA.name.localeCompare(unitB.name))
+      )
+    )
     .catch((e) => Failure.fromError(e))
 }
 

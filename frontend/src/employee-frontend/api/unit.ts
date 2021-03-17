@@ -174,7 +174,16 @@ export async function getUnitData(
         mapPlacementPlanJson
       ),
       placementPlans: response.data.placementPlans?.map(mapPlacementPlanJson),
-      applications: response.data.applications?.map(mapApplicationsJson)
+      applications: response.data.applications
+        ?.map(mapApplicationsJson)
+        .sort((applicationA, applicationB) => {
+          const lastNameCmp = applicationA.lastName.localeCompare(
+            applicationB.lastName
+          )
+          return lastNameCmp !== 0
+            ? lastNameCmp
+            : applicationA.firstName.localeCompare(applicationB.firstName)
+        })
     })
   } catch (e) {
     console.error(e)
