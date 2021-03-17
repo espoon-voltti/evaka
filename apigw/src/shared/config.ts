@@ -136,7 +136,7 @@ const certificateNames = Object.keys(certificates) as ReadonlyArray<
 export const devLoginEnabled =
   env('DEV_LOGIN', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
 
-const adCallbackUrl = process.env.EAD_SAML_CALLBACK_URL
+const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
 const adEntryPointUrl = process.env.AD_SAML_ENTRYPOINT_URL
 const adLogoutUrl = process.env.AD_SAML_LOGOUT_URL
 
@@ -146,15 +146,16 @@ export const adConfig =
         callbackUrl: required(adCallbackUrl),
         entryPointUrl: required(adEntryPointUrl),
         logoutUrl: required(adLogoutUrl),
-        issuer: required(process.env.EAD_SAML_ISSUER),
+        issuer: required(process.env.AD_SAML_ISSUER),
         publicCert: required(
-          envArray('EAD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+          envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
         ),
-        privateCert: required(process.env.EAD_SAML_PRIVATE_CERT)
+        privateCert: required(process.env.AD_SAML_PRIVATE_CERT)
       }
     : undefined
 
-export const adExternalIdPrefix = process.env.AD_SAML_EXTERNAL_ID_PREFIX || 'espoo-ad'
+export const adExternalIdPrefix =
+  process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad'
 
 export const sfiMock =
   env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
