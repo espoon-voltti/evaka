@@ -790,6 +790,22 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }
         return ResponseEntity.noContent().build()
     }
+
+    @DeleteMapping("/attendances")
+    fun deleteAttendances(db: Database): ResponseEntity<Unit> {
+        db.transaction {
+            it.createUpdate("DELETE FROM child_attendance").execute()
+        }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/daycare-daily-notes")
+    fun deleteDaycareDailyNotes(db: Database): ResponseEntity<Unit> {
+        db.transaction {
+            it.createUpdate("DELETE FROM daycare_daily_note").execute()
+        }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
