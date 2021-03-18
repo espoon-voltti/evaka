@@ -23,7 +23,11 @@ export async function getUnits(
     )
     .then((res) =>
       Success.of(
-        res.data.sort((unitA, unitB) => unitA.name.localeCompare(unitB.name))
+        res.data.sort((unitA, unitB) =>
+          unitA.name.localeCompare(unitB.name, 'fi', {
+            ignorePunctuation: true
+          })
+        )
       )
     )
     .catch((e) => Failure.fromError(e))
