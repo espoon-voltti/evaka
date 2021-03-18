@@ -235,6 +235,15 @@ export async function createOrUpdateDaycareDailyNoteForChild(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function deleteDaycareDailyNote(
+  noteId: string
+): Promise<Result<void>> {
+  return client
+    .delete(`/daycare-daily-note/${noteId}`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
 function compareByProperty(
   a: JsonOf<AttendanceChild>,
   b: JsonOf<AttendanceChild>,
