@@ -108,12 +108,14 @@ fun Database.Transaction.sendBulletin(
             SELECT g.guardian_id AS receiver_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
+            WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = c.child_id AND bl.blocked_recipient = g.guardian_id)
             
             UNION DISTINCT 
             
             SELECT fc.head_of_child AS receiver_id
             FROM children c
             JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+            WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = c.child_id AND bl.blocked_recipient = fc.head_of_child)
         )
         INSERT INTO bulletin_instance (bulletin_id, receiver_id)
         SELECT :bulletinId, receiver_id FROM receivers
