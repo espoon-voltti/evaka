@@ -109,6 +109,7 @@ export default React.memo(function MarkDeparted() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}
@@ -168,7 +169,7 @@ export default React.memo(function MarkDeparted() {
                           markDepartedWithAbsence(selectedAbsenceType)
                         }
                         onSuccess={() => history.goBack()}
-                        data-qa="mark-absent"
+                        data-qa="mark-departed-with-absence-btn"
                       />
                     ) : (
                       <Button
@@ -192,7 +193,7 @@ export default React.memo(function MarkDeparted() {
                     text={i18n.common.confirm}
                     onClick={() => markDeparted()}
                     onSuccess={() => history.go(-2)}
-                    data-qa="mark-present"
+                    data-qa="mark-departed-btn"
                     disabled={timeError}
                   />
                 </FixedSpaceRow>

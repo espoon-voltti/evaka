@@ -68,6 +68,7 @@ export default React.memo(function MarkPresent() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}
@@ -108,7 +109,7 @@ export default React.memo(function MarkPresent() {
                   text={i18n.common.confirm}
                   onClick={() => childArrives()}
                   onSuccess={() => history.go(-2)}
-                  data-qa="mark-present"
+                  data-qa="mark-present-btn"
                 />
               </FixedSpaceRow>
             </Actions>

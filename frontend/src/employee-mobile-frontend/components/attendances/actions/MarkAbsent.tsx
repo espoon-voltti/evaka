@@ -76,6 +76,7 @@ export default React.memo(function MarkAbsent() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}
@@ -117,7 +118,7 @@ export default React.memo(function MarkAbsent() {
                     text={i18n.common.confirm}
                     onClick={() => postAbsence(selectedAbsenceType)}
                     onSuccess={() => history.goBack()}
-                    data-qa="mark-absent"
+                    data-qa="mark-absent-btn"
                   />
                 ) : (
                   <Button primary text={i18n.common.confirm} disabled={true} />
