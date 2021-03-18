@@ -140,7 +140,7 @@ function VoucherServiceProviders() {
           unitName: unit.name,
           areaName: unit.areaName,
           childCount: childCount,
-          sum: formatCents(monthlyPaymentSum)
+          sum: formatCents(monthlyPaymentSum, true)
         }))
     )
     .getOrElse(undefined)

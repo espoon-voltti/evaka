@@ -225,7 +225,9 @@ function VoucherServiceProviderUnit() {
             <SumRow>
               <FixedSpaceRow>
                 <strong>{`${i18n.reports.voucherServiceProviderUnit.total}`}</strong>
-                <strong>{formatCents(sortedReport.value.voucherTotal)}</strong>
+                <strong>
+                  {formatCents(sortedReport.value.voucherTotal, true)}
+                </strong>
               </FixedSpaceRow>
 
               <ReportDownload
@@ -243,15 +245,22 @@ function VoucherServiceProviderUnit() {
                     serviceVoucherServiceCoefficient: formatCents(
                       r.serviceVoucherServiceCoefficient
                     ),
-                    serviceVoucherValue: formatCents(r.serviceVoucherValue),
-                    serviceVoucherCoPayment: formatCents(
-                      r.serviceVoucherCoPayment
+                    serviceVoucherValue: formatCents(
+                      r.serviceVoucherValue,
+                      true
                     ),
-                    realizedAmount: formatCents(r.realizedAmount)
+                    serviceVoucherCoPayment: formatCents(
+                      r.serviceVoucherCoPayment,
+                      true
+                    ),
+                    realizedAmount: formatCents(r.realizedAmount, true)
                   })),
                   {
                     childFirstName: 'Yhteensä',
-                    realizedAmount: formatCents(sortedReport.value.voucherTotal)
+                    realizedAmount: formatCents(
+                      sortedReport.value.voucherTotal,
+                      true
+                    )
                   }
                 ]}
                 headers={[
@@ -389,12 +398,12 @@ function VoucherServiceProviderUnit() {
                           {row.numberOfDays}
                         </Tooltip>
                       </Td>
-                      <Td>{formatCents(row.serviceVoucherValue)}</Td>
+                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
                       <Td>
                         {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
                       </Td>
-                      <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
-                      <Td>{formatCents(row.realizedAmount)}</Td>
+                      <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
+                      <Td>{formatCents(row.realizedAmount, true)}</Td>
                     </Tr>
                   )
                 )}
