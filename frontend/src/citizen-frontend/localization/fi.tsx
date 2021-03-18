@@ -507,7 +507,7 @@ export default {
           }
         },
         partTime: {
-          true: 'Osapäiväinen (max 5h/Pv, 25h/vko)',
+          true: 'Osapäiväinen (max 5h / pv, 25h / vko)',
           false: 'Kokopäiväinen'
         },
         dailyTime: {
