@@ -58,6 +58,8 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLockAlt, fasArrowDown, fasArrowUp } from '@evaka/lib-icons'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
+import { isPartDayPlacement } from '@evaka/employee-frontend/utils/placements'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -90,6 +92,10 @@ const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
 
     return `border-left: 6px solid ${color};`
   }}
+`
+
+const StyledTh = styled(Th)`
+  white-space: nowrap;
 `
 
 const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
@@ -230,7 +236,7 @@ function VoucherServiceProviderUnit() {
               <FixedSpaceRow>
                 <strong>{`${i18n.reports.voucherServiceProviderUnit.total}`}</strong>
                 <strong>
-                  {formatCents(sortedReport.value.voucherTotal, true)}
+                  {formatCents(sortedReport.value.voucherTotal, true)} €
                 </strong>
               </FixedSpaceRow>
 
@@ -299,14 +305,14 @@ function VoucherServiceProviderUnit() {
                     key: 'numberOfDays'
                   },
                   {
-                    label:
-                      i18n.reports.voucherServiceProviderUnit
-                        .serviceVoucherValue,
-                    key: 'serviceVoucherValue'
-                  },
-                  {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
                     key: 'serviceVoucherHoursPerWeek'
+                  },
+                  {
+                    label:
+                    i18n.reports.voucherServiceProviderUnit
+                      .serviceVoucherValue,
+                    key: 'serviceVoucherValue'
                   },
                   {
                     label:
@@ -340,28 +346,31 @@ function VoucherServiceProviderUnit() {
                   >
                     {i18n.reports.common.groupName}
                   </SortableTh>
-                  <Th>
+                  <StyledTh>
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
-                  </Th>
-                  <Th>
+                  </StyledTh>
+                  <StyledTh>
+                    {i18n.reports.voucherServiceProviderUnit.placementType}
+                  </StyledTh>
+                  <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
+                  <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherValue
                     }
-                  </Th>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  <Th>
+                  </StyledTh>
+                  <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherCoPayment
                     }
-                  </Th>
-                  <Th>
+                  </StyledTh>
+                  <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherRealizedValue
                     }
-                  </Th>
+                  </StyledTh>
                 </Tr>
               </Thead>
               <Tbody>
@@ -423,10 +432,21 @@ function VoucherServiceProviderUnit() {
                           {row.numberOfDays}
                         </Tooltip>
                       </Td>
-                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
+                      <Td style={{ paddingTop: '10px' }}>
+                        <PlacementCircle
+                          type={
+                            isPartDayPlacement(row.placementType)
+                              ? 'half'
+                              : 'full'
+                          }
+                          label={i18n.placement.type[row.placementType]}
+                          tooltipUp
+                        />
+                      </Td>
                       <Td>
                         {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
                       </Td>
+                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
                       <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
                       <Td>{formatCents(row.realizedAmount, true)}</Td>
                     </Tr>

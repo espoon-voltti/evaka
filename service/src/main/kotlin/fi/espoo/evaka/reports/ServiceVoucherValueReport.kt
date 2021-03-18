@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -171,6 +172,7 @@ data class ServiceVoucherValueRow(
     val serviceVoucherCoPayment: Int,
     val serviceVoucherServiceCoefficient: Int,
     val serviceVoucherHoursPerWeek: Int,
+    val placementType: PlacementType,
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
@@ -288,6 +290,7 @@ SELECT
     part.co_payment AS service_voucher_co_payment,
     part.service_coefficient AS service_voucher_service_coefficient,
     part.hours_per_week AS service_voucher_hours_per_week,
+    part.placement_type,
     coalesce(
         row.realized_amount,
         round((part.voucher_value - part.co_payment) * (row.number_of_days::numeric(10, 8) / (upper(row.period) - lower(row.period))))
@@ -359,6 +362,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             part.co_payment AS service_voucher_co_payment,
             part.service_coefficient AS service_voucher_service_coefficient,
             part.hours_per_week service_voucher_hours_per_week,
+            part.placement_type,
             sn_part.realized_amount,
             sn_part.realized_period,
             upper(sn_part.realized_period) - lower(sn_part.realized_period) AS number_of_days,

@@ -37,11 +37,16 @@ const HalfCircle = styled.div`
 type Props = {
   type: 'half' | 'full'
   label: string
+  tooltipUp?: boolean
 }
 
-export default React.memo(function PlacementCircle({ type, label }: Props) {
+export default React.memo(function PlacementCircle({
+  type,
+  label,
+  tooltipUp
+}: Props) {
   return (
-    <Tooltip tooltip={<span>{label}</span>}>
+    <Tooltip tooltip={<span>{label}</span>} up={tooltipUp}>
       {type === 'half' ? <HalfCircle /> : <Circle />}
     </Tooltip>
   )
