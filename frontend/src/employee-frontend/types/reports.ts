@@ -6,7 +6,6 @@ import { UUID } from '../types/index'
 import LocalDate from '@evaka/lib-common/local-date'
 import { AbsenceType } from '../types/absence'
 import FiniteDateRange from '@evaka/lib-common/finite-date-range'
-import { PlacementType } from '@evaka/employee-frontend/types/child'
 
 export interface InvoiceReportRow {
   areaCode: number
@@ -350,7 +349,6 @@ export interface VoucherServiceProviderUnitRow {
   serviceVoucherCoPayment: number
   serviceVoucherServiceCoefficient: number
   serviceVoucherHoursPerWeek: number
-  placementType: PlacementType
   unitId: UUID
   unitName: string
   areaId: UUID

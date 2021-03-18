@@ -2040,7 +2040,6 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       coefficient: 'Kerroin',
-      placementType: 'Osa/koko',
       serviceNeed: 'Palveluntarve',
       serviceNeedType: 'h / vk',
       partTime: 'Osa/Koko'

@@ -58,8 +58,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLockAlt, fasArrowDown, fasArrowUp } from '@evaka/lib-icons'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
-import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
-import { isPartDayPlacement } from '@evaka/employee-frontend/utils/placements'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -310,8 +308,8 @@ function VoucherServiceProviderUnit() {
                   },
                   {
                     label:
-                    i18n.reports.voucherServiceProviderUnit
-                      .serviceVoucherValue,
+                      i18n.reports.voucherServiceProviderUnit
+                        .serviceVoucherValue,
                     key: 'serviceVoucherValue'
                   },
                   {
@@ -348,9 +346,6 @@ function VoucherServiceProviderUnit() {
                   </SortableTh>
                   <StyledTh>
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
-                  </StyledTh>
-                  <StyledTh>
-                    {i18n.reports.voucherServiceProviderUnit.placementType}
                   </StyledTh>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
                   <StyledTh>
@@ -431,17 +426,6 @@ function VoucherServiceProviderUnit() {
                         >
                           {row.numberOfDays}
                         </Tooltip>
-                      </Td>
-                      <Td style={{ paddingTop: '10px' }}>
-                        <PlacementCircle
-                          type={
-                            isPartDayPlacement(row.placementType)
-                              ? 'half'
-                              : 'full'
-                          }
-                          label={i18n.placement.type[row.placementType]}
-                          tooltipUp
-                        />
                       </Td>
                       <Td>
                         {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
