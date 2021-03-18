@@ -112,7 +112,11 @@ export default React.memo(function AttendanceChildPage() {
   return (
     <Fragment>
       <TallContentArea opaque paddingHorizontal={'s'} spaced>
-        <BackButton onClick={() => history.goBack()} icon={faArrowLeft} />
+        <BackButton
+          onClick={() => history.goBack()}
+          icon={faArrowLeft}
+          dataQa="back-btn"
+        />
         {child && group && !loading ? (
           <Fragment>
             <FixedSpaceColumn alignItems={'center'}>
@@ -121,12 +125,15 @@ export default React.memo(function AttendanceChildPage() {
                 color={getColorByStatus(child.status)}
                 size="XXL"
               />
-              <CustomTitle>
+              <CustomTitle data-qa={'child-name'}>
                 {child.firstName} {child.lastName}
               </CustomTitle>
               <GroupName>{group.name}</GroupName>
               <ChildStatus>
-                <StaticChip color={getColorByStatus(child.status)}>
+                <StaticChip
+                  color={getColorByStatus(child.status)}
+                  data-qa="child-status"
+                >
                   {i18n.attendances.types[child.status]}
                 </StaticChip>
               </ChildStatus>

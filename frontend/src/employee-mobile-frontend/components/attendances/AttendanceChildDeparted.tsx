@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { Fragment, useContext } from 'react'
+import { useHistory } from 'react-router-dom'
 
 import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
 
@@ -29,6 +30,7 @@ export default React.memo(function AttendanceChildDeparted({
   child,
   unitId
 }: Props) {
+  const history = useHistory()
   const { i18n } = useTranslation()
 
   const { setAttendanceResponse } = useContext(AttendanceUIContext)
@@ -70,8 +72,9 @@ export default React.memo(function AttendanceChildDeparted({
         onClick={() => returnToPresentCall()}
         onSuccess={async () => {
           await getDaycareAttendances(unitId).then(setAttendanceResponse)
+          history.goBack()
         }}
-        data-qa="delete-attendance"
+        data-qa="return-to-present-btn"
       />
     </Fragment>
   )

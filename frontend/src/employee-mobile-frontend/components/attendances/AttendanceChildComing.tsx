@@ -28,13 +28,14 @@ export default React.memo(function AttendanceChildComing({
       <FixedSpaceColumn>
         <WideLinkButton
           $primary
-          data-qa="mark-present"
+          data-qa="mark-present-link"
           to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markpresent`}
         >
           {i18n.attendances.actions.markPresent}
         </WideLinkButton>
 
         <WideLinkButton
+          data-qa="mark-absent-link"
           to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markabsent`}
         >
           {i18n.attendances.actions.markAbsent}

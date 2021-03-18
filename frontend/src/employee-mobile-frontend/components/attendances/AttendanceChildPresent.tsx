@@ -54,7 +54,7 @@ export default React.memo(function AttendanceChildPresent({
           <Gap size={'xxs'} />
           <WideLinkButton
             $primary
-            data-qa="mark-present"
+            data-qa="mark-departed-link"
             to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markdeparted`}
           >
             {i18n.attendances.actions.markDeparted}
@@ -66,7 +66,7 @@ export default React.memo(function AttendanceChildPresent({
               await getDaycareAttendances(unitId).then(setAttendanceResponse)
               history.goBack()
             }}
-            data-qa="delete-attendance"
+            data-qa="return-to-coming-btn"
           />
         </FixedSpaceColumn>
       )}
