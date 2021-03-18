@@ -75,12 +75,13 @@ function InlineButton({
   icon,
   disabled = false,
   color,
-  iconRight
+  iconRight,
+  'data-qa': dataQa2
 }: InlineButtonProps) {
   return (
     <StyledButton
       className={classNames(className, { disabled })}
-      data-qa={dataQa}
+      data-qa={dataQa2 ?? dataQa}
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}
