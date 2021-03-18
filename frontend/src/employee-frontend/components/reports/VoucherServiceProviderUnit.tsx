@@ -51,9 +51,13 @@ import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import Tooltip from '@evaka/lib-components/atoms/Tooltip'
 import colors from '@evaka/lib-components/colors'
 import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '@evaka/lib-components/layout/flex-helpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt } from '@evaka/lib-icons'
+import { faLockAlt, fasArrowDown, fasArrowUp } from '@evaka/lib-icons'
+import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -86,6 +90,10 @@ const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
 
     return `border-left: 6px solid ${color};`
   }}
+`
+
+const StyledTh = styled(Th)`
+  white-space: nowrap;
 `
 
 const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
@@ -225,7 +233,9 @@ function VoucherServiceProviderUnit() {
             <SumRow>
               <FixedSpaceRow>
                 <strong>{`${i18n.reports.voucherServiceProviderUnit.total}`}</strong>
-                <strong>{formatCents(sortedReport.value.voucherTotal)}</strong>
+                <strong>
+                  {formatCents(sortedReport.value.voucherTotal, true)} €
+                </strong>
               </FixedSpaceRow>
 
               <ReportDownload
@@ -243,15 +253,22 @@ function VoucherServiceProviderUnit() {
                     serviceVoucherServiceCoefficient: formatCents(
                       r.serviceVoucherServiceCoefficient
                     ),
-                    serviceVoucherValue: formatCents(r.serviceVoucherValue),
-                    serviceVoucherCoPayment: formatCents(
-                      r.serviceVoucherCoPayment
+                    serviceVoucherValue: formatCents(
+                      r.serviceVoucherValue,
+                      true
                     ),
-                    realizedAmount: formatCents(r.realizedAmount)
+                    serviceVoucherCoPayment: formatCents(
+                      r.serviceVoucherCoPayment,
+                      true
+                    ),
+                    realizedAmount: formatCents(r.realizedAmount, true)
                   })),
                   {
                     childFirstName: 'Yhteensä',
-                    realizedAmount: formatCents(sortedReport.value.voucherTotal)
+                    realizedAmount: formatCents(
+                      sortedReport.value.voucherTotal,
+                      true
+                    )
                   }
                 ]}
                 headers={[
@@ -286,14 +303,14 @@ function VoucherServiceProviderUnit() {
                     key: 'numberOfDays'
                   },
                   {
+                    label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
+                    key: 'serviceVoucherHoursPerWeek'
+                  },
+                  {
                     label:
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherValue,
                     key: 'serviceVoucherValue'
-                  },
-                  {
-                    label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
-                    key: 'serviceVoucherHoursPerWeek'
                   },
                   {
                     label:
@@ -327,28 +344,28 @@ function VoucherServiceProviderUnit() {
                   >
                     {i18n.reports.common.groupName}
                   </SortableTh>
-                  <Th>
+                  <StyledTh>
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
-                  </Th>
-                  <Th>
+                  </StyledTh>
+                  <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
+                  <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherValue
                     }
-                  </Th>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  <Th>
+                  </StyledTh>
+                  <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherCoPayment
                     }
-                  </Th>
-                  <Th>
+                  </StyledTh>
+                  <StyledTh>
                     {
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherRealizedValue
                     }
-                  </Th>
+                  </StyledTh>
                 </Tr>
               </Thead>
               <Tbody>
@@ -366,15 +383,36 @@ function VoucherServiceProviderUnit() {
                             : row.type
                         }
                       >
-                        <Link to={`/child-information/${row.childId}`}>
-                          {formatName(
-                            row.childFirstName,
-                            row.childLastName,
-                            i18n
-                          )}
-                        </Link>
-                        <br />
-                        {row.childDateOfBirth.format()}
+                        <FixedSpaceColumn spacing="xs">
+                          <Link to={`/child-information/${row.childId}`}>
+                            {formatName(
+                              row.childFirstName,
+                              row.childLastName,
+                              i18n
+                            )}
+                          </Link>
+
+                          <FixedSpaceRow spacing="xs">
+                            <RoundIcon
+                              content={
+                                row.realizedPeriod.start.differenceInYears(
+                                  row.childDateOfBirth
+                                ) < 3
+                                  ? fasArrowDown
+                                  : fasArrowUp
+                              }
+                              color={
+                                row.realizedPeriod.start.differenceInYears(
+                                  row.childDateOfBirth
+                                ) < 3
+                                  ? colors.accents.green
+                                  : colors.blues.medium
+                              }
+                              size="s"
+                            />
+                            <span>{row.childDateOfBirth.format()}</span>
+                          </FixedSpaceRow>
+                        </FixedSpaceColumn>
                       </StyledTd>
                       <Td>{row.childGroupName}</Td>
                       <Td>
@@ -389,12 +427,12 @@ function VoucherServiceProviderUnit() {
                           {row.numberOfDays}
                         </Tooltip>
                       </Td>
-                      <Td>{formatCents(row.serviceVoucherValue)}</Td>
                       <Td>
                         {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
                       </Td>
-                      <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
-                      <Td>{formatCents(row.realizedAmount)}</Td>
+                      <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
+                      <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
+                      <Td>{formatCents(row.realizedAmount, true)}</Td>
                     </Tr>
                   )
                 )}

@@ -75,7 +75,11 @@ test('voucher service providers are reported correctly, respecting the area filt
   await reports.selectArea('Superkeskus')
 
   await reports.assertVoucherServiceProviderRowCount(1)
-  await reports.assertVoucherServiceProviderRow(daycareFixture.id, '1', '-289')
+  await reports.assertVoucherServiceProviderRow(
+    daycareFixture.id,
+    '1',
+    '-289,00'
+  )
 
   const report = await reports.getCsvReport()
   assert(

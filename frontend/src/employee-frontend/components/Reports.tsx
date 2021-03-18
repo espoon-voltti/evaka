@@ -362,7 +362,9 @@ function Reports() {
             </ReportItem>
           </RequireRole>
           {featureFlags.voucherValueDecisionsPage && (
-            <RequireRole oneOf={['ADMIN', 'DIRECTOR', 'UNIT_SUPERVISOR']}>
+            <RequireRole
+              oneOf={['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+            >
               <ReportItem>
                 <TitleRow>
                   <RoundIcon

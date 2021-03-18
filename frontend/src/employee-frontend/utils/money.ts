@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export function formatCents(amount?: number): string | undefined {
+export function formatCents(
+  amount?: number,
+  fixedCents?: boolean
+): string | undefined {
   if (amount === undefined || amount === null) {
     return undefined
   }
@@ -10,7 +13,11 @@ export function formatCents(amount?: number): string | undefined {
   const euros = amount >= 0 ? Math.floor(amount / 100) : Math.ceil(amount / 100)
   const cents = Math.abs(amount % 100)
 
-  return `${euros}${cents !== 0 ? `,${cents.toString().padStart(2, '0')}` : ''}`
+  if (cents !== 0 || fixedCents) {
+    return `${euros},${cents.toString().padStart(2, '0')}`
+  } else {
+    return euros.toString()
+  }
 }
 
 export const eurosRegex = /^-?[0-9]+((,|\.){1}[0-9]{0,2})?$/
