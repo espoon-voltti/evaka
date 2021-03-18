@@ -149,7 +149,7 @@ test('Child is shown in the coming list in the beginning', async (t) => {
     .contains('Tulossa')
 })
 
-test.only('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async () => {
+test('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
@@ -162,11 +162,11 @@ test.only('The basic case of marking child as present at 08:30 and leaving at 16
   )
 })
 
-test.only('Child can be marked as absent for the whole day', async () => {
+test('Child can be marked as absent for the whole day', async () => {
   await childPage.markAbsent(fixtures.enduserChildFixtureJari, mobileGroupsPage)
 })
 
-test.only('Child can be marked as present and returned to coming', async () => {
+test('Child can be marked as present and returned to coming', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
