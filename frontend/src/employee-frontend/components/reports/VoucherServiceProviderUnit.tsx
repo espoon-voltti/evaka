@@ -2,16 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
-import { range } from 'lodash'
-
+import { range, sortBy } from 'lodash'
+import { fi } from 'date-fns/locale'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
+import {
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody,
+  SortableTh
+} from '@evaka/lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/api'
 import {
@@ -31,15 +38,17 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import { UUID } from '../../types'
-import { reactSelectStyles } from '../../components/common/Select'
+import {
+  reactSelectStyles,
+  SelectOptionProps
+} from '../../components/common/Select'
 
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 
 import { formatCents } from '../../utils/money'
-import { capitalizeFirstLetter, formatName } from '../../utils'
+import { formatName } from '../../utils'
+import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import Tooltip from '@evaka/lib-components/atoms/Tooltip'
-import LocalDate from '@evaka/lib-common/local-date'
-import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
 import colors from '@evaka/lib-components/colors'
 import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
@@ -64,43 +73,80 @@ const SumRow = styled.div`
   align-items: center;
 `
 
-const StyledTd = styled(Td)<{ type: VoucherReportRowType }>`
-  ${(p) =>
-    p.type === 'REFUND'
-      ? `
-    border-left: 6px solid ${colors.accents.orange};
-  `
-      : p.type === 'CORRECTION'
-      ? `
-    border-left: 6px solid ${colors.accents.yellow};
-  `
-      : `
-    border-left: 6px solid ${colors.greyscale.white};
-  `}
+const StyledTd = styled(Td)<{ type: VoucherReportRowType | 'NEW' }>`
+  ${(p) => {
+    const color =
+      p.type === 'REFUND'
+        ? colors.accents.orange
+        : p.type === 'CORRECTION'
+        ? colors.accents.yellow
+        : p.type === 'NEW'
+        ? colors.blues.primary
+        : colors.greyscale.white
+
+    return `border-left: 6px solid ${color};`
+  }}
 `
 
+const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+  value: String(num + 1),
+  label: String(fi.localize?.month(num))
+}))
+
+const minYear = new Date().getFullYear() - 4
+const maxYear = new Date().getFullYear()
+const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+  (num) => ({
+    value: String(num),
+    label: String(num)
+  })
+)
+
 function VoucherServiceProviderUnit() {
+  const location = useLocation()
   const { i18n } = useTranslation()
   const { unitId } = useParams<{ unitId: UUID }>()
   const [report, setReport] = useState<
     Result<VoucherServiceProviderUnitReport>
   >(Loading.of())
-  const [unitName, setUnitName] = useState<string>('')
+  const [sort, setSort] = useState<'child' | 'group'>('child')
 
-  const now = new Date()
+  const sortOnClick = (prop: 'child' | 'group') => () => {
+    if (sort !== prop) {
+      setSort(prop)
+    }
+  }
 
-  const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>({
-    month: now.getMonth() + 1,
-    year: now.getFullYear()
-  })
-
-  const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
-    LocalDate.today().withDate(1)
+  const sortedReport = report.map((rs) =>
+    sort === 'group' ? { ...rs, rows: sortBy(rs.rows, 'childGroupName') } : rs
   )
 
-  useEffect(() => {
-    if (futureSelected) return
+  const [unitName, setUnitName] = useState<string>('')
+  const [filters, setFilters] = useState<VoucherServiceProviderUnitFilters>(
+    () => {
+      const { search } = location
+      const queryParams = new URLSearchParams(search)
+      const year = Number(queryParams.get('year'))
+      const month = Number(queryParams.get('month'))
 
+      return {
+        year:
+          year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
+        month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1
+      }
+    }
+  )
+
+  const memoizedFilters = useMemo(
+    () => ({
+      year: filters.year.toString(),
+      month: filters.month.toString()
+    }),
+    [filters]
+  )
+  useSyncQueryParams(memoizedFilters)
+
+  useEffect(() => {
     setReport(Loading.of())
     void getVoucherServiceProviderUnitReport(unitId, filters).then((res) => {
       setReport(res)
@@ -110,16 +156,6 @@ function VoucherServiceProviderUnit() {
     })
   }, [filters])
 
-  const monthOptions = range(0, 12).map((num) => ({
-    value: num + 1,
-    label: capitalizeFirstLetter(i18n.datePicker.months[num])
-  }))
-
-  const yearOptions = range(2019, now.getFullYear() + 10).map((num) => ({
-    value: num,
-    label: num
-  }))
-
   const formatServiceNeed = (amount: number) =>
     `${amount} ${i18n.reports.voucherServiceProviderUnit.serviceNeedType}`
 
@@ -127,7 +163,7 @@ function VoucherServiceProviderUnit() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {report.isSuccess && <Title size={1}>{unitName}</Title>}
+        {sortedReport.isSuccess && <Title size={1}>{unitName}</Title>}
         <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>
         <FilterRow>
           <FilterLabel>
@@ -136,14 +172,14 @@ function VoucherServiceProviderUnit() {
           <FilterWrapper>
             <ReactSelect
               options={monthOptions}
-              defaultValue={monthOptions.find(
-                ({ value }) => value === filters.month
+              value={monthOptions.find(
+                ({ value }) => Number(value) === filters.month
               )}
               onChange={(option) =>
                 option && 'value' in option
                   ? setFilters({
                       ...filters,
-                      month: option.value
+                      month: Number(option.value)
                     })
                   : undefined
               }
@@ -153,14 +189,14 @@ function VoucherServiceProviderUnit() {
           <FilterWrapper>
             <ReactSelect
               options={yearOptions}
-              defaultValue={yearOptions.find(
-                ({ value }) => value === filters.year
+              value={yearOptions.find(
+                ({ value }) => Number(value) === filters.year
               )}
               onChange={(option) =>
                 option && 'value' in option
                   ? setFilters({
                       ...filters,
-                      year: option.value
+                      year: Number(option.value)
                     })
                   : undefined
               }
@@ -169,41 +205,32 @@ function VoucherServiceProviderUnit() {
           </FilterWrapper>
         </FilterRow>
 
-        {report.isSuccess && report.value.locked && (
+        {sortedReport.isSuccess && sortedReport.value.locked && (
           <LockedDate spacing="xs" alignItems="center">
             <FontAwesomeIcon icon={faLockAlt} />
             <span>
               {`${
                 i18n.reports.voucherServiceProviders.locked
-              }: ${report.value.locked.format()}`}
+              }: ${sortedReport.value.locked.format()}`}
             </span>
           </LockedDate>
         )}
 
         <HorizontalLine slim />
 
-        {report.isLoading && <Loader />}
-        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {futureSelected && (
-          <>
-            <Gap />
-            <InfoBox
-              wide
-              message={i18n.reports.voucherServiceProviders.filters.noFuture}
-            />
-          </>
-        )}
-        {!futureSelected && report.isSuccess && (
+        {sortedReport.isLoading && <Loader />}
+        {sortedReport.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {sortedReport.isSuccess && (
           <>
             <SumRow>
               <FixedSpaceRow>
                 <strong>{`${i18n.reports.voucherServiceProviderUnit.total}`}</strong>
-                <strong>{formatCents(report.value.voucherTotal)}</strong>
+                <strong>{formatCents(sortedReport.value.voucherTotal)}</strong>
               </FixedSpaceRow>
 
               <ReportDownload
                 data={[
-                  ...report.value.rows.map((r) => ({
+                  ...sortedReport.value.rows.map((r) => ({
                     ...r,
                     start: r.realizedPeriod.start.format(),
                     end: r.realizedPeriod.end.format(),
@@ -224,7 +251,7 @@ function VoucherServiceProviderUnit() {
                   })),
                   {
                     childFirstName: 'Yhteensä',
-                    realizedAmount: formatCents(report.value.voucherTotal)
+                    realizedAmount: formatCents(sortedReport.value.voucherTotal)
                   }
                 ]}
                 headers={[
@@ -269,10 +296,6 @@ function VoucherServiceProviderUnit() {
                     key: 'serviceVoucherHoursPerWeek'
                   },
                   {
-                    label: i18n.reports.voucherServiceProviderUnit.coefficient,
-                    key: 'serviceVoucherServiceCoefficient'
-                  },
-                  {
                     label:
                       i18n.reports.voucherServiceProviderUnit
                         .serviceVoucherCoPayment,
@@ -292,8 +315,18 @@ function VoucherServiceProviderUnit() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.child}</Th>
-                  <Th>{i18n.reports.common.groupName}</Th>
+                  <SortableTh
+                    sorted={sort === 'child' ? 'ASC' : undefined}
+                    onClick={sortOnClick('child')}
+                  >
+                    {i18n.reports.voucherServiceProviderUnit.child}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={sort === 'group' ? 'ASC' : undefined}
+                    onClick={sortOnClick('group')}
+                  >
+                    {i18n.reports.common.groupName}
+                  </SortableTh>
                   <Th>
                     {i18n.reports.voucherServiceProviderUnit.numberOfDays}
                   </Th>
@@ -304,7 +337,6 @@ function VoucherServiceProviderUnit() {
                     }
                   </Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.coefficient}</Th>
                   <Th>
                     {
                       i18n.reports.voucherServiceProviderUnit
@@ -320,43 +352,52 @@ function VoucherServiceProviderUnit() {
                 </Tr>
               </Thead>
               <Tbody>
-                {report.value.rows.map((row: VoucherServiceProviderUnitRow) => (
-                  <Tr
-                    key={`${
-                      row.serviceVoucherPartId
-                    }:${row.realizedPeriod.start.formatIso()}`}
-                  >
-                    <StyledTd type={row.type}>
-                      <Link to={`/child-information/${row.childId}`}>
-                        {formatName(
-                          row.childFirstName,
-                          row.childLastName,
-                          i18n
-                        )}
-                      </Link>
-                      <br />
-                      {row.childDateOfBirth.format()}
-                    </StyledTd>
-                    <Td>{row.childGroupName}</Td>
-                    <Td>
-                      <Tooltip
-                        up
-                        tooltip={
-                          <div>
-                            {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}
-                          </div>
+                {sortedReport.value.rows.map(
+                  (row: VoucherServiceProviderUnitRow) => (
+                    <Tr
+                      key={`${
+                        row.serviceVoucherPartId
+                      }:${row.realizedPeriod.start.formatIso()}`}
+                    >
+                      <StyledTd
+                        type={
+                          row.isNew && row.type === 'ORIGINAL'
+                            ? 'NEW'
+                            : row.type
                         }
                       >
-                        {row.numberOfDays}
-                      </Tooltip>
-                    </Td>
-                    <Td>{formatCents(row.serviceVoucherValue)}</Td>
-                    <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
-                    <Td>{formatCents(row.serviceVoucherServiceCoefficient)}</Td>
-                    <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
-                    <Td>{formatCents(row.realizedAmount)}</Td>
-                  </Tr>
-                ))}
+                        <Link to={`/child-information/${row.childId}`}>
+                          {formatName(
+                            row.childFirstName,
+                            row.childLastName,
+                            i18n
+                          )}
+                        </Link>
+                        <br />
+                        {row.childDateOfBirth.format()}
+                      </StyledTd>
+                      <Td>{row.childGroupName}</Td>
+                      <Td>
+                        <Tooltip
+                          up
+                          tooltip={
+                            <div>
+                              {`${row.realizedPeriod.start.format()} - ${row.realizedPeriod.end.format()}`}
+                            </div>
+                          }
+                        >
+                          {row.numberOfDays}
+                        </Tooltip>
+                      </Td>
+                      <Td>{formatCents(row.serviceVoucherValue)}</Td>
+                      <Td>
+                        {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
+                      </Td>
+                      <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
+                      <Td>{formatCents(row.realizedAmount)}</Td>
+                    </Tr>
+                  )
+                )}
               </Tbody>
             </TableScrollable>
           </>

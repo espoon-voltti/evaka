@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { range } from 'lodash'
+import { faSearch } from '@evaka/lib-icons'
 import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
 import Loader from '@evaka/lib-components/atoms/Loader'
 import Title from '@evaka/lib-components/atoms/Title'
@@ -19,6 +21,7 @@ import {
   VoucherServiceProvidersFilters
 } from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import InputField from '@evaka/lib-components/atoms/form/InputField'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { formatDate } from '../../utils/date'
 import { SelectOptionProps } from '../../components/common/Select'
@@ -32,9 +35,8 @@ import {
 } from '../../components/reports/common'
 import { FlexRow } from '../../components/common/styled/containers'
 import { formatCents } from '../../utils/money'
-import LocalDate from '@evaka/lib-common/local-date'
-import { InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
+import { defaultMargins } from '@evaka/lib-components/white-space'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import colors from '@evaka/lib-components/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -55,28 +57,20 @@ const LockedDate = styled(FixedSpaceRow)`
   margin-bottom: ${defaultMargins.xs};
 `
 
-function monthOptions(): SelectOptionProps[] {
-  const monthOptions = []
-  for (let i = 1; i <= 12; i++) {
-    monthOptions.push({
-      value: i.toString(),
-      label: String(fi.localize?.month(i - 1))
-    })
-  }
-  return monthOptions
-}
+const monthOptions: SelectOptionProps[] = range(0, 12).map((num) => ({
+  value: String(num + 1),
+  label: String(fi.localize?.month(num))
+}))
 
-function yearOptions(): SelectOptionProps[] {
-  const currentYear = new Date().getFullYear()
-  const yearOptions = []
-  for (let year = currentYear; year > currentYear - 5; year--) {
-    yearOptions.push({
-      value: year.toString(),
-      label: year.toString()
-    })
-  }
-  return yearOptions
-}
+const minYear = new Date().getFullYear() - 4
+// Max year is next year if current date is in December and current year otherwise
+const maxYear = new Date().getFullYear() + (new Date().getMonth() == 11 ? 1 : 0)
+const yearOptions: SelectOptionProps[] = range(maxYear, minYear - 1, -1).map(
+  (num) => ({
+    value: String(num),
+    label: String(num)
+  })
+)
 
 function getFilename(year: number, month: number, areaName: string) {
   const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
@@ -84,44 +78,70 @@ function getFilename(year: number, month: number, areaName: string) {
 }
 
 function VoucherServiceProviders() {
+  const location = useLocation()
   const { i18n } = useTranslation()
   const [report, setReport] = useState<Result<VoucherServiceProviderReport>>(
     Success.of({ locked: null, rows: [] })
   )
   const [areas, setAreas] = useState<CareArea[]>([])
-  const [filters, setFilters] = useState<VoucherServiceProvidersFilters>({
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
-    areaId: ''
+  const [filters, setFilters] = useState<VoucherServiceProvidersFilters>(() => {
+    const { search } = location
+    const queryParams = new URLSearchParams(search)
+    const year = Number(queryParams.get('year'))
+    const month = Number(queryParams.get('month'))
+
+    return {
+      year:
+        year >= minYear && year <= maxYear ? year : new Date().getFullYear(),
+      month: month >= 1 && month <= 12 ? month : new Date().getMonth() + 1,
+      areaId: queryParams.get('areaId') ?? ''
+    }
+  })
+  const [unitFilter, setUnitFilter] = useState<string>(() => {
+    const { search } = location
+    const queryParams = new URLSearchParams(search)
+    return queryParams.get('unit') ?? ''
   })
 
-  const futureSelected = LocalDate.of(filters.year, filters.month, 1).isAfter(
-    LocalDate.today().withDate(1)
+  const memoizedFilters = useMemo(
+    () => ({
+      year: filters.year.toString(),
+      month: filters.month.toString(),
+      areaId: filters.areaId,
+      unit: unitFilter
+    }),
+    [filters, unitFilter]
   )
+  useSyncQueryParams(memoizedFilters)
+  const query = new URLSearchParams(memoizedFilters).toString()
 
   useEffect(() => {
     void getAreas().then((res) => res.isSuccess && setAreas(res.value))
   }, [])
 
   useEffect(() => {
-    if (filters.areaId == '' || futureSelected) return
+    if (filters.areaId == '') return
 
     setReport(Loading.of())
     void getVoucherServiceProvidersReport(filters).then(setReport)
   }, [filters])
 
-  const months = monthOptions()
-  const years = yearOptions()
+  const months = monthOptions
+  const years = yearOptions
 
   const mappedData = report
     .map((rs) =>
-      rs.rows.map(({ unit, childCount, monthlyPaymentSum }) => ({
-        unitId: unit.id,
-        unitName: unit.name,
-        areaName: unit.areaName,
-        childCount: childCount,
-        sum: formatCents(monthlyPaymentSum)
-      }))
+      rs.rows
+        .filter(({ unit }) =>
+          unit.name.toLowerCase().includes(unitFilter.toLowerCase())
+        )
+        .map(({ unit, childCount, monthlyPaymentSum }) => ({
+          unitId: unit.id,
+          unitName: unit.name,
+          areaName: unit.areaName,
+          childCount: childCount,
+          sum: formatCents(monthlyPaymentSum)
+        }))
     )
     .getOrElse(undefined)
 
@@ -172,6 +192,11 @@ function VoucherServiceProviders() {
               options={[
                 ...areas.map((area) => ({ value: area.id, label: area.name }))
               ]}
+              value={
+                areas
+                  .filter(({ id }) => id === filters.areaId)
+                  .map((area) => ({ value: area.id, label: area.name }))[0]
+              }
               onChange={(value) => {
                 if (value && 'value' in value) {
                   setFilters({ ...filters, areaId: value.value })
@@ -179,6 +204,19 @@ function VoucherServiceProviders() {
               }}
               styles={reactSelectStyles}
               placeholder={i18n.reports.common.careAreaName}
+            />
+          </FilterWrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterWrapper data-qa="unit-name-input">
+            <InputField
+              value={unitFilter}
+              onChange={(value) => setUnitFilter(value)}
+              placeholder={
+                i18n.reports.voucherServiceProviders.filters.unitPlaceholder
+              }
+              icon={faSearch}
             />
           </FilterWrapper>
         </FilterRow>
@@ -198,16 +236,7 @@ function VoucherServiceProviders() {
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {futureSelected && (
-          <>
-            <Gap />
-            <InfoBox
-              wide
-              message={i18n.reports.voucherServiceProviders.filters.noFuture}
-            />
-          </>
-        )}
-        {!futureSelected && mappedData && filters.areaId && (
+        {mappedData && filters.areaId && (
           <>
             <ReportDownload
               data={mappedData}
@@ -249,7 +278,7 @@ function VoucherServiceProviders() {
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link
-                        to={`/reports/voucher-service-providers/${row.unitId}`}
+                        to={`/reports/voucher-service-providers/${row.unitId}?${query}`}
                       >
                         {row.unitName}
                       </Link>
