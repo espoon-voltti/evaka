@@ -51,9 +51,13 @@ import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import Tooltip from '@evaka/lib-components/atoms/Tooltip'
 import colors from '@evaka/lib-components/colors'
 import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '@evaka/lib-components/layout/flex-helpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt } from '@evaka/lib-icons'
+import { faLockAlt, fasArrowDown, fasArrowUp } from '@evaka/lib-icons'
+import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -375,15 +379,36 @@ function VoucherServiceProviderUnit() {
                             : row.type
                         }
                       >
-                        <Link to={`/child-information/${row.childId}`}>
-                          {formatName(
-                            row.childFirstName,
-                            row.childLastName,
-                            i18n
-                          )}
-                        </Link>
-                        <br />
-                        {row.childDateOfBirth.format()}
+                        <FixedSpaceColumn spacing="xs">
+                          <Link to={`/child-information/${row.childId}`}>
+                            {formatName(
+                              row.childFirstName,
+                              row.childLastName,
+                              i18n
+                            )}
+                          </Link>
+
+                          <FixedSpaceRow spacing="s">
+                            <RoundIcon
+                              content={
+                                row.realizedPeriod.start.differenceInYears(
+                                  row.childDateOfBirth
+                                ) < 3
+                                  ? fasArrowDown
+                                  : fasArrowUp
+                              }
+                              color={
+                                row.realizedPeriod.start.differenceInYears(
+                                  row.childDateOfBirth
+                                ) < 3
+                                  ? colors.accents.green
+                                  : colors.blues.medium
+                              }
+                              size="s"
+                            />
+                            <span>{row.childDateOfBirth.format()}</span>
+                          </FixedSpaceRow>
+                        </FixedSpaceColumn>
                       </StyledTd>
                       <Td>{row.childGroupName}</Td>
                       <Td>
