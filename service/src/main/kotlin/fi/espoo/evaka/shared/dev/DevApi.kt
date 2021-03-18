@@ -806,6 +806,14 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }
         return ResponseEntity.noContent().build()
     }
+
+    @DeleteMapping("/absences")
+    fun deleteAbsences(db: Database): ResponseEntity<Unit> {
+        db.transaction {
+            it.createUpdate("DELETE FROM absence").execute()
+        }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {

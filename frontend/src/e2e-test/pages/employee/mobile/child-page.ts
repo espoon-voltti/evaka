@@ -120,6 +120,7 @@ export default class ChildPage {
     await t.click(this.markAbsentLink)
     await t.click(this.markAbsentRadio('SICKLEAVE'))
     await t.click(this.markAbsentBtn)
+    await t.click(this.backBtn)
 
     await t.click(mobileGroupsPage.absentTab)
     await t

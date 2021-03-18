@@ -9,6 +9,7 @@ import {
 } from '../../dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
+  deleteAbsences,
   deleteAttendances,
   deleteEmployeeById,
   deleteMobileDevice,
@@ -118,6 +119,7 @@ fixture('Mobile attendances')
   .afterEach(async (t) => {
     await logConsoleMessages(t)
     await deleteAttendances()
+    await deleteAbsences()
   })
   .after(async () => {
     await deletePairing(pairingId)
@@ -147,7 +149,7 @@ test('Child is shown in the coming list in the beginning', async (t) => {
     .contains('Tulossa')
 })
 
-test('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async () => {
+test.only('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
@@ -160,11 +162,11 @@ test('The basic case of marking child as present at 08:30 and leaving at 16:00 w
   )
 })
 
-test('Child can be marked as absent for the whole day', async () => {
+test.only('Child can be marked as absent for the whole day', async () => {
   await childPage.markAbsent(fixtures.enduserChildFixtureJari, mobileGroupsPage)
 })
 
-test('Child can be marked as present and returned to coming', async () => {
+test.only('Child can be marked as present and returned to coming', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,

@@ -845,3 +845,11 @@ export async function deleteDaycareDailyNotes(): Promise<void> {
     throw new DevApiError(e)
   }
 }
+
+export async function deleteAbsences(): Promise<void> {
+  try {
+    await devClient.delete(`/absences`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
