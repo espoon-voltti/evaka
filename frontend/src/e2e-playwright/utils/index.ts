@@ -1,6 +1,7 @@
 import { eq } from 'lodash'
 import { differenceInSeconds } from 'date-fns'
 import { Page } from 'playwright'
+import config from 'e2e-test-common/config'
 
 /**
  * Returns a promise that is resolved after the given amount of milliseconds
@@ -11,7 +12,7 @@ export async function delay(ms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, ms))
 }
 
-const WAIT_TIMEOUT_SECONDS = 30
+const WAIT_TIMEOUT_SECONDS = config.playwright.developmentMode ? 5 : 30
 const WAIT_LOOP_INTERVAL_MS = 100
 
 /**

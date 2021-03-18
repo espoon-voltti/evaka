@@ -7,8 +7,5 @@
     "outDir": "../../dist/e2e-playwright",
     "types": ["jest", "node"]
   },
-  "references": [
-    { "path": "../lib-common" },
-    { "path": "../e2e-test-common" }
-  ]
+  "references": [{ "path": "../lib-common" }, { "path": "../e2e-test-common" }]
 }

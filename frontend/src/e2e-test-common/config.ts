@@ -42,12 +42,15 @@ function env<T>(key: string, parser: (value: string) => T): T | undefined {
 const supervisorAad = '123dc92c-278b-4cea-9e54-2cc7e41555f3'
 const adminAad = 'c50be1c1-304d-4d5a-86a0-1fad225c76cb'
 
+const developmentMode = env('E2E_DEVELOPMENT', parseBoolean) ?? false
+
 const baseUrl = env('BASE_URL', (url) => url)
 const browserUrl = baseUrl ?? 'http://localhost:9099'
 
 const config = {
   playwright: {
-    headless: env('HEADLESS', parseBoolean) ?? true,
+    developmentMode,
+    headless: env('HEADLESS', parseBoolean) ?? !developmentMode,
     browser:
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
       'chromium'
