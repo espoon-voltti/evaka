@@ -147,7 +147,7 @@ test('Child is shown in the coming list in the beginning', async (t) => {
     .contains('Tulossa')
 })
 
-test('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async (t) => {
+test('The basic case of marking child as present at 08:30 and leaving at 16:00 works', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
@@ -160,11 +160,11 @@ test('The basic case of marking child as present at 08:30 and leaving at 16:00 w
   )
 })
 
-test('Child can be marked as absent for the whole day', async (t) => {
-  childPage.markAbsent(fixtures.enduserChildFixtureJari, mobileGroupsPage)
+test('Child can be marked as absent for the whole day', async () => {
+  await childPage.markAbsent(fixtures.enduserChildFixtureJari, mobileGroupsPage)
 })
 
-test('Child can be marked as present and returned to coming', async (t) => {
+test('Child can be marked as present and returned to coming', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
@@ -176,7 +176,7 @@ test('Child can be marked as present and returned to coming', async (t) => {
   )
 })
 
-test('User can undo the whole flow of marking present at 08:30 and leaving at 16:00', async (t) => {
+test('User can undo the whole flow of marking present at 08:30 and leaving at 16:00', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
@@ -197,7 +197,7 @@ test('User can undo the whole flow of marking present at 08:30 and leaving at 16
   )
 })
 
-test('User has to mark an absence if child arrives at 08:30 and leaves at 09:00', async (t) => {
+test('User has to mark an absence if child arrives at 08:30 and leaves at 09:00', async () => {
   await childPage.markPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,

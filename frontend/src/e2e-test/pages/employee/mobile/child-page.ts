@@ -199,9 +199,9 @@ export default class ChildPage {
     await t.click(this.dailyNoteFeedingNote(dailyNote.feedingNote))
     await t.click(this.dailyNoteSleepingNote(dailyNote.sleepingNote))
     await t.typeText(this.dailyNoteSleepingTimeInput, dailyNote.sleepingHours)
-    dailyNote.reminders.forEach(async (reminder) => {
+    for (const reminder of dailyNote.reminders) {
       await t.click(this.dailyNoteReminders(reminder))
-    })
+    }
     await t.typeText(this.dailyNoteReminderNoteInput, dailyNote.reminderNote)
 
     await t.click(this.createDailyNoteBtn)
