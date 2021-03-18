@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { Link, useLocation } from 'react-router-dom'
@@ -42,6 +42,7 @@ import colors from '@evaka/lib-components/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLockAlt } from '@evaka/lib-icons'
 import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
+import { UserContext } from '@evaka/employee-frontend/state/user'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -80,6 +81,7 @@ function getFilename(year: number, month: number, areaName: string) {
 function VoucherServiceProviders() {
   const location = useLocation()
   const { i18n } = useTranslation()
+  const { roles } = useContext(UserContext)
   const [report, setReport] = useState<Result<VoucherServiceProviderReport>>(
     Success.of({ locked: null, rows: [] })
   )
@@ -107,7 +109,7 @@ function VoucherServiceProviders() {
     () => ({
       year: filters.year.toString(),
       month: filters.month.toString(),
-      areaId: filters.areaId,
+      areaId: filters.areaId ?? '',
       unit: unitFilter
     }),
     [filters, unitFilter]
@@ -119,11 +121,17 @@ function VoucherServiceProviders() {
     void getAreas().then((res) => res.isSuccess && setAreas(res.value))
   }, [])
 
+  const allAreas = !roles.find((r) =>
+    ['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR'].includes(r)
+  )
   useEffect(() => {
-    if (filters.areaId == '') return
+    if (!allAreas && filters.areaId == '') return
 
     setReport(Loading.of())
-    void getVoucherServiceProvidersReport(filters).then(setReport)
+    void getVoucherServiceProvidersReport({
+      ...filters,
+      areaId: filters.areaId || undefined
+    }).then(setReport)
   }, [filters])
 
   const months = monthOptions
@@ -185,41 +193,48 @@ function VoucherServiceProviders() {
             </FilterWrapper>
           </FlexRow>
         </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <FilterWrapper data-qa="select-area">
-            <ReactSelect
-              options={[
-                ...areas.map((area) => ({ value: area.id, label: area.name }))
-              ]}
-              value={
-                areas
-                  .filter(({ id }) => id === filters.areaId)
-                  .map((area) => ({ value: area.id, label: area.name }))[0]
-              }
-              onChange={(value) => {
-                if (value && 'value' in value) {
-                  setFilters({ ...filters, areaId: value.value })
-                }
-              }}
-              styles={reactSelectStyles}
-              placeholder={i18n.reports.common.careAreaName}
-            />
-          </FilterWrapper>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
-          <FilterWrapper data-qa="unit-name-input">
-            <InputField
-              value={unitFilter}
-              onChange={(value) => setUnitFilter(value)}
-              placeholder={
-                i18n.reports.voucherServiceProviders.filters.unitPlaceholder
-              }
-              icon={faSearch}
-            />
-          </FilterWrapper>
-        </FilterRow>
+        {!allAreas && (
+          <>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+              <FilterWrapper data-qa="select-area">
+                <ReactSelect
+                  options={[
+                    ...areas.map((area) => ({
+                      value: area.id,
+                      label: area.name
+                    }))
+                  ]}
+                  value={
+                    areas
+                      .filter(({ id }) => id === filters.areaId)
+                      .map((area) => ({ value: area.id, label: area.name }))[0]
+                  }
+                  onChange={(value) => {
+                    if (value && 'value' in value) {
+                      setFilters({ ...filters, areaId: value.value })
+                    }
+                  }}
+                  styles={reactSelectStyles}
+                  placeholder={i18n.reports.common.careAreaName}
+                />
+              </FilterWrapper>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+              <FilterWrapper data-qa="unit-name-input">
+                <InputField
+                  value={unitFilter}
+                  onChange={(value) => setUnitFilter(value)}
+                  placeholder={
+                    i18n.reports.voucherServiceProviders.filters.unitPlaceholder
+                  }
+                  icon={faSearch}
+                />
+              </FilterWrapper>
+            </FilterRow>
+          </>
+        )}
 
         {report.isSuccess && report.value.locked && (
           <LockedDate spacing="xs" alignItems="center">
@@ -236,7 +251,7 @@ function VoucherServiceProviders() {
 
         {report.isLoading && <Loader />}
         {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
-        {mappedData && filters.areaId && (
+        {mappedData && (allAreas || filters.areaId) && (
           <>
             <ReportDownload
               data={mappedData}

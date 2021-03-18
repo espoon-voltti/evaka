@@ -39,7 +39,7 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @RequestParam areaId: UUID
+        @RequestParam(required = false) areaId: UUID?
     ): ResponseEntity<ServiceVoucherReport> {
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 

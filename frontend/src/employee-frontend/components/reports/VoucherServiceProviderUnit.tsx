@@ -392,7 +392,7 @@ function VoucherServiceProviderUnit() {
                             )}
                           </Link>
 
-                          <FixedSpaceRow spacing="s">
+                          <FixedSpaceRow spacing="xs">
                             <RoundIcon
                               content={
                                 row.realizedPeriod.start.differenceInYears(
