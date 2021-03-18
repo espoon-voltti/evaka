@@ -37,7 +37,7 @@ export default React.memo(function Absences({
       <AbsencesTitle size={2}>{i18n.absences.title}</AbsencesTitle>
 
       {attendanceChild.absences.map((absence) => (
-        <div key={absence.id}>
+        <div key={absence.id} data-qa="absence">
           <CustomLabel>
             {formatCareType(
               absence.careType,
