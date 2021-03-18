@@ -5,4 +5,5 @@
 export interface BaseProps {
   className?: string
   dataQa?: string
+  'data-qa'?: string
 }
