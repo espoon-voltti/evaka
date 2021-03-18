@@ -11,13 +11,30 @@ export const langs = ['fi', 'sv', 'en'] as const
 
 export type Lang = typeof langs[number]
 
+const getDefaultLanguage: () => Lang = () => {
+  const params = new URLSearchParams(window.location.search)
+  const lang = params.get('lang')
+  if (lang && ['fi', 'sv', 'en'].includes(lang)) {
+    return lang as Lang
+  } else {
+    const language = (
+      (window.navigator['userLanguage'] as string) || window.navigator.language
+    ).split('-')[0]
+    if (language === 'fi' || language === 'sv') {
+      return language as Lang
+    } else {
+      return 'fi' as const
+    }
+  }
+}
+
 type LocalizationState = {
   lang: Lang
   setLang: (lang: Lang) => void
 }
 
 const defaultState = {
-  lang: 'fi' as const,
+  lang: getDefaultLanguage(),
   setLang: () => undefined
 }
 
