@@ -31,7 +31,18 @@ export async function getGroupAbsences(
     .then((res) => res.data.data)
     .then((data) => ({
       ...data,
-      children: data.children.map(deserializeChild),
+      children: data.children.map(deserializeChild).sort((childA, childB) => {
+        const lastNameCmp = childA.lastName.localeCompare(
+          childB.lastName,
+          'fi',
+          { ignorePunctuation: true }
+        )
+        return lastNameCmp !== 0
+          ? lastNameCmp
+          : childA.firstName.localeCompare(childB.firstName, 'fi', {
+              ignorePunctuation: true
+            })
+      }),
       operationDays: data.operationDays.map((date) => LocalDate.parseIso(date))
     }))
     .then((v) => Success.of(v))
