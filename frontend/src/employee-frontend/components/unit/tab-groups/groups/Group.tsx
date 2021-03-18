@@ -29,6 +29,7 @@ import {
   faCheck,
   faExchange,
   faPen,
+  faPlus,
   faStickyNote,
   faTimes,
   faTrash,
@@ -104,6 +105,11 @@ const IconContainer = styled.div`
   display: flex;
   justify-content: center;
   font-size: 18px;
+`
+
+const GroupNoteLinkContainer = styled.div`
+  margin-top: 16px;
+  margin-left: 8px;
 `
 
 function getChildMinMaxHeadcounts(
@@ -224,6 +230,11 @@ function Group({
       ? groupDaycareDailyNotes.value.find((note) => note.childId === childId)
       : undefined
 
+  const getGroupNote = (groupId: string): DaycareDailyNote | undefined =>
+    groupDaycareDailyNotes.isSuccess
+      ? groupDaycareDailyNotes.value.find((note) => note.groupId === groupId)
+      : undefined
+
   const renderDaycareDailyNote = (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => {
@@ -326,6 +337,7 @@ function Group({
           groupId={selectedDaycareDailyNote.groupId}
           childFirstName={selectedDaycareDailyNote.childFirstName}
           childLastName={selectedDaycareDailyNote.childLastName}
+          groupNote={getGroupNote(group.id)?.note ?? null}
           onClose={() => clearUiMode()}
           reload={() => loadGroupDaycareDailyNotes()}
         />
@@ -598,6 +610,23 @@ function Group({
                   })}
                 </Tbody>
               </Table>
+              <GroupNoteLinkContainer>
+                <InlineButton
+                  icon={faPlus}
+                  text={i18n.unit.groups.daycareDailyNote.groupNoteModalLink}
+                  onClick={() => {
+                    setSelectedDaycareDailyNote({
+                      daycareDailyNote: getGroupNote(group.id) ?? null,
+                      groupId: group.id,
+                      childId: null,
+                      childFirstName: '',
+                      childLastName: ''
+                    })
+                    toggleUiMode(`daycare-daily-note-edit-${group.id}`)
+                  }}
+                  dataQa="btn-create-group-note"
+                />
+              </GroupNoteLinkContainer>
             </div>
           ) : (
             <p data-qa="no-children-placeholder">

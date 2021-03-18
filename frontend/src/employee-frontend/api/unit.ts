@@ -693,6 +693,19 @@ export async function upsertChildDaycareDailyNote(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function upsertGroupDaycareDailyNote(
+  groupId: string,
+  daycareDailyNote: DaycareDailyNoteFormData
+): Promise<Result<Unit>> {
+  const url = `/daycare-daily-note/group/${groupId}`
+  return (daycareDailyNote.id
+    ? client.put(url, daycareDailyNote)
+    : client.post(url, daycareDailyNote)
+  )
+    .then(({ data }) => Success.of(convertUnitJson(data)))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function deleteDaycareDailyNote(
   noteId: UUID
 ): Promise<Result<void>> {
