@@ -18,6 +18,7 @@ import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import Title from '@evaka/lib-components/atoms/Title'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 
 import {
   ContentAreaWithShadow,
@@ -68,7 +69,7 @@ export default React.memo(function MarkPresent() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
-      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}

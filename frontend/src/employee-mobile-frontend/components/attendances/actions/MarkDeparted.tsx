@@ -20,6 +20,7 @@ import {
 } from '@evaka/lib-components/layout/flex-helpers'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 import { Result, Loading } from '@evaka/lib-common/api'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 
 import {
   ContentAreaWithShadow,
@@ -109,7 +110,7 @@ export default React.memo(function MarkDeparted() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
-      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}

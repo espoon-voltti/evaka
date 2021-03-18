@@ -4,11 +4,11 @@
 import React, { Fragment } from 'react'
 
 import { Result } from '@evaka/lib-common/api'
-import { AttendanceResponse } from '../../api/attendances'
 import Loader from '@evaka/lib-components/atoms/Loader'
-import { useTranslation } from '../../state/i18n'
-import AttendanceList from './AttendanceList'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 
+import { AttendanceResponse } from '../../api/attendances'
+import AttendanceList from './AttendanceList'
 interface Props {
   attendanceResponse: Result<AttendanceResponse>
 }
@@ -16,11 +16,9 @@ interface Props {
 export default React.memo(function AttendancePresentPage({
   attendanceResponse
 }: Props) {
-  const { i18n } = useTranslation()
-
   return (
     <Fragment>
-      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isLoading && <Loader />}
       {attendanceResponse.isSuccess && (
         <AttendanceList
