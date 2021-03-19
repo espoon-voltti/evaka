@@ -142,7 +142,7 @@ executors:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
   e2e_executor:
-    <<: *default_config
+    <<: *node_config
     machine:
       image: *ubuntu_machine_image
       docker_layer_caching: true
