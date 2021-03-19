@@ -133,10 +133,6 @@ export default class ChildPage {
     await t.click(mobileGroupsPage.childName(childFixture.id))
 
     await t.click(this.returnToPresentBtn)
-    await t.click(mobileGroupsPage.presentTab)
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
   }
 
   async markDepartedAbsence(
