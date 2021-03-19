@@ -34,6 +34,7 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testPurchasedDaycare
+import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
@@ -80,7 +81,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `PAOS decision is sent when it has all required data`() {
+    fun `PAOS decision to purchased daycare is sent when it has all required data`() {
         val decisionId = insertPlacementWithDecision(db, testChild_1, testPurchasedDaycare.id, FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))).first
         updateChildren()
 
@@ -92,6 +93,25 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val vardaDecisions = mockEndpoint.decisions
         assertEquals(1, vardaDecisions.size)
         assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, vardaDecisions.values.first().providerTypeCode)
+
+        val decisionRows = getVardaDecisions()
+        assertEquals(1, decisionRows.size)
+        assertEquals(decisionId, decisionRows.first().evakaDecisionId)
+    }
+
+    @Test
+    fun `PAOS decision to voucher daycare is sent when it has all required data`() {
+        val decisionId = insertPlacementWithDecision(db, testChild_1, testVoucherDaycare.id, FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))).first
+        updateChildren()
+
+        val children = getUploadedChildren(db)
+        assertEquals(1, children.size)
+
+        updateDecisions(db, vardaClient)
+
+        val vardaDecisions = mockEndpoint.decisions
+        assertEquals(1, vardaDecisions.size)
+        assertEquals(VardaUnitProviderType.PRIVATE_SERVICE_VOUCHER.vardaCode, vardaDecisions.values.first().providerTypeCode)
 
         val decisionRows = getVardaDecisions()
         assertEquals(1, decisionRows.size)
