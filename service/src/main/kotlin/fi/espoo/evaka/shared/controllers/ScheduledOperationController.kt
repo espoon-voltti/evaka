@@ -19,7 +19,8 @@ import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.EInstant
+import fi.espoo.evaka.shared.utils.ELocalDate
 import fi.espoo.evaka.varda.VardaUpdateService
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger { }
 
@@ -121,9 +121,9 @@ class ScheduledOperationController(
         db.transaction {
             freezeVoucherValueReportRows(
                 it,
-                year ?: LocalDate.now(zoneId).year,
-                month ?: LocalDate.now(zoneId).monthValue,
-                Instant.now()
+                year ?: ELocalDate.now().year,
+                month ?: ELocalDate.now().monthValue,
+                EInstant.now()
             )
         }
         return ResponseEntity.noContent().build()

@@ -51,7 +51,7 @@ class VoucherValueDecisionService(
         return key to s3Client.getPdf(bucket, key)
     }
 
-    fun sendDecision(tx: Database.Transaction, decisionId: UUID) {
+    fun sendDecision(tx: Database.Transaction, decisionId: UUID, now: Instant) {
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
@@ -91,7 +91,7 @@ class VoucherValueDecisionService(
             )
         )
 
-        tx.markVoucherValueDecisionsSent(listOf(decision.id), Instant.now())
+        tx.markVoucherValueDecisionsSent(listOf(decision.id), now)
     }
 
     private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =

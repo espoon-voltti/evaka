@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.async.NotifyFeeDecisionPdfGenerated
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionPdfGenerated
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.utils.EInstant
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -52,7 +53,7 @@ class InvoicingAsyncJobs(
 
     fun runSendVoucherValueDecisionPdf(db: Database, msg: NotifyVoucherValueDecisionPdfGenerated) = db.transaction { tx ->
         val decisionId = msg.decisionId
-        valueDecisionService.sendDecision(tx, decisionId)
+        valueDecisionService.sendDecision(tx, decisionId, EInstant.now())
         logger.info { "Successfully sent fee decision msg to suomi.fi (id: $decisionId)." }
     }
 }

@@ -17,7 +17,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.utils.dateNow
+import fi.espoo.evaka.shared.utils.ELocalDate
 import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
@@ -309,7 +309,7 @@ private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: UUID)
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("date", dateNow())
+        .bind("date", ELocalDate.now())
         .mapTo<ChildPlacementBasics>()
         .list()
         .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
