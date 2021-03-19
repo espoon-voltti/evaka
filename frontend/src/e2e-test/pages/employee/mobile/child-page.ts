@@ -60,9 +60,7 @@ export default class ChildPage {
     mobileGroupsPage: MobileGroupsPage,
     time: string
   ) {
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
+    await t.click(mobileGroupsPage.comingTab)
 
     await t.click(mobileGroupsPage.childName(childFixture.id))
     await t
@@ -72,11 +70,6 @@ export default class ChildPage {
     await t.click(this.markPresentLink)
     await t.typeText(this.setTimeInput, time)
     await t.click(this.markPresentBtn)
-
-    await t.click(mobileGroupsPage.presentTab)
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
   }
 
   async markDeparted(
@@ -97,20 +90,13 @@ export default class ChildPage {
     await t.click(this.markDepartedLink)
     await t.typeText(this.setTimeInput, time)
     await t.click(this.markDepartedBtn)
-
-    await t.click(mobileGroupsPage.departedTab)
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
   }
 
   async markAbsent(
     childFixture: ApplicationPersonDetail,
     mobileGroupsPage: MobileGroupsPage
   ) {
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
+    await t.click(mobileGroupsPage.comingTab)
 
     await t.click(mobileGroupsPage.childName(childFixture.id))
     await t
@@ -121,11 +107,6 @@ export default class ChildPage {
     await t.click(this.markAbsentRadio('SICKLEAVE'))
     await t.click(this.markAbsentBtn)
     await t.click(this.backBtn)
-
-    await t.click(mobileGroupsPage.absentTab)
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
   }
 
   async returnToComing(
@@ -139,10 +120,6 @@ export default class ChildPage {
     await t.click(mobileGroupsPage.childName(childFixture.id))
 
     await t.click(this.returnToComingBtn)
-    await t.click(mobileGroupsPage.comingTab)
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
   }
 
   async returnToPresent(
@@ -168,9 +145,6 @@ export default class ChildPage {
     time: string
   ) {
     await t.click(mobileGroupsPage.presentTab)
-    await t
-      .expect(mobileGroupsPage.childName(childFixture.id).textContent)
-      .eql(`${childFixture.firstName} ${childFixture.lastName}`)
 
     await t.click(mobileGroupsPage.childName(childFixture.id))
     await t
@@ -182,10 +156,6 @@ export default class ChildPage {
 
     await t.click(this.markAbsentRadio('SICKLEAVE'))
     await t.click(this.markDepartedWithAbsenceBtn)
-
-    await t.expect(this.absence.exists).ok()
-
-    await t.expect(this.childStatus.textContent).contains('Lähtenyt')
   }
 
   async createDailyNote(

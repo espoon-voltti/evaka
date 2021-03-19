@@ -155,15 +155,43 @@ test('The basic case of marking child as present at 08:30 and leaving at 16:00 w
     mobileGroupsPage,
     '08:30'
   )
+  await t.click(mobileGroupsPage.presentTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
   await childPage.markDeparted(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
     '16:00'
   )
+  await t.click(mobileGroupsPage.departedTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
 })
 
 test('Child can be marked as absent for the whole day', async () => {
   await childPage.markAbsent(fixtures.enduserChildFixtureJari, mobileGroupsPage)
+  await t.click(mobileGroupsPage.absentTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
 })
 
 test('Child can be marked as present and returned to coming', async () => {
@@ -172,10 +200,29 @@ test('Child can be marked as present and returned to coming', async () => {
     mobileGroupsPage,
     '08:30'
   )
+  await t.click(mobileGroupsPage.presentTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
   await childPage.returnToComing(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage
   )
+  await t.click(mobileGroupsPage.comingTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
 })
 
 test('User can undo the whole flow of marking present at 08:30 and leaving at 16:00', async () => {
@@ -184,19 +231,58 @@ test('User can undo the whole flow of marking present at 08:30 and leaving at 16
     mobileGroupsPage,
     '08:30'
   )
+  await t.click(mobileGroupsPage.presentTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
   await childPage.markDeparted(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
     '16:00'
   )
+  await t.click(mobileGroupsPage.departedTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
   await childPage.returnToPresent(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage
   )
+  await t.click(mobileGroupsPage.presentTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
   await childPage.returnToComing(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage
   )
+  await t.click(mobileGroupsPage.comingTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
 })
 
 test('User has to mark an absence if child arrives at 08:30 and leaves at 09:00', async () => {
@@ -205,9 +291,21 @@ test('User has to mark an absence if child arrives at 08:30 and leaves at 09:00'
     mobileGroupsPage,
     '08:30'
   )
+  await t.click(mobileGroupsPage.presentTab)
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
   await childPage.markDepartedAbsence(
     fixtures.enduserChildFixtureJari,
     mobileGroupsPage,
     '09:00'
   )
+  await t.expect(childPage.absence.exists).ok()
+  await t.expect(childPage.childStatus.textContent).contains('Lähtenyt')
 })
