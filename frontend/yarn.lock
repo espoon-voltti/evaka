@@ -1576,45 +1576,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@evaka/citizen-frontend@link:src/citizen-frontend::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@evaka/citizen-frontend@link:src/citizen-frontend::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"@evaka/employee-frontend@link:src/employee-frontend::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@evaka/employee-frontend@link:src/employee-frontend::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
 "@evaka/eslint-plugin@link:eslint-plugin::locator=evaka-frontend%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "@evaka/eslint-plugin@link:eslint-plugin::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"@evaka/lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"@evaka/lib-components@link:src/lib-components::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-components@link:src/lib-components::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"@evaka/lib-customizations@link:src/lib-customizations::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-customizations@link:src/lib-customizations::locator=evaka-frontend%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"@evaka/lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@evaka/lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A."
   languageName: node
   linkType: soft
 
@@ -7044,6 +7008,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"citizen-frontend@link:src/citizen-frontend::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "citizen-frontend@link:src/citizen-frontend::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
 "cjs-module-lexer@npm:^0.6.0":
   version: 0.6.0
   resolution: "cjs-module-lexer@npm:0.6.0"
@@ -8831,6 +8801,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"employee-frontend@link:src/employee-frontend::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "employee-frontend@link:src/employee-frontend::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
 "encodeurl@npm:~1.0.2":
   version: 1.0.2
   resolution: "encodeurl@npm:1.0.2"
@@ -9397,13 +9373,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "evaka-frontend@workspace:."
   dependencies:
-    "@evaka/citizen-frontend": "link:src/citizen-frontend"
-    "@evaka/employee-frontend": "link:src/employee-frontend"
     "@evaka/eslint-plugin": "link:eslint-plugin"
-    "@evaka/lib-common": "link:src/lib-common"
-    "@evaka/lib-components": "link:src/lib-components"
-    "@evaka/lib-customizations": "link:src/lib-customizations"
-    "@evaka/lib-icons": "link:src/lib-icons"
     "@fortawesome/fontawesome-svg-core": 1.2.30
     "@fortawesome/free-regular-svg-icons": 5.14.0
     "@fortawesome/free-solid-svg-icons": 5.14.0
@@ -9432,11 +9402,13 @@ __metadata:
     bulma: 0.7.5
     chart.js: ^2.9.4
     chartjs-adapter-date-fns: ^1.0.0
+    citizen-frontend: "link:src/citizen-frontend"
     classnames: ^2.2.6
     core-js: ^3.8.3
     css-loader: ^5.1.1
     csstype: ^3.0.6
     date-fns: ^2.17.0
+    employee-frontend: "link:src/employee-frontend"
     eslint: ^7.21.0
     eslint-config-prettier: ^8.1.0
     eslint-plugin-prettier: ^3.3.1
@@ -9453,6 +9425,10 @@ __metadata:
     jest: ^26.6.3
     jest-junit: ^12.0.0
     leaflet: ^1.7.1
+    lib-common: "link:src/lib-common"
+    lib-components: "link:src/lib-components"
+    lib-customizations: "link:src/lib-customizations"
+    lib-icons: "link:src/lib-icons"
     lodash: ^4.17.15
     make-error-cause: ^2.3.0
     parcel-bundler: ^1.12.4
@@ -13086,6 +13062,30 @@ fsevents@^1.2.7:
   checksum: 775861da38dcb7e5f1de5bea2a1c7ffaede6e9e8632cfbac76be145ecb295370f46bb41307613c283d66f1fee5d8cc448ca3323c4a02d0fb1e913b2f78de2abb
   languageName: node
   linkType: hard
+
+"lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "lib-common@link:src/lib-common::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"lib-components@link:src/lib-components::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "lib-components@link:src/lib-components::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"lib-customizations@link:src/lib-customizations::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "lib-customizations@link:src/lib-customizations::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "lib-icons@link:src/lib-icons::locator=evaka-frontend%40workspace%3A."
+  languageName: node
+  linkType: soft
 
 "line-height@npm:^0.3.1":
   version: 0.3.1

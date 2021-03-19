@@ -38,7 +38,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
       (resource) => {
         resource.request = resource.request.replace(
           /@evaka\/customizations/,
-          `@evaka/lib-customizations/${customizationsModule}`
+          `lib-customizations/${customizationsModule}`
         )
       }
     )

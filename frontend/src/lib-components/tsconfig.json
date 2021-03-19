@@ -2,10 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "@evaka/*": ["../*"]
-    },
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/components",

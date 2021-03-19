@@ -4,10 +4,7 @@
     "lib": ["dom", "esnext"],
     "moduleResolution": "node",
     "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "@evaka/*": ["../*"]
-    },
+    "baseUrl": "..",
     "composite": true,
     "outDir": "../../dist/e2e-test",
     "types": ["testcafe"],
