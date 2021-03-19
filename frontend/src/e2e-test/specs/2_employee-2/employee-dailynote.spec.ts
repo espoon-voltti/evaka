@@ -23,6 +23,7 @@ import {
   DaycareBuilder,
   DaycareGroupBuilder,
   enduserChildFixtureJari,
+  enduserChildFixtureKaarina,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -168,4 +169,75 @@ test('Child daycare daily note indicators are shown on group view and can be edi
   await t
     .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
     .eql('aardvark')
+})
+
+test('Group daycare daily notes can be written and are shown on child notes', async (t) => {
+  const daycareDailyNote: DaycareDailyNote = {
+    id: uuidv4(),
+    groupId: null,
+    childId: enduserChildFixtureJari.id,
+    date: LocalDate.today(),
+    note: 'Toinen viesti',
+    feedingNote: 'NONE',
+    sleepingHours: '',
+    sleepingNote: 'NONE',
+    reminders: ['DIAPERS'],
+    reminderNote: 'Muistakaa muistakaa!',
+    modifiedBy: 'e2e-test'
+  }
+
+  await postDaycareDailyNote(daycareDailyNote)
+
+  await unitPage.navigateHere(daycare.data.id)
+  await unitPage.openTabGroups()
+  await unitPage.openGroups()
+
+  await t.click(unitPage.group(daycareGroup.data.id))
+  await t.click(unitPage.groupDaycareDailyNoteLink)
+
+  await t.typeText(
+    unitPage.daycareDailyNoteModal.groupNoteInput,
+    'Ryhmälle viesti',
+    { replace: true }
+  )
+  await t.click(unitPage.daycareDailyNoteModal.submit)
+
+  await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t
+    .expect(unitPage.daycareDailyNoteModal.childGroupNote.textContent)
+    .eql('Ryhmälle viesti')
+
+  await t.click(unitPage.daycareDailyNoteModal.cancel)
+
+  await t.click(
+    unitPage.childDaycareDailyNoteIcon(enduserChildFixtureKaarina.id)
+  )
+  await t
+    .expect(unitPage.daycareDailyNoteModal.childGroupNote.textContent)
+    .eql('Ryhmälle viesti')
+
+  // Delete group note
+  await t.click(unitPage.daycareDailyNoteModal.cancel)
+  await t.click(unitPage.groupDaycareDailyNoteLink)
+  await t.click(unitPage.daycareDailyNoteModal.delete)
+
+  await t.click(unitPage.childDaycareDailyNoteIcon(enduserChildFixtureJari.id))
+  await t
+    .expect(
+      unitPage.daycareDailyNoteModal.childGroupNote.with({ timeout: 2000 })
+        .visible
+    )
+    .notOk()
+
+  await t.click(unitPage.daycareDailyNoteModal.cancel)
+
+  await t.click(
+    unitPage.childDaycareDailyNoteIcon(enduserChildFixtureKaarina.id)
+  )
+  await t
+    .expect(
+      unitPage.daycareDailyNoteModal.childGroupNote.with({ timeout: 2000 })
+        .visible
+    )
+    .notOk()
 })

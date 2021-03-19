@@ -135,7 +135,11 @@ export default React.memo(function DaycareDailyNoteModal({
             justifyContent={'flex-end'}
             spacing={'s'}
           >
-            <IconButton icon={faTrash} onClick={deleteNote} />
+            <IconButton
+              icon={faTrash}
+              onClick={deleteNote}
+              dataQa={'btn-delete-note'}
+            />
             <span>{i18n.common.remove}</span>
           </FixedSpaceRow>
         </FixedSpaceColumn>
@@ -150,7 +154,7 @@ export default React.memo(function DaycareDailyNoteModal({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 updateForm({ note: e.target.value })
               }
-              data-qa="note-input"
+              data-qa="group-note-input"
             />
           </FixedSpaceColumn>
         </FixedSpaceColumn>
@@ -319,7 +323,7 @@ export default React.memo(function DaycareDailyNoteModal({
                 <div className="bold">
                   {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
                 </div>
-                <p>{groupNote}</p>
+                <p data-qa={'group-note'}>{groupNote}</p>
               </GrayFontContainer>
             </FixedSpaceColumn>
           )}

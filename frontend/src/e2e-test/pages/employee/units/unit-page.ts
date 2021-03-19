@@ -31,8 +31,16 @@ export default class UnitPage {
     noteInput: Selector('[data-qa="note-input"]'),
     sleepingHoursInput: Selector('[data-qa="sleeping-hours-input"]'),
     reminderNoteInput: Selector('[data-qa="reminder-note-input"]'),
-    submit: Selector('[data-qa="modal-okBtn"]')
+    submit: Selector('[data-qa="modal-okBtn"]'),
+    cancel: Selector('[data-qa="modal-cancelBtn"]'),
+    delete: Selector('[data-qa="btn-delete-note"]'),
+    groupNoteInput: Selector('[data-qa="group-note-input"]'),
+    childGroupNote: Selector('[data-qa="group-note"]')
   }
+
+  readonly groupDaycareDailyNoteLink = Selector(
+    '[data-qa="btn-create-group-note"]'
+  )
 
   readonly groupUpdateModal = {
     nameInput: Selector(
