@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { fasInfo, faTimes } from '@evaka/lib-icons'
+import { fasInfo, faTimes } from 'lib-icons'
 import React, { ReactNode, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../colors'
 import RoundIcon from '../atoms/RoundIcon'
-import Container, { ContentArea } from '@evaka/lib-components/layout/Container'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import Container, { ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import IconButton from '../atoms/buttons/IconButton'

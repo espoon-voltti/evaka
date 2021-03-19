@@ -4,7 +4,7 @@
 import React, { Fragment, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import {
   AttendanceChild,

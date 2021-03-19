@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 
-import { faAngleLeft } from '@evaka/lib-icons'
+import { faAngleLeft } from 'lib-icons'
 import InlineButton from './InlineButton'
 import colors from '../../colors'
 import { tabletMin } from '../../breakpoints'

@@ -6,11 +6,11 @@ import React from 'react'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faFileAlt } from '@evaka/lib-icons'
+import { faFileAlt } from 'lib-icons'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading } from '@evaka/lib-common/api'
+import { Loading } from 'lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
 import {
@@ -20,13 +20,13 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+} from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '../../api/person'
 import { ApplicationSummary } from '../../types/application'
 import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 
 interface Props {
   id: UUID

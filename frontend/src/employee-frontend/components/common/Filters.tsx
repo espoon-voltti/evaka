@@ -12,10 +12,10 @@ import {
   faTimes,
   faTrash,
   fasExclamationTriangle
-} from '@evaka/lib-icons'
-import LocalDate from '@evaka/lib-common/local-date'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import { DatePickerClearableDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+} from 'lib-icons'
+import LocalDate from 'lib-common/local-date'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
 import {
   DecisionDistinctiveDetails,
@@ -28,20 +28,20 @@ import { ApplicationSummaryStatus } from '../../types/application'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import { Gap, defaultMargins } from '@evaka/lib-components/white-space'
+} from 'lib-components/layout/flex-helpers'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import { Gap, defaultMargins } from 'lib-components/white-space'
 import { FlexRow } from './styled/containers'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
-import colors from '@evaka/lib-components/colors'
-import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import colors from 'lib-components/colors'
+import { faAngleDown, faAngleUp } from 'lib-icons'
 import Tooltip from '../../components/common/Tooltip'
 import { CareArea } from '../../types/unit'
 import { Label, LabelText } from '../../components/common/styled/common'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
-import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 
 interface Props {
   freeText: string

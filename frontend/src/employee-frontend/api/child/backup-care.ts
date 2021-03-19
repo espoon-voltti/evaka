@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../../types'
-import { Failure, Result, Success } from '@evaka/lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import { ChildBackupCare, UnitBackupCare } from '../../types/child'
 import { client } from '../../api/client'
-import { JsonOf } from '@evaka/lib-common/json'
-import FiniteDateRange from '@evaka/lib-common/finite-date-range'
+import { JsonOf } from 'lib-common/json'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 interface BackupCaresResponse<T extends ChildBackupCare | UnitBackupCare> {
   backupCares: T[]

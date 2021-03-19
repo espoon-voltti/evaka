@@ -10,7 +10,7 @@ import {
   faChevronDown,
   fasChevronUp,
   fasChevronDown
-} from '@evaka/lib-icons'
+} from 'lib-icons'
 import { defaultMargins, Gap } from '../white-space'
 import { greyscale } from '../colors'
 

@@ -6,19 +6,19 @@ import React, { useEffect, useState } from 'react'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
 
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import Title from '@evaka/lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '@evaka/lib-components/layout/Table'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { reactSelectStyles } from '../../components/common/Select'
 import { Translations, useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from '@evaka/lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import { EndedPlacementsReportRow } from '../../types/reports'
 import {
   getEndedPlacementsReport,
   PlacementsReportFilters
 } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { SelectOptionProps } from '../../components/common/Select'
 import { fi } from 'date-fns/locale'
@@ -29,7 +29,7 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import { Link } from 'react-router-dom'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
 
 const StyledTd = styled(Td)`

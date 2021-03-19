@@ -5,12 +5,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import Title from '@evaka/lib-components/atoms/Title'
+import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import { Unit } from '../../../types/unit'
 import { DataList } from '../../../components/common/DataList'
 import { RequireRole } from '../../../utils/roles'
-import { Gap } from '@evaka/lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;

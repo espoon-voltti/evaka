@@ -23,7 +23,7 @@ import { format, sub } from 'date-fns'
 import { OtherGuardianAgreementStatus } from '../../dev-api/types'
 import ReportsPage from '../../pages/reports'
 import { seppoAdminRole } from '../../config/users'
-import { ApplicationStatus } from '@evaka/lib-common/api-types/application/enums'
+import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>

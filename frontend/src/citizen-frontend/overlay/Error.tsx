@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faExclamation } from '@evaka/lib-icons'
+import { faExclamation } from 'lib-icons'
 import React, { useContext } from 'react'
 import { OverlayContext } from './state'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 
 function GlobalErrorDialog() {
   const { errorMessage, clearErrorMessage } = useContext(OverlayContext)

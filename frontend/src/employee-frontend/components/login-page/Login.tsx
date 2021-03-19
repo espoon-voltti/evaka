@@ -5,11 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
-import Title from '@evaka/lib-components/atoms/Title'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import Title from 'lib-components/atoms/Title'
 import ErrorMessage from './login/ErrorMessage'
 import { useTranslation } from '../../state/i18n'
-import { Gap } from '@evaka/lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import { getLoginUrl } from '../../api/auth'
 import { featureFlags } from '../../config'
 

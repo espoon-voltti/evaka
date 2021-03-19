@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import { faFileAlt } from '@evaka/lib-icons'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { faFileAlt } from 'lib-icons'
 import { noop } from 'lodash'
 import React from 'react'
 import { useTranslation } from '../localization'

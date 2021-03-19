@@ -4,8 +4,8 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { faCheck, fasArrowDown, fasArrowUp, faTimes } from '@evaka/lib-icons'
-import { Paged } from '@evaka/lib-common/api'
+import { faCheck, fasArrowDown, fasArrowUp, faTimes } from 'lib-icons'
+import { Paged } from 'lib-common/api'
 import {
   Table,
   Tr,
@@ -14,31 +14,31 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/layout/Table'
+} from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { ApplicationListSummary } from '../../types/application'
 import { SearchOrder } from '../../types'
-import Pagination from '@evaka/lib-components/Pagination'
-import colors, { blueColors } from '@evaka/lib-components/colors'
+import Pagination from 'lib-components/Pagination'
+import colors, { blueColors } from 'lib-components/colors'
 import { SortByApplications } from '../../types/application'
 import { formatName } from '../../utils'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import { H1 } from '@evaka/lib-components/typography'
-import { defaultMargins } from '@evaka/lib-components/white-space'
+} from 'lib-components/layout/flex-helpers'
+import { H1 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { getEmployeeUrlPrefix } from '../../constants'
 import { formatDate } from '../../utils/date'
 import ApplicationActions from '../../components/applications/ApplicationActions'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { ApplicationUIContext } from '../../state/application-ui'
 import ActionBar from '../../components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Tooltip from '@evaka/lib-components/atoms/Tooltip'
+import Tooltip from 'lib-components/atoms/Tooltip'
 import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
-import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { UserContext } from '../../state/user'
 import { hasRole } from '../../utils/roles'
 import { isPartDayPlacement } from '../../utils/placements'

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { format } from 'date-fns'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { DATE_FORMAT_DEFAULT, MAX_DATE } from '../constants'
 import { StatusLabelType } from '../components/common/StatusLabel'
 

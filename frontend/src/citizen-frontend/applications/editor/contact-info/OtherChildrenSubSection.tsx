@@ -7,16 +7,16 @@ import { useTranslation } from '../../../localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import { H3, Label, P } from '@evaka/lib-components/typography'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import { faTimes } from '@evaka/lib-icons'
-import { Gap } from '@evaka/lib-components/white-space'
+} from 'lib-components/layout/flex-helpers'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { H3, Label, P } from 'lib-components/typography'
+import InputField from 'lib-components/atoms/form/InputField'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { faTimes } from 'lib-icons'
+import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../form-validation'
-import AdaptiveFlex from '@evaka/lib-components/layout/AdaptiveFlex'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 
 export default React.memo(function OtherChildrenSubSection({

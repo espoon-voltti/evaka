@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { P } from '@evaka/lib-components/typography'
+import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from '.'
 

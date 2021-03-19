@@ -6,7 +6,7 @@ import colors, {
   accentColors,
   blueColors,
   greyscale
-} from '@evaka/lib-components/colors'
+} from 'lib-components/colors'
 import {
   faGavel,
   faCheck,
@@ -14,7 +14,7 @@ import {
   faEnvelope,
   faPlay,
   faFile
-} from '@evaka/lib-icons'
+} from 'lib-icons'
 import styled from 'styled-components'
 import { Decision, DecisionSummary } from '../decisions/types'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'

@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, FormEvent, useEffect } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
-import Title from '@evaka/lib-components/atoms/Title'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import { TextArea } from '@evaka/lib-components/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/white-space'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import LocalDate from 'lib-common/local-date'
+import Title from 'lib-components/atoms/Title'
+import Button from 'lib-components/atoms/buttons/Button'
+import { TextArea } from 'lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import LabelValueList from '../../../components/common/LabelValueList'
 import DateRangeInput from '../../../components/common/DateRangeInput'
 import FeeAlterationRowInput from './FeeAlterationRowInput'

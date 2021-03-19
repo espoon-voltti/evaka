@@ -6,10 +6,10 @@ import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileSpreadsheet } from '@evaka/lib-icons'
+import { faFileSpreadsheet } from 'lib-icons'
 import { LabelKeyObject } from 'react-csv/components/CommonPropTypes'
 import { useTranslation } from '../../state/i18n'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 const RowRightAligned = styled.div`
   display: flex;

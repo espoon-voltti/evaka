@@ -4,10 +4,10 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/local-date'
-import colors from '@evaka/lib-components/colors'
-import { defaultMargins } from '@evaka/lib-components/white-space'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import LocalDate from 'lib-common/local-date'
+import colors from 'lib-components/colors'
+import { defaultMargins } from 'lib-components/white-space'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { formatDate } from '../util'
 import { ReceivedBulletin } from '../messages/types'
 

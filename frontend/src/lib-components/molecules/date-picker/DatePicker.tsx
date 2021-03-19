@@ -9,7 +9,7 @@ import { greyscale } from '../../colors'
 import { defaultMargins } from '../../white-space'
 import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { InputInfo } from '../../atoms/form/InputField'
 import { DayModifiers } from 'react-day-picker'
 

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '@evaka/lib-common/local-date'
-import { UUID } from '@evaka/lib-common/types'
-import { JsonOf } from '@evaka/lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import { JsonOf } from 'lib-common/json'
 
 export type DecisionType =
   | 'CLUB'

@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 import Tooltip from './Tooltip'
 
 const Circle = styled.div`

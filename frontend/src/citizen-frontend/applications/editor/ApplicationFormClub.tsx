@@ -4,11 +4,11 @@
 
 import React from 'react'
 
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Heading from '../../applications/editor/Heading'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'

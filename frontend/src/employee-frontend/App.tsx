@@ -59,7 +59,7 @@ import VoucherServiceProviders from './components/reports/VoucherServiceProvider
 import VoucherServiceProviderUnit from './components/reports/VoucherServiceProviderUnit'
 import { featureFlags } from './config'
 import PlacementSketching from './components/reports/PlacementSketching'
-import { idleTracker } from '@evaka/lib-common/utils/idleTracker'
+import { idleTracker } from 'lib-common/utils/idleTracker'
 import { client } from './api/client'
 import MessagesPage from './components/messages/MessagesPage'
 

@@ -6,16 +6,16 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { faFilePdf, faGavel, fasExclamationTriangle } from '@evaka/lib-icons'
-import { Label } from '@evaka/lib-components/typography'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
+import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
+import { Label } from 'lib-components/typography'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { useTranslation } from '../../state/i18n'
 import { Decision } from '../../types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
+} from 'lib-components/layout/flex-helpers'
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { UUID } from '../../types'
 

@@ -5,9 +5,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/local-date'
-import { Gap } from '@evaka/lib-components/white-space'
-import { H1 } from '@evaka/lib-components/typography'
+import LocalDate from 'lib-common/local-date'
+import { Gap } from 'lib-components/white-space'
+import { H1 } from 'lib-components/typography'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
@@ -17,7 +17,7 @@ import {
 } from '../../types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '../../components/common/WarningLabel'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 import { formatName } from '../../utils'
 
 type Props = {

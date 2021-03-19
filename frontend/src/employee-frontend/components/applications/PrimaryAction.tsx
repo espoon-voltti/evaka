@@ -4,7 +4,7 @@
 
 import { Action } from '../../components/applications/ApplicationActions'
 import React from 'react'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import styled from 'styled-components'
 
 type Props = {

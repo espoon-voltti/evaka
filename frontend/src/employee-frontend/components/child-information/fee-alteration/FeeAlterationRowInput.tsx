@@ -4,9 +4,9 @@
 
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import SimpleSelect from '@evaka/lib-components/atoms/form/SimpleSelect'
-import colors from '@evaka/lib-components/colors'
+import InputField from 'lib-components/atoms/form/InputField'
+import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import colors from 'lib-components/colors'
 import {
   FeeAlterationType,
   PartialFeeAlteration

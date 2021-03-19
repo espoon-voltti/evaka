@@ -2,25 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from '@evaka/lib-common/api'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
+import { Failure, Result, Success } from 'lib-common/api'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import {
   ApplicationDetails,
   ApplicationFormUpdate,
   deserializeApplicationDetails
-} from '@evaka/lib-common/api-types/application/ApplicationDetails'
+} from 'lib-common/api-types/application/ApplicationDetails'
 import {
   ApplicationsOfChild,
   deserializeApplicationsOfChild
-} from '@evaka/lib-common/api-types/application/ApplicationsOfChild'
+} from 'lib-common/api-types/application/ApplicationsOfChild'
 import {
   ApplicationType,
   AttachmentType
-} from '@evaka/lib-common/api-types/application/enums'
+} from 'lib-common/api-types/application/enums'
 import { client } from '../api-client'
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
-import { UUID } from '@evaka/lib-common/types'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { UUID } from 'lib-common/types'
 
 export type ApplicationUnitType =
   | 'CLUB'

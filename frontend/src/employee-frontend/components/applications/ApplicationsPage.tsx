@@ -3,23 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useState, useContext } from 'react'
-import { Paged, Result } from '@evaka/lib-common/api'
+import { Paged, Result } from 'lib-common/api'
 import { getApplications } from '../../api/applications'
 import {
   ApplicationListSummary,
   ApplicationSearchParams
 } from '../../types/application'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SortByApplications } from '../../types/application'
 import { SearchOrder } from '../../types'
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import ApplicationsList from '../../components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
 import { ApplicationUIContext } from '../../state/application-ui'
-import { H1 } from '@evaka/lib-components/typography'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import { H1 } from 'lib-components/typography'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 

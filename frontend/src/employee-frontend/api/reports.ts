@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from '@evaka/lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../api/client'
 import {
   ChildAgeLanguageReportRow,
@@ -27,9 +27,9 @@ import {
   VoucherServiceProviderReport
 } from '../types/reports'
 import { UUID } from '../types'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
-import FiniteDateRange from '@evaka/lib-common/finite-date-range'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 export interface PeriodFilters {
   from: LocalDate

@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   Table,
   Tbody,
@@ -12,14 +12,14 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import Title from '@evaka/lib-components/atoms/Title'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+} from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
+import Button from 'lib-components/atoms/buttons/Button'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '../types'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { CaretakerAmount, CaretakersResponse } from '../types/caretakers'
 import { deleteCaretakers, getCaretakers } from '../api/caretakers'
 import { TitleContext, TitleState } from '../state/title'
@@ -27,12 +27,12 @@ import { capitalizeFirstLetter } from '../utils'
 import { getStatusLabelByDateRange } from '../utils/date'
 import StatusLabel from '../components/common/StatusLabel'
 import styled from 'styled-components'
-import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 import GroupCaretakersModal from '../components/group-caretakers/GroupCaretakersModal'
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { useTranslation } from '../state/i18n'
-import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 const NarrowContainer = styled.div`
   max-width: 900px;

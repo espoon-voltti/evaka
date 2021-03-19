@@ -6,9 +6,9 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamation, faSync } from '@evaka/lib-icons'
-import { Gap } from '@evaka/lib-components/white-space'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import { faExclamation, faSync } from 'lib-icons'
+import { Gap } from 'lib-components/white-space'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   Table,
   Tr,
@@ -17,22 +17,22 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/layout/Table'
-import Title from '@evaka/lib-components/atoms/Title'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+} from 'lib-components/layout/Table'
+import Title from 'lib-components/atoms/Title'
+import Loader from 'lib-components/atoms/Loader'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { useTranslation } from '../../state/i18n'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { InvoiceSummary } from '../../types/invoicing'
-import { Result } from '@evaka/lib-common/api'
+import { Result } from 'lib-common/api'
 import { formatCents } from '../../utils/money'
 import Tooltip from '../../components/common/Tooltip'
 import { StatusIconContainer } from '../../components/common/StatusIconContainer'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 import { SearchOrder } from '../../types'
 import { SortByInvoices } from '../../api/invoicing'
-import Pagination from '@evaka/lib-components/Pagination'
+import Pagination from 'lib-components/Pagination'
 import { InvoicesActions } from './invoices-state'
 
 interface Props {

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '@evaka/lib-common/local-date'
-import { getAge } from '@evaka/lib-common/utils/local-date'
+import LocalDate from 'lib-common/local-date'
+import { getAge } from 'lib-common/utils/local-date'
 
 describe('local-date utils', () => {
   describe('getAge', () => {

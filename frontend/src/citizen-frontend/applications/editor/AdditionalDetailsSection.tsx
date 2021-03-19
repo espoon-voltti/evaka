@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Label } from '@evaka/lib-components/typography'
-import { Gap } from '@evaka/lib-components/white-space'
-import { TextArea } from '@evaka/lib-components/atoms/form/InputField'
+import { Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import { TextArea } from 'lib-components/atoms/form/InputField'
 import { useTranslation } from '../../localization'
 import { AdditionalDetailsFormData } from '../../applications/editor/ApplicationFormData'
 import EditorSection from '../../applications/editor/EditorSection'
-import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { ApplicationFormDataErrors } from '../../applications/editor/validations'
 import { getErrorCount } from '../../form-validation'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import styled from 'styled-components'
-import ExpandingInfo from '@evaka/lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 type Props = {
   formData: AdditionalDetailsFormData

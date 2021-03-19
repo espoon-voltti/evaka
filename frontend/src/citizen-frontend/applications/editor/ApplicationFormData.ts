@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import {
   ApplicationAttachment,
   ApplicationDetails,
   ApplicationFormUpdate
-} from '@evaka/lib-common/api-types/application/ApplicationDetails'
-import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/api-types/application/enums'
+} from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationGuardianAgreementStatus } from 'lib-common/api-types/application/enums'
 import { User } from '../../auth/state'
-import { ApplicationAddress } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 
 export type ServiceNeedFormData = {
   preferredStartDate: string

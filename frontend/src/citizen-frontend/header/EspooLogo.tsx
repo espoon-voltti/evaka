@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { desktopMin } from '@evaka/lib-components/breakpoints'
-import { defaultMargins } from '@evaka/lib-components/white-space'
-import { cityLogo } from '@evaka/lib-customizations/citizen'
+import { desktopMin } from 'lib-components/breakpoints'
+import { defaultMargins } from 'lib-components/white-space'
+import { cityLogo } from 'lib-customizations/citizen'
 
 export default React.memo(function Logo() {
   return (

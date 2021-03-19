@@ -4,15 +4,15 @@
 
 import axios from 'axios'
 import _ from 'lodash'
-import { JsonOf } from '@evaka/lib-common/json'
-import { Failure, Result, Success } from '@evaka/lib-common/api'
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
-import { Coordinate } from '@evaka/lib-common/api-types/units/Coordinate'
+import { JsonOf } from 'lib-common/json'
+import { Failure, Result, Success } from 'lib-common/api'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { Coordinate } from 'lib-common/api-types/units/Coordinate'
 import { client } from '../api-client'
 import { MapAddress } from '../map/MapView'
 import { UnitWithDistance, UnitWithStraightDistance } from '../map/distances'
-import { isAutomatedTest } from '@evaka/lib-common/utils/helpers'
-import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 
 export async function fetchUnits(
   type: ApplicationType

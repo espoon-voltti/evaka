@@ -6,7 +6,7 @@ import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import NameWithSsn from '../common/NameWithSsn'
 import { formatName } from '../../utils'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 type Props = {
   people: {

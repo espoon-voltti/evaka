@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import classNames from 'classnames'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { Child, TableMode } from '../../types/absence'
 import { getRange, getWeekDay, getMonthDays } from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'

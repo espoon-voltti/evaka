@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
 import { formatName } from '../../utils'
@@ -17,15 +17,15 @@ import {
   Th,
   Thead,
   Tr
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+} from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Parentship } from '../../types/fridge'
 import * as _ from 'lodash'
-import { faChild, faQuestion } from '@evaka/lib-icons'
+import { faChild, faQuestion } from 'lib-icons'
 import { UIContext } from '../../state/ui'
 import FridgeChildModal from '../../components/person-profile/person-fridge-child/FridgeChildModal'
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Link } from 'react-router-dom'
 import {
   getParentshipsByHeadOfChild,
@@ -33,9 +33,9 @@ import {
   retryParentship
 } from '../../api/parentships'
 import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
-import { AddButtonRow } from '@evaka/lib-components/atoms/buttons/AddButton'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import Toolbar from '../../components/common/Toolbar'
-import { getAge } from '@evaka/lib-common/utils/local-date'
+import { getAge } from 'lib-common/utils/local-date'
 
 interface Props {
   id: UUID

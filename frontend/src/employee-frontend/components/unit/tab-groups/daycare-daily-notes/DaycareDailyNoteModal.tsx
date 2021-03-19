@@ -1,31 +1,29 @@
 import React, { useState } from 'react'
 import { useTranslation } from '../../../../state/i18n'
-import { faExclamation, faTrash } from '@evaka/lib-icons'
+import { faExclamation, faTrash } from 'lib-icons'
 import {
   DaycareDailyNote,
   DaycareDailyNoteReminder
 } from '../../../../types/unit'
 import { formatName } from '../../../../utils'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import {
   DaycareDailyNoteFormData,
   deleteDaycareDailyNote,
   upsertChildDaycareDailyNote,
   upsertGroupDaycareDailyNote
 } from '../../../../api/unit'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
-import InputField, {
-  TextArea
-} from '@evaka/lib-components/atoms/form/InputField'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
+} from 'lib-components/layout/flex-helpers'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 const GrayFontContainer = styled.div`
   & * {

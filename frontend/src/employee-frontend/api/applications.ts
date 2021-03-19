@@ -10,22 +10,22 @@ import {
   ApplicationResponse,
   ApplicationNote
 } from '../types/application'
-import { Failure, Paged, Result, Success } from '@evaka/lib-common/api'
+import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { client } from '../api/client'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { CreatePersonBody } from '../api/person'
 import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
 import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '../types/unit'
-import FiniteDateRange from '@evaka/lib-common/finite-date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
-} from '@evaka/lib-common/api-types/application/ApplicationDetails'
-import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+} from 'lib-common/api-types/application/ApplicationDetails'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 
 export async function getApplication(
   id: UUID

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 export const WarningBox = styled.div`
   border-radius: 2px;

@@ -5,18 +5,18 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
 import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { getVoucherValueDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 export const ErrorMessage = styled.div`
   color: ${colors.accents.red};

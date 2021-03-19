@@ -5,9 +5,9 @@
 import { UnitPreferenceFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { H2, H3, Label } from '@evaka/lib-components/typography'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
-import { Gap } from '@evaka/lib-components/white-space'
+import { H2, H3, Label } from 'lib-components/typography'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { Gap } from 'lib-components/white-space'
 import styled from 'styled-components'
 import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 

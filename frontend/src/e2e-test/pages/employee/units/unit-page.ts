@@ -6,7 +6,7 @@ import { ClientFunction, Selector, t } from 'testcafe'
 import config from '../../../config'
 import { postPairingChallenge } from '../../../dev-api'
 import { UUID } from '../../../dev-api/types'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 export default class UnitPage {
   private readonly baseUrl = config.employeeUrl

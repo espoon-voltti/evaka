@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/white-space'
-import { faChild, faComments, faUser } from '@evaka/lib-icons'
+} from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'

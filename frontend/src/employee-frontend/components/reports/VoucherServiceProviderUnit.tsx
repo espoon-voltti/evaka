@@ -8,9 +8,9 @@ import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { range, sortBy } from 'lodash'
 import { fi } from 'date-fns/locale'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import Title from '@evaka/lib-components/atoms/Title'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
 import {
   Th,
   Tr,
@@ -18,9 +18,9 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/layout/Table'
+} from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
   VoucherReportRowType,
   VoucherServiceProviderUnitReport,
@@ -30,7 +30,7 @@ import {
   getVoucherServiceProviderUnitReport,
   VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
 } from '../../api/reports'
-import ReturnButton from '@evaka/lib-components/atoms/buttons/ReturnButton'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
@@ -43,21 +43,21 @@ import {
   SelectOptionProps
 } from '../../components/common/Select'
 
-import { defaultMargins } from '@evaka/lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { formatCents } from '../../utils/money'
 import { formatName } from '../../utils'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
-import Tooltip from '@evaka/lib-components/atoms/Tooltip'
-import colors from '@evaka/lib-components/colors'
-import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
+import Tooltip from 'lib-components/atoms/Tooltip'
+import colors from 'lib-components/colors'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
+} from 'lib-components/layout/flex-helpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt, fasArrowDown, fasArrowUp } from '@evaka/lib-icons'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import { faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 
 const FilterWrapper = styled.div`
   width: 400px;

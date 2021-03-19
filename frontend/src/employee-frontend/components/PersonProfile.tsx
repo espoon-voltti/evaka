@@ -5,9 +5,9 @@
 import React, { Fragment, useContext, useMemo } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '../types'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
-import Title from '@evaka/lib-components/atoms/Title'
-import { Td } from '@evaka/lib-components/layout/Table'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import Title from 'lib-components/atoms/Title'
+import { Td } from 'lib-components/layout/Table'
 import PersonFridgePartner from '../components/person-profile/PersonFridgePartner'
 import PersonFridgeChild from '../components/person-profile/PersonFridgeChild'
 import PersonFridgeHead from '../components/person-profile/PersonFridgeHead'
@@ -25,7 +25,7 @@ import styled from 'styled-components'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '../state/i18n'
 import CircularLabel from '../components/common/CircularLabel'
-import { Gap, defaultMargins } from '@evaka/lib-components/white-space'
+import { Gap, defaultMargins } from 'lib-components/white-space'
 
 export const NameTd = styled(Td)`
   width: 30%;

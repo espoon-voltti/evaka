@@ -4,12 +4,12 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import Title from '@evaka/lib-components/atoms/Title'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import Loader from 'lib-components/atoms/Loader'
+import Title from 'lib-components/atoms/Title'
 import { getDay } from 'date-fns'
 import { formatName } from '../../utils'
 import { getAbsencesByChild } from '../../api/invoicing'
@@ -23,7 +23,7 @@ import { UUID } from '../../types'
 import ColourInfoItem from '../../components/common/ColourInfoItem'
 import Tooltip from '../../components/common/Tooltip'
 import PeriodPicker from '../../components/absences/PeriodPicker'
-import { faAbacus } from '@evaka/lib-icons'
+import { faAbacus } from 'lib-icons'
 
 const Section = styled.section``
 

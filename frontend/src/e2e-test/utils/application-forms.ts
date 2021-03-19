@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ApplicationFormData } from '@evaka/citizen-frontend/applications/editor/ApplicationFormData'
-import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { ApplicationFormData } from 'citizen-frontend/applications/editor/ApplicationFormData'
+import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
 
 function assertEquals<T>(expected: T, actual: T) {

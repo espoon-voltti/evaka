@@ -7,10 +7,10 @@ import { useTranslation } from '../../../state/i18n'
 import { AssistanceAction } from '../../../types/child'
 import { UIContext } from '../../../state/ui'
 import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
-import { faQuestion } from '@evaka/lib-icons'
+import { faQuestion } from 'lib-icons'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { isActiveDateRange } from '../../../utils/date'
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import LabelValueList from '../../../components/common/LabelValueList'
 import {

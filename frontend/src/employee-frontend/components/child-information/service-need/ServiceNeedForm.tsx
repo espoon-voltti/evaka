@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
-import DateRange from '@evaka/lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
+import DateRange from 'lib-common/date-range'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { Gap } from '@evaka/lib-components/white-space'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
 import { Placement, ServiceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
 import {
@@ -19,8 +19,8 @@ import {
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/molecules/DatePickerDeprecated'
-import { AlertBox, InfoBox } from '@evaka/lib-components/molecules/MessageBoxes'
+} from 'lib-components/molecules/DatePickerDeprecated'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import FormActions from '../../../components/common/FormActions'
 import LabelValueList from '../../../components/common/LabelValueList'
 import styled from 'styled-components'
@@ -32,7 +32,7 @@ import {
   ServiceNeedRequest,
   updateServiceNeed
 } from '../../../api/child/service-needs'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 const NumberInputWrapper = styled.div`
   display: flex;

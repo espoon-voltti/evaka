@@ -4,15 +4,15 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import InputField from 'lib-components/atoms/form/InputField'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { UUID } from '../../../types'
 import { addSsn } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 import { isSsnValid } from '../../../utils/validation/validations'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 const Error = styled.div`
   display: flex;

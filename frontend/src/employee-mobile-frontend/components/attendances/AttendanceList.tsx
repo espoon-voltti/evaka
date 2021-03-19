@@ -10,11 +10,11 @@ import {
   defaultMargins,
   isSpacingSize,
   SpacingSize
-} from '@evaka/lib-components/white-space'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+} from 'lib-components/white-space'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { AttendanceChild, AttendanceStatus } from '../../api/attendances'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 import { useTranslation } from '../../state/i18n'
 
 interface Props {

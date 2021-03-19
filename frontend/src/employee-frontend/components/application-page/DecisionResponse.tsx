@@ -8,11 +8,11 @@ import { Decision } from '../../types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
+} from 'lib-components/layout/flex-helpers'
+import Radio from 'lib-components/atoms/form/Radio'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
-import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { acceptDecision, rejectDecision } from '../../api/applications'
 import { UUID } from '../../types'
 

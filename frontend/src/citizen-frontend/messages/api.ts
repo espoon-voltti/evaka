@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Paged, Result, Success } from '@evaka/lib-common/api'
-import { JsonOf } from '@evaka/lib-common/json'
+import { Failure, Paged, Result, Success } from 'lib-common/api'
+import { JsonOf } from 'lib-common/json'
 import { client } from '../api-client'
 import {
   deserializeReceivedBulletin,

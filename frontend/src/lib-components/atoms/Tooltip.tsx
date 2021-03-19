@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCaretDown, fasCaretUp } from '@evaka/lib-icons'
+import { fasCaretDown, fasCaretUp } from 'lib-icons'
 import { greyscale } from '../colors'
 import { defaultMargins } from '../white-space'
 import classNames from 'classnames'

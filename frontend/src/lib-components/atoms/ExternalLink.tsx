@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExternalLink } from '@evaka/lib-icons'
+import { faExternalLink } from 'lib-icons'
 import styled from 'styled-components'
 import colors from '../colors'
 import { Gap } from '../white-space'

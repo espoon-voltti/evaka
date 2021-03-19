@@ -175,8 +175,7 @@
       "<rootDir>/src/e2e-test"
     ],
     "moduleNameMapper": {
-      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js",
-      "^@evaka/(.*)$": "<rootDir>/src/$1"
+      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js"
     },
     "globals": {
       "ts-jest": {

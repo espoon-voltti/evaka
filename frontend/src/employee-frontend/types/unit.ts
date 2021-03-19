@@ -4,9 +4,9 @@
 
 import { DayOfWeek, UUID } from '../types'
 import { PlacementType } from '../types/child'
-import LocalDate from '@evaka/lib-common/local-date'
-import FiniteDateRange from '@evaka/lib-common/finite-date-range'
-import DateRange from '@evaka/lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import DateRange from 'lib-common/date-range'
 
 export interface CareArea {
   id: UUID

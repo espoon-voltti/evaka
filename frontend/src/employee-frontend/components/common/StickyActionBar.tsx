@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/colors'
-import { Container } from '@evaka/lib-components/layout/Container'
+import colors from 'lib-components/colors'
+import { Container } from 'lib-components/layout/Container'
 
 type Props = {
   align: 'center' | 'left' | 'right'

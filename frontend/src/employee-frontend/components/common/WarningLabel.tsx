@@ -6,8 +6,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import colors from '@evaka/lib-components/colors'
-import { Gap } from '@evaka/lib-components/white-space'
+import colors from 'lib-components/colors'
+import { Gap } from 'lib-components/white-space'
 
 interface Props {
   text: string

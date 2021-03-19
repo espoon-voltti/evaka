@@ -5,9 +5,9 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faTimes } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/colors'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import { faArrowLeft, faTimes } from 'lib-icons'
+import colors from 'lib-components/colors'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { AttendanceChild } from '../../api/attendances'
 import { defaultMargins } from '../../../lib-components/white-space'
 

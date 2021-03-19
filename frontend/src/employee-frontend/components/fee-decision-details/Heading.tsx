@@ -5,10 +5,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/local-date'
-import { Gap } from '@evaka/lib-components/white-space'
-import { H1 } from '@evaka/lib-components/typography'
-import SimpleSelect from '@evaka/lib-components/atoms/form/SimpleSelect'
+import LocalDate from 'lib-common/local-date'
+import { Gap } from 'lib-components/white-space'
+import { H1 } from 'lib-components/typography'
+import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import LabelValueList from '../../components/common/LabelValueList'
 import WarningLabel from '../../components/common/WarningLabel'
 import { getFeeDecisionPdfUrl } from '../../api/invoicing'
@@ -19,7 +19,7 @@ import {
   FeeDecisionType,
   PersonDetailed
 } from '../../types/invoicing'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 import { formatDate } from '../../utils/date'
 import { formatName } from '../../utils'
 

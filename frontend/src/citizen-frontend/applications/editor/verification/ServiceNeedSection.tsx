@@ -5,13 +5,13 @@
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { H2, H3, Label } from '@evaka/lib-components/typography'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
+import { H2, H3, Label } from 'lib-components/typography'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
-import { Gap } from '@evaka/lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPreparatory from './ServiceNeedPreparatory'
-import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 import {
   ServiceNeedUrgency,
   ServiceNeedShiftCare

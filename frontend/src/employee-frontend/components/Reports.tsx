@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
-import Title from '@evaka/lib-components/atoms/Title'
-import { Gap } from '@evaka/lib-components/white-space'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import Title from 'lib-components/atoms/Title'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../state/i18n'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -25,11 +25,11 @@ import {
   faDiagnoses,
   faDatabase,
   faMoneyBillWave
-} from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/colors'
+} from 'lib-icons'
+import colors from 'lib-components/colors'
 import { RequireRole } from '../utils/roles'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
-import { defaultMargins } from '@evaka/lib-components/white-space'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from '../config'
 
 const ReportItems = styled.div`

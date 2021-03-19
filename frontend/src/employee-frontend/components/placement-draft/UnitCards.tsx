@@ -10,7 +10,7 @@ import {
   DaycarePlacementPlan,
   PlacementDraft
 } from '../../types/placementdraft'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 const FlexContainer = styled.div`
   display: flex;

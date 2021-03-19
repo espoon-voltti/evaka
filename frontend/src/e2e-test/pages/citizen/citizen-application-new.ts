@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { ApplicationType } from '@evaka/lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 
 export default class CitizenNewApplicationPage {
   readonly title = Selector('h1')

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
-import { faExclamation } from '@evaka/lib-icons'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faExclamation } from 'lib-icons'
 import React, { useContext } from 'react'
 import { UIContext } from '../../state/ui'
-import { errorModalZIndex } from '@evaka/lib-components/layout/z-helpers'
+import { errorModalZIndex } from 'lib-components/layout/z-helpers'
 
 function ErrorMessage() {
   const { errorMessage, clearErrorMessage } = useContext(UIContext)

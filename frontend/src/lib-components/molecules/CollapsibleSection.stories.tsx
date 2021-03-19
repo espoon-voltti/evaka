@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { faChild, faInfo, faUsers } from '@evaka/lib-icons'
+import { faChild, faInfo, faUsers } from 'lib-icons'
 import { LoremParagraph } from '../story-utils'
 import CollapsibleSection from './CollapsibleSection'
 

@@ -5,12 +5,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import styled from 'styled-components'
 import FocusTrap from 'focus-trap-react'
-import { Loading, Paged, Result, Success } from '@evaka/lib-common/api'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
-import { defaultMargins } from '@evaka/lib-components/white-space'
-import Container from '@evaka/lib-components/layout/Container'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import { Loading, Paged, Result, Success } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useDebounce } from 'lib-common/utils/useDebounce'
+import { defaultMargins } from 'lib-components/white-space'
+import Container from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bulletin, IdAndName } from './types'
 import {
   deleteDraftBulletin,
