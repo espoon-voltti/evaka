@@ -32,6 +32,7 @@ import fi.espoo.evaka.invoicing.service.DaycareCodes
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -185,7 +186,7 @@ val testPeriod = LocalDate.now().let {
 fun testParentship(
     child: PersonJSON = testPisPerson(testPisFridgeChild),
     parent: PersonJSON = testPisPerson(testPisFridgeParent),
-    period: DateRange = testPeriod
+    period: FiniteDateRange = testPeriod.asFiniteDateRange()!!
 ) = Parentship(
     id = UUID.randomUUID(),
     childId = child.id,

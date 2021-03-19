@@ -21,6 +21,6 @@ export interface Parentship {
   childId: string
   child: PersonDetails
   startDate: LocalDate
-  endDate: LocalDate | null
+  endDate: LocalDate
   conflict: boolean
 }

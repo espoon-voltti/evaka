@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
-import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -76,10 +75,10 @@ fun Handle.createParentship(
     childId: UUID,
     headOfChildId: UUID,
     startDate: LocalDate,
-    endDate: LocalDate?,
+    endDate: LocalDate,
     conflict: Boolean = false
 ): Parentship {
-    // language=SQL
+    // language=sql
     val sql =
         """
         WITH new_fridge_child AS (
@@ -100,22 +99,21 @@ fun Handle.createParentship(
         .bind("childId", childId)
         .bind("headOfChild", headOfChildId)
         .bind("startDate", startDate)
-        .bind("endDate", endDate ?: PGConstants.infinity)
+        .bind("endDate", endDate)
         .bind("conflict", conflict)
         .map(toParentship("child", "head"))
         .first()
 }
 
-fun Handle.updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate?): Boolean {
-    // language=SQL
-    val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id RETURNING id"
+fun Handle.updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate): Boolean {
+    // language=sql
+    val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
 
-    return createQuery(sql)
+    return createUpdate(sql)
         .bind("id", id)
         .bind("startDate", startDate)
-        .bind("endDate", endDate ?: PGConstants.infinity)
-        .mapTo<UUID>()
-        .firstOrNull() != null
+        .bind("endDate", endDate)
+        .execute() > 0
 }
 
 fun Handle.retryParentship(id: UUID) {
@@ -172,8 +170,7 @@ private val toParentship: (String, String) -> (ResultSet, StatementContext) -> P
             headOfChildId = rs.getUUID("head_of_child"),
             headOfChild = toPersonJSON(headAlias, rs),
             startDate = rs.getDate("start_date").toLocalDate(),
-            endDate = rs.getDate("end_date").toLocalDate()
-                .let { if (it.isBefore(PGConstants.infinity)) it else null },
+            endDate = rs.getDate("end_date").toLocalDate(),
             conflict = rs.getBoolean("conflict")
         )
     }

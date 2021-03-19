@@ -165,11 +165,11 @@ class ParentshipController(
         val headOfChildId: UUID,
         val childId: UUID,
         val startDate: LocalDate,
-        val endDate: LocalDate?
+        val endDate: LocalDate
     )
 
     data class ParentshipUpdateRequest(
         val startDate: LocalDate,
-        val endDate: LocalDate?
+        val endDate: LocalDate
     )
 }
