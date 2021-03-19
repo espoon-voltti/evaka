@@ -84,7 +84,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         assertEmail(
             sentMails.first(),
             testAdult_6.email!!,
-            "no-reply.evaka@espoo.fi",
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Päätös varhaiskasvatuksesta",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https"
@@ -110,7 +110,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         assertEmail(
             sentMails.first(),
             testAdult_6.email!!,
-            "no-reply.evaka@espoo.fi",
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Päätös varhaiskasvatuksesta",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https"

@@ -29,7 +29,14 @@ class BulletinNotificationEmailService(
         asyncJobRunner.sendBulletinNotificationEmail = ::sendBulletinNotification
     }
 
-    val fromAddress = env.getRequiredProperty("mail_reply_to_address")
+    val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
+    val senderNameFi: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.fi")
+    val senderNameSv: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.sv")
+
+    fun getFromAddress(language: Language) = when (language) {
+        Language.sv -> "$senderNameSv <$senderAddress>"
+        else -> "$senderNameFi <$senderAddress>"
+    }
 
     data class BulletinReceiver(
         val id: UUID,
@@ -88,7 +95,7 @@ class BulletinNotificationEmailService(
             emailClient.sendEmail(
                 traceId = msg.id.toString(),
                 toAddress = msg.receiverEmail,
-                fromAddress = fromAddress,
+                fromAddress = getFromAddress(msg.language),
                 getSubject(msg.language),
                 getHtml(msg.language),
                 getText(msg.language)

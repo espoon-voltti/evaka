@@ -30,7 +30,14 @@ class PendingDecisionEmailService(
         asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
     }
 
-    val fromAddress = env.getRequiredProperty("mail_reply_to_address")
+    val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
+    val senderNameFi: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.fi")
+    val senderNameSv: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.sv")
+
+    fun getFromAddress(language: Language) = when (language) {
+        Language.sv -> "$senderNameSv <$senderAddress>"
+        else -> "$senderNameFi <$senderAddress>"
+    }
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
@@ -107,7 +114,7 @@ GROUP BY application.guardian_id
             emailClient.sendEmail(
                 "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
                 pendingDecision.email,
-                fromAddress,
+                getFromAddress(lang),
                 getSubject(lang),
                 getHtml(lang),
                 getText(lang)

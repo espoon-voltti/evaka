@@ -48,8 +48,12 @@ fi:
       message:
         enabled: true
       maxAttachmentsPerUser: 100
+      email:
+        reply_to_address: "no-reply.evaka@espoo.fi"
+        sender_name:
+          fi: "Espoon Varhaiskasvatus"
+          sv: "Esbo småbarnspedagogik"
     voltti:
       s3mock:
         url: "http://s3.lvh.me:9876"
 fee_decision_min_date: "2020-03-01"
-mail_reply_to_address: "no-reply.evaka@espoo.fi"
