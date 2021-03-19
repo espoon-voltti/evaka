@@ -308,3 +308,19 @@ server {
   auth_basic_user_file  "/etc/nginx/.htpasswd";
   <% end %>
 }
+
+<% if ENV.key?("SERVICE_DOMAIN_SV") && ENV.key?("SERVICE_DOMAIN") %>
+server {
+    listen 8080;
+    server_name <%= ENV["SERVICE_DOMAIN_SV"] %>;
+
+    access_log /var/log/nginx/access.log json_access;
+
+    add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection '1; mode=block';
+    add_header X-DNS-Prefetch-Control off;
+
+    rewrite ^ https://<%= ENV["SERVICE_DOMAIN"] %>$uri?lang=sv redirect;
+}
+<% end %>
