@@ -14,6 +14,7 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -79,7 +80,8 @@ GROUP BY application.guardian_id
                                 )
                             ),
                             runAt = Instant.now(),
-                            retryCount = 10
+                            retryCount = 3,
+                            retryInterval = Duration.ofHours(1)
                         )
                         createdJobCount++
                     } else {
