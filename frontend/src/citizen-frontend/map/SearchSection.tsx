@@ -21,12 +21,7 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { H1, Label, P } from 'lib-components/typography'
-import {
-  faAngleDown,
-  faAngleUp,
-  faList,
-  fasMapMarkerAlt
-} from 'lib-icons'
+import { faAngleDown, faAngleUp, faList, fasMapMarkerAlt } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { mapViewBreakpoint, MobileMode } from '../map/const'
 import SearchInput from '../map/SearchInput'

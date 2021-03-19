@@ -6,10 +6,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
 import { Failure, Loading, Result, Success } from 'lib-common/api'
-import {
-  ProviderType,
-  UnitLanguage
-} from 'lib-common/api-types/units/enums'
+import { ProviderType, UnitLanguage } from 'lib-common/api-types/units/enums'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Coordinate } from 'lib-common/api-types/units/Coordinate'

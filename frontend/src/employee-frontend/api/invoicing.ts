@@ -4,13 +4,7 @@
 
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import {
-  Failure,
-  Paged,
-  Response,
-  Result,
-  Success
-} from 'lib-common/api'
+import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import { API_URL, client } from '../api/client'
 import { SearchOrder, UUID } from '../types'
 import { Absence, deserializeAbsence } from '../types/absence'

@@ -9,9 +9,7 @@ import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, {
-  TextArea
-} from 'lib-components/atoms/form/InputField'
+import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import InfoBall from '../../../components/common/InfoBall'
 import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'

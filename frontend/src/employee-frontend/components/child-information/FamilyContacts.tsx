@@ -13,14 +13,7 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faUsers } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { formatName } from '../../utils'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 

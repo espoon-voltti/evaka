@@ -14,14 +14,7 @@ import { Loading } from 'lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { getGuardianDecisions } from '../../api/person'
 import { Decision } from '../../types/decision'

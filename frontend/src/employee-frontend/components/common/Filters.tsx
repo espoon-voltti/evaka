@@ -7,12 +7,7 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReactSelect from 'react-select'
 
-import {
-  faSearch,
-  faTimes,
-  faTrash,
-  fasExclamationTriangle
-} from 'lib-icons'
+import { faSearch, faTimes, faTrash, fasExclamationTriangle } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'

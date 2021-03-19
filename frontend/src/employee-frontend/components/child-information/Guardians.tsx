@@ -9,14 +9,7 @@ import { useEffect } from 'react'
 import { Loading } from 'lib-common/api'
 import { useContext } from 'react'
 import Loader from 'lib-components/atoms/Loader'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { PersonDetails } from '../../types/person'

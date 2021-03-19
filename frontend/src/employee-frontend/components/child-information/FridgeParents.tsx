@@ -8,14 +8,7 @@ import * as _ from 'lodash'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext, ChildState } from '../../state/child'
 import { faUser } from 'lib-icons'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'

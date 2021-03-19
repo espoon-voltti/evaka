@@ -14,14 +14,7 @@ import {
   Stats,
   Unit
 } from '../../../../types/unit'
-import {
-  Table,
-  Td,
-  Th,
-  Tr,
-  Thead,
-  Tbody
-} from 'lib-components/layout/Table'
+import { Table, Td, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
 import {
   faAngleDown,
   faAngleUp,

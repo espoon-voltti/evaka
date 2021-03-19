@@ -16,14 +16,7 @@ import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import {
-  Table,
-  Th,
-  Tr,
-  Td,
-  Thead,
-  Tbody
-} from 'lib-components/layout/Table'
+import { Table, Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Loading, Result } from 'lib-common/api'
 import {

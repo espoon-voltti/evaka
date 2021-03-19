@@ -10,14 +10,7 @@ import { useEffect } from 'react'
 import { Loading, Result } from 'lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'

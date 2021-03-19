@@ -7,14 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faHomeAlt } from 'lib-icons'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import LabelValueList from '../../components/common/LabelValueList'

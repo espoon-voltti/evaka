@@ -20,9 +20,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import InputField, {
-  TextArea
-} from 'lib-components/atoms/form/InputField'
+import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'

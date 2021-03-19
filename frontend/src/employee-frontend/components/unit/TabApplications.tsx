@@ -13,14 +13,7 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { useTranslation } from '../../state/i18n'
 import Title from 'lib-components/atoms/Title'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { formatName } from '../../utils'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'

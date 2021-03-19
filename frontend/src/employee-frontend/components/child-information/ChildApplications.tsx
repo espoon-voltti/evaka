@@ -12,14 +12,7 @@ import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from 'lib-common/api'
 import { useContext } from 'react'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from 'lib-components/layout/Table'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { getChildApplicationSummaries } from '../../api/person'
 import { ApplicationSummary } from '../../types/application'

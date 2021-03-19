@@ -5,14 +5,7 @@
 import React, { useContext, useState } from 'react'
 import _ from 'lodash'
 
-import {
-  Table,
-  Td,
-  Th,
-  Tr,
-  Thead,
-  Tbody
-} from 'lib-components/layout/Table'
+import { Table, Td, Th, Tr, Thead, Tbody } from 'lib-components/layout/Table'
 import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { faArrowRight } from 'lib-icons'
