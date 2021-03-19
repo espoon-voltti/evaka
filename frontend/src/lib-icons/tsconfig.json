@@ -3,6 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "outDir": "../../dist/icons"
+    "outDir": "../../dist/lib-icons"
   }
 }

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "outDir": "../../dist/common",
+    "outDir": "../../dist/lib-common",
     "types": ["jest", "node"]
   }
 }
