@@ -23,7 +23,7 @@ async function getParentships(
       dataArray.map((data) => ({
         ...data,
         startDate: LocalDate.parseIso(data.startDate),
-        endDate: LocalDate.parseNullableIso(data.endDate),
+        endDate: LocalDate.parseIso(data.endDate),
         headOfChild: deserializePersonDetails(data.headOfChild),
         child: deserializePersonDetails(data.child)
       }))
@@ -48,7 +48,7 @@ export async function addParentship(
   headOfChildId: UUID,
   childId: UUID,
   startDate: LocalDate,
-  endDate: LocalDate | null
+  endDate: LocalDate
 ): Promise<Result<Parentship>> {
   const body = {
     headOfChildId,
@@ -62,7 +62,7 @@ export async function addParentship(
     .then((data) => ({
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseNullableIso(data.endDate),
+      endDate: LocalDate.parseIso(data.endDate),
       headOfChild: deserializePersonDetails(data.headOfChild),
       child: deserializePersonDetails(data.child)
     }))
@@ -73,7 +73,7 @@ export async function addParentship(
 export async function updateParentship(
   id: UUID,
   startDate: LocalDate,
-  endDate: LocalDate | null
+  endDate: LocalDate
 ): Promise<Result<Parentship>> {
   const body = {
     startDate,
@@ -85,7 +85,7 @@ export async function updateParentship(
     .then((data) => ({
       ...data,
       startDate: LocalDate.parseIso(data.startDate),
-      endDate: LocalDate.parseNullableIso(data.endDate),
+      endDate: LocalDate.parseIso(data.endDate),
       headOfChild: deserializePersonDetails(data.headOfChild),
       child: deserializePersonDetails(data.child)
     }))

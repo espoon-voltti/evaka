@@ -154,18 +154,25 @@ class FamilyInitializerService(
         )
             .any {
                 (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
-                    (it.endDate == null || it.endDate.isAfter(startDate))
+                    (it.endDate.isAfter(startDate))
             }
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
+            val child = tx.handle.getPersonById(childId)
+                ?: error("Couldn't find child ($childId) to create parentship")
+            val endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+            if (startDate > endDate) {
+                logger.debug("Skipped adding a child that is at least 18 years old to a family")
+                return
+            }
             try {
                 tx.subTransaction {
                     tx.handle.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
-                        endDate = null,
+                        endDate = endDate,
                         conflict = false
                     )
                 }
@@ -178,7 +185,7 @@ class FamilyInitializerService(
                             childId = childId,
                             headOfChildId = headOfChildId,
                             startDate = startDate,
-                            endDate = null,
+                            endDate = endDate,
                             conflict = true
                         )
                     }

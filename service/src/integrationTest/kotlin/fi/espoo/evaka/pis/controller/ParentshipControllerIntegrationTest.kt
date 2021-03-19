@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import java.time.LocalDate
 import java.util.UUID
 
 class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
@@ -49,7 +49,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
 
-        val startDate = LocalDate.now()
+        val startDate = child.dateOfBirth
         val endDate = startDate.plusDays(200)
         val reqBody = ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
         val createResponse = controller.createParentship(db, user, reqBody)
@@ -95,11 +95,11 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson1()
         val child = testPerson2()
         val parentship = jdbi.handle { h ->
-            h.createParentship(child.id, adult.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
-            h.createParentship(child.id, adult.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            h.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(500), child.dateOfBirth.plusDays(700))
+            h.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
-        val newStartDate = LocalDate.now().plusDays(100)
-        val newEndDate = LocalDate.now().plusDays(300)
+        val newStartDate = child.dateOfBirth.plusDays(100)
+        val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
         val updateResponse = controller.updateParentship(db, user, parentship.id, requestBody)
         assertEquals(HttpStatus.OK, updateResponse.statusCode)
@@ -134,8 +134,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, adult.id, LocalDate.now(), LocalDate.now().plusDays(100))
-            h.createParentship(child.id, adult.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
+            val parentship = h.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100))
+            h.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
             assertEquals(2, h.getParentships(headOfChildId = adult.id, childId = null).size)
 
             val delResponse = controller.deleteParentship(db, user, parentship.id)
@@ -148,8 +148,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, adult.id, LocalDate.now(), LocalDate.now().plusDays(100))
-            h.createParentship(child.id, adult.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
+            val parentship = h.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100))
+            h.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
             assertEquals(2, h.getParentships(headOfChildId = adult.id, childId = null).size)
             assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
         }
@@ -161,7 +161,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
-            h.createParentship(child.id, parent.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            h.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         assertThrows<Forbidden> { controller.getParentships(db, user, headOfChildId = parent.id) }
     }
@@ -172,9 +172,9 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, parent.id, LocalDate.now(), LocalDate.now().plusDays(200))
-            val newStartDate = LocalDate.now().plusDays(100)
-            val newEndDate = LocalDate.now().plusDays(300)
+            val parentship = h.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            val newStartDate = child.dateOfBirth.plusDays(100)
+            val newEndDate = child.dateOfBirth.plusDays(300)
             val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
             assertThrows<Forbidden> { controller.updateParentship(db, user, parentship.id, requestBody) }
         }
@@ -186,50 +186,27 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, parent.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            val parentship = h.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
             assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
         }
     }
 
     @Test
-    fun `service worker can create a parentship without an end date`() {
+    fun `error is thrown if service worker tries to create a partnership with a start date before child's date of birth`() {
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val parent = testPerson1()
         val child = testPerson2()
-
-        val startDate = LocalDate.now()
-        val endDate = null
-        val reqBody = ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
-        val createResponse = controller.createParentship(db, user, reqBody)
-        assertEquals(HttpStatus.CREATED, createResponse.statusCode)
-        with(createResponse.body!!) {
-            assertNotNull(this.id)
-            assertEquals(parent.id, this.headOfChildId)
-            assertEquals(child, this.child)
-            assertEquals(startDate, this.startDate)
-            assertEquals(endDate, this.endDate)
-        }
+        val request = ParentshipController.ParentshipRequest(parent.id, child.id, child.dateOfBirth.minusDays(1), child.dateOfBirth.plusYears(1))
+        assertThrows<BadRequest> { controller.createParentship(db, user, request) }
     }
 
     @Test
-    fun `service worker can update a parentship without an end date`() {
+    fun `error is thrown if service worker tries to create a partnership with a end date after child's 18th birthday`() {
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
-        val adult = testPerson1()
+        val parent = testPerson1()
         val child = testPerson2()
-        jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, adult.id, LocalDate.now(), LocalDate.now().plusDays(200))
-
-            val newStartDate = LocalDate.now().plusDays(100)
-            val newEndDate = null
-            val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-            val updateResponse = controller.updateParentship(db, user, parentship.id, requestBody)
-            assertEquals(HttpStatus.OK, updateResponse.statusCode)
-            with(updateResponse.body!!) {
-                assertEquals(parentship.id, this.id)
-                assertEquals(newStartDate, this.startDate)
-                assertEquals(newEndDate, this.endDate)
-            }
-        }
+        val request = ParentshipController.ParentshipRequest(parent.id, child.id, child.dateOfBirth, child.dateOfBirth.plusYears(18))
+        assertThrows<BadRequest> { controller.createParentship(db, user, request) }
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON = jdbi.transaction { h ->

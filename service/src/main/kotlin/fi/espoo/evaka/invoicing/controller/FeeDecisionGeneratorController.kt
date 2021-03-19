@@ -43,7 +43,7 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner)
     private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
         db.transaction { tx ->
             val heads = if (targetHeads.isEmpty()) {
-                tx.createQuery("SELECT head_of_child FROM fridge_child WHERE COALESCE(end_date, '9999-01-01') >= :from AND conflict = false")
+                tx.createQuery("SELECT head_of_child FROM fridge_child WHERE end_date >= :from AND conflict = false")
                     .bind("from", starting)
                     .mapTo<UUID>()
                     .list()

@@ -19,10 +19,7 @@ import { Result } from '@evaka/lib-common/api'
 import { faChild } from '@evaka/lib-icons'
 import { formatName } from '../../../utils'
 import PersonSearch from '../../../components/common/PersonSearch'
-import {
-  DatePickerDeprecated,
-  DatePickerClearableDeprecated
-} from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
 import { addParentship, updateParentship } from '../../../api/parentships'
 import { PersonDetails } from '../../../types/person'
 
@@ -42,7 +39,7 @@ interface FormValidationResult {
 export interface FridgeChildForm {
   child?: PersonDetails
   startDate: LocalDate
-  endDate: LocalDate | null
+  endDate: LocalDate
 }
 
 function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
@@ -52,7 +49,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const initialForm: FridgeChildForm = {
     child: parentship && parentship.child,
     startDate: parentship ? parentship.startDate : LocalDate.today(),
-    endDate: parentship ? parentship.endDate : null
+    endDate: parentship ? parentship.endDate : LocalDate.today()
   }
   const [form, setForm] = useState<FridgeChildForm>(initialForm)
 
@@ -151,8 +148,8 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
                 <PersonSearch
                   onResult={(person: PersonDetails | undefined) => {
                     let endDate = form.endDate
-                    if (person && person.dateOfBirth) {
-                      endDate = person.dateOfBirth.addYears(18)
+                    if (person) {
+                      endDate = person.dateOfBirth.addYears(18).subDays(1)
                     }
                     assignFridgeChildForm({ child: person, endDate })
                   }}
@@ -166,15 +163,18 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
             <DatePickerDeprecated
               date={form.startDate}
               onChange={(startDate) => assignFridgeChildForm({ startDate })}
+              minDate={form.child?.dateOfBirth}
+              maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
               type="full-width"
             />
           </section>
           <section>
             <div className="bold">{i18n.common.form.endDate}</div>
-            <DatePickerClearableDeprecated
+            <DatePickerDeprecated
               date={form.endDate}
               onChange={(endDate) => assignFridgeChildForm({ endDate })}
-              onCleared={() => assignFridgeChildForm({ endDate: null })}
+              minDate={form.child?.dateOfBirth}
+              maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
               type="full-width"
             />
           </section>

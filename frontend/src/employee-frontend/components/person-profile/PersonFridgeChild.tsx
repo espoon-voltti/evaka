@@ -146,7 +146,7 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
                 {getAge(fridgeChild.child.dateOfBirth)}
               </Td>
               <DateTd>{fridgeChild.startDate.format()}</DateTd>
-              <DateTd>{fridgeChild.endDate?.format()}</DateTd>
+              <DateTd>{fridgeChild.endDate.format()}</DateTd>
               <ButtonsTd>
                 <Toolbar
                   dateRange={fridgeChild}
