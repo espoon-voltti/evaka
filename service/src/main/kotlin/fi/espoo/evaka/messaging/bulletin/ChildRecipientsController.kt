@@ -69,7 +69,7 @@ fun addToBlocklist(tx: Database.Transaction, childId: UUID, recipientId: UUID) {
     // language=sql
     val sql = """
         INSERT INTO messaging_blocklist (child_id, blocked_recipient)
-        VALUES (:child, :recipient)
+        VALUES (:childId, :recipient)
         ON CONFLICT DO NOTHING;
     """.trimIndent()
 

@@ -16,6 +16,7 @@ import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
+import { Recipient } from '@evaka/employee-frontend/components/messages/types'
 
 export interface ChildState {
   person: Result<PersonDetails>
@@ -40,6 +41,8 @@ export interface ChildState {
   setGuardians: (request: Result<PersonDetails[]>) => void
   applications: Result<ApplicationSummary[]>
   setApplications: (r: Result<ApplicationSummary[]>) => void
+  recipients: Result<Recipient[]>
+  setRecipients: (r: Result<Recipient[]>) => void
 }
 
 const defaultState: ChildState = {
@@ -64,7 +67,9 @@ const defaultState: ChildState = {
   guardians: Loading.of(),
   setGuardians: () => undefined,
   applications: Loading.of(),
-  setApplications: () => undefined
+  setApplications: () => undefined,
+  recipients: Loading.of(),
+  setRecipients: () => undefined
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -108,6 +113,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     Result<ApplicationSummary[]>
   >(defaultState.applications)
 
+  const [recipients, setRecipients] = useState<Result<Recipient[]>>(
+    defaultState.recipients
+  )
+
   const value = useMemo(
     () => ({
       person,
@@ -131,7 +140,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       guardians,
       setGuardians,
       applications,
-      setApplications
+      setApplications,
+      recipients,
+      setRecipients
     }),
     [
       person,
@@ -155,7 +166,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       guardians,
       setGuardians,
       applications,
-      setApplications
+      setApplications,
+      recipients,
+      setRecipients
     ]
   )
 
