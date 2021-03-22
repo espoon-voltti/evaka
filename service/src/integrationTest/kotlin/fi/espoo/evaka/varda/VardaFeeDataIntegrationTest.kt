@@ -9,13 +9,19 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionPartFixture
+import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
+import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
+import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
+import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -35,6 +41,7 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testPurchasedDaycare
+import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
@@ -528,6 +535,125 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(4, mockEndpoint.feeData.size)
     }
 
+    @Test
+    fun `voucher value decision data is sent to varda`() {
+        createDecisionsAndPlacements(testPeriod, testChild_1)
+        val voucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+
+        updateAll()
+
+        assertEquals(1, mockEndpoint.feeData.size)
+        mockEndpoint.feeData.values.first().let {
+            assertEquals(guardiansTestChild1, it.huoltajat)
+            assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
+            assertEquals(voucherValueDecision.parts.first().finalCoPayment() / 100.0, it.asiakasmaksu)
+            assertEquals(voucherValueDecision.parts.first().value / 100.0, it.palveluseteli_arvo)
+            assertEquals(voucherValueDecision.familySize, it.perheen_koko)
+            assertEquals(testPeriod.start, it.alkamis_pvm)
+            assertEquals(testPeriod.end, it.paattymis_pvm)
+        }
+    }
+
+    @Test
+    fun `voucher value data is saved to database correctly after upload`() {
+        createDecisionsAndPlacements(testPeriod, testChild_1)
+        val voucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+
+        updateAll()
+
+        assertEquals(1, mockEndpoint.feeData.size)
+        val vardaFeeDataRows = getVardaFeeDataRows(db)
+        assertEquals(1, vardaFeeDataRows.size)
+        vardaFeeDataRows.first().let { row ->
+            assertEquals(voucherValueDecision.id, row.evakaVoucherValueDecisionId)
+            assertEquals(mockEndpoint.feeData.keys.first(), row.vardaId)
+            db.read {
+                val decisionId = it.createQuery("SELECT id FROM varda_decision LIMIT 1").mapTo<UUID>().first()
+                assertEquals(decisionId, row.vardaDecisionId)
+                val childId = it.createQuery("SELECT id FROM varda_child LIMIT 1").mapTo<UUID>().first()
+                assertEquals(childId, row.vardaChildId)
+            }
+        }
+    }
+
+    @Test
+    fun `voucher data is deleted when corresponding decision is deleted`() {
+        createDecisionsAndPlacements(testPeriod, testChild_1)
+        insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+
+        updateAll()
+
+        val originalSentData = mockEndpoint.feeData.toMap()
+        assertEquals(1, originalSentData.size)
+        val originalRows = getVardaFeeDataRows(db)
+        assertEquals(1, originalRows.size)
+
+        db.transaction {
+            it.execute("DELETE FROM decision")
+            it.execute("DELETE FROM placement")
+        }
+        updateAll()
+
+        val newSentData = mockEndpoint.feeData.toMap()
+        assertEquals(0, newSentData.size)
+        val newRows = getVardaFeeDataRows(db)
+        assertEquals(0, newRows.size)
+    }
+
+    @Test
+    fun `fee data is deleted when corresponding voucher value decision is annulled`() {
+        createDecisionsAndPlacements(testPeriod, testChild_1)
+        val voucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+
+        updateAll()
+
+        val originalSentData = mockEndpoint.feeData.toMap()
+        assertEquals(1, originalSentData.size)
+        val originalRows = getVardaFeeDataRows(db)
+        assertEquals(1, originalRows.size)
+
+        db.transaction {
+            it.execute(
+                "UPDATE voucher_value_decision SET status = ? WHERE id = ?",
+                VoucherValueDecisionStatus.ANNULLED,
+                voucherValueDecision.id
+            )
+        }
+        updateAll()
+
+        val newSentData = mockEndpoint.feeData.toMap()
+        assertEquals(0, newSentData.size)
+        val newRows = getVardaFeeDataRows(db)
+        assertEquals(0, newRows.size)
+    }
+
+    @Test
+    fun `fee data is replaced when corresponding voucher value decision is replaced by a new one`() {
+        createDecisionsAndPlacements(testPeriod, testChild_1)
+        val originalVoucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+
+        updateAll()
+
+        val originalSentData = mockEndpoint.feeData.toMap()
+        assertEquals(1, originalSentData.size)
+        originalSentData.values.first().let { data ->
+            assertEquals(originalVoucherValueDecision.familySize, data.perheen_koko)
+        }
+        val originalRows = getVardaFeeDataRows(db)
+        assertEquals(1, originalRows.size)
+
+        val newVoucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1, testChild_2), testPeriod).send()
+        updateAll()
+
+        val newSentData = mockEndpoint.feeData.toMap()
+        assertEquals(1, newSentData.size)
+        newSentData.values.first().let { data ->
+            assertEquals(newVoucherValueDecision.familySize, data.perheen_koko)
+        }
+        val newRows = getVardaFeeDataRows(db)
+        assertEquals(1, newRows.size)
+    }
+
     private fun updateAll() {
         updateChildren(db, vardaClient, vardaOrganizerName)
         updateDecisions(db, vardaClient)
@@ -555,7 +681,8 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
     data class VardaFeeDataRow(
         val id: UUID,
-        val evakaFeeDecisionId: UUID,
+        val evakaFeeDecisionId: UUID?,
+        val evakaVoucherValueDecisionId: UUID?,
         val vardaId: Long?,
         val vardaDecisionId: UUID?,
         val vardaChildId: UUID?,
@@ -574,7 +701,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
-        daycareId: UUID = testDaycare.id,
+        daycareId: UUID = testVoucherDaycare.id,
         guardian: UUID = testAdult_1.id
     ): FeeDecision = db.transaction {
         val feeDecision = createFeeDecisionFixture(
@@ -595,6 +722,32 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         feeDecision
     }
 
+    private fun insertVoucherValueDecision(
+        db: Database.Connection,
+        children: List<PersonData.Detailed>,
+        period: FiniteDateRange,
+        placementType: PlacementType = PlacementType.DAYCARE,
+        unitId: UUID = testDaycare.id,
+        guardian: UUID = testAdult_1.id
+    ): VoucherValueDecision = db.transaction {
+        val voucherValueDecision = createVoucherValueDecisionFixture(
+            status = VoucherValueDecisionStatus.DRAFT,
+            headOfFamilyId = guardian,
+            validFrom = period.start,
+            validTo = period.end,
+            parts = children.map { child ->
+                createVoucherValueDecisionPartFixture(
+                    childId = child.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    unitId = unitId,
+                    placementType = placementType
+                )
+            }
+        )
+        it.handle.upsertValueDecisions(objectMapper, listOf(voucherValueDecision))
+        voucherValueDecision
+    }
+
     private fun FeeDecision.send(): FeeDecision {
         val (_, response, _) = http.post("/fee-decisions/confirm")
             .asUser(AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)))
@@ -603,5 +756,15 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
         return db.read { getFeeDecisionsByIds(it.handle, objectMapper, listOf(this.id)) }.first()
+    }
+
+    private fun VoucherValueDecision.send(): VoucherValueDecision {
+        val (_, response, _) = http.post("/value-decisions/send")
+            .asUser(AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)))
+            .jsonBody(objectMapper.writeValueAsString(listOf(this.id)))
+            .response()
+        assertEquals(204, response.statusCode)
+        asyncJobRunner.runPendingJobsSync()
+        return db.read { it.handle.getValueDecisionsByIds(objectMapper, listOf(this.id)) }.first()
     }
 }

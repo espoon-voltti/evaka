@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.PlacementType
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -42,7 +43,7 @@ fun removeMarkedFeeDataFromVarda(db: Database.Connection, client: VardaClient) {
 }
 
 fun deleteAnnulledFeeData(db: Database.Connection, client: VardaClient) {
-    val vardaIds = db.read { getAnnulledFeeDecisions(it) }
+    val vardaIds = db.read { getAnnulledDecisions(it) }
     logger.info { "Varda: Deleting ${vardaIds.size} annulled fee data" }
     deleteFeeData(db, client, vardaIds)
 }
@@ -91,7 +92,9 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
         newFeeData.forEach { (vardaDecisionId, data) ->
             val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId))
             client.createFeeData(richData)?.let { (vardaId) ->
-                db.transaction { insertFeeDataUpload(it, vardaId, data.feeDecisionId, vardaDecisionId, childVardaId) }
+                db.transaction {
+                    insertFeeDataUpload(it, vardaId, data.feeDecisionId, data.voucherValueDecisionId, vardaDecisionId, childVardaId)
+                }
             }
         }
     }
@@ -107,16 +110,18 @@ fun getMarkedFeeData(tx: Database.Read): List<Long> {
 private fun insertFeeDataUpload(
     tx: Database.Transaction,
     vardaId: Long,
-    feeDecisionId: UUID,
+    feeDecisionId: UUID?,
+    voucherValueDecisionId: UUID?,
     vardaDecisionId: Long,
     vardaChildId: Long
 ) {
     tx.createUpdate(
         """
-INSERT INTO varda_fee_data (varda_id, evaka_fee_decision_id, varda_decision_id, varda_child_id, uploaded_at)
+INSERT INTO varda_fee_data (varda_id, evaka_fee_decision_id, evaka_voucher_value_decision_id, varda_decision_id, varda_child_id, uploaded_at)
 VALUES (
     :vardaId,
     :feeDecisionId,
+    :evakaVoucherValueDecisionId,
     (SELECT id FROM varda_decision WHERE varda_decision_id = :vardaDecisionId),
     (SELECT id FROM varda_child WHERE varda_child_id = :vardaChildId),
     :uploadedAt
@@ -125,6 +130,7 @@ VALUES (
     )
         .bind("vardaId", vardaId)
         .bind("feeDecisionId", feeDecisionId)
+        .bind("evakaVoucherValueDecisionId", voucherValueDecisionId)
         .bind("vardaDecisionId", vardaDecisionId)
         .bind("vardaChildId", vardaChildId)
         .bind("uploadedAt", Instant.now())
@@ -138,16 +144,25 @@ private fun updateFeeDataUploadedAt(tx: Database.Transaction, vardaId: Long, tim
         .execute()
 }
 
-private fun getAnnulledFeeDecisions(tx: Database.Read): List<Long> {
+private fun getAnnulledDecisions(tx: Database.Read): List<Long> {
     return tx
         .createQuery(
             """
 SELECT varda_id
 FROM varda_fee_data
-JOIN fee_decision ON fee_decision.id = varda_fee_data.evaka_fee_decision_id AND fee_decision.status = :annulled
+JOIN fee_decision ON fee_decision.id = varda_fee_data.evaka_fee_decision_id
+    AND fee_decision.status = :annulledFeeDecision
+
+UNION ALL
+
+SELECT varda_id
+FROM varda_fee_data
+JOIN voucher_value_decision ON voucher_value_decision.id = varda_fee_data.evaka_voucher_value_decision_id
+    AND voucher_value_decision.status = :annulledVoucherDecision
 """
         )
-        .bind("annulled", FeeDecisionStatus.ANNULLED)
+        .bind("annulledFeeDecision", FeeDecisionStatus.ANNULLED)
+        .bind("annulledVoucherDecision", VoucherValueDecisionStatus.ANNULLED)
         .mapTo<Long>()
         .toList()
 }
@@ -158,21 +173,30 @@ private fun getChildrenWithOutdatedFeeData(tx: Database.Read): List<Pair<UUID, L
 SELECT varda_child.person_id, varda_child.varda_child_id
 FROM varda_child
 JOIN LATERAL (
-    SELECT MAX(fd.approved_at) approved_at
-    FROM fee_decision fd
-    JOIN fee_decision_part p ON fd.id = p.fee_decision_id AND p.child = varda_child.person_id
-    WHERE fd.status = ANY(:effective)
-) latest_fee_decision ON true
+    SELECT MAX(approved_at) approved_at
+    FROM (
+        SELECT approved_at
+        FROM fee_decision d
+        JOIN fee_decision_part p ON d.id = p.fee_decision_id AND p.child = varda_child.person_id
+        WHERE d.status = ANY(:effectiveFeeDecision)
+        UNION ALL
+        SELECT approved_at
+        FROM voucher_value_decision d
+        JOIN voucher_value_decision_part p ON d.id = p.voucher_value_decision_id AND p.child = varda_child.person_id
+        WHERE d.status = ANY(:effectiveVoucherValueDecision)
+    ) decisions
+) latest_finance_decision ON true
 JOIN LATERAL (
     SELECT MAX(uploaded_at) uploaded_at
     FROM varda_fee_data
     WHERE varda_child_id = varda_child.id
 ) latest_fee_data ON true
 WHERE varda_child.varda_child_id IS NOT NULL
-AND COALESCE(latest_fee_data.uploaded_at <= COALESCE(latest_fee_decision.approved_at, '-infinity'), true)
+AND COALESCE(latest_fee_data.uploaded_at <= COALESCE(latest_finance_decision.approved_at, '-infinity'), true)
 """
     )
-        .bind("effective", FeeDecisionStatus.effective)
+        .bind("effectiveFeeDecision", FeeDecisionStatus.effective)
+        .bind("effectiveVoucherValueDecision", VoucherValueDecisionStatus.effective)
         .map { rs, _ -> rs.getUUID("person_id") to rs.getLong("varda_child_id") }
         .toList()
 }
@@ -185,6 +209,14 @@ SELECT vfd.varda_id
 FROM varda_decision vd
 JOIN varda_fee_data vfd ON vd.id = vfd.varda_decision_id
 JOIN fee_decision d ON vfd.evaka_fee_decision_id = d.id AND NOT daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
+WHERE vd.varda_decision_id = :decisionId
+
+UNION ALL
+
+SELECT vfd.varda_id
+FROM varda_decision vd
+JOIN varda_fee_data vfd ON vd.id = vfd.varda_decision_id
+JOIN voucher_value_decision d ON vfd.evaka_voucher_value_decision_id = d.id AND NOT daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
 WHERE vd.varda_decision_id = :decisionId
 """
         )
@@ -200,11 +232,13 @@ fun getDecisionFeeData(tx: Database.Read, childVardaId: Long, decisionPeriod: Va
             """
 SELECT
     d.id AS fee_decision_id,
+    NULL AS voucher_value_decision_id,
     vc.varda_child_id AS varda_child_id,
     vfd.varda_id AS varda_id,
     GREATEST(d.valid_from, :decisionStartDate) AS start_date,
     LEAST(d.valid_to, :decisionEndDate) AS end_date,
     (p.fee + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
+    0.0 AS voucher_value,
     d.family_size AS family_size,
     p.placement_type AS placement_type
 FROM varda_child vc
@@ -221,6 +255,35 @@ LEFT JOIN (
 ) alterations ON p.id = alterations.id
 JOIN varda_decision vd ON vd.varda_decision_id = :decisionId
 LEFT JOIN varda_fee_data vfd ON d.id = vfd.evaka_fee_decision_id AND vd.id = vfd.varda_decision_id AND vc.id = vfd.varda_child_id
+WHERE vc.varda_child_id = :childVardaId
+
+UNION ALL
+
+SELECT
+    NULL AS fee_decision_id,
+    d.id AS voucher_value_decision_id,
+    vc.varda_child_id AS varda_child_id,
+    vfd.varda_id AS varda_id,
+    GREATEST(d.valid_from, :decisionStartDate) AS start_date,
+    LEAST(d.valid_to, :decisionEndDate) AS end_date,
+    (p.co_payment + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
+    p.voucher_value / 100.0 AS voucher_value,
+    d.family_size AS family_size,
+    p.placement_type AS placement_type
+FROM varda_child vc
+JOIN voucher_value_decision_part p ON vc.person_id = p.child
+JOIN voucher_value_decision d ON p.voucher_value_decision_id = d.id AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod AND d.status = ANY(:effective)
+LEFT JOIN (
+    SELECT voucher_value_decision_part.id, SUM(effects.effect) sum
+    FROM voucher_value_decision_part
+    JOIN (
+        SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
+        FROM voucher_value_decision_part
+    ) effects ON voucher_value_decision_part.id = effects.id
+    GROUP BY voucher_value_decision_part.id
+) alterations ON p.id = alterations.id
+JOIN varda_decision vd ON vd.varda_decision_id = :decisionId
+LEFT JOIN varda_fee_data vfd ON d.id = vfd.evaka_voucher_value_decision_id AND vd.id = vfd.varda_decision_id AND vc.id = vfd.varda_child_id
 WHERE vc.varda_child_id = :childVardaId
 """
         )
@@ -257,13 +320,13 @@ private fun baseToFeeData(
     return VardaFeeData(
         huoltajat = vardaGuardians,
         lapsi = childUrl,
-        palveluseteli_arvo = 0.0,
         maksun_peruste_koodi =
         if (feeDataBase.placementType == PlacementType.FIVE_YEARS_OLD_DAYCARE)
             FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
         else
             FeeBasisCode.DAYCARE.code,
         asiakasmaksu = feeDataBase.fee,
+        palveluseteli_arvo = feeDataBase.voucherValue,
         perheen_koko = feeDataBase.familySize,
         alkamis_pvm = feeDataBase.startDate,
         paattymis_pvm = feeDataBase.endDate
@@ -282,12 +345,14 @@ data class VardaGuardian(
 )
 
 data class VardaFeeDataBase(
-    val feeDecisionId: UUID,
+    val feeDecisionId: UUID?,
+    val voucherValueDecisionId: UUID?,
     val vardaChildId: Long,
     val vardaId: Long?,
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val fee: Double,
+    val voucherValue: Double,
     val familySize: Int,
     val placementType: PlacementType
 )
