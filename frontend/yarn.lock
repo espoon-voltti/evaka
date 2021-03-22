@@ -3052,9 +3052,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/cli@npm:^1.58.0":
-  version: 1.62.0
-  resolution: "@sentry/cli@npm:1.62.0"
+"@sentry/cli@npm:^1.63.1":
+  version: 1.63.1
+  resolution: "@sentry/cli@npm:1.63.1"
   dependencies:
     https-proxy-agent: ^5.0.0
     mkdirp: ^0.5.5
@@ -3063,7 +3063,7 @@ __metadata:
     proxy-from-env: ^1.1.0
   bin:
     sentry-cli: bin/sentry-cli
-  checksum: 40c9d071789a5aed2ae5fcad26960898c7d6109f9cc0372af9b9aef21001e15b77654c37d5e2864c7c5e22920447e41b0bc3871ee752dbf2c2ce322ae0c129e6
+  checksum: 32e718d4595eaf3bf4ffb3fe9937ebd772e24834e95a3154c007ac9556ecb08dd6818d7f76ca26941def3cd0e759352208ca1eadace16f34ddd574ed42e6b2b3
   languageName: node
   linkType: hard
 
@@ -3119,12 +3119,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/webpack-plugin@npm:^1.14.1":
-  version: 1.14.1
-  resolution: "@sentry/webpack-plugin@npm:1.14.1"
+"@sentry/webpack-plugin@npm:^1.14.2":
+  version: 1.14.2
+  resolution: "@sentry/webpack-plugin@npm:1.14.2"
   dependencies:
-    "@sentry/cli": ^1.58.0
-  checksum: b9654125ee58ea7fea29b557394af1157fa27a7e05e7032b704c12e1a4ebc147d86b3baa47fe4860155c7d87d72c442723cebb4e98caf1e5e34c77ff9d897bee
+    "@sentry/cli": ^1.63.1
+  checksum: 3517da8d40d0c0eba1e7ae1bf5f1500cf5944b29ed3bbd76833dd648c44a6789a0fd0d642943b8d00d1a06f5f5d3bb0334dcf7b912fc0f3f70f2aeb855684ca7
   languageName: node
   linkType: hard
 
@@ -8387,15 +8387,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "css-loader@npm:5.1.1"
+"css-loader@npm:^5.1.3":
+  version: 5.1.3
+  resolution: "css-loader@npm:5.1.3"
   dependencies:
     camelcase: ^6.2.0
     cssesc: ^3.0.0
     icss-utils: ^5.1.0
     loader-utils: ^2.0.0
-    postcss: ^8.2.6
+    postcss: ^8.2.8
     postcss-modules-extract-imports: ^3.0.0
     postcss-modules-local-by-default: ^4.0.0
     postcss-modules-scope: ^3.0.0
@@ -8405,7 +8405,7 @@ __metadata:
     semver: ^7.3.4
   peerDependencies:
     webpack: ^4.27.0 || ^5.0.0
-  checksum: 620fae3cace4a251fec723da2a4549a3874dd3459774451f834b19c4f38051aa76323d500d5d3408244b11fb40dbfc2fb30722be7b5e87ba7c6bed65396a898b
+  checksum: 032cf72141b73406005aba954a54f5d29c9c9f057ca6a8489935a3017d63b22f2ff199985d0dede99c09fe3cc8d04c962d1896ac4d6d0f057f83ac429f234650
   languageName: node
   linkType: hard
 
@@ -10003,7 +10003,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": 5.14.0
     "@fortawesome/react-fontawesome": 0.1.11
     "@sentry/browser": ^6.2.1
-    "@sentry/webpack-plugin": ^1.14.1
+    "@sentry/webpack-plugin": ^1.14.2
     "@storybook/addon-actions": ^6.1.21
     "@storybook/react": ^6.1.21
     "@types/classnames": ^2.2.11
@@ -10029,7 +10029,7 @@ __metadata:
     citizen-frontend: "link:src/citizen-frontend"
     classnames: ^2.2.6
     core-js: ^3.8.3
-    css-loader: ^5.1.1
+    css-loader: ^5.1.3
     csstype: ^3.0.6
     date-fns: ^2.17.0
     employee-frontend: "link:src/employee-frontend"
@@ -10042,7 +10042,7 @@ __metadata:
     express: ^4.17.1
     express-http-proxy: ^1.6.2
     focus-trap-react: ^8.4.2
-    fork-ts-checker-webpack-plugin: ^6.1.1
+    fork-ts-checker-webpack-plugin: ^6.2.0
     history: ^4.9.0
     html-webpack-plugin: ^5.3.1
     husky: ^5.0.9
@@ -10057,7 +10057,7 @@ __metadata:
     make-error-cause: ^2.3.0
     parcel-bundler: ^1.12.4
     polished: ^4.1.0
-    postcss-loader: ^5.1.0
+    postcss-loader: ^5.2.0
     postcss-preset-env: ^6.7.0
     prettier: ^2.2.1
     react: ^17.0.1
@@ -10082,11 +10082,11 @@ __metadata:
     testcafe: ~1.9.4
     testcafe-reporter-junit: 3.0.2
     ts-jest: ^26.5.3
-    ts-loader: ^8.0.17
-    tsconfig-paths-webpack-plugin: ^3.3.0
+    ts-loader: ^8.0.18
+    tsconfig-paths-webpack-plugin: ^3.5.1
     tslib: ^2.1.0
     typescript: ^4.1.3
-    webpack: ^5.24.4
+    webpack: ^5.27.1
     webpack-cli: ^4.5.0
     webpack-dev-middleware: ^4.1.0
     webpack-pwa-manifest: ^4.3.0
@@ -10751,9 +10751,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:^6.1.1":
-  version: 6.1.1
-  resolution: "fork-ts-checker-webpack-plugin@npm:6.1.1"
+"fork-ts-checker-webpack-plugin@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "fork-ts-checker-webpack-plugin@npm:6.2.0"
   dependencies:
     "@babel/code-frame": ^7.8.3
     "@types/json-schema": ^7.0.5
@@ -10767,7 +10767,7 @@ __metadata:
     schema-utils: 2.7.0
     semver: ^7.3.2
     tapable: ^1.0.0
-  checksum: 0327346d6a2939f90274945c53024387f5e527cff4313fdd6edfb2aa4c0760b843648171ba9221d6675b8c4dd0a481f269690541e6d4f6161aed1c2c8a27fbab
+  checksum: 0600c928014a1a0a24728aca863a998028b2f3cbbd53722ecb1555cfc0723a31662d1b3970e58d1dad646bf16c6da12415ca779e84ea0446dcf74122f0c3d41c
   languageName: node
   linkType: hard
 
@@ -16193,9 +16193,9 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "postcss-loader@npm:5.1.0"
+"postcss-loader@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "postcss-loader@npm:5.2.0"
   dependencies:
     cosmiconfig: ^7.0.0
     klona: ^2.0.4
@@ -16203,7 +16203,7 @@ fsevents@^1.2.7:
   peerDependencies:
     postcss: ^7.0.0 || ^8.0.1
     webpack: ^5.0.0
-  checksum: 266feaa1d958871a00f3eb5d1e1d54d7cac105e85d7c7f494404161a3d77d3edbb128c32ea2f263c76baeff015e56e9067e5c0bd44f63b52976bd30c973909e1
+  checksum: 669232a256aa44a08f37122f7645a4979f8ec9f87c387596e4970c39da96d1ae12cec077e915314d09262dcd584fc12592920298b21b1b6cbb562adadc3ce516
   languageName: node
   linkType: hard
 
@@ -16815,14 +16815,14 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.2.6":
-  version: 8.2.7
-  resolution: "postcss@npm:8.2.7"
+"postcss@npm:^8.2.8":
+  version: 8.2.8
+  resolution: "postcss@npm:8.2.8"
   dependencies:
     colorette: ^1.2.2
     nanoid: ^3.1.20
     source-map: ^0.6.1
-  checksum: cd2a7a8b9c1950783afd05e906d65a6433b13bcce5a52f3c2802c524479e7ba6893f516338ed1bc755b3a8545eb5a181daf0fcf25af694ad2e33e9d9fe7d4254
+  checksum: 6e17d28833cf918a5ab306bfc7ec66b236dc51ed0f3de959491d40f6a171f5bd5f26de12f74e6bfeebaad44b0ac92b9f477a669d5f1fc07a27d67d8147a4bf6f
   languageName: node
   linkType: hard
 
@@ -20371,9 +20371,9 @@ resolve@^1.14.2:
   languageName: node
   linkType: hard
 
-"ts-loader@npm:^8.0.17":
-  version: 8.0.17
-  resolution: "ts-loader@npm:8.0.17"
+"ts-loader@npm:^8.0.18":
+  version: 8.0.18
+  resolution: "ts-loader@npm:8.0.18"
   dependencies:
     chalk: ^4.1.0
     enhanced-resolve: ^4.0.0
@@ -20383,7 +20383,7 @@ resolve@^1.14.2:
   peerDependencies:
     typescript: "*"
     webpack: "*"
-  checksum: e09b71875034ec5daf0f6eac2acefea31c78df1a0aa2d6f76f66954326acf93bafa9092a5a7f5872276bba39ba4dfebbcb7c21ef88d4334ff95bb4d216b9dfe0
+  checksum: 16c1a3cc4d03fb96293f9e0dd163e9eb872d8b2e610eeff50ed1502b3c5fda870cff3b9cc48423cf1f4bcd4cb5755c4456b3e7d8351014702a7f34d5fdd1ecc0
   languageName: node
   linkType: hard
 
@@ -20397,18 +20397,18 @@ resolve@^1.14.2:
   languageName: node
   linkType: hard
 
-"tsconfig-paths-webpack-plugin@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "tsconfig-paths-webpack-plugin@npm:3.3.0"
+"tsconfig-paths-webpack-plugin@npm:^3.5.1":
+  version: 3.5.1
+  resolution: "tsconfig-paths-webpack-plugin@npm:3.5.1"
   dependencies:
-    chalk: ^2.3.0
-    enhanced-resolve: ^4.0.0
-    tsconfig-paths: ^3.4.0
-  checksum: 4ae21d85e211610c4f7246930ebc265135f37c53f63d32733ecb2e0a3c218ba9ee6e86cebf60b86f7b5e5c39ba5421d7319afbd7cc640b5d927ee4472bb7a1ab
+    chalk: ^4.1.0
+    enhanced-resolve: ^5.7.0
+    tsconfig-paths: ^3.9.0
+  checksum: 522a48d26112f94850c1d71694bd59a768337df86af5e7b7304debf7b3f825b9a3351484185b3d928de59c882296c6f95bc6167e68c71c60224aa4238b5680b4
   languageName: node
   linkType: hard
 
-"tsconfig-paths@npm:^3.4.0":
+"tsconfig-paths@npm:^3.9.0":
   version: 3.9.0
   resolution: "tsconfig-paths@npm:3.9.0"
   dependencies:
@@ -21354,9 +21354,9 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.24.4":
-  version: 5.24.4
-  resolution: "webpack@npm:5.24.4"
+"webpack@npm:^5.27.1":
+  version: 5.27.1
+  resolution: "webpack@npm:5.27.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.46
@@ -21386,7 +21386,7 @@ typescript@^4.1.3:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: d7a9ab34014de5d51de2b6079ff926d290eba59c00be05fb2a9e9263b8b2981db4776eb9668dc4177471ad1bba6b49e887c7ab1991edc4df7bbc9dbea4da6691
+  checksum: 9f801e3d86c093ebe8fe4f5ec28cf6d28bc14f62ff64d0b06abe4555112f21d7d82e313cde1e8f5c6fd41a0953f36b840e5e5116530699d0ac8e1b588ce74ce1
   languageName: node
   linkType: hard
 
