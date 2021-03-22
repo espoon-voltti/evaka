@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,6 +11,7 @@ import { Gap } from '@evaka/lib-components/white-space'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
 import { AttendanceResponse, Group } from '../../api/attendances'
+import colors from '@evaka/lib-components/colors'
 
 interface GroupSelectorProps {
   groupIdOrAll: string | 'all'
@@ -75,6 +76,7 @@ export default function GroupSelector({
           ))}
         </>
       )}
+      <Info>{i18n.attendances.chooseGroupInfo}</Info>
     </GroupChipWrapper>
   )
 }
@@ -88,4 +90,12 @@ const GroupChipWrapper = styled.div`
   > div {
     margin-bottom: 16px;
   }
+`
+
+const Info = styled.span`
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 21px;
+  color: ${colors.greyscale.dark};
 `

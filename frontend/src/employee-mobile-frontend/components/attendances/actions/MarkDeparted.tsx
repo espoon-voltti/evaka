@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -20,6 +20,7 @@ import {
 } from '@evaka/lib-components/layout/flex-helpers'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
 import { Result, Loading } from '@evaka/lib-common/api'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 
 import {
   ContentAreaWithShadow,
@@ -109,6 +110,7 @@ export default React.memo(function MarkDeparted() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}
@@ -168,7 +170,7 @@ export default React.memo(function MarkDeparted() {
                           markDepartedWithAbsence(selectedAbsenceType)
                         }
                         onSuccess={() => history.goBack()}
-                        data-qa="mark-absent"
+                        data-qa="mark-departed-with-absence-btn"
                       />
                     ) : (
                       <Button
@@ -192,7 +194,7 @@ export default React.memo(function MarkDeparted() {
                     text={i18n.common.confirm}
                     onClick={() => markDeparted()}
                     onSuccess={() => history.go(-2)}
-                    data-qa="mark-present"
+                    data-qa="mark-departed-btn"
                     disabled={timeError}
                   />
                 </FixedSpaceRow>

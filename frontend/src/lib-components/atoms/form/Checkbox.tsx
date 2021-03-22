@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -121,7 +121,8 @@ function Checkbox({
   onChange,
   disabled,
   className,
-  dataQa
+  dataQa,
+  'data-qa': dataQa2
 }: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -132,7 +133,7 @@ function Checkbox({
         if (!disabled && onChange) onChange(!checked)
       }}
       className={classNames(className, { disabled })}
-      data-qa={dataQa}
+      data-qa={dataQa2 ?? dataQa}
     >
       <Box>
         <CheckboxInput

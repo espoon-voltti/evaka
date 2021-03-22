@@ -9,6 +9,7 @@ import {
 } from '../../dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
+  deleteDaycareDailyNotes,
   deleteEmployeeById,
   deleteMobileDevice,
   deletePairing,
@@ -30,6 +31,7 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
+import ChildPage from '../../pages/employee/mobile/child-page'
 import { DaycareDailyNote, DaycarePlacement } from '../../dev-api/types'
 import LocalDate from '@evaka/lib-common/local-date'
 
@@ -95,7 +97,10 @@ fixture('Mobile daily notes')
   .beforeEach(async () => {
     await t.useRole(mobileAutoSignInRole(mobileLongTermToken))
   })
-  .afterEach(logConsoleMessages)
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
+    await deleteDaycareDailyNotes()
+  })
   .after(async () => {
     await deletePairing(pairingId)
     await deleteMobileDevice(mobileDeviceId)
@@ -104,6 +109,7 @@ fixture('Mobile daily notes')
   })
 
 const mobileGroupsPage = new MobileGroupsPage()
+const childPage = new ChildPage()
 
 test('Daycare groups are shown', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
@@ -155,4 +161,86 @@ test('Daycare group empty list indicator is shown', async (t) => {
 
   await t.click(mobileGroupsPage.departedTab)
   await t.expect(mobileGroupsPage.noChildrenIndicator.visible).ok()
+})
+
+test('User can create a daily note for a child', async (t) => {
+  const daycareDailyNote: DaycareDailyNote = {
+    id: uuidv4(),
+    groupId: daycareGroup.data.id,
+    childId: enduserChildFixtureJari.id,
+    date: LocalDate.today(),
+    note: 'Testi viesti',
+    feedingNote: 'MEDIUM',
+    sleepingHours: '3',
+    sleepingNote: 'NONE',
+    reminders: ['DIAPERS'],
+    reminderNote: 'Ei enää pähkinöitä antaa saa',
+    modifiedBy: 'e2e-test'
+  }
+
+  await t
+    .expect(
+      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
+        .textContent
+    )
+    .eql(
+      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+    )
+
+  await t
+    .expect(
+      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
+        .visible
+    )
+    .notOk()
+
+  await childPage.createDailyNote(
+    fixtures.enduserChildFixtureJari,
+    mobileGroupsPage,
+    daycareDailyNote
+  )
+
+  await t.click(
+    mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
+  )
+  await t
+    .expect(childPage.dailyNoteNoteInput.textContent)
+    .eql(daycareDailyNote.note)
+  await t
+    .expect(childPage.dailyNoteSleepingTimeInput.value)
+    .eql(daycareDailyNote.sleepingHours.toString())
+  await t
+    .expect(childPage.dailyNoteReminderNoteInput.textContent)
+    .eql(daycareDailyNote.reminderNote)
+})
+
+test('User can delete a daily note for a child', async (t) => {
+  const daycareDailyNote: DaycareDailyNote = {
+    id: uuidv4(),
+    groupId: daycareGroup.data.id,
+    childId: enduserChildFixtureJari.id,
+    date: LocalDate.today(),
+    note: 'Testi viesti',
+    feedingNote: 'MEDIUM',
+    sleepingHours: '',
+    sleepingNote: 'NONE',
+    reminders: ['DIAPERS'],
+    reminderNote: 'Ei enää pähkinöitä antaa saa',
+    modifiedBy: 'e2e-test'
+  }
+
+  await postDaycareDailyNote(daycareDailyNote)
+
+  await t.click(
+    mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
+  )
+
+  await childPage.deleteDailyNote()
+
+  await t
+    .expect(
+      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
+        .visible
+    )
+    .notOk()
 })

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -32,7 +32,9 @@ export const fi = {
     staff: 'Henkilökunta',
     messages: 'Viestit',
     back: 'Takaisin',
-    hours: 'Tuntia'
+    hours: 'Tuntia',
+    remove: 'Poista',
+    clear: 'Tyhjennä'
   },
   absences: {
     title: 'Poissaolomerkinnät',
@@ -81,6 +83,7 @@ export const fi = {
     departureTime: 'Lähtöaika',
     arrivalTime: 'Saapumisaika',
     chooseGroup: 'Valitse ryhmä',
+    chooseGroupInfo: 'Lapsia: Läsnä nyt/Ryhmässä yhteensä',
     searchPlaceholder: 'Etsi lapsen nimellä',
     noAbsences: 'Ei poissaoloja',
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
@@ -109,7 +112,8 @@ export const fi = {
         reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
         sleepingTime: 'Esim 1,5'
       },
-      noNotes: 'Ei merkintöjä tälle päivälle'
+      noNotes: 'Ei merkintöjä tälle päivälle',
+      clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?'
     },
     absenceTitle: 'Poissaolomerkintä'
   },

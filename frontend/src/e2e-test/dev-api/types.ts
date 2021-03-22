@@ -238,7 +238,7 @@ export interface Child {
   // todo: could add support for allergies etc
 }
 
-type PlacementType = 'DAYCARE' | 'PRESCHOOL'
+type PlacementType = 'DAYCARE' | 'PRESCHOOL' | 'PRESCHOOL_DAYCARE'
 
 export interface DaycarePlacement {
   id: UUID

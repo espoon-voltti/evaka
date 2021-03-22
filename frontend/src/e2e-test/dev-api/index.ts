@@ -829,3 +829,27 @@ export async function clearBulletins(): Promise<void> {
     throw new DevApiError(e)
   }
 }
+
+export async function deleteAttendances(): Promise<void> {
+  try {
+    await devClient.delete(`/attendances`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteDaycareDailyNotes(): Promise<void> {
+  try {
+    await devClient.delete(`/daycare-daily-notes`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteAbsences(): Promise<void> {
+  try {
+    await devClient.delete(`/absences`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

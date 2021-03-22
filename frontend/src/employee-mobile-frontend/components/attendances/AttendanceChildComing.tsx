@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,13 +28,14 @@ export default React.memo(function AttendanceChildComing({
       <FixedSpaceColumn>
         <WideLinkButton
           $primary
-          data-qa="mark-present"
+          data-qa="mark-present-link"
           to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markpresent`}
         >
           {i18n.attendances.actions.markPresent}
         </WideLinkButton>
 
         <WideLinkButton
+          data-qa="mark-absent-link"
           to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markabsent`}
         >
           {i18n.attendances.actions.markAbsent}

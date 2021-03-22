@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -232,6 +232,15 @@ export async function createOrUpdateDaycareDailyNoteForChild(
     : client.post(url, daycareDailyNote)
   )
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteDaycareDailyNote(
+  noteId: string
+): Promise<Result<void>> {
+  return client
+    .delete(`/daycare-daily-note/${noteId}`)
+    .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -18,6 +18,7 @@ import Button from '@evaka/lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
 import Title from '@evaka/lib-components/atoms/Title'
 import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 
 import {
   ContentAreaWithShadow,
@@ -68,6 +69,7 @@ export default React.memo(function MarkPresent() {
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && (
         <TallContentArea
           opaque={false}
@@ -108,7 +110,7 @@ export default React.memo(function MarkPresent() {
                   text={i18n.common.confirm}
                   onClick={() => childArrives()}
                   onSuccess={() => history.go(-2)}
-                  data-qa="mark-present"
+                  data-qa="mark-present-btn"
                 />
               </FixedSpaceRow>
             </Actions>
