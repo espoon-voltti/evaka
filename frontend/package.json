@@ -82,6 +82,8 @@
     "tslib": "^2.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
     "@sentry/webpack-plugin": "^1.14.1",
     "@storybook/addon-actions": "^6.1.21",
     "@storybook/react": "^6.1.21",
@@ -100,7 +102,7 @@
     "@types/styled-components": "^5.1.7",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
-    "babel-loader": "8.2.2",
+    "babel-loader": "^8.2.2",
     "bulma": "0.7.5",
     "css-loader": "^5.1.1",
     "csstype": "^3.0.6",
@@ -155,7 +157,15 @@
     "node": ">= 14.15.0"
   },
   "browserslist": [
-    "Firefox ESR"
+    "Firefox ESR",
+    "last 2 Chrome versions",
+    "last 2 Android versions",
+    "last 2 FirefoxAndroid versions",
+    "last 2 ChromeAndroid versions",
+    "last 2 Safari versions",
+    "last 2 iOS versions",
+    "last 2 Edge versions",
+    "> 5% in FI"
   ],
   "prettier": {
     "bracketSpacing": true,
