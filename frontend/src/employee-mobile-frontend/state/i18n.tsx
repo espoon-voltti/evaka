@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext, useContext } from 'react'
-import { translations, Lang, Translations } from '../assets/i18n'
+import { translations } from '../assets/i18n'
+import type { Lang, Translations } from '../assets/i18n'
 
 interface I18nState {
   lang: Lang
@@ -34,4 +35,4 @@ export const useTranslation = (): { i18n: Translations; lang: Lang } => {
   return { i18n: translations[lang], lang }
 }
 
-export { Lang, Translations }
+export type { Lang, Translations }
