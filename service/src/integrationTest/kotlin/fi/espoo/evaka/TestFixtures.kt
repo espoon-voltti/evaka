@@ -421,6 +421,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             id = testVoucherDaycare.id,
             name = testVoucherDaycare.name,
             providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            ophOrganizerOid = defaultPurchasedOrganizerOid,
             invoicedByMunicipality = false
         )
     )
