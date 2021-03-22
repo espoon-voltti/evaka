@@ -727,6 +727,16 @@ export const fi = {
       endDate: 'Päättyen',
       status: 'Tila'
     },
+    messaging: {
+      title: 'Lapseen liittyvä viestintä (vastaanottajat)',
+      info:
+        'Lapseen liittyvät viestit lähetetään merkityille vastaanottajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle päämiehelle tai huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta.',
+      name: 'Vastaanottajan nimi',
+      role: 'Rooli',
+      notBlocklisted: 'Saa Vastaanottaa',
+      guardian: 'Huoltaja',
+      headOfChild: 'Päämies'
+    },
     backupCares: {
       title: 'Varasijoitukset',
       remove: 'Haluatko poistaa varasijoituksen?',

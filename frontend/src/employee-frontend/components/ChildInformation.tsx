@@ -35,6 +35,7 @@ import Guardians from '../components/child-information/Guardians'
 import FamilyContacts from '../components/child-information/FamilyContacts'
 import { requireRole } from '../utils/roles'
 import ChildApplications from '../components/child-information/ChildApplications'
+import MessageBlocklist from '@evaka/employee-frontend/components/child-information/MessageBlocklist'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -79,7 +80,8 @@ const components = {
   assistance: Assistance,
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
-  applications: ChildApplications
+  applications: ChildApplications,
+  'message-blocklist': MessageBlocklist
 }
 
 const layouts: Layouts<typeof components> = {
@@ -87,6 +89,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
     { component: 'guardians', open: false },
     { component: 'parents', open: false },
+    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },

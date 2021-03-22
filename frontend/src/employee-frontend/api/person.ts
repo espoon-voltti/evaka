@@ -16,6 +16,7 @@ import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
 import { JsonOf } from '@evaka/lib-common/json'
 import LocalDate from '@evaka/lib-common/local-date'
+import { Recipient } from '@evaka/employee-frontend/components/messages/types'
 
 export async function getPersonDetails(
   id: UUID
@@ -128,6 +129,28 @@ export async function getChildApplicationSummaries(
       }))
     )
     .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getChildRecipients(
+  childId: UUID
+): Promise<Result<Recipient[]>> {
+  return client
+    .get<JsonOf<Recipient[]>>(`/child/${childId}/recipients`)
+    .then((v) => Success.of(v.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateChildRecipient(
+  childId: UUID,
+  recipientId: UUID,
+  blocklisted: boolean
+): Promise<Result<void>> {
+  return client
+    .put<void>(`/child/${childId}/recipients/${recipientId}`, {
+      blocklisted: blocklisted
+    })
+    .then((v) => Success.of(v.data))
     .catch((e) => Failure.fromError(e))
 }
 
