@@ -44,11 +44,12 @@ WHERE child_id IN (
 fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): UUID {
     return createUpdate(
         """
-INSERT INTO daycare_daily_note (child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_hours, reminders, reminder_note, modified_by, modified_at)
-VALUES(:childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :sleepingHours, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy, now())
+INSERT INTO daycare_daily_note (id, child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_hours, reminders, reminder_note, modified_by, modified_at)
+VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :sleepingHours, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy, COALESCE(:modifiedAt, now()))
 RETURNING id
         """.trimIndent()
     )
+        .bind("id", note.id)
         .bind("childId", note.childId)
         .bind("groupId", note.groupId)
         .bind("date", note.date)
@@ -59,6 +60,7 @@ RETURNING id
         .bind("reminders", note.reminders.map { it.name }.toTypedArray())
         .bind("reminderNote", note.reminderNote)
         .bind("modifiedBy", note.modifiedBy)
+        .bind("modifiedAt", note.modifiedAt)
         .executeAndReturnGeneratedKeys()
         .mapTo<UUID>()
         .first()
@@ -118,7 +120,7 @@ WITH expired_child_notes AS (
     SELECT id, child_id
     FROM daycare_daily_note
     WHERE child_id IS NOT null
-        AND modified_at < :now - INTERVAL '12 hours'
+        AND modified_at < :now::timestamp - INTERVAL '12 hours'
 )
 DELETE FROM daycare_daily_note
 WHERE id IN (
