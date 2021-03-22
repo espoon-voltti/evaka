@@ -153,7 +153,7 @@ export default React.memo(function DailyNoteEditor() {
                 <InlineButton
                   text={i18n.common.clear}
                   onClick={deleteNote}
-                  data-qa="delete-daily-note-btn"
+                  dataQa="delete-daily-note-btn"
                 />
               </Buttons>
             </Center>
@@ -216,7 +216,7 @@ export default React.memo(function DailyNoteEditor() {
                           setDailyNote({ ...dailyNote, feedingNote: levelInfo })
                         }
                         checked={dailyNote.feedingNote === levelInfo}
-                        data-qa={`feeding-note-${levelInfo}`}
+                        dataQa={`feeding-note-${levelInfo}`}
                       />
                     ))}
                   </FixedSpaceColumn>
@@ -236,7 +236,7 @@ export default React.memo(function DailyNoteEditor() {
                           })
                         }
                         checked={dailyNote.sleepingNote === levelInfo}
-                        data-qa={`sleeping-note-${levelInfo}`}
+                        dataQa={`sleeping-note-${levelInfo}`}
                       />
                     ))}
                   </FixedSpaceColumn>
@@ -286,7 +286,7 @@ export default React.memo(function DailyNoteEditor() {
                               })
                         }}
                         checked={dailyNote.reminders.includes(reminder)}
-                        data-qa={`reminders-${reminder}`}
+                        dataQa={`reminders-${reminder}`}
                       />
                     ))}
                     <TextArea

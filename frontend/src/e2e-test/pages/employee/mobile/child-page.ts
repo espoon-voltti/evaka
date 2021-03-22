@@ -163,6 +163,7 @@ export default class ChildPage {
     await t.click(this.dailyNoteLink)
 
     await t.typeText(this.dailyNoteNoteInput, dailyNote.note)
+
     await t.click(this.dailyNoteFeedingNote(dailyNote.feedingNote))
     await t.click(this.dailyNoteSleepingNote(dailyNote.sleepingNote))
     await t.typeText(this.dailyNoteSleepingTimeInput, dailyNote.sleepingHours)

@@ -49,7 +49,7 @@ VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :slee
 RETURNING id
         """.trimIndent()
     )
-        .bind("id", note.id)
+        .bind("id", note.id ?: UUID.randomUUID())
         .bind("childId", note.childId)
         .bind("groupId", note.groupId)
         .bind("date", note.date)
