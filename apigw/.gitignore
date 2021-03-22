@@ -12,3 +12,10 @@ dist/
 build/
 test-reports/
 .vscode
+
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
