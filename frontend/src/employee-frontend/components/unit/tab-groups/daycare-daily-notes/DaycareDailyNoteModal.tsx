@@ -10,7 +10,8 @@ import LocalDate from '@evaka/lib-common/local-date'
 import {
   DaycareDailyNoteFormData,
   deleteDaycareDailyNote,
-  upsertChildDaycareDailyNote
+  upsertChildDaycareDailyNote,
+  upsertGroupDaycareDailyNote
 } from '../../../../api/unit'
 import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
 import {
@@ -18,9 +19,19 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/layout/flex-helpers'
 import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
+import InputField, {
+  TextArea
+} from '@evaka/lib-components/atoms/form/InputField'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import Radio from '@evaka/lib-components/atoms/form/Radio'
+import styled from 'styled-components'
+import colors from '@evaka/lib-components/colors'
+
+const GrayFontContainer = styled.div`
+  & * {
+    color: ${colors.greyscale.medium};
+  }
+`
 
 interface Props {
   note: DaycareDailyNote | null
@@ -28,6 +39,7 @@ interface Props {
   groupId: string | null
   childFirstName: string
   childLastName: string
+  groupNote: string | null
   onClose: () => void
   reload: () => void
 }
@@ -53,6 +65,7 @@ export default React.memo(function DaycareDailyNoteModal({
   groupId,
   childFirstName,
   childLastName,
+  groupNote,
   onClose,
   reload
 }: Props) {
@@ -73,8 +86,11 @@ export default React.memo(function DaycareDailyNoteModal({
         onClose()
         reload()
       })
-    } else {
-      // TODO group daily note
+    } else if (groupId != null) {
+      void upsertGroupDaycareDailyNote(groupId, form).then(() => {
+        onClose()
+        reload()
+      })
     }
   }
 
@@ -92,7 +108,59 @@ export default React.memo(function DaycareDailyNoteModal({
     updateForm({ reminders: newReminders })
   }
 
-  return (
+  return groupId !== null ? (
+    <FormModal
+      data-qa={'daycare-daily-group-note-modal'}
+      title={i18n.unit.groups.daycareDailyNote.groupNoteHeader}
+      icon={faExclamation}
+      iconColour={'blue'}
+      resolve={{
+        action: () => {
+          submit()
+          onClose()
+        },
+        label: i18n.common.confirm
+      }}
+      reject={{
+        action: () => {
+          onClose()
+        },
+        label: i18n.common.cancel
+      }}
+    >
+      <FixedSpaceColumn>
+        <FixedSpaceColumn alignItems={'center'} fullWidth={true}>
+          <FixedSpaceRow
+            fullWidth={true}
+            justifyContent={'flex-end'}
+            spacing={'s'}
+          >
+            <IconButton
+              icon={faTrash}
+              onClick={deleteNote}
+              dataQa={'btn-delete-note'}
+            />
+            <span>{i18n.common.remove}</span>
+          </FixedSpaceRow>
+        </FixedSpaceColumn>
+        <FixedSpaceColumn alignItems={'left'} fullWidth={true} spacing={'L'}>
+          <FixedSpaceColumn>
+            <div className="bold">
+              {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
+            </div>
+            <TextArea
+              value={form.note || ''}
+              placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                updateForm({ note: e.target.value })
+              }
+              data-qa="group-note-input"
+            />
+          </FixedSpaceColumn>
+        </FixedSpaceColumn>
+      </FixedSpaceColumn>
+    </FormModal>
+  ) : (
     <FormModal
       data-qa={'daycare-daily-note-modal'}
       title={i18n.unit.groups.daycareDailyNote.header}
@@ -131,10 +199,12 @@ export default React.memo(function DaycareDailyNoteModal({
             <div className="bold">
               {i18n.unit.groups.daycareDailyNote.notesHeader}
             </div>
-            <InputField
+            <TextArea
               value={form.note || ''}
               placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
-              onChange={(value) => updateForm({ note: value })}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                updateForm({ note: e.target.value })
+              }
               data-qa="note-input"
             />
           </FixedSpaceColumn>
@@ -235,15 +305,28 @@ export default React.memo(function DaycareDailyNoteModal({
             />
           </FixedSpaceColumn>
 
-          <InputField
+          <TextArea
             type={'text'}
             placeholder={
               i18n.unit.groups.daycareDailyNote.otherThingsToRememberHeader
             }
             value={form.reminderNote || ''}
-            onChange={(value) => updateForm({ reminderNote: value })}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              updateForm({ reminderNote: e.target.value })
+            }
             data-qa="reminder-note-input"
           />
+
+          {groupNote && (
+            <FixedSpaceColumn>
+              <GrayFontContainer>
+                <div className="bold">
+                  {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
+                </div>
+                <p data-qa={'group-note'}>{groupNote}</p>
+              </GrayFontContainer>
+            </FixedSpaceColumn>
+          )}
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>
