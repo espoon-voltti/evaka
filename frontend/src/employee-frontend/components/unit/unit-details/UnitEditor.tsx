@@ -971,6 +971,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={showRequired(i18n.unitEditor.label.ophUnitOid)}
             value={form.ophUnitOid}
             onChange={(value) => updateForm({ ophUnitOid: value })}
+            width="L"
           />
         ) : (
           form.ophUnitOid
@@ -984,6 +985,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={showRequired(i18n.unitEditor.label.ophOrganizerOid)}
             value={form.ophOrganizerOid}
             onChange={(value) => updateForm({ ophOrganizerOid: value })}
+            width="L"
           />
         ) : (
           form.ophOrganizerOid
@@ -997,6 +999,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={showRequired(i18n.unitEditor.label.ophOrganizationOid)}
             value={form.ophOrganizationOid}
             onChange={(value) => updateForm({ ophOrganizationOid: value })}
+            width="L"
           />
         ) : (
           form.ophOrganizationOid
