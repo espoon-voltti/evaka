@@ -165,7 +165,9 @@
     "last 2 Safari versions",
     "last 2 iOS versions",
     "last 2 Edge versions",
-    "> 5% in FI"
+    "last 2 Samsung versions",
+    "> 5% in FI",
+    "last 3 years"
   ],
   "prettier": {
     "bracketSpacing": true,
