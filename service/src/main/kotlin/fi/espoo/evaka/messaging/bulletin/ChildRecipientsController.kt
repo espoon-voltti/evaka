@@ -1,5 +1,6 @@
 package fi.espoo.evaka.messaging.bulletin
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -27,7 +28,7 @@ class ChildRecipientsController(
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<Recipient>> {
-        // todo: audit log
+        Audit.MessagingBlocklistRead.log(childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
             UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER,
             UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF
@@ -48,7 +49,7 @@ class ChildRecipientsController(
         @PathVariable personId: UUID,
         @RequestBody body: EditRecipientRequest
     ): ResponseEntity<Unit> {
-        // todo: audit log
+        Audit.MessagingBlocklistEdit.log(childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
             UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR
         )
