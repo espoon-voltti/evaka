@@ -26,17 +26,22 @@ fun Database.Transaction.initBulletin(
         VALUES (:createdBy)
         RETURNING id
     """.trimIndent()
+
+    // language=sql
     val newBulletinId = this.createQuery(createBulletinSQL)
         .bind("createdBy", user.id)
         .mapTo<UUID>()
         .first()
+
     val createBulletinReceiverSQL = """
         INSERT INTO bulletin_receiver (bulletin_id, unit_id) VALUES (:newBulletinId, :unitId)
     """.trimIndent()
+
     this.createUpdate(createBulletinReceiverSQL)
         .bind("newBulletinId", newBulletinId)
         .bind("unitId", unitId)
         .execute()
+
     return newBulletinId
 }
 
@@ -48,13 +53,13 @@ fun Database.Transaction.updateDraftBulletin(
     content: String
 ) {
     // language=sql
-    val sql = """
+    val updateBulletinSQL = """
         UPDATE bulletin
-        SET group_id = :groupId, title = :title, content = :content
+        SET title = :title, content = :content
         WHERE id = :id AND created_by_employee = :userId AND sent_at IS NULL
     """.trimIndent()
 
-    val updated = this.createUpdate(sql)
+    val updated = this.createUpdate(updateBulletinSQL)
         .bind("id", id)
         .bind("userId", user.id)
         .bind("groupId", groupId)
@@ -63,6 +68,22 @@ fun Database.Transaction.updateDraftBulletin(
         .execute()
 
     if (updated == 0) throw NotFound("No bulletin $id found by user ${user.id} in draft state")
+    else {
+        // language=sql
+        val updateBulletinReceiverSQL = """
+        UPDATE bulletin_receiver
+        SET group_id = :groupId
+        WHERE bulletin_id = :bulletinId
+        """.trimIndent()
+
+        val receiverUpdated = this.createUpdate(updateBulletinReceiverSQL)
+            .bind("bulletinId", id)
+            .bind("userId", user.id)
+            .bind("groupId", groupId)
+            .execute()
+
+        if (receiverUpdated == 0) throw NotFound("No bulletin receiver found for bulletin $id")
+    }
 }
 
 fun Database.Transaction.deleteDraftBulletin(
@@ -70,12 +91,12 @@ fun Database.Transaction.deleteDraftBulletin(
     id: UUID
 ) {
     // language=sql
-    val updateBulletinSql = """
+    val updateBulletinSQL = """
         DELETE FROM bulletin
         WHERE id = :id AND created_by_employee = :userId AND sent_at IS NULL 
     """.trimIndent()
 
-    val deleted = this.createUpdate(updateBulletinSql)
+    val deleted = this.createUpdate(updateBulletinSQL)
         .bind("id", id)
         .bind("userId", user.id)
         .execute()
@@ -105,27 +126,28 @@ fun Database.Transaction.sendBulletin(
     // language=sql
     val insertBulletinInstancesSql = """
         WITH children AS (
-            SELECT pl.child_id
+            SELECT pl.child_id, br.id AS bulletin_receiver_id
             FROM bulletin b
-            JOIN daycare_group dg ON b.group_id = dg.id
+            JOIN bulletin_receiver br ON br.bulletin_id = b.id 
+            JOIN daycare_group dg ON br.group_id = dg.id
             JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
             WHERE b.id = :bulletinId
         ), receivers AS (
-            SELECT g.guardian_id AS receiver_id
+            SELECT g.guardian_id AS receiver_person_id, c.bulletin_receiver_id AS bulletin_receiver_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
             WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = c.child_id AND bl.blocked_recipient = g.guardian_id)
             
             UNION DISTINCT 
             
-            SELECT fc.head_of_child AS receiver_id
+            SELECT fc.head_of_child AS receiver_person_id, c.bulletin_receiver_id AS bulletin_receiver_id
             FROM children c
             JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
             WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = c.child_id AND bl.blocked_recipient = fc.head_of_child)
         )
-        INSERT INTO bulletin_instance (bulletin_id, receiver_id)
-        SELECT :bulletinId, receiver_id FROM receivers
+        INSERT INTO bulletin_instance (bulletin_receiver_id, receiver_person_id)
+        SELECT bulletin_receiver_id, receiver_person_id FROM receivers
     """.trimIndent()
 
     this.createUpdate(insertBulletinInstancesSql)
@@ -141,10 +163,11 @@ fun Database.Read.getSentBulletinsByUnit(
 ): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT COUNT(b.*) OVER (), b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT COUNT(b.*) OVER (), b.*, br.group_id AS group_id, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
+        JOIN bulletin_receiver br ON br.bulletin_id = b.id
         JOIN employee e on b.created_by_employee = e.id
-        JOIN daycare_group dg ON b.group_id = dg.id
+        JOIN daycare_group dg ON br.group_id = dg.id
         WHERE dg.daycare_id = :unitId AND b.sent_at IS NOT NULL
         ORDER BY b.sent_at DESC
         LIMIT :pageSize OFFSET (:page - 1) * :pageSize
@@ -186,11 +209,12 @@ fun Database.Read.getOwnBulletinDrafts(
 ): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT COUNT(b.*) OVER (), b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT COUNT(b.*) OVER (), b.*, br.group_id AS group_id, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
+        JOIN bulletin_receiver br ON br.bulletin_id = b.id
         JOIN employee e on b.created_by_employee = e.id
-        LEFT JOIN daycare_group dg ON b.group_id = dg.id
-        WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND b.unit_id = :unitId 
+        LEFT JOIN daycare_group dg ON br.group_id = dg.id
+        WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND br.unit_id = :unitId 
         ORDER BY b.updated DESC
         LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
@@ -214,8 +238,9 @@ fun Database.Read.getReceivedBulletinsByGuardian(
         SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
         FROM bulletin_instance bi
         JOIN bulletin b ON bi.bulletin_id = b.id
-        JOIN daycare_group dg on b.group_id = dg.id
-        WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL 
+        JOIN bulletin_receiver br ON br.bulletin_id = b.id
+        JOIN daycare_group dg on br.group_id = dg.id
+        WHERE bi.receiver_person_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
         LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
@@ -235,7 +260,7 @@ fun Database.Read.getUnreadBulletinCountByGuardian(
     val sql = """
         SELECT count(distinct bi.id) AS count
         FROM bulletin_instance bi
-        WHERE bi.receiver_id = :userId AND bi.read_at IS NULL
+        WHERE bi.receiver_person_id = :userId AND bi.read_at IS NULL
     """.trimIndent()
 
     return this.createQuery(sql)
@@ -252,7 +277,7 @@ fun Database.Transaction.markBulletinRead(
     val sql = """
         UPDATE bulletin_instance
         SET read_at = :readAt
-        WHERE id = :id AND receiver_id = :userId AND read_at IS NULL
+        WHERE id = :id AND receiver_person_id = :userId AND read_at IS NULL
     """.trimIndent()
 
     this.createUpdate(sql)
