@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
+import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -320,14 +321,14 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
     val childrenBasics = fetchChildrenBasics(unitId)
     val childrenAttendances = fetchChildrenAttendances(unitId)
     val childrenAbsences = fetchChildrenAbsences(unitId)
-    val childDaycareDailyNotes = fetchChildDaycareDailyNotes(unitId)
+    val daycareDailyNotesForChildrenPlacedInUnit = getDaycareDailyNotesForChildrenPlacedInUnit(unitId)
 
     val children = childrenBasics.map { child ->
         val attendance = childrenAttendances.firstOrNull { it.childId == child.id }
         val absences = childrenAbsences.filter { it.childId == child.id }
         val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
         val status = getChildAttendanceStatus(placementBasics, attendance, absences)
-        val daycareDailyNote = childDaycareDailyNotes.firstOrNull { it.childId == child.id }
+        val daycareDailyNote = daycareDailyNotesForChildrenPlacedInUnit.firstOrNull { it.childId == child.id }
 
         Child(
             id = child.id,
