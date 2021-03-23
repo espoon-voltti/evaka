@@ -4,12 +4,14 @@
 
 import type { EmployeeCustomizations } from 'lib-customizations/types'
 import EspooLogo from './EspooLogo.png'
+import featureFlags from './featureFlags'
 
 const customizations: EmployeeCustomizations = {
   cityLogo: {
     src: EspooLogo,
     alt: 'Espoo Logo'
-  }
+  },
+  featureFlags
 }
 
 export default customizations

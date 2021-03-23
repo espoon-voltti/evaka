@@ -8,5 +8,5 @@ import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { cityLogo }: EmployeeCustomizations = customizations
-export { cityLogo }
+const { cityLogo, featureFlags }: EmployeeCustomizations = customizations
+export { cityLogo, featureFlags }

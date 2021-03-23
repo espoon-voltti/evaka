@@ -5,6 +5,7 @@
 import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from '.'
+import { enCustomizations } from 'lib-customizations/citizen'
 
 const en: Translations = {
   common: {
@@ -58,7 +59,7 @@ const en: Translations = {
     logout: 'Log out'
   },
   footer: {
-    espooLabel: '© City of Espoo',
+    cityLabel: enCustomizations.footer.cityLabel,
     privacyPolicy: 'Privacy Notices',
     privacyPolicyLink:
       'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',

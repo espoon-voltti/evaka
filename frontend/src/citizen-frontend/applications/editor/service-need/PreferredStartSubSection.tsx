@@ -20,6 +20,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { isValidPreferredStartDate } from '../../../applications/editor/validations'
 import LocalDate from 'lib-common/local-date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { featureFlags } from 'lib-customizations/citizen'
 
 const clubTerms = ['13.08.2020 - 04.06.2021', '11.8.2021 - 03.06.2022']
 
@@ -176,7 +177,7 @@ export default React.memo(function PreferredStartSubSection({
                 })
               }
             />
-            {formData.urgent && (
+            {formData.urgent && featureFlags.urgencyAttachmentsEnabled === true && (
               <>
                 <Gap size={'s'} />
                 {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text()}

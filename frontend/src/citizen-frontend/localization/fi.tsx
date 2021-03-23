@@ -4,6 +4,7 @@
 
 import React from 'react'
 import { P } from 'lib-components/typography'
+import { fiCustomizations } from 'lib-customizations/citizen'
 
 export default {
   common: {
@@ -57,7 +58,7 @@ export default {
     logout: 'Kirjaudu ulos'
   },
   footer: {
-    espooLabel: '© Espoon kaupunki',
+    cityLabel: fiCustomizations.footer.cityLabel,
     privacyPolicy: 'Tietosuojaselosteet',
     privacyPolicyLink:
       'https://www.espoo.fi/fi-FI/Asioi_verkossa/Tietosuoja/Tietosuojaselosteet',
