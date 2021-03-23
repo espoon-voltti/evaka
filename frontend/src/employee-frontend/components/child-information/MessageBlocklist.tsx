@@ -29,6 +29,7 @@ import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
 import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
 import { UIContext } from '@evaka/employee-frontend/state/ui'
+import { UserContext } from '@evaka/employee-frontend/state/user'
 
 interface Props {
   id: UUID
@@ -38,6 +39,7 @@ interface Props {
 const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
   const { i18n } = useTranslation()
 
+  const { roles } = useContext(UserContext)
   const { setErrorMessage } = useContext(UIContext)
   const { recipients, setRecipients } = useContext(ChildContext)
 
@@ -92,6 +94,15 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
                       label={`${recipient.firstName} ${recipient.lastName}`}
                       hiddenLabel
                       checked={!recipient.blocklisted}
+                      disabled={
+                        !roles.find((r) =>
+                          [
+                            'ADMIN',
+                            'SERVICE_WORKER',
+                            'UNIT_SUPERVISOR'
+                          ].includes(r)
+                        )
+                      }
                       onChange={(checked: boolean) => {
                         setRecipients(Loading.of())
                         void updateChildRecipient(

@@ -100,6 +100,7 @@ const layouts: Layouts<typeof components> = {
   ['SERVICE_WORKER']: [
     { component: 'guardians', open: false },
     { component: 'parents', open: false },
+    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
@@ -110,6 +111,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'fee-alterations', open: true },
     { component: 'guardians', open: false },
     { component: 'parents', open: false },
+    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false }
@@ -117,6 +119,7 @@ const layouts: Layouts<typeof components> = {
   ['UNIT_SUPERVISOR']: [
     { component: 'guardians', open: false },
     { component: 'parents', open: false },
+    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
@@ -125,12 +128,14 @@ const layouts: Layouts<typeof components> = {
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
+    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
+    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
