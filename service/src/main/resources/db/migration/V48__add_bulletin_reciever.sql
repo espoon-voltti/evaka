@@ -1,4 +1,5 @@
 ALTER TABLE bulletin DROP COLUMN unit_id;
+ALTER TABLE bulletin DROP COLUMN group_id;
 ALTER TABLE bulletin ADD COLUMN sender text;
 CREATE TABLE bulletin_receiver (id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
                                 bulletin_id uuid NOT NULL REFERENCES bulletin(id),

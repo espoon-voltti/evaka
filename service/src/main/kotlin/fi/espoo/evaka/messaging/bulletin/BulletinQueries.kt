@@ -21,16 +21,23 @@ fun Database.Transaction.initBulletin(
     unitId: UUID
 ): UUID {
     // language=sql
-    val sql = """
-        INSERT INTO bulletin (created_by_employee, unit_id)
-        VALUES (:createdBy, :unitId)
+    val createBulletinSQL = """
+        INSERT INTO bulletin (created_by_employee)
+        VALUES (:createdBy)
         RETURNING id
     """.trimIndent()
-    return this.createQuery(sql)
+    val newBulletinId = this.createQuery(createBulletinSQL)
         .bind("createdBy", user.id)
-        .bind("unitId", unitId)
         .mapTo<UUID>()
         .first()
+    val createBulletinReceiverSQL = """
+        INSERT INTO bulletin_receiver (bulletin_id, unit_id) VALUES (:newBulletinId, :unitId)
+    """.trimIndent()
+    this.createUpdate(createBulletinReceiverSQL)
+        .bind("newBulletinId", newBulletinId)
+        .bind("unitId", unitId)
+        .execute()
+    return newBulletinId
 }
 
 fun Database.Transaction.updateDraftBulletin(
@@ -156,10 +163,11 @@ fun Database.Read.getBulletin(
 ): Bulletin? {
     // language=sql
     val sql = """
-        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT b.*, br.group_id AS group_id, br.unit_id AS unit_id, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
         JOIN employee e on b.created_by_employee = e.id
-        LEFT JOIN daycare_group dg ON b.group_id = dg.id
+        LEFT JOIN bulletin_receiver br ON b.id = br.bulletin_id
+        LEFT JOIN daycare_group dg ON br.group_id = dg.id
         
         WHERE b.id = :id
     """.trimIndent()
