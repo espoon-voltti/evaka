@@ -8,7 +8,7 @@ import {
 } from '@evaka/employee-frontend/api/person'
 import { Recipient } from '@evaka/employee-frontend/components/messages/types'
 import { ChildContext } from '@evaka/employee-frontend/state'
-import { Failure, Loading } from '@evaka/lib-common/api'
+import { Loading } from '@evaka/lib-common/api'
 import { UUID } from '@evaka/lib-common/types'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import {
@@ -22,58 +22,28 @@ import {
 import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
 import { P } from '@evaka/lib-components/typography'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import _ from 'lodash'
 import React, { useContext } from 'react'
-import { useState } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
+import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+import { UIContext } from '@evaka/employee-frontend/state/ui'
 
 interface Props {
   id: UUID
   open: boolean
 }
 
-interface NullableCheckboxProps {
-  checked: boolean | undefined
-  onChange: (checked: boolean) => void
-}
-
-interface CheckedByUUID {
-  id: UUID
-  checked: boolean
-}
-
-const NullableCheckbox = ({ checked, onChange }: NullableCheckboxProps) => {
-  const isDefined = checked === true || checked === false
-  return isDefined ? (
-    <Checkbox label={''} checked={checked as boolean} onChange={onChange} />
-  ) : null
-}
-
 const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
   const { i18n } = useTranslation()
 
+  const { setErrorMessage } = useContext(UIContext)
   const { recipients, setRecipients } = useContext(ChildContext)
 
-  const loadData = () => {
-    setRecipients(Loading.of())
-    void getChildRecipients(id).then(setRecipients)
-  }
+  const loadData = useRestApi(getChildRecipients, setRecipients)
 
-  const [checkboxStateById, setCheckboxStateById] = useState<CheckedByUUID[]>(
-    []
-  )
-
-  useEffect(loadData, [id])
-  useEffect(() => {
-    recipients.isSuccess &&
-      setCheckboxStateById(
-        recipients.value.map((recipient) => ({
-          id: recipient.personId,
-          checked: !recipient.blocklisted
-        }))
-      )
-  }, [recipients])
+  useEffect(() => loadData(id), [id])
 
   const getRoleString = (headOfChild: boolean, guardian: boolean) => {
     if (headOfChild && guardian) {
@@ -106,6 +76,10 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
             </Tr>
           </Thead>
           <Tbody>
+            {recipients.isLoading && <SpinnerSegment />}
+            {recipients.isFailure && (
+              <ErrorSegment title={i18n.common.loadingFailed} />
+            )}
             {recipients.isSuccess &&
               recipients.value.map((recipient: Recipient) => (
                 <Tr key={recipient.personId}>
@@ -114,25 +88,27 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
                     {getRoleString(recipient.headOfChild, recipient.guardian)}
                   </Td>
                   <Td>
-                    <NullableCheckbox
-                      checked={
-                        checkboxStateById.find(
-                          (c) => c.id === recipient.personId
-                        )?.checked
-                      }
+                    <Checkbox
+                      label={`${recipient.firstName} ${recipient.lastName}`}
+                      hiddenLabel
+                      checked={!recipient.blocklisted}
                       onChange={(checked: boolean) => {
-                        setCheckboxStateById(
-                          checkboxStateById.map((c) =>
-                            c.id === recipient.personId
-                              ? { id: c.id, checked: checked }
-                              : c
-                          )
-                        )
-                        updateChildRecipient(
+                        setRecipients(Loading.of())
+                        void updateChildRecipient(
                           id,
                           recipient.personId,
                           !checked
-                        ).catch((e) => Failure.fromError(e))
+                        ).then((res) => {
+                          if (res.isFailure) {
+                            setErrorMessage({
+                              type: 'error',
+                              title: i18n.common.error.unknown,
+                              text: i18n.common.error.saveFailed,
+                              resolveLabel: i18n.common.ok
+                            })
+                          }
+                          loadData(id)
+                        })
                       }}
                     />
                   </Td>

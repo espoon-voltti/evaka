@@ -108,7 +108,8 @@ export const fi = {
     today: 'Tänään',
     error: {
       unknown: 'Hups, jotain meni pieleen!',
-      forbidden: 'Oikeudet tähän toimintoon puuttuvat'
+      forbidden: 'Oikeudet tähän toimintoon puuttuvat',
+      saveFailed: 'Muutosten tallentaminen ei onnistunut, yritä uudelleen.'
     },
     days: 'päivää',
     day: 'päivä',
