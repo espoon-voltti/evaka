@@ -8,3 +8,6 @@
 !package.json
 !yarn.lock
 !entrypoint.sh
+!.yarn/releases
+!.yarn/plugins
+!.yarnrc.yml

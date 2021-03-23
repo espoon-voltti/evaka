@@ -8,8 +8,6 @@ const defaults = {
   autorestart: false
 }
 
-const useProIcons = process.env.ICONS === 'pro'
-
 module.exports = {
   apps: [{
     name: 'apigw',
@@ -18,8 +16,11 @@ module.exports = {
     ...defaults
   }, {
     name: 'frontend',
-    script: useProIcons ? 'yarn install && ICONS=pro yarn dev' : 'yarn install && yarn dev',
+    script: 'yarn clean && yarn && yarn dev',
     cwd: path.resolve(__dirname, '../frontend'),
+    env: {
+      'ICONS': process.env.ICONS
+    },
     ...defaults
   }, {
     name: 'service',

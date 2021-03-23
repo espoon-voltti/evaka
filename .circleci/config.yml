@@ -20,7 +20,6 @@ aliases:
   - &workspace_service /home/circleci/repo/service
   - &workspace_message_service /home/circleci/repo/message-service
   - &workspace_compose /home/circleci/repo/compose
-  - &yarn_cache .yarn_cache
 
   # SSH key fingerprint for checking out other eVaka repositories
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
@@ -47,8 +46,6 @@ aliases:
 
   - &node_config
     <<: *default_config
-    environment:
-      YARN_CACHE_FOLDER: *yarn_cache
 
   - &jvm_config
     <<: *default_config
@@ -68,31 +65,31 @@ aliases:
       paths:
         - .
 
-  - &restore_apigw_node_modules
+  - &restore_apigw_deps
     restore_cache:
       keys:
-        - node-modules-apigw-v3-{{ checksum "apigw/yarn.lock" }}
-        - node-modules-apigw-v3-
-        - node-modules-apigw-
+        - yarn-cache-apigw-v1-{{ checksum "apigw/yarn.lock" }}
+        - yarn-cache-apigw-v1-
+        - yarn-cache-apigw-
 
-  - &store_apigw_node_modules
+  - &store_apigw_deps
     save_cache:
-      key: node-modules-apigw-v3-{{ checksum "apigw/yarn.lock" }}
+      key: yarn-cache-apigw-v1-{{ checksum "apigw/yarn.lock" }}
       paths:
-        - apigw/node_modules
+        - apigw/.yarn/cache
 
-  - &restore_frontend_node_modules
+  - &restore_frontend_deps
     restore_cache:
       keys:
-        - node-modules-frontend-v4-{{ checksum "frontend/yarn.lock" }}
-        - node-modules-frontend-v4-
-        - node-modules-frontend-
+        - yarn-cache-frontend-v1-{{ checksum "frontend/yarn.lock" }}
+        - yarn-cache-frontend-v1-
+        - yarn-cache-frontend-
 
-  - &store_frontend_node_modules
+  - &store_frontend_deps
     save_cache:
-      key: node-modules-frontend-v4-{{ checksum "frontend/yarn.lock" }}
+      key: yarn-cache-frontend-v4-{{ checksum "frontend/yarn.lock" }}
       paths:
-        - frontend/node_modules
+        - frontend/.yarn/cache
 
   - &restore_service_gradle
     restore_cache:
@@ -263,7 +260,7 @@ commands:
               && sudo mv chromedriver /usr/local/bin/chromedriver \
               && sudo chmod +x /usr/local/bin/chromedriver \
               && chromedriver --version
-      - *restore_frontend_node_modules
+      - *restore_frontend_deps
       - run:
           name: Run e2e tests against compose
           working_directory: *workspace_frontend
@@ -535,11 +532,11 @@ jobs:
     executor: apigw_executor
     steps:
       - *restore_repo
-      - *restore_apigw_node_modules
+      - *restore_apigw_deps
       - run:
           working_directory: *workspace_apigw
           command: yarn install --immutable
-      - *store_apigw_node_modules
+      - *store_apigw_deps
       - run:
           working_directory: *workspace_apigw
           command: yarn build
@@ -547,7 +544,6 @@ jobs:
           root: *workspace_root
           paths:
             - apigw/dist
-            - *yarn_cache
       - run:
           working_directory: *workspace_apigw
           command: yarn lint
@@ -592,16 +588,16 @@ jobs:
     steps:
       - *restore_repo
       - attach_root_workspace
-      - *restore_frontend_node_modules
+      - *restore_frontend_deps
+      - run:
+          working_directory: *workspace_frontend
+          command: yarn install --immutable
       - run:
           name: Unpack commercial frontend dependencies
           working_directory: *workspace_frontend
           command: |
             ./unpack-pro-icons.sh
-      - run:
-          working_directory: *workspace_frontend
-          command: yarn install --immutable
-      - *store_frontend_node_modules
+      - *store_frontend_deps
       - build_frontend
       - build_maintenance_page
       - build_storybook
@@ -610,7 +606,7 @@ jobs:
           paths:
             - frontend/dist
             - frontend/storybook-build
-            - *yarn_cache
+            - frontend/node_modules
       - run:
           working_directory: *workspace_frontend
           command: yarn lint
