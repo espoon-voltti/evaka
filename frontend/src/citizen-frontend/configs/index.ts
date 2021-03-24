@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { defaultsDeep } from 'lodash'
-import { BaseAppConfig, DeepReadonly } from '@evaka/lib-common/types'
-import { getEnvironment } from '@evaka/lib-common/utils/helpers'
+import { BaseAppConfig, DeepReadonly } from 'lib-common/types'
+import { getEnvironment } from 'lib-common/utils/helpers'
 
 type AppConfig = DeepReadonly<BaseAppConfig>
 

@@ -6,7 +6,7 @@ import React from 'react'
 import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import styled from 'styled-components'
 import fi from 'date-fns/locale/fi'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import colors from '../colors'
 
 import 'react-datepicker/dist/react-datepicker.css'

@@ -4,14 +4,14 @@
 
 import React, { useContext } from 'react'
 import { useTranslation } from '../localization'
-import { H2, H3, Label } from '@evaka/lib-components/typography'
-import { ContentArea } from '@evaka/lib-components/layout/Container'
-import { Gap } from '@evaka/lib-components/white-space'
+import { H2, H3, Label } from 'lib-components/typography'
+import { ContentArea } from 'lib-components/layout/Container'
+import { Gap } from 'lib-components/white-space'
 import styled from 'styled-components'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { formatDate } from '../util'
 import { Status, applicationStatusIcon } from '../decisions/shared'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faArrowRight,
@@ -20,14 +20,14 @@ import {
   faPen,
   faTimes,
   faTrash
-} from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/colors'
-import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
+} from 'lib-icons'
+import colors from 'lib-components/colors'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
-import { CitizenApplicationSummary } from '@evaka/lib-common/api-types/application/ApplicationsOfChild'
-import { ApplicationStatus } from '@evaka/lib-common/api-types/application/enums'
-import { FixedSpaceFlexWrap } from '@evaka/lib-components/layout/flex-helpers'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
+import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'
+import { ApplicationStatus } from 'lib-common/api-types/application/enums'
+import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
 import { removeUnprocessedApplication } from '../applications/api'
 import { OverlayContext } from '../overlay/state'

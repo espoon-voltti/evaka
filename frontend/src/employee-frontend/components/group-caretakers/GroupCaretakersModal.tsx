@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { CaretakerAmount } from '../../types/caretakers'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
-import { faPen, faPlus } from '@evaka/lib-icons'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { faPen, faPlus } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/molecules/DatePickerDeprecated'
+} from 'lib-components/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
 import { UUID } from '../../types'
 import { postCaretakers, putCaretakers } from '../../api/caretakers'
-import { Result } from '@evaka/lib-common/api'
-import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import { Result } from 'lib-common/api'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
 const NumberInputContainer = styled.div`
   width: 150px;

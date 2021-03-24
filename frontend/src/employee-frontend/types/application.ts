@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../types/index'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { Decision } from '../types/decision'
 import { PersonDetails } from '../types/person'
 import {
@@ -15,11 +15,11 @@ import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,
   ApplicationDetails
-} from '@evaka/lib-common/api-types/application/ApplicationDetails'
+} from 'lib-common/api-types/application/ApplicationDetails'
 import {
   ApplicationOrigin,
   ApplicationStatus
-} from '@evaka/lib-common/api-types/application/enums'
+} from 'lib-common/api-types/application/enums'
 
 export interface ApplicationSummary {
   applicationId: UUID

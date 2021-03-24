@@ -7,30 +7,23 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useContext } from 'react'
-import { ContentArea } from '@evaka/lib-components/layout/Container'
+import { ContentArea } from 'lib-components/layout/Container'
 import { UnitContext } from '../../state/unit'
-import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
-import Title from '@evaka/lib-components/atoms/Title'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from '@evaka/lib-components/layout/Table'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import Title from 'lib-components/atoms/Title'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
 import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
 import { getEmployeeUrlPrefix } from '../../constants'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
-import { faFileAlt } from '@evaka/lib-icons'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faFileAlt } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import _ from 'lodash'
 import { DaycarePlacementPlan } from '../../types/unit'
 import styled from 'styled-components'
-import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../utils/placements'
 
 const CenteredDiv = styled.div`

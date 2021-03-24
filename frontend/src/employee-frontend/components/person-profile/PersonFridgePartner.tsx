@@ -7,27 +7,20 @@ import styled from 'styled-components'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Partnership } from '../../types/fridge'
 import * as _ from 'lodash'
 import { UIContext } from '../../state/ui'
 import FridgePartnerModal from '../../components/person-profile/person-fridge-partner/FridgePartnerModal'
 import { Link } from 'react-router-dom'
 import { formatName } from '../../utils'
-import { faQuestion, faUser } from '@evaka/lib-icons'
+import { faQuestion, faUser } from 'lib-icons'
 import { PersonDetails } from '../../types/person'
 import {
   getPartnerships,
@@ -36,7 +29,7 @@ import {
 } from '../../api/partnerships'
 import { ButtonsTd, DateTd, NameTd } from '../../components/PersonProfile'
 import Toolbar from '../../components/common/Toolbar'
-import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 
 const TopBar = styled.div`
   display: flex;

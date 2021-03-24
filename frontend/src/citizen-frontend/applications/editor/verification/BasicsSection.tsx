@@ -5,11 +5,11 @@
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { H2, Label } from '@evaka/lib-components/typography'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
+import { H2, Label } from 'lib-components/typography'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { DATE_FORMAT_DATE_DEFAULT, formatDate } from '../../../util'
 import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
-import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 
 type BasicsSectionProps = {
   application: ApplicationDetails

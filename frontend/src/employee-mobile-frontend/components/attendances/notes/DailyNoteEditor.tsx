@@ -7,27 +7,25 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 
-import Loader from '@evaka/lib-components/atoms/Loader'
-import { faArrowLeft, faExclamation, faTrash } from '@evaka/lib-icons'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import colors from '@evaka/lib-components/colors'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import Title from '@evaka/lib-components/atoms/Title'
+import Loader from 'lib-components/atoms/Loader'
+import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import colors from 'lib-components/colors'
+import Radio from 'lib-components/atoms/form/Radio'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Title from 'lib-components/atoms/Title'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import { Label } from '@evaka/lib-components/typography'
-import InputField, {
-  TextArea
-} from '@evaka/lib-components/atoms/form/InputField'
-import LocalDate from '@evaka/lib-common/local-date'
-import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import { defaultMargins } from '@evaka/lib-components/white-space'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+} from 'lib-components/layout/flex-helpers'
+import { Label } from 'lib-components/typography'
+import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
+import LocalDate from 'lib-common/local-date'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import { defaultMargins } from 'lib-components/white-space'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 import {
   createOrUpdateDaycareDailyNoteForChild,
@@ -43,8 +41,8 @@ import { TallContentArea, ContentAreaWithShadow } from '../../mobile/components'
 import { Actions } from '../components'
 import { UserContext } from '../../../state/user'
 import { User } from '../../../types/index'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 
 interface DailyNoteEdited {
   id: string | undefined

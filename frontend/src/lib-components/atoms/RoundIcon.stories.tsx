@@ -14,7 +14,7 @@ import {
   faPlus,
   fasExclamationTriangle,
   faEuroSign
-} from '@evaka/lib-icons'
+} from 'lib-icons'
 import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import { FixedSpaceRow } from '../layout/flex-helpers'

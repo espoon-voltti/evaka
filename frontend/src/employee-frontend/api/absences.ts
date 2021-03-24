@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from './client'
-import { Failure, Result, Success, Response } from '@evaka/lib-common/api'
+import { Failure, Result, Success, Response } from 'lib-common/api'
 import {
   Group,
   AbsencePayload,
@@ -14,8 +14,8 @@ import {
   CareType
 } from '../types/absence'
 import { UUID } from '../types'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 
 interface SearchParams {
   year: number

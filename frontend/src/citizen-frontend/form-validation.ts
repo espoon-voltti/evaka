@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '@evaka/lib-common/local-date'
-import { InputInfo } from '@evaka/lib-components/atoms/form/InputField'
+import LocalDate from 'lib-common/local-date'
+import { InputInfo } from 'lib-components/atoms/form/InputField'
 import { Translations } from './localization'
 import { parse } from 'date-fns'
 

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Dispatch, SetStateAction } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { useTranslation } from '../../state/i18n'
-import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
 import Chip, { Chips } from '../../components/common/Chip'
 import { UnitFilters } from '../../utils/UnitFilters'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 const DatePickersContainer = styled.div`
   display: flex;

@@ -6,21 +6,21 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { faArrowLeft, farStickyNote } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/colors'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import { Gap } from '@evaka/lib-components/white-space'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
+import { faArrowLeft, farStickyNote } from 'lib-icons'
+import colors from 'lib-components/colors'
+import Loader from 'lib-components/atoms/Loader'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { Gap } from 'lib-components/white-space'
+import InputField from 'lib-components/atoms/form/InputField'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import Button from 'lib-components/atoms/buttons/Button'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
-import { Result, Loading } from '@evaka/lib-common/api'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+} from 'lib-components/layout/flex-helpers'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { Result, Loading } from 'lib-common/api'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 import {
   ContentAreaWithShadow,

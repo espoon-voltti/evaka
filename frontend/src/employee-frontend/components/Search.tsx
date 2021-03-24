@@ -2,20 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faSearch } from '@evaka/lib-icons'
+import { faSearch } from 'lib-icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { getAge } from '@evaka/lib-common/utils/local-date'
+import { getAge } from 'lib-common/utils/local-date'
 
 import { formatName } from '../utils'
 import { triggerDvvBatch } from '../api/hidden'
-import { Gap } from '@evaka/lib-components/white-space'
-import AddButton from '@evaka/lib-components/atoms/buttons/AddButton'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
+import { Gap } from 'lib-components/white-space'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import Button from 'lib-components/atoms/buttons/Button'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   Table,
   Tr,
@@ -23,8 +23,8 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
+} from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
 import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '../components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '../constants'

@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { H3, Label } from '@evaka/lib-components/typography'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/white-space'
+import { H3, Label } from 'lib-components/typography'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../../localization'
 import { errorToInputInfo } from '../../../form-validation'
-import AdaptiveFlex from '@evaka/lib-components/layout/AdaptiveFlex'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { UnitPreferenceSectionCommonProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
+import Radio from 'lib-components/atoms/form/Radio'
 
 export default React.memo(function SiblingBasisSubSection({
   applicationType,

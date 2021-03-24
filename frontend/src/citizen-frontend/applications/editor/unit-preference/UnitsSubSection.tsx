@@ -4,29 +4,29 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { H3, Label, P } from '@evaka/lib-components/typography'
+import { H3, Label, P } from 'lib-components/typography'
 import {
   FixedSpaceColumn,
   FixedSpaceRow,
   FixedSpaceFlexWrap
-} from '@evaka/lib-components/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/white-space'
-import { Loading, Result, Success } from '@evaka/lib-common/api'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+} from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
+import { Loading, Result, Success } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
   ApplicationUnitType,
   getApplicationUnits
 } from '../../../applications/api'
-import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
-import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
-import { SelectionChip } from '@evaka/lib-components/atoms/Chip'
-import MultiSelect from '@evaka/lib-components/atoms/form/MultiSelect'
-import colors from '@evaka/lib-components/colors'
-import ExternalLink from '@evaka/lib-components/atoms/ExternalLink'
+import { SelectionChip } from 'lib-components/atoms/Chip'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import colors from 'lib-components/colors'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { useTranslation } from '../../../localization'
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { UnitPreferenceSectionProps } from '../../../applications/editor/unit-preference/UnitPreferenceSection'
 
 const maxUnits = 3

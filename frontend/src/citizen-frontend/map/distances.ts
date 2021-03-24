@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
-import { Coordinate } from '@evaka/lib-common/api-types/units/Coordinate'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { Coordinate } from 'lib-common/api-types/units/Coordinate'
 
 export type UnitWithStraightDistance = PublicUnit & {
   straightDistance: number | null

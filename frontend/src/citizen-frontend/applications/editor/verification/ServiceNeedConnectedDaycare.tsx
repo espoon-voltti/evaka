@@ -5,8 +5,8 @@
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '../../../localization'
-import { Label } from '@evaka/lib-components/typography'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
+import { Label } from 'lib-components/typography'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 
 type Props = {

@@ -33,7 +33,7 @@ import {
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
 import { DaycareDailyNote, DaycarePlacement } from '../../dev-api/types'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>

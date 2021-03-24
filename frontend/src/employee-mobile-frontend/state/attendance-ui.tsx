@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, createContext } from 'react'
 
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { AttendanceResponse } from '../api/attendances'
 
 interface UIState {

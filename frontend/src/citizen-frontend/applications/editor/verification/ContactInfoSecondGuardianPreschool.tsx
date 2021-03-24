@@ -6,8 +6,8 @@ import React from 'react'
 import { useTranslation } from '../../../localization'
 import { ContactInfoFormData } from '../ApplicationFormData'
 import { ApplicationDataGridLabelWidth } from './const'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
-import { Label } from '@evaka/lib-components/typography'
+import ListGrid from 'lib-components/layout/ListGrid'
+import { Label } from 'lib-components/typography'
 
 type Props = {
   formData: ContactInfoFormData

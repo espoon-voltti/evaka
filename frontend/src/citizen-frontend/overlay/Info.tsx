@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import { OverlayContext } from './state'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 
 function GlobalInfoDialog() {
   const { infoMessage } = useContext(OverlayContext)

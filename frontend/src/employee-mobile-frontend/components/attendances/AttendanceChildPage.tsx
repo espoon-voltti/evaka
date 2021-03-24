@@ -6,23 +6,23 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import RoundIcon from '@evaka/lib-components/atoms/RoundIcon'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
 import {
   faArrowLeft,
   faComments,
   faInfo,
   farStickyNote,
   farUser
-} from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/colors'
+} from 'lib-icons'
+import colors from 'lib-components/colors'
 import { useTranslation } from '../../state/i18n'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
+import Loader from 'lib-components/atoms/Loader'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import { StaticChip } from '@evaka/lib-components/atoms/Chip'
+} from 'lib-components/layout/flex-helpers'
+import { StaticChip } from 'lib-components/atoms/Chip'
 
 import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'

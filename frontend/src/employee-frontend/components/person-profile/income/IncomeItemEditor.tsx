@@ -5,24 +5,24 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import LocalDate from '@evaka/lib-common/local-date'
-import AsyncButton from '@evaka/lib-components/atoms/buttons/AsyncButton'
-import ListGrid from '@evaka/lib-components/layout/ListGrid'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import Title from '@evaka/lib-components/atoms/Title'
+import LocalDate from 'lib-common/local-date'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import ListGrid from 'lib-components/layout/ListGrid'
+import Button from 'lib-components/atoms/buttons/Button'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import Title from 'lib-components/atoms/Title'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
+} from 'lib-components/layout/flex-helpers'
 import { Label, LabelText } from '../../../components/common/styled/common'
 import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable from './IncomeTable'
 import { useTranslation } from '../../../state/i18n'
 import { incomeEffects, Income, PartialIncome } from '../../../types/income'
 import { formatDate } from '../../../utils/date'
-import { Gap } from '@evaka/lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 
 const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;

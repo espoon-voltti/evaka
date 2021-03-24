@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, createContext } from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
-import { IconColour } from '@evaka/lib-components/molecules/modals/FormModal'
+import { IconColour } from 'lib-components/molecules/modals/FormModal'
 
 export interface InfoMessage {
   title: string

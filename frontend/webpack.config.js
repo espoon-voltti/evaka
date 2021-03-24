@@ -38,7 +38,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
       (resource) => {
         resource.request = resource.request.replace(
           /@evaka\/customizations/,
-          `@evaka/lib-customizations/${customizationsModule}`
+          `lib-customizations/${customizationsModule}`
         )
       }
     )
@@ -100,14 +100,22 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
         {
           test: /\.(ts|tsx|json)$/,
           exclude: /[\\/]node_modules[\\/]/,
-          use: {
-            loader: 'ts-loader',
-            options: {
-              onlyCompileBundledFiles: true,
-              projectReferences: true,
-              transpileOnly: isDevServer
+          use: [
+            {
+              loader: 'babel-loader',
+              options: {
+                presets: ['@babel/preset-env']
+              }
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                onlyCompileBundledFiles: true,
+                projectReferences: true,
+                transpileOnly: isDevServer
+              }
             }
-          }
+          ]
         },
         // All CSS
         {

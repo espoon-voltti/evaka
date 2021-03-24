@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from './client'
-import { JsonOf } from '@evaka/lib-common/json'
+import { JsonOf } from 'lib-common/json'
 
 interface User {
   id: string

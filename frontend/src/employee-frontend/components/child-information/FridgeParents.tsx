@@ -7,21 +7,14 @@ import * as _ from 'lodash'
 
 import { useTranslation } from '../../state/i18n'
 import { ChildContext, ChildState } from '../../state/child'
-import { faUser } from '@evaka/lib-icons'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
+import { faUser } from 'lib-icons'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
 import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 
 type Props = {
   open: boolean

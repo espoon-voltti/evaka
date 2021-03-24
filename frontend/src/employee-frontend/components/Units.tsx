@@ -6,12 +6,12 @@ import React, { useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { SearchColumn, UnitsContext, UnitsState } from '../state/units'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
+import Button from 'lib-components/atoms/buttons/Button'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
   Table,
   Tr,
@@ -19,14 +19,14 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '@evaka/lib-components/layout/Table'
-import { Gap } from '@evaka/lib-components/white-space'
+} from 'lib-components/layout/Table'
+import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../state/i18n'
-import { faSearch } from '@evaka/lib-icons'
+import { faSearch } from 'lib-icons'
 import { getDaycares } from '../api/unit'
 import { Unit } from '../types/unit'
 import { RequireRole } from '../utils/roles'
-import Loader from '@evaka/lib-components/atoms/Loader'
+import Loader from 'lib-components/atoms/Loader'
 
 const TopBar = styled.div`
   display: flex;

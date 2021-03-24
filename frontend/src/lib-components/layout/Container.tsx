@@ -5,7 +5,7 @@
 import React, { KeyboardEvent, ReactNode } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronDown, faChevronUp } from '@evaka/lib-icons'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 import colors from '../colors'
 import { defaultMargins, SpacingSize } from '../white-space'
 import classNames from 'classnames'

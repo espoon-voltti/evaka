@@ -31,11 +31,11 @@ import {
   VoucherValueDecision,
   VtjPerson
 } from './types'
-import { JsonOf } from '@evaka/lib-common/json'
+import { JsonOf } from 'lib-common/json'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
-} from '@evaka/lib-common/api-types/application/ApplicationDetails'
+} from 'lib-common/api-types/application/ApplicationDetails'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {

@@ -3,29 +3,29 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as React from 'react'
-import { faPen } from '@evaka/lib-icons'
-import { Result } from '@evaka/lib-common/api'
+import { faPen } from 'lib-icons'
+import { Result } from 'lib-common/api'
 import { PersonDetails } from '../../types/person'
 import { useTranslation } from '../../state/i18n'
 import { useContext, useEffect, useState } from 'react'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
+import Loader from 'lib-components/atoms/Loader'
+import Button from 'lib-components/atoms/buttons/Button'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import InputField from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
 import LabelValueList from '../../components/common/LabelValueList'
-import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { patchPersonDetails } from '../../api/person'
 import { UIContext, UiState } from '../../state/ui'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
 import { UserContext } from '../../state/user'
 import styled from 'styled-components'
 import { RequireRole, requireRole } from '../../utils/roles'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
+} from 'lib-components/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;

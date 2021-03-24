@@ -4,20 +4,18 @@
 
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { Gap } from '@evaka/lib-components/white-space'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import InputField, {
-  TextArea
-} from '@evaka/lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import InfoBall from '../../../components/common/InfoBall'
 import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
 import { formatDecimal, textAreaRows } from '../../../components/utils'
 
-import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {
   FormErrors,
   formHasErrors,
@@ -28,7 +26,7 @@ import { ASSISTANCE_BASIS_LIST } from '../../../constants'
 import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
-import { AlertBox } from '@evaka/lib-components/molecules/MessageBoxes'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DivFitContent } from '../../../components/common/styled/containers'
 import {
   AssistanceNeedRequest,

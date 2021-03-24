@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Result } from '@evaka/lib-common/api'
-import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+import { Result } from 'lib-common/api'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 export function renderResult<T>(
   result: Result<T>,

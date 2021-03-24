@@ -3,25 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
+} from 'lib-components/layout/flex-helpers'
+import Radio from 'lib-components/atoms/form/Radio'
 import { useTranslation } from '../../../localization'
-import { H3, Label, P } from '@evaka/lib-components/typography'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/white-space'
+import { H3, Label, P } from 'lib-components/typography'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
 import FileUpload from '../FileUpload'
 import { deleteAttachment, saveAttachment } from '../../../applications/api'
-import { Result } from '@evaka/lib-common/api'
-import { UUID } from '@evaka/lib-common/types'
+import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { errorToInputInfo } from '../../../form-validation'
 import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
-import ExpandingInfo from '@evaka/lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 const Hyphenbox = styled.div`
   display: flex;

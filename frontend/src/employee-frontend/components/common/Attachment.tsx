@@ -12,9 +12,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { ApplicationAttachment } from '@evaka/lib-common/api-types/application/ApplicationDetails'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
-import FileDownloadButton from '@evaka/lib-components/molecules/FileDownloadButton'
+import { ApplicationAttachment } from 'lib-common/api-types/application/ApplicationDetails'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { getAttachmentBlob } from '../../api/applications'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'

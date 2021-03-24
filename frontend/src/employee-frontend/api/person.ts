@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from '@evaka/lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializePersonDetails,
   PersonContactInfo,
@@ -14,8 +14,8 @@ import { SearchOrder, UUID } from '../types'
 import { client } from '../api/client'
 import { ApplicationSummary } from '../types/application'
 import { Decision } from '../types/decision'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 
 export async function getPersonDetails(
   id: UUID

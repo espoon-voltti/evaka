@@ -9,7 +9,7 @@ import * as Sentry from '@sentry/browser'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import App from './App'
 import './index.css'
-import { getEnvironment } from '@evaka/lib-common/utils/helpers'
+import { getEnvironment } from 'lib-common/utils/helpers'
 import { config } from './configs'
 
 import 'leaflet/dist/leaflet.css'

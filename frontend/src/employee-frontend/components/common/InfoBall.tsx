@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfo } from '@fortawesome/free-solid-svg-icons'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 interface ContainerProps {
   inline: boolean

@@ -7,7 +7,7 @@ import DayPicker, { DayModifiers } from 'react-day-picker'
 import 'react-day-picker/lib/style.css'
 import { fi, sv, enGB } from 'date-fns/locale'
 
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 const monthNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 

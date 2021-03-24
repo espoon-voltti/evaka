@@ -6,10 +6,10 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import LabelValueList from '../../components/common/LabelValueList'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
-import { faUserFriends } from '@evaka/lib-icons'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { faUserFriends } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 
 interface Props {
   id: string

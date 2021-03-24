@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Td, Tr } from '@evaka/lib-components/layout/Table'
+import { Td, Tr } from 'lib-components/layout/Table'
 import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
@@ -18,17 +18,17 @@ import styled from 'styled-components'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
-import { faFileAlt } from '@evaka/lib-icons'
+} from 'lib-components/layout/flex-helpers'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faFileAlt } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../../constants'
-import CheckIconButton from '@evaka/lib-components/atoms/buttons/CheckIconButton'
-import CrossIconButton from '@evaka/lib-components/atoms/buttons/CrossIconButton'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/white-space'
-import PlacementCircle from '@evaka/lib-components/atoms/PlacementCircle'
+import CheckIconButton from 'lib-components/atoms/buttons/CheckIconButton'
+import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import Radio from 'lib-components/atoms/form/Radio'
+import InputField from 'lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
+import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../../utils/placements'
 
 const CenteredDiv = styled.div`

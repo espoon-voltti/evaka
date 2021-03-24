@@ -4,17 +4,17 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { faPen } from '@evaka/lib-icons'
-import LocalDate from '@evaka/lib-common/local-date'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import { tabletMin } from '@evaka/lib-components/breakpoints'
-import colors from '@evaka/lib-components/colors'
-import { H3 } from '@evaka/lib-components/typography'
-import { defaultMargins } from '@evaka/lib-components/white-space'
+import { faPen } from 'lib-icons'
+import LocalDate from 'lib-common/local-date'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { tabletMin } from 'lib-components/breakpoints'
+import colors from 'lib-components/colors'
+import { H3 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import { formatDate } from '../../utils/date'
 import { useTranslation } from '../../state/i18n'
 import { Bulletin } from './types'
-import { FixedSpaceRow } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 interface Props {
   message: Bulletin

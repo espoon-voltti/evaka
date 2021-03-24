@@ -2,12 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "@evaka/*": ["../*"]
-    },
     "composite": true,
-    "outDir": "../../dist/common",
+    "outDir": "../../dist/lib-common",
     "types": ["jest", "node"]
   }
 }

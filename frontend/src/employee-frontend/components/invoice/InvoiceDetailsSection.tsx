@@ -5,8 +5,8 @@
 import React from 'react'
 
 import LabelValueList from '../../components/common/LabelValueList'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
-import { faMoneyCheck } from '@evaka/lib-icons'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { faMoneyCheck } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { InvoiceDetailed } from '../../types/invoicing'
 

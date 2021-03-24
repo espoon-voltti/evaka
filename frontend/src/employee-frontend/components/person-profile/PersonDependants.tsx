@@ -6,28 +6,21 @@ import React from 'react'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faChild } from '@evaka/lib-icons'
+import { faChild } from 'lib-icons'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
-import { Loading } from '@evaka/lib-common/api'
+import { Loading } from 'lib-common/api'
 import { useContext } from 'react'
 import { PersonContext } from '../../state/person'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
-import {
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr
-} from '@evaka/lib-components/layout/Table'
-import Loader from '@evaka/lib-components/atoms/Loader'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import Loader from 'lib-components/atoms/Loader'
 import { getPersonDependants } from '../../api/person'
 import { DependantAddress, PersonWithChildren } from '../../types/person'
 import { formatName } from '../../utils'
 import { NameTd } from '../../components/PersonProfile'
-import { getAge } from '@evaka/lib-common/utils/local-date'
+import { getAge } from 'lib-common/utils/local-date'
 
 interface Props {
   id: UUID

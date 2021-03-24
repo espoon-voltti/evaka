@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useContext } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { useTranslation } from '../../../../../state/i18n'
 import { UIContext } from '../../../../../state/ui'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
-import { Result } from '@evaka/lib-common/api'
-import { faExchange } from '@evaka/lib-icons'
+import FormModal from 'lib-components/molecules/modals/FormModal'
+import { Result } from 'lib-common/api'
+import { faExchange } from 'lib-icons'
 import { transferGroup } from '../../../../../api/unit'
 import { UUID } from '../../../../../types'
-import { DatePickerDeprecated } from '@evaka/lib-components/molecules/DatePickerDeprecated'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { formatName } from '../../../../../utils'
 import {
   DaycareGroupPlacementDetailed,
   DaycareGroup
 } from '../../../../../types/unit'
 import Select from '../../../../../components/common/Select'
-import { FixedSpaceColumn } from '@evaka/lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 interface Props {
   placement: DaycareGroupPlacementDetailed

@@ -5,7 +5,7 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
-import { faPen, faTrash } from '@evaka/lib-icons'
+import { faPen, faTrash } from 'lib-icons'
 import { H3 } from '../../typography'
 import { Gap } from '../../white-space'
 import AddButton from './AddButton'

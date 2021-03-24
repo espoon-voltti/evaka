@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../types'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 
 export interface PersonIdentity {
   id: UUID

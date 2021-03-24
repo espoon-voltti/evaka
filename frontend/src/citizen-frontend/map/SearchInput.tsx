@@ -7,20 +7,20 @@ import styled from 'styled-components'
 import ReactSelect from 'react-select'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { Result, Success } from '@evaka/lib-common/api'
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import colors from '@evaka/lib-components/colors'
-import { defaultMargins } from '@evaka/lib-components/white-space'
+import { Result, Success } from 'lib-common/api'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import colors from 'lib-components/colors'
+import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import { fasMapMarkerAlt } from '@evaka/lib-icons'
+} from 'lib-components/layout/flex-helpers'
+import { fasMapMarkerAlt } from 'lib-icons'
 import { queryAutocomplete } from '../map/api'
 import { MapAddress } from '../map/MapView'
 import { useTranslation } from '../localization'
-import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

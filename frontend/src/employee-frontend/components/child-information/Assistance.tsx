@@ -4,11 +4,11 @@
 
 import React from 'react'
 import { useTranslation } from '../../state/i18n'
-import { faHandHolding } from '@evaka/lib-icons'
+import { faHandHolding } from 'lib-icons'
 import { UUID } from '../../types'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import AssistanceAction from '../../components/child-information/AssistanceAction'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 
 export interface Props {
   id: UUID

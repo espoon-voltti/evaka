@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from '../../types'
-import { Failure, Result, Success } from '@evaka/lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../../api/client'
 import { ServiceNeed } from '../../types/child'
-import { JsonOf } from '@evaka/lib-common/json'
-import LocalDate from '@evaka/lib-common/local-date'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 
 export interface ServiceNeedRequest {
   startDate: LocalDate

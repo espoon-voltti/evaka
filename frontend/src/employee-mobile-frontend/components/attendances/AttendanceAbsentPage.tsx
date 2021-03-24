@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { Fragment } from 'react'
 
-import { Result } from '@evaka/lib-common/api'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
+import { Result } from 'lib-common/api'
+import Loader from 'lib-components/atoms/Loader'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 import { AttendanceResponse } from '../../api/attendances'
 import AttendanceList from './AttendanceList'

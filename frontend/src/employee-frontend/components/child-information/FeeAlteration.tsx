@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { faMoneyCheckEdit, faQuestion } from '@evaka/lib-icons'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import { Gap } from '@evaka/lib-components/white-space'
-import InfoModal from '@evaka/lib-components/molecules/modals/InfoModal'
+import { faMoneyCheckEdit, faQuestion } from 'lib-icons'
+import Loader from 'lib-components/atoms/Loader'
+import { Gap } from 'lib-components/white-space'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import { useTranslation } from '../../state/i18n'
@@ -14,16 +14,16 @@ import { UIContext } from '../../state/ui'
 import { ChildContext } from '../../state'
 import { UUID } from '../../types'
 import { FeeAlteration, PartialFeeAlteration } from '../../types/fee-alteration'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
   createFeeAlteration,
   deleteFeeAlteration,
   getFeeAlterations,
   updateFeeAlteration
 } from '../../api/child/fee-alteration'
-import { AddButtonRow } from '@evaka/lib-components/atoms/buttons/AddButton'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

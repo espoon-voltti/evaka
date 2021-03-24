@@ -4,12 +4,12 @@
 
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
-import colors from '@evaka/lib-components/colors'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-components/colors'
 import leaflet from 'leaflet'
 import { FooterContent } from '../Footer'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import markerUnit from './marker-unit.svg'
 import markerUnitHighlight from './marker-unit-highlight.svg'
 import markerAddress from './marker-address.svg'
@@ -18,8 +18,8 @@ import { useTranslation } from '../localization'
 import { formatCareTypes } from './format'
 import { MapAddress } from '../map/MapView'
 import { addressZoom, initialZoom, mapViewBreakpoint } from '../map/const'
-import { isAutomatedTest } from '@evaka/lib-common/utils/helpers'
-import ExternalLink from '@evaka/lib-components/atoms/ExternalLink'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]

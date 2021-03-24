@@ -10,8 +10,8 @@ import {
   ApplicationType
 } from './enums'
 import { JsonOf } from '../../json'
-import LocalDate from '@evaka/lib-common/local-date'
-import { UUID } from '@evaka/lib-common/types'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 
 export interface GuardianApplications {
   childId: string

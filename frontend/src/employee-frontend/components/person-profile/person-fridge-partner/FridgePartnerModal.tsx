@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useContext, useEffect } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
@@ -11,18 +11,18 @@ import {
   isDateRangeValid
 } from '../../../utils/validation/validations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQuestionCircle } from '@evaka/lib-icons'
-import FormModal from '@evaka/lib-components/molecules/modals/FormModal'
+import { faQuestionCircle } from 'lib-icons'
+import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Partnership } from '../../../types/fridge'
 import { UUID } from '../../../types'
-import { Result } from '@evaka/lib-common/api'
-import { faPen, faUser } from '@evaka/lib-icons'
+import { Result } from 'lib-common/api'
+import { faPen, faUser } from 'lib-icons'
 import { formatName } from '../../../utils'
 import PersonSearch from '../../../components/common/PersonSearch'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/molecules/DatePickerDeprecated'
+} from 'lib-components/molecules/DatePickerDeprecated'
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
 import { PersonDetails } from '../../../types/person'
 

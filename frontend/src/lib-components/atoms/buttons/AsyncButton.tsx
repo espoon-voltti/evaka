@@ -11,7 +11,7 @@ import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faTimes } from '@evaka/lib-icons'
+import { faCheck, faTimes } from 'lib-icons'
 import colors from '../../colors'
 import { StyledButton } from './Button'
 

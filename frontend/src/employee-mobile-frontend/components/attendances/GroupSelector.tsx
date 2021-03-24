@@ -5,13 +5,13 @@
 import React, { Fragment, useContext } from 'react'
 import styled from 'styled-components'
 
-import { ChoiceChip } from '@evaka/lib-components/atoms/Chip'
-import { Gap } from '@evaka/lib-components/white-space'
+import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { Gap } from 'lib-components/white-space'
 
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
 import { AttendanceResponse, Group } from '../../api/attendances'
-import colors from '@evaka/lib-components/colors'
+import colors from 'lib-components/colors'
 
 interface GroupSelectorProps {
   groupIdOrAll: string | 'all'

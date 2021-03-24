@@ -10,9 +10,9 @@ import React, {
   SetStateAction,
   useCallback
 } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import { Unit } from '../types/invoicing'
-import { Result, Loading, Paged } from '@evaka/lib-common/api'
+import { Result, Loading, Paged } from 'lib-common/api'
 import {
   ApplicationDateType,
   ApplicationTypeToggle,
@@ -23,7 +23,7 @@ import {
   ApplicationDistinctions,
   TransferApplicationFilter
 } from '../components/common/Filters'
-import { useDebounce } from '@evaka/lib-common/utils/useDebounce'
+import { useDebounce } from 'lib-common/utils/useDebounce'
 import { UUID } from '../types'
 import { CareArea } from '../types/unit'
 import { ApplicationListSummary } from '../types/application'

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CareType } from '@evaka/lib-common/api-types/units/enums'
+import { CareType } from 'lib-common/api-types/units/enums'
 import { Translations } from '../localization'
 
 export function formatCareType(t: Translations, type: CareType): string {

@@ -4,10 +4,10 @@
 
 import React, { ReactElement } from 'react'
 import styled from 'styled-components'
-import { faChevronUp, faChevronDown } from '@evaka/lib-icons'
-import { H4 } from '@evaka/lib-components/typography'
-import { Gap } from '@evaka/lib-components/white-space'
-import IconButton from '@evaka/lib-components/atoms/buttons/IconButton'
+import { faChevronUp, faChevronDown } from 'lib-icons'
+import { H4 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import StatusLabel, {
   StatusLabelType
 } from '../../components/common/StatusLabel'

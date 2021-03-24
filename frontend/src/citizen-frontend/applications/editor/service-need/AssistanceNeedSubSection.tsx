@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { useTranslation } from '../../../localization'
-import { H3 } from '@evaka/lib-components/typography'
-import { TextArea } from '@evaka/lib-components/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/white-space'
+import { H3 } from 'lib-components/typography'
+import { TextArea } from 'lib-components/atoms/form/InputField'
+import { Gap } from 'lib-components/white-space'
 import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
-import ExpandingInfo from '@evaka/lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import styled from 'styled-components'
 
 export default React.memo(function AssistanceNeedSubSection({

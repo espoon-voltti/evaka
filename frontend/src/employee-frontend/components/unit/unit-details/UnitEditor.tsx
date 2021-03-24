@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
-import LocalDate from '@evaka/lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import styled from 'styled-components'
 import Select from '../../../components/common/Select'
 import {
@@ -17,25 +17,25 @@ import {
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
-} from '@evaka/lib-components/molecules/DatePickerDeprecated'
-import InputField from '@evaka/lib-components/atoms/form/InputField'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
+} from 'lib-components/molecules/DatePickerDeprecated'
+import InputField from 'lib-components/atoms/form/InputField'
+import Button from 'lib-components/atoms/buttons/Button'
+import Radio from 'lib-components/atoms/form/Radio'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { DaycareFields } from '../../../api/unit'
 import { DayOfWeek, UUID } from '../../../types'
-import { Result } from '@evaka/lib-common/api'
+import { Result } from 'lib-common/api'
 import { Translations, useTranslation } from '../../../state/i18n'
-import colors from '@evaka/lib-components/colors'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import { faPen } from '@evaka/lib-icons'
-import { H1, H3 } from '@evaka/lib-components/typography'
-import { defaultMargins, Gap } from '@evaka/lib-components/white-space'
+import colors from 'lib-components/colors'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { faPen } from 'lib-icons'
+import { H1, H3 } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import DateRange from '@evaka/lib-common/date-range'
+} from 'lib-components/layout/flex-helpers'
+import DateRange from 'lib-common/date-range'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'

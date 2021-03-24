@@ -4,13 +4,13 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import UnitEditor from '../../../components/unit/unit-details/UnitEditor'
-import { Loading, Result } from '@evaka/lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { CareArea } from '../../../types/unit'
 import { getAreas } from '../../../api/daycare'
 import { getEmployees } from '../../../api/employees'
-import { Container, ContentArea } from '@evaka/lib-components/layout/Container'
-import Loader from '@evaka/lib-components/atoms/Loader'
-import { Gap } from '@evaka/lib-components/white-space'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import Loader from 'lib-components/atoms/Loader'
+import { Gap } from 'lib-components/white-space'
 import { useParams } from 'react-router-dom'
 import {
   DaycareFields,

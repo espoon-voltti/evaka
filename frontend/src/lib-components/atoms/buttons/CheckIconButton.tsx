@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from '@evaka/lib-icons'
+import { faCheck } from 'lib-icons'
 import colors from '../../colors'
 import { BaseProps } from '../../utils'
 

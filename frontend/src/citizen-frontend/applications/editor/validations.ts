@@ -17,12 +17,12 @@ import {
   validDate
 } from '../../form-validation'
 import { ApplicationFormData } from '../../applications/editor/ApplicationFormData'
-import { ApplicationDetails } from '@evaka/lib-common/api-types/application/ApplicationDetails'
+import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import {
   ApplicationStatus,
   ApplicationType
-} from '@evaka/lib-common/api-types/application/enums'
-import LocalDate from '@evaka/lib-common/local-date'
+} from 'lib-common/api-types/application/enums'
+import LocalDate from 'lib-common/local-date'
 import { DecisionType } from '../../decisions/types'
 
 export type ApplicationFormDataErrors = {

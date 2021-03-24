@@ -4,29 +4,24 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Result } from '@evaka/lib-common/api'
-import { PublicUnit } from '@evaka/lib-common/api-types/units/PublicUnit'
-import { UnitLanguage } from '@evaka/lib-common/api-types/units/enums'
-import { ContentArea } from '@evaka/lib-components/layout/Container'
+import { Result } from 'lib-common/api'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { UnitLanguage } from 'lib-common/api-types/units/enums'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap,
   FixedSpaceRow
-} from '@evaka/lib-components/layout/flex-helpers'
-import colors from '@evaka/lib-components/colors'
-import { Gap } from '@evaka/lib-components/white-space'
-import { SelectionChip } from '@evaka/lib-components/atoms/Chip'
-import HorizontalLine from '@evaka/lib-components/atoms/HorizontalLine'
-import InlineButton from '@evaka/lib-components/atoms/buttons/InlineButton'
-import Radio from '@evaka/lib-components/atoms/form/Radio'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import { H1, Label, P } from '@evaka/lib-components/typography'
-import {
-  faAngleDown,
-  faAngleUp,
-  faList,
-  fasMapMarkerAlt
-} from '@evaka/lib-icons'
+} from 'lib-components/layout/flex-helpers'
+import colors from 'lib-components/colors'
+import { Gap } from 'lib-components/white-space'
+import { SelectionChip } from 'lib-components/atoms/Chip'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Radio from 'lib-components/atoms/form/Radio'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { H1, Label, P } from 'lib-components/typography'
+import { faAngleDown, faAngleUp, faList, fasMapMarkerAlt } from 'lib-icons'
 import { useTranslation } from '../localization'
 import { mapViewBreakpoint, MobileMode } from '../map/const'
 import SearchInput from '../map/SearchInput'
