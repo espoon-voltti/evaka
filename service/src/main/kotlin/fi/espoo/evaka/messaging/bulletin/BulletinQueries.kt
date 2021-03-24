@@ -237,8 +237,8 @@ fun Database.Read.getReceivedBulletinsByGuardian(
     val sql = """
         SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
         FROM bulletin_instance bi
-        JOIN bulletin b ON bi.bulletin_id = b.id
-        JOIN bulletin_receiver br ON br.bulletin_id = b.id
+        JOIN bulletin_receiver br ON bi.bulletin_receiver_id = br.id
+        JOIN bulletin b ON br.bulletin_id = b.id
         JOIN daycare_group dg on br.group_id = dg.id
         WHERE bi.receiver_person_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
