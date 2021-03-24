@@ -87,7 +87,7 @@ aliases:
 
   - &store_frontend_deps
     save_cache:
-      key: yarn-cache-frontend-v4-{{ checksum "frontend/yarn.lock" }}
+      key: yarn-cache-frontend-v1-{{ checksum "frontend/yarn.lock" }}
       paths:
         - frontend/.yarn/cache
 
