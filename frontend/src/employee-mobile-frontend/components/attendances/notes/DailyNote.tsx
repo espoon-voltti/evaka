@@ -51,10 +51,18 @@ export default React.memo(function DailyNote({ child }: Props) {
               </span>
             </FixedSpaceColumn>
           )}
-          {child.dailyNote.reminderNote && (
+          {(child.dailyNote.reminderNote ||
+            child.dailyNote.reminders.length > 0) && (
             <FixedSpaceColumn spacing={'xxs'}>
               <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
-              <span>{child.dailyNote.reminderNote}</span>
+              <span>
+                {child.dailyNote.reminders.map((reminder) => (
+                  <span
+                    key={reminder}
+                  >{`${i18n.attendances.notes.reminders[reminder]}. `}</span>
+                ))}{' '}
+                {child.dailyNote.reminderNote}
+              </span>
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>
