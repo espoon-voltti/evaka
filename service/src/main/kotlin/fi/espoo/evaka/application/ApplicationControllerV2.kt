@@ -256,8 +256,8 @@ class ApplicationControllerV2(
     ): ResponseEntity<ApplicationResponse> {
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
-        acl.getRolesForApplication(user, applicationId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        val roles = acl.getRolesForApplication(user, applicationId)
+        roles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
@@ -266,12 +266,20 @@ class ApplicationControllerV2(
             val guardians =
                 personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
+            val attachments: List<Attachment> = when {
+                roles.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER) ->
+                    tx.getApplicationAttachments(applicationId)
+                roles.hasOneOfRoles(UserRole.UNIT_SUPERVISOR) ->
+                    tx.getApplicationAttachmentsForUnitSupervisor(applicationId)
+                else -> listOf()
+            }
+
             ResponseEntity.ok(
                 ApplicationResponse(
-                    application = application,
+                    application = application.copy(attachments = attachments),
                     decisions = decisions,
                     guardians = guardians,
-                    attachments = application.attachments
+                    attachments = attachments
                 )
             )
         }

@@ -9,6 +9,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -37,6 +38,7 @@ const val attachmentsPath = "/"
 @RestController
 @RequestMapping("/attachments")
 class AttachmentsController(
+    private val acl: AccessControlList,
     private val documentClient: DocumentService,
     env: Environment
 ) {
@@ -121,9 +123,7 @@ class AttachmentsController(
         @PathVariable attachmentId: UUID
     ): ResponseEntity<ByteArray> {
         Audit.AttachmentsRead.log(targetId = attachmentId)
-        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
-            if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
-        }
+        db.authorizeAttachmentDownload(user, attachmentId)
 
         val attachment =
             db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
@@ -158,13 +158,20 @@ class AttachmentsController(
     }
 }
 
+private fun Database.authorizeAttachmentDownload(user: AuthenticatedUser, attachmentId: UUID) {
+    if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) return
+    if (user.hasOneOfRoles(UserRole.END_USER) && read { it.isOwnAttachment(attachmentId, user) }) return
+    if (read { it.userHasSupervisorRights(user, attachmentId) }) return
+
+    throw NotFound("Attachment $attachmentId not found")
+}
+
 fun Database.Read.isOwnApplication(applicationId: UUID, user: AuthenticatedUser): Boolean {
     return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
         .bind("id", applicationId)
         .bind("userId", user.id)
         .mapTo<Int>()
-        .toList()
-        .isNotEmpty()
+        .any()
 }
 
 fun Database.Read.userAttachmentCount(userId: UUID): Int {
@@ -172,6 +179,28 @@ fun Database.Read.userAttachmentCount(userId: UUID): Int {
         .bind("userId", userId)
         .mapTo<Int>()
         .first()
+}
+
+fun Database.Read.userHasSupervisorRights(user: AuthenticatedUser, attachmentId: UUID): Boolean {
+    return this.createQuery(
+        """
+SELECT 1
+FROM attachment
+JOIN placement_plan ON attachment.application_id = placement_plan.application_id
+JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
+JOIN daycare_acl_view ON daycare.id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId
+    AND role = :unitSupervisor
+    AND attachment.id = :attachmentId
+    AND attachment.type = :extendedCare
+"""
+    )
+        .bind("userId", user.id)
+        .bind("unitSupervisor", UserRole.UNIT_SUPERVISOR)
+        .bind("attachmentId", attachmentId)
+        .bind("extendedCare", AttachmentType.EXTENDED_CARE)
+        .mapTo<Int>()
+        .any()
 }
 
 val contentTypesWithMagicNumbers = mapOf(

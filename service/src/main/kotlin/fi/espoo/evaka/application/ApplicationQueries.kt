@@ -895,3 +895,25 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .mapTo<UUID>()
     .toList()
+
+fun Database.Read.getApplicationAttachments(applicationId: UUID): List<Attachment> =
+    createQuery("SELECT id, name, content_type, updated, type FROM attachment WHERE application_id = :applicationId")
+        .bind("applicationId", applicationId)
+        .mapTo<Attachment>()
+        .toList()
+
+fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: UUID): List<Attachment> =
+    createQuery(
+        """
+SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.type
+FROM attachment
+JOIN application ON application.id = attachment.application_id
+JOIN placement_plan ON placement_plan.application_id = application.id
+JOIN daycare ON daycare.id = placement_plan.unit_id
+WHERE application.id = :applicationId AND daycare.round_the_clock AND attachment.type = ANY(:attachmentTypes)
+"""
+    )
+        .bind("applicationId", applicationId)
+        .bind("attachmentTypes", arrayOf(AttachmentType.EXTENDED_CARE))
+        .mapTo<Attachment>()
+        .toList()

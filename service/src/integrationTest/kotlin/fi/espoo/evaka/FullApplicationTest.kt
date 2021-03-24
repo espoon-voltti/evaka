@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
+import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
@@ -83,8 +84,8 @@ abstract class FullApplicationTest {
         db.close()
     }
 
-    fun uploadAttachment(applicationId: UUID, user: AuthenticatedUser): Boolean {
-        val (_, res, _) = http.upload("/attachments/citizen/applications/$applicationId", parameters = listOf("type" to "URGENCY"))
+    fun uploadAttachment(applicationId: UUID, user: AuthenticatedUser, type: AttachmentType = AttachmentType.URGENCY): Boolean {
+        val (_, res, _) = http.upload("/attachments/citizen/applications/$applicationId", parameters = listOf("type" to type))
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .response()
