@@ -57,7 +57,9 @@ export default React.memo(function DailyNote({ child }: Props) {
               <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
               <span>
                 {child.dailyNote.reminders.map((reminder) => (
-                  <span>{`${i18n.attendances.notes.reminders[reminder]}. `}</span>
+                  <span
+                    key={reminder}
+                  >{`${i18n.attendances.notes.reminders[reminder]}. `}</span>
                 ))}{' '}
                 {child.dailyNote.reminderNote}
               </span>
