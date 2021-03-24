@@ -25,6 +25,12 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
 
+data class BulletinReceiverTriplet (
+        val unitId: UUID,
+        val groupId: UUID? = null,
+        val personId: UUID? = null
+)
+
 @RestController
 @RequestMapping("/bulletins")
 class BulletinControllerEmployee(
@@ -33,7 +39,7 @@ class BulletinControllerEmployee(
 ) {
 
     data class CreateBulletinRequest(
-        val unitId: UUID
+        val receivers: List<BulletinReceiverTriplet>
     )
     @PostMapping
     fun createBulletin(
@@ -47,7 +53,7 @@ class BulletinControllerEmployee(
         return db.transaction { tx ->
             tx.initBulletin(
                 user = user,
-                unitId = body.unitId
+                receivers = body.receivers
             ).let { tx.getBulletin(it)!! }
         }.let {
             ResponseEntity.ok(it)
@@ -117,11 +123,12 @@ class BulletinControllerEmployee(
         }.let { ResponseEntity.ok(it) }
     }
 
+
     data class BulletinUpdate(
-        val groupId: UUID?,
         val title: String,
         val content: String
     )
+
     @PutMapping("/{id}")
     fun updateBulletin(
         db: Database.Connection,
@@ -136,7 +143,6 @@ class BulletinControllerEmployee(
             tx.updateDraftBulletin(
                 user = user,
                 id = id,
-                groupId = body.groupId,
                 title = body.title,
                 content = body.content
             )

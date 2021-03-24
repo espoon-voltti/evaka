@@ -13,6 +13,7 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.bulletin.Bulletin
 import fi.espoo.evaka.messaging.bulletin.BulletinControllerEmployee
+import fi.espoo.evaka.messaging.bulletin.BulletinReceiverTriplet
 import fi.espoo.evaka.messaging.bulletin.ReceivedBulletin
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -144,7 +145,6 @@ class BulletinIntegrationTest : FullApplicationTest() {
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
-                groupId = groupId,
                 title = msgTitle,
                 content = msgContent
             )
@@ -192,7 +192,6 @@ class BulletinIntegrationTest : FullApplicationTest() {
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
-                groupId = groupId,
                 title = msgTitle,
                 content = msgContent
             )
@@ -218,7 +217,6 @@ class BulletinIntegrationTest : FullApplicationTest() {
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
-                groupId = groupId,
                 title = msgTitle,
                 content = msgContent
             )
@@ -242,7 +240,6 @@ class BulletinIntegrationTest : FullApplicationTest() {
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
-                groupId = groupId,
                 title = msgTitle,
                 content = msgContent
             )
@@ -307,7 +304,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
         val (_, res, result) = http.post("/bulletins")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(unitId)))
+            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(receivers = listOf(BulletinReceiverTriplet(unitId = unitId)))))
             .responseObject<Bulletin>(objectMapper)
 
         assertEquals(200, res.statusCode)

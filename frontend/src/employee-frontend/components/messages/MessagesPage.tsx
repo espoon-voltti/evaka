@@ -11,7 +11,7 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import { defaultMargins } from 'lib-components/white-space'
 import Container from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Bulletin, IdAndName } from './types'
+import { Bulletin, IdAndName, ReceiverTriplet } from './types'
 import {
   deleteDraftBulletin,
   getDraftBulletins,
@@ -50,6 +50,9 @@ export default React.memo(function MessagesPage() {
     false
   )
   const debouncedMessage = useDebounce(messageUnderEdit, 2000)
+  const [receiverTriplets, setReceiverTriplets] = useState<ReceiverTriplet[]>(
+    []
+  )
 
   const selectUnit = (unit: IdAndName) => {
     setActiveMessageBox('SENT')
@@ -71,14 +74,14 @@ export default React.memo(function MessagesPage() {
 
   useEffect(() => {
     if (debouncedMessage) {
-      const { id, groupId, title, content } = debouncedMessage
-      void updateDraftBulletin(id, groupId, title, content).then(() => {
+      const { id, title, content } = debouncedMessage
+      void updateDraftBulletin(id, receiverTriplets, title, content).then(() => {
         if (activeMessageBox === 'DRAFT') {
           setMessagesState((state) => ({
             ...state,
             bulletins: state.bulletins.map((bulletin) =>
               bulletin.id === id
-                ? { ...bulletin, groupId, title, content }
+                ? { ...bulletin, title, content }
                 : bulletin
             )
           }))
@@ -105,17 +108,16 @@ export default React.memo(function MessagesPage() {
   const onSend = () => {
     if (!messageUnderEdit) return
 
-    const { id, groupId, title, content } = messageUnderEdit
-    void updateDraftBulletin(id, groupId, title, content)
+    const { id, title, content } = messageUnderEdit
+    void updateDraftBulletin(id, receiverTriplets, title, content)
       .then(() => sendBulletin(messageUnderEdit.id))
       .then(resetUI)
   }
-
   const onClose = () => {
     if (!messageUnderEdit) return
 
-    const { id, groupId, title, content } = messageUnderEdit
-    void updateDraftBulletin(id, groupId, title, content).then(() =>
+    const { id, title, content } = messageUnderEdit
+    void updateDraftBulletin(id, receiverTriplets, title, content).then(() =>
       setMessageUnderEdit(null)
     )
   }
@@ -150,7 +152,10 @@ export default React.memo(function MessagesPage() {
             {}
 
             {receiverSelectionShown ? (
-              <ReceiverSelection unitId={selectedUnit.id} />
+              <ReceiverSelection
+                unitId={selectedUnit.id}
+                setReceiverTriplets={setReceiverTriplets}
+              />
             ) : messageOpen ? (
               <MessageReadView
                 message={messageOpen}
@@ -180,7 +185,6 @@ export default React.memo(function MessagesPage() {
             <div>
               <MessageEditor
                 bulletin={messageUnderEdit}
-                groups={groups.value}
                 onChange={(change) =>
                   setMessageUnderEdit((old) =>
                     old ? { ...old, ...change } : old

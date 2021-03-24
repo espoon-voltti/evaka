@@ -16,16 +16,27 @@ import { defaultMargins } from '@evaka/lib-components/white-space'
 import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
 import Button from '@evaka/lib-components/atoms/buttons/Button'
 import colors from '@evaka/lib-components/colors'
-import { getReceivers } from './api'
-import { ReceiverChild, ReceiverGroup } from './types'
+import { ReceiverGroup, ReceiverTriplet } from './types'
 import { useTranslation } from '../../state/i18n'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
+import { getReceivers } from '@evaka/employee-frontend/components/messages/api'
+import {
+  getSelectorStatus,
+  getReceiverTriplets,
+  SelectorNode,
+  updateSelector
+} from 'components/messages/receiver-selection-utils'
 
 interface Props {
   unitId: UUID
+  setReceiverTriplets: (value: ReceiverTriplet[]) => void
 }
-export default React.memo(function ReceiverSelection({ unitId }: Props) {
+
+export default React.memo(function ReceiverSelection({
+  unitId,
+  setReceiverTriplets
+}: Props) {
   const { i18n } = useTranslation()
 
   const [receiversResult, setReceiversResult] = useState<
@@ -34,14 +45,6 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
 
   const loadReceivers = useRestApi(getReceivers, setReceiversResult)
   useEffect(() => loadReceivers(unitId), [])
-
-  const receivers: ReceiverGroup[] = receiversResult.isSuccess
-    ? receiversResult.value
-    : []
-
-  const allReceivers: UUID[] = receivers.flatMap((receiverGroup) =>
-    receiverGroup.receiverChildren.map(({ childId }: ReceiverChild) => childId)
-  )
 
   const [collapsedGroups, setCollapsedGroups] = useState<UUID[]>([])
 
@@ -56,97 +59,38 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
   const toggleCollapsed = (groupId: UUID) =>
     isCollapsed(groupId) ? setNotCollapsed(groupId) : setCollapsed(groupId)
 
-  const [checkedReceivers, setCheckedReceivers] = useState<UUID[]>([])
+  const [selectorChange, setSelectorChange] = useState<SelectorNode>()
+  const [receiverSelection, setReceiverSelection] = useState<SelectorNode>()
 
-  const checkGroup = (checkedGroup: ReceiverGroup) => {
-    const checkedChildIds = checkedGroup.receiverChildren.map(
-      (child) => child.childId
-    )
-    setCheckedReceivers((old) => {
-      return [...old, ...checkedChildIds]
-    })
-  }
-
-  const unCheckGroup = (receiverGroup: ReceiverGroup) => {
-    const childIds = receiverGroup.receiverChildren.map(
-      (child) => child.childId
-    )
-    setCheckedReceivers((old) =>
-      old.filter((earlierId) => childIds.indexOf(earlierId) === -1)
-    )
-  }
-
-  const isGroupChecked = (receiverGroup: ReceiverGroup) => {
-    const receiverIds = receiverGroup.receiverChildren.map(
-      ({ childId }: ReceiverChild) => childId
-    )
-    return receiverIds.every(
-      (receiverId) => checkedReceivers.indexOf(receiverId) > -1
-    )
-  }
-
-  const isAllChecked = () =>
-    allReceivers.every(
-      (receiverId) => checkedReceivers.indexOf(receiverId) > -1
-    )
-
-  const checkAll = () => setCheckedReceivers(allReceivers)
-
-  const isChildChecked = (childId: UUID) =>
-    checkedReceivers.indexOf(childId) > -1
-
-  interface ReceiverTriplet {
-    unitId: UUID
-    groupId?: UUID
-    childId?: UUID
-  }
-
-  const receiverTriplets: ReceiverTriplet[] = (() => {
-    if (isAllChecked()) return [{ unitId }]
-
-    const checkedGroups = receivers.filter((receiverGroup: ReceiverGroup) =>
-      isGroupChecked(receiverGroup)
-    )
-    const unCheckedGroups = receivers.filter(
-      (receiverGroup: ReceiverGroup) => !isGroupChecked(receiverGroup)
-    )
-
-    const getGroupChildren = (groups: ReceiverGroup[]): UUID[] =>
-      groups.flatMap((receiverGroup) =>
-        receiverGroup.receiverChildren.map(
-          ({ childId }: ReceiverChild) => childId
-        )
-      )
-
-    const isChildInSomeCheckedGroup = (childId: UUID): boolean =>
-      getGroupChildren(checkedGroups).indexOf(childId) > -1
-
-    const checkedChildrenOutsideCheckedGroups = getGroupChildren(
-      unCheckedGroups
-    ).filter(
-      (childId: UUID) =>
-        !isChildInSomeCheckedGroup(childId) && isChildChecked(childId)
-    )
-
-    const selectedGroupsAsReceiverData = checkedGroups.map(
-      ({ groupId }: ReceiverGroup) => ({ unitId, groupId })
-    )
-
-    const otherChildrenAsReceiverData = receivers
-      .flatMap((receiverGroup) =>
-        receiverGroup.receiverChildren.map(({ childId }: ReceiverChild) => ({
-          unitId,
-          groupId: receiverGroup.groupId,
-          childId
+  useEffect(() => {
+    if (receiversResult.isSuccess) {
+      setReceiverSelection({
+        selectorId: unitId,
+        selected: false,
+        childNodes: receiversResult.value.map((group) => ({
+          selectorId: group.groupId,
+          selected: false,
+          childNodes: group.receivers.map((child) => ({
+            selectorId: child.childId,
+            selected: false,
+            childNodes: undefined
+          }))
         }))
-      )
-      .filter(
-        ({ childId }) =>
-          checkedChildrenOutsideCheckedGroups.indexOf(childId) > -1
-      )
+      })
+    }
+  }, [receiversResult])
 
-    return [...selectedGroupsAsReceiverData, ...otherChildrenAsReceiverData]
-  })()
+  useEffect(() => {
+    if (receiverSelection && selectorChange) {
+      setReceiverSelection(updateSelector(receiverSelection, selectorChange))
+    }
+  }, [selectorChange])
+
+  useEffect(() => {
+    if (receiverSelection) {
+      setReceiverTriplets(getReceiverTriplets(receiverSelection))
+    }
+  }, [receiverSelection])
 
   return (
     <Container>
@@ -160,15 +104,20 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
             <Th>
               <Checkbox
                 label={''}
-                checked={isAllChecked()}
+                checked={
+                  receiverSelection
+                    ? getSelectorStatus(unitId, receiverSelection)
+                    : false
+                }
                 onChange={(checked) =>
-                  checked ? checkAll() : setCheckedReceivers([])
+                  setSelectorChange({ selectorId: unitId, selected: checked })
                 }
               />
             </Th>
           </Tr>
         </Thead>
         {receiversResult.isSuccess &&
+          receiverSelection &&
           receiversResult.value.map((receiverGroup) => (
             <Tbody key={receiverGroup.groupId}>
               <Tr>
@@ -190,17 +139,21 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
                 <Td>
                   <Checkbox
                     label={''}
-                    checked={isGroupChecked(receiverGroup)}
+                    checked={getSelectorStatus(
+                      receiverGroup.groupId,
+                      receiverSelection
+                    )}
                     onChange={(checked) =>
-                      checked
-                        ? checkGroup(receiverGroup)
-                        : unCheckGroup(receiverGroup)
+                      setSelectorChange({
+                        selectorId: receiverGroup.groupId,
+                        selected: checked
+                      })
                     }
                   />
                 </Td>
               </Tr>
               {!isCollapsed(receiverGroup.groupId) &&
-                receiverGroup.receiverChildren.map((receiverChild) => (
+                receiverGroup.receivers.map((receiverChild) => (
                   <Tr key={receiverChild.childId}>
                     <Td>
                       {receiverChild.childFirstName}{' '}
@@ -208,7 +161,7 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
                     </Td>
                     <Td>{receiverChild.childDateOfBirth.format()}</Td>
                     <Td>
-                      {receiverChild.receivers.map(
+                      {receiverChild.receiverPersons.map(
                         ({
                           receiverId,
                           receiverFirstName,
@@ -223,13 +176,15 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
                     <Td>
                       <Checkbox
                         label={''}
-                        checked={isChildChecked(receiverChild.childId)}
+                        checked={getSelectorStatus(
+                          receiverChild.childId,
+                          receiverSelection
+                        )}
                         onChange={(checked) =>
-                          setCheckedReceivers((old) =>
-                            checked
-                              ? [...old, receiverChild.childId]
-                              : old.filter((id) => id !== receiverChild.childId)
-                          )
+                          setSelectorChange({
+                            selectorId: receiverChild.childId,
+                            selected: checked
+                          })
                         }
                         dataQa={`check-receiver-${receiverChild.childId}`}
                       />
@@ -239,11 +194,6 @@ export default React.memo(function ReceiverSelection({ unitId }: Props) {
             </Tbody>
           ))}
       </Table>
-      {receiverTriplets.map(({ unitId, groupId, childId }) => (
-        <div key={`${unitId}-${groupId}-${childId}`}>
-          {unitId} {groupId} {childId}
-        </div>
-      ))}
       <Button text={i18n.messages.receiverSelection.confirmText} primary />
     </Container>
   )

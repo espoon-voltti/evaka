@@ -54,7 +54,7 @@ export interface ReceiverChild {
   childFirstName: string
   childLastName: string
   childDateOfBirth: LocalDate
-  receivers: {
+  receiverPersons: {
     receiverId: UUID
     receiverFirstName: string
     receiverLastName: string
@@ -64,7 +64,7 @@ export interface ReceiverChild {
 export interface ReceiverGroup {
   groupId: UUID
   groupName: string
-  receiverChildren: ReceiverChild[]
+  receivers: ReceiverChild[]
 }
 export const deserializeReceiverChild = (
   json: JsonOf<ReceiverChild>
@@ -72,3 +72,8 @@ export const deserializeReceiverChild = (
   ...json,
   childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
 })
+export interface ReceiverTriplet {
+  unitId: UUID
+  groupId?: UUID
+  childId?: UUID
+}

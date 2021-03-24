@@ -12,7 +12,8 @@ import {
   SentBulletin,
   deserializeSentBulletin,
   deserializeReceiverChild,
-  ReceiverGroup
+  ReceiverGroup,
+  ReceiverTriplet
 } from './types'
 
 export async function initNewBulletin(unitId: UUID): Promise<Result<Bulletin>> {
@@ -28,12 +29,12 @@ export async function deleteDraftBulletin(id: UUID): Promise<void> {
 
 export async function updateDraftBulletin(
   id: UUID,
-  groupId: UUID | null,
+  receivers: ReceiverTriplet[] | null,
   title: string,
   content: string
 ): Promise<void> {
   return client.put(`/bulletins/${id}`, {
-    groupId,
+    receivers,
     title,
     content
   })
@@ -104,9 +105,7 @@ export async function getReceivers(
       Success.of(
         res.data.map((receiverGroup) => ({
           ...receiverGroup,
-          receiverChildren: receiverGroup.receiverChildren.map(
-            deserializeReceiverChild
-          )
+          receivers: receiverGroup.receivers.map(deserializeReceiverChild)
         }))
       )
     )

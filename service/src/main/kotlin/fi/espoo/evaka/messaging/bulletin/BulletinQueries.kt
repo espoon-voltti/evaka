@@ -18,7 +18,7 @@ import java.util.UUID
 
 fun Database.Transaction.initBulletin(
     user: AuthenticatedUser,
-    unitId: UUID
+    receivers: List<BulletinReceiverTriplet>
 ): UUID {
     // language=sql
     val createBulletinSQL = """
@@ -33,14 +33,24 @@ fun Database.Transaction.initBulletin(
         .mapTo<UUID>()
         .first()
 
-    val createBulletinReceiverSQL = """
-        INSERT INTO bulletin_receiver (bulletin_id, unit_id) VALUES (:newBulletinId, :unitId)
+    // language=sql
+    val insertReceiversSQL = """
+        INSERT INTO bulletin_receiver
+        (bulletin_id, unit_id, group_id, child_id)
+        VALUES (:newBulletinId, :unitId, :groupId, :childId)
     """.trimIndent()
 
-    this.createUpdate(createBulletinReceiverSQL)
-        .bind("newBulletinId", newBulletinId)
-        .bind("unitId", unitId)
-        .execute()
+    val batch = this.prepareBatch(insertReceiversSQL)
+
+    receivers.forEach { receiver ->
+        batch
+                .bind("newBulletinId", newBulletinId)
+                .bind("unitId", receiver.unitId)
+                .bind("groupId", receiver.groupId)
+                .bind("childId", receiver.personId)
+    }
+
+    batch.execute()
 
     return newBulletinId
 }
@@ -48,7 +58,6 @@ fun Database.Transaction.initBulletin(
 fun Database.Transaction.updateDraftBulletin(
     user: AuthenticatedUser,
     id: UUID,
-    groupId: UUID?,
     title: String,
     content: String
 ) {
@@ -62,28 +71,11 @@ fun Database.Transaction.updateDraftBulletin(
     val updated = this.createUpdate(updateBulletinSQL)
         .bind("id", id)
         .bind("userId", user.id)
-        .bind("groupId", groupId)
         .bind("title", title)
         .bind("content", content)
         .execute()
 
     if (updated == 0) throw NotFound("No bulletin $id found by user ${user.id} in draft state")
-    else {
-        // language=sql
-        val updateBulletinReceiverSQL = """
-        UPDATE bulletin_receiver
-        SET group_id = :groupId
-        WHERE bulletin_id = :bulletinId
-        """.trimIndent()
-
-        val receiverUpdated = this.createUpdate(updateBulletinReceiverSQL)
-            .bind("bulletinId", id)
-            .bind("userId", user.id)
-            .bind("groupId", groupId)
-            .execute()
-
-        if (receiverUpdated == 0) throw NotFound("No bulletin receiver found for bulletin $id")
-    }
 }
 
 fun Database.Transaction.deleteDraftBulletin(

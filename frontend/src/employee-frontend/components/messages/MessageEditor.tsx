@@ -4,7 +4,6 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
 import _ from 'lodash'
 import { faTimes, faTrash } from 'lib-icons'
 import colors from 'lib-components/colors'
@@ -15,11 +14,10 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
-import { Bulletin, IdAndName } from './types'
+import { Bulletin } from './types'
 
 type Props = {
   bulletin: Bulletin
-  groups: IdAndName[]
   onChange: (change: Partial<Bulletin>) => void
   onDeleteDraft: () => void
   onClose: () => void
@@ -28,7 +26,6 @@ type Props = {
 
 export default React.memo(function MessageEditor({
   bulletin,
-  groups,
   onChange,
   onDeleteDraft,
   onClose,
@@ -43,33 +40,6 @@ export default React.memo(function MessageEditor({
         <IconButton icon={faTimes} onClick={onClose} white />
       </TopBar>
       <FormArea>
-        <div>{i18n.messages.messageEditor.to.label}</div>
-        <Gap size={'xs'} />
-        <div data-qa="group-selector">
-          <ReactSelect
-            options={_.sortBy(groups, (g) => g.name.toLowerCase())}
-            getOptionLabel={(u) => u.name}
-            getOptionValue={(u) => u.id}
-            value={
-              groups.find((group) => group.id === bulletin.groupId) ?? null
-            }
-            onChange={(val) =>
-              onChange({
-                groupId: val
-                  ? 'length' in val
-                    ? val.length > 0
-                      ? val[0].id
-                      : null
-                    : val.id
-                  : null
-              })
-            }
-            noOptionsMessage={() => i18n.messages.messageEditor.to.noOptions}
-            placeholder={i18n.messages.messageEditor.to.placeholder}
-          />
-        </div>
-
-        <Gap size={'s'} />
 
         <div>{i18n.messages.messageEditor.title}</div>
         <Gap size={'xs'} />
@@ -100,10 +70,6 @@ export default React.memo(function MessageEditor({
             text={i18n.messages.messageEditor.send}
             primary
             onClick={onSend}
-            disabled={
-              !bulletin.groupId ||
-              !groups.find((group) => group.id === bulletin.groupId)
-            }
             data-qa="send-bulletin-btn"
           />
         </BottomRow>
