@@ -35,7 +35,7 @@ import Guardians from '../components/child-information/Guardians'
 import FamilyContacts from '../components/child-information/FamilyContacts'
 import { requireRole } from '../utils/roles'
 import ChildApplications from '../components/child-information/ChildApplications'
-import MessageBlocklist from '@evaka/employee-frontend/components/child-information/MessageBlocklist'
+import MessageBlocklist from 'employee-frontend/components/child-information/MessageBlocklist'
 
 const HeaderRow = styled.div`
   display: flex;

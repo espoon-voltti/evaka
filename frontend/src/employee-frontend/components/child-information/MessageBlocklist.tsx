@@ -5,31 +5,24 @@
 import {
   getChildRecipients,
   updateChildRecipient
-} from '@evaka/employee-frontend/api/person'
-import { Recipient } from '@evaka/employee-frontend/components/messages/types'
-import { ChildContext } from '@evaka/employee-frontend/state'
-import { Loading } from '@evaka/lib-common/api'
-import { UUID } from '@evaka/lib-common/types'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import {
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td
-} from '@evaka/lib-components/layout/Table'
-import CollapsibleSection from '@evaka/lib-components/molecules/CollapsibleSection'
-import { P } from '@evaka/lib-components/typography'
+} from 'employee-frontend/api/person'
+import { Recipient } from 'employee-frontend/components/messages/types'
+import { ChildContext } from 'employee-frontend/state'
+import { Loading } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { P } from 'lib-components/typography'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import React, { useContext } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import { SpinnerSegment } from '@evaka/lib-components/atoms/state/Spinner'
-import ErrorSegment from '@evaka/lib-components/atoms/state/ErrorSegment'
-import { UIContext } from '@evaka/employee-frontend/state/ui'
-import { UserContext } from '@evaka/employee-frontend/state/user'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { UIContext } from 'employee-frontend/state/ui'
+import { UserContext } from 'employee-frontend/state/user'
 
 interface Props {
   id: UUID

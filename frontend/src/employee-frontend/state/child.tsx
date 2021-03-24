@@ -16,7 +16,7 @@ import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
-import { Recipient } from '@evaka/employee-frontend/components/messages/types'
+import { Recipient } from 'employee-frontend/components/messages/types'
 
 export interface ChildState {
   person: Result<PersonDetails>
