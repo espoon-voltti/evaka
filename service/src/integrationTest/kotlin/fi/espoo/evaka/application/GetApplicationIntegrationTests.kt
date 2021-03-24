@@ -7,16 +7,21 @@ package fi.espoo.evaka.application
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.updateDaycareAcl
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -24,15 +29,26 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testRoundTheClockDaycare
+import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 class GetApplicationIntegrationTests : FullApplicationTest() {
+    @Autowired
+    lateinit var stateService: ApplicationStateService
+
     private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val enduser = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+    private val testDaycareSupervisor = AuthenticatedUser(unitSupervisorOfTestDaycare.id, setOf())
+    private val testRoundTheClockDaycareSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
+    private val testRoundTheClockDaycareSupervisor = AuthenticatedUser(UUID.randomUUID(), setOf())
 
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
 
@@ -41,6 +57,18 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
+            h.insertTestEmployee(
+                DevEmployee(
+                    id = testRoundTheClockDaycareSupervisor.id,
+                    externalId = testRoundTheClockDaycareSupervisorExternalId
+                )
+            )
+            updateDaycareAcl(
+                h,
+                testRoundTheClockDaycare.id!!,
+                testRoundTheClockDaycareSupervisorExternalId,
+                UserRole.UNIT_SUPERVISOR
+            )
         }
     }
 
@@ -215,5 +243,76 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
             assertEquals(setOf(id1, id2), data)
         }
+    }
+
+    @Test
+    fun `application attachments when placed into a regular unit`() {
+        val applicationId = createPlacementProposalWithAttachments(testDaycare.id)
+
+        val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
+            .asUser(serviceWorker)
+            .responseObject<ApplicationResponse>(objectMapper)
+        assertEquals(2, serviceWorkerResult.get().attachments.size)
+
+        val (_, _, unitSupervisorResult) = http.get("/v2/applications/$applicationId")
+            .asUser(testDaycareSupervisor)
+            .responseObject<ApplicationResponse>(objectMapper)
+        assertEquals(0, unitSupervisorResult.get().attachments.size)
+    }
+
+    @Test
+    fun `application attachments when placed into a round the clock unit`() {
+        val applicationId = createPlacementProposalWithAttachments(testRoundTheClockDaycare.id!!)
+
+        val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
+            .asUser(serviceWorker)
+            .responseObject<ApplicationResponse>(objectMapper)
+        assertEquals(2, serviceWorkerResult.get().attachments.size)
+
+        val (_, _, unitSupervisorResult) = http.get("/v2/applications/$applicationId")
+            .asUser(testRoundTheClockDaycareSupervisor)
+            .responseObject<ApplicationResponse>(objectMapper)
+        assertEquals(1, unitSupervisorResult.get().attachments.size)
+        assertEquals(AttachmentType.EXTENDED_CARE, unitSupervisorResult.get().attachments.first().type)
+
+        val attachment = unitSupervisorResult.get().attachments.first()
+        val (_, res, _) = http.get("/attachments/${attachment.id}/download")
+            .asUser(testRoundTheClockDaycareSupervisor)
+            .response()
+        assertEquals(200, res.statusCode)
+    }
+
+    private fun createPlacementProposalWithAttachments(unitId: UUID): UUID {
+        val applicationId = db.transaction { tx ->
+            val applicationId = insertTestApplication(
+                tx.handle,
+                childId = testChild_1.id,
+                guardianId = enduser.id,
+                status = ApplicationStatus.CREATED
+            )
+            insertTestApplicationForm(
+                h = tx.handle,
+                applicationId = applicationId,
+                document = DaycareFormV0.fromApplication2(validDaycareApplication)
+            )
+            applicationId
+        }
+        uploadAttachment(applicationId, enduser, AttachmentType.URGENCY)
+        uploadAttachment(applicationId, enduser, AttachmentType.EXTENDED_CARE)
+        db.transaction { tx ->
+            stateService.sendApplication(tx, serviceWorker, applicationId)
+            stateService.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            stateService.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = unitId,
+                    period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31))
+                )
+            )
+            stateService.sendPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        return applicationId
     }
 }
