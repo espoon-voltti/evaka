@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -102,16 +103,20 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
         WHERE u.id = :unitId
         """.trimIndent()
 
-    return createQuery(groupsSql)
+    val groups = createQuery(groupsSql)
         .bind("unitId", unitId)
         .bind("today", LocalDate.now(zoneId))
         .mapTo<GroupInfo>()
         .list()
-        .let { groups ->
+
+    val daycareDailyNotesForGroups = getDaycareDailyNotesForDaycareGroups(unitId)
+
+    return groups.map { group -> group.copy(dailyNote = daycareDailyNotesForGroups.find { note -> note.groupId == group.id }) }
+        .let { grps ->
             UnitInfo(
                 id = unit.id,
                 name = unit.name,
-                groups = groups
+                groups = grps
             )
         }
 }

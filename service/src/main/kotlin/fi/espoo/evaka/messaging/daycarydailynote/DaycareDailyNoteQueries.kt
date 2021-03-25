@@ -19,6 +19,39 @@ fun Database.Read.getChildDaycareDailyNotes(childId: UUID): List<DaycareDailyNot
         .list()
 }
 
+fun Database.Read.getDaycareDailyNotesForChildrenPlacedInUnit(unitId: UUID): List<DaycareDailyNote> {
+    return createQuery(
+        """
+SELECT note.* 
+FROM daycare_daily_note note
+    LEFT JOIN placement p on p.child_id = note.child_id
+    LEFT JOIN daycare d ON d.id = p.unit_id
+WHERE 
+    note.child_id IS NOT NULL
+    AND d.id = :id
+        """.trimIndent()
+    )
+        .bind("id", unitId)
+        .mapTo<DaycareDailyNote>()
+        .list()
+}
+
+fun Database.Read.getDaycareDailyNotesForDaycareGroups(unitId: UUID): List<DaycareDailyNote> {
+    return createQuery(
+        """
+SELECT note.* 
+FROM daycare_daily_note note
+    LEFT JOIN daycare_group ON daycare_group.id = note.group_id
+    LEFT JOIN daycare d ON d.id = daycare_group.daycare_id
+WHERE 
+    d.id = :id
+        """.trimIndent()
+    )
+        .bind("id", unitId)
+        .mapTo<DaycareDailyNote>()
+        .list()
+}
+
 fun Database.Read.getGroupDaycareDailyNotes(groupId: UUID): List<DaycareDailyNote> {
     return createQuery("SELECT * FROM daycare_daily_note WHERE group_id = :id")
         .bind("id", groupId)

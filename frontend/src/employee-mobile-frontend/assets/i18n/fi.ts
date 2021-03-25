@@ -95,7 +95,8 @@ export const fi = {
         note: 'Päivän tapahtumia',
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
-        reminderNote: 'Muistettavia asioita'
+        reminderNote: 'Muistettavia asioita',
+        groupNotesHeader: 'Koko ryhmää koskeva muistiinpano'
       },
       values: {
         GOOD: 'Hyvin',

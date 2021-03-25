@@ -78,7 +78,7 @@ export default React.memo(function DailyNoteEditor() {
   const [dailyNote, setDailyNote] = useState<DailyNoteEdited>({
     id: undefined,
     childId: childId,
-    groupId: groupId,
+    groupId: undefined,
     date: LocalDate.today(),
     note: '',
     feedingNote: undefined,
@@ -111,6 +111,10 @@ export default React.memo(function DailyNoteEditor() {
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
+
+  const groupNote =
+    attendanceResponse.isSuccess &&
+    attendanceResponse.value.unit.groups.find((g) => g.id == groupId)?.dailyNote
 
   const levelInfoValues: DaycareDailyNoteLevelInfo[] = [
     'GOOD',
@@ -302,6 +306,16 @@ export default React.memo(function DailyNoteEditor() {
                     />
                   </FixedSpaceColumn>
                 </FixedSpaceColumn>
+                {attendanceResponse.isSuccess && groupNote && (
+                  <FixedSpaceColumn spacing={'s'}>
+                    <GrayFontContainer>
+                      <Label>
+                        {i18n.attendances.notes.labels.groupNotesHeader}
+                      </Label>
+                      <p data-qa={'group-note'}>{groupNote.note}</p>
+                    </GrayFontContainer>
+                  </FixedSpaceColumn>
+                )}
                 <Actions>
                   <FixedSpaceRow fullWidth>
                     <Button
@@ -417,4 +431,10 @@ const DialogTitle = styled.h2`
   color: ${colors.blues.dark};
   margin-top: 32px;
   margin-bottom: 40px;
+`
+
+const GrayFontContainer = styled.div`
+  & * {
+    color: ${colors.greyscale.medium};
+  }
 `

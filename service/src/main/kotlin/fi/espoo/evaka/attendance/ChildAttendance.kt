@@ -24,7 +24,8 @@ data class UnitInfo(
 
 data class GroupInfo(
     val id: UUID,
-    val name: String
+    val name: String,
+    val dailyNote: DaycareDailyNote?
 )
 
 data class ChildBasics(

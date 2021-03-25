@@ -44,6 +44,8 @@ export default class ChildPage {
     '[data-qa="reminder-note-input"]'
   )
 
+  readonly dailyNoteGroupNote = Selector('[data-qa="group-note"]')
+
   readonly markAbsentRadio = (absenceType: AbsenceType) =>
     Selector(`[data-qa="mark-absent-${absenceType}"]`)
   readonly dailyNoteFeedingNote = (dailyNoteLevel: DaycareDailyNoteLevel) =>

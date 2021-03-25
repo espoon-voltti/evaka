@@ -27,6 +27,7 @@ export interface Unit {
 export interface Group {
   id: string
   name: string
+  dailyNote: DailyNote | null
 }
 
 export interface AttendanceChild {
@@ -263,7 +264,23 @@ function deserializeAttendanceResponse(
 ): AttendanceResponse {
   {
     return {
-      unit: data.unit,
+      unit: {
+        ...data.unit,
+        groups: data.unit.groups.map((group) => {
+          return {
+            ...group,
+            dailyNote: group.dailyNote
+              ? {
+                  ...group.dailyNote,
+                  date: LocalDate.parseIso(group.dailyNote.date),
+                  modifiedAt: group.dailyNote.modifiedAt
+                    ? new Date(group.dailyNote.modifiedAt)
+                    : null
+                }
+              : null
+          }
+        })
+      },
       children: data.children
         .sort((a, b) => compareByProperty(a, b, 'lastName'))
         .sort((a, b) => compareByProperty(a, b, 'firstName'))

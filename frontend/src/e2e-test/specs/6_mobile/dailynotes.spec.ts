@@ -166,7 +166,7 @@ test('Daycare group empty list indicator is shown', async (t) => {
 test('User can create a daily note for a child', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
-    groupId: daycareGroup.data.id,
+    groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
@@ -217,7 +217,7 @@ test('User can create a daily note for a child', async (t) => {
 test('User can delete a daily note for a child', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
-    groupId: daycareGroup.data.id,
+    groupId: null,
     childId: enduserChildFixtureJari.id,
     date: LocalDate.today(),
     note: 'Testi viesti',
@@ -243,4 +243,29 @@ test('User can delete a daily note for a child', async (t) => {
         .visible
     )
     .notOk()
+})
+
+test('User can see group daily note', async (t) => {
+  const daycareDailyNote: DaycareDailyNote = {
+    id: uuidv4(),
+    groupId: daycareGroup.data.id,
+    childId: null,
+    date: LocalDate.today(),
+    note: 'Testi ryhmäviesti',
+    feedingNote: 'MEDIUM',
+    sleepingHours: '3',
+    sleepingNote: 'NONE',
+    reminders: [],
+    reminderNote: '',
+    modifiedBy: 'e2e-test'
+  }
+
+  await postDaycareDailyNote(daycareDailyNote)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childDailyNoteLink2)
+
+  await t
+    .expect(childPage.dailyNoteGroupNote.textContent)
+    .eql(daycareDailyNote.note)
 })
