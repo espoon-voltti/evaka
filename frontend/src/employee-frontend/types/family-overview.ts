@@ -48,6 +48,7 @@ export type FamilyContactRole =
   | 'REMOTE_GUARDIAN'
 
 export interface FamilyContact {
+  id: string
   role: FamilyContactRole
   firstName: string | null
   lastName: string | null
@@ -56,4 +57,5 @@ export interface FamilyContact {
   streetAddress: string
   postalCode: string
   postOffice: string
+  priority: number
 }

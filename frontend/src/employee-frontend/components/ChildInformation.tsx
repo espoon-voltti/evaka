@@ -107,7 +107,8 @@ const layouts: Layouts<typeof components> = {
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
     { component: 'assistance', open: false },
-    { component: 'applications', open: false }
+    { component: 'applications', open: false },
+    { component: 'family-contacts', open: false }
   ],
   ['FINANCE_ADMIN']: [
     { component: 'fee-alterations', open: true },
@@ -124,7 +125,8 @@ const layouts: Layouts<typeof components> = {
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
     { component: 'assistance', open: false },
-    { component: 'applications', open: false }
+    { component: 'applications', open: false },
+    { component: 'family-contacts', open: false }
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },

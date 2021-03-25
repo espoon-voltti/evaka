@@ -45,3 +45,18 @@ export async function getFamilyContacts(
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
+
+interface FamilyContactUpdateBody {
+  childId: string
+  contactPersonId: string
+  priority?: number
+}
+
+export async function updateFamilyContacts(
+  body: FamilyContactUpdateBody
+): Promise<Result<void>> {
+  return client
+    .post<void>('/family/contacts', body)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
