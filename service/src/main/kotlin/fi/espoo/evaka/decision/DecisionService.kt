@@ -74,7 +74,7 @@ class DecisionService(
         val unitManager = tx.handle.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
         val guardianDecisionURI = createAndUploadDecision(
-            decision, application, guardian, child, decisionLanguage, guardian, unitManager
+            decision, application, guardian, child, decisionLanguage, unitManager
         )
 
         updateDecisionGuardianDocumentUri(
@@ -88,7 +88,7 @@ class DecisionService(
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
             val otherGuardianDecisionURI = createAndUploadDecision(
-                decision, application, otherGuardian, child, decisionLanguage, guardian, unitManager
+                decision, application, otherGuardian, child, decisionLanguage, unitManager
             )
             updateDecisionOtherGuardianDocumentUri(
                 tx.handle,
@@ -101,16 +101,15 @@ class DecisionService(
     private fun createAndUploadDecision(
         decision: Decision,
         application: ApplicationDetails,
-        otherGuardian: PersonDTO,
+        guardian: PersonDTO,
         child: PersonDTO,
         decisionLanguage: String,
-        guardian: PersonDTO,
         unitManager: DaycareManager
     ): URI {
         val decisionBytes = createDecisionPdf(
             pdfService,
             decision,
-            otherGuardian,
+            guardian,
             child,
             application.transferApplication,
             decisionLanguage,
