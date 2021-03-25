@@ -57,6 +57,7 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
   return (
     <div className="child-message-blocklist">
       <CollapsibleSection
+        data-qa="child-message-blocklist-collapsible"
         icon={faEnvelope}
         title={i18n.childInformation.messaging.title}
         startCollapsed={!open}
@@ -77,7 +78,10 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
             )}
             {recipients.isSuccess &&
               recipients.value.map((recipient: Recipient) => (
-                <Tr key={recipient.personId}>
+                <Tr
+                  key={recipient.personId}
+                  data-qa={`recipient-${recipient.personId}`}
+                >
                   <Td>{`${recipient.lastName} ${recipient.firstName}`}</Td>
                   <Td>
                     {getRoleString(recipient.headOfChild, recipient.guardian)}
@@ -87,6 +91,7 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
                       label={`${recipient.firstName} ${recipient.lastName}`}
                       hiddenLabel
                       checked={!recipient.blocklisted}
+                      dataQa={'blocklist-checkbox'}
                       disabled={
                         !roles.find((r) =>
                           [
