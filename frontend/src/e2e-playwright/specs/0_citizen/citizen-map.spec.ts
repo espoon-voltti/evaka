@@ -126,7 +126,7 @@ describe('Citizen map page', () => {
     await waitUntilTrue(() => mapPage.map.isMarkerInView(swedishMarker))
   })
   test('Units can be searched', async () => {
-    await mapPage.searchInput.typeText('Svart')
+    await mapPage.searchInput.type('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
     await waitUntilTrue(() => mapPage.unitDetailsPanel.visible)
     await waitUntilEqual(
@@ -138,7 +138,7 @@ describe('Citizen map page', () => {
     await putDigitransitAutocomplete({
       features: [testStreet]
     })
-    await mapPage.searchInput.typeText('Testikatu')
+    await mapPage.searchInput.type('Testikatu')
     await mapPage.searchInput.clickAddressResult(testStreet.properties.name)
     await waitUntilTrue(() => mapPage.map.addressMarker.visible)
   })

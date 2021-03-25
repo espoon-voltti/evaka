@@ -1,6 +1,5 @@
 import { eq } from 'lodash'
 import { differenceInSeconds } from 'date-fns'
-import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 
 /**
@@ -42,34 +41,6 @@ export async function waitUntilTrue(f: () => Promise<boolean>) {
  */
 export async function waitUntilFalse(f: () => Promise<boolean>) {
   await waitUntilEqual(f, false)
-}
-
-export class ElementSelector {
-  constructor(protected page: Page, protected selector: string) {}
-
-  /**
-   * Returns the client-side bounding box of this element.
-   *
-   * If the element does not exist on the page, an error is thrown
-   */
-  get boundingBox(): Promise<BoundingBox> {
-    return this.page
-      .$eval(this.selector, (el) => {
-        // DOMRect doesn't serialize nicely, so extract the individual fields
-        const rect = el.getBoundingClientRect()
-        const { x, y, width, height } = rect
-        return { x, y, width, height }
-      })
-      .then((box) => new BoundingBox(box))
-  }
-
-  get visible(): Promise<boolean> {
-    return this.page.isVisible(this.selector)
-  }
-
-  async click(): Promise<void> {
-    await this.page.click(this.selector)
-  }
 }
 
 /**
