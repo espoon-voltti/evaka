@@ -138,7 +138,6 @@ test('Admin sends bulletin and blocked guardian does not get it', async (t) => {
 
   const daycareId = fixtures.daycareFixture.id
 
-  await t.useRole(seppoAdminRole)
   await employeeHome.navigateToChildInformation(
     fixtures.enduserChildFixtureJari.id
   )
