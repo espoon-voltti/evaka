@@ -98,6 +98,7 @@ export interface IconSet {
   fasArrowDown: IconDefinition
   fasArrowUp: IconDefinition
   farUser: IconDefinition
+  faTruck: IconDefinition
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -195,3 +196,4 @@ export const fasMapMarkerAlt = iconSet.fasMapMarkerAlt
 export const fasArrowDown = iconSet.fasArrowDown
 export const fasArrowUp = iconSet.fasArrowUp
 export const farUser = iconSet.farUser
+export const faTruck = iconSet.faTruck

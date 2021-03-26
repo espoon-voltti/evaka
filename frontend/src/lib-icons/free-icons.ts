@@ -77,7 +77,8 @@ import {
   faUserAltSlash,
   faUserFriends,
   faUsers,
-  faComments
+  faComments,
+  faTruck
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faFileAlt as farFileAlt,
@@ -177,7 +178,8 @@ const icons: IconSet = {
   fasArrowDown: faArrowDown,
   fasArrowUp: faArrowUp,
   farUser,
-  faComments
+  faComments,
+  faTruck
 }
 
 export default icons
