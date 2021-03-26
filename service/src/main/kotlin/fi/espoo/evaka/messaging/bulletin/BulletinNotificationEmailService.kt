@@ -42,7 +42,7 @@ class BulletinNotificationEmailService(
         val id: UUID,
         val receiverId: UUID,
         val receiverEmail: String,
-        val language: Language
+        val language: String
     )
 
     fun getBulletinNotificationReceivers(tx: Database.Transaction, bulletinId: UUID): List<BulletinReceiver> {
@@ -78,7 +78,7 @@ class BulletinNotificationEmailService(
                             id = notification.id,
                             receiverId = notification.receiverId,
                             receiverEmail = notification.receiverEmail,
-                            language = notification.language
+                            language = getLanguage(notification.language)
                         )
                     ),
                     runAt = Instant.now(),
@@ -87,6 +87,14 @@ class BulletinNotificationEmailService(
             } else {
                 logger.warn("Could not send bulletin notification email to guardian ${notification.receiverId}: missing email")
             }
+        }
+    }
+
+    private fun getLanguage(languageStr: String?): Language {
+        return when (languageStr?.toLowerCase()) {
+            "sv" -> Language.sv
+            "en" -> Language.en
+            else -> Language.fi
         }
     }
 
