@@ -5,7 +5,7 @@
 import { Page } from 'playwright'
 import { BoundingBox } from '.'
 
-export class ElementSelector {
+export class RawElement {
   constructor(public page: Page, public selector: string) {}
 
   /**
@@ -24,6 +24,10 @@ export class ElementSelector {
       .then((box) => new BoundingBox(box))
   }
 
+  get innerText(): Promise<string> {
+    return this.page.innerText(this.selector)
+  }
+
   get visible(): Promise<boolean> {
     return this.page.isVisible(this.selector)
   }
@@ -31,13 +35,22 @@ export class ElementSelector {
   async click(): Promise<void> {
     await this.page.click(this.selector)
   }
+
+  async waitUntilVisible(): Promise<void> {
+    await this.page.waitForSelector(this.selector, { state: 'visible' })
+  }
+
+  find(descendant: string): RawElement {
+    return new RawElement(this.page, `${this.selector} ${descendant}`)
+  }
 }
 
-type Constructor<T extends ElementSelector> = new (...args: any[]) => T
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T extends RawElement> = new (...args: any[]) => T
 const identity = <T>(x: T) => x
 export const descendantInput = (selector: string) => `${selector} input`
 
-export const Checked = <T extends Constructor<ElementSelector>>(
+export const WithChecked = <T extends Constructor<RawElement>>(
   Base: T,
   inputSelector: (selector: string) => string = identity
 ) =>
@@ -49,7 +62,7 @@ export const Checked = <T extends Constructor<ElementSelector>>(
     }
   }
 
-export const TextInput = <T extends Constructor<ElementSelector>>(
+export const WithTextInput = <T extends Constructor<RawElement>>(
   Base: T,
   inputSelector: (selector: string) => string = identity
 ) =>
@@ -59,10 +72,15 @@ export const TextInput = <T extends Constructor<ElementSelector>>(
     async type(text: string): Promise<void> {
       await this.page.type(this.#input, text)
     }
+    async clear(): Promise<void> {
+      await this.page.click(this.#input, { clickCount: 3 })
+      await this.page.keyboard.press('Backspace')
+    }
   }
 
-export default {
-  Element: ElementSelector,
-  Radio: Checked(ElementSelector, descendantInput),
-  SelectionChip: Checked(ElementSelector, descendantInput)
-}
+export class Radio extends WithChecked(RawElement, descendantInput) {}
+
+export class RawTextInput extends WithTextInput(RawElement) {}
+export class RawRadio extends WithChecked(RawElement) {}
+
+export class SelectionChip extends WithChecked(RawElement, descendantInput) {}

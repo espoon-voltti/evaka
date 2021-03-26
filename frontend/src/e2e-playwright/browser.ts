@@ -7,7 +7,8 @@ import path from 'path'
 import playwright, {
   Browser,
   BrowserContext,
-  BrowserContextOptions
+  BrowserContextOptions,
+  Download
 } from 'playwright'
 import config from 'e2e-test-common/config'
 
@@ -40,4 +41,16 @@ export async function newBrowserContext(
   const ctx = await browser.newContext(options)
   await ctx.addInitScript({ content: injected })
   return ctx
+}
+
+export async function captureTextualDownload(
+  download: Download
+): Promise<string> {
+  const filePath = await download.path()
+  if (!filePath) throw new Error('Download failed')
+  return new Promise<string>((resolve, reject) =>
+    fs.readFile(filePath, 'utf-8', (err, data) =>
+      err ? reject(err) : resolve(data)
+    )
+  )
 }

@@ -2,20 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ClientFunction, Selector, t } from 'testcafe'
+import { Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
 import { format } from 'date-fns'
 
 export default class ReportsPage {
   readonly url = config.employeeUrl
-  readonly downloadCsvLink = Selector('[data-qa="download-csv"] a')
 
   async selectReportsTab() {
     await t.click(Selector('[data-qa="reports-nav"]'))
-  }
-
-  async selectVoucherServiceProvidersReport() {
-    await t.click(Selector('[data-qa="report-voucher-service-providers"]'))
   }
 
   async selectApplicationsReport() {
@@ -24,20 +19,6 @@ export default class ReportsPage {
 
   async selectPlacementSketchingReport() {
     await t.click(Selector('[data-qa="report-placement-sketching"]'))
-  }
-
-  async selectMonth(month: 'Tammikuu') {
-    const monthSelector = Selector('[data-qa="select-month"]')
-    await t.click(monthSelector)
-    await t.typeText(monthSelector, month)
-    await t.pressKey('enter')
-  }
-
-  async selectYear(year: number) {
-    const yearSelector = Selector('[data-qa="select-year"]')
-    await t.click(yearSelector)
-    await t.typeText(yearSelector, year.toString())
-    await t.pressKey('enter')
   }
 
   async selectArea(area: string) {
@@ -54,25 +35,6 @@ export default class ReportsPage {
     await t.typeText(fromInput, format(from, 'dd.MM.yyyy'))
     await t.selectText(toInput).pressKey('delete')
     await t.typeText(toInput, format(to, 'dd.MM.yyyy'))
-  }
-
-  async assertVoucherServiceProviderRowCount(expectedChildCount: number) {
-    await t.expect(Selector('.reportRow').count).eql(expectedChildCount)
-  }
-
-  async assertVoucherServiceProviderRow(
-    unitId: string,
-    expectedChildCount: string,
-    expectedMonthlySum: string
-  ) {
-    const unitRowSelector = Selector(`[data-qa="${unitId}"]`)
-    await t.expect(unitRowSelector.exists).ok()
-    await t
-      .expect(unitRowSelector.find('[data-qa="child-count"]').innerText)
-      .eql(expectedChildCount)
-    await t
-      .expect(unitRowSelector.find('[data-qa="child-sum"]').innerText)
-      .eql(expectedMonthlySum)
   }
 
   async assertApplicationsReportContainsArea(area: string) {
@@ -104,23 +66,5 @@ export default class ReportsPage {
     await t
       .expect(childSelector.find('[data-qa="child-name"]').innerText)
       .eql(childName)
-  }
-
-  async getCsvReport(): Promise<string> {
-    const path = await this.downloadCsvLink.getAttribute('href')
-    const getCsvFile = ClientFunction((url) => {
-      return new Promise<string>((resolve) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('GET', url)
-
-        xhr.onload = function () {
-          resolve(xhr.responseText)
-        }
-
-        xhr.send(null)
-      })
-    })
-
-    return await getCsvFile(`${path}`)
   }
 }

@@ -5,26 +5,26 @@
 import { Page } from 'playwright'
 import { Daycare } from 'e2e-test-common/dev-api/types'
 import { delay } from '../../utils'
-import selector, {
+import {
   descendantInput,
-  TextInput
-} from 'e2e-playwright/utils/selector'
+  RawElement,
+  Radio,
+  SelectionChip,
+  WithTextInput
+} from 'e2e-playwright/utils/element'
 
 export default class CitizenMapPage {
   constructor(private readonly page: Page) {}
 
-  readonly daycareFilter = new selector.Radio(
+  readonly daycareFilter = new Radio(
     this.page,
     '[data-qa="map-filter-daycare"]'
   )
-  readonly preschoolFilter = new selector.Radio(
+  readonly preschoolFilter = new Radio(
     this.page,
     '[data-qa="map-filter-preschool"]'
   )
-  readonly clubFilter = new selector.Radio(
-    this.page,
-    '[data-qa="map-filter-club"]'
-  )
+  readonly clubFilter = new Radio(this.page, '[data-qa="map-filter-club"]')
 
   readonly unitDetailsPanel = new UnitDetailsPanel(
     this.page,
@@ -37,8 +37,8 @@ export default class CitizenMapPage {
     '[data-qa="map-search-input"]'
   )
   readonly languageChips = {
-    fi: new selector.SelectionChip(this.page, '[data-qa="map-filter-fi"]'),
-    sv: new selector.SelectionChip(this.page, '[data-qa="map-filter-sv"]')
+    fi: new SelectionChip(this.page, '[data-qa="map-filter-fi"]'),
+    sv: new SelectionChip(this.page, '[data-qa="map-filter-sv"]')
   }
 
   async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {
@@ -49,21 +49,18 @@ export default class CitizenMapPage {
   }
 
   listItemFor(daycare: Daycare) {
-    return new selector.Element(
-      this.page,
-      `[data-qa="map-unit-list-${daycare.id}"]`
-    )
+    return new RawElement(this.page, `[data-qa="map-unit-list-${daycare.id}"]`)
   }
 }
 
-class Map extends selector.Element {
+class Map extends RawElement {
   static readonly MAX_ZOOM_ATTEMPTS = 30
   readonly #zoomIn = `${this.selector} .leaflet-control-zoom-in`
-  readonly #container = new selector.Element(
+  readonly #container = new RawElement(
     this.page,
     `${this.selector} .leaflet-container`
   )
-  readonly addressMarker = new selector.Element(
+  readonly addressMarker = new RawElement(
     this.page,
     `${this.selector} [data-qa="map-marker-address"]`
   )
@@ -88,10 +85,7 @@ class Map extends selector.Element {
   }
 
   markerFor(daycare: Daycare) {
-    return new selector.Element(
-      this.page,
-      `[data-qa="map-marker-${daycare.id}"]`
-    )
+    return new RawElement(this.page, `[data-qa="map-marker-${daycare.id}"]`)
   }
   popupFor(daycare: Daycare): MapPopup {
     return new MapPopup(this.page, `[data-qa="map-popup-${daycare.id}"]`)
@@ -108,9 +102,9 @@ class Map extends selector.Element {
   }
 }
 
-class UnitDetailsPanel extends selector.Element {
+class UnitDetailsPanel extends RawElement {
   readonly #name = `${this.selector} [data-qa="map-unit-details-name"]`
-  readonly backButton = new selector.Element(
+  readonly backButton = new RawElement(
     this.page,
     `${this.selector} [data-qa="map-unit-details-back"]`
   )
@@ -120,9 +114,9 @@ class UnitDetailsPanel extends selector.Element {
   }
 }
 
-class MapMarker extends selector.Element {}
+class MapMarker extends RawElement {}
 
-class MapPopup extends selector.Element {
+class MapPopup extends RawElement {
   readonly #name = `${this.selector} [data-qa="map-popup-name"]`
 
   get name(): Promise<string | null> {
@@ -130,7 +124,7 @@ class MapPopup extends selector.Element {
   }
 }
 
-class MapSearchInput extends TextInput(selector.Element, descendantInput) {
+class MapSearchInput extends WithTextInput(RawElement, descendantInput) {
   async clickUnitResult(daycare: Daycare) {
     await this.page.click(
       `${this.selector} [data-qa="map-search-${daycare.id}"]`
