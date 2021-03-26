@@ -36,6 +36,26 @@ export default class ChildInformationPage {
     '[data-qa="applications-collapsible"]'
   )
 
+  readonly backupPickupsCollapsible = Selector(
+    '[data-qa="backup-pickups-collapsible"]'
+  )
+
+  backupPickupRows(name: string): Selector {
+    return Selector(`[data-qa="table-backup-pickup-row-${name}"]`)
+  }
+
+  readonly createBackupPickupBtn: Selector = Selector(
+    '[data-qa="create-backup-pickup-btn"]'
+  )
+
+  readonly backupPickupNameInput: Selector = Selector(
+    '[data-qa="backup-pickup-name-input"]'
+  )
+
+  readonly backupPickupPhoneInput: Selector = Selector(
+    '[data-qa="backup-pickup-phone-input"]'
+  )
+
   readonly btnCreateNewAssistanceNeed: Selector = Selector(
     '[data-qa="assistance-need-create-btn"]'
   )
@@ -121,6 +141,10 @@ export default class ChildInformationPage {
     await this.openCollapsible(this.messageBlocklistCollapsible)
   }
 
+  async openBackupPickupsCollapsible() {
+    await this.openCollapsible(this.backupPickupsCollapsible)
+  }
+
   async openCollapsible(collapsibleSelector: Selector) {
     if ((await collapsibleSelector.getAttribute('data-status')) === 'closed') {
       await t.click(collapsibleSelector.find('[data-qa="collapsible-trigger"]'))
@@ -168,6 +192,7 @@ export default class ChildInformationPage {
         .nth(index)
         .find('[data-qa="btn-remove-backup-care"]')
     )
+
     const modal = this.backupCares.find('[data-qa="modal"]')
     await t.expect(modal.visible).ok()
     await t.click(this.backupCares.find('[data-qa="modal-okBtn"]'))
@@ -208,6 +233,20 @@ export default class ChildInformationPage {
 
   findGuardianRow(ssn: string) {
     return this.guardianRows.find('[data-qa="guardian-ssn"]').withText(ssn)
+  }
+
+  async addBackupPickup(name: string, phone: string) {
+    await t.click(this.createBackupPickupBtn)
+    await t.typeText(this.backupPickupNameInput, name)
+    await t.typeText(this.backupPickupPhoneInput, phone)
+    await t.click(Selector('[data-qa="modal-okBtn"]'))
+  }
+
+  async deleteBackupPickup(name: string) {
+    await t.click(
+      this.backupPickupRows(name).find('[data-qa="delete-backup-pickup"]')
+    )
+    await t.click(Selector('[data-qa="modal-okBtn"]'))
   }
 
   async createNewPlacement({
