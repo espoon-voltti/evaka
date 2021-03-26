@@ -48,14 +48,15 @@ class BulletinNotificationEmailService(
     fun getBulletinNotificationReceivers(tx: Database.Transaction, bulletinId: UUID): List<BulletinReceiver> {
         return tx.createQuery(
             """
-            SELECT
+            SELECT DISTINCT
                 bi.id,
-                bi.receiver_id,
+                bi.receiver_person_id AS receiver_id,
                 g.email receiver_email,
                 coalesce(lower(g.language), 'fi') as language
             FROM bulletin_instance bi
-            JOIN person g ON bi.receiver_id = g.id
-            WHERE bi.bulletin_id = :bulletinId
+            JOIN bulletin_receiver br ON bi.bulletin_receiver_id = br.id
+            JOIN person g ON bi.receiver_person_id = g.id
+            WHERE br.bulletin_id = :bulletinId
             AND bi.read_at IS NULL
             AND bi.notification_sent_at IS NULL
             AND g.email IS NOT NULL

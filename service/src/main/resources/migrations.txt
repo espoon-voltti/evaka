@@ -47,3 +47,4 @@ V46__voucher_value_report_snapshot_taken.sql
 V47__drop_iban_from_varda_organizer.sql
 V48__messaging_blocklist.sql
 V49__varda_voucher_values.sql
+V50__add_bulletin_reciever.sql
