@@ -14,7 +14,9 @@ ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 ENV LANGUAGE C.UTF-8
 RUN set -euxo pipefail \
-    && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    && apt-get update \
+    && apt-get -y dist-upgrade \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         tzdata \
         ca-certificates \
     && ln -fs /usr/share/zoneinfo/Europe/Helsinki /etc/localtime \
