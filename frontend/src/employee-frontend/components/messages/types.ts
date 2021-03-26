@@ -16,6 +16,15 @@ export type Bulletin = {
   sentAt: Date | null
 }
 
+export type Recipient = {
+  personId: string
+  firstName: string
+  lastName: string
+  guardian: boolean
+  headOfChild: boolean
+  blocklisted: boolean
+}
+
 export function deserializeBulletin(json: JsonOf<Bulletin>): Bulletin {
   return {
     ...json,

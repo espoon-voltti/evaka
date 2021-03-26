@@ -414,6 +414,7 @@ AttachmentsDeleted AS (DELETE FROM application_form USING ApplicationsDeleted WH
 DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = ApplicationsDeleted.id""",
                 id, id
             )
+
             it.execute("DELETE FROM fee_decision_part WHERE child = ?", id)
             it.execute("DELETE FROM fee_decision WHERE head_of_family = ?", id)
             it.execute("DELETE FROM income WHERE person_id = ?", id)
@@ -428,6 +429,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
             it.execute("DELETE FROM guardian WHERE (guardian_id = ? OR child_id = ?)", id, id)
             it.execute("DELETE FROM child WHERE id = ?", id)
             it.execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
+            it.execute("DELETE FROM messaging_blocklist WHERE (child_id = ? OR blocked_recipient = ?)", id, id)
             it.execute("DELETE FROM person WHERE id = ?", id)
         }
         return ResponseEntity.ok().build()
@@ -829,6 +831,7 @@ fun ensureFakeAdminExists(h: Handle) {
 }
 
 fun Handle.clearDatabase() = listOf(
+    "messaging_blocklist",
     "attachment",
     "guardian",
     "decision",

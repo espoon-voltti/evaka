@@ -111,6 +111,8 @@ enum class Audit(
     InvoicesSend("evaka.invoices.send"),
     InvoicesSendByDate("evaka.invoices.send-by-date"),
     InvoicesUpdate("evaka.invoices.update"),
+    MessagingBlocklistEdit("messaging.blocklist.edit"),
+    MessagingBlocklistRead("messaging.blocklist.read"),
     MessagingBulletinDraftCreate("messaging.bulletin.draft.create"),
     MessagingBulletinDraftRead("messaging.bulletin.draft.read"),
     MessagingBulletinDraftUpdate("messaging.bulletin.draft.update"),

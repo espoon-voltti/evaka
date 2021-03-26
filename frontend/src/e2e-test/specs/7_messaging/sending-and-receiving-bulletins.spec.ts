@@ -26,9 +26,10 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import { DaycareGroupPlacement, DaycarePlacement } from '../../dev-api/types'
-import { enduserRole } from '../../config/users'
+import { enduserRole, seppoAdminRole } from '../../config/users'
 import CitizenHomepage from '../../pages/citizen/citizen-homepage'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
+import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 
 const home = new EmployeeHome()
 const messagesPage = new MessagesPage()
@@ -73,9 +74,9 @@ fixture('Sending and receiving bulletins')
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
+    await clearBulletins()
   })
   .after(async () => {
-    await clearBulletins()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await cleanUp()
   })
@@ -119,4 +120,46 @@ test('Supervisor sends bulletin and guardian reads it', async (t) => {
     .expect(citizenMessages.messageReaderContent.textContent)
     .eql('This is a test')
   await t.expect(citizenHome.nav.messages.textContent).notContains('1')
+})
+
+const employeeHome = new EmployeeHome()
+const childInformationPage = new ChildInformationPage()
+
+test('Admin sends bulletin and blocked guardian does not get it', async (t) => {
+  // login as a citizen first to init data in guardian table
+  await t.useRole(enduserRole)
+
+  await t.navigateTo(config.adminUrl)
+  await home.login({
+    aad: config.supervisorAad,
+    roles: ['ADMIN']
+  })
+  await home.navigateToMessages()
+
+  const daycareId = fixtures.daycareFixture.id
+
+  await employeeHome.navigateToChildInformation(
+    fixtures.enduserChildFixtureJari.id
+  )
+
+  await childInformationPage.openChildMessageBlocklistCollapsible()
+  await childInformationPage.clickBlockListForParent(
+    fixtures.enduserGuardianFixture.id
+  )
+
+  await t.navigateTo(config.adminUrl)
+  await home.navigateToMessages()
+
+  await t
+    .expect(messagesPage.unitsListUnit(daycareId).textContent)
+    .contains(fixtures.daycareFixture.name)
+
+  await t.click(messagesPage.unitsListUnit(daycareId))
+
+  await messagesPage.createNewBulletin('Hello', 'This is a test')
+
+  await t.useRole(enduserRole)
+  await t.expect(citizenHome.nav.messages.textContent).notContains('1')
+  await t.click(citizenHome.nav.messages)
+  await t.expect(citizenMessages.bulletins.exists).notOk()
 })

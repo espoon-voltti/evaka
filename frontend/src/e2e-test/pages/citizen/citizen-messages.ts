@@ -5,8 +5,8 @@
 import { Selector } from 'testcafe'
 
 export default class CitizenMessagesPage {
-  readonly message = (index: number) =>
-    Selector('[data-qa="bulletin-list-item"]').nth(index)
+  readonly bulletins = Selector('[data-qa="bulletin-list-item"]')
+  readonly message = (index: number) => this.bulletins.nth(index)
 
   readonly messageReaderTitle = Selector('[data-qa="message-reader-title"]')
   readonly messageReaderSender = Selector('[data-qa="message-reader-sender"]')

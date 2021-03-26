@@ -85,6 +85,18 @@ export default class ChildInformationPage {
     '[data-qa="modal-okBtn"]'
   )
 
+  readonly messageBlocklistCollapsible: Selector = Selector(
+    '[data-qa="child-message-blocklist-collapsible"]'
+  )
+
+  readonly clickBlockListForParent = async (parentId: string) => {
+    await t.click(
+      Selector(`[data-qa="recipient-${parentId}"]`).find(
+        '[data-qa="blocklist-checkbox"]'
+      )
+    )
+  }
+
   async openGuardiansCollapsible() {
     await this.openCollapsible(this.guardiansCollapsible)
   }
@@ -103,6 +115,10 @@ export default class ChildInformationPage {
 
   async openApplicationsCollapsible() {
     await this.openCollapsible(this.applicationsCollapsible)
+  }
+
+  async openChildMessageBlocklistCollapsible() {
+    await this.openCollapsible(this.messageBlocklistCollapsible)
   }
 
   async openCollapsible(collapsibleSelector: Selector) {
