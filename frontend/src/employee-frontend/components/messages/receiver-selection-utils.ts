@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ReceiverTriplet } from '@evaka/employee-frontend/components/messages/types'
-import { UUID } from '@evaka/employee-frontend/types'
+import { ReceiverTriplet } from 'employee-frontend/components/messages/types'
+import { UUID } from 'employee-frontend/types'
 
 /*
     SelectorNode is a recursive type for storing a selectorId, the corresponding selected

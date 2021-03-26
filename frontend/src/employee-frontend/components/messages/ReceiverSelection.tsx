@@ -1,40 +1,35 @@
 import React, { useEffect, useState } from 'react'
-import { UUID } from 'types'
+import { UUID } from 'employee-frontend/types'
 import styled from 'styled-components'
-import { Loading, Result } from '@evaka/lib-common/api'
-import { useRestApi } from '@evaka/lib-common/utils/useRestApi'
-import { H1 } from '@evaka/lib-components/typography'
-import {
-  Table,
-  Tr,
-  Th,
-  Td,
-  Thead,
-  Tbody
-} from '@evaka/lib-components/layout/Table'
-import { defaultMargins } from '@evaka/lib-components/white-space'
-import Checkbox from '@evaka/lib-components/atoms/form/Checkbox'
-import Button from '@evaka/lib-components/atoms/buttons/Button'
-import colors from '@evaka/lib-components/colors'
-import { ReceiverGroup, ReceiverTriplet } from './types'
+import { Loading, Result } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { H1 } from 'lib-components/typography'
+import { Table, Tr, Th, Td, Thead, Tbody } from 'lib-components/layout/Table'
+import { defaultMargins } from 'lib-components/white-space'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Button from 'lib-components/atoms/buttons/Button'
+import colors from 'lib-components/colors'
+import { ReceiverTriplet, ReceiverGroup } from './types'
 import { useTranslation } from '../../state/i18n'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
-import { getReceivers } from '@evaka/employee-frontend/components/messages/api'
+import { faAngleDown, faAngleUp } from 'lib-icons'
+import { getReceivers } from 'employee-frontend/components/messages/api'
 import {
   getSelectorStatus,
   getReceiverTriplets,
   SelectorNode,
   updateSelector
-} from 'components/messages/receiver-selection-utils'
+} from 'employee-frontend/components/messages/receiver-selection-utils'
 
 interface Props {
   unitId: UUID
+  onCreateNew: (receivers: ReceiverTriplet[]) => void
   setReceiverTriplets: (value: ReceiverTriplet[]) => void
 }
 
 export default React.memo(function ReceiverSelection({
   unitId,
+  onCreateNew,
   setReceiverTriplets
 }: Props) {
   const { i18n } = useTranslation()
@@ -194,7 +189,14 @@ export default React.memo(function ReceiverSelection({
             </Tbody>
           ))}
       </Table>
-      <Button text={i18n.messages.receiverSelection.confirmText} primary />
+      <Button
+        text={i18n.messages.receiverSelection.confirmText}
+        primary
+        onClick={() =>
+          receiverSelection &&
+          onCreateNew(getReceiverTriplets(receiverSelection))
+        }
+      />
     </Container>
   )
 })

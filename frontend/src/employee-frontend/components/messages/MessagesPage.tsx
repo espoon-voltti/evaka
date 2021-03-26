@@ -11,7 +11,7 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import { defaultMargins } from 'lib-components/white-space'
 import Container from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Bulletin, IdAndName, ReceiverTriplet } from './types'
+import { Bulletin, ReceiverTriplet, IdAndName } from './types'
 import {
   deleteDraftBulletin,
   getDraftBulletins,
@@ -59,10 +59,10 @@ export default React.memo(function MessagesPage() {
     setSelectedUnit(unit)
   }
 
-  const onCreateNew = () => {
+  const onCreateNew = (receivers: ReceiverTriplet[]) => {
     if (!selectedUnit || messageUnderEdit) return
 
-    void initNewBulletin(selectedUnit.id)
+    void initNewBulletin(receivers)
       .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
       .then(() => {
         reloadMessageCounts()
@@ -75,18 +75,18 @@ export default React.memo(function MessagesPage() {
   useEffect(() => {
     if (debouncedMessage) {
       const { id, title, content } = debouncedMessage
-      void updateDraftBulletin(id, receiverTriplets, title, content).then(() => {
-        if (activeMessageBox === 'DRAFT') {
-          setMessagesState((state) => ({
-            ...state,
-            bulletins: state.bulletins.map((bulletin) =>
-              bulletin.id === id
-                ? { ...bulletin, title, content }
-                : bulletin
-            )
-          }))
+      void updateDraftBulletin(id, receiverTriplets, title, content).then(
+        () => {
+          if (activeMessageBox === 'DRAFT') {
+            setMessagesState((state) => ({
+              ...state,
+              bulletins: state.bulletins.map((bulletin) =>
+                bulletin.id === id ? { ...bulletin, title, content } : bulletin
+              )
+            }))
+          }
         }
-      })
+      )
     }
   }, [debouncedMessage])
 
@@ -141,7 +141,7 @@ export default React.memo(function MessagesPage() {
                 setReceiverSelectionShown(false)
               }}
               messageCounts={messageCounts}
-              onCreateNew={onCreateNew}
+              onCreateNew={() => onCreateNew([{ unitId: selectedUnit.id }])}
               createNewDisabled={!selectUnit || groups?.isSuccess !== true}
               showReceiverSelection={() => {
                 setReceiverSelectionShown(true)
@@ -154,6 +154,7 @@ export default React.memo(function MessagesPage() {
             {receiverSelectionShown ? (
               <ReceiverSelection
                 unitId={selectedUnit.id}
+                onCreateNew={onCreateNew}
                 setReceiverTriplets={setReceiverTriplets}
               />
             ) : messageOpen ? (

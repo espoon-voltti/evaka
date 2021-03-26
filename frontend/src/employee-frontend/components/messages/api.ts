@@ -16,9 +16,11 @@ import {
   ReceiverTriplet
 } from './types'
 
-export async function initNewBulletin(unitId: UUID): Promise<Result<Bulletin>> {
+export async function initNewBulletin(
+  receivers: ReceiverTriplet[]
+): Promise<Result<Bulletin>> {
   return client
-    .post<JsonOf<Bulletin>>('/bulletins', { unitId })
+    .post<JsonOf<Bulletin>>('/bulletins', { receivers })
     .then((res) => Success.of(deserializeBulletin(res.data)))
     .catch((e) => Failure.fromError(e))
 }

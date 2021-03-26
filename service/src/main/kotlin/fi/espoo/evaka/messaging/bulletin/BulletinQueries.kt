@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -44,10 +45,11 @@ fun Database.Transaction.initBulletin(
 
     receivers.forEach { receiver ->
         batch
-                .bind("newBulletinId", newBulletinId)
-                .bind("unitId", receiver.unitId)
-                .bind("groupId", receiver.groupId)
-                .bind("childId", receiver.personId)
+            .bind("newBulletinId", newBulletinId)
+            .bind("unitId", receiver.unitId)
+            .bind("groupId", receiver.groupId)
+            .bind("childId", receiver.personId)
+            .add()
     }
 
     batch.execute()
@@ -155,42 +157,144 @@ fun Database.Read.getSentBulletinsByUnit(
 ): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT COUNT(b.*) OVER (), b.*, br.group_id AS group_id, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
-        FROM bulletin b
+        WITH limited_bulletins AS (
+        SELECT
+            COUNT(b.id) OVER (),
+            b.id,
+            b.title,
+            b.content,
+            b.sent_at,
+            b.created_by_employee,
+            concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+            FROM bulletin b 
+            JOIN employee e on b.created_by_employee = e.id
+            ORDER BY b.sent_at DESC
+            LIMIT :pageSize OFFSET (:page - 1) * :pageSize
+        )
+        SELECT 
+            b.*,
+            br.bulletin_id,
+            d.id as unit_id,
+            d.name as unit_name,
+            dg.id as group_id,
+            dg.name as group_name,
+            c.id as child_id,
+            c.first_name as child_first_name,
+            c.last_name as child_last_name
+        FROM limited_bulletins b
         JOIN bulletin_receiver br ON br.bulletin_id = b.id
-        JOIN employee e on b.created_by_employee = e.id
-        JOIN daycare_group dg ON br.group_id = dg.id
-        WHERE dg.daycare_id = :unitId AND b.sent_at IS NOT NULL
-        ORDER BY b.sent_at DESC
-        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
+        JOIN daycare d ON br.unit_id = d.id
+        LEFT JOIN daycare_group dg ON br.group_id = dg.id
+        LEFT JOIN person c ON br.child_id = c.id
+        WHERE br.unit_id = :unitId AND b.sent_at IS NOT NULL
     """.trimIndent()
 
-    return this.createQuery(sql)
+    val pagedRawBulletinResults = this.createQuery(sql)
         .bind("unitId", unitId)
         .bind("page", page)
         .bind("pageSize", pageSize)
-        .map(withCountMapper<Bulletin>())
+        .map(withCountMapper<BulletinRaw>())
         .let(mapToPaged(pageSize))
+
+    val data: List<Bulletin> = pagedRawBulletinResults.data
+        .groupBy { raw -> raw.id }
+        .map { (_, rawBulletins) ->
+            mapRawBulletin(rawBulletins)
+        }
+        .filterNotNull()
+
+    return Paged(data, pages = pagedRawBulletinResults.pages, total = pagedRawBulletinResults.total)
 }
 
+data class BulletinRaw(
+    val id: UUID,
+    val title: String,
+    val content: String,
+    val unitId: UUID,
+    val unitName: String,
+    val groupId: UUID?,
+    val groupName: String?,
+    val childId: UUID?,
+    val childFirstName: String?,
+    val childLastName: String?,
+    val createdByEmployee: UUID,
+    val createdByEmployeeName: String,
+    val sentAt: Instant?
+)
 fun Database.Read.getBulletin(
     id: UUID
 ): Bulletin? {
     // language=sql
     val sql = """
-        SELECT b.*, br.group_id AS group_id, br.unit_id AS unit_id, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT 
+            b.id,
+            b.title,
+            b.content,
+            b.sent_at,
+            b.created_by_employee,
+            d.id as unit_id,
+            d.name as unit_name,
+            dg.id as group_id,
+            dg.name as group_name,
+            c.id as child_id,
+            c.first_name as child_first_name,
+            c.last_name as child_last_name,
+            concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
-        JOIN employee e on b.created_by_employee = e.id
-        LEFT JOIN bulletin_receiver br ON b.id = br.bulletin_id
+        JOIN bulletin_receiver br ON br.bulletin_id = b.id
+        JOIN daycare d ON br.unit_id = d.id
         LEFT JOIN daycare_group dg ON br.group_id = dg.id
-        
+        LEFT JOIN person c ON br.child_id = c.id
+        JOIN employee e ON b.created_by_employee = e.id
         WHERE b.id = :id
     """.trimIndent()
 
-    return this.createQuery(sql)
+    val rawBulletins = this.createQuery(sql)
         .bind("id", id)
-        .mapTo<Bulletin>()
-        .firstOrNull()
+        .mapTo<BulletinRaw>()
+        .toList()
+
+    return mapRawBulletin(rawBulletins)
+}
+
+private fun mapRawBulletin(rawBulletinsByBulletinId: List<BulletinRaw>): Bulletin? {
+    val receiverUnits = rawBulletinsByBulletinId.filter { it.groupId == null && it.childId == null }.map {
+        ReceiverUnit(
+            unitId = it.unitId,
+            unitName = it.unitName
+        )
+    }.distinctBy { it.unitId }
+
+    val receiverGroups = rawBulletinsByBulletinId.filter { it.groupId != null && it.childId == null }.map {
+        ReceiverGroup(
+            unitId = it.unitId,
+            groupId = it.groupId!!,
+            groupName = it.groupName!!
+        )
+    }.distinctBy { it.groupId }
+
+    val receiverChildren = rawBulletinsByBulletinId.filter { it.groupId != null && it.childId != null }.map {
+        ReceiverChild(
+            childId = it.childId!!,
+            firstName = it.childFirstName!!,
+            lastName = it.childLastName!!,
+            receiverPersons = listOf()
+        )
+    }.distinctBy { it.childId }
+
+    return rawBulletinsByBulletinId.firstOrNull()?.let {
+        Bulletin(
+            id = it.id,
+            title = it.title,
+            content = it.content,
+            createdByEmployee = it.createdByEmployee,
+            createdByEmployeeName = it.createdByEmployeeName,
+            receiverUnits = receiverUnits,
+            receiverGroups = receiverGroups,
+            receiverChildren = receiverChildren,
+            sentAt = it.sentAt
+        )
+    }
 }
 
 fun Database.Read.getOwnBulletinDrafts(
@@ -201,23 +305,55 @@ fun Database.Read.getOwnBulletinDrafts(
 ): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT COUNT(b.*) OVER (), b.*, br.group_id AS group_id, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
-        FROM bulletin b
+        WITH limited_bulletins AS (
+        SELECT
+            COUNT(b.id) OVER (),
+            b.id,
+            b.title,
+            b.content,
+            b.sent_at,
+            b.created_by_employee,
+            concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+            FROM bulletin b 
+            JOIN employee e on b.created_by_employee = e.id
+            WHERE b.sent_at IS NULL
+            ORDER BY b.updated DESC
+            LIMIT :pageSize OFFSET (:page - 1) * :pageSize
+        )
+        SELECT 
+            b.*,
+            br.bulletin_id,
+            d.id as unit_id,
+            d.name as unit_name,
+            dg.id as group_id,
+            dg.name as group_name,
+            c.id as child_id,
+            c.first_name as child_first_name,
+            c.last_name as child_last_name
+        FROM limited_bulletins b
         JOIN bulletin_receiver br ON br.bulletin_id = b.id
-        JOIN employee e on b.created_by_employee = e.id
+        JOIN daycare d ON br.unit_id = d.id
         LEFT JOIN daycare_group dg ON br.group_id = dg.id
-        WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND br.unit_id = :unitId 
-        ORDER BY b.updated DESC
-        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
+        LEFT JOIN person c ON br.child_id = c.id
+        WHERE b.created_by_employee = :userId AND br.unit_id = :unitId 
     """.trimIndent()
 
-    return this.createQuery(sql)
+    val pagedRawBulletinResults = this.createQuery(sql)
         .bind("userId", user.id)
         .bind("unitId", unitId)
         .bind("page", page)
         .bind("pageSize", pageSize)
-        .map(withCountMapper<Bulletin>())
+        .map(withCountMapper<BulletinRaw>())
         .let(mapToPaged(pageSize))
+
+    val data: List<Bulletin> = pagedRawBulletinResults.data
+        .groupBy { raw -> raw.id }
+        .map { (_, rawBulletins) ->
+            mapRawBulletin(rawBulletins)
+        }
+        .filterNotNull()
+
+    return Paged(data, pages = pagedRawBulletinResults.pages, total = pagedRawBulletinResults.total)
 }
 
 data class BulletinReceiversResult(

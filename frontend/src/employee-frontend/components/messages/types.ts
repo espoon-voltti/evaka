@@ -12,8 +12,9 @@ export type Bulletin = {
   content: string
   createdByEmployee: UUID
   createdByEmployeeName: string
-  groupId: UUID | null
-  groupName: string | null
+  receiverUnits: { unitId: UUID; unitName: string }[]
+  receiverGroups: { unitId: UUID; groupId: UUID; groupName: string }[]
+  receiverChildren: { childId: UUID; firstName: string; lastName: string }[]
   sentAt: Date | null
 }
 

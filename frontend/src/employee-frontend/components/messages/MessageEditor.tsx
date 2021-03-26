@@ -40,7 +40,15 @@ export default React.memo(function MessageEditor({
         <IconButton icon={faTimes} onClick={onClose} white />
       </TopBar>
       <FormArea>
-
+        <div>
+          <div>{bulletin.receiverUnits.map(({ unitName }) => unitName).join(',')}</div>
+          <div>{bulletin.receiverGroups
+            .map(({ groupName }) => `${groupName} (YKSIKÖN NIMI)`)
+            .join(',')}</div>
+          <div>{bulletin.receiverChildren.map(
+            ({ firstName, lastName }) => `${firstName} ${lastName}`
+          )}</div>
+        </div>
         <div>{i18n.messages.messageEditor.title}</div>
         <Gap size={'xs'} />
         <InputField

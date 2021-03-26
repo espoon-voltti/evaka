@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,10 +24,10 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
 
-data class BulletinReceiverTriplet (
-        val unitId: UUID,
-        val groupId: UUID? = null,
-        val personId: UUID? = null
+data class BulletinReceiverTriplet(
+    val unitId: UUID,
+    val groupId: UUID? = null,
+    val personId: UUID? = null
 )
 
 @RestController
@@ -123,7 +122,6 @@ class BulletinControllerEmployee(
         }.let { ResponseEntity.ok(it) }
     }
 
-
     data class BulletinUpdate(
         val title: String,
         val content: String
@@ -177,12 +175,7 @@ class BulletinControllerEmployee(
         authorizeAdminSupervisorOrStaff(user)
 
         db.transaction { tx ->
-            tx.getBulletin(id)?.let {
-                if (it.groupId != null) {
-                    acl.getRolesForUnitGroup(user, it.groupId)
-                        .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-                } else throw BadRequest("Must select group before sending")
-            }
+            tx.getBulletin(id)
             tx.sendBulletin(user, id)
             bulletinNotificationEmailService.scheduleSendingBulletinNotifications(tx, id)
         }

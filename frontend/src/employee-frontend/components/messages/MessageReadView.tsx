@@ -30,7 +30,9 @@ export default React.memo(function MessageReadView({ message, onEdit }: Props) {
         <Title noMargin>{message.title || i18n.messages.noTitle}</Title>
         {message.sentAt ? (
           <FixedSpaceRow>
-            <span>{message.groupName}</span>
+            <span>
+              {message.receiverUnits.map(({ unitName }) => unitName).join(', ')}
+            </span>
             <span>
               {formatDate(
                 message.sentAt,
