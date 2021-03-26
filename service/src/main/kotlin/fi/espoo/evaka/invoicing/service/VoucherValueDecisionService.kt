@@ -170,8 +170,8 @@ ORDER BY start_date ASC
     }
 
     private fun generatePdf(decision: VoucherValueDecisionDetailed): ByteArray {
-        val pages = listOf(coverPage(decision))
-        return pdfService.renderHtml(pages)
+        val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
+        return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, lang))
     }
 }
 

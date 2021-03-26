@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
@@ -30,6 +31,11 @@ class Page(val template: Template, val context: Context)
 
 data class FeeDecisionPdfData(
     val decision: FeeDecisionDetailed,
+    val lang: String
+)
+
+data class VoucherValueDecisionPdfData(
+    val decision: VoucherValueDecisionDetailed,
     val lang: String
 )
 
@@ -53,55 +59,100 @@ class PDFService(
 ) {
     fun processPage(page: Page): String = templateEngine.process(page.template.value, page.context)
 
-    fun render(pages: List<Page>): ByteArray {
+    fun render(page: Page): ByteArray {
         val os = ByteArrayOutputStream()
-        renderHtmlPages(pages.map(this::processPage), os)
+
+        renderHtmlPages(processPage(page), os)
         return os.toByteArray()
     }
 
-    fun renderHtml(pages: List<String>): ByteArray {
+    fun renderHtml(page: String): ByteArray {
         val os = ByteArrayOutputStream()
-        renderHtmlPages(pages, os)
+        renderHtmlPages(page, os)
         return os.toByteArray()
     }
 
-    private fun renderHtmlPages(pages: List<String>, os: OutputStream) {
+    private fun renderHtmlPages(pages: String, os: OutputStream) {
         val textRenderer = ITextRenderer()
-        val head = pages.first()
-        val tail = pages.drop(1)
-        // First page
-        textRenderer.setDocumentFromString(head)
+        textRenderer.setDocumentFromString(pages)
         textRenderer.layout()
         textRenderer.createPDF(os, false)
-        // Rest of the pages
-        tail.forEach { page ->
-            textRenderer.setDocumentFromString(page)
-            textRenderer.layout()
-            textRenderer.writeNextDocument()
-        }
         textRenderer.finishPDF()
     }
 
     fun generateFeeDecisionPdf(data: FeeDecisionPdfData): ByteArray {
-        val templates = listOf(
-            "fee-decision/decision"
-        )
 
-        val pages = templates.mapIndexed { i, template ->
-            Page(Template(template), createFeeDecisionPdfContext(data, i + 1))
+        val page = Page(Template("fee-decision/decision"), createFeeDecisionPdfContext(data))
+
+        return render(page)
+    }
+
+    fun generateVoucherValueDecisionPdf(data: VoucherValueDecisionPdfData): ByteArray {
+
+        val page = Page(Template("fee-decision/voucher-value-decision"), createVoucherValueDecisionPdfContext(data))
+
+        return render(page)
+    }
+
+    private fun createVoucherValueDecisionPdfContext(data: VoucherValueDecisionPdfData): Context {
+        return Context().apply {
+            locale = Locale.Builder().setLanguage(data.lang).build()
+            setVariables(getVoucherValueDecisionPdfVariables(data))
         }
+    }
 
-        return render(pages)
+    private fun getVoucherValueDecisionPdfVariables(data: VoucherValueDecisionPdfData): Map<String, Any?> {
+        val (decision, lang) = data
+
+        val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
+        val hideTotalIncome =
+            (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
+                (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
+
+        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, lang)
+        return mapOf(
+            "child" to decision.child,
+            "approvedAt" to instantFmt(decision.approvedAt),
+            "validFrom" to decision.validFrom,
+            "placementUnit" to decision.placementUnit,
+            "placement" to decision.placement,
+            "familySize" to decision.familySize,
+            "value" to formatCents(decision.value),
+            "serviceNeed" to decision.placement.serviceNeed,
+            "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
+            "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+            "hasPartner" to (decision.partner != null),
+            "partner" to decision.partner,
+            "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
+            "partnerIncomeEffect" to (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+            "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
+            "totalIncome" to formatCents(totalIncome),
+            "showTotalIncome" to !hideTotalIncome,
+            "coPayment" to formatCents(decision.coPayment),
+            "decisionNumber" to decision.decisionNumber,
+            "sendAddress" to sendAddress,
+            "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
+            "serviceProviderValue" to formatCents(decision.value - (decision.coPayment + decision.feeAlterations.sumBy { it.effect })),
+
+            "approverFirstName" to (
+                decision.financeDecisionHandlerName?.split(" ")?.get(0)
+                    ?: decision.approvedBy?.firstName
+                ),
+            "approverLastName" to (
+                decision.financeDecisionHandlerName?.split(" ")?.get(1)
+                    ?: decision.approvedBy?.lastName
+                )
+
+        )
     }
 
     private fun createFeeDecisionPdfContext(
-        data: FeeDecisionPdfData,
-        pageNumber: Int
+        data: FeeDecisionPdfData
+
     ): Context {
         return Context().apply {
             locale = Locale.Builder().setLanguage(data.lang).build()
             setVariables(getFeeDecisionPdfVariables(data))
-            setVariable("pageNumber", pageNumber)
         }
     }
 
@@ -158,8 +209,14 @@ class PDFService(
             "pricingMinThreshold" to formatCents(-1 * decision.minThreshold()),
             "familySize" to decision.familySize,
             "showValidTo" to (decision.validTo?.isBefore(LocalDate.now()) ?: false),
-            "approverFirstName" to (decision.financeDecisionHandlerName?.split(" ")?.get(0) ?: decision.approvedBy?.firstName),
-            "approverLastName" to (decision.financeDecisionHandlerName?.split(" ")?.get(1) ?: decision.approvedBy?.lastName),
+            "approverFirstName" to (
+                decision.financeDecisionHandlerName?.split(" ")?.get(0)
+                    ?: decision.approvedBy?.firstName
+                ),
+            "approverLastName" to (
+                decision.financeDecisionHandlerName?.split(" ")?.get(1)
+                    ?: decision.approvedBy?.lastName
+                ),
         ).mapValues {
             it.value ?: ""
         }
