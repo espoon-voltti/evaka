@@ -2236,6 +2236,7 @@ export const fi = {
         placeholder: 'Valitse ryhmä',
         noOptions: 'Ei ryhmiä'
       },
+      sender: 'Lähettäjä',
       title: 'Otsikko',
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',

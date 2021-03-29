@@ -38,6 +38,7 @@ class BulletinControllerEmployee(
 ) {
 
     data class CreateBulletinRequest(
+        val sender: String,
         val receivers: List<BulletinReceiverTriplet>
     )
     @PostMapping
@@ -52,6 +53,7 @@ class BulletinControllerEmployee(
         return db.transaction { tx ->
             tx.initBulletin(
                 user = user,
+                sender = body.sender,
                 receivers = body.receivers
             ).let { tx.getBulletin(it)!! }
         }.let {
@@ -124,7 +126,8 @@ class BulletinControllerEmployee(
 
     data class BulletinUpdate(
         val title: String,
-        val content: String
+        val content: String,
+        val sender: String
     )
 
     @PutMapping("/{id}")
@@ -142,7 +145,8 @@ class BulletinControllerEmployee(
                 user = user,
                 id = id,
                 title = body.title,
-                content = body.content
+                content = body.content,
+                sender = body.sender
             )
         }
 

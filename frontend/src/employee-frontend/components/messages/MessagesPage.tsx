@@ -59,10 +59,10 @@ export default React.memo(function MessagesPage() {
     setSelectedUnit(unit)
   }
 
-  const onCreateNew = (receivers: ReceiverTriplet[]) => {
+  const onCreateNew = (sender: string, receivers: ReceiverTriplet[]) => {
     if (!selectedUnit || messageUnderEdit) return
 
-    void initNewBulletin(receivers)
+    void initNewBulletin(sender, receivers)
       .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
       .then(() => {
         reloadMessageCounts()
@@ -74,19 +74,23 @@ export default React.memo(function MessagesPage() {
 
   useEffect(() => {
     if (debouncedMessage) {
-      const { id, title, content } = debouncedMessage
-      void updateDraftBulletin(id, receiverTriplets, title, content).then(
-        () => {
-          if (activeMessageBox === 'DRAFT') {
-            setMessagesState((state) => ({
-              ...state,
-              bulletins: state.bulletins.map((bulletin) =>
-                bulletin.id === id ? { ...bulletin, title, content } : bulletin
-              )
-            }))
-          }
+      const { id, title, content, sender } = debouncedMessage
+      void updateDraftBulletin(
+        id,
+        receiverTriplets,
+        title,
+        content,
+        sender
+      ).then(() => {
+        if (activeMessageBox === 'DRAFT') {
+          setMessagesState((state) => ({
+            ...state,
+            bulletins: state.bulletins.map((bulletin) =>
+              bulletin.id === id ? { ...bulletin, title, content } : bulletin
+            )
+          }))
         }
-      )
+      })
     }
   }, [debouncedMessage])
 
@@ -108,18 +112,22 @@ export default React.memo(function MessagesPage() {
   const onSend = () => {
     if (!messageUnderEdit) return
 
-    const { id, title, content } = messageUnderEdit
-    void updateDraftBulletin(id, receiverTriplets, title, content)
+    const { id, title, content, sender } = messageUnderEdit
+    void updateDraftBulletin(id, receiverTriplets, title, content, sender)
       .then(() => sendBulletin(messageUnderEdit.id))
       .then(resetUI)
   }
   const onClose = () => {
     if (!messageUnderEdit) return
 
-    const { id, title, content } = messageUnderEdit
-    void updateDraftBulletin(id, receiverTriplets, title, content).then(() =>
-      setMessageUnderEdit(null)
-    )
+    const { id, title, content, sender } = messageUnderEdit
+    void updateDraftBulletin(
+      id,
+      receiverTriplets,
+      title,
+      content,
+      sender
+    ).then(() => setMessageUnderEdit(null))
   }
 
   return (
@@ -141,7 +149,9 @@ export default React.memo(function MessagesPage() {
                 setReceiverSelectionShown(false)
               }}
               messageCounts={messageCounts}
-              onCreateNew={() => onCreateNew([{ unitId: selectedUnit.id }])}
+              onCreateNew={() =>
+                onCreateNew(selectedUnit.name, [{ unitId: selectedUnit.id }])
+              }
               createNewDisabled={!selectUnit || groups?.isSuccess !== true}
               showReceiverSelection={() => {
                 setReceiverSelectionShown(true)
@@ -154,7 +164,9 @@ export default React.memo(function MessagesPage() {
             {receiverSelectionShown ? (
               <ReceiverSelection
                 unitId={selectedUnit.id}
-                onCreateNew={onCreateNew}
+                onCreateNew={() =>
+                  onCreateNew(selectedUnit.name, receiverTriplets)
+                }
                 setReceiverTriplets={setReceiverTriplets}
               />
             ) : messageOpen ? (

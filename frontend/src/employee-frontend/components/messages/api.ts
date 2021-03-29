@@ -17,10 +17,11 @@ import {
 } from './types'
 
 export async function initNewBulletin(
+  sender: string,
   receivers: ReceiverTriplet[]
 ): Promise<Result<Bulletin>> {
   return client
-    .post<JsonOf<Bulletin>>('/bulletins', { receivers })
+    .post<JsonOf<Bulletin>>('/bulletins', { sender, receivers })
     .then((res) => Success.of(deserializeBulletin(res.data)))
     .catch((e) => Failure.fromError(e))
 }
@@ -33,12 +34,14 @@ export async function updateDraftBulletin(
   id: UUID,
   receivers: ReceiverTriplet[] | null,
   title: string,
-  content: string
+  content: string,
+  sender: string
 ): Promise<void> {
   return client.put(`/bulletins/${id}`, {
     receivers,
     title,
-    content
+    content,
+    sender
   })
 }
 

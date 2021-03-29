@@ -19,17 +19,19 @@ import java.util.UUID
 
 fun Database.Transaction.initBulletin(
     user: AuthenticatedUser,
+    sender: String,
     receivers: List<BulletinReceiverTriplet>
 ): UUID {
     // language=sql
     val createBulletinSQL = """
-        INSERT INTO bulletin (created_by_employee)
-        VALUES (:createdBy)
+        INSERT INTO bulletin (sender, created_by_employee)
+        VALUES (:sender, :createdBy)
         RETURNING id
     """.trimIndent()
 
     // language=sql
     val newBulletinId = this.createQuery(createBulletinSQL)
+        .bind("sender", sender)
         .bind("createdBy", user.id)
         .mapTo<UUID>()
         .first()
@@ -61,12 +63,13 @@ fun Database.Transaction.updateDraftBulletin(
     user: AuthenticatedUser,
     id: UUID,
     title: String,
-    content: String
+    content: String,
+    sender: String
 ) {
     // language=sql
     val updateBulletinSQL = """
         UPDATE bulletin
-        SET title = :title, content = :content
+        SET title = :title, content = :content, sender = :sender
         WHERE id = :id AND created_by_employee = :userId AND sent_at IS NULL
     """.trimIndent()
 
@@ -75,6 +78,7 @@ fun Database.Transaction.updateDraftBulletin(
         .bind("userId", user.id)
         .bind("title", title)
         .bind("content", content)
+        .bind("sender", sender)
         .execute()
 
     if (updated == 0) throw NotFound("No bulletin $id found by user ${user.id} in draft state")
@@ -186,6 +190,7 @@ fun Database.Read.getSentBulletinsByUnit(
         SELECT
             COUNT(b.id) OVER (),
             b.id,
+            b.sender,
             b.title,
             b.content,
             b.sent_at,
@@ -233,6 +238,7 @@ fun Database.Read.getSentBulletinsByUnit(
 
 data class BulletinRaw(
     val id: UUID,
+    val sender: String,
     val title: String,
     val content: String,
     val unitId: UUID,
@@ -253,6 +259,7 @@ fun Database.Read.getBulletin(
     val sql = """
         SELECT 
             b.id,
+            b.sender,
             b.title,
             b.content,
             b.sent_at,
@@ -310,6 +317,7 @@ private fun mapRawBulletin(rawBulletinsByBulletinId: List<BulletinRaw>): Bulleti
     return rawBulletinsByBulletinId.firstOrNull()?.let {
         Bulletin(
             id = it.id,
+            sender = it.sender,
             title = it.title,
             content = it.content,
             createdByEmployee = it.createdByEmployee,
@@ -334,6 +342,7 @@ fun Database.Read.getOwnBulletinDrafts(
         SELECT
             COUNT(b.id) OVER (),
             b.id,
+            b.sender,
             b.title,
             b.content,
             b.sent_at,
@@ -467,7 +476,13 @@ fun Database.Read.getReceivedBulletinsByGuardian(
 ): Paged<ReceivedBulletin> {
     // language=sql
     val sql = """
-        SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, b.sender as sender
+        SELECT COUNT(bi.*) OVER (), 
+            bi.id, 
+            b.sent_at, 
+            b.sender, 
+            b.title, 
+            b.content, 
+            bi.read_at IS NOT NULL AS is_read
         FROM bulletin_instance bi
         JOIN bulletin b ON bi.bulletin_id = b.id
         WHERE bi.receiver_person_id = :userId AND b.sent_at IS NOT NULL 

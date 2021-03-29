@@ -31,7 +31,7 @@ export default React.memo(function MessageListItem({
     >
       <FixedSpaceColumn>
         <Header>
-          <span>{bulletin.sender}</span>
+          <span data-qa="bulletin-sender">{bulletin.sender}</span>
           <span>
             {formatDate(
               bulletin.sentAt,

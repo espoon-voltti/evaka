@@ -8,6 +8,7 @@ import { UUID } from '../../types'
 
 export type Bulletin = {
   id: UUID
+  sender: string
   title: string
   content: string
   createdByEmployee: UUID

@@ -23,7 +23,7 @@ import {
 
 interface Props {
   unitId: UUID
-  onCreateNew: (receivers: ReceiverTriplet[]) => void
+  onCreateNew: () => void
   setReceiverTriplets: (value: ReceiverTriplet[]) => void
 }
 
@@ -192,10 +192,7 @@ export default React.memo(function ReceiverSelection({
       <Button
         text={i18n.messages.receiverSelection.confirmText}
         primary
-        onClick={() =>
-          receiverSelection &&
-          onCreateNew(getReceiverTriplets(receiverSelection))
-        }
+        onClick={() => receiverSelection && onCreateNew()}
       />
     </Container>
   )

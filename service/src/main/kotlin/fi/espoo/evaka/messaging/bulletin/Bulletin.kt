@@ -9,6 +9,7 @@ import java.util.UUID
 
 data class Bulletin(
     val id: UUID,
+    val sender: String,
     val title: String,
     val content: String,
     val createdByEmployee: UUID,
