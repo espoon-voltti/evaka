@@ -173,21 +173,34 @@ class DecisionService(
         val application = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
+        val currentVtjGuardianIds = personService.getGuardians(tx, AuthenticatedUser.machineUser, decision.childId).map { person -> person.id }
+
         val applicationGuardian = tx.handle.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
 
-        deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentUri.toString())
+        if (currentVtjGuardianIds.contains(applicationGuardian.id)) {
+            deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentUri.toString())
+        } else {
+            logger.warn("Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current VTJ guardian")
+        }
 
-        if (application.otherGuardianId != null && !decision.otherGuardianDocumentUri.isNullOrBlank() && !applicationGuardian.restrictedDetailsEnabled) {
+        if (application.otherGuardianId != null &&
+            !decision.otherGuardianDocumentUri.isNullOrBlank() &&
+            !applicationGuardian.restrictedDetailsEnabled
+        ) {
             val otherGuardian = tx.handle.getPersonById(application.otherGuardianId)
                 ?: error("Other guardian not found with id: ${application.otherGuardianId}")
 
-            deliverDecisionToGuardian(
-                tx,
-                decision,
-                otherGuardian,
-                decision.otherGuardianDocumentUri.toString()
-            )
+            if (currentVtjGuardianIds.contains(application.otherGuardianId)) {
+                deliverDecisionToGuardian(
+                    tx,
+                    decision,
+                    otherGuardian,
+                    decision.otherGuardianDocumentUri.toString()
+                )
+            } else {
+                logger.warn("Skipping sending decision $decisionId to application other guardian ${application.otherGuardianId} - not a current VTJ guardian")
+            }
         }
     }
 
