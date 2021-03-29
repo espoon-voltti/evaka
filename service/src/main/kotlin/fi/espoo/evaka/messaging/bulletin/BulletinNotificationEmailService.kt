@@ -54,9 +54,8 @@ class BulletinNotificationEmailService(
                 g.email receiver_email,
                 coalesce(lower(g.language), 'fi') as language
             FROM bulletin_instance bi
-            JOIN bulletin_receiver br ON bi.bulletin_receiver_id = br.id
             JOIN person g ON bi.receiver_person_id = g.id
-            WHERE br.bulletin_id = :bulletinId
+            WHERE bi.bulletin_id = :bulletinId
             AND bi.read_at IS NULL
             AND bi.notification_sent_at IS NULL
             AND g.email IS NOT NULL

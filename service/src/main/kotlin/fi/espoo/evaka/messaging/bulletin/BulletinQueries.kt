@@ -120,28 +120,53 @@ fun Database.Transaction.sendBulletin(
     // language=sql
     val insertBulletinInstancesSql = """
         WITH children AS (
-            SELECT pl.child_id, br.id AS bulletin_receiver_id
+            SELECT child_id, bulletin_id FROM bulletin_receiver
+            WHERE
+            bulletin_id = :bulletinId 
+            AND unit_id IS NOT NULL 
+            AND group_id IS NOT NULL 
+            AND child_id IS NOT NULL
+            
+            UNION DISTINCT
+            
+            SELECT pl.child_id, br.bulletin_id
             FROM bulletin b
             JOIN bulletin_receiver br ON br.bulletin_id = b.id 
             JOIN daycare_group dg ON br.group_id = dg.id
             JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
-            WHERE b.id = :bulletinId
+            WHERE b.id = :bulletinId 
+            AND br.unit_id IS NOT NULL 
+            AND br.group_id IS NOT NULL 
+            AND br.child_id IS NULL
+            
+            UNION DISTINCT
+            
+            SELECT pl.child_id, br.bulletin_id
+            FROM bulletin b
+            JOIN bulletin_receiver br ON br.bulletin_id = b.id
+            JOIN daycare_group dg ON br.unit_id = dg.daycare_id
+            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
+            JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            WHERE b.id = :bulletinId 
+            AND br.unit_id IS NOT NULL 
+            AND br.group_id IS NULL 
+            AND br.child_id IS NULL
         ), receivers AS (
-            SELECT g.guardian_id AS receiver_person_id, c.bulletin_receiver_id AS bulletin_receiver_id
+            SELECT g.guardian_id AS receiver_person_id, c.bulletin_id AS bulletin_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
             WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = c.child_id AND bl.blocked_recipient = g.guardian_id)
             
             UNION DISTINCT 
             
-            SELECT fc.head_of_child AS receiver_person_id, c.bulletin_receiver_id AS bulletin_receiver_id
+            SELECT fc.head_of_child AS receiver_person_id, c.bulletin_id AS bulletin_id
             FROM children c
             JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
             WHERE NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = c.child_id AND bl.blocked_recipient = fc.head_of_child)
         )
-        INSERT INTO bulletin_instance (bulletin_receiver_id, receiver_person_id)
-        SELECT bulletin_receiver_id, receiver_person_id FROM receivers
+        INSERT INTO bulletin_instance (bulletin_id, receiver_person_id)
+        SELECT DISTINCT bulletin_id, receiver_person_id FROM receivers
     """.trimIndent()
 
     this.createUpdate(insertBulletinInstancesSql)
@@ -442,11 +467,9 @@ fun Database.Read.getReceivedBulletinsByGuardian(
 ): Paged<ReceivedBulletin> {
     // language=sql
     val sql = """
-        SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
+        SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, b.sender as sender
         FROM bulletin_instance bi
-        JOIN bulletin_receiver br ON bi.bulletin_receiver_id = br.id
-        JOIN bulletin b ON br.bulletin_id = b.id
-        JOIN daycare_group dg on br.group_id = dg.id
+        JOIN bulletin b ON bi.bulletin_id = b.id
         WHERE bi.receiver_person_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
         LIMIT :pageSize OFFSET (:page - 1) * :pageSize
