@@ -308,12 +308,10 @@ export default React.memo(function DailyNoteEditor() {
                 </FixedSpaceColumn>
                 {attendanceResponse.isSuccess && groupNote && (
                   <FixedSpaceColumn spacing={'s'}>
-                    <GrayFontContainer>
-                      <Label>
-                        {i18n.attendances.notes.labels.groupNotesHeader}
-                      </Label>
-                      <p data-qa={'group-note'}>{groupNote.note}</p>
-                    </GrayFontContainer>
+                    <Label>
+                      {i18n.attendances.notes.labels.groupNotesHeader}
+                    </Label>
+                    <p data-qa={'group-note'}>{groupNote.note}</p>
                   </FixedSpaceColumn>
                 )}
                 <Actions>
@@ -431,10 +429,4 @@ const DialogTitle = styled.h2`
   color: ${colors.blues.dark};
   margin-top: 32px;
   margin-bottom: 40px;
-`
-
-const GrayFontContainer = styled.div`
-  & * {
-    color: ${colors.greyscale.medium};
-  }
 `
