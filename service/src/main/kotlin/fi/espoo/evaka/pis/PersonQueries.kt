@@ -224,6 +224,7 @@ fun Handle.updatePersonContactInfo(id: UUID, contactInfo: ContactInfo): Boolean 
         UPDATE person SET
             email = :email,
             phone = :phone,
+            phone2 = :phone2,
             invoice_recipient_name = :invoiceRecipientName,
             invoicing_street_address = :invoicingStreetAddress,
             invoicing_postal_code = :invoicingPostalCode,
@@ -299,6 +300,7 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, _ ->
         lastName = rs.getString("last_name"),
         email = rs.getString("email"),
         phone = rs.getString("phone"),
+        phone2 = rs.getString("phone2"),
         language = rs.getString("language"),
         dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
         dateOfDeath = rs.getDate("date_of_death")?.toLocalDate(),
