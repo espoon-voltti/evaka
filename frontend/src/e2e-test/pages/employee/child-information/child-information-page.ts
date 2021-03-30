@@ -56,6 +56,14 @@ export default class ChildInformationPage {
     '[data-qa="backup-pickup-phone-input"]'
   )
 
+  readonly medication: Selector = Selector('[data-qa="medication"]')
+
+  readonly medicationInput: Selector = Selector('[data-qa="medication-input"]')
+
+  readonly confirmEditedChildBtn: Selector = Selector(
+    '[data-qa="confirm-edited-child-button"]'
+  )
+
   readonly btnCreateNewAssistanceNeed: Selector = Selector(
     '[data-qa="assistance-need-create-btn"]'
   )
