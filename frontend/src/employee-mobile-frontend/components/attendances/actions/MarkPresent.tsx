@@ -44,9 +44,10 @@ export default React.memo(function MarkPresent() {
 
   const [time, setTime] = useState<string>(getCurrentTime())
 
-  const { childId, unitId } = useParams<{
+  const { childId, unitId, groupId } = useParams<{
     unitId: string
     childId: string
+    groupId: string
   }>()
 
   const loadDaycareAttendances = useRestApi(
@@ -65,6 +66,11 @@ export default React.memo(function MarkPresent() {
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
+
+  const groupNote =
+    attendanceResponse.isSuccess &&
+    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
+      ?.dailyNote
 
   return (
     <>
@@ -130,7 +136,10 @@ export default React.memo(function MarkPresent() {
                   size={'m'}
                 />
               </span>
-              <DailyNote child={child ? child : undefined} />
+              <DailyNote
+                child={child ? child : undefined}
+                groupNote={groupNote ? groupNote : undefined}
+              />
             </DailyNotes>
           </ContentAreaWithShadow>
         </TallContentArea>

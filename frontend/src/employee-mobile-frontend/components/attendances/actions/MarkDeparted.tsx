@@ -65,14 +65,20 @@ export default React.memo(function MarkDeparted() {
     AbsenceType | undefined
   >(undefined)
 
-  const { childId, unitId } = useParams<{
+  const { childId, unitId, groupId } = useParams<{
     unitId: string
     childId: string
+    groupId: string
   }>()
 
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
+
+  const groupNote =
+    attendanceResponse.isSuccess &&
+    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
+      ?.dailyNote
 
   const loadDaycareAttendances = useRestApi(
     getDaycareAttendances,
@@ -216,7 +222,10 @@ export default React.memo(function MarkDeparted() {
                   size={'m'}
                 />
               </span>
-              <DailyNote child={child ? child : undefined} />
+              <DailyNote
+                child={child ? child : undefined}
+                groupNote={groupNote ? groupNote : undefined}
+              />
             </DailyNotes>
           </ContentAreaWithShadow>
         </TallContentArea>

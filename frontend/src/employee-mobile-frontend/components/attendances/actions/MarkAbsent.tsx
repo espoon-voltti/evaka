@@ -52,8 +52,9 @@ export default React.memo(function MarkAbsent() {
     AbsenceType | undefined
   >(undefined)
 
-  const { childId, unitId } = useParams<{
+  const { childId, unitId, groupId } = useParams<{
     unitId: string
+    groupId: string
     childId: string
   }>()
 
@@ -73,6 +74,11 @@ export default React.memo(function MarkAbsent() {
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
+
+  const groupNote =
+    attendanceResponse.isSuccess &&
+    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
+      ?.dailyNote
 
   return (
     <>
@@ -142,7 +148,10 @@ export default React.memo(function MarkAbsent() {
                   size={'m'}
                 />
               </span>
-              <DailyNote child={child ? child : undefined} />
+              <DailyNote
+                child={child ? child : undefined}
+                groupNote={groupNote ? groupNote : undefined}
+              />
             </DailyNotes>
           </ContentAreaWithShadow>
         </TallContentArea>

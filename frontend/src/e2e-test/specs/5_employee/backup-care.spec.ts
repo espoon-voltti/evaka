@@ -112,7 +112,7 @@ test('backup care child can be placed into a group and removed from it', async (
     .eql(`${childFixture.lastName} ${childFixture.firstName}`)
   await t
     .expect(groupPlacement.placementDuration.textContent)
-    .eql('01.02.2021 - 03.02.2021')
+    .eql('01.02.2021- 03.02.2021')
 
   // after removing the child is again visible at missing groups and no longer at the group
   await groupPlacement.remove()

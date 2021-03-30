@@ -11,14 +11,15 @@ import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 
-import { AttendanceChild } from '../../../api/attendances'
+import { AttendanceChild, DailyNote } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
   child: AttendanceChild | undefined
+  groupNote: DailyNote | undefined
 }
 
-export default React.memo(function DailyNote({ child }: Props) {
+export default React.memo(function DailyNote({ child, groupNote }: Props) {
   const { i18n } = useTranslation()
 
   return (
@@ -63,6 +64,12 @@ export default React.memo(function DailyNote({ child }: Props) {
                 ))}{' '}
                 {child.dailyNote.reminderNote}
               </span>
+            </FixedSpaceColumn>
+          )}
+          {groupNote && (
+            <FixedSpaceColumn spacing={'xxs'}>
+              <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
+              <span>{groupNote.note}</span>
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>
