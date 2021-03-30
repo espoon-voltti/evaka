@@ -62,7 +62,7 @@ fixture('Mobile attendances')
         firstName: 'Yrjö',
         lastName: 'Yksikkö',
         email: 'yy@example.com',
-        roles: ['MOBILE']
+        roles: []
       })
     ])
 

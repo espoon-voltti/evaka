@@ -61,7 +61,7 @@ fixture('Mobile daily notes')
       firstName: 'Yrjö',
       lastName: 'Yksikkö',
       email: 'yy@example.com',
-      roles: ['MOBILE']
+      roles: []
     })
 
     careArea = await Fixture.careArea().save()
