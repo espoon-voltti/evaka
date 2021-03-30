@@ -61,6 +61,7 @@ interface Form {
   dateOfBirth: LocalDate
   email: string
   phone: string
+  phone2: string
   streetAddress: string
   postalCode: string
   postOffice: string
@@ -92,6 +93,7 @@ const PersonDetails = React.memo(function PersonDetails({
     dateOfBirth: LocalDate.today(),
     email: '',
     phone: '',
+    phone2: '',
     streetAddress: '',
     postalCode: '',
     postOffice: '',
@@ -110,6 +112,7 @@ const PersonDetails = React.memo(function PersonDetails({
         dateOfBirth: personResult.value.dateOfBirth,
         email: personResult.value.email || '',
         phone: personResult.value.phone || '',
+        phone2: personResult.value.phone2 || '',
         streetAddress: personResult.value.streetAddress || '',
         postalCode: personResult.value.postalCode || '',
         postOffice: personResult.value.postOffice || '',
@@ -408,6 +411,17 @@ const PersonDetails = React.memo(function PersonDetails({
                       />
                     ) : (
                       person.phone
+                    )
+                  },
+                  {
+                    label: i18n.common.form.phone2,
+                    value: editing ? (
+                      <InputField
+                        value={form.phone2}
+                        onChange={(value) => updateForm({ phone2: value })}
+                      />
+                    ) : (
+                      person.phone2
                     )
                   }
                 ]

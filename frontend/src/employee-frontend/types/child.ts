@@ -90,6 +90,7 @@ export interface AdditionalInformation {
   diet: string
   additionalInfo: string
   preferredName: string | null
+  medication: string
 }
 
 export interface Placement {

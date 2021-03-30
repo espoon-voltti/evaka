@@ -76,8 +76,14 @@ function FamilyContacts({ id, open }: FamilyContactsProps) {
                 <Td>{i18n.childInformation.familyContacts.roles[row.role]}</Td>
                 <Td>
                   <FixedSpaceColumn spacing="xs">
-                    <span>{row.email}</span>
-                    <span>{row.phone}</span>
+                    {row.email && <span>{row.email}</span>}
+                    {row.phone && <span>{row.phone}</span>}
+                    {row.phone2 && (
+                      <span>
+                        {row.phone2}{' '}
+                        {`(${i18n.childInformation.familyContacts.phone2})`}
+                      </span>
+                    )}
                   </FixedSpaceColumn>
                 </Td>
                 <Td>
