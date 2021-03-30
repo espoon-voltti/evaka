@@ -105,6 +105,10 @@ const GroupNoteLinkContainer = styled.div`
   margin-left: 8px;
 `
 
+const RowActionContainer = styled.div`
+  display: flex;
+`
+
 function getChildMinMaxHeadcounts(
   occupancyResponse?: OccupancyResponse
 ): { min: number; max: number } | undefined {
@@ -461,7 +465,7 @@ function Group({
           </DataList>
           {sortedPlacements.length > 0 ? (
             <div className="table-of-group-placements">
-              <Table data-qa="table-of-group-placements" className="compact">
+              <Table data-qa="table-of-group-placements">
                 <Thead>
                   <Tr>
                     {(isNotProduction() || isPilotUnit(unit.id)) && (
@@ -578,24 +582,26 @@ function Group({
                         ) : null}
                         <Td data-qa="placement-duration">
                           {'type' in placement
-                            ? `${placement.startDate.format()} - ${placement.endDate.format()}`
-                            : `${placement.period.start.format()} - ${placement.period.end.format()}`}
+                            ? `${placement.startDate.format()}- ${placement.endDate.format()}`
+                            : `${placement.period.start.format()}- ${placement.period.end.format()}`}
                         </Td>
                         {canManageChildren ? (
                           <Td align="right">
-                            <InlineButton
-                              onClick={() => onTransferRequested(placement)}
-                              dataQa="transfer-btn"
-                              icon={faExchange}
-                              text={i18n.unit.groups.transferBtn}
-                            />
-                            <Gap size="s" horizontal />
-                            <InlineButton
-                              onClick={() => onDeletePlacement(placement)}
-                              dataQa="remove-btn"
-                              icon={faUndo}
-                              text={i18n.unit.groups.returnBtn}
-                            />
+                            <RowActionContainer>
+                              <InlineButton
+                                onClick={() => onTransferRequested(placement)}
+                                dataQa="transfer-btn"
+                                icon={faExchange}
+                                text={i18n.unit.groups.transferBtn}
+                              />
+                              <Gap size="s" horizontal />
+                              <InlineButton
+                                onClick={() => onDeletePlacement(placement)}
+                                dataQa="remove-btn"
+                                icon={faUndo}
+                                text={i18n.unit.groups.returnBtn}
+                              />
+                            </RowActionContainer>
                           </Td>
                         ) : null}
                       </Tr>
