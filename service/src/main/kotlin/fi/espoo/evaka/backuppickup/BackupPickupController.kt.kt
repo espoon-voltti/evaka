@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.backuppickup
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -28,7 +29,8 @@ class BackupPickupController(private val acl: AccessControlList) {
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<List<ChildBackupPickup>> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        Audit.ChildBackupPickupRead.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             tx.getBackupPickupsForChild(childId)
@@ -42,7 +44,8 @@ class BackupPickupController(private val acl: AccessControlList) {
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewChildBackupPickup
     ): ResponseEntity<ChildBackupPickupCreateResponse> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.ChildBackupPickupCreate.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.transaction { tx ->
             tx.createBackupPickup(
                 body
@@ -59,7 +62,8 @@ class BackupPickupController(private val acl: AccessControlList) {
         @PathVariable("childId") childId: UUID,
         @RequestBody body: ChildBackupPickup
     ): ResponseEntity<Unit> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.ChildBackupPickupUpdate.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.transaction { tx ->
             tx.updateBackupPickup(
                 body
@@ -76,7 +80,8 @@ class BackupPickupController(private val acl: AccessControlList) {
         @PathVariable("id") id: UUID,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<Unit> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.ChildBackupPickupDelete.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         db.transaction { tx ->
             tx.deleteBackupPickup(id)
         }
