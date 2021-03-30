@@ -146,7 +146,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
-                content = msgContent
+                content = msgContent,
+                sender = "Testaajat"
             )
         )
         getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.total) }
@@ -193,7 +194,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
-                content = msgContent
+                content = msgContent,
+                sender = "Testaajat"
             )
         )
         sendBulletin(supervisor, bulletinId)
@@ -218,7 +220,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
-                content = msgContent
+                content = msgContent,
+                sender = "Testaajat"
             )
         )
         sendBulletin(supervisor, bulletinId)
@@ -241,7 +244,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
-                content = msgContent
+                content = msgContent,
+                sender = "Testaajat"
             )
         )
 
@@ -304,7 +308,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
         val (_, res, result) = http.post("/bulletins")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(receivers = listOf(BulletinReceiverTriplet(unitId = unitId)))))
+            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(receivers = listOf(BulletinReceiverTriplet(unitId = unitId)), sender = "Testaajat")))
             .responseObject<Bulletin>(objectMapper)
 
         assertEquals(200, res.statusCode)
