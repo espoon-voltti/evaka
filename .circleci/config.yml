@@ -941,6 +941,11 @@ workflows:
     jobs:
       - checkout_repo:
           <<: *default_contexts
+          filters:
+            branches:
+              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+              # Currently ALL jobs require secrets -> stop already at checkout for forks
+              ignore: /pull\/[0-9]+/
       - fetch_private_dependencies:
           <<: *aws_contexts
           requires:
