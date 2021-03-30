@@ -7,6 +7,7 @@ package fi.espoo.evaka.vtjclient.config
 import fi.espoo.evaka.vtjclient.properties.XRoadProperties
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -20,6 +21,7 @@ class KeyManagerConfig {
 
     @Bean
     @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
+    @ConditionalOnProperty(prefix = "fi.espoo.voltti.vtj.xroad", name = ["key-store.location"])
     fun keyManagers(@Qualifier("keyStore") keyStore: KeyStoreFactoryBean, xroadProps: XRoadProperties) = KeyManagersFactoryBean()
         .apply {
             setKeyStore(keyStore.`object`)
@@ -28,6 +30,7 @@ class KeyManagerConfig {
 
     @Bean("keyStore")
     @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
+    @ConditionalOnProperty(prefix = "fi.espoo.voltti.vtj.xroad", name = ["key-store.location"])
     fun keyStore(xroadProps: XRoadProperties) = KeyStoreFactoryBean()
         .apply {
             val keyStore = checkNotNull(xroadProps.keyStore.location) { "Xroad security server client authentication key store location is not set" }

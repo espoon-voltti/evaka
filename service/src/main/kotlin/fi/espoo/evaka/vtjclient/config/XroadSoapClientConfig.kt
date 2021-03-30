@@ -13,6 +13,7 @@ import fi.espoo.voltti.logging.MdcKey
 import mu.KotlinLogging
 import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -26,7 +27,7 @@ import org.springframework.ws.client.core.WebServiceTemplate
 import org.springframework.ws.soap.SoapMessage
 import org.springframework.ws.soap.security.support.KeyManagersFactoryBean
 import org.springframework.ws.soap.security.support.TrustManagersFactoryBean
-import org.springframework.ws.transport.http.HttpUrlConnectionMessageSender
+import org.springframework.ws.transport.WebServiceMessageSender
 import org.springframework.ws.transport.http.HttpsUrlConnectionMessageSender
 import javax.xml.bind.helpers.DefaultValidationEventHandler
 
@@ -53,7 +54,7 @@ class XroadSoapClientConfig {
     fun wsTemplate(
         marshaller: Jaxb2Marshaller,
         xRoadProperties: XRoadProperties,
-        messageSender: HttpUrlConnectionMessageSender,
+        messageSender: WebServiceMessageSender,
         faultMessageResolver: FaultMessageResolver
     ) = WebServiceTemplate()
         .apply {
@@ -92,6 +93,7 @@ class XroadSoapClientConfig {
 
     @Bean
     @ConditionalOnExpression("'\${voltti.env}' != 'prod' && '\${voltti.env}' != 'staging'")
+    @ConditionalOnMissingBean(WebServiceMessageSender::class)
     fun httpsMessageSender(trustManagersFactoryBean: TrustManagersFactoryBean) = HttpsUrlConnectionMessageSender()
         .apply {
             setTrustManagers(trustManagersFactoryBean.`object`)
@@ -103,6 +105,7 @@ class XroadSoapClientConfig {
 
     @Bean
     @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
+    @ConditionalOnMissingBean(WebServiceMessageSender::class)
     fun httpsClientAuthMessageSender(
         trustManagersFactoryBean: TrustManagersFactoryBean,
         keyManagersFactoryBean: KeyManagersFactoryBean
