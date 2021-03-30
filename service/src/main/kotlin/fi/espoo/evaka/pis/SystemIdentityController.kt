@@ -49,26 +49,31 @@ class SystemIdentityController {
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody employee: EmployeeIdentityRequest
-    ): ResponseEntity<AuthenticatedUser> {
+    ): EmployeeUser {
         Audit.EmployeeGetOrCreate.log(targetId = employee.externalId)
         user.assertMachineUser()
-        return ResponseEntity.ok(
-            db.transaction {
-                it.handle.getEmployeeAuthenticatedUser(employee.externalId)
-                    ?: AuthenticatedUser(
-                        it.handle.createEmployee(
-                            NewEmployee(
-                                externalId = employee.externalId,
-                                firstName = employee.firstName,
-                                lastName = employee.lastName,
-                                email = employee.email,
-                                roles = emptySet()
-                            )
-                        ).id,
-                        emptySet()
-                    )
-            }
-        )
+        return db.transaction {
+            it.getEmployeeUserByExternalId(employee.externalId)
+                ?: EmployeeUser(
+                    id = it.handle.createEmployee(employee.toNewEmployee()).id,
+                    firstName = employee.firstName,
+                    lastName = employee.lastName,
+                    globalRoles = emptySet(),
+                    allScopedRoles = emptySet()
+                )
+        }
+    }
+
+    @GetMapping("/system/employee/{id}")
+    fun employeeUser(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable
+        id: UUID
+    ): EmployeeUser? {
+        Audit.EmployeeGetOrCreate.log(targetId = id)
+        user.assertMachineUser()
+        return db.read { it.getEmployeeUser(id) }
     }
 
     @GetMapping("/system/mobile-identity/{token}")
@@ -88,7 +93,9 @@ class SystemIdentityController {
         val firstName: String,
         val lastName: String,
         val email: String?
-    )
+    ) {
+        fun toNewEmployee(): NewEmployee = NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId)
+    }
 
     data class PersonIdentityRequest(
         val socialSecurityNumber: String,

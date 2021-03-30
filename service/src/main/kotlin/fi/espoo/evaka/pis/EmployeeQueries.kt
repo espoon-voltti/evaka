@@ -5,8 +5,8 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -18,6 +18,14 @@ data class NewEmployee(
     val email: String?,
     val externalId: ExternalId?,
     val roles: Set<UserRole> = setOf()
+)
+
+data class EmployeeUser(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val globalRoles: Set<UserRole> = setOf(),
+    val allScopedRoles: Set<UserRole> = setOf()
 )
 
 fun Handle.createEmployee(employee: NewEmployee): Employee = createUpdate(
@@ -59,20 +67,28 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
 fun Handle.getEmployees(): List<Employee> = searchEmployees().toList()
 fun Handle.getFinanceDecisionHandlers(): List<Employee> = searchFinanceDecisionHandlers().toList()
 fun Handle.getEmployee(id: UUID): Employee? = searchEmployees(id = id).firstOrNull()
-fun Handle.getEmployeeAuthenticatedUser(externalId: ExternalId): AuthenticatedUser? = createQuery(
-    // language=SQL
+
+private fun Database.Read.createEmployeeUserQuery(where: String) = createQuery(
     """
-SELECT id, employee.roles
-  || (
-    SELECT array_agg(DISTINCT role)
+SELECT id, first_name, last_name, email, employee.roles AS global_roles, (
+    SELECT array_agg(DISTINCT role ORDER BY role)
     FROM daycare_acl
     WHERE employee_id = employee.id
-  )
-  AS roles
+) AS all_scoped_roles
 FROM employee
-WHERE external_id = :externalId
-    """.trimIndent()
-).bind("externalId", externalId).mapTo<AuthenticatedUser>().singleOrNull()
+$where
+"""
+)
+
+fun Database.Read.getEmployeeUser(id: UUID): EmployeeUser? = createEmployeeUserQuery("WHERE id = :id")
+    .bind("id", id)
+    .mapTo<EmployeeUser>()
+    .singleOrNull()
+
+fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeUser? = createEmployeeUserQuery("WHERE external_id = :externalId")
+    .bind("externalId", externalId)
+    .mapTo<EmployeeUser>()
+    .singleOrNull()
 
 fun Handle.deleteEmployee(employeeId: UUID) = createUpdate(
     // language=SQL

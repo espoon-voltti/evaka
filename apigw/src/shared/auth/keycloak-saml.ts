@@ -66,8 +66,9 @@ async function verifyKeycloakProfile(
   })
   return {
     id: person.id,
-    roles: person.roles,
     userType: 'EMPLOYEE',
+    globalRoles: person.globalRoles,
+    allScopedRoles: person.allScopedRoles,
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,

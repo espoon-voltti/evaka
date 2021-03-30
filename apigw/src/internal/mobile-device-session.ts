@@ -38,7 +38,8 @@ async function mobileLogin(
     req.logIn(
       {
         id: device.id,
-        roles: ['MOBILE'],
+        globalRoles: [],
+        allScopedRoles: ['MOBILE'],
         userType: 'MOBILE'
       },
       cb

@@ -41,10 +41,13 @@ export interface StatusObject {
 }
 
 export interface SamlUser {
-  // eVaka id from person table
+  // eVaka id
   id: string
-  roles: string[]
   userType: UserType | undefined
+  // all are optional because of legacy sessions
+  roles?: string[]
+  globalRoles?: string[]
+  allScopedRoles?: string[]
   // fields used by passport-saml during logout flow
   nameID?: string
   nameIDFormat?: string
