@@ -41,6 +41,8 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -65,7 +67,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
     private val guardian = AuthenticatedUser(guardianPerson.id, setOf(UserRole.END_USER))
     private val groupId = UUID.randomUUID()
     private val groupName = "Testaajat"
-    private val daycarePlacementId = UUID.randomUUID()
+    private val secondGroupId = UUID.randomUUID()
+    private val secondGroupName = "Koekaniinit"
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
     private val msgTitle = "Koronatiedote"
@@ -78,11 +81,11 @@ class BulletinIntegrationTest : FullApplicationTest() {
         Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     """.trimIndent()
 
-    private fun insertChildToGroup(tx: Database.Transaction, childId: UUID, guardianId: UUID) {
+    private fun insertChildToGroup(tx: Database.Transaction, childId: UUID, guardianId: UUID, groupId: UUID, unitId: UUID) {
         val daycarePlacementId = tx.handle.insertTestPlacement(
             DevPlacement(
                 childId = childId,
-                unitId = testDaycare.id,
+                unitId = unitId,
                 startDate = placementStart,
                 endDate = placementEnd
             )
@@ -102,23 +105,16 @@ class BulletinIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             insertGeneralTestFixtures(tx.handle)
-            tx.handle.insertTestPlacement(
-                DevPlacement(
-                    id = daycarePlacementId,
-                    childId = childId,
-                    unitId = testDaycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
-                )
-            )
+
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            insertTestDaycareGroupPlacement(
-                h = tx.handle,
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = placementEnd
-            )
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = secondGroupId, daycareId = testDaycare2.id, name = secondGroupName))
+
+            insertChildToGroup(tx, childId, guardianPerson.id, groupId, unitId)
+            insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, testDaycare2.id)
+            insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, testDaycare2.id)
+
+            tx.handle.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
+
             tx.handle.insertTestEmployee(
                 DevEmployee(
                     id = supervisorId,
@@ -132,16 +128,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
                 )
             )
             tx.handle.insertDaycareAclRow(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.handle.insertDaycareAclRow(testDaycare2.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.handle.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
-            insertGuardian(tx.handle, guardianPerson.id, childId)
         }
         MockEmailClient.emails.clear()
     }
 
     @Test
     fun `supervisor sends a bulletin, citizen reads it`() {
-        val unitId = testDaycare.id
-        val bulletinId = initBulletin(supervisor, unitId)
+        val bulletinId = initBulletin(supervisor)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
@@ -179,17 +174,46 @@ class BulletinIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `supervisor sends a bulletin to two units`() {
+        val secondUnitId = testDaycare2.id
+        val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId), BulletinReceiverTriplet(secondUnitId)))
+        updateBulletin(
+            supervisor, bulletinId,
+            BulletinControllerEmployee.BulletinUpdate(
+                title = msgTitle,
+                content = msgContent,
+                sender = "TestSender"
+            )
+        )
+        getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.total) }
+        sendBulletin(supervisor, bulletinId)
+
+        getSentBulletinsByUnit(supervisor, unitId).also {
+            assertEquals(msgContent, it.data.first().content)
+        }
+
+        getSentBulletinsByUnit(supervisor, secondUnitId).also {
+            assertEquals(msgContent, it.data.first().content)
+        }
+
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
+
+        db.transaction { tx ->
+            val instanceReceivers = getBulletinInstances(tx, bulletinId)
+            assertEquals(4, instanceReceivers.size)
+        }
+    }
+
+    @Test
     fun `supervisor deletes a draft`() {
-        val unitId = testDaycare.id
-        val bulletinId = initBulletin(supervisor, unitId)
+        val bulletinId = initBulletin(supervisor)
         deleteDraftBulletin(supervisor, bulletinId)
         getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
     }
 
     @Test
     fun `Sending a bulletin sends a reminder email`() {
-        val unitId = unitId
-        val bulletinId = initBulletin(supervisor, unitId)
+        val bulletinId = initBulletin(supervisor)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
@@ -214,8 +238,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Notification is sent only once`() {
-        val unitId = unitId
-        val bulletinId = initBulletin(supervisor, unitId)
+        val bulletinId = initBulletin(supervisor)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
@@ -238,8 +261,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Notification language is parsed right`() {
-        val unitId = unitId
-        val bulletinId = initBulletin(supervisor, unitId)
+        val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId = unitId), BulletinReceiverTriplet(unitId = testDaycare2.id)))
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
@@ -251,11 +273,9 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx ->
             updatePersonLanguage(tx, guardianPerson.id, Language.en)
-            insertChildToGroup(tx, testChild_2.id, testAdult_2.id)
+            insertChildToGroup(tx, testChild_2.id, testAdult_2.id, groupId, unitId)
             updatePersonLanguage(tx, testAdult_2.id, Language.fi)
-            insertChildToGroup(tx, testChild_3.id, testAdult_3.id)
             updatePersonLanguage(tx, testAdult_3.id, Language.sv)
-            insertChildToGroup(tx, testChild_4.id, testAdult_4.id)
             updatePersonLanguage(tx, testAdult_4.id, null)
         }
 
@@ -286,12 +306,6 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Bulletin receiver endpoint works`() {
-        val unitId = unitId
-
-        db.transaction {
-            it.handle.createParentship(childId, testAdult_2.id, placementStart, placementEnd)
-        }
-
         val (_, res, result) = http.get("/bulletins/receivers?unitId=$unitId")
             .asUser(supervisor)
             .responseObject<List<BulletinControllerEmployee.BulletinReceiversResponse>>(objectMapper)
@@ -300,15 +314,21 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
         val receivers = result.get()
 
-        assertEquals(1, receivers.size)
-        assertEquals(1, receivers.first().receivers.size)
-        assertEquals(2, receivers.first().receivers.first().receiverPersons.size)
+        assertEquals(2, receivers.size)
+
+        val groupTestaajat = receivers.find { it.groupName == groupName }!!
+        assertEquals(1, groupTestaajat.receivers.size)
+
+        val groupKoekaniinit = receivers.find { it.groupName == secondGroupName }!!
+        assertEquals(2, groupKoekaniinit.receivers.size)
+        val childWithTwoReceiverPersons = groupKoekaniinit.receivers.find { it.childId == testChild_3.id }!!
+        assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
     }
 
-    private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
+    private fun initBulletin(user: AuthenticatedUser, receivers: List<BulletinReceiverTriplet> = listOf(BulletinReceiverTriplet(unitId = unitId))): UUID {
         val (_, res, result) = http.post("/bulletins")
             .asUser(user)
-            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(receivers = listOf(BulletinReceiverTriplet(unitId = unitId)), sender = "Testaajat")))
+            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(receivers = receivers, sender = "Testaajat")))
             .responseObject<Bulletin>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -373,6 +393,17 @@ class BulletinIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
+    }
+
+    private fun getBulletinInstances(tx: Database.Transaction, bulletinId: UUID): List<UUID> {
+        return tx.createQuery(
+            """
+            SELECT receiver_person_id FROM bulletin_instance WHERE bulletin_id = :bulletinId
+            """.trimIndent()
+        )
+            .bind("bulletinId", bulletinId)
+            .mapTo<UUID>()
+            .toList()
     }
 
     private fun updatePersonLanguage(tx: Database.Transaction, id: UUID, lang: Language?) {
