@@ -22,7 +22,7 @@ import {
   faCheck,
   faExchange,
   faPen,
-  faPlus,
+  farStickyNote,
   faStickyNote,
   faTimes,
   faTrash,
@@ -611,8 +611,13 @@ function Group({
               </Table>
               <GroupNoteLinkContainer>
                 <InlineButton
-                  icon={faPlus}
-                  text={i18n.unit.groups.daycareDailyNote.groupNoteModalLink}
+                  icon={getGroupNote(group.id) ? farStickyNote : faStickyNote}
+                  text={
+                    getGroupNote(group.id)
+                      ? i18n.unit.groups.daycareDailyNote
+                          .groupNoteModalModifyLink
+                      : i18n.unit.groups.daycareDailyNote.groupNoteModalAddLink
+                  }
                   onClick={() => {
                     setSelectedDaycareDailyNote({
                       daycareDailyNote: getGroupNote(group.id) ?? null,
