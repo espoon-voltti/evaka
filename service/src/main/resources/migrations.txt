@@ -51,3 +51,4 @@ V50__add_bulletin_reciever.sql
 V51__refactor_bulletin_receiver.sql
 V52__backup_pickup.sql
 V53__create_family_contacts_table.sql
+V54__employee_only_global_roles.sql
