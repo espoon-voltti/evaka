@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { DecisionType, UUID } from '../../../dev-api/types'
-import config from '../../../config'
+import { DecisionType, UUID } from 'e2e-test-common/dev-api/types'
+import config from 'e2e-test-common/config'
 
 export default class ApplicationReadView {
   readonly url = config.employeeUrl

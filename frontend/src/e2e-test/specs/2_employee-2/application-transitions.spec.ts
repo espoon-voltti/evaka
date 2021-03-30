@@ -2,14 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
-import { applicationFixture, decisionFixture } from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/data-init'
+import {
+  applicationFixture,
+  decisionFixture
+} from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import { EmployeeDetail } from '../../dev-api/types'
+import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import {
   cleanUpMessages,
   createDecisionPdf,
@@ -22,7 +25,7 @@ import {
   insertDecisionFixtures,
   insertEmployeeFixture,
   setAclForDaycares as setAclForDaycare
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole, seppoManagerRole } from '../../config/users'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'

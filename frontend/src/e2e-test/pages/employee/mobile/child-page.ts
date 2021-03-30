@@ -7,7 +7,7 @@ import {
   DaycareDailyNote,
   DaycareDailyNoteLevel,
   DaycareDailyNoteReminder
-} from '../../../dev-api/types'
+} from 'e2e-test-common/dev-api/types'
 import { t, Selector } from 'testcafe'
 import { AbsenceType } from '../absences/absences-page'
 import MobileGroupsPage from './mobile-groups'

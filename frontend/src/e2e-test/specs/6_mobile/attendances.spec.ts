@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteAbsences,
@@ -18,7 +18,7 @@ import {
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   postMobileDevice
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { mobileAutoSignInRole } from '../../config/users'
 import { t } from 'testcafe'
 import {
@@ -29,10 +29,10 @@ import {
   DaycareGroupBuilder,
   Fixture,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import ChildPage from '../../pages/employee/mobile/child-page'
-import { DaycarePlacement } from '../../dev-api/types'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures

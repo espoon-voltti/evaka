@@ -26,4 +26,5 @@ export const isProduction = (): boolean => {
   return getEnvironment() === 'prod'
 }
 
-export const isAutomatedTest = 'evakaAutomatedTest' in window
+export const isAutomatedTest =
+  typeof window !== 'undefined' && 'evakaAutomatedTest' in window

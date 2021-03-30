@@ -6,25 +6,25 @@ import {
   createDaycarePlacementFixture,
   daycareGroupFixture,
   uuidv4
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage, {
   daycareGroupElement
 } from '../../pages/employee/units/unit-page'
-import { DaycarePlacement } from '../../dev-api/types'
-import config from '../../config'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
+import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   deleteEmployeeFixture,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   setAclForDaycares
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
 import AbsencesPage from '../../pages/employee/absences/absences-page'
 import { t } from 'testcafe'

@@ -9,7 +9,7 @@ import UnitPage, {
   missingPlacementElement
 } from '../../../pages/employee/units/unit-page'
 import GroupPlacementModal from '../../../pages/employee/units/group-placement-modal'
-import { DaycarePlacement } from '../../../dev-api/types'
+import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import { Checkbox } from '../../../utils/helpers'
 
 export type AbsenceType =

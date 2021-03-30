@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ClientFunction, Selector, t } from 'testcafe'
-import { Daycare } from '../../../dev-api/types'
+import { Daycare } from 'e2e-test-common/dev-api/types'
 import { selectFirstOption } from '../../../utils/helpers'
 
 export default class ChildInformationPage {

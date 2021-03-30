@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../../config'
+import config from 'e2e-test-common/config'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
-import { applicationFixture } from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/data-init'
+import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   cleanUpMessages,
@@ -23,13 +23,13 @@ import {
   setAclForDaycares,
   runPendingAsyncJobs,
   getMessages
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import { ApplicationDetailsPage } from '../../pages/admin/application-details-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import { Application } from '../../dev-api/types'
+import { Application } from 'e2e-test-common/dev-api/types'
 import { DevLoginUser } from '../../pages/dev-login-form'
 import assert from 'assert'
 

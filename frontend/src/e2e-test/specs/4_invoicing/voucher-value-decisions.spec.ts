@@ -6,13 +6,13 @@ import InvoicingPage from '../../pages/invoicing'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
-import { voucherValueDecisionsFixture } from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/data-init'
+import { voucherValueDecisionsFixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   cleanUpInvoicingDatabase,
   insertVoucherValueDecisionFixtures,
   runPendingAsyncJobs
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
 import { seppoAdminRole } from '../../config/users'
 

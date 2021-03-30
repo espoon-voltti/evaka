@@ -16,16 +16,16 @@ import {
   getDecisionsByApplication,
   insertApplications,
   runPendingAsyncJobs
-} from '../../dev-api'
+} from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+} from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
   daycareFixture,
   Fixture
-} from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/fixtures'
 import {
   FormInput,
   fullDaycareForm,

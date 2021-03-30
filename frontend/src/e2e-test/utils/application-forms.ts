@@ -4,7 +4,7 @@
 
 import { ApplicationFormData } from 'citizen-frontend/applications/editor/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import { clubFixture, daycareFixture } from '../dev-api/fixtures'
+import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
 
 function assertEquals<T>(expected: T, actual: T) {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

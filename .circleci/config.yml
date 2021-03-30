@@ -46,6 +46,9 @@ aliases:
 
   - &node_config
     <<: *default_config
+    environment:
+      # this makes Playwright download browsers to node_modules/playwright instead of $HOME/.cache/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: 0
 
   - &jvm_config
     <<: *default_config
@@ -139,7 +142,7 @@ executors:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
   e2e_executor:
-    <<: *default_config
+    <<: *node_config
     machine:
       image: *ubuntu_machine_image
       docker_layer_caching: true
@@ -280,6 +283,58 @@ commands:
       - store_artifacts:
           path: frontend/screenshots
           destination: screenshots
+      - store_test_results:
+          path: frontend/test-results
+
+  e2e_test_playwright:
+    parameters:
+      suite:
+        type: string
+      yarn_version:
+        type: string
+        default: *yarn_version
+    steps:
+      - *restore_repo
+      - attach_root_workspace
+      - run:
+          name: Load docker images
+          command: |
+            docker load -i apigw/image.tar
+            docker load -i service/image.tar
+      - login_docker_hub
+      - run:
+          name: Start up compose stack
+          working_directory: *workspace_compose
+          command: |
+            CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
+      - run:
+          name: Install Node.js and yarn
+          command: |
+            export DEBIAN_FRONTEND=noninteractive
+            nvm install
+            node --version
+
+            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
+            yarn --version
+      - *restore_frontend_deps
+      - run:
+          name: Run e2e tests against compose
+          working_directory: *workspace_frontend
+          command: |
+            nvm use
+            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
+            yarn << parameters.suite >>
+      - run:
+          name: Collect error logs
+          command: |
+            cd /home/circleci/repo/compose
+            ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
+          when: on_fail
+      - store_artifacts:
+          path: /tmp/docker-compose-logs.txt
+          destination: docker-compose-logs.txt
       - store_test_results:
           path: frontend/test-results
 
@@ -664,6 +719,13 @@ jobs:
           suite: e2e-ci-messaging
       - notify_slack
 
+  e2e-test-playwright:
+    executor: e2e_executor
+    steps:
+      - e2e_test_playwright:
+          suite: e2e-ci-playwright
+      - notify_slack
+
   # DEPLOY JOBS
 
   services_deploy:
@@ -945,6 +1007,12 @@ workflows:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
+      - e2e-test-playwright:
+          <<: *default_contexts
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
 
       - proxy_build_and_push_image:
           context:
@@ -996,6 +1064,7 @@ workflows:
             - e2e-test-employee-2
             - e2e-test-mobile
             - e2e-test-messaging
+            - e2e-test-playwright
             - apigw_push_image
             - proxy_build_and_push_image
             - service_push_image

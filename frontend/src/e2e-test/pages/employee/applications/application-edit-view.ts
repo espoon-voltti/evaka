@@ -4,7 +4,7 @@
 
 import { Selector, t } from 'testcafe'
 import { format } from 'date-fns'
-import { OtherGuardianAgreementStatus } from '../../../dev-api/types'
+import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 import { scrollThenClick, selectFirstOption } from '../../../utils/helpers'
 
 export default class ApplicationEditView {

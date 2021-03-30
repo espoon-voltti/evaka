@@ -8,12 +8,12 @@ import CitizenNewApplicationPage from '../../pages/citizen/citizen-application-n
 import CitizenApplicationEditor from '../../pages/citizen/citizen-application-editor'
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
-import { deleteApplication, getApplication } from '../../dev-api'
+import { deleteApplication, getApplication } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+} from 'e2e-test-common/dev-api/data-init'
+import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { fullClubForm, minimalClubForm } from '../../utils/application-forms'
 
 const citizenHomePage = new CitizenHomePage()

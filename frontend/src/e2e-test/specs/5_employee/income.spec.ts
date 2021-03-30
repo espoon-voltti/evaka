@@ -8,8 +8,8 @@ import { Selector } from 'testcafe'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
-} from '../../dev-api/data-init'
-import { cleanUpInvoicingDatabase } from '../../dev-api'
+} from 'e2e-test-common/dev-api/data-init'
+import { cleanUpInvoicingDatabase } from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
 import FridgeHeadInformationPage from '../../pages/employee/fridge-head-information/fridge-head-information-page'
 
