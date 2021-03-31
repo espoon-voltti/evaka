@@ -149,13 +149,7 @@ fun Database.Transaction.sendBulletin(
             SELECT pl.child_id, br.bulletin_id
             FROM bulletin b
             JOIN bulletin_receiver br ON br.bulletin_id = b.id
-            JOIN daycare_group dg ON br.unit_id = dg.daycare_id
-            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
-            JOIN placement pl ON gpl.daycare_placement_id = pl.id
-            WHERE b.id = :bulletinId 
-            AND br.unit_id IS NOT NULL 
-            AND br.group_id IS NULL 
-            AND br.child_id IS NULL
+            JOIN placement pl ON br.unit_id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> :date
         ), receivers AS (
             SELECT g.guardian_id AS receiver_person_id, c.bulletin_id AS bulletin_id
             FROM children c
