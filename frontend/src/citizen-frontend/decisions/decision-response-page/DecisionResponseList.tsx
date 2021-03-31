@@ -161,7 +161,7 @@ const isDecisionBlocked = (decision: Decision, allDecisions: Decision[]) =>
     (decision) =>
       ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
       decision.status !== 'ACCEPTED'
-  )
+  ) !== undefined
 
 const isRejectCascaded = (decision: Decision, allDecisions: Decision[]) =>
   ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
