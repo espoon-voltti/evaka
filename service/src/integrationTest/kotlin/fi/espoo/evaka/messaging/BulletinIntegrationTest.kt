@@ -273,7 +273,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
             sentMails.find { it.toAddress == testAdult_2.email }!!.subject
         )
         assertEquals(
-            "Ny [${System.getenv("VOLTTI_ENV")}]",
+            "Ny meddelande i eVaka [${System.getenv("VOLTTI_ENV")}]",
             sentMails.find { it.toAddress == testAdult_3.email }!!.subject
         )
         assertEquals(
