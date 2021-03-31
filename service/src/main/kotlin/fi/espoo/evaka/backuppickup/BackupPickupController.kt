@@ -125,22 +125,22 @@ fun Database.Transaction.createBackupPickup(
 
 fun Database.Transaction.updateBackupPickup(
     backupPickup: ChildBackupPickup
-): Int {
+) {
     // language=sql
     val sql = """
         UPDATE backup_pickup
         SET
-            child_id = :childId,
             name = :name,
             phone = :phone
         WHERE id  = :id
     """.trimIndent()
-    return this.createUpdate(sql)
+    val updated = this.createUpdate(sql)
         .bind("id", backupPickup.id)
-        .bind("childId", backupPickup.childId)
         .bind("name", backupPickup.name)
         .bind("phone", backupPickup.phone)
         .execute()
+
+    if (updated == 0) throw NotFound("No backup pickup ${backupPickup.id} found")
 }
 
 data class NewChildBackupPickup(

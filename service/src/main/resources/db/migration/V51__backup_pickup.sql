@@ -7,3 +7,5 @@ CREATE TABLE public.backup_pickup(
 
 ALTER TABLE ONLY public.backup_pickup
     ADD CONSTRAINT backup_pickup_child_fkey FOREIGN KEY (child_id) REFERENCES public.person(id);
+
+CREATE INDEX idx$backup_pickup_child ON backup_pickup (child_id);
