@@ -193,6 +193,10 @@ fun Database.Read.getSentBulletinsByUnit(
             concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
             FROM bulletin b 
             JOIN employee e on b.created_by_employee = e.id
+            JOIN (
+                SELECT DISTINCT bulletin_id FROM bulletin_receiver WHERE unit_id = :unitId
+            ) sub ON sub.bulletin_id = b.id
+            WHERE b.sent_at IS NOT NULL
             ORDER BY b.sent_at DESC
             LIMIT :pageSize OFFSET (:page - 1) * :pageSize
         )
@@ -211,7 +215,6 @@ fun Database.Read.getSentBulletinsByUnit(
         JOIN daycare d ON br.unit_id = d.id
         LEFT JOIN daycare_group dg ON br.group_id = dg.id
         LEFT JOIN person c ON br.child_id = c.id
-        WHERE br.unit_id = :unitId AND b.sent_at IS NOT NULL
     """.trimIndent()
 
     val pagedRawBulletinResults = this.createQuery(sql)
@@ -345,7 +348,10 @@ fun Database.Read.getOwnBulletinDrafts(
             concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
             FROM bulletin b 
             JOIN employee e on b.created_by_employee = e.id
-            WHERE b.sent_at IS NULL
+            JOIN (
+                SELECT DISTINCT bulletin_id FROM bulletin_receiver WHERE unit_id = :unitId
+            ) sub ON sub.bulletin_id = b.id
+            WHERE b.sent_at IS NULL AND b.created_by_employee = :userId
             ORDER BY b.updated DESC
             LIMIT :pageSize OFFSET (:page - 1) * :pageSize
         )
@@ -364,7 +370,6 @@ fun Database.Read.getOwnBulletinDrafts(
         JOIN daycare d ON br.unit_id = d.id
         LEFT JOIN daycare_group dg ON br.group_id = dg.id
         LEFT JOIN person c ON br.child_id = c.id
-        WHERE b.created_by_employee = :userId AND br.unit_id = :unitId 
     """.trimIndent()
 
     val pagedRawBulletinResults = this.createQuery(sql)
