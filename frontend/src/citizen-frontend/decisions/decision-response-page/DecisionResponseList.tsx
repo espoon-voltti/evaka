@@ -157,11 +157,11 @@ export default React.memo(function DecisionResponseList() {
 
 const isDecisionBlocked = (decision: Decision, allDecisions: Decision[]) =>
   decision.type === 'PRESCHOOL_DAYCARE' &&
-  !allDecisions.find(
+  allDecisions.find(
     (decision) =>
       ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
-      decision.status === 'ACCEPTED'
-  )
+      decision.status !== 'ACCEPTED'
+  ) !== undefined
 
 const isRejectCascaded = (decision: Decision, allDecisions: Decision[]) =>
   ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
