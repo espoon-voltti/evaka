@@ -23,6 +23,7 @@ export default React.memo(function AttendancePresentPage({
       {attendanceResponse.isSuccess && (
         <AttendanceList
           attendanceChildren={attendanceResponse.value.children}
+          groups={attendanceResponse.value.unit.groups}
           type={'PRESENT'}
         />
       )}

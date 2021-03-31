@@ -109,6 +109,11 @@ export default React.memo(function AttendanceChildPage() {
 
   const loading = attendanceResponse.isLoading
 
+  const groupNote =
+    attendanceResponse.isSuccess &&
+    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
+      ?.dailyNote
+
   return (
     <Fragment>
       <TallContentArea opaque paddingHorizontal={'s'} spaced>
@@ -153,7 +158,7 @@ export default React.memo(function AttendanceChildPage() {
                       content={farStickyNote}
                       color={colors.accents.petrol}
                       size="L"
-                      active={child && child.dailyNote ? true : false}
+                      active={child?.dailyNote || groupNote ? true : false}
                     />
                   </Link>
                   <RoundIcon

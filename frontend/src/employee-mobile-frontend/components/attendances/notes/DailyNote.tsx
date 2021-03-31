@@ -73,6 +73,11 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>
+      ) : groupNote ? (
+        <FixedSpaceColumn spacing={'xxs'}>
+          <Label>{i18n.attendances.notes.labels.groupNotesHeader}</Label>
+          <span>{groupNote.note}</span>
+        </FixedSpaceColumn>
       ) : (
         <div>{i18n.attendances.notes.noNotes}</div>
       )}

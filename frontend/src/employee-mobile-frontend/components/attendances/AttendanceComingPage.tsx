@@ -24,6 +24,7 @@ export default React.memo(function AttendanceComingPage({
       {attendanceResponse.isSuccess && (
         <AttendanceList
           attendanceChildren={attendanceResponse.value.children}
+          groups={attendanceResponse.value.unit.groups}
           type={'COMING'}
         />
       )}
