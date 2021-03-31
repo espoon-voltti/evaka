@@ -150,6 +150,7 @@ fun Database.Transaction.sendBulletin(
             FROM bulletin b
             JOIN bulletin_receiver br ON br.bulletin_id = b.id
             JOIN placement pl ON br.unit_id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+            WHERE b.id = :bulletinId 
         ), receivers AS (
             SELECT g.guardian_id AS receiver_person_id, c.bulletin_id AS bulletin_id
             FROM children c
