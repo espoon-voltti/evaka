@@ -46,7 +46,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         jdbi.handle(::resetDatabase)
     }
 
-    private val user = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val personId = UUID.randomUUID()
 
     private val testFeeAlteration = FeeAlteration(

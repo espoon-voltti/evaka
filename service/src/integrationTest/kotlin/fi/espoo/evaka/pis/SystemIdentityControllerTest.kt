@@ -42,7 +42,7 @@ class SystemIdentityControllerTest : FullApplicationTest() {
         val token = UUID.randomUUID()
         val deviceId = db.transaction { it.insertTestDevice(longTermToken = token) }
 
-        val (_, res, result) = http.get("/system/mobile-identity/$token").asUser(AuthenticatedUser.machineUser)
+        val (_, res, result) = http.get("/system/mobile-identity/$token").asUser(AuthenticatedUser.SystemInternalUser)
             .responseObject<MobileDeviceIdentity>()
         assertTrue(res.isSuccessful)
         assertEquals(MobileDeviceIdentity(id = deviceId, longTermToken = token), result.get())
@@ -53,7 +53,7 @@ class SystemIdentityControllerTest : FullApplicationTest() {
         val token = UUID.randomUUID()
         db.transaction { it.insertTestDevice(longTermToken = token, deleted = true) }
 
-        val (_, res, _) = http.get("/system/mobile-identity/$token").asUser(AuthenticatedUser.machineUser)
+        val (_, res, _) = http.get("/system/mobile-identity/$token").asUser(AuthenticatedUser.SystemInternalUser)
             .response()
         assertEquals(404, res.statusCode)
     }

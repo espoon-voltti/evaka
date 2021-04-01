@@ -167,7 +167,7 @@ class DvvModificationsService(
         ssn: String,
         custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup
     ) {
-        val user = AuthenticatedUser.machineUser
+        val user = AuthenticatedUser.SystemInternalUser
         db.transaction { tx ->
             personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
         }?.let {
@@ -180,7 +180,7 @@ class DvvModificationsService(
         db: Database,
         caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup
     ) {
-        val user = AuthenticatedUser.machineUser
+        val user = AuthenticatedUser.SystemInternalUser
         if (caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus != null) {
             db.transaction { tx ->
                 personService.getOrCreatePerson(
@@ -203,7 +203,7 @@ class DvvModificationsService(
         personNameDvvInfoGroup: PersonNameDvvInfoGroup
     ) = db.transaction { tx ->
         tx.handle.getPersonBySSN(ssn)?.let {
-            val user = AuthenticatedUser.machineUser
+            val user = AuthenticatedUser.SystemInternalUser
             personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
                 logger.info("Dvv modification for ${it.id}: name ${personNameDvvInfoGroup.muutosattribuutti}, refreshed all info from DVV")
             }
@@ -216,7 +216,7 @@ class DvvModificationsService(
         personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup
     ) = db.transaction { tx ->
         tx.handle.getPersonBySSN(ssn)?.let {
-            val user = AuthenticatedUser.machineUser
+            val user = AuthenticatedUser.SystemInternalUser
             personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
                 logger.info("Dvv modification for ${it.id}: name has changed: ${personNameChangeDvvInfoGroup.muutosattribuutti} - ${personNameChangeDvvInfoGroup.nimilaji}, refreshed all info from DVV")
             }

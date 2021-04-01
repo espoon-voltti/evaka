@@ -39,9 +39,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     final val placementEnd = placementStart.plusDays(200)
     lateinit var testPlacement: DaycarePlacementDetails
 
-    private val unitSupervisor = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
-    private val staff = AuthenticatedUser(testDecisionMaker_2.id, emptySet())
-    private val serviceWorker = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+    private val unitSupervisor = AuthenticatedUser.Employee(testDecisionMaker_1.id, emptySet())
+    private val staff = AuthenticatedUser.Employee(testDecisionMaker_2.id, emptySet())
+    private val serviceWorker = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun setUp() {

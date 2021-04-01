@@ -150,6 +150,6 @@ class MockPersonDetailsServiceTest {
 
     private fun mapToQuery(ssn: String) = IPersonDetailsService.DetailsQuery(
         targetIdentifier = ExternalIdentifier.SSN.getInstance(ssn),
-        requestingUser = AuthenticatedUser(UUID.randomUUID(), setOf())
+        requestingUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
     )
 }

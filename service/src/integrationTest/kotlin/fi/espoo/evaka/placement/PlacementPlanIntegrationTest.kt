@@ -45,7 +45,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class PlacementPlanIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -275,7 +275,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.get("/v2/applications/$applicationId/placement-draft")
-                .asUser(AuthenticatedUser(testDecisionMaker_1.id, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }
@@ -286,7 +286,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
                 .jsonBody(objectMapper.writeValueAsString(proposal))
-                .asUser(AuthenticatedUser(testDecisionMaker_1.id, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }

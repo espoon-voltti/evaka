@@ -43,7 +43,7 @@ class MobileDevicesController(
         @PathVariable id: UUID
     ): ResponseEntity<MobileDevice> {
         Audit.MobileDevicesRead.log(targetId = id)
-        user.assertMachineUser()
+        user.assertSystemInternalUser()
 
         return db
             .read { it.getDevice(id) }

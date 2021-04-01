@@ -76,7 +76,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Autowired
     lateinit var mapper: ObjectMapper
 
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private val applicationId = UUID.randomUUID()
     val address = Address(
@@ -1216,7 +1216,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - existing overlapping indefinite income will be handled`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1255,7 +1255,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1294,7 +1294,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val laterIndefiniteIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1333,7 +1333,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - earlier income does not affect creating a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1374,7 +1374,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - later income will be handled by not adding a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val laterIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1413,7 +1413,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - if application does not have a preferred start date income will still be created`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1450,7 +1450,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val sameDayIncomeIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1488,7 +1488,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val sameDayIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1527,7 +1527,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val dayBeforeIncomeIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1567,7 +1567,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val nextDayIncomeIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1606,7 +1606,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day - 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val incomeDayBefore = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1645,7 +1645,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnSameDay = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1684,7 +1684,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnNextDay = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1723,7 +1723,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `accept preschool application with maxFeeAccepted - new income will be created if there exists income that ends on the same day - 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnDayBefore = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -1766,7 +1766,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.transaction { tx ->
             // when
-            val user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
+            val user = AuthenticatedUser.Citizen(testAdult_5.id)
             service.acceptDecision(
                 tx,
                 user,
@@ -1796,7 +1796,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             workflowForPreschoolDaycareDecisions(tx)
         }
         db.transaction { tx ->
-            val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+            val user = AuthenticatedUser.Citizen(testAdult_1.id)
             // when
             assertThrows<Forbidden> {
                 service.acceptDecision(
@@ -1819,7 +1819,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.transaction { tx ->
             // when
-            val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+            val user = AuthenticatedUser.Citizen(testAdult_1.id)
             assertThrows<Forbidden> {
                 service.rejectDecision(
                     tx,

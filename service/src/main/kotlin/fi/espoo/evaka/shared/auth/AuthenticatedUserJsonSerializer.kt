@@ -12,8 +12,24 @@ import com.fasterxml.jackson.databind.SerializerProvider
 class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
     override fun serialize(value: AuthenticatedUser, gen: JsonGenerator, serializers: SerializerProvider) {
         gen.writeStartObject()
-        gen.writeObjectField("id", value.id.toString())
-        gen.writeObjectField("roles", value.roles)
+        when (value) {
+            is AuthenticatedUser.Citizen -> {
+                gen.writeObjectField("type", "citizen")
+                gen.writeObjectField("id", value.id.toString())
+            }
+            is AuthenticatedUser.Employee -> {
+                gen.writeObjectField("type", "employee")
+                gen.writeObjectField("id", value.id.toString())
+                gen.writeObjectField("roles", value.roles)
+            }
+            is AuthenticatedUser.MobileDevice -> {
+                gen.writeObjectField("type", "mobile")
+                gen.writeObjectField("id", value.id.toString())
+            }
+            is AuthenticatedUser.SystemInternalUser -> {
+                gen.writeObjectField("type", "system")
+            }
+        }
         gen.writeEndObject()
     }
 }

@@ -28,7 +28,7 @@ class FridgeFamilyService(
         val head = db.transaction {
             personService.getUpToDatePersonWithChildren(
                 it,
-                user = AuthenticatedUser(msg.requestingUserId, setOf()),
+                user = AuthenticatedUser.Employee(msg.requestingUserId, setOf()),
                 id = msg.personId
             )
         }
@@ -41,7 +41,7 @@ class FridgeFamilyService(
                     db.transaction {
                         personService.getUpToDatePersonWithChildren(
                             it,
-                            user = AuthenticatedUser(msg.requestingUserId, setOf()),
+                            user = AuthenticatedUser.Employee(msg.requestingUserId, setOf()),
                             id = partnerId
                         )
                     }

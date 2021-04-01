@@ -42,7 +42,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DaycareGroupIntegrationTest : FullApplicationTest() {
-    private val admin = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
     @BeforeEach
     protected fun beforeEach() {

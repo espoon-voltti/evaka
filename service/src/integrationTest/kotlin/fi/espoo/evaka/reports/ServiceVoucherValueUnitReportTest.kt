@@ -272,7 +272,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
     private fun LocalDate.toInstant() = this.atStartOfDay(helsinkiZone).toInstant()
 
-    private val adminUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
     private fun getUnitReport(unitId: UUID, year: Int, month: Int): List<ServiceVoucherValueRow> {
         val (_, response, data) = http.get(
@@ -286,7 +286,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         return data.get().rows
     }
 
-    private val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
 
     private fun createVoucherDecision(
         validFrom: LocalDate,

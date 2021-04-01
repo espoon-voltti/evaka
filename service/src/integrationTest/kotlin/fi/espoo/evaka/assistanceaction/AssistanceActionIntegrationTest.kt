@@ -26,7 +26,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class AssistanceActionIntegrationTest : FullApplicationTest() {
-    private val assistanceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {

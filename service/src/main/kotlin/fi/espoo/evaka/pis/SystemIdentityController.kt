@@ -10,7 +10,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,7 +28,7 @@ class SystemIdentityController {
         @RequestBody person: PersonIdentityRequest
     ): ResponseEntity<AuthenticatedUser> {
         Audit.PersonCreate.log()
-        user.assertMachineUser()
+        user.assertSystemInternalUser()
         return db.transaction { tx ->
             tx.handle.getPersonBySSN(person.socialSecurityNumber) ?: tx.handle.createPerson(
                 fi.espoo.evaka.pis.service.PersonIdentityRequest(
@@ -41,7 +40,7 @@ class SystemIdentityController {
                 )
             )
         }
-            .let { ResponseEntity.ok().body(AuthenticatedUser(it.id, setOf(UserRole.END_USER))) }
+            .let { ResponseEntity.ok().body(AuthenticatedUser.Citizen(it.id)) }
     }
 
     @PostMapping("/system/employee-identity")
@@ -51,7 +50,7 @@ class SystemIdentityController {
         @RequestBody employee: EmployeeIdentityRequest
     ): EmployeeUser {
         Audit.EmployeeGetOrCreate.log(targetId = employee.externalId)
-        user.assertMachineUser()
+        user.assertSystemInternalUser()
         return db.transaction {
             it.getEmployeeUserByExternalId(employee.externalId)
                 ?: EmployeeUser(
@@ -72,7 +71,7 @@ class SystemIdentityController {
         id: UUID
     ): EmployeeUser? {
         Audit.EmployeeGetOrCreate.log(targetId = id)
-        user.assertMachineUser()
+        user.assertSystemInternalUser()
         return db.read { it.getEmployeeUser(id) }
     }
 
@@ -84,7 +83,7 @@ class SystemIdentityController {
         token: UUID
     ): ResponseEntity<MobileDeviceIdentity> {
         Audit.MobileDevicesRead.log(targetId = token)
-        user.assertMachineUser()
+        user.assertSystemInternalUser()
         return ResponseEntity.ok(db.read { it.getDeviceByToken(token) })
     }
 

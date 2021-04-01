@@ -54,7 +54,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DecisionCreationIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @Autowired
     private lateinit var asyncJobRunner: AsyncJobRunner
@@ -414,7 +414,7 @@ WHERE id = :unitId
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.get("/v2/applications/$applicationId/decision-drafts")
-                .asUser(AuthenticatedUser(testDecisionMaker_1.id, roles))
+                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
                 .response()
             assertEquals(403, res.statusCode)
         }

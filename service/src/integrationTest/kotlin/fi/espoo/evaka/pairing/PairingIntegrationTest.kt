@@ -26,7 +26,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class PairingIntegrationTest : FullApplicationTest() {
-    private val user = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, emptySet())
     private val testUnitId = testDaycare.id
 
     @BeforeEach
@@ -497,7 +497,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                     )
                 )
             )
-            .asUser(AuthenticatedUser.machineUser)
+            .asUser(AuthenticatedUser.SystemInternalUser)
             .responseObject<MobileDeviceIdentity>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -514,7 +514,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                     )
                 )
             )
-            .asUser(AuthenticatedUser.machineUser)
+            .asUser(AuthenticatedUser.SystemInternalUser)
             .response()
 
         assertEquals(status, res.statusCode)
@@ -540,7 +540,7 @@ class PairingIntegrationTest : FullApplicationTest() {
 
     private fun getMobileDeviceAssertOk(id: UUID): MobileDevice {
         val (_, res, result) = http.get("/system/mobile-devices/$id")
-            .asUser(AuthenticatedUser.machineUser)
+            .asUser(AuthenticatedUser.SystemInternalUser)
             .responseObject<MobileDevice>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -549,7 +549,7 @@ class PairingIntegrationTest : FullApplicationTest() {
 
     private fun getMobileDeviceAssertFail(id: UUID, status: Int) {
         val (_, res, _) = http.get("/system/mobile-devices/$id")
-            .asUser(AuthenticatedUser.machineUser)
+            .asUser(AuthenticatedUser.SystemInternalUser)
             .response()
 
         assertEquals(status, res.statusCode)

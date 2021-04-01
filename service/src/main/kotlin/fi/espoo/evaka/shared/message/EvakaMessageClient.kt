@@ -65,7 +65,7 @@ class EvakaMessageClient(
     }
 
     private fun sendRequest(msg: SuomiFiMessage, path: String) {
-        val token = encodeSignedJwtToken(algorithm, user = AuthenticatedUser.machineUser)
+        val token = encodeSignedJwtToken(algorithm, user = AuthenticatedUser.SystemInternalUser)
         val (_, _, result) = Fuel.post(path)
             .authentication().bearer(token)
             .jsonBody(objectMapper.writeValueAsString(msg))

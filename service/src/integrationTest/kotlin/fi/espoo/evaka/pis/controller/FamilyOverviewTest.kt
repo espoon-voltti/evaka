@@ -109,7 +109,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         )
     }
 
-    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val testUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
     private fun fetchAndParseFamilyDetails(personId: UUID): FamilyOverview {
         val (_, response, result) = http.get("/family/by-adult/$personId")

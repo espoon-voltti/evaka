@@ -32,7 +32,7 @@ class ServerSmokeTest : FullApplicationTest() {
         val (_, res, _) = http.get("/daycares").responseString()
         assertEquals(401, res.statusCode)
 
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val (_, res2, _) = http.get("/daycares").asUser(user).responseString()
         assertEquals(200, res2.statusCode)
     }

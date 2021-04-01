@@ -191,7 +191,7 @@ class VTJPersonDetailsServiceTest {
     private fun queryAboutSelf(vtjPerson: VtjPerson = validPerson) =
         vtjPerson
             .toPersonDTO()
-            .let { DetailsQuery(requestingUser = AuthenticatedUser(it.id, setOf()), targetIdentifier = it.identity as SSN) }
+            .let { DetailsQuery(requestingUser = AuthenticatedUser.Employee(it.id, setOf()), targetIdentifier = it.identity as SSN) }
 
     private fun DetailsQuery.asMinimalVtjResponse(): Henkilo = minimalVtjResponse("${requestingUser.id}")
 

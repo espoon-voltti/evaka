@@ -56,8 +56,8 @@ import java.util.stream.Stream
 data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
 
 class DecisionResolutionIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
     private val applicationId = UUID.randomUUID()
 
     @BeforeEach

@@ -750,7 +750,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
     private fun FeeDecision.send(): FeeDecision {
         val (_, response, _) = http.post("/fee-decisions/confirm")
-            .asUser(AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)))
+            .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)))
             .jsonBody(objectMapper.writeValueAsString(listOf(this.id)))
             .response()
         assertEquals(204, response.statusCode)
@@ -760,7 +760,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
     private fun VoucherValueDecision.send(): VoucherValueDecision {
         val (_, response, _) = http.post("/value-decisions/send")
-            .asUser(AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)))
+            .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN)))
             .jsonBody(objectMapper.writeValueAsString(listOf(this.id)))
             .response()
         assertEquals(204, response.statusCode)

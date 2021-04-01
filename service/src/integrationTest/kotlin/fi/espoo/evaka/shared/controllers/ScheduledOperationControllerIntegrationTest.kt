@@ -51,7 +51,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
     @Autowired
     private lateinit var applicationStateService: ApplicationStateService
 
-    private val serviceWorker = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -65,7 +65,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
     fun `Draft application and attachments older than 30 days is cleaned up`() {
         val id_to_be_deleted = UUID.randomUUID()
         val id_not_to_be_deleted = UUID.randomUUID()
-        val user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
+        val user = AuthenticatedUser.Citizen(testAdult_5.id)
 
         db.transaction { tx ->
             insertApplication(tx.handle, guardian = testAdult_5, applicationId = id_to_be_deleted)

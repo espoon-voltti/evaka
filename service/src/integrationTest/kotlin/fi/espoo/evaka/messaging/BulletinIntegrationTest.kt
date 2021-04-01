@@ -61,11 +61,11 @@ class BulletinIntegrationTest : FullApplicationTest() {
     private val secondUnitId = testDaycare2.id
 
     private val supervisorId = UUID.randomUUID()
-    private val supervisor = AuthenticatedUser(supervisorId, emptySet())
+    private val supervisor = AuthenticatedUser.Employee(supervisorId, emptySet())
     private val staffId = UUID.randomUUID()
-    private val staffMember = AuthenticatedUser(staffId, emptySet())
+    private val staffMember = AuthenticatedUser.Employee(staffId, emptySet())
     private val guardianPerson = testAdult_6
-    private val guardian = AuthenticatedUser(guardianPerson.id, setOf(UserRole.END_USER))
+    private val guardian = AuthenticatedUser.Citizen(guardianPerson.id)
     private val groupId = UUID.randomUUID()
     private val groupName = "Testaajat"
     private val secondGroupId = UUID.randomUUID()
