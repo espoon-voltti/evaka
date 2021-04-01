@@ -21,7 +21,7 @@ import { isValidPreferredStartDate } from '../../../applications/editor/validati
 import LocalDate from 'lib-common/local-date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 
-const clubTerms = ['13.08.2020 - 04.06.2021', '11.8.2021-03.06.2022']
+const clubTerms = ['13.08.2020 - 04.06.2021', '11.8.2021 - 03.06.2022']
 
 export default React.memo(function PreferredStartSubSection({
   status,
