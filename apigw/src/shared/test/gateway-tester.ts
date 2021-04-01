@@ -10,7 +10,7 @@ import nock from 'nock'
 import { evakaServiceUrl } from '../config'
 import { sessionCookie, SessionType } from '../session'
 import { csrfCookieName } from '../middleware/csrf'
-import { AuthenticatedUser } from '../service-client'
+import { AuthenticatedUser, EmployeeUser } from '../service-client'
 
 export class GatewayTester {
   public readonly client: AxiosInstance
@@ -68,7 +68,7 @@ export class GatewayTester {
     )
   }
 
-  public async login(user: AuthenticatedUser): Promise<void> {
+  public async login(user: AuthenticatedUser | EmployeeUser): Promise<void> {
     if (this.sessionType === 'employee') {
       this.nockScope.post('/system/employee-identity').reply(200, user)
       await this.client.post(

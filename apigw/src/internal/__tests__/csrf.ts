@@ -5,11 +5,14 @@
 import { GatewayTester } from '../../shared/test/gateway-tester'
 import app from '../app'
 import { csrfCookieName } from '../../shared/middleware/csrf'
-import { AuthenticatedUser } from '../../shared/service-client'
+import { EmployeeUser } from '../../shared/service-client'
 
-const mockUser: AuthenticatedUser = {
+const mockUser: EmployeeUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
-  roles: ['SERVICE_WORKER']
+  firstName: '',
+  lastName: '',
+  globalRoles: ['SERVICE_WORKER'],
+  allScopedRoles: []
 }
 
 describe('CSRF middleware and cookie handling in internal-gw', () => {
@@ -22,9 +25,7 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
   afterAll(async () => tester?.stop())
 
   async function setupCsrfToken() {
-    tester.nockScope.get(`/employee/${mockUser.id}`).reply(200, {
-      id: mockUser.id
-    })
+    tester.nockScope.get(`/system/employee/${mockUser.id}`).reply(200, mockUser)
     await tester.client.get('/api/internal/auth/status')
     tester.nockScope.done()
 

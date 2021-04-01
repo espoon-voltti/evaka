@@ -61,14 +61,12 @@ export interface EmployeeIdentityRequest {
   email?: string
 }
 
-export interface EmployeeResponse {
+export interface EmployeeUser {
   id: string
-  externalId: string | null
   firstName: string
   lastName: string
-  email: string
-  created: string
-  updated: string
+  globalRoles: UserRole[]
+  allScopedRoles: UserRole[]
 }
 
 export interface PersonIdentityRequest {
@@ -79,8 +77,8 @@ export interface PersonIdentityRequest {
 
 export async function getOrCreateEmployee(
   employee: EmployeeIdentityRequest
-): Promise<AuthenticatedUser> {
-  const { data } = await client.post<AuthenticatedUser>(
+): Promise<EmployeeUser> {
+  const { data } = await client.post<EmployeeUser>(
     `/system/employee-identity`,
     employee,
     {
@@ -94,10 +92,10 @@ export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
 ) {
-  const { data } = await client.get<EmployeeResponse>(
-    `/employee/${employeeId}`,
+  const { data } = await client.get<EmployeeUser>(
+    `/system/employee/${employeeId}`,
     {
-      headers: createServiceRequestHeaders(req)
+      headers: createServiceRequestHeaders(req, machineUser)
     }
   )
   return data

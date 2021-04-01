@@ -65,7 +65,7 @@ fixture('Mobile daily notes')
         firstName: 'Yrjö',
         lastName: 'Yksikkö',
         email: 'yy@example.com',
-        roles: ['MOBILE']
+        roles: []
       })
     ])
 

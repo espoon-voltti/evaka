@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { concat } from 'lodash'
 import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
@@ -31,10 +32,12 @@ export function requireAuthentication(
 }
 
 export function createAuthHeader(user: SamlUser): string {
+  const roles =
+    user.roles ?? concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
   const token = createJwt({
     kind: gatewayRole === 'enduser' ? 'SuomiFI' : 'AD',
     sub: user.id,
-    scope: user.roles
+    scope: roles
       .map((role) => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))
       .join(' ')
   })
