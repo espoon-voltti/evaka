@@ -19,28 +19,28 @@ repositories {
 }
 
 dependencies {
+    implementation(platform(project(":evaka-bom")))
+    testImplementation(platform(project(":evaka-bom")))
+
     // Kotlin + core
-    implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
 
     // Logging
-    implementation("io.github.microutils:kotlin-logging-jvm:${Version.kotlinLogging}")
-    implementation("net.logstash.logback:logstash-logback-encoder:${Version.logstashEncoder}")
-    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:${Version.logbackSpringBoot}")
+    implementation("io.github.microutils:kotlin-logging-jvm")
+    implementation("net.logstash.logback:logstash-logback-encoder")
+    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter")
 
     // Spring
-    implementation(platform("org.springframework.boot:spring-boot-dependencies:${Version.springBoot}"))
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     // Jackson
-    implementation(platform("com.fasterxml.jackson:jackson-bom:${Version.jackson}"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Auth0 JWT
-    implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
+    implementation("com.auth0:java-jwt")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.skyscreamer:jsonassert:1.5.0")
+    testImplementation("org.skyscreamer:jsonassert")
 }
 
 tasks.withType<KotlinCompile> {

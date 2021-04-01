@@ -25,8 +25,9 @@ repositories {
 }
 
 dependencies {
-    implementation("javax.jws:javax.jws-api:1.1")
-    implementation("javax.xml.ws:jaxws-api:2.3.1")
+    implementation(platform(project(":evaka-bom")))
+    implementation("javax.jws:javax.jws-api")
+    implementation("javax.xml.ws:jaxws-api")
 }
 
 project.wsdl2javaExt {
