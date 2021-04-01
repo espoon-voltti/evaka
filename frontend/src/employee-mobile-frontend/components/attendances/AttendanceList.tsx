@@ -13,12 +13,13 @@ import {
 } from 'lib-components/white-space'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
-import { AttendanceChild, AttendanceStatus } from '../../api/attendances'
+import { AttendanceChild, AttendanceStatus, Group } from '../../api/attendances'
 import colors from 'lib-components/colors'
 import { useTranslation } from '../../state/i18n'
 
 interface Props {
   attendanceChildren: AttendanceChild[]
+  groups: Group[]
   type?: AttendanceStatus
   showAll?: boolean
 }
@@ -31,7 +32,8 @@ const NoChildrenOnList = styled.div`
 export default React.memo(function AttendanceList({
   attendanceChildren,
   type,
-  showAll
+  showAll,
+  groups
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -40,33 +42,30 @@ export default React.memo(function AttendanceList({
     groupId: string | 'all'
   }>()
 
-  if (type) {
-    attendanceChildren = attendanceChildren.filter((ac) => ac.status === type)
-  }
+  const filteredChildren = attendanceChildren.filter((ac) => {
+    const allowedType = type ? ac.status === type : true
+    const allowedGroup =
+      groupIdOrAll !== 'all' && !showAll ? ac.groupId === groupIdOrAll : true
+    return allowedType && allowedGroup
+  })
 
-  if (groupIdOrAll !== 'all' && !showAll) {
-    attendanceChildren = attendanceChildren.filter(
-      (ac) => ac.groupId === groupIdOrAll
-    )
-  }
-
-  function getGroupIdByChild(child: AttendanceChild) {
-    return attendanceChildren.find((ac) => ac.groupId === child.groupId)
-      ?.groupId
+  function getGroupNote(child: AttendanceChild) {
+    return groups.find((group) => group.id == child.groupId)?.dailyNote
   }
 
   return (
     <FixedSpaceColumn>
       <OrderedList spacing={'zero'}>
-        {attendanceChildren.length > 0 ? (
-          attendanceChildren.map((ac) => (
+        {filteredChildren.length > 0 ? (
+          filteredChildren.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
                 type={ac.status}
                 key={ac.id}
                 attendanceChild={ac}
+                groupNote={getGroupNote(ac)}
                 childAttendanceUrl={`/units/${unitId}/groups/${
-                  getGroupIdByChild(ac) ?? 'all'
+                  ac.groupId ?? 'all'
                 }/childattendance/${ac.id}`}
               />
             </Li>

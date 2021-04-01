@@ -1219,8 +1219,10 @@ export const fi = {
         sleepingHours: 'tuntia',
         reminderHeader: 'Muistettavia asioita',
         otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
-        groupNoteModalLink: 'Muistiinpano koko ryhmälle',
-        edit: 'Lisää/muokkaa päivän muistiinpanoa',
+        groupNoteModalAddLink: 'Lisää muistiinpano koko ryhmälle',
+        groupNoteModalModifyLink:
+          'Muokkaa tai poista muistiinpano koko ryhmälle',
+        edit: 'Lisää päivän muistiinpano',
         level: {
           GOOD: 'Hyvin',
           MEDIUM: 'Kohtalaisesti',

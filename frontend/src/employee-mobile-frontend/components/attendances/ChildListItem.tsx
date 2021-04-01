@@ -5,7 +5,12 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { AttendanceChild, AttendanceStatus, Group } from '../../api/attendances'
+import {
+  AttendanceChild,
+  AttendanceStatus,
+  DailyNote,
+  Group
+} from '../../api/attendances'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import colors from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
@@ -96,13 +101,15 @@ interface ChildListItemProps {
   onClick?: () => void
   type: AttendanceStatus
   childAttendanceUrl: string
+  groupNote?: DailyNote | null
 }
 
 export default React.memo(function ChildListItem({
   attendanceChild,
   onClick,
   type,
-  childAttendanceUrl
+  childAttendanceUrl,
+  groupNote
 }: ChildListItemProps) {
   const { i18n } = useTranslation()
   const { attendanceResponse } = useContext(AttendanceUIContext)
@@ -161,18 +168,19 @@ export default React.memo(function ChildListItem({
         </ChildBoxInfo>
       </AttendanceLinkBox>
       <ToolsColumn>
-        {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
-          <Link
-            to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
-            data-qa={'link-child-daycare-daily-note'}
-          >
-            <RoundIcon
-              content={farStickyNote}
-              color={colors.accents.petrol}
-              size={'m'}
-            />
-          </Link>
-        )}
+        {(attendanceChild.dailyNote || groupNote) &&
+          attendanceResponse.isSuccess && (
+            <Link
+              to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
+              data-qa={'link-child-daycare-daily-note'}
+            >
+              <RoundIcon
+                content={farStickyNote}
+                color={colors.accents.petrol}
+                size={'m'}
+              />
+            </Link>
+          )}
       </ToolsColumn>
     </ChildBox>
   )

@@ -22,14 +22,6 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
-import styled from 'styled-components'
-import colors from 'lib-components/colors'
-
-const GrayFontContainer = styled.div`
-  & * {
-    color: ${colors.greyscale.medium};
-  }
-`
 
 interface Props {
   note: DaycareDailyNote | null
@@ -317,12 +309,10 @@ export default React.memo(function DaycareDailyNoteModal({
 
           {groupNote && (
             <FixedSpaceColumn>
-              <GrayFontContainer>
-                <div className="bold">
-                  {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
-                </div>
-                <p data-qa={'group-note'}>{groupNote}</p>
-              </GrayFontContainer>
+              <div className="bold">
+                {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
+              </div>
+              <p data-qa={'group-note'}>{groupNote}</p>
             </FixedSpaceColumn>
           )}
         </FixedSpaceColumn>

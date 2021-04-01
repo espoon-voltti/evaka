@@ -252,7 +252,11 @@ export default React.memo(function AttendancePageWrapper() {
                 setShowSearch={setShowSearch}
                 searchResults={searchResults}
               />
-              <AttendanceList attendanceChildren={searchResults} showAll />
+              <AttendanceList
+                attendanceChildren={searchResults}
+                groups={[]}
+                showAll
+              />
             </ContentArea>
           </SearchBar>
           <Name>

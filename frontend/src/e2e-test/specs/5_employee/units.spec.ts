@@ -169,7 +169,7 @@ test('child can be placed into a group and removed from it', async (t) => {
     )
   await t
     .expect(groupPlacement.placementDuration.textContent)
-    .eql('01.05.2020 - 31.08.2021')
+    .eql('01.05.2020- 31.08.2021')
 
   // after removing the child is again visible at missing groups and no longer at the group
   await groupPlacement.remove()
