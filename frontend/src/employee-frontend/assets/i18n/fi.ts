@@ -470,6 +470,7 @@ export const fi = {
         REMOTE_GUARDIAN: 'Huoltaja'
       },
       contact: 'S-posti ja puhelin',
+      contactPerson: 'Yhteyshlö',
       address: 'Osoite'
     },
     serviceNeed: {

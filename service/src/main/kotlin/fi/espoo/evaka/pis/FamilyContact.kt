@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.pis
 
+import java.util.UUID
+
 enum class FamilyContactRole {
     LOCAL_GUARDIAN,
     LOCAL_ADULT,
@@ -12,6 +14,7 @@ enum class FamilyContactRole {
 }
 
 data class FamilyContact(
+    val id: UUID,
     val role: FamilyContactRole,
     val firstName: String?,
     val lastName: String?,
@@ -19,5 +22,6 @@ data class FamilyContact(
     val phone: String?,
     val streetAddress: String,
     val postalCode: String,
-    val postOffice: String
+    val postOffice: String,
+    val priority: Int?
 )
