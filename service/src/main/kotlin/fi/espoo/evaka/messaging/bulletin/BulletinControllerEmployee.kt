@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -22,7 +21,14 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.util.UUID
+
+data class BulletinReceiverTriplet(
+    val unitId: UUID,
+    val groupId: UUID? = null,
+    val personId: UUID? = null
+)
 
 @RestController
 @RequestMapping("/bulletins")
@@ -32,7 +38,8 @@ class BulletinControllerEmployee(
 ) {
 
     data class CreateBulletinRequest(
-        val unitId: UUID
+        val sender: String,
+        val receivers: List<BulletinReceiverTriplet>
     )
     @PostMapping
     fun createBulletin(
@@ -46,7 +53,8 @@ class BulletinControllerEmployee(
         return db.transaction { tx ->
             tx.initBulletin(
                 user = user,
-                unitId = body.unitId
+                sender = body.sender,
+                receivers = body.receivers
             ).let { tx.getBulletin(it)!! }
         }.let {
             ResponseEntity.ok(it)
@@ -85,11 +93,43 @@ class BulletinControllerEmployee(
         }.let { ResponseEntity.ok(it) }
     }
 
-    data class BulletinUpdate(
-        val groupId: UUID?,
-        val title: String,
-        val content: String
+    data class BulletinReceiverPerson(
+        val receiverId: UUID,
+        val receiverFirstName: String,
+        val receiverLastName: String
     )
+    data class BulletinReceiver(
+        val childId: UUID,
+        val childFirstName: String,
+        val childLastName: String,
+        val childDateOfBirth: LocalDate,
+        val receiverPersons: List<BulletinReceiverPerson>
+    )
+    data class BulletinReceiversResponse(
+        val groupId: UUID,
+        val groupName: String,
+        val receivers: List<BulletinReceiver>
+    )
+    @GetMapping("/receivers")
+    fun getReceiversForNewBulletin(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestParam unitId: UUID
+    ): ResponseEntity<List<BulletinReceiversResponse>> {
+        Audit.MessagingBulletinReceiversRead.log(unitId)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
+        return db.transaction { tx ->
+            tx.getReceiversForNewBulletin(user, unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    data class BulletinUpdate(
+        val title: String,
+        val content: String,
+        val sender: String
+    )
+
     @PutMapping("/{id}")
     fun updateBulletin(
         db: Database.Connection,
@@ -104,9 +144,9 @@ class BulletinControllerEmployee(
             tx.updateDraftBulletin(
                 user = user,
                 id = id,
-                groupId = body.groupId,
                 title = body.title,
-                content = body.content
+                content = body.content,
+                sender = body.sender
             )
         }
 
@@ -139,12 +179,7 @@ class BulletinControllerEmployee(
         authorizeAdminSupervisorOrStaff(user)
 
         db.transaction { tx ->
-            tx.getBulletin(id)?.let {
-                if (it.groupId != null) {
-                    acl.getRolesForUnitGroup(user, it.groupId)
-                        .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-                } else throw BadRequest("Must select group before sending")
-            }
+            tx.getBulletin(id)
             tx.sendBulletin(user, id)
             bulletinNotificationEmailService.scheduleSendingBulletinNotifications(tx, id)
         }

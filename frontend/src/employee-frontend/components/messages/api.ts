@@ -10,12 +10,18 @@ import {
   IdAndName,
   deserializeBulletin,
   SentBulletin,
-  deserializeSentBulletin
+  deserializeSentBulletin,
+  deserializeReceiverChild,
+  ReceiverGroup,
+  ReceiverTriplet
 } from './types'
 
-export async function initNewBulletin(unitId: UUID): Promise<Result<Bulletin>> {
+export async function initNewBulletin(
+  sender: string,
+  receivers: ReceiverTriplet[]
+): Promise<Result<Bulletin>> {
   return client
-    .post<JsonOf<Bulletin>>('/bulletins', { unitId })
+    .post<JsonOf<Bulletin>>('/bulletins', { sender, receivers })
     .then((res) => Success.of(deserializeBulletin(res.data)))
     .catch((e) => Failure.fromError(e))
 }
@@ -26,14 +32,16 @@ export async function deleteDraftBulletin(id: UUID): Promise<void> {
 
 export async function updateDraftBulletin(
   id: UUID,
-  groupId: UUID | null,
+  receivers: ReceiverTriplet[] | null,
   title: string,
-  content: string
+  content: string,
+  sender: string
 ): Promise<void> {
   return client.put(`/bulletins/${id}`, {
-    groupId,
+    receivers,
     title,
-    content
+    content,
+    sender
   })
 }
 
@@ -87,6 +95,24 @@ export async function getDraftBulletins(
         ...res.data,
         data: res.data.data.map(deserializeBulletin)
       })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getReceivers(
+  unitId: UUID
+): Promise<Result<ReceiverGroup[]>> {
+  return client
+    .get<JsonOf<ReceiverGroup[]>>('/bulletins/receivers', {
+      params: { unitId }
+    })
+    .then((res) =>
+      Success.of(
+        res.data.map((receiverGroup) => ({
+          ...receiverGroup,
+          receivers: receiverGroup.receivers.map(deserializeReceiverChild)
+        }))
+      )
     )
     .catch((e) => Failure.fromError(e))
 }

@@ -52,7 +52,11 @@ export default React.memo(function MessageList({
               </MessageTitle>
               {msg.sentAt ? (
                 <FixedSpaceRow>
-                  <span>{groups.find((g) => g.id === msg.groupId)?.name}</span>
+                  <span>
+                    {msg.receiverUnits
+                      .map(({ unitName }) => unitName)
+                      .join(', ')}
+                  </span>
                   <span>
                     {formatDate(
                       msg.sentAt,
