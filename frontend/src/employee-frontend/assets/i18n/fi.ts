@@ -23,7 +23,8 @@ export const fi = {
     reports: 'Raportit',
     messages: 'Viestit',
     caretakers: 'Henkilökunta',
-    createUnit: 'Luo uusi yksikkö'
+    createUnit: 'Luo uusi yksikkö',
+    employeePinCode: 'PIN-koodin hallinta'
   },
   common: {
     yes: 'Kyllä',
