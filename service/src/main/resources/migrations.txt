@@ -55,4 +55,5 @@ V54__employee_only_global_roles.sql
 V55__add_backup_number_to_person.sql
 V56__add_medication_to_child.sql
 V57__add_missing_enums.sql
-V58__add_pin_to_employee.sql
+V58__child_service_time.sql
+V59__add_pin_to_employee.sql
