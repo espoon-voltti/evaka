@@ -10,5 +10,3 @@ ALTER TABLE bulletin_instance DROP COLUMN bulletin_id;
 ALTER TABLE bulletin_instance DROP COLUMN receiver_id;
 ALTER TABLE bulletin_instance ADD COLUMN bulletin_receiver_id uuid REFERENCES bulletin_receiver(id);
 ALTER TABLE bulletin_instance ADD COLUMN receiver_person_id uuid REFERENCES person(id);
-
-CREATE INDEX idx$bulletin_receiver_bulletin_id ON bulletin_receiver (bulletin_id);
