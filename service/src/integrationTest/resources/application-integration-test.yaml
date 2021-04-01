@@ -102,6 +102,9 @@ fi:
             password: password
             type: JKS
 application:
+  frontend:
+    baseurl: https://foo.espoonvarhaiskasvatus.fi
+    baseurl.sv: https://esbosmabarnspedagogik.fi
   email:
     address:
       fi: testemail_fi@test.com

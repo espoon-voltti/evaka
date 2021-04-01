@@ -29,6 +29,8 @@ class BulletinNotificationEmailService(
         asyncJobRunner.sendBulletinNotificationEmail = ::sendBulletinNotification
     }
 
+    val baseUrl: String = env.getRequiredProperty("application.frontend.baseurl")
+    val baseUrlSv: String = env.getRequiredProperty("application.frontend.baseurl.sv")
     val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
     val senderNameFi: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.fi")
     val senderNameSv: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.sv")
@@ -134,11 +136,16 @@ class BulletinNotificationEmailService(
         }
     }
 
-    private fun getCitizenMessagesUrl() = if (System.getenv("VOLTTI_ENV") == "prod") "https://espoonvarhaiskasvatus.fi/messages"
-    else "https://${System.getenv("VOLTTI_ENV")}.espoonvarhaiskasvatus.fi/messages"
+    private fun getCitizenMessagesUrl(lang: Language): String {
+        val base = when (lang) {
+            Language.sv -> baseUrlSv
+            else -> baseUrl
+        }
+        return "$base/messages"
+    }
 
     private fun getHtml(language: Language): String {
-        val messagesUrl = getCitizenMessagesUrl()
+        val messagesUrl = getCitizenMessagesUrl(language)
         return when (language) {
             Language.en -> """
                 <p>You have received a new eVaka bulletin/message. Read the message here: <a href="$messagesUrl">$messagesUrl</a></p>
@@ -156,7 +163,7 @@ class BulletinNotificationEmailService(
     }
 
     private fun getText(language: Language): String {
-        val messagesUrl = getCitizenMessagesUrl()
+        val messagesUrl = getCitizenMessagesUrl(language)
         return when (language) {
             Language.en -> """
                 You have received a new eVaka bulletin/message. Read the message here: $messagesUrl
