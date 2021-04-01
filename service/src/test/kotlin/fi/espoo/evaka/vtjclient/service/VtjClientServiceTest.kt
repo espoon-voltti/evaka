@@ -296,6 +296,7 @@ class VtjClientServiceTest {
         lastName = lastName,
         email = email,
         phone = phone,
+        phone2 = null,
         language = language,
         dateOfBirth = dateOfBirth,
         streetAddress = streetAddress,
