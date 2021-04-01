@@ -16,15 +16,16 @@ export default toRequestHandler(async (req, res) => {
   if (user) {
     if (user.userType === 'MOBILE') {
       const device = await getMobileDevice(req, user.id)
+      const globalRoles = user.globalRoles ?? []
+      const allScopedRoles = user.allScopedRoles ?? ['MOBILE']
       if (device) {
         const { id, name, unitId } = device
         res.status(200).json({
           loggedIn: true,
           user: { id, name, unitId },
-          roles: user.roles ?? [
-            ...(user.globalRoles ?? []),
-            ...(user.allScopedRoles ?? [])
-          ]
+          globalRoles,
+          allScopedRoles,
+          roles: [...globalRoles, ...allScopedRoles]
         })
       } else {
         // device has been removed
@@ -54,6 +55,8 @@ export default toRequestHandler(async (req, res) => {
       res.status(200).json({
         loggedIn: true,
         user: { id, name },
+        globalRoles,
+        allScopedRoles,
         roles: [...globalRoles, ...allScopedRoles]
       })
     }
