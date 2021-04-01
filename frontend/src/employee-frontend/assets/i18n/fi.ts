@@ -1222,7 +1222,7 @@ export const fi = {
         groupNoteModalAddLink: 'Lisää muistiinpano koko ryhmälle',
         groupNoteModalModifyLink:
           'Muokkaa tai poista muistiinpano koko ryhmälle',
-        edit: 'Lisää/muokkaa päivän muistiinpanoa',
+        edit: 'Lisää päivän muistiinpano',
         level: {
           GOOD: 'Hyvin',
           MEDIUM: 'Kohtalaisesti',

@@ -232,10 +232,22 @@ function Group({
       ? groupDaycareDailyNotes.value.find((note) => note.groupId === groupId)
       : undefined
 
+  const formatSleepingTooltipText = (childNote: DaycareDailyNote) => {
+    return [
+      childNote.sleepingNote
+        ? i18n.unit.groups.daycareDailyNote.level[childNote.sleepingNote]
+        : null,
+      childNote.sleepingHours ? `${childNote.sleepingHours}h` : null
+    ]
+      .filter((s) => s !== null)
+      .join(',')
+  }
+
   const renderDaycareDailyNote = (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => {
     const childNote = getChildNote(placement.child.id)
+    const groupNote = getGroupNote(group.id)
     return (
       <>
         {groupDaycareDailyNotes.isLoading &&
@@ -250,9 +262,7 @@ function Group({
               dataQa={`daycare-daily-note-hover-${placement.child.id}`}
               up
               tooltip={
-                !childNote ? (
-                  <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
-                ) : (
+                childNote ? (
                   <div>
                     <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
                     <h5>{i18n.unit.groups.daycareDailyNote.notesHeader}</h5>
@@ -266,13 +276,7 @@ function Group({
                         : ''}
                     </p>
                     <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
-                    <p>
-                      {childNote.sleepingNote
-                        ? i18n.unit.groups.daycareDailyNote.level[
-                            childNote.sleepingNote
-                          ]
-                        : ''}
-                    </p>
+                    <p>{formatSleepingTooltipText(childNote)}</p>
                     <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
                     <p>
                       {childNote.reminders
@@ -291,12 +295,22 @@ function Group({
                       }
                     </h5>
                     <p>{childNote.reminderNote}</p>
+                    {groupNote && (
+                      <>
+                        <h5>
+                          {i18n.unit.groups.daycareDailyNote.groupNotesHeader}
+                        </h5>
+                        <p>{groupNote.note}</p>
+                      </>
+                    )}
                   </div>
+                ) : (
+                  <span>{i18n.unit.groups.daycareDailyNote.edit}</span>
                 )
               }
             >
               <RoundIcon
-                active={childNote != null}
+                active={childNote != null || groupNote != null}
                 dataQa={`daycare-daily-note-icon-${placement.child.id}`}
                 content={faStickyNote}
                 color={colors.blues.primary}
