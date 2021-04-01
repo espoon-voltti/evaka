@@ -60,6 +60,10 @@ export default class ChildInformationPage {
 
   readonly medicationInput: Selector = Selector('[data-qa="medication-input"]')
 
+  readonly editChildBtn: Selector = Selector(
+    '[data-qa="edit-child-settings-button"]'
+  )
+
   readonly confirmEditedChildBtn: Selector = Selector(
     '[data-qa="confirm-edited-child-button"]'
   )

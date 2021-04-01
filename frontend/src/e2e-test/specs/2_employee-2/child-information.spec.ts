@@ -112,11 +112,14 @@ test('medication info and be added and removed', async () => {
   const medication = 'Epipen'
 
   await t.expect(childInformation.medication.textContent).eql('')
+
+  await t.click(childInformation.editChildBtn)
   await t.typeText(childInformation.medicationInput, medication)
   await t.click(childInformation.confirmEditedChildBtn)
   await t.expect(childInformation.medication.textContent).eql(medication)
 
-  await t.typeText(childInformation.medicationInput, '')
+  await t.click(childInformation.editChildBtn)
+  await t.selectText(childInformation.medicationInput).pressKey('delete')
   await t.click(childInformation.confirmEditedChildBtn)
   await t.expect(childInformation.medication.textContent).eql('')
 })
