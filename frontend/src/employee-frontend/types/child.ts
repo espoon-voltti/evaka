@@ -134,3 +134,10 @@ export interface UnitBackupCare {
     birthDate: LocalDate
   }
 }
+
+export interface ChildBackupPickup {
+  id: UUID
+  childId: UUID
+  name: string
+  phone: string
+}

@@ -745,6 +745,14 @@ export const fi = {
       create: 'Luo uusi varasijoitus',
       dateRange: 'Varasijoitus ajalle',
       unit: 'Yksikkö'
+    },
+    backupPickups: {
+      title: 'Varahakijat',
+      name: 'Varahakijan nimi',
+      phone: 'Puhelinnumero',
+      add: 'Lisää varahakija',
+      edit: 'Muokkaa varahakijan tietoja',
+      removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
     }
   },
   personSearch: {

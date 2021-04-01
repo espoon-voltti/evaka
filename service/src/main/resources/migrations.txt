@@ -49,3 +49,4 @@ V48__messaging_blocklist.sql
 V49__varda_voucher_values.sql
 V50__add_bulletin_reciever.sql
 V51__refactor_bulletin_receiver.sql
+V52__backup_pickup.sql

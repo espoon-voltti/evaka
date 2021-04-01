@@ -31,6 +31,7 @@ import { UserContext } from '../state/user'
 import { TitleContext, TitleState } from '../state/title'
 import { getLayout, Layouts } from './layouts'
 import BackupCare from '../components/child-information/BackupCare'
+import BackupPickup from '../components/child-information/BackupPickup'
 import Guardians from '../components/child-information/Guardians'
 import FamilyContacts from '../components/child-information/FamilyContacts'
 import { requireRole } from '../utils/roles'
@@ -81,12 +82,14 @@ const components = {
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
   applications: ChildApplications,
-  'message-blocklist': MessageBlocklist
+  'message-blocklist': MessageBlocklist,
+  'backup-pickup': BackupPickup
 }
 
 const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
+    { component: 'backup-pickup', open: false },
     { component: 'guardians', open: false },
     { component: 'parents', open: false },
     { component: 'message-blocklist', open: false },
