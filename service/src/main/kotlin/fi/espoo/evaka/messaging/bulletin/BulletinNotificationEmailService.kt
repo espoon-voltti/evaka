@@ -29,6 +29,8 @@ class BulletinNotificationEmailService(
         asyncJobRunner.sendBulletinNotificationEmail = ::sendBulletinNotification
     }
 
+    val baseUrl: String = env.getRequiredProperty("application.frontend.baseurl")
+    val baseUrlSv: String = env.getRequiredProperty("application.frontend.baseurl.sv")
     val senderAddress: String = env.getRequiredProperty("fi.espoo.evaka.email.reply_to_address")
     val senderNameFi: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.fi")
     val senderNameSv: String = env.getRequiredProperty("fi.espoo.evaka.email.sender_name.sv")
@@ -128,35 +130,54 @@ class BulletinNotificationEmailService(
 
         return when (language) {
             Language.en -> "New bulletin in eVaka$postfix"
-            Language.sv -> "Ny$postfix"
+            Language.sv -> "Ny meddelande i eVaka$postfix"
             else -> "Uusi tiedote eVakassa$postfix"
         }
     }
 
+    private fun getCitizenMessagesUrl(lang: Language): String {
+        val base = when (lang) {
+            Language.sv -> baseUrlSv
+            else -> baseUrl
+        }
+        return "$base/messages"
+    }
+
     private fun getHtml(language: Language): String {
+        val messagesUrl = getCitizenMessagesUrl(language)
         return when (language) {
             Language.en -> """
-<p>Sinulle on uusi viesti</p>
+                <p>You have received a new eVaka bulletin/message. Read the message here: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p> 
             """.trimIndent()
             Language.sv -> """
-<p>Sinulle on uusi viesti</p>                
+                <p>Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>                
             """.trimIndent()
             else -> """
-<p>Sinulle on uusi viesti</p>                
+               <p>Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: <a href="$messagesUrl">$messagesUrl</a></p>
+               <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
             """.trimIndent()
         }
     }
 
     private fun getText(language: Language): String {
+        val messagesUrl = getCitizenMessagesUrl(language)
         return when (language) {
             Language.en -> """
-Sinulle on uusi viesti
+                You have received a new eVaka bulletin/message. Read the message here: $messagesUrl
+                
+                This is an automatic message from the eVaka system. Do not reply to this message. 
             """.trimIndent()
             Language.sv -> """
-Sinulle on uusi viesti
+                Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: $messagesUrl
+                
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.  
             """.trimIndent()
             else -> """
-Sinulle on uusi viesti
+               Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: $messagesUrl
+               
+               Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
             """.trimIndent()
         }
     }
