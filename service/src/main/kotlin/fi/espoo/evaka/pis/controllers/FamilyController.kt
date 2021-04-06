@@ -127,7 +127,7 @@ WITH contact AS (
         CASE
             WHEN EXISTS (SELECT 1 FROM guardian g WHERE g.guardian_id = p.id AND g.child_id = :id)
             THEN 'LOCAL_GUARDIAN' ELSE 'LOCAL_ADULT'
-        END AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.phone2, p.street_address, p.postal_code, p.post_office, family_contact.priority
+        END AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
     FROM person p
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
     WHERE EXISTS ( -- is either head of child or their partner
@@ -143,7 +143,7 @@ WITH contact AS (
     UNION
 
     -- siblings in the same household
-    SELECT 'LOCAL_SIBLING' AS role, p.id, p.first_name, p.last_name, NULL AS email, NULL AS phone, NULL AS phone2, p.street_address, p.postal_code, p.post_office, family_contact.priority
+    SELECT 'LOCAL_SIBLING' AS role, p.id, p.first_name, p.last_name, NULL AS email, NULL AS phone, NULL AS backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
     FROM person p
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
     WHERE EXISTS (
@@ -161,7 +161,7 @@ WITH contact AS (
     UNION
 
     -- guardians in other households
-    SELECT 'REMOTE_GUARDIAN' AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.phone2, p.street_address, p.postal_code, p.post_office, family_contact.priority
+    SELECT 'REMOTE_GUARDIAN' AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
     FROM person p
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
     WHERE

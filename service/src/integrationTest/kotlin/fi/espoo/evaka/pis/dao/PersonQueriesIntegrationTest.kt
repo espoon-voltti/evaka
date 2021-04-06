@@ -145,7 +145,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         val contactInfo = ContactInfo(
             email = "test@emai.l",
             phone = "+3584012345678",
-            phone2 = "",
+            backupPhone = "",
             invoiceRecipientName = "Laskun saaja",
             invoicingStreetAddress = "Laskutusosoite",
             invoicingPostalCode = "02123",
@@ -300,7 +300,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             lastName = "O'Brien",
             email = null,
             phone = null,
-            phone2 = null,
+            backupPhone = null,
             language = "fi",
             nationalities = listOf("248", "060"),
 

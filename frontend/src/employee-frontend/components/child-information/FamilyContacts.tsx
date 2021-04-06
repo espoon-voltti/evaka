@@ -78,10 +78,10 @@ function FamilyContacts({ id, open }: FamilyContactsProps) {
                   <FixedSpaceColumn spacing="xs">
                     {row.email && <span>{row.email}</span>}
                     {row.phone && <span>{row.phone}</span>}
-                    {row.phone2 && (
+                    {row.backupPhone && (
                       <span>
-                        {row.phone2}{' '}
-                        {`(${i18n.childInformation.familyContacts.phone2})`}
+                        {row.backupPhone}{' '}
+                        {`(${i18n.childInformation.familyContacts.backupPhone})`}
                       </span>
                     )}
                   </FixedSpaceColumn>

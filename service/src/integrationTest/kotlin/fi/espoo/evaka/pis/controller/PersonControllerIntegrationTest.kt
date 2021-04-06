@@ -31,7 +31,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     private val contactInfo = ContactInfo(
         email = "test@hii",
         phone = "+358401234567",
-        phone2 = "",
+        backupPhone = "",
         invoiceRecipientName = "Laskun saaja",
         invoicingStreetAddress = "Laskutusosoite",
         invoicingPostalCode = "02123",

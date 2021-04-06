@@ -1,1 +1,1 @@
-ALTER TABLE person ADD COLUMN phone2 text DEFAULT NULL::character varying;
+ALTER TABLE person ADD COLUMN backup_phone text DEFAULT ''::text NOT NULL;

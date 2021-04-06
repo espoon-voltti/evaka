@@ -19,7 +19,7 @@ export interface PersonDetails {
   lastName: string | null
   email: string | null
   phone: string | null
-  phone2: string | null
+  backupPhone: string | null
   language: string | null
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null

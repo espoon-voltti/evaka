@@ -54,7 +54,7 @@ export interface FamilyContact {
   lastName: string | null
   email: string | null
   phone: string | null
-  phone2: string | null
+  backupPhone: string | null
   streetAddress: string
   postalCode: string
   postOffice: string

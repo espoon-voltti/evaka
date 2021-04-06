@@ -93,7 +93,7 @@ export const fi = {
       range: 'Ajalle',
       email: 'Sähköposti',
       phone: 'Puhelinnumero',
-      phone2: 'Varapuhelinnumero',
+      backupPhone: 'Varapuhelinnumero',
       address: 'Osoite',
       streetAddress: 'Katuosoite',
       postalCode: 'Postinumero',
@@ -473,7 +473,7 @@ export const fi = {
       contact: 'S-posti ja puhelin',
       contactPerson: 'Yhteyshlö',
       address: 'Osoite',
-      phone2: 'Varanro'
+      backupPhone: 'Varanro'
     },
     serviceNeed: {
       title: 'Palveluntarve',
