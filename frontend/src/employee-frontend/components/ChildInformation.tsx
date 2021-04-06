@@ -136,6 +136,7 @@ const layouts: Layouts<typeof components> = {
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
+    { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
