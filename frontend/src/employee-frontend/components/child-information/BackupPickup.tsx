@@ -33,6 +33,7 @@ import { ChildBackupPickup } from '../../types/child'
 import { UIContext } from '../../state/ui'
 import { Label } from 'lib-components/typography'
 import FormModal from 'lib-components/molecules/modals/FormModal'
+import { RequireRole } from '../../utils/roles'
 
 interface BackupPickupProps {
   id: UUID
@@ -184,18 +185,22 @@ function BackupPickup({ id, open }: BackupPickupProps) {
       {result.isFailure && <ErrorSegment />}
       {result.isSuccess && (
         <>
-          <AddButtonRow
-            text={i18n.childInformation.backupPickups.add}
-            onClick={() => toggleUiMode('create-backup-pickup')}
-            data-qa="create-backup-pickup-btn"
-          />
+          <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
+            <AddButtonRow
+              text={i18n.childInformation.backupPickups.add}
+              onClick={() => toggleUiMode('create-backup-pickup')}
+              data-qa="create-backup-pickup-btn"
+            />
+          </RequireRole>
           {result.value.length > 0 && (
             <Table>
               <Thead>
                 <Tr>
                   <Th>{i18n.childInformation.backupPickups.name}</Th>
                   <Th>{i18n.childInformation.backupPickups.phone}</Th>
-                  <Th></Th>
+                  <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
+                    <Th></Th>
+                  </RequireRole>
                 </Tr>
               </Thead>
               <Tbody>
@@ -206,20 +211,22 @@ function BackupPickup({ id, open }: BackupPickupProps) {
                   >
                     <Td data-qa="backup-pickup-name">{row.name}</Td>
                     <Td>{row.phone}</Td>
-                    <Td>
-                      <FixedSpaceRowAlignRight>
-                        <IconButton
-                          icon={faPen}
-                          onClick={() => openEditBackupPickupModal(row)}
-                          data-qa="edit-backup-pickup"
-                        />
-                        <IconButton
-                          icon={faTrash}
-                          onClick={() => openRemoveBackupPickupModal(row)}
-                          data-qa="delete-backup-pickup"
-                        />
-                      </FixedSpaceRowAlignRight>
-                    </Td>
+                    <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
+                      <Td>
+                        <FixedSpaceRowAlignRight>
+                          <IconButton
+                            icon={faPen}
+                            onClick={() => openEditBackupPickupModal(row)}
+                            data-qa="edit-backup-pickup"
+                          />
+                          <IconButton
+                            icon={faTrash}
+                            onClick={() => openRemoveBackupPickupModal(row)}
+                            data-qa="delete-backup-pickup"
+                          />
+                        </FixedSpaceRowAlignRight>
+                      </Td>
+                    </RequireRole>
                   </Tr>
                 ))}
               </Tbody>
