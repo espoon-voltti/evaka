@@ -188,7 +188,7 @@ private fun Database.Read.getServiceVoucherValues(
     // language=sql
     val sql = """
 WITH min_voucher_decision_date AS (
-    SELECT coalesce(min(valid_from), :reportDate) AS min_date FROM voucher_value_decision WHERE status = ANY(:effective)
+    SELECT coalesce(min(valid_from), :reportDate) AS min_date FROM voucher_value_decision WHERE status = ANY(:effective::voucher_value_decision_status[])
 ), min_change_month AS (
     SELECT make_date(extract(year from min_date)::int, extract(month from min_date)::int, 1) AS month FROM min_voucher_decision_date
 ), include_corrections AS (
@@ -209,13 +209,13 @@ WITH min_voucher_decision_date AS (
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
-    WHERE decision.status = ANY(:effective) AND lower(p.period) = :reportDate
+    WHERE decision.status = ANY(:effective::voucher_value_decision_status[]) AND lower(p.period) = :reportDate
 ), correction_targets AS (
     SELECT DISTINCT part.child, p.year, p.month, p.period
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     JOIN voucher_value_decision_part part on decision.id = part.voucher_value_decision_id
-    WHERE decision.status = ANY(:effective)
+    WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
       AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
       AND lower(p.period) < :reportDate
 ), corrections AS (
@@ -223,7 +223,7 @@ WITH min_voucher_decision_date AS (
     FROM correction_targets ct
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && ct.period
     JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id AND part.child = ct.child
-    WHERE decision.status = ANY(:effective)
+    WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
 ), refunds AS (
     SELECT
         ct.period,

@@ -36,7 +36,7 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
         ) VALUES (
             :id,
             :person_id,
-            :effect,
+            :effect::income_effect,
             :data,
             :is_entrepreneur,
             :works_at_echa,
@@ -47,7 +47,7 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
             :updated_by,
             :application_id
         ) ON CONFLICT (id) DO UPDATE SET
-            effect = :effect,
+            effect = :effect::income_effect,
             data = :data,
             is_entrepreneur = :is_entrepreneur,
             works_at_echa = :works_at_echa,

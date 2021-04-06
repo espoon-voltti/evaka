@@ -142,9 +142,9 @@ private fun upsertDecisions(h: Handle, mapper: ObjectMapper, decisions: List<Fee
             created_at
         ) VALUES (
             :id,
-            :status,
+            :status::fee_decision_status,
             :decision_number,
-            :decision_type,
+            :decision_type::fee_decision_type,
             :valid_from,
             :valid_to,
             :head_of_family,
@@ -155,9 +155,9 @@ private fun upsertDecisions(h: Handle, mapper: ObjectMapper, decisions: List<Fee
             :pricing,
             :created_at
         ) ON CONFLICT (id) DO UPDATE SET
-            status = :status,
+            status = :status::fee_decision_status,
             decision_number = :decision_number,
-            decision_type = :decision_type,
+            decision_type = :decision_type::fee_decision_type,
             valid_from = :valid_from,
             valid_to = :valid_to,
             head_of_family = :head_of_family,
@@ -341,7 +341,7 @@ fun searchFeeDecisions(
     val (numberQuery, numberParams) = disjointNumberQuery("decision", "decision_number", numberParamsRaw)
 
     val conditions = listOfNotNull(
-        if (statuses.isNotEmpty()) "status = ANY(:status)" else null,
+        if (statuses.isNotEmpty()) "status = ANY(:status::fee_decision_status[])" else null,
         if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
         if (unit != null) "part.placement_unit = :unit" else null,
         if (withNullHours) "part.service_need = :missingServiceNeed" else null,
@@ -496,7 +496,7 @@ fun findFeeDecisionsForHeadOfFamily(
         WHERE
             decision.head_of_family = :headOfFamilyId
             ${period?.let { "AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(:periodStart, :periodEnd, '[]')" } ?: ""}
-            ${status?.let { "AND decision.status = ANY(:status)" } ?: ""}
+            ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
     """
 
     return h.createQuery(sql)
@@ -523,7 +523,7 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
         )
         UPDATE fee_decision
         SET
-            status = :status,
+            status = :status::fee_decision_status,
             decision_number = nextval('fee_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = CASE
@@ -556,9 +556,9 @@ fun setFeeDecisionWaitingForManualSending(h: Handle, id: UUID) {
         """
         UPDATE fee_decision
         SET
-            status = :status
+            status = :status::fee_decision_status
         WHERE id = :id
-        AND status = :requiredStatus
+        AND status = :requiredStatus::fee_decision_status
     """
 
     h.createUpdate(sql)
@@ -573,7 +573,7 @@ fun setFeeDecisionSent(h: Handle, ids: List<UUID>) {
         """
         UPDATE fee_decision
         SET
-            status = :status,
+            status = :status::fee_decision_status,
             sent_at = NOW()
         WHERE id = :id
     """
@@ -589,7 +589,7 @@ fun setFeeDecisionSent(h: Handle, ids: List<UUID>) {
 }
 
 fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<FeeDecision>) {
-    prepareBatch("UPDATE fee_decision SET status = :status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+    prepareBatch("UPDATE fee_decision SET status = :status::fee_decision_status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
@@ -636,9 +636,9 @@ fun setFeeDecisionType(h: Handle, id: UUID, type: FeeDecisionType) {
     val sql =
         """
         UPDATE fee_decision
-        SET decision_type = :type
+        SET decision_type = :type::fee_decision_type
         WHERE id = :id
-            AND status = :requiredStatus
+            AND status = :requiredStatus::fee_decision_status
     """
 
     h.createUpdate(sql)
