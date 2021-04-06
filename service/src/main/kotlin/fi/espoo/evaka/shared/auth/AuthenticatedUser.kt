@@ -43,5 +43,6 @@ sealed class AuthenticatedUser : RoleContainer {
         override val id: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
         override val roles: Set<UserRole> = emptySet()
         override val isSystemInternalUser = true
+        override fun toString(): String = "SystemInternalUser"
     }
 }
