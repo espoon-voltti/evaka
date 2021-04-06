@@ -107,6 +107,8 @@ services:
       REDIS_PORT: ${EVAKA_REDIS_PORT}
       REDIS_PASSWORD: ""
       REDIS_SSL: "false"
+      APPLICATION_FRONTEND_BASEURL: ""
+      APPLICATION_FRONTEND_BASEURL_SV: ""
     restart: unless-stopped
 
   db:
