@@ -36,6 +36,9 @@ logging:
           autoconfigure: INFO
 
 application:
+  frontend:
+    baseurl: http://localhost:9099
+    baseurl.sv: http://localhost:9099
   email:
     enabled: false
 
