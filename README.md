@@ -45,6 +45,38 @@ The applications consists of several sub-projects:
 Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for further
 instructions regarding code contributions.
 
+### Running CI for forked Pull Requests
+
+**After** the code in a forked PR has been reviewed to not pose a security risk
+for CI:
+
+In CircleCI, "Build forked pull requests" must be enabled for repository.
+
+**IMPORTANT:** "Pass secrets to builds from forked pull requests" must still be
+**disabled**.
+
+```sh
+# Add remote (can be done only once if expecting more PRs from same remote)
+git remote add <name for remote> <address of remote>
+# E.g.: git remote add Tampere git@github.com:Tampere/evaka.git
+
+# Fetch remote references
+git fetch --all
+
+# Push refs as-is to origin
+# NOTE: Upstream branch name doesn't need to match downstream, just the refs
+# need to be identical
+git push --force origin "refs/remotes/<name for remote>/<source branch>:refs/heads/<upstream branch>"
+# E.g. git push --force origin "refs/remotes/Tampere/cool-branch-sauce:refs/heads/cool-branch-sauce"
+
+# Remove remote (can be skipped if expecting more PRs from same remote)
+git remote remove <name for remote>
+# E.g. git remote remove Tampere
+```
+
+If any changes are made to the PR, they must similarly pushed to origin. You
+can use the same method as above.
+
 ## Security issues
 
 In case you notice any information security related issue in our
