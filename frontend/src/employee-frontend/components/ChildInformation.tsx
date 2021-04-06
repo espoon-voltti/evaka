@@ -37,6 +37,7 @@ import FamilyContacts from '../components/child-information/FamilyContacts'
 import { requireRole } from '../utils/roles'
 import ChildApplications from '../components/child-information/ChildApplications'
 import MessageBlocklist from 'employee-frontend/components/child-information/MessageBlocklist'
+import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -78,6 +79,7 @@ const components = {
   parents: FridgeParents,
   placements: Placements,
   'service-need': ServiceNeed,
+  'daily-service-times': DailyServiceTimesSection,
   assistance: Assistance,
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
@@ -96,6 +98,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
