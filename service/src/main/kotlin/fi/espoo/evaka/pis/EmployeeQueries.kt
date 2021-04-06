@@ -126,7 +126,7 @@ fun Database.Transaction.updatePinCode(
 ) {
     // language=sql
     val sql = """
-        UPDATE evaka_local.public.employee
+        UPDATE employee
         SET
             pin = :pin_code
         WHERE id = :userId
