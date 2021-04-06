@@ -412,16 +412,27 @@ fun Database.Read.getReceiversForNewBulletin(
             FROM daycare_group dg
             JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            WHERE pl.unit_id = :unitId
         ), receivers AS (
             SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
-            
+            WHERE NOT EXISTS (
+                SELECT 1 FROM messaging_blocklist bl 
+                WHERE bl.child_id = c.child_id 
+                AND bl.blocked_recipient = g.guardian_id
+            )
+
             UNION DISTINCT
             
             SELECT c.child_id, c.group_id, c.group_name, fc.head_of_child AS receiver_id
             FROM children c
             JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+            WHERE NOT EXISTS (
+                SELECT 1 FROM messaging_blocklist bl 
+                WHERE bl.child_id = c.child_id 
+                AND bl.blocked_recipient = fc.head_of_child
+            )
         )
         SELECT
             r.receiver_id,
