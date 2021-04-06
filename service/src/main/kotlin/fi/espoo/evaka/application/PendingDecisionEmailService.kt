@@ -63,7 +63,7 @@ WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
 AND (d.sent_date < current_date - INTERVAL '1 week' AND d.sent_date > current_date - INTERVAL '2 month')
 AND d.pending_decision_emails_sent_count < 2
-AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < current_date - INTERVAL '1 week')
+AND (d.pending_decision_email_sent IS NULL OR d.pending_decision_email_sent < current_date - INTERVAL '1 week'))
 SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
 FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
 GROUP BY application.guardian_id
