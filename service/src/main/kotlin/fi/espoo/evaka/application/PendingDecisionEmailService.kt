@@ -51,7 +51,7 @@ class PendingDecisionEmailService(
 
     fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {
         val jobCount = db.transaction { tx ->
-            tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
+            tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND claimed_by IS NULL")
                 .execute()
 
             val pendingGuardianDecisions = tx.createQuery(
@@ -174,7 +174,7 @@ Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkän
 Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
 </p>
 <p>
-Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 7600
+Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 27600
 </p>                
             """.trimIndent()
             else -> """

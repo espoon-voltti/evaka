@@ -127,7 +127,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week should not send reminder`() {
+    fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week but already two reminders should not send reminder`() {
         createPendingDecision(LocalDate.now().minusDays(8), null, LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC), 2)
         Assertions.assertEquals(0, runPendingDecisionEmailAsyncJobs())
         val sentMails = MockEmailClient.emails
