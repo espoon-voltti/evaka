@@ -528,7 +528,7 @@ export const fi = {
           DEVELOPMENTAL_DISABILITY_2_INFO:
             'Käytetään silloin, kun esiopetuksessa oleva lapsi on vaikeasti kehitysvammainen.',
           FOCUS_CHALLENGE: 'Keskittymisen / tarkkaavaisuuden vaikeus',
-          LINGUISTIC_CHALLENGE: 'Kielellinen erityisvaikeus',
+          LINGUISTIC_CHALLENGE: 'Kielellinen vaikeus',
           DEVELOPMENT_MONITORING: 'Lapsen kehityksen seuranta',
           DEVELOPMENT_MONITORING_PENDING:
             'Lapsen kehityksen seuranta, tutkimukset kesken',
