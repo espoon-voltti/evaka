@@ -300,7 +300,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             lastName = "O'Brien",
             email = null,
             phone = null,
-            backupPhone = null,
+            backupPhone = "",
             language = "fi",
             nationalities = listOf("248", "060"),
 
