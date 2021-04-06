@@ -5,8 +5,10 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -117,3 +119,22 @@ WHERE external_id = :externalId
     """.trimIndent()
 ).bind("externalId", externalId)
     .execute()
+
+fun Database.Transaction.updatePinCode(
+    userId: UUID,
+    pinCode: PinCode
+) {
+    // language=sql
+    val sql = """
+        UPDATE evaka_local.public.employee
+        SET
+            pin = :pin_code
+        WHERE id = :userId
+    """.trimIndent()
+    val updated = this.createUpdate(sql)
+        .bind("userId", userId)
+        .bind("pin_code", pinCode.pin)
+        .execute()
+
+    if (updated == 0) throw NotFound("Could not update pin-code for ${userId}. User not found")
+}

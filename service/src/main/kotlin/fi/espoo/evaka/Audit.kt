@@ -168,6 +168,7 @@ enum class Audit(
     PersonIncomeUpdate("evaka.person.income.update"),
     PersonMerge("evaka.person.merge", securityEvent = true, securityLevel = "high"),
     PersonUpdate("evaka.person.update", securityEvent = true, securityLevel = "high"),
+    PinCodeUpdate("evaka.pin.update"),
     PisFamilyRead("evaka.pis-family.read"),
     PlacementCancel("evaka.placement.cancel"),
     PlacementCreate("evaka.placement.create"),
@@ -224,3 +225,4 @@ enum class Audit(
 }
 
 private val logger = KotlinLogging.logger {}
+
