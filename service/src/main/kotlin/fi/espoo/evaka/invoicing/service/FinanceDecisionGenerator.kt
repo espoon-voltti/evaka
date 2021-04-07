@@ -68,7 +68,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 
 @Component
-class DecisionGenerator(private val objectMapper: ObjectMapper, env: Environment) {
+class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Environment) {
     private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
 
     fun createRetroactive(h: Handle, headOfFamily: UUID, from: LocalDate) {

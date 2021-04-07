@@ -70,9 +70,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-class DecisionGeneratorIntegrationTest : FullApplicationTest() {
+class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
-    private lateinit var generator: DecisionGenerator
+    private lateinit var generator: FinanceDecisionGenerator
 
     @BeforeEach
     fun beforeEach() {
