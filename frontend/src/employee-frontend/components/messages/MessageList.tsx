@@ -33,10 +33,33 @@ export default React.memo(function MessageList({
   nextPage,
   loadNextPage,
   messageBoxType,
-  selectMessage,
-  groups
+  selectMessage
 }: Props) {
   const { i18n } = useTranslation()
+
+  const renderReceivers = (msg: Bulletin): string => {
+    const visibleNamesCount = 3
+    const parseFirstName = (firstNames: string) =>
+      firstNames.trim().split(/\s+/)[0]
+    const maybeVisible = [
+      ...msg.receiverUnits
+        .slice(0, visibleNamesCount)
+        .map(({ unitName }) => unitName),
+      ...msg.receiverGroups
+        .slice(0, visibleNamesCount)
+        .map(({ groupName }) => groupName),
+      ...msg.receiverChildren
+        .slice(0, visibleNamesCount)
+        .map(
+          ({ firstName, lastName }) =>
+            `${parseFirstName(firstName)} ${lastName}`
+        )
+    ]
+    const visibleNames = maybeVisible.slice(0, visibleNamesCount).join(', ')
+    return maybeVisible.length > visibleNamesCount
+      ? `${visibleNames}, ...`
+      : visibleNames
+  }
 
   return (
     <Container>
@@ -47,16 +70,13 @@ export default React.memo(function MessageList({
         <React.Fragment key={msg.id}>
           <MessageListItem onClick={() => selectMessage(msg)}>
             <MessageTopRow>
-              <MessageTitle noMargin>
-                {msg.title || `(${i18n.messages.noTitle})`}
-              </MessageTitle>
-              {msg.sentAt ? (
-                <FixedSpaceRow>
-                  <span>
-                    {msg.receiverUnits
-                      .map(({ unitName }) => unitName)
-                      .join(', ')}
-                  </span>
+              <FixedSpaceRow
+                justifyContent="space-between"
+                alignItems="baseline"
+              >
+                <MessageReceivers>{renderReceivers(msg)}</MessageReceivers>
+
+                {msg.sentAt ? (
                   <span>
                     {formatDate(
                       msg.sentAt,
@@ -67,12 +87,16 @@ export default React.memo(function MessageList({
                         : 'd.M.'
                     )}
                   </span>
-                </FixedSpaceRow>
-              ) : (
-                <span>{i18n.messages.notSent}</span>
-              )}
+                ) : (
+                  <span>{i18n.messages.notSent}</span>
+                )}
+              </FixedSpaceRow>
             </MessageTopRow>
             <MessageSummary>
+              <MessageTitle>
+                {msg.title || `(${i18n.messages.noTitle})`}
+              </MessageTitle>
+              {' - '}
               {msg.content.substring(0, 200).replace('\n', ' ')}
             </MessageSummary>
           </MessageListItem>
@@ -125,16 +149,19 @@ const MessageListItem = styled.button`
 `
 
 const MessageTopRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
   width: 100%;
 `
 
-const MessageTitle = styled(H3)`
+const MessageReceivers = styled(H3)`
   font-size: 16px;
   font-weight: 600;
   color: ${colors.greyscale.dark};
+`
+
+const MessageTitle = styled.span`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${colors.greyscale.darkest};
 `
 
 const MessageSummary = styled.div`
