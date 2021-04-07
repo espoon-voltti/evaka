@@ -20,6 +20,7 @@ import { faInfo } from 'lib-icons'
 import ContactInfoSection from './ContactInfoSection'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import AdditionalDetailsSection from './AdditionalDetailsSection'
+import { featureFlags } from 'lib-customizations/citizen'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetails
@@ -45,9 +46,13 @@ export default React.memo(function ApplicationVerificationViewDaycare({
   closeVerification
 }: DaycareApplicationVerificationViewProps) {
   const t = useTranslation()
+  const missingUrgencyAttachments =
+    formData.serviceNeed.urgent &&
+    formData.serviceNeed.urgencyAttachments.length === 0 &&
+    featureFlags.urgencyAttachmentsEnabled === true
+
   const missingAttachments =
-    (formData.serviceNeed.urgent &&
-      formData.serviceNeed.urgencyAttachments.length === 0) ||
+    missingUrgencyAttachments ||
     (formData.serviceNeed.shiftCare &&
       formData.serviceNeed.shiftCareAttachments.length === 0)
   return (
@@ -72,12 +77,11 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                 {t.applications.editor.verification.attachmentBox.headline}
               </P>
               <ul>
-                {formData.serviceNeed.urgent &&
-                  formData.serviceNeed.urgencyAttachments.length === 0 && (
-                    <li>
-                      {t.applications.editor.verification.attachmentBox.urgency}
-                    </li>
-                  )}
+                {missingUrgencyAttachments && (
+                  <li>
+                    {t.applications.editor.verification.attachmentBox.urgency}
+                  </li>
+                )}
                 {formData.serviceNeed.shiftCare &&
                   formData.serviceNeed.shiftCareAttachments.length === 0 && (
                     <li>

@@ -14,6 +14,7 @@ import { faFile, faInfo } from 'lib-icons'
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import { useTranslation } from '../../../localization'
 import { getAttachmentBlob } from '../../../applications/api'
+import { featureFlags } from 'lib-customizations/citizen'
 
 type Props = {
   formData: ApplicationFormData
@@ -44,44 +45,50 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
               .withoutUrgency}
       </span>
 
-      {formData.serviceNeed.urgent && (
-        <>
-          {errorModalVisible && (
-            <InfoModal
-              title={t.fileDownload.modalHeader}
-              text={t.fileDownload.modalMessage}
-              close={() => setErrorModalVisible(false)}
-              icon={faInfo}
-            />
-          )}
-          <Label>
-            {t.applications.editor.verification.serviceNeed.attachments.label}
-          </Label>
-          <span>
-            {formData.serviceNeed.urgencyAttachments.length > 0 ? (
-              <AttachmentList>
-                {formData.serviceNeed.urgencyAttachments.map((file) => (
-                  <li key={file.id}>
-                    <span className="attachment-icon">
-                      <FontAwesomeIcon icon={faFile} />
-                    </span>
-                    <Gap horizontal size={'xs'} />
-                    <FileDownloadButton
-                      file={file}
-                      fileFetchFn={getAttachmentBlob}
-                      onFileUnavailable={() => setErrorModalVisible(true)}
-                      dataQa={'service-need-urgency-attachment-download'}
-                    />
-                  </li>
-                ))}
-              </AttachmentList>
-            ) : (
-              t.applications.editor.verification.serviceNeed.attachments
-                .withoutAttachments
+      {formData.serviceNeed.urgent &&
+        featureFlags.urgencyAttachmentsEnabled === true && (
+          <>
+            {errorModalVisible && (
+              <InfoModal
+                title={t.fileDownload.modalHeader}
+                text={t.fileDownload.modalMessage}
+                close={() => setErrorModalVisible(false)}
+                icon={faInfo}
+              />
             )}
-          </span>
-        </>
-      )}
+            <>
+              <Label>
+                {
+                  t.applications.editor.verification.serviceNeed.attachments
+                    .label
+                }
+              </Label>
+              <span>
+                {formData.serviceNeed.urgencyAttachments.length > 0 ? (
+                  <AttachmentList>
+                    {formData.serviceNeed.urgencyAttachments.map((file) => (
+                      <li key={file.id}>
+                        <span className="attachment-icon">
+                          <FontAwesomeIcon icon={faFile} />
+                        </span>
+                        <Gap horizontal size={'xs'} />
+                        <FileDownloadButton
+                          file={file}
+                          fileFetchFn={getAttachmentBlob}
+                          onFileUnavailable={() => setErrorModalVisible(true)}
+                          dataQa={'service-need-urgency-attachment-download'}
+                        />
+                      </li>
+                    ))}
+                  </AttachmentList>
+                ) : (
+                  t.applications.editor.verification.serviceNeed.attachments
+                    .withoutAttachments
+                )}
+              </span>
+            </>
+          </>
+        )}
     </>
   )
 })

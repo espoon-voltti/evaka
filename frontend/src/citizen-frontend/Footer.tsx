@@ -11,7 +11,7 @@ export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()
   return (
     <>
-      <FooterItem>{t.footer.espooLabel}</FooterItem>
+      <FooterItem>{t.footer.cityLabel}</FooterItem>
       <FooterItem>
         <FooterLink href={t.footer.privacyPolicyLink} data-qa={'nav-old-map'}>
           {t.footer.privacyPolicy}

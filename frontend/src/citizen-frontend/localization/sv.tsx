@@ -5,6 +5,7 @@
 import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from '.'
+import { svCustomizations } from 'lib-customizations/citizen'
 
 const sv: Translations = {
   common: {
@@ -58,7 +59,7 @@ const sv: Translations = {
     logout: 'Logga ut'
   },
   footer: {
-    espooLabel: '© Esbo stad',
+    cityLabel: svCustomizations.footer.cityLabel,
     privacyPolicy: 'Dataskyddsbeskrivningar',
     privacyPolicyLink:
       'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
