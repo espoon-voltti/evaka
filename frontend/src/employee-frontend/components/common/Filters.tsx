@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReactSelect from 'react-select'
 
 import {
-  faEnvelope,
+  faPaperclip,
   faSearch,
   faTimes,
   faTrash,
@@ -1061,7 +1061,7 @@ export function ApplicationBasisFilter({
           delayShow={750}
         >
           <RoundIcon
-            content={faEnvelope} // TODO attachment/paperclip icon
+            content={faPaperclip}
             color={colors.accents.violet}
             size="m"
             onClick={toggle('HAS_ATTACHMENTS')}

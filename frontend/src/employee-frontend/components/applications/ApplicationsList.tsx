@@ -6,9 +6,9 @@ import React, { useContext } from 'react'
 import styled from 'styled-components'
 import {
   faCheck,
-  faEnvelope,
   fasArrowDown,
   fasArrowUp,
+  faPaperclip,
   faTimes
 } from 'lib-icons'
 import { Paged } from 'lib-common/api'
@@ -326,7 +326,7 @@ const ApplicationsList = React.memo(function Applications({
           )}
           {application.attachmentCount > 0 && (
             <RoundIcon
-              content={faEnvelope} // TODO attachment/paperclip icon
+              content={faPaperclip}
               color={colors.accents.violet}
               size="s"
             />
