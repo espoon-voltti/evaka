@@ -1,5 +1,6 @@
 package fi.espoo.evaka.dailyservicetimes
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -28,7 +29,7 @@ class DailyServiceTimesController(
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<DailyServiceTimesResponse> {
-        // todo audit
+        Audit.ChildDailyServiceTimesRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
             UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF
         )
@@ -47,7 +48,7 @@ class DailyServiceTimesController(
         @PathVariable childId: UUID,
         @RequestBody body: DailyServiceTimes
     ): ResponseEntity<Unit> {
-        // todo audit
+        Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
             UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR
         )
@@ -63,7 +64,7 @@ class DailyServiceTimesController(
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
-        // todo audit
+        Audit.ChildDailyServiceTimesDelete.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
             UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR
         )
