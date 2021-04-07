@@ -51,7 +51,9 @@ test('application report is generated correctly, respecting care area filter', a
   await reports.selectReportsTab()
   await reports.selectApplicationsReport()
 
-  await reports.assertApplicationsReportContainsArea('Superkeskus')
+  await reports.assertApplicationsReportContainsArea(
+    fixtures.careAreaFixture.name
+  )
   await reports.assertApplicationsReportContainsArea('Toinen alue')
   await reports.assertApplicationsReportContainsServiceProviders([
     'Kunnallinen',
@@ -61,5 +63,7 @@ test('application report is generated correctly, respecting care area filter', a
   await reports.selectArea('Toinen alue')
   await reports.selectDateRangePickerDates(new Date(), new Date())
   await reports.assertApplicationsReportContainsArea('Toinen alue')
-  await reports.assertApplicationsReportNotContainsArea('Superkeskus')
+  await reports.assertApplicationsReportNotContainsArea(
+    fixtures.careAreaFixture.name
+  )
 })

@@ -144,9 +144,8 @@ function Applications() {
             <ReportDownload
               data={filteredRows.map((row) => ({
                 ...row,
-                unitProviderType: String(
+                unitProviderType:
                   i18n.reports.common.unitProviderTypes[row.unitProviderType]
-                )
               }))}
               headers={[
                 {

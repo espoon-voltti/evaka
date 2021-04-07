@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types/index'
+import { UUID } from './index'
 import LocalDate from 'lib-common/local-date'
-import { AbsenceType } from '../types/absence'
+import { AbsenceType } from './absence'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ProviderType } from './unit'
 
 export interface InvoiceReportRow {
   areaCode: number
@@ -62,7 +63,7 @@ export interface ApplicationsReportRow {
   careAreaName: string
   unitId: UUID
   unitName: string
-  unitProviderType: string
+  unitProviderType: ProviderType
   under3Years: number
   over3Years: number
   preschool: number
@@ -86,7 +87,7 @@ export interface RawReportRow {
   unitName: string
   careArea: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
-  unitProviderType: 'MUNICIPAL' | 'PURCHASED' | 'PRIVATE' | 'MUNICIPAL_SCHOOL'
+  unitProviderType: ProviderType
   daycareGroupId: UUID | null
   groupName: string | null
   caretakersPlanned: number | null
@@ -118,7 +119,7 @@ export interface ServiceNeedReportRow {
   careAreaName: string
   unitName: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
-  unitProviderType: 'MUNICIPAL' | 'PURCHASED' | 'PRIVATE' | 'MUNICIPAL_SCHOOL'
+  unitProviderType: ProviderType
   age: number
   fullDay: number
   partDay: number
@@ -182,7 +183,7 @@ export interface UnitBasicsAbstractReportRow {
   unitId: UUID
   unitName: string
   unitType: 'DAYCARE' | 'FAMILY' | 'GROUP_FAMILY' | 'CLUB' | null
-  unitProviderType: 'MUNICIPAL' | 'PURCHASED' | 'PRIVATE' | 'MUNICIPAL_SCHOOL'
+  unitProviderType: ProviderType
 }
 
 export interface GroupBasicsAbstractReportRow
