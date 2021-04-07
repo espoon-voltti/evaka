@@ -144,9 +144,8 @@ function Applications() {
             <ReportDownload
               data={filteredRows.map((row) => ({
                 ...row,
-                unitProviderType: String(
+                unitProviderType:
                   i18n.reports.common.unitProviderTypes[row.unitProviderType]
-                )
               }))}
               headers={[
                 {
@@ -196,11 +195,11 @@ function Applications() {
               <Tbody>
                 {filteredRows.map((row: ApplicationsReportRow) => (
                   <Tr key={row.unitId}>
-                    <Td>{row.careAreaName}</Td>
+                    <Td data-qa="care-area-name">{row.careAreaName}</Td>
                     <Td>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </Td>
-                    <Td>
+                    <Td data-qa="unit-provider-type">
                       {
                         i18n.reports.common.unitProviderTypes[
                           row.unitProviderType
