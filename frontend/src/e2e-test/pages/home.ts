@@ -56,7 +56,11 @@ export default class Home {
       case 'enduser':
         break
     }
-    await t.expect(this.userNameBtn.visible).ok()
+    if (role === 'enduser') {
+      await t.expect(this.logoutBtn.visible).ok()
+    } else {
+      await t.expect(this.userNameBtn.visible).ok()
+    }
   }
 
   async logout() {
