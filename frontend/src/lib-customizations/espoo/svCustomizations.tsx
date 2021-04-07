@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export default {
-    footer: {
-        cityLabel: '© Esbo stad'
-    }
+  footer: {
+    cityLabel: '© Esbo stad'
+  }
 }
