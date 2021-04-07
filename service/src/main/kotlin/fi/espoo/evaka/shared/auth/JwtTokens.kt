@@ -25,7 +25,7 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
             if (it.isNullOrEmpty()) emptyList()
             else it.split(' ')
         }
-        .map { UserRole.parse(it) }
+        .map { enumValueOf<UserRole>(it.removePrefix("ROLE_")) }
         .toSet()
     return when (type) {
         "citizen" -> AuthenticatedUser.Citizen(id)
