@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { deleteApplication } from '../../../e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -18,8 +17,6 @@ let cleanUp: () => Promise<void>
 
 const home = new Home()
 const reports = new ReportsPage()
-
-let applicationId: string | null = null
 
 fixture('Reporting - applications')
   .meta({ type: 'regression', subType: 'reports' })
@@ -39,11 +36,7 @@ fixture('Reporting - applications')
       .careArea(careArea)
       .save()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    if (applicationId) await deleteApplication(applicationId)
-    applicationId = null
-  })
+  .afterEach(async (t) => await logConsoleMessages(t))
   .after(async () => await cleanUp())
 
 test('application report is generated correctly, respecting care area filter', async (t) => {
