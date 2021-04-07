@@ -149,19 +149,20 @@ WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
         }
     )
 
-    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
-            it.createQuery(
-                // language=SQL
-                """
+    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: UUID): AclAppliedRoles =
+        AclAppliedRoles(
+            (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+                it.createQuery(
+                    // language=SQL
+                    """
 SELECT role
 FROM child_acl_view acl
 JOIN assistance_action ac ON acl.child_id = ac.child_id
 WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
-                """.trimIndent()
-            ).bind("assistanceActionId", assistanceActionId).bind("userId", user.id).mapTo<UserRole>().toSet()
-        }
-    )
+                    """.trimIndent()
+                ).bind("assistanceActionId", assistanceActionId).bind("userId", user.id).mapTo<UserRole>().toSet()
+            }
+        )
 
     fun getRolesForBackupCare(user: AuthenticatedUser, backupCareId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
@@ -216,6 +217,32 @@ JOIN mobile_device d ON daycare_id = d.unit_id
 WHERE employee_id = :userId AND d.id = :deviceId
                 """.trimIndent()
             ).bind("userId", user.id).bind("deviceId", deviceId).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForDailyNote(user: AuthenticatedUser, noteId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                """
+SELECT role
+FROM daycare_daily_note dn
+JOIN LATERAL (
+    SELECT role
+    FROM child_acl_view acl
+    WHERE acl.employee_id = :userId
+    AND acl.child_id = dn.child_id
+
+    UNION ALL
+
+    SELECT role
+    FROM daycare_acl_view acl
+    JOIN daycare_group dg USING (daycare_id)
+    WHERE acl.employee_id = :userId
+    AND dg.id = dn.group_id
+) acls ON true
+WHERE dn.id = :noteId
+"""
+            ).bind("userId", user.id).bind("noteId", noteId).mapTo<UserRole>().toSet()
         }
     )
 }

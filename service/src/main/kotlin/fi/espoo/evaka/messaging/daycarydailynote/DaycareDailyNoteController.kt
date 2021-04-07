@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -123,9 +122,8 @@ class DaycareDailyNoteController(
     ) {
         Audit.DaycareDailyNoteDelete.log(user.id)
 
-        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)) {
-            throw Forbidden("Permission denied")
-        }
+        acl.getRolesForDailyNote(user, noteId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
 
         return db.transaction { it.deleteDaycareDailyNote(noteId) }.let { ResponseEntity.ok() }
     }
