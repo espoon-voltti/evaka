@@ -37,12 +37,44 @@ export default class ReportsPage {
     await t.typeText(toInput, format(to, 'dd.MM.yyyy'))
   }
 
-  async assertApplicationsReportContainsArea(area: string) {
+  private async areaWithNameExistsAssertion(
+    area: string,
+    exists = true
+  ): Promise<Assertion<boolean>> {
     const applicationTableSelector = Selector(
       `[data-qa="report-application-table"]`
     )
     await t.expect(applicationTableSelector.exists).ok()
-    await t.expect(applicationTableSelector.find('td').innerText).eql(area)
+    return t
+      .expect(
+        applicationTableSelector.find('td:first-child').withExactText(area)
+          .exists
+      )
+      .eql(exists)
+  }
+
+  async assertApplicationsReportContainsArea(area: string) {
+    await this.areaWithNameExistsAssertion(area, true)
+  }
+
+  async assertApplicationsReportNotContainsArea(area: string) {
+    await this.areaWithNameExistsAssertion(area, false)
+  }
+
+  async assertApplicationsReportContainsServiceProviders(providers: string[]) {
+    const applicationTableSelector = Selector(
+      `[data-qa="report-application-table"]`
+    )
+    await t.expect(applicationTableSelector.exists).ok()
+    for (const provider of providers) {
+      await t
+        .expect(
+          applicationTableSelector
+            .find('td:nth-child(3)')
+            .withExactText(provider).exists
+        )
+        .ok(`Service provider ${provider} does not exist`)
+    }
   }
 
   async assertPlacementSketchingRow(
