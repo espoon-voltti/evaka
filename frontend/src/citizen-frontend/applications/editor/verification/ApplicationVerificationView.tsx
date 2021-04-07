@@ -46,12 +46,13 @@ export default React.memo(function ApplicationVerificationViewDaycare({
   closeVerification
 }: DaycareApplicationVerificationViewProps) {
   const t = useTranslation()
-  const missingUrgencyAttachments = (formData.serviceNeed.urgent &&
-    formData.serviceNeed.urgencyAttachments.length === 0) &&
+  const missingUrgencyAttachments =
+    formData.serviceNeed.urgent &&
+    formData.serviceNeed.urgencyAttachments.length === 0 &&
     featureFlags.urgencyAttachmentsEnabled === true
 
   const missingAttachments =
-    (missingUrgencyAttachments) ||
+    missingUrgencyAttachments ||
     (formData.serviceNeed.shiftCare &&
       formData.serviceNeed.shiftCareAttachments.length === 0)
   return (
@@ -77,10 +78,10 @@ export default React.memo(function ApplicationVerificationViewDaycare({
               </P>
               <ul>
                 {missingUrgencyAttachments && (
-                    <li>
-                      {t.applications.editor.verification.attachmentBox.urgency}
-                    </li>
-                  )}
+                  <li>
+                    {t.applications.editor.verification.attachmentBox.urgency}
+                  </li>
+                )}
                 {formData.serviceNeed.shiftCare &&
                   formData.serviceNeed.shiftCareAttachments.length === 0 && (
                     <li>

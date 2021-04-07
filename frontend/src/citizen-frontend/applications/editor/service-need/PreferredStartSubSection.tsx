@@ -177,30 +177,31 @@ export default React.memo(function PreferredStartSubSection({
                 })
               }
             />
-            {formData.urgent && featureFlags.urgencyAttachmentsEnabled === true && (
-              <>
-                <Gap size={'s'} />
-                {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text()}
+            {formData.urgent &&
+              featureFlags.urgencyAttachmentsEnabled === true && (
+                <>
+                  <Gap size={'s'} />
+                  {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text()}
 
-                <Gap size={'s'} />
+                  <Gap size={'s'} />
 
-                <strong>
-                  {
-                    t.applications.editor.serviceNeed.urgent.attachmentsMessage
-                      .subtitle
-                  }
-                </strong>
+                  <strong>
+                    {
+                      t.applications.editor.serviceNeed.urgent
+                        .attachmentsMessage.subtitle
+                    }
+                  </strong>
 
-                <Gap size="s" />
+                  <Gap size="s" />
 
-                <FileUpload
-                  files={formData.urgencyAttachments}
-                  onUpload={uploadUrgencyAttachment}
-                  onDelete={deleteUrgencyAttachment}
-                  dataQa={'urgent-file-upload'}
-                />
-              </>
-            )}
+                  <FileUpload
+                    files={formData.urgencyAttachments}
+                    onUpload={uploadUrgencyAttachment}
+                    onDelete={deleteUrgencyAttachment}
+                    dataQa={'urgent-file-upload'}
+                  />
+                </>
+              )}
           </>
         )}
 
