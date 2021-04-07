@@ -58,6 +58,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     lateinit var asyncJobRunner: AsyncJobRunner
     private val childId = testChild_1.id
     private val unitId = testDaycare.id
+    private val secondUnitId = testDaycare2.id
 
     private val supervisorId = UUID.randomUUID()
     private val supervisor = AuthenticatedUser(supervisorId, emptySet())
@@ -107,11 +108,11 @@ class BulletinIntegrationTest : FullApplicationTest() {
             insertGeneralTestFixtures(tx.handle)
 
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = secondGroupId, daycareId = testDaycare2.id, name = secondGroupName))
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = secondGroupId, daycareId = secondUnitId, name = secondGroupName))
 
             insertChildToGroup(tx, childId, guardianPerson.id, groupId, unitId)
-            insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, testDaycare2.id)
-            insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, testDaycare2.id)
+            insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, secondUnitId)
+            insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
 
             tx.handle.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
@@ -127,9 +128,9 @@ class BulletinIntegrationTest : FullApplicationTest() {
                     id = staffId
                 )
             )
-            tx.handle.insertDaycareAclRow(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.handle.insertDaycareAclRow(testDaycare2.id, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.handle.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+            tx.handle.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.handle.insertDaycareAclRow(unitId, staffId, UserRole.STAFF)
+            tx.handle.insertDaycareAclRow(secondUnitId, supervisorId, UserRole.UNIT_SUPERVISOR)
         }
         MockEmailClient.emails.clear()
     }
@@ -175,7 +176,6 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `supervisor sends a bulletin to two units`() {
-        val secondUnitId = testDaycare2.id
         val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId), BulletinReceiverTriplet(secondUnitId)))
         updateBulletin(
             supervisor, bulletinId,
@@ -261,7 +261,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Notification language is parsed right`() {
-        val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId = unitId), BulletinReceiverTriplet(unitId = testDaycare2.id)))
+        val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId = unitId), BulletinReceiverTriplet(unitId = secondUnitId)))
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
@@ -305,7 +305,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `Bulletin receiver endpoint works`() {
+    fun `Bulletin receiver endpoint works for unit 1`() {
         val (_, res, result) = http.get("/bulletins/receivers?unitId=$unitId")
             .asUser(supervisor)
             .responseObject<List<BulletinControllerEmployee.BulletinReceiversResponse>>(objectMapper)
@@ -314,10 +314,23 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
         val receivers = result.get()
 
-        assertEquals(2, receivers.size)
+        assertEquals(1, receivers.size)
 
         val groupTestaajat = receivers.find { it.groupName == groupName }!!
         assertEquals(1, groupTestaajat.receivers.size)
+    }
+
+    @Test
+    fun `Bulletin receiver endpoint works for unit 2`() {
+        val (_, res, result) = http.get("/bulletins/receivers?unitId=$secondUnitId")
+            .asUser(supervisor)
+            .responseObject<List<BulletinControllerEmployee.BulletinReceiversResponse>>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+
+        val receivers = result.get()
+
+        assertEquals(1, receivers.size)
 
         val groupKoekaniinit = receivers.find { it.groupName == secondGroupName }!!
         assertEquals(2, groupKoekaniinit.receivers.size)
