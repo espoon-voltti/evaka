@@ -104,9 +104,9 @@ pm2 flush # Clears old logs
 Once the development environment is correctly set up, you can access
 the frontends at following URLs:
 
-- <http://localhost:9094> – Frontend for the citizen
-- <http://localhost:9093/employee> – Frontend for the employee roles
-- <http://localhost:9095/employee/mobile> – Frontend for the employee mobile frontend
+- <http://localhost:9099> – Frontend for the citizen
+- <http://localhost:9099/employee> – Frontend for the employee roles
+- <http://localhost:9099/employee/mobile> – Frontend for the employee mobile frontend
 
 ## Running the full stack for E2E tests
 
