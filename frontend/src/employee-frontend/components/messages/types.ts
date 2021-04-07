@@ -77,5 +77,5 @@ export const deserializeReceiverChild = (
 export interface ReceiverTriplet {
   unitId: UUID
   groupId?: UUID
-  childId?: UUID
+  personId?: UUID
 }

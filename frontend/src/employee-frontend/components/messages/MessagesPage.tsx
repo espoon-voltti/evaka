@@ -11,11 +11,12 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import { defaultMargins } from 'lib-components/white-space'
 import Container from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { Bulletin, ReceiverTriplet, IdAndName } from './types'
+import { Bulletin, ReceiverTriplet, IdAndName, ReceiverGroup } from './types'
 import {
   deleteDraftBulletin,
   getDraftBulletins,
   getGroups,
+  getReceivers,
   getSentBulletins,
   getUnits,
   initNewBulletin,
@@ -28,6 +29,18 @@ import MessageBoxes, { MessageBoxType } from './MessageBoxes'
 import MessageList from './MessageList'
 import MessageReadView from './MessageReadView'
 import ReceiverSelection from './ReceiverSelection'
+import {
+  deselectAll,
+  getReceiverOptions,
+  getReceiverSelection,
+  getReceiverTriplets,
+  getSelectorStatus,
+  unitAsSelectorNode,
+  SelectorChange,
+  SelectorNode,
+  updateSelector
+} from 'employee-frontend/components/messages/receiver-selection-utils'
+import { UUID } from 'lib-common/types'
 
 export default React.memo(function MessagesPage() {
   const { units, groups, selectedUnit, setSelectedUnit } = useUnitsState()
@@ -45,14 +58,51 @@ export default React.memo(function MessagesPage() {
     resetMessagesState
   } = useMessagesState(activeMessageBox, selectedUnit?.id)
   const [messageOpen, setMessageOpen] = useState<Bulletin | null>()
+
   const [messageUnderEdit, setMessageUnderEdit] = useState<Bulletin | null>()
-  const [receiverSelectionShown, setReceiverSelectionShown] = useState<boolean>(
-    false
-  )
   const debouncedMessage = useDebounce(messageUnderEdit, 2000)
+
+  const [receiversResult, setReceiversResult] = useState<
+    Result<ReceiverGroup[]>
+  >(Loading.of())
+
+  const loadReceivers = useRestApi(getReceivers, setReceiversResult)
+  useEffect(() => {
+    selectedUnit && loadReceivers(selectedUnit.id)
+  }, [selectedUnit])
+
+  const [receiverSelection, setReceiverSelection] = useState<SelectorNode>()
+
+  useEffect(() => {
+    if (receiversResult.isSuccess) {
+      selectedUnit &&
+        setReceiverSelection(
+          unitAsSelectorNode(selectedUnit, receiversResult.value, true)
+        )
+    }
+  }, [receiversResult])
+
   const [receiverTriplets, setReceiverTriplets] = useState<ReceiverTriplet[]>(
     []
   )
+
+  useEffect(() => {
+    if (receiverSelection) {
+      setReceiverTriplets(getReceiverTriplets(receiverSelection))
+    }
+  }, [receiverSelection])
+
+  const [receiverSelectionShown, setReceiverSelectionShown] = useState<boolean>(
+    false
+  )
+
+  const isSelected = (id: UUID) =>
+    receiverSelection ? getSelectorStatus(id, receiverSelection) : false
+
+  const updateSelection = (selectorChange: SelectorChange) => {
+    receiverSelection &&
+      setReceiverSelection(updateSelector(receiverSelection, selectorChange))
+  }
 
   const selectUnit = (unit: IdAndName) => {
     setActiveMessageBox('SENT')
@@ -105,29 +155,27 @@ export default React.memo(function MessagesPage() {
 
   const onDeleteDraft = () => {
     if (!messageUnderEdit) return
-
     void deleteDraftBulletin(messageUnderEdit.id).then(resetUI)
   }
 
   const onSend = () => {
     if (!messageUnderEdit) return
-
     const { id, title, content, sender } = messageUnderEdit
     void updateDraftBulletin(id, receiverTriplets, title, content, sender)
       .then(() => sendBulletin(messageUnderEdit.id))
       .then(resetUI)
   }
+
   const onClose = () => {
     if (!messageUnderEdit) return
-
     const { id, title, content, sender } = messageUnderEdit
-    void updateDraftBulletin(
-      id,
-      receiverTriplets,
-      title,
-      content,
-      sender
-    ).then(() => setMessageUnderEdit(null))
+    void updateDraftBulletin(id, receiverTriplets, title, content, sender)
+      .then(() => setMessageUnderEdit(null))
+      .then(() => {
+        receiverSelection &&
+          setReceiverSelection(deselectAll(receiverSelection))
+      })
+      .then(resetMessagesState)
   }
 
   return (
@@ -162,17 +210,40 @@ export default React.memo(function MessagesPage() {
             {}
 
             {receiverSelectionShown ? (
-              <ReceiverSelection
-                unitId={selectedUnit.id}
-                onCreateNew={() =>
-                  onCreateNew(selectedUnit.name, receiverTriplets)
-                }
-                setReceiverTriplets={setReceiverTriplets}
-              />
+              receiversResult.isSuccess && (
+                <ReceiverSelection
+                  unitId={selectedUnit.id}
+                  onCreateNew={() =>
+                    onCreateNew(selectedUnit.name, receiverTriplets)
+                  }
+                  receivers={receiversResult.value}
+                  isSelected={isSelected}
+                  updateSelection={updateSelection}
+                />
+              )
             ) : messageOpen ? (
               <MessageReadView
                 message={messageOpen}
                 onEdit={() => {
+                  if (receiverSelection) {
+                    const selectorChangeList = messageOpen.receiverUnits
+                      .map(({ unitId }) => unitId)
+                      .concat(
+                        messageOpen.receiverGroups.map(({ groupId }) => groupId)
+                      )
+                      .concat(
+                        messageOpen.receiverChildren.map(
+                          ({ childId }) => childId
+                        )
+                      )
+                      .map((id) => ({ selected: true, selectorId: id }))
+                    setReceiverSelection(
+                      selectorChangeList.reduce<SelectorNode>(
+                        (acc, change) => updateSelector(acc, change),
+                        deselectAll(receiverSelection)
+                      )
+                    )
+                  }
                   setMessageUnderEdit(messageOpen)
                   setMessageOpen(null)
                 }}
@@ -191,22 +262,27 @@ export default React.memo(function MessagesPage() {
         )}
       </StyledFlex>
 
-      {messageUnderEdit && groups?.isSuccess && (
+      {messageUnderEdit && receiverSelection && (
         <>
           <Dimmer />
           <FocusTrap>
             <div>
-              <MessageEditor
-                bulletin={messageUnderEdit}
-                onChange={(change) =>
-                  setMessageUnderEdit((old) =>
-                    old ? { ...old, ...change } : old
-                  )
-                }
-                onClose={onClose}
-                onDeleteDraft={onDeleteDraft}
-                onSend={onSend}
-              />
+              {receiversResult.isSuccess && (
+                <MessageEditor
+                  bulletin={messageUnderEdit}
+                  onChange={(change) =>
+                    setMessageUnderEdit((old) =>
+                      old ? { ...old, ...change } : old
+                    )
+                  }
+                  onClose={onClose}
+                  onDeleteDraft={onDeleteDraft}
+                  onSend={onSend}
+                  selectedReceivers={getReceiverSelection(receiverSelection)}
+                  receiverOptions={getReceiverOptions(receiverSelection)}
+                  updateSelection={updateSelection}
+                />
+              )}
             </div>
           </FocusTrap>
         </>
@@ -253,8 +329,8 @@ const useMessageCountState = (unitId?: string) => {
   const loadMessageCounts = useRestApi(
     (unitId: string) =>
       Promise.all([
-        getDraftBulletins(unitId, 1, 1),
-        getSentBulletins(unitId, 1, 1)
+        getDraftBulletins(unitId, 1),
+        getSentBulletins(unitId, 1)
       ]).then(([drafts, sent]) =>
         drafts.chain((ds) =>
           sent.map((ss) => ({ SENT: ss.total, DRAFT: ds.total }))

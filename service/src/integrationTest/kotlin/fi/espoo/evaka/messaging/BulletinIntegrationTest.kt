@@ -137,13 +137,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `supervisor sends a bulletin, citizen reads it`() {
-        val bulletinId = initBulletin(supervisor)
+        val receivers = listOf(BulletinReceiverTriplet(unitId = unitId))
+        val bulletinId = initBulletin(supervisor, receivers)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
                 content = msgContent,
-                sender = "Testaajat"
+                sender = "Testaajat",
+                receivers
             )
         )
         getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.total) }
@@ -176,13 +178,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `supervisor sends a bulletin to two units`() {
-        val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId), BulletinReceiverTriplet(secondUnitId)))
+        val receivers = listOf(BulletinReceiverTriplet(unitId), BulletinReceiverTriplet(secondUnitId))
+        val bulletinId = initBulletin(supervisor, receivers)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
                 content = msgContent,
-                sender = "TestSender"
+                sender = "TestSender",
+                receivers = receivers
             )
         )
         getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.total) }
@@ -206,20 +210,22 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `supervisor deletes a draft`() {
-        val bulletinId = initBulletin(supervisor)
+        val bulletinId = initBulletin(supervisor, receivers = listOf(BulletinReceiverTriplet(unitId)))
         deleteDraftBulletin(supervisor, bulletinId)
         getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
     }
 
     @Test
     fun `Sending a bulletin sends a reminder email`() {
-        val bulletinId = initBulletin(supervisor)
+        val receivers = listOf(BulletinReceiverTriplet(unitId = unitId))
+        val bulletinId = initBulletin(supervisor, receivers)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
                 content = msgContent,
-                sender = "Testaajat"
+                sender = "Testaajat",
+                receivers = receivers
             )
         )
         sendBulletin(supervisor, bulletinId)
@@ -238,13 +244,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Notification is sent only once`() {
-        val bulletinId = initBulletin(supervisor)
+        val receivers = listOf(BulletinReceiverTriplet(unitId = unitId))
+        val bulletinId = initBulletin(supervisor, receivers)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
                 content = msgContent,
-                sender = "Testaajat"
+                sender = "Testaajat",
+                receivers = receivers
             )
         )
         sendBulletin(supervisor, bulletinId)
@@ -261,13 +269,15 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Notification language is parsed right`() {
-        val bulletinId = initBulletin(supervisor, listOf(BulletinReceiverTriplet(unitId = unitId), BulletinReceiverTriplet(unitId = secondUnitId)))
+        val receivers = listOf(BulletinReceiverTriplet(unitId = unitId), BulletinReceiverTriplet(unitId = secondUnitId))
+        val bulletinId = initBulletin(supervisor, receivers)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
                 title = msgTitle,
                 content = msgContent,
-                sender = "Testaajat"
+                sender = "Testaajat",
+                receivers = receivers
             )
         )
 
@@ -338,7 +348,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
     }
 
-    private fun initBulletin(user: AuthenticatedUser, receivers: List<BulletinReceiverTriplet> = listOf(BulletinReceiverTriplet(unitId = unitId))): UUID {
+    private fun initBulletin(user: AuthenticatedUser, receivers: List<BulletinReceiverTriplet>): UUID {
         val (_, res, result) = http.post("/bulletins")
             .asUser(user)
             .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(receivers = receivers, sender = "Testaajat")))
