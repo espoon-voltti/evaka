@@ -112,7 +112,7 @@ class PersonStorageService {
         dateOfDeath = inputPerson.dateOfDeath,
         email = null,
         phone = null,
-        backupPhone = null
+        backupPhone = ""
     )
 
     private fun getPersonWithUpdatedProperties(sourcePerson: VtjPersonDTO, existingPerson: PersonDTO): PersonDTO =

@@ -1079,7 +1079,7 @@ data class DevPerson(
     val ssn: String? = null,
     val email: String? = null,
     val phone: String? = null,
-    val backupPhone: String? = null,
+    val backupPhone: String = "",
     val language: String? = null,
     val streetAddress: String = "",
     val postalCode: String = "",
