@@ -37,18 +37,16 @@ export default class ReportsPage {
     await t.typeText(toInput, format(to, 'dd.MM.yyyy'))
   }
 
-  private async areaWithNameExistsAssertion(
-    area: string,
-    exists = true
-  ): Promise<Assertion<boolean>> {
+  private async areaWithNameExistsAssertion(area: string, exists = true) {
     const applicationTableSelector = Selector(
       `[data-qa="report-application-table"]`
     )
     await t.expect(applicationTableSelector.exists).ok()
-    return t
+    await t
       .expect(
-        applicationTableSelector.find('td:first-child').withExactText(area)
-          .exists
+        applicationTableSelector
+          .find(`[data-qa="care-area-name"]`)
+          .withExactText(area).exists
       )
       .eql(exists)
   }
@@ -70,7 +68,7 @@ export default class ReportsPage {
       await t
         .expect(
           applicationTableSelector
-            .find('td:nth-child(3)')
+            .find(`[data-qa="unit-provider-type"]`)
             .withExactText(provider).exists
         )
         .ok(`Service provider ${provider} does not exist`)
