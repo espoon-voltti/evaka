@@ -38,21 +38,27 @@ export default React.memo(function MessageList({
   const { i18n } = useTranslation()
 
   const renderReceivers = (msg: Bulletin): string => {
-    const maxShow = 3
+    const visibleNamesCount = 3
     const parseFirstName = (firstNames: string) =>
       firstNames.trim().split(/\s+/)[0]
     const maybeVisible = [
-      ...msg.receiverUnits.slice(0, maxShow).map(({ unitName }) => unitName),
-      ...msg.receiverGroups.slice(0, maxShow).map(({ groupName }) => groupName),
+      ...msg.receiverUnits
+        .slice(0, visibleNamesCount)
+        .map(({ unitName }) => unitName),
+      ...msg.receiverGroups
+        .slice(0, visibleNamesCount)
+        .map(({ groupName }) => groupName),
       ...msg.receiverChildren
-        .slice(0, maxShow)
+        .slice(0, visibleNamesCount)
         .map(
           ({ firstName, lastName }) =>
             `${parseFirstName(firstName)} ${lastName}`
         )
     ]
-    const basePart = maybeVisible.slice(0, maxShow).join(', ')
-    return maybeVisible.length > maxShow ? `${basePart}, ...` : basePart
+    const visibleNames = maybeVisible.slice(0, visibleNamesCount).join(', ')
+    return maybeVisible.length > visibleNamesCount
+      ? `${visibleNames}, ...`
+      : visibleNames
   }
 
   return (
