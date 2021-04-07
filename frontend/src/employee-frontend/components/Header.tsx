@@ -18,13 +18,14 @@ import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import colors from 'lib-components/colors'
 import { cityLogo } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { logoutUrl } from '../api/auth'
 import { RequireRole } from '../utils/roles'
 import { featureFlags } from '../config'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { isNotProduction } from 'employee-frontend/constants'
 
 const Img = styled.img`
   color: #0050bb;
@@ -213,9 +214,11 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           {popupVisible && (
             <UserPopup>
               <FixedSpaceColumn spacing={'m'}>
-                <Link to={`/pin-code`} onClick={() => setPopupVisible(false)}>
-                  eVaka-mobiilin PIN-koodi
-                </Link>
+                {isNotProduction() && (
+                  <Link to={`/pin-code`} onClick={() => setPopupVisible(false)}>
+                    {i18n.pinCode.link}
+                  </Link>
+                )}
                 <LogoutLink
                   data-qa="logout-btn"
                   href={logoutUrl}
@@ -249,7 +252,6 @@ const UserPopup = styled.div`
   font-family: 'Open Sans', sans-serif;
   position: absolute;
   width: 320px;
-  height: 120px;
   right: 0px;
   top: 148px;
   z-index: 5;

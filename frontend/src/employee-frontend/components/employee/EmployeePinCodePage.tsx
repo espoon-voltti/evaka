@@ -90,7 +90,9 @@ export default React.memo(function EmployeePinCodePage() {
             primary
             text={i18n.pinCode.button}
             onClick={savePinCode}
-            onSuccess={() => {}}
+            onSuccess={() => {
+              setError(false)
+            }}
           />
         )}
         <Gap size={'L'} />
