@@ -122,6 +122,14 @@ interface ValidationResult {
   }
 }
 
+const weekdays = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday'
+] as const
+
 const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   id,
   open
@@ -379,7 +387,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
             <>
               <RightAlign>
                 <InlineButton
-                  text={'Muokkaa'}
+                  text={i18n.common.edit}
                   icon={faPen}
                   onClick={() => {
                     resetForm()
@@ -388,21 +396,53 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                 />
               </RightAlign>
 
+              <Gap size="s" />
+
               {apiData.value === null ? (
-                <Label>
+                <FixedWidthLabel>
                   {i18n.childInformation.dailyServiceTimes.types.notSet}
-                </Label>
+                </FixedWidthLabel>
               ) : (
                 <>
                   {isRegular(apiData.value) && (
-                    <div>
-                      {i18n.childInformation.dailyServiceTimes.types.regular}
-                    </div>
+                    <FixedSpaceRow>
+                      <FixedWidthLabel>
+                        {i18n.childInformation.dailyServiceTimes.types.regular}
+                      </FixedWidthLabel>
+                      <div>
+                        {i18n.childInformation.dailyServiceTimes.weekdays.monday.toLowerCase()}
+                        -
+                        {i18n.childInformation.dailyServiceTimes.weekdays.friday.toLowerCase()}{' '}
+                        {apiData.value.regularTimes.start}–
+                        {apiData.value.regularTimes.end}
+                      </div>
+                    </FixedSpaceRow>
                   )}
                   {isIrregular(apiData.value) && (
-                    <div>
-                      {i18n.childInformation.dailyServiceTimes.types.irregular}
-                    </div>
+                    <FixedSpaceRow>
+                      <FixedWidthLabel>
+                        {
+                          i18n.childInformation.dailyServiceTimes.types
+                            .irregular
+                        }
+                      </FixedWidthLabel>
+                      <div>
+                        {weekdays
+                          .map((wd) =>
+                            apiData.value &&
+                            isIrregular(apiData.value) &&
+                            apiData.value[wd]
+                              ? `${i18n.childInformation.dailyServiceTimes.weekdays[
+                                  wd
+                                ].toLowerCase()} ${
+                                  apiData.value[wd]?.start ?? ''
+                                }-${apiData.value[wd]?.end ?? ''}`
+                              : null
+                          )
+                          .filter((s) => s !== null)
+                          .join(', ')}
+                      </div>
+                    </FixedSpaceRow>
                   )}
                 </>
               )}
@@ -532,13 +572,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     />
                     {formData.type === 'IRREGULAR' && (
                       <FixedSpaceColumn>
-                        {([
-                          'monday',
-                          'tuesday',
-                          'wednesday',
-                          'thursday',
-                          'friday'
-                        ] as const).map((wd) => (
+                        {weekdays.map((wd) => (
                           <FixedSpaceRow
                             key={wd}
                             style={{ marginLeft: defaultMargins.XXL }}
@@ -660,6 +694,10 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
 const RightAlign = styled.div`
   display: flex;
   justify-content: flex-end;
+`
+
+const FixedWidthLabel = styled(Label)`
+  width: 220px;
 `
 
 export default DailyServiceTimesSection

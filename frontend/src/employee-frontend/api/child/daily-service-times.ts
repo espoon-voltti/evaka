@@ -15,7 +15,7 @@ export async function getChildDailyServiceTimes(
     .get<JsonOf<DailyServiceTimesResponse>>(
       `/children/${childId}/daily-service-times`
     )
-    .then((v) => Success.of(v.data.dailyServiceTimes))
+    .then((res) => Success.of(res.data.dailyServiceTimes))
     .catch((e) => Failure.fromError(e))
 }
 

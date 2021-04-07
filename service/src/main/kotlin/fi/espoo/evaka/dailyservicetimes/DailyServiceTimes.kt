@@ -1,12 +1,15 @@
 package fi.espoo.evaka.dailyservicetimes
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalTime
 import java.util.UUID
 
 data class TimeRange(
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     val start: LocalTime,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     val end: LocalTime
 ) {
     constructor(startText: String, endText: String) : this(
