@@ -36,7 +36,7 @@ data class FeeDecision(
     val decisionHandler: PersonData.JustId? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null
-) : FinanceDecision<FeeDecisionPart, FeeDecision>, MergeableDecision<FeeDecisionPart, FeeDecision> {
+) : FinanceDecision<FeeDecision>, Mergeable<FeeDecisionPart, FeeDecision> {
     override fun withParts(parts: List<FeeDecisionPart>) = this.copy(parts = parts)
     override fun withRandomId() = this.copy(id = UUID.randomUUID())
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
@@ -51,6 +51,7 @@ data class FeeDecision(
     }
 
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
+    override fun isEmpty(): Boolean = this.parts.isEmpty()
     override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
 
     @JsonProperty("totalFee")
@@ -65,7 +66,7 @@ data class FeeDecisionPart(
     val siblingDiscount: Int,
     val fee: Int,
     val feeAlterations: List<FeeAlterationWithEffect>
-) : FinanceDecisionPart {
+) {
     @JsonProperty("finalFee")
     fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
 }
@@ -120,7 +121,7 @@ data class FeeDecisionDetailed(
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
     val financeDecisionHandlerName: String?
-) : MergeableDecision<FeeDecisionPartDetailed, FeeDecisionDetailed> {
+) : Mergeable<FeeDecisionPartDetailed, FeeDecisionDetailed> {
     override fun withParts(parts: List<FeeDecisionPartDetailed>) = this.copy(parts = parts)
 
     @JsonProperty("totalFee")
@@ -181,7 +182,7 @@ data class FeeDecisionPartDetailed(
     val siblingDiscount: Int,
     val fee: Int,
     val feeAlterations: List<FeeAlterationWithEffect> = listOf()
-) : FinanceDecisionPart {
+) {
     @JsonProperty("finalFee")
     fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
 
@@ -202,14 +203,35 @@ data class FeeDecisionSummary(
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
     val finalPrice: Int
-) : MergeableDecision<FeeDecisionPartSummary, FeeDecisionSummary> {
+) : Mergeable<FeeDecisionPartSummary, FeeDecisionSummary> {
     override fun withParts(parts: List<FeeDecisionPartSummary>) = this.copy(parts = parts)
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionPartSummary(
     val child: PersonData.Basic
-) : FinanceDecisionPart
+)
+
+private interface Mergeable<Part, Decision : Mergeable<Part, Decision>> {
+    val id: UUID
+    val parts: List<Part>
+
+    fun withParts(parts: List<Part>): Decision
+}
+
+fun <Part, Decision : Mergeable<Part, Decision>, Decisions : Iterable<Decision>> Decisions.merge(): List<Decision> {
+    val map = mutableMapOf<UUID, Decision>()
+    for (decision in this) {
+        val id = decision.id
+        if (map.containsKey(id)) {
+            val existing = map.getValue(id)
+            map[id] = existing.withParts(existing.parts + decision.parts)
+        } else {
+            map[id] = decision
+        }
+    }
+    return map.values.toList()
+}
 
 fun useMaxFee(incomes: List<DecisionIncome?>): Boolean = incomes.filterNotNull().let {
     it.size < incomes.size || it.any { income -> income.effect != IncomeEffect.INCOME }

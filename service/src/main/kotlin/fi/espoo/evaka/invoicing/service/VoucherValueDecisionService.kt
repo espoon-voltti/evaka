@@ -12,7 +12,6 @@ import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -150,36 +149,29 @@ private fun coverPage(decision: VoucherValueDecisionDetailed): String {
         <div class="content">
             <h1>PÄÄTÖS VARHAISKASVATUKSEN PALVELUSETELIN ARVOSTA</h1>
             <table>
-                ${decision.parts.joinToString(transform = ::tablePart)}
+                <tr>
+                    <td colspan="2">${decision.child.firstName} ${decision.child.lastName}</td>
+                </tr>
+                <tr>
+                    <td>Yksikkö</td>
+                    <td>${decision.placementUnit.name}</td>
+                </tr>
+                <tr>
+                    <td>Palveluntarve</td>
+                    <td>${decision.placement.hours ?: "ei asetettu"}</td>
+                </tr>
+                <tr>
+                    <td>Palvelusetelin enimmäisarvo</td>
+                    <td>${decision.value / 100},${decision.value % 100} €</td>
+                </tr>
+                <tr>
+                    <td>Omavastuu</td>
+                    <td>${decision.coPayment / 100},${decision.coPayment % 100} €</td>
+                </tr>
             </table>
         </div>
     </body>
 </html>
-    """.trimIndent()
-}
-
-private fun tablePart(part: VoucherValueDecisionPartDetailed): String {
-    // language=html
-    return """
-        <tr>
-            <td colspan="2">${part.child.firstName} ${part.child.lastName}</td>
-        </tr>
-        <tr>
-            <td>Yksikkö</td>
-            <td>${part.placementUnit.name}</td>
-        </tr>
-        <tr>
-            <td>Palveluntarve</td>
-            <td>${part.placement.hours ?: "ei asetettu"}</td>
-        </tr>
-        <tr>
-            <td>Palvelusetelin enimmäisarvo</td>
-            <td>${part.value / 100},${part.value % 100} €</td>
-        </tr>
-        <tr>
-            <td>Omavastuu</td>
-            <td>${part.coPayment / 100},${part.coPayment % 100} €</td>
-        </tr>
     """.trimIndent()
 }
 

@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
-import fi.espoo.evaka.invoicing.data.findValueDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
-import fi.espoo.evaka.invoicing.data.lockValueDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -22,7 +22,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
-import fi.espoo.evaka.invoicing.domain.FinanceDecisionPart
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
@@ -32,7 +31,6 @@ import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPart
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
@@ -125,23 +123,26 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
 
     private fun handleDecisionChangesForFamilies(h: Handle, period: DateRange, families: List<FridgeFamily>) {
         families.filter { it.period.overlaps(period) }
-            .forEach {
+            .forEach { family ->
                 handleFeeDecisionChanges(
                     h,
                     objectMapper,
-                    maxOf(feeDecisionMinDate, period.start, it.period.start),
-                    it.headOfFamily,
-                    it.partner,
-                    it.children
+                    maxOf(feeDecisionMinDate, period.start, family.period.start),
+                    family.headOfFamily,
+                    family.partner,
+                    family.children
                 )
-                handleValueDecisionChanges(
-                    h,
-                    objectMapper,
-                    maxOf(period.start, it.period.start),
-                    it.headOfFamily,
-                    it.partner,
-                    it.children
-                )
+                family.children.forEach { child ->
+                    handleValueDecisionChanges(
+                        h,
+                        objectMapper,
+                        maxOf(period.start, family.period.start),
+                        child,
+                        family.headOfFamily,
+                        family.partner,
+                        family.children
+                    )
+                }
             }
     }
 }
@@ -201,23 +202,25 @@ private fun handleValueDecisionChanges(
     h: Handle,
     objectMapper: ObjectMapper,
     from: LocalDate,
+    child: PersonData.WithDateOfBirth,
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
-    children: List<PersonData.WithDateOfBirth>
+    allChildren: List<PersonData.WithDateOfBirth>
 ) {
-    val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
+    val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
     val prices = getPricing(h, from)
     val voucherValues = h.getVoucherValues(from)
     val incomes = getIncomesFrom(h, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
-        getFeeAlterationsFrom(h, children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+        getFeeAlterationsFrom(h, listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
-    val placements = getPaidPlacements(h, from, children)
+    val placements = getPaidPlacements(h, from, allChildren)
     val serviceVoucherUnits = getServiceVoucherUnits(h)
 
     val newDrafts =
         generateNewValueDecisions(
             from,
+            child,
             headOfFamily,
             partner,
             familySize,
@@ -229,13 +232,13 @@ private fun handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    h.lockValueDecisionsForHeadOfFamily(headOfFamily.id)
+    h.lockValueDecisionsForChild(child.id)
 
     val existingDrafts =
-        h.findValueDecisionsForHeadOfFamily(objectMapper, headOfFamily.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
-    val activeDecisions = h.findValueDecisionsForHeadOfFamily(
+        h.findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
+    val activeDecisions = h.findValueDecisionsForChild(
         objectMapper,
-        headOfFamily.id,
+        child.id,
         null,
         listOf(
             VoucherValueDecisionStatus.WAITING_FOR_SENDING,
@@ -359,6 +362,7 @@ private fun generateNewFeeDecisions(
 
 private fun generateNewValueDecisions(
     from: LocalDate,
+    voucherChild: PersonData.WithDateOfBirth,
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
     familySize: Int,
@@ -380,7 +384,7 @@ private fun generateNewValueDecisions(
         feeAlterations.map { DateRange(it.validFrom, it.validTo) }
 
     return asDistinctPeriods(periods, DateRange(from, null))
-        .map { period ->
+        .mapNotNull { period ->
             val price = prices.find { it.first.contains(period) }?.second
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
@@ -403,64 +407,58 @@ private fun generateNewValueDecisions(
                         ?.toDecisionIncome()
                 }
 
-            val validPlacements = allPlacements
+            val periodPlacements = allPlacements
                 .map { (child, placements) -> child to placements.find { it.first.contains(period) }?.second }
                 .filter { (_, placement) -> placement != null }
                 .map { (child, placement) -> child to placement!! }
 
-            val parts = if (validPlacements.isNotEmpty()) {
-                val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
+            val voucherChildPlacement = periodPlacements.find { (child, _) -> child == voucherChild }?.second
 
-                val baseCoPayment = calculateBaseFee(price, familySize, familyIncomes)
-                validPlacements
-                    .sortedByDescending { (child, _) -> child.dateOfBirth }
-                    .mapIndexed { index, (child, placement) ->
-                        val placedIntoServiceVoucherUnit = serviceVoucherUnits.any { unit -> unit == placement.unit }
-                        if (!placedIntoServiceVoucherUnit) {
-                            return@mapIndexed null
-                        }
+            voucherChildPlacement
+                // Skip the placement if it's not into a service voucher unit
+                ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unit } }
+                ?.let { placement ->
+                    val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
+                    val baseCoPayment = calculateBaseFee(price, familySize, familyIncomes)
 
-                        val siblingDiscount = getSiblingDiscountPercent(index + 1)
-                        val coPaymentBeforeAlterations =
-                            calculateFeeBeforeFeeAlterations(baseCoPayment, placement.withoutHours(), siblingDiscount)
-                        val relevantFeeAlterations = feeAlterations.filter {
-                            it.personId == child.id && DateRange(it.validFrom, it.validTo).contains(period)
-                        }
+                    val siblingIndex = periodPlacements
+                        .sortedByDescending { (child, _) -> child.dateOfBirth }
+                        .indexOfFirst { (child, _) -> child == voucherChild }
 
-                        val ageCoefficient = getAgeCoefficient(period, child.dateOfBirth)
-                        val serviceCoefficient = getServiceCoefficient(placement)
-                        val value = calculateVoucherValue(baseValue, ageCoefficient, serviceCoefficient)
+                    val siblingDiscount = getSiblingDiscountPercent(siblingIndex + 1)
+                    val coPaymentBeforeAlterations =
+                        calculateFeeBeforeFeeAlterations(baseCoPayment, placement.withoutHours(), siblingDiscount)
+                    val relevantFeeAlterations = feeAlterations.filter {
+                        DateRange(it.validFrom, it.validTo).contains(period)
+                    }
 
-                        VoucherValueDecisionPart(
-                            child,
-                            placement,
-                            baseCoPayment,
-                            siblingDiscount,
-                            coPaymentBeforeAlterations,
-                            toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
-                            baseValue,
-                            ageCoefficient,
-                            serviceCoefficient,
-                            value
-                        )
-                    }.filterNotNull()
-            } else {
-                listOf()
-            }
+                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth)
+                    val serviceCoefficient = getServiceCoefficient(placement)
+                    val value = calculateVoucherValue(baseValue, ageCoefficient, serviceCoefficient)
 
-            period to VoucherValueDecision(
-                id = UUID.randomUUID(),
-                status = VoucherValueDecisionStatus.DRAFT,
-                headOfFamily = headOfFamily,
-                partner = partner,
-                headOfFamilyIncome = income,
-                partnerIncome = partnerIncome,
-                familySize = familySize,
-                pricing = price,
-                parts = parts.sortedBy { it.siblingDiscount },
-                validFrom = period.start,
-                validTo = period.end
-            )
+                    period to VoucherValueDecision(
+                        id = UUID.randomUUID(),
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        headOfFamily = headOfFamily,
+                        partner = partner,
+                        headOfFamilyIncome = income,
+                        partnerIncome = partnerIncome,
+                        familySize = familySize,
+                        pricing = price,
+                        validFrom = period.start,
+                        validTo = period.end,
+                        child = voucherChild,
+                        placement = placement,
+                        baseCoPayment = baseCoPayment,
+                        siblingDiscount = siblingDiscount,
+                        coPayment = coPaymentBeforeAlterations,
+                        feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
+                        baseValue = baseValue,
+                        ageCoefficient = ageCoefficient,
+                        serviceCoefficient = serviceCoefficient,
+                        value = value
+                    )
+                }
         }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }
         .map { (period, decision) -> decision.withValidity(period) }
@@ -632,7 +630,7 @@ private fun getPlacementType(placement: Placement, isFiveYearOld: Boolean): Plac
             error("Placements of type '${placement.type}' should not be included in finance decisions")
     }
 
-internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> mergeAndFilterUnnecessaryDrafts(
+internal fun <Decision : FinanceDecision<Decision>> mergeAndFilterUnnecessaryDrafts(
     drafts: List<Decision>,
     active: List<Decision>
 ): List<Decision> {
@@ -661,16 +659,16 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
  *   - the draft is "empty" and there is no existing sent decision that should be overridden
  *   - the draft is practically identical to an existing sent decision and no drafts have been generated before this draft
  */
-internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> draftIsUnnecessary(
+internal fun <Decision : FinanceDecision<Decision>> draftIsUnnecessary(
     draft: Decision,
     sent: Decision?,
     alreadyGeneratedDrafts: Boolean
 ): Boolean {
-    return (draft.parts.isEmpty() && sent == null) ||
+    return (draft.isEmpty() && sent == null) ||
         (!alreadyGeneratedDrafts && sent != null && draft.contentEquals(sent))
 }
 
-internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> mergeDecisions(
+internal fun <Decision : FinanceDecision<Decision>> mergeDecisions(
     decisions: List<Decision>
 ): List<Decision> {
     return decisions
@@ -680,7 +678,7 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
         .map { it.withRandomId() }
 }
 
-internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> updateExistingDecisions(
+internal fun <Decision : FinanceDecision<Decision>> updateExistingDecisions(
     from: LocalDate,
     newDrafts: List<Decision>,
     existingDrafts: List<Decision>,
@@ -697,15 +695,12 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     return mergedDrafts + withUpdatedEndDates
 }
 
-internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> filterOrUpdateStaleDrafts(
+internal fun <Decision : FinanceDecision<Decision>> filterOrUpdateStaleDrafts(
     drafts: List<Decision>,
     period: DateRange
 ): List<Decision> {
     val (overlappingDrafts, nonOverlappingDrafts) = drafts.partition {
-        DateRange(
-            it.validFrom,
-            it.validTo
-        ).overlaps(period)
+        DateRange(it.validFrom, it.validTo).overlaps(period)
     }
 
     val updatedOverlappingDrafts = when (period.end) {
@@ -735,7 +730,7 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     return nonOverlappingDrafts + updatedOverlappingDrafts
 }
 
-internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> updateDecisionEndDatesAndMergeDrafts(
+internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMergeDrafts(
     actives: List<Decision>,
     drafts: List<Decision>
 ): Pair<List<Decision>, List<Decision>> {

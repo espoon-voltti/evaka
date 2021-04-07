@@ -10,7 +10,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionPartFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
-import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
@@ -538,7 +537,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Test
     fun `voucher value decision data is sent to varda`() {
         createDecisionsAndPlacements(testPeriod, testChild_1)
-        val voucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+        val voucherValueDecisions = insertVoucherValueDecisions(db, listOf(testChild_1), testPeriod).map { it.send() }
 
         updateAll()
 
@@ -546,9 +545,9 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         mockEndpoint.feeData.values.first().let {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
-            assertEquals(voucherValueDecision.parts.first().finalCoPayment() / 100.0, it.asiakasmaksu)
-            assertEquals(voucherValueDecision.parts.first().value / 100.0, it.palveluseteli_arvo)
-            assertEquals(voucherValueDecision.familySize, it.perheen_koko)
+            assertEquals(voucherValueDecisions.first().coPayment / 100.0, it.asiakasmaksu)
+            assertEquals(voucherValueDecisions.first().value / 100.0, it.palveluseteli_arvo)
+            assertEquals(voucherValueDecisions.first().familySize, it.perheen_koko)
             assertEquals(testPeriod.start, it.alkamis_pvm)
             assertEquals(testPeriod.end, it.paattymis_pvm)
         }
@@ -557,7 +556,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Test
     fun `voucher value data is saved to database correctly after upload`() {
         createDecisionsAndPlacements(testPeriod, testChild_1)
-        val voucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+        val voucherValueDecisions = insertVoucherValueDecisions(db, listOf(testChild_1), testPeriod).map { it.send() }
 
         updateAll()
 
@@ -565,7 +564,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         val vardaFeeDataRows = getVardaFeeDataRows(db)
         assertEquals(1, vardaFeeDataRows.size)
         vardaFeeDataRows.first().let { row ->
-            assertEquals(voucherValueDecision.id, row.evakaVoucherValueDecisionId)
+            assertEquals(voucherValueDecisions.first().id, row.evakaVoucherValueDecisionId)
             assertEquals(mockEndpoint.feeData.keys.first(), row.vardaId)
             db.read {
                 val decisionId = it.createQuery("SELECT id FROM varda_decision LIMIT 1").mapTo<UUID>().first()
@@ -579,7 +578,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Test
     fun `voucher data is deleted when corresponding decision is deleted`() {
         createDecisionsAndPlacements(testPeriod, testChild_1)
-        insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+        insertVoucherValueDecisions(db, listOf(testChild_1), testPeriod).map { it.send() }
 
         updateAll()
 
@@ -603,7 +602,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Test
     fun `fee data is deleted when corresponding voucher value decision is annulled`() {
         createDecisionsAndPlacements(testPeriod, testChild_1)
-        val voucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+        val voucherValueDecisions = insertVoucherValueDecisions(db, listOf(testChild_1), testPeriod).map { it.send() }
 
         updateAll()
 
@@ -616,7 +615,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             it.execute(
                 "UPDATE voucher_value_decision SET status = ? WHERE id = ?",
                 VoucherValueDecisionStatus.ANNULLED,
-                voucherValueDecision.id
+                voucherValueDecisions.first().id
             )
         }
         updateAll()
@@ -630,25 +629,27 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Test
     fun `fee data is replaced when corresponding voucher value decision is replaced by a new one`() {
         createDecisionsAndPlacements(testPeriod, testChild_1)
-        val originalVoucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1), testPeriod).send()
+        val originalVoucherValueDecisions = insertVoucherValueDecisions(db, listOf(testChild_1), testPeriod)
+            .map { it.send() }
 
         updateAll()
 
         val originalSentData = mockEndpoint.feeData.toMap()
         assertEquals(1, originalSentData.size)
         originalSentData.values.first().let { data ->
-            assertEquals(originalVoucherValueDecision.familySize, data.perheen_koko)
+            assertEquals(originalVoucherValueDecisions.first().familySize, data.perheen_koko)
         }
         val originalRows = getVardaFeeDataRows(db)
         assertEquals(1, originalRows.size)
 
-        val newVoucherValueDecision = insertVoucherValueDecision(db, listOf(testChild_1, testChild_2), testPeriod).send()
+        val newVoucherValueDecisions = insertVoucherValueDecisions(db, listOf(testChild_1, testChild_2), testPeriod)
+            .map { it.send() }
         updateAll()
 
         val newSentData = mockEndpoint.feeData.toMap()
         assertEquals(1, newSentData.size)
         newSentData.values.first().let { data ->
-            assertEquals(newVoucherValueDecision.familySize, data.perheen_koko)
+            assertEquals(newVoucherValueDecisions.first().familySize, data.perheen_koko)
         }
         val newRows = getVardaFeeDataRows(db)
         assertEquals(1, newRows.size)
@@ -722,30 +723,30 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         feeDecision
     }
 
-    private fun insertVoucherValueDecision(
+    private fun insertVoucherValueDecisions(
         db: Database.Connection,
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
         unitId: UUID = testDaycare.id,
         guardian: UUID = testAdult_1.id
-    ): VoucherValueDecision = db.transaction {
-        val voucherValueDecision = createVoucherValueDecisionFixture(
-            status = VoucherValueDecisionStatus.DRAFT,
-            headOfFamilyId = guardian,
-            validFrom = period.start,
-            validTo = period.end,
-            parts = children.map { child ->
-                createVoucherValueDecisionPartFixture(
-                    childId = child.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    unitId = unitId,
-                    placementType = placementType
-                )
-            }
-        )
-        it.handle.upsertValueDecisions(objectMapper, listOf(voucherValueDecision))
-        voucherValueDecision
+    ): List<VoucherValueDecision> = db.transaction {
+        val voucherValueDecisions = children.map { child ->
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                headOfFamilyId = guardian,
+                validFrom = period.start,
+                validTo = period.end,
+                childId = child.id,
+                dateOfBirth = testChild_1.dateOfBirth,
+                unitId = unitId,
+                placementType = placementType,
+                familySize = children.size + 1
+            )
+        }
+
+        it.handle.upsertValueDecisions(objectMapper, voucherValueDecisions)
+        voucherValueDecisions
     }
 
     private fun FeeDecision.send(): FeeDecision {
