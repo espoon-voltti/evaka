@@ -9,6 +9,7 @@ import DevLoginForm, { DevLoginUser } from '../dev-login-form'
 export default class EmployeeHome {
   private readonly devLoginForm = new DevLoginForm()
   readonly loginBtn = Selector('[data-qa="login-btn"]')
+  readonly userNameBtn = Selector('[data-qa="username"]')
   readonly logoutBtn = Selector('[data-qa="logout-btn"]')
 
   readonly url = config.employeeUrl
@@ -47,7 +48,7 @@ export default class EmployeeHome {
   async login(user: DevLoginUser) {
     await t.click(this.loginBtn)
     await this.devLoginForm.login(user)
-    await t.expect(this.logoutBtn.visible).ok()
+    await t.expect(this.userNameBtn.visible).ok()
   }
 
   async navigateToUnits() {

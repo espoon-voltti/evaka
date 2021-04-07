@@ -11,6 +11,7 @@ export default class InvoicingPage {
 
   readonly loginBtn = Selector('[data-qa="login-btn"]')
   readonly devLoginSubmitBtn = Selector('form button')
+  readonly userNameBtn = Selector('[data-qa="username"]')
   readonly logoutBtn = Selector('[data-qa="logout-btn"]')
 
   readonly financeNav = Selector('[data-qa="finance-nav"]')
