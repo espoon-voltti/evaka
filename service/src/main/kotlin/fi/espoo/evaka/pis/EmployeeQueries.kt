@@ -136,5 +136,5 @@ fun Database.Transaction.updatePinCode(
         .bind("pin_code", pinCode.pin)
         .execute()
 
-    if (updated == 0) throw NotFound("Could not update pin-code for ${userId}. User not found")
+    if (updated == 0) throw NotFound("Could not update pin-code for $userId. User not found")
 }
