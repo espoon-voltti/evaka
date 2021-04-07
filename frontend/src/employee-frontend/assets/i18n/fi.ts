@@ -2275,7 +2275,7 @@ export const fi = {
     pinCode: 'PIN-koodi',
     button: 'Tallenna PIN-koodi',
     placeholder: '4 numeroa',
-    error: 'Liian helppo PIN-koodi',
+    error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
     link: 'eVaka-mobiilin PIN-koodi'
   }
 }

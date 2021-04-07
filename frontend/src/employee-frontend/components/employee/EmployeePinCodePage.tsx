@@ -23,6 +23,12 @@ export default React.memo(function EmployeePinCodePage() {
   const [pin, setPin] = useState<string>('')
   const [error, setError] = useState<boolean>(false)
 
+  function isValidNumber(pin: string) {
+    const int = parseInt(pin)
+    const str = int.toString()
+    return str.length === 4
+  }
+
   function errorCheck(pin: string) {
     const badPins = [
       '1234',
@@ -37,7 +43,7 @@ export default React.memo(function EmployeePinCodePage() {
       '8888',
       '9999'
     ]
-    if (badPins.includes(pin)) {
+    if (badPins.includes(pin) || !isValidNumber(pin)) {
       setError(true)
     } else {
       setError(false)
