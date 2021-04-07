@@ -37,6 +37,8 @@ data class ApplicationSummary(
     val extendedCare: Boolean,
     val duplicateApplication: Boolean = false,
     val transferApplication: Boolean,
+    val urgent: Boolean,
+    val attachmentCount: Int,
     val additionalDaycareApplication: Boolean,
     val placementProposalStatus: PlacementProposalStatus?,
     val placementProposalUnitName: String?,

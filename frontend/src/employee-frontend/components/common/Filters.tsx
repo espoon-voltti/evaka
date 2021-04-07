@@ -7,7 +7,13 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReactSelect from 'react-select'
 
-import { faSearch, faTimes, faTrash, fasExclamationTriangle } from 'lib-icons'
+import {
+  faEnvelope,
+  faSearch,
+  faTimes,
+  faTrash,
+  fasExclamationTriangle
+} from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -907,6 +913,8 @@ export type ApplicationBasis =
   | 'DAYCARE'
   | 'EXTENDED_CARE'
   | 'DUPLICATE_APPLICATION'
+  | 'URGENT'
+  | 'HAS_ATTACHMENTS'
 
 interface ApplicationBasisFilterProps {
   toggled: ApplicationBasis[]
@@ -1028,6 +1036,36 @@ export function ApplicationBasisFilter({
             size="m"
             onClick={toggle('DUPLICATE_APPLICATION')}
             active={toggled.includes('DUPLICATE_APPLICATION')}
+          />
+        </Tooltip>
+        <Tooltip
+          tooltipId="application-basis-URGENT"
+          tooltipText={i18n.applications.basisTooltip.URGENT}
+          place={'top'}
+          className={'application-basis-tooltip'}
+          delayShow={750}
+        >
+          <RoundIcon
+            content="!"
+            color={colors.accents.red}
+            size="m"
+            onClick={toggle('URGENT')}
+            active={toggled.includes('URGENT')}
+          />
+        </Tooltip>
+        <Tooltip
+          tooltipId="application-basis-HAS_ATTACHMENTS"
+          tooltipText={i18n.applications.basisTooltip.HAS_ATTACHMENTS}
+          place={'top'}
+          className={'application-basis-tooltip'}
+          delayShow={750}
+        >
+          <RoundIcon
+            content={faEnvelope} // TODO attachment/paperclip icon
+            color={colors.accents.violet}
+            size="m"
+            onClick={toggle('HAS_ATTACHMENTS')}
+            active={toggled.includes('HAS_ATTACHMENTS')}
           />
         </Tooltip>
       </FixedSpaceRow>

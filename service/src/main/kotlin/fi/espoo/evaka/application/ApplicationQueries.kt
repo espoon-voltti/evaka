@@ -54,7 +54,9 @@ enum class ApplicationBasis {
     CLUB_CARE,
     DAYCARE,
     EXTENDED_CARE,
-    DUPLICATE_APPLICATION
+    DUPLICATE_APPLICATION,
+    URGENT,
+    HAS_ATTACHMENTS
 }
 
 enum class ApplicationSortDirection {
@@ -203,6 +205,8 @@ fun fetchApplicationSummaries(
                 ApplicationBasis.DAYCARE -> "(f.document ->> 'wasOnDaycare')::boolean = true"
                 ApplicationBasis.EXTENDED_CARE -> "(f.document ->> 'extendedCare')::boolean = true"
                 ApplicationBasis.DUPLICATE_APPLICATION -> "array_length(duplicates.duplicate_application_ids, 1) > 0"
+                ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
+                ApplicationBasis.HAS_ATTACHMENTS -> "array_length(attachments.attachment_ids, 1) > 0"
             }
         }.joinToString("\nAND ") else null,
         if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,
@@ -264,6 +268,8 @@ fun fetchApplicationSummaries(
             COALESCE(f.document -> 'careDetails' ->> 'assistanceNeeded', f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
             (f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as wasOnClubCare,
             (f.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
+            (f.document ->> 'urgent')::boolean as urgent,
+            (SELECT COALESCE(array_length(attachments.attachment_ids, 1), 0)) AS attachmentCount,
             COALESCE((f.document ->> 'extendedCare')::boolean, false) as extendedCare,
             (SELECT COALESCE(array_length(duplicates.duplicate_application_ids, 1), 0) > 0) AS has_duplicates,
             pp.unit_confirmation_status,
@@ -302,6 +308,16 @@ fun fetchApplicationSummaries(
             GROUP by
                 l.id
         ) duplicates ON a.id = duplicates.id
+        LEFT JOIN (
+            SELECT
+                appl.id, array_agg(att.id) AS attachment_ids
+            FROM
+                application appl, attachment att
+            WHERE
+                appl.id = att.application_id
+            GROUP by
+                appl.id
+        ) attachments ON a.id = attachments.id
         LEFT JOIN LATERAL (
             SELECT daycare.id, daycare.name
             FROM daycare
@@ -355,6 +371,8 @@ fun fetchApplicationSummaries(
                     extendedCare = row.mapColumn("extendedCare"),
                     duplicateApplication = row.mapColumn("has_duplicates"),
                     transferApplication = row.mapColumn("transferapplication"),
+                    urgent = row.mapColumn("urgent"),
+                    attachmentCount = row.mapColumn("attachmentCount"),
                     additionalDaycareApplication = row.mapColumn("additionaldaycareapplication"),
                     placementProposalStatus = row.mapColumn<PlacementPlanConfirmationStatus?>("unit_confirmation_status")
                         ?.let {

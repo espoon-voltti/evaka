@@ -4,7 +4,13 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { faCheck, fasArrowDown, fasArrowUp, faTimes } from 'lib-icons'
+import {
+  faCheck,
+  faEnvelope,
+  fasArrowDown,
+  fasArrowUp,
+  faTimes
+} from 'lib-icons'
 import { Paged } from 'lib-common/api'
 import {
   Table,
@@ -314,6 +320,16 @@ const ApplicationsList = React.memo(function Applications({
           )}
           {application.duplicateApplication && (
             <RoundIcon content="2" color={colors.accents.emerald} size="s" />
+          )}
+          {application.urgent && (
+            <RoundIcon content="!" color={colors.accents.red} size="s" />
+          )}
+          {application.attachmentCount > 0 && (
+            <RoundIcon
+              content={faEnvelope} // TODO attachment/paperclip icon
+              color={colors.accents.violet}
+              size="s"
+            />
           )}
         </FixedSpaceRow>
       </Td>
