@@ -83,10 +83,6 @@ Then, start eVaka projects with PM2:
 pm2 start
 ```
 
-`yarn install` might fail on frontends when running `pm2 start`. To
-fix this, try to running `yarn cache clean && yarn install` in failing
-repositories.
-
 ### Useful commands
 
 ```bash
