@@ -151,14 +151,14 @@ private fun getAnnulledDecisions(tx: Database.Read): List<Long> {
 SELECT varda_id
 FROM varda_fee_data
 JOIN fee_decision ON fee_decision.id = varda_fee_data.evaka_fee_decision_id
-    AND fee_decision.status = :annulledFeeDecision
+    AND fee_decision.status = :annulledFeeDecision::fee_decision_status
 
 UNION ALL
 
 SELECT varda_id
 FROM varda_fee_data
 JOIN voucher_value_decision ON voucher_value_decision.id = varda_fee_data.evaka_voucher_value_decision_id
-    AND voucher_value_decision.status = :annulledVoucherDecision
+    AND voucher_value_decision.status = :annulledVoucherDecision::voucher_value_decision_status
 """
         )
         .bind("annulledFeeDecision", FeeDecisionStatus.ANNULLED)
@@ -178,12 +178,12 @@ JOIN LATERAL (
         SELECT approved_at
         FROM fee_decision d
         JOIN fee_decision_part p ON d.id = p.fee_decision_id AND p.child = varda_child.person_id
-        WHERE d.status = ANY(:effectiveFeeDecision)
+        WHERE d.status = ANY(:effectiveFeeDecision::fee_decision_status[])
         UNION ALL
         SELECT approved_at
         FROM voucher_value_decision d
         JOIN voucher_value_decision_part p ON d.id = p.voucher_value_decision_id AND p.child = varda_child.person_id
-        WHERE d.status = ANY(:effectiveVoucherValueDecision)
+        WHERE d.status = ANY(:effectiveVoucherValueDecision::voucher_value_decision_status[])
     ) decisions
 ) latest_finance_decision ON true
 JOIN LATERAL (
@@ -243,7 +243,9 @@ SELECT
     p.placement_type AS placement_type
 FROM varda_child vc
 JOIN fee_decision_part p ON vc.person_id = p.child
-JOIN fee_decision d ON p.fee_decision_id = d.id AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod AND d.status = ANY(:effective)
+JOIN fee_decision d ON p.fee_decision_id = d.id
+    AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
+    AND d.status = ANY(:effective::fee_decision_status[])
 LEFT JOIN (
     SELECT fee_decision_part.id, SUM(effects.effect) sum
     FROM fee_decision_part
@@ -272,7 +274,9 @@ SELECT
     p.placement_type AS placement_type
 FROM varda_child vc
 JOIN voucher_value_decision_part p ON vc.person_id = p.child
-JOIN voucher_value_decision d ON p.voucher_value_decision_id = d.id AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod AND d.status = ANY(:effective)
+JOIN voucher_value_decision d ON p.voucher_value_decision_id = d.id
+    AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
+    AND d.status = ANY(:effective::voucher_value_decision_status[])
 LEFT JOIN (
     SELECT voucher_value_decision_part.id, SUM(effects.effect) sum
     FROM voucher_value_decision_part

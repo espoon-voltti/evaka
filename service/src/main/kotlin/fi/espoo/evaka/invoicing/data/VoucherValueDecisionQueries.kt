@@ -86,7 +86,7 @@ private fun Handle.upsertDecisions(mapper: ObjectMapper, decisions: List<Voucher
             created_at
         ) VALUES (
             :id,
-            :status,
+            :status::voucher_value_decision_status,
             :valid_from,
             :valid_to,
             :decision_number,
@@ -98,7 +98,7 @@ private fun Handle.upsertDecisions(mapper: ObjectMapper, decisions: List<Voucher
             :pricing,
             :created_at
         ) ON CONFLICT (id) DO UPDATE SET
-            status = :status,
+            status = :status::voucher_value_decision_status,
             decision_number = :decision_number,
             valid_from = :valid_from,
             valid_to = :valid_to,
@@ -262,7 +262,7 @@ fun Handle.findValueDecisionsForHeadOfFamily(
         $voucherValueDecisionQueryBase
         WHERE decision.head_of_family = :headOfFamily
         AND (:period::daterange IS NULL OR daterange(decision.valid_from, decision.valid_to, '[]') && :period)
-        AND (:statuses::text[] IS NULL OR decision.status = ANY(:statuses))
+        AND (:statuses::text[] IS NULL OR decision.status = ANY(:statuses::voucher_value_decision_status[]))
         """
 
     return createQuery(sql)
@@ -353,7 +353,7 @@ fun Database.Read.searchValueDecisions(
                 GROUP BY final_co_payments.id
             ) sums ON decision.id = sums.id
             WHERE
-                status = :status
+                status = :status::voucher_value_decision_status
                 ${if (areas.isNotEmpty()) youngestChildAnd else ""}
                 AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
                 AND $freeTextQuery
@@ -482,7 +482,7 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
             LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
         )
         UPDATE voucher_value_decision SET
-            status = :status,
+            status = :status::voucher_value_decision_status,
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = CASE
@@ -529,7 +529,7 @@ fun Handle.updateVoucherValueDecisionDocumentKey(id: UUID, documentKey: String) 
 
 fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<UUID>, status: VoucherValueDecisionStatus) {
     // language=sql
-    val sql = "UPDATE voucher_value_decision SET status = :status WHERE id = ANY(:ids)"
+    val sql = "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 
     createUpdate(sql)
         .bind("ids", ids.toTypedArray())
@@ -538,7 +538,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<UUID>, statu
 }
 
 fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<UUID>, now: Instant) {
-    createUpdate("UPDATE voucher_value_decision SET status = :sent, sent_at = :now WHERE id = ANY(:ids)")
+    createUpdate("UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("now", now)
@@ -546,7 +546,7 @@ fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<UUID>, now: Ins
 }
 
 fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisions: List<VoucherValueDecision>) {
-    prepareBatch("UPDATE voucher_value_decision SET status = :status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+    prepareBatch("UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch

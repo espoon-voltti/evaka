@@ -494,7 +494,7 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Da
             WHERE
                 decision.valid_from <= :period_end
                 AND (decision.valid_to IS NULL OR decision.valid_to >= :period_start)
-                AND decision.status = ANY(:effective)
+                AND decision.status = ANY(:effective::fee_decision_status[])
                 ${
         /* delete this when these kinds of fee decisions stop existing */
         "AND (decision.valid_from <= decision.valid_to OR decision.valid_to IS NULL)"
@@ -511,12 +511,12 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Da
 
 fun getInvoicedHeadsOfFamily(h: Handle, period: DateRange): List<UUID> {
     val sql =
-        "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status IN (<statuses>)"
+        "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status = :sent::invoice_status"
 
     return h.createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
-        .bindList("statuses", listOf(InvoiceStatus.SENT).map { it.toString() })
+        .bind("sent", InvoiceStatus.SENT)
         .map { rs, _ -> rs.getUUID("head_of_family") }
         .list()
 }

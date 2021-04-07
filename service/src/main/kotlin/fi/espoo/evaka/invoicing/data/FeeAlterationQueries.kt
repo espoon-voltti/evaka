@@ -28,7 +28,7 @@ fun upsertFeeAlteration(h: Handle, feeAlteration: FeeAlteration) {
             ) VALUES (
                 :id,
                 :person_id,
-                :type,
+                :type::fee_alteration_type,
                 :amount,
                 :is_absolute,
                 :valid_from,
@@ -37,7 +37,7 @@ fun upsertFeeAlteration(h: Handle, feeAlteration: FeeAlteration) {
                 :updated_by,
                 now()
             ) ON CONFLICT (id) DO UPDATE SET
-                type = :type,
+                type = :type::fee_alteration_type,
                 amount = :amount,
                 is_absolute = :is_absolute,
                 valid_from = :valid_from,

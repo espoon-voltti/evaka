@@ -96,8 +96,8 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
 fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: List<UUID>) {
     val sql =
         """
-        UPDATE invoice SET status = :status_sent, sent_at = :sent_at, sent_by = :sent_by
-        WHERE id IN (<ids>) AND status = :status_waiting
+        UPDATE invoice SET status = :status_sent::invoice_status, sent_at = :sent_at, sent_by = :sent_by
+        WHERE id = ANY(:ids) AND status = :status_waiting::invoice_status
         RETURNING id
         """.trimIndent()
 
@@ -106,7 +106,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
         .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())
         .bind("sent_at", Instant.now())
         .bind("sent_by", user.id)
-        .bindList("ids", invoiceIds)
+        .bind("ids", invoiceIds.toTypedArray())
         .mapTo(UUID::class.java)
         .list()
 

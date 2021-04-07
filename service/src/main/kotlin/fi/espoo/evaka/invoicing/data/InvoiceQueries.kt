@@ -155,7 +155,7 @@ fun getInvoiceIdsByDates(h: Handle, from: LocalDate, to: LocalDate, areas: List<
         SELECT id FROM invoice
         WHERE daterange(:from, :to, '[]') @> invoice_date
         AND agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:areas))
-        AND status = :draft
+        AND status = :draft::invoice_status
     """
 
     return h.createQuery(sql)
@@ -204,7 +204,7 @@ fun paginatedSearch(
     val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
 
     val conditions = listOfNotNull(
-        if (statuses.isNotEmpty()) "invoice.status = ANY(:status)" else null,
+        if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
         if (areas.isNotEmpty()) "invoice.agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:area))" else null,
         if (unit != null) "row.cost_center = (SELECT cost_center FROM daycare WHERE id = :unit)" else null,
         if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
@@ -289,7 +289,7 @@ fun searchInvoices(
     val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
 
     val conditions = listOfNotNull(
-        if (statuses.isNotEmpty()) "invoice.status = ANY(:status)" else null,
+        if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
         if (areas.isNotEmpty()) "invoice.agreement_type IN (SELECT area_code FROM care_area WHERE short_name = ANY(:area))" else null,
         if (unit != null) "row.cost_center = (SELECT cost_center FROM daycare WHERE id = :unit)" else null,
         if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
@@ -331,7 +331,7 @@ fun getMaxInvoiceNumber(h: Handle): Long {
 fun deleteDraftInvoices(h: Handle, draftIds: List<UUID>) {
     if (draftIds.isEmpty()) return
 
-    h.createUpdate("DELETE FROM invoice WHERE status = :status AND id = ANY(:draftIds)")
+    h.createUpdate("DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)")
         .bind("status", InvoiceStatus.DRAFT.toString())
         .bind("draftIds", draftIds.toTypedArray())
         .execute()
@@ -345,7 +345,7 @@ fun setDraftsSent(h: Handle, idNumberPairs: List<Pair<UUID, Long>>, sentBy: UUID
             number = :number,
             sent_at = now(),
             sent_by = :sentBy,
-            status = :status
+            status = :status::invoice_status
         WHERE id = :id
     """
 
@@ -364,7 +364,7 @@ fun setDraftsSent(h: Handle, idNumberPairs: List<Pair<UUID, Long>>, sentBy: UUID
 fun updateToWaitingForSending(h: Handle, invoiceIds: List<UUID>) {
     if (invoiceIds.isEmpty()) return
 
-    h.createUpdate("UPDATE invoice SET status = :status WHERE id = ANY(:ids)")
+    h.createUpdate("UPDATE invoice SET status = :status::invoice_status WHERE id = ANY(:ids)")
         .bind("ids", invoiceIds.toTypedArray())
         .bind("status", InvoiceStatus.WAITING_FOR_SENDING.toString())
         .execute()
@@ -385,7 +385,7 @@ fun deleteDraftInvoicesByPeriod(h: Handle, period: DateRange) {
     val sql =
         """
             DELETE FROM invoice
-            WHERE status = :status
+            WHERE status = :status::invoice_status
             AND daterange(:periodStart, :periodEnd, '[]') && daterange(period_start, period_end, '[]')
         """
 
@@ -419,7 +419,7 @@ private fun upsertInvoicesWithoutRows(h: Handle, invoices: List<Invoice>) {
         ) VALUES (
             :id,
             :number,
-            :status,
+            :status::invoice_status,
             :period_start,
             :period_end,
             :due_date,

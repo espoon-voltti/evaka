@@ -428,7 +428,7 @@ fun insertTestIncome(
         .createUpdate(
             """
             INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, updated_at, updated_by)
-            VALUES (:id, :personId, :validFrom, :validTo, :data, :effect, :updatedAt, :updatedBy)
+            VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :updatedAt, :updatedBy)
             """
         )
         .bindMap(
@@ -467,7 +467,7 @@ fun insertTestFeeAlteration(
         .createUpdate(
             """
             INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
-            VALUES (:id, :childId, :type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy) 
+            VALUES (:id, :childId, :type::fee_alteration_type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy)
             """.trimIndent()
         )
         .bindMap(
