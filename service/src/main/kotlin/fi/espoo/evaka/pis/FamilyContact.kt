@@ -20,6 +20,7 @@ data class FamilyContact(
     val lastName: String?,
     val email: String?,
     val phone: String?,
+    val backupPhone: String,
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,

@@ -22,13 +22,14 @@ fun Handle.getChild(id: UUID): Child? {
 fun Handle.createChild(child: Child): Child {
     // language=SQL
     val sql =
-        "INSERT INTO child (id, allergies, diet, additionalinfo) VALUES (:id, :allergies, :diet, :additionalInfo) RETURNING *"
+        "INSERT INTO child (id, allergies, diet, additionalinfo, medication) VALUES (:id, :allergies, :diet, :additionalInfo, :medication) RETURNING *"
 
     return createQuery(sql)
         .bind("id", child.id)
         .bind("allergies", child.additionalInformation.allergies)
         .bind("diet", child.additionalInformation.diet)
         .bind("additionalInfo", child.additionalInformation.additionalInfo)
+        .bind("medication", child.additionalInformation.medication)
         .mapTo<Child>()
         .first()
 }
@@ -50,7 +51,7 @@ fun Handle.upsertChild(child: Child) {
 
 fun Handle.updateChild(child: Child) {
     // language=SQL
-    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, preferred_name = :preferredName WHERE id = :id"
+    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, preferred_name = :preferredName, medication = :medication WHERE id = :id"
 
     createUpdate(sql)
         .bind("id", child.id)
@@ -58,5 +59,6 @@ fun Handle.updateChild(child: Child) {
         .bind("diet", child.additionalInformation.diet)
         .bind("additionalInfo", child.additionalInformation.additionalInfo)
         .bind("preferredName", child.additionalInformation.preferredName)
+        .bind("medication", child.additionalInformation.medication)
         .execute()
 }

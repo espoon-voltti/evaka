@@ -62,7 +62,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
     additionalInfo: '',
     allergies: '',
     diet: '',
-    preferredName: ''
+    preferredName: '',
+    medication: ''
   })
 
   const editing = uiMode == 'child-additional-details-editing'
@@ -84,7 +85,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
         additionalInfo: additionalInformation.value.additionalInfo,
         allergies: additionalInformation.value.allergies,
         diet: additionalInformation.value.diet,
-        preferredName: additionalInformation.value.preferredName
+        preferredName: additionalInformation.value.preferredName,
+        medication: additionalInformation.value.medication
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -209,6 +211,29 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                     />
                   ) : (
                     formatParagraphs(additionalInformation.value.diet)
+                  ),
+                  valueWidth: '400px'
+                },
+                {
+                  label: i18n.childInformation.additionalInformation.medication,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.medication}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          medication: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.medication)}
+                      data-qa="medication-input"
+                    />
+                  ) : (
+                    <span data-qa="medication">
+                      {formatParagraphs(additionalInformation.value.medication)}
+                    </span>
                   ),
                   valueWidth: '400px'
                 }

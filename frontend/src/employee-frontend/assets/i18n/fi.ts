@@ -93,6 +93,7 @@ export const fi = {
       range: 'Ajalle',
       email: 'Sähköposti',
       phone: 'Puhelinnumero',
+      backupPhone: 'Varapuhelinnumero',
       address: 'Osoite',
       streetAddress: 'Katuosoite',
       postalCode: 'Postinumero',
@@ -471,7 +472,8 @@ export const fi = {
       },
       contact: 'S-posti ja puhelin',
       contactPerson: 'Yhteyshlö',
-      address: 'Osoite'
+      address: 'Osoite',
+      backupPhone: 'Varanro'
     },
     serviceNeed: {
       title: 'Palveluntarve',
@@ -657,7 +659,8 @@ export const fi = {
       allergies: 'Allergiat',
       diet: 'Erityisruokavalio',
       additionalInfo: 'Lisätiedot',
-      preferredName: 'Kutsumanimi'
+      preferredName: 'Kutsumanimi',
+      medication: 'Lääkitys'
     },
     feeAlteration: {
       title: 'Alennukset, vapautukset ja korotukset',

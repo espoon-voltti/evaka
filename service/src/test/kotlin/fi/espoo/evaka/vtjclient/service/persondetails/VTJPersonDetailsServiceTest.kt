@@ -212,6 +212,7 @@ class VTJPersonDetailsServiceTest {
         language = nativeLanguage?.code ?: "fi",
         email = "example@example.org",
         phone = "+573601234567",
+        backupPhone = "+573601234569",
         dateOfBirth = LocalDate.now().minusYears(15),
         restrictedDetailsEnabled = false,
         restrictedDetailsEndDate = null,
