@@ -11,12 +11,12 @@ const defaults = {
 module.exports = {
   apps: [{
     name: 'apigw',
-    script: 'yarn clean && yarn && yarn dev',
+    script: 'yarn && yarn clean && yarn dev',
     cwd: path.resolve(__dirname, '../apigw'),
     ...defaults
   }, {
     name: 'frontend',
-    script: 'yarn clean && yarn && yarn dev',
+    script: 'yarn && yarn clean && yarn dev',
     cwd: path.resolve(__dirname, '../frontend'),
     env: {
       'ICONS': process.env.ICONS
