@@ -89,6 +89,11 @@ export const fi = {
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
     missingFromPlural: 'Poissa seuraavista toimintamuodoista',
     timeError: 'Virheellinen aika',
+    serviceTime: {
+      serviceToday: (start: string, end: string) =>
+        `Varhaiskasvatusaika tänään ${start}-${end}`,
+      noServiceToday: 'Ei varattua varhaiskasvatusaikaa tänään'
+    },
     notes: {
       dailyNotes: 'Päivän muistiinpanot',
       labels: {

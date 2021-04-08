@@ -41,6 +41,7 @@ export interface AttendanceChild {
   placementType: PlacementType
   attendance: Attendance | null
   absences: Absence[]
+  dailyServiceTimes: DailyServiceTimes | null
   entitledToFreeFiveYearsOldDaycare: boolean
   dailyNote: DailyNote | null
 }
@@ -56,6 +57,29 @@ interface Absence {
   childId: string
   id: string
 }
+
+export type TimeRange = {
+  start: string
+  end: string
+}
+
+type DailyServiceTimesRegular = {
+  regular: true
+  regularTimes: TimeRange
+}
+
+type DailyServiceTimesIrregular = {
+  regular: false
+  monday: TimeRange | null
+  tuesday: TimeRange | null
+  wednesday: TimeRange | null
+  thursday: TimeRange | null
+  friday: TimeRange | null
+}
+
+export type DailyServiceTimes =
+  | DailyServiceTimesRegular
+  | DailyServiceTimesIrregular
 
 export interface DailyNote {
   id: string | null
@@ -248,7 +272,7 @@ export async function deleteDaycareDailyNote(
 function compareByProperty(
   a: JsonOf<AttendanceChild>,
   b: JsonOf<AttendanceChild>,
-  property: string
+  property: 'firstName' | 'lastName'
 ) {
   if (a[property] < b[property]) {
     return -1
@@ -281,7 +305,7 @@ function deserializeAttendanceResponse(
           }
         })
       },
-      children: data.children
+      children: [...data.children]
         .sort((a, b) => compareByProperty(a, b, 'lastName'))
         .sort((a, b) => compareByProperty(a, b, 'firstName'))
         .map((attendanceChild) => {
