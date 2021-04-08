@@ -66,7 +66,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
         notes = ""
     )
 
-    private val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
 
     @Test
     fun `getIncome works with no data in DB`() {

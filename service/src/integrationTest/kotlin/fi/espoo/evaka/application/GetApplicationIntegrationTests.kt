@@ -44,11 +44,11 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @Autowired
     lateinit var stateService: ApplicationStateService
 
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val enduser = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
-    private val testDaycareSupervisor = AuthenticatedUser(unitSupervisorOfTestDaycare.id, setOf())
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val enduser = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val testDaycareSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf())
     private val testRoundTheClockDaycareSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
-    private val testRoundTheClockDaycareSupervisor = AuthenticatedUser(UUID.randomUUID(), setOf())
+    private val testRoundTheClockDaycareSupervisor = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
 
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
 

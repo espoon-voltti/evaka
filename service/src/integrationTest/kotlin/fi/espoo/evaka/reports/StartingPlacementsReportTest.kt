@@ -107,7 +107,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
         getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
     }
 
-    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.DIRECTOR))
+    private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.DIRECTOR))
 
     private fun getAndAssert(date: LocalDate, expected: List<StartingPlacementsRow>) {
         val (_, response, result) = http.get(

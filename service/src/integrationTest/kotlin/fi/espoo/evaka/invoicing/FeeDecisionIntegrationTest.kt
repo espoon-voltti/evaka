@@ -50,7 +50,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner
 
-    private val user = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
     private val testDecisions = listOf(
         createFeeDecisionFixture(

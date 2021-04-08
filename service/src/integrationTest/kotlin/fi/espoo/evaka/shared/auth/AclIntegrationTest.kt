@@ -6,6 +6,8 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
+import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -43,6 +45,7 @@ class AclIntegrationTest : PureJdbiTest() {
     private lateinit var decisionId: UUID
     private lateinit var placementId: UUID
     private lateinit var mobileId: UUID
+    private lateinit var noteId: UUID
 
     private lateinit var acl: AccessControlList
 
@@ -68,6 +71,21 @@ class AclIntegrationTest : PureJdbiTest() {
             )
             placementId = insertTestPlacement(it.handle, childId = childId, unitId = daycareId)
             mobileId = it.handle.insertTestEmployee(DevEmployee())
+            noteId = it.createDaycareDailyNote(
+                DaycareDailyNote(
+                    id = null,
+                    groupId = groupId,
+                    childId = null,
+                    date = LocalDate.of(2019, 1, 7),
+                    note = "Test",
+                    feedingNote = null,
+                    modifiedAt = null,
+                    reminderNote = null,
+                    reminders = emptyList(),
+                    sleepingHours = null,
+                    sleepingNote = null
+                )
+            )
             it.insertTestMobileDevice(DevMobileDevice(id = mobileId, unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
@@ -81,7 +99,7 @@ class AclIntegrationTest : PureJdbiTest() {
     @ParameterizedTest(name = "{0}")
     @EnumSource(names = ["ADMIN", "SERVICE_WORKER", "FINANCE_ADMIN"])
     fun testGlobalRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser(employeeId, setOf(role))
+        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val aclAuth = AclAuthorization.All
         val aclRoles = AclAppliedRoles(setOf(role))
 
@@ -92,12 +110,13 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(aclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(aclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(aclRoles, acl.getRolesForUnitGroup(user, groupId))
+        assertEquals(aclRoles, acl.getRolesForDailyNote(user, noteId))
     }
 
     @ParameterizedTest(name = "{0}")
     @EnumSource(names = ["UNIT_SUPERVISOR", "STAFF"])
     fun testAclRoleAuthorization(role: UserRole) {
-        val user = AuthenticatedUser(employeeId, setOf(role))
+        val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val negativeAclAuth = AclAuthorization.Subset(emptySet())
         val negativeAclRoles = AclAppliedRoles(emptySet())
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
@@ -109,6 +128,7 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(negativeAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(negativeAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(negativeAclRoles, acl.getRolesForUnitGroup(user, groupId))
+        assertEquals(negativeAclRoles, acl.getRolesForDailyNote(user, noteId))
 
         jdbi.handle { it.insertDaycareAclRow(daycareId, employeeId, role) }
 
@@ -118,11 +138,12 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(positiveAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(positiveAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(positiveAclRoles, acl.getRolesForUnitGroup(user, groupId))
+        assertEquals(positiveAclRoles, acl.getRolesForDailyNote(user, noteId))
     }
 
     @Test
     fun testMobileAclRoleAuthorization() {
-        val user = AuthenticatedUser(mobileId, setOf(UserRole.MOBILE))
+        val user = AuthenticatedUser.MobileDevice(mobileId)
 
         val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
         val expectedAclRoles = AclAppliedRoles(setOf(UserRole.MOBILE))
@@ -133,5 +154,6 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(expectedAclRoles, acl.getRolesForDecision(user, decisionId))
         assertEquals(expectedAclRoles, acl.getRolesForPlacement(user, placementId))
         assertEquals(expectedAclRoles, acl.getRolesForUnitGroup(user, groupId))
+        assertEquals(expectedAclRoles, acl.getRolesForDailyNote(user, noteId))
     }
 }

@@ -25,7 +25,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
         db.transaction { it.resetDatabase() }
     }
 
-    private val adminUser = AuthenticatedUser(id = UUID.randomUUID(), roles = setOf(UserRole.ADMIN))
+    private val adminUser = AuthenticatedUser.Employee(id = UUID.randomUUID(), roles = setOf(UserRole.ADMIN))
 
     @Test
     fun `two people with identical names and dates of birth are matched`() {

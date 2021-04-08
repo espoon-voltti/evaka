@@ -173,7 +173,7 @@ class DecisionService(
         val application = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
-        val currentVtjGuardianIds = personService.getGuardians(tx, AuthenticatedUser.machineUser, decision.childId).map { person -> person.id }
+        val currentVtjGuardianIds = personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, decision.childId).map { person -> person.id }
 
         val applicationGuardian = tx.handle.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")

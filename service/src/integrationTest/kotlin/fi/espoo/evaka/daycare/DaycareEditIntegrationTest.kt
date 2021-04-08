@@ -35,7 +35,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DaycareEditIntegrationTest : FullApplicationTest() {
-    private val admin = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
+    private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val fields = DaycareFields(
         name = "Uusi päiväkoti",
         openingDate = LocalDate.of(2020, 1, 1),

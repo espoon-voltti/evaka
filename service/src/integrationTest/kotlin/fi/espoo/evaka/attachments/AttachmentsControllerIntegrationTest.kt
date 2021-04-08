@@ -11,7 +11,6 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.testAdult_5
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -29,7 +28,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
         db.transaction {
             resetDatabase(it.handle)
             insertGeneralTestFixtures(it.handle)
-            user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
+            user = AuthenticatedUser.Citizen(testAdult_5.id)
         }
     }
 

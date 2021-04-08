@@ -38,7 +38,7 @@ import java.util.UUID
 
 class GetAttendancesIntegrationTest : FullApplicationTest() {
     private val userId = UUID.randomUUID()
-    private val mobileUser = AuthenticatedUser(userId, emptySet())
+    private val mobileUser = AuthenticatedUser.MobileDevice(userId)
     private val groupId = UUID.randomUUID()
     private val groupId2 = UUID.randomUUID()
     private val groupName = "Testaajat"

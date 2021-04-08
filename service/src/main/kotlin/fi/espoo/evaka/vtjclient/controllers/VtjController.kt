@@ -64,7 +64,7 @@ class VtjController(
     ): PersonResult {
         Audit.VtjRequest.log(targetId = personId)
         return when {
-            user.isEndUser() -> {
+            user.isEndUser -> {
                 if (personId != user.id) {
                     PersonResult.Error("Query not allowed")
                         .also { logger.error { "Error preparing request for person data: ${it.msg}" } }

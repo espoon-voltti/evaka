@@ -71,7 +71,7 @@ class InvoicingReportTest : FullApplicationTest() {
         )
     }
 
-    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.DIRECTOR))
+    private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.DIRECTOR))
 
     private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
         val (_, response, result) = http.get(

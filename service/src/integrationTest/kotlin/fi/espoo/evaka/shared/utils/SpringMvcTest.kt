@@ -27,7 +27,7 @@ class SpringMvcTest : FullApplicationTest() {
 
     @Test
     fun `a database connection passed to a controller is closed automatically on success`() {
-        val (_, res, _) = http.get("/integration-test/db-connection-pass").asUser(AuthenticatedUser.machineUser)
+        val (_, res, _) = http.get("/integration-test/db-connection-pass").asUser(AuthenticatedUser.SystemInternalUser)
             .response()
         assertTrue(res.isSuccessful)
         val connection = controller.lastDbConnection.get()
@@ -37,7 +37,7 @@ class SpringMvcTest : FullApplicationTest() {
 
     @Test
     fun `a database connection passed to a controller is closed automatically on failure`() {
-        val (_, res, _) = http.get("/integration-test/db-connection-fail").asUser(AuthenticatedUser.machineUser)
+        val (_, res, _) = http.get("/integration-test/db-connection-fail").asUser(AuthenticatedUser.SystemInternalUser)
             .response()
         assertEquals(500, res.statusCode)
         val connection = controller.lastDbConnection.get()

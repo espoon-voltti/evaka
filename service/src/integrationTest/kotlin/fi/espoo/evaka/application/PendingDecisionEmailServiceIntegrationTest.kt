@@ -174,7 +174,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     private fun runPendingDecisionEmailAsyncJobs(): Int {
         val (_, res, _) = http.post("/scheduled/send-pending-decision-reminder-emails")
-            .asUser(AuthenticatedUser.machineUser)
+            .asUser(AuthenticatedUser.SystemInternalUser)
             .response()
 
         Assertions.assertEquals(204, res.statusCode)

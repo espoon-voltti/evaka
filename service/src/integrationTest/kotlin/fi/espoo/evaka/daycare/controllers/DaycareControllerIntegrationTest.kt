@@ -26,7 +26,7 @@ class DaycareControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `smoke test for groups`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
         val existingGroups = daycareController.getGroups(db, user, daycareId).body!!
         assertEquals(2, existingGroups.size)
 

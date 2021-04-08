@@ -177,6 +177,6 @@ class MockDataServiceTest {
 
     private fun mapToQuery(ssn: String) = DetailsQuery(
         targetIdentifier = getInstance(ssn),
-        requestingUser = AuthenticatedUser(UUID.randomUUID(), setOf())
+        requestingUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
     )
 }

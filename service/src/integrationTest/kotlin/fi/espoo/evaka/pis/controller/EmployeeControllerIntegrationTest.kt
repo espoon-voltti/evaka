@@ -25,7 +25,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `no employees return empty list`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
         val response = employeeController.getEmployees(db, user)
         assertEquals(HttpStatus.OK, response.statusCode)
         assertEquals(emptyList<Employee>(), response.body)
@@ -33,7 +33,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `admin can add employee`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
         val response = employeeController.createEmployee(db, user, requestFromEmployee(employee1))
         assertEquals(HttpStatus.OK, response.statusCode)
         assertEquals(employee1.firstName, response.body!!.firstName)
@@ -44,7 +44,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `admin gets all employees`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
         assertEquals(HttpStatus.OK, employeeController.createEmployee(db, user, requestFromEmployee(employee1)).statusCode)
         assertEquals(HttpStatus.OK, employeeController.createEmployee(db, user, requestFromEmployee(employee2)).statusCode)
         val response = employeeController.getEmployees(db, user)
@@ -56,7 +56,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `admin can first create, then get employee`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
         assertEquals(0, employeeController.getEmployees(db, user).body?.size)
 
         val responseCreate = employeeController.createEmployee(db, user, requestFromEmployee(employee1))
@@ -71,7 +71,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `admin can delete employee`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
         val createdEmployeeResponse = employeeController.createEmployee(db, user, requestFromEmployee(employee1))
         assertEquals(HttpStatus.OK, createdEmployeeResponse.statusCode)
         val response = employeeController.deleteEmployee(db, user, createdEmployeeResponse.body?.id!!)

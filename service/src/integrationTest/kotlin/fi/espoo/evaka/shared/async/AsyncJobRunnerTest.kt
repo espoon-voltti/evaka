@@ -30,7 +30,7 @@ class AsyncJobRunnerTest {
     private lateinit var jdbi: Jdbi
     private lateinit var db: Database
 
-    private val user = AuthenticatedUser(UUID.randomUUID(), setOf())
+    private val user = AuthenticatedUser.SystemInternalUser
 
     @BeforeAll
     fun setup() {

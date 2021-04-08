@@ -21,7 +21,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class AsyncJobQueriesTest : PureJdbiTest() {
-    private val user = AuthenticatedUser(UUID.randomUUID(), setOf())
+    private val user = AuthenticatedUser.SystemInternalUser
 
     @BeforeEach
     fun beforeEach() {
@@ -109,7 +109,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
             ).map { row -> row.mapJsonColumn<AuthenticatedUser>("user") }.asSequence().first()
         }
         assertEquals(
-            AuthenticatedUser(
+            AuthenticatedUser.Employee(
                 UUID.fromString("44e1ff31-fce4-4ca1-922a-a385fb21c69e"),
                 setOf(UserRole.FINANCE_ADMIN)
             ),

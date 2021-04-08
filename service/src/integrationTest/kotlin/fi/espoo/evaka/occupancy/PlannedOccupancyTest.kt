@@ -471,7 +471,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
         assertEquals(0, reportResult2?.headcount)
     }
 
-    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val testUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private fun fetchAndParseOccupancy(unitId: UUID, period: FiniteDateRange): List<OccupancyPeriod> {
         val (_, response, result) = http.get("/occupancy/by-unit/$unitId?from=${period.start}&to=${period.end}&type=PLANNED")

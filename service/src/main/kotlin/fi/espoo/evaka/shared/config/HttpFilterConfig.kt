@@ -75,7 +75,7 @@ class HttpFilterConfig {
         }
 
         private fun HttpServletRequest.isAuthorized(user: AuthenticatedUser): Boolean {
-            if (requestURI.startsWith("/system/")) return user.isMachineUser()
+            if (requestURI.startsWith("/system/")) return user.isSystemInternalUser
             return true
         }
     }

@@ -99,8 +99,8 @@ class AttachmentsController(
                 name,
                 contentType,
                 applicationId,
-                uploadedByEnduser = user.id.takeIf { user.isEndUser() },
-                uploadedByEmployee = user.id.takeUnless { user.isEndUser() },
+                uploadedByEnduser = user.id.takeIf { user.isEndUser },
+                uploadedByEmployee = user.id.takeUnless { user.isEndUser },
                 type = type
             )
             documentClient.upload(

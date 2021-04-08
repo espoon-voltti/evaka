@@ -29,9 +29,9 @@ import java.time.LocalDate
 import java.util.UUID
 
 class ServiceNeedIntegrationTest : FullApplicationTest() {
-    private val unitSupervisor = AuthenticatedUser(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
-    private val admin = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val admin = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {

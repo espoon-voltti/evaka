@@ -32,17 +32,17 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `service worker can create and fetch parentships`() {
-        `can create and fetch parentships`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        `can create and fetch parentships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can create and fetch parentships`() {
-        `can create and fetch parentships`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        `can create and fetch parentships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can create and fetch parentships`() {
-        `can create and fetch parentships`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can create and fetch parentships`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     fun `can create and fetch parentships`(user: AuthenticatedUser) {
@@ -78,17 +78,17 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `service worker can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        `can update parentship duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        `can update parentship duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can update parentship duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     fun `can update parentship duration`(user: AuthenticatedUser) {
@@ -117,17 +117,17 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `service worker cannot delete parentships`() {
-        `cannot delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        `cannot delete parentship`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor cannot delete parentships`() {
-        `cannot delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        `cannot delete parentship`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can delete parentships`() {
-        `can delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        `can delete parentship`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     fun `can delete parentship`(user: AuthenticatedUser) {
@@ -157,7 +157,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to get parentships`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.END_USER))
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val parent = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
@@ -168,7 +168,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to update parentship`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.END_USER))
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val parent = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
@@ -182,7 +182,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if enduser tries to delete parentship`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.END_USER))
+        val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val parent = testPerson1()
         val child = testPerson2()
         jdbi.handle { h ->
@@ -193,7 +193,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if service worker tries to create a partnership with a start date before child's date of birth`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val parent = testPerson1()
         val child = testPerson2()
         val request = ParentshipController.ParentshipRequest(parent.id, child.id, child.dateOfBirth.minusDays(1), child.dateOfBirth.plusYears(1))
@@ -202,7 +202,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `error is thrown if service worker tries to create a partnership with a end date after child's 18th birthday`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val parent = testPerson1()
         val child = testPerson2()
         val request = ParentshipController.ParentshipRequest(parent.id, child.id, child.dateOfBirth, child.dateOfBirth.plusYears(18))

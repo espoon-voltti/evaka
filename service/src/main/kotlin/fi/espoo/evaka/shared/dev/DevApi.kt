@@ -93,7 +93,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
 
-private val fakeAdmin = AuthenticatedUser(
+private val fakeAdmin = AuthenticatedUser.Employee(
     id = UUID.fromString("00000000-0000-0000-0000-000000000000"),
     roles = setOf(UserRole.ADMIN)
 )
@@ -609,7 +609,7 @@ RETURNING id
 
             uuid?.let {
                 // Refresh Pis data by forcing refresh from VTJ
-                val dummyUser = AuthenticatedUser(it, setOf(UserRole.SERVICE_WORKER))
+                val dummyUser = AuthenticatedUser.Employee(it, setOf(UserRole.SERVICE_WORKER))
                 personService.getUpToDatePerson(tx, dummyUser, it)
             }
         }

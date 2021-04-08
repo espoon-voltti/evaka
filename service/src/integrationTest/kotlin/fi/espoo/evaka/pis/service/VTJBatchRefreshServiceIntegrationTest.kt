@@ -45,7 +45,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
     lateinit var service: VTJBatchRefreshService
 
     val lastDayBefore18YearsOld = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
-    private val user = AuthenticatedUser(UUID.fromString("00000000-0000-0000-0000-000000000000"), setOf())
+    private val user = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
 
     @BeforeEach
     internal fun setUp() {

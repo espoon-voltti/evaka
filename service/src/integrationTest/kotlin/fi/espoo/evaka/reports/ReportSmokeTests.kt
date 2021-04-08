@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class ReportSmokeTests : FullApplicationTest() {
-    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     @BeforeAll
     fun beforeEach() {

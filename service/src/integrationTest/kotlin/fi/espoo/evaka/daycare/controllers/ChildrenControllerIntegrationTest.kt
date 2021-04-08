@@ -57,17 +57,17 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `get additional info returns correct reply with service worker`() {
-        getAdditionalInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        getAdditionalInfo(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `get additional info returns correct reply with finance admin`() {
-        getAdditionalInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        getAdditionalInfo(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     @Test
     fun `get additional info throws forbidden with enduser`() {
-        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.END_USER))) }
+        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser.Citizen(UUID.randomUUID())) }
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {
