@@ -191,7 +191,7 @@ export default React.memo(function DecisionResponse({
                     {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(
                       decisionType
                     ) ? (
-                      <span>{startDate}</span>
+                      <span> {startDate} </span>
                     ) : (
                       <span onClick={(e) => e.stopPropagation()}>
                         <DatePicker

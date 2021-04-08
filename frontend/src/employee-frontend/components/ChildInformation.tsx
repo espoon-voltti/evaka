@@ -37,6 +37,7 @@ import FamilyContacts from '../components/child-information/FamilyContacts'
 import { requireRole } from '../utils/roles'
 import ChildApplications from '../components/child-information/ChildApplications'
 import MessageBlocklist from 'employee-frontend/components/child-information/MessageBlocklist'
+import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -78,6 +79,7 @@ const components = {
   parents: FridgeParents,
   placements: Placements,
   'service-need': ServiceNeed,
+  'daily-service-times': DailyServiceTimesSection,
   assistance: Assistance,
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
@@ -96,6 +98,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
@@ -106,6 +109,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'family-contacts', open: false }
@@ -116,7 +120,8 @@ const layouts: Layouts<typeof components> = {
     { component: 'parents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false }
+    { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false }
   ],
   ['UNIT_SUPERVISOR']: [
     { component: 'guardians', open: false },
@@ -124,6 +129,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'family-contacts', open: false }
@@ -132,7 +138,8 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false }
+    { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
@@ -140,6 +147,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
+    { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false }
   ]
 }

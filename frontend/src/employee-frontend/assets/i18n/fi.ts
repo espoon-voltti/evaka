@@ -510,6 +510,28 @@ export const fi = {
         preparatoryEducation: 'Valmistava opetus'
       }
     },
+    dailyServiceTimes: {
+      title: 'Päivittäinen varhaiskasvatusaika',
+      info:
+        'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
+      info2:
+        'Epäsäännölliset ja säännölliset poissaolot merkitään päiväkirjalle.',
+      types: {
+        notSet: 'Ei asetettu',
+        regular: 'Säännöllinen varhaiskasvatusaika',
+        irregular: 'Epäsäännöllinen varhaiskasvatusaika'
+      },
+      weekdays: {
+        monday: 'Maanantai',
+        tuesday: 'Tiistai',
+        wednesday: 'Keskiviikko',
+        thursday: 'Torstai',
+        friday: 'Perjantai'
+      },
+      errors: {
+        required: 'Arvo puuttuu'
+      }
+    },
     assistance: {
       title: 'Tuen tarve ja tukitoimet'
     },
