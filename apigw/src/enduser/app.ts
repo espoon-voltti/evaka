@@ -8,7 +8,10 @@ import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import publicRoutes from './publicRoutes'
 import routes from './routes'
-import { createAuthEndpoints } from '../shared/routes/auth/suomi-fi'
+import {
+  createSuomiFiAuthEndpoints,
+  createKeycloakAuthEndpoints
+} from '../shared/routes/auth/suomi-fi'
 import { errorHandler } from '../shared/middleware/error-handler'
 import { requireAuthentication } from '../shared/auth'
 import session, { refreshLogoutToken } from '../shared/session'
@@ -46,7 +49,9 @@ function apiRouter() {
   const router = Router()
 
   router.use(publicRoutes)
-  router.use(createAuthEndpoints('enduser'))
+  router.use(createSuomiFiAuthEndpoints('enduser'))
+  router.use(createKeycloakAuthEndpoints('enduser'))
+
   router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
   router.use(requireAuthentication)
   router.use(csrf)

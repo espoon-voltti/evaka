@@ -180,7 +180,14 @@ const evakaCallbackUrl =
   process.env.EVAKA_SAML_CALLBACK_URL ??
   ifNodeEnv(
     ['local', 'test'],
-    `http://localhost:9093/api/internal/auth/evaka/login/callback`
+    `http://localhost:9099/api/internal/auth/evaka/login/callback`
+  )
+
+const evakaCustomerCallbackUrl =
+  process.env.EVAKA_CUSTOMER_SAML_CALLBACK_URL ??
+  ifNodeEnv(
+    ['local', 'test'],
+    `http://localhost:9099/api/application/auth/evaka-customer/login/callback`
   )
 
 export const evakaSamlConfig = evakaCallbackUrl
@@ -206,6 +213,36 @@ export const evakaSamlConfig = evakaCallbackUrl
       ),
       privateCert: required(
         process.env.EVAKA_SAML_PRIVATE_CERT ??
+          ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+      )
+    }
+  : undefined
+
+export interface EvakaSamlConfig {
+  callbackUrl: string
+  entryPoint: string
+  publicCert: string
+  privateCert: string
+}
+
+export const evakaCustomerSamlConfig:
+  | EvakaSamlConfig
+  | undefined = evakaCustomerCallbackUrl
+  ? {
+      callbackUrl: required(evakaCustomerCallbackUrl),
+      entryPoint: required(
+        process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
+          ifNodeEnv(
+            ['local', 'test'],
+            'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+          )
+      ),
+      publicCert: required(
+        process.env.EVAKA_CUSTOMER_SAML_PUBLIC_CERT ??
+          ifNodeEnv(['local', 'test'], 'config/test-cert/keycloak-local.pem')
+      ),
+      privateCert: required(
+        process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
           ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
       )
     }
