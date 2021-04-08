@@ -17,11 +17,11 @@ buildscript {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version Version.kotlin
-    id("org.jetbrains.kotlin.plugin.allopen") version Version.kotlin
-    id("org.jetbrains.kotlin.plugin.spring") version Version.kotlin
-    id("org.springframework.boot") version Version.springBoot
-    id("org.flywaydb.flyway") version Version.flyway
+    id("org.jetbrains.kotlin.jvm") version Version.GradlePlugin.kotlin
+    id("org.jetbrains.kotlin.plugin.allopen") version Version.GradlePlugin.kotlin
+    id("org.jetbrains.kotlin.plugin.spring") version Version.GradlePlugin.kotlin
+    id("org.springframework.boot") version Version.GradlePlugin.springBoot
+    id("org.flywaydb.flyway") version Version.GradlePlugin.flyway
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
     id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
@@ -59,16 +59,18 @@ idea {
 val ktlint by configurations.creating
 
 dependencies {
+    implementation(platform(project(":evaka-bom")))
+    testImplementation(platform(project(":evaka-bom")))
+    integrationTestImplementation(platform(project(":evaka-bom")))
+
     // Kotlin + core
-    api(platform(kotlin("bom")))
     api(kotlin("stdlib-jdk8"))
 
     // Logging
-    implementation("io.github.microutils:kotlin-logging-jvm:${Version.kotlinLogging}")
-    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:${Version.logbackSpringBoot}")
+    implementation("io.github.microutils:kotlin-logging-jvm")
+    implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter")
 
     // Spring
-    api(platform("org.springframework.boot:spring-boot-dependencies:${Version.springBoot}"))
     api("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop")
@@ -80,24 +82,22 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-devtools")
 
     // Database-related dependencies
-    implementation("com.zaxxer:HikariCP:${Version.hikariCp}")
-    implementation("org.flywaydb:flyway-core:${Version.flyway}")
-    implementation("org.postgresql:postgresql:${Version.postgresDriver}")
-    implementation("redis.clients:jedis:${Version.jedis}")
+    implementation("com.zaxxer:HikariCP")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.postgresql:postgresql")
+    implementation("redis.clients:jedis")
 
     // JDBI
-    implementation(platform("org.jdbi:jdbi3-bom:${Version.jdbi}"))
     implementation("org.jdbi:jdbi3-core")
     implementation("org.jdbi:jdbi3-jackson2")
     implementation("org.jdbi:jdbi3-kotlin")
     implementation("org.jdbi:jdbi3-postgres")
 
     // Fuel
-    implementation("com.github.kittinunf.fuel:fuel:${Version.fuel}")
-    implementation("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
+    implementation("com.github.kittinunf.fuel:fuel")
+    implementation("com.github.kittinunf.fuel:fuel-jackson")
 
     // Jackson
-    implementation(platform("com.fasterxml.jackson:jackson-bom:${Version.jackson}"))
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -106,7 +106,6 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
 
     // AWS SDK
-    implementation(platform("com.amazonaws:aws-java-sdk-bom:${Version.awsSdk}"))
     implementation("com.amazonaws:aws-java-sdk-s3")
     implementation("com.amazonaws:aws-java-sdk-sts")
     implementation("com.amazonaws:aws-java-sdk-ses")
@@ -115,34 +114,32 @@ dependencies {
     implementation(project(":service-lib"))
 
     // Flying Saucer <=>
-    implementation("org.thymeleaf:thymeleaf:3.0.11.RELEASE")
-    implementation("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.3.RELEASE")
-    implementation("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
-    implementation("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
+    implementation("org.thymeleaf:thymeleaf")
+    implementation("org.thymeleaf.extras:thymeleaf-extras-java8time")
+    implementation("org.xhtmlrenderer:flying-saucer-core")
+    implementation("org.xhtmlrenderer:flying-saucer-pdf-openpdf")
 
     // Miscellaneous
-    implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
-    implementation("javax.annotation:javax.annotation-api:1.3.2")
-    implementation("org.apache.commons:commons-pool2:${Version.commonsPool2}")
-    implementation("org.glassfish.jaxb:jaxb-runtime:2.3.2")
-    implementation("org.bouncycastle:bcprov-jdk15on:${Version.bouncyCastle}")
-    implementation("org.bouncycastle:bcpkix-jdk15on:${Version.bouncyCastle}")
+    implementation("com.auth0:java-jwt")
+    implementation("javax.annotation:javax.annotation-api")
+    implementation("org.apache.commons:commons-pool2")
+    implementation("org.glassfish.jaxb:jaxb-runtime")
+    implementation("org.bouncycastle:bcprov-jdk15on")
+    implementation("org.bouncycastle:bcpkix-jdk15on")
 
     // JUnit
-    testImplementation(platform("org.junit:junit-bom:${Version.junit}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    testImplementation("com.nhaarman:mockito-kotlin:${Version.mockitoKotlin}")
-    testImplementation("net.bytebuddy:byte-buddy:${Version.byteBuddy}")
-    testImplementation("net.logstash.logback:logstash-logback-encoder:${Version.logstashEncoder}")
-    testImplementation("org.jetbrains:annotations:${Version.jetbrainsAnnotations}")
-    testImplementation("org.mockito:mockito-core:${Version.mockito}")
-    testImplementation("org.mockito:mockito-junit-jupiter:${Version.mockito}")
+    testImplementation("com.nhaarman:mockito-kotlin")
+    testImplementation("net.bytebuddy:byte-buddy")
+    testImplementation("net.logstash.logback:logstash-logback-encoder")
+    testImplementation("org.jetbrains:annotations")
+    testImplementation("org.mockito:mockito-core")
+    testImplementation("org.mockito:mockito-junit-jupiter")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.ws:spring-ws-test")
 
-    integrationTestImplementation("io.javalin:javalin:${Version.javalin}")
-    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${Version.testContainers}"))
+    integrationTestImplementation("io.javalin:javalin")
     integrationTestImplementation("org.testcontainers:postgresql")
 
     implementation(project(":vtjclient"))

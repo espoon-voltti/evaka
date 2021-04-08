@@ -4,5 +4,7 @@
 
 rootProject.name = "evaka-message-service"
 include("service-lib")
+include("evaka-bom")
 
 project(":service-lib").projectDir = file("../service-lib")
+project(":evaka-bom").projectDir = file("../evaka-bom")
