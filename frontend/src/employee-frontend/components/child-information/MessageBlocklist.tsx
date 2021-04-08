@@ -72,9 +72,23 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
             </Tr>
           </Thead>
           <Tbody>
-            {recipients.isLoading && <SpinnerSegment />}
+            {recipients.isLoading && (
+              <Tr>
+                <Td></Td>
+                <Td>
+                  <SpinnerSegment />
+                </Td>
+                <Td></Td>
+              </Tr>
+            )}
             {recipients.isFailure && (
-              <ErrorSegment title={i18n.common.loadingFailed} />
+              <Tr>
+                <Td></Td>
+                <Td>
+                  <ErrorSegment title={i18n.common.loadingFailed} />
+                </Td>
+                <Td></Td>
+              </Tr>
             )}
             {recipients.isSuccess &&
               recipients.value.map((recipient: Recipient) => (
