@@ -57,3 +57,4 @@ V56__add_medication_to_child.sql
 V57__add_missing_enums.sql
 V58__add_pin_to_employee.sql
 V59__child_service_time.sql
+V60__application_person_foreign_keys.sql
