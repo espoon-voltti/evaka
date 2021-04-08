@@ -345,7 +345,7 @@ export interface VoucherServiceProviderUnitRow {
   childLastName: string
   childDateOfBirth: LocalDate
   childGroupName: string
-  serviceVoucherPartId: string
+  serviceVoucherDecisionId: string
   serviceVoucherValue: number
   serviceVoucherCoPayment: number
   serviceVoucherServiceCoefficient: number

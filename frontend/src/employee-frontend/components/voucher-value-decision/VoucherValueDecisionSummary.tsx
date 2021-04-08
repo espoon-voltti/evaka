@@ -32,20 +32,13 @@ export default React.memo(function Summary({ decision }: Props) {
       <Gap size="m" />
       <VoucherValueDecisionCoPaymentSection decision={decision} />
       <Gap size="m" />
-      <Total>
-        <TotalTitle noMargin>
-          {i18n.valueDecision.summary.totalCoPayment}
-        </TotalTitle>
-        <b>{formatCents(decision.totalCoPayment)} €</b>
-      </Total>
-      <Gap size="m" />
       <VoucherValueDecisionValueSection decision={decision} />
       <Gap size="m" />
       <Total>
         <TotalTitle noMargin>
           {i18n.valueDecision.summary.totalValue}
         </TotalTitle>
-        <b>{formatCents(decision.totalValue)} €</b>
+        <b>{formatCents(decision.value - decision.coPayment)} €</b>
       </Total>
     </CollapsibleSection>
   )
