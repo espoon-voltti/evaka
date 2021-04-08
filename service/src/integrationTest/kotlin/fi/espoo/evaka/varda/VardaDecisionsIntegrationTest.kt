@@ -996,7 +996,7 @@ fun insertDecisionWithApplication(
     sentDate: LocalDate = LocalDate.of(2019, 1, 1),
     decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED
 ): UUID = db.transaction {
-    val applicationId = insertTestApplication(it.handle, childId = child.id, sentDate = sentDate)
+    val applicationId = insertTestApplication(it.handle, childId = child.id, guardianId = testAdult_1.id, sentDate = sentDate)
     insertTestApplicationForm(
         it.handle, applicationId,
         DaycareFormV0(

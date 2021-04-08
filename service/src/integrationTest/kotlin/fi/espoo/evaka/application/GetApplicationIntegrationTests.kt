@@ -202,15 +202,15 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @Test
     fun `old drafts are removed`() {
         val old = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_1.id, status = ApplicationStatus.CREATED)
+            insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED)
         }
 
         val id1 = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_2.id, status = ApplicationStatus.CREATED)
+            insertTestApplication(h = h, childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED)
         }
 
         val id2 = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_3.id)
+            insertTestApplication(h = h, childId = testChild_3.id, guardianId = testAdult_1.id)
         }
 
         jdbi.handle { h ->

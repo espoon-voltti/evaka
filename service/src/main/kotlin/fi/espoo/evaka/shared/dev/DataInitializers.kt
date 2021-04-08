@@ -254,8 +254,8 @@ fun insertTestApplication(
     sentDate: LocalDate? = LocalDate.of(2019, 1, 1),
     dueDate: LocalDate? = LocalDate.of(2019, 5, 1),
     status: ApplicationStatus = ApplicationStatus.SENT,
-    guardianId: UUID = UUID.randomUUID(),
-    childId: UUID = UUID.randomUUID(),
+    guardianId: UUID,
+    childId: UUID,
     otherGuardianId: UUID? = null,
     hideFromGuardian: Boolean = false,
     transferApplication: Boolean = false

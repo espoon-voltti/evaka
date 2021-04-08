@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -28,7 +29,10 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle { h -> resetDatabase(h) }
+        jdbi.handle { h ->
+            resetDatabase(h)
+            insertGeneralTestFixtures(h)
+        }
     }
 
     @Test
