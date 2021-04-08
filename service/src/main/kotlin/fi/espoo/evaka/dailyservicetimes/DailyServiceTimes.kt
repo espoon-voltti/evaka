@@ -3,6 +3,8 @@ package fi.espoo.evaka.dailyservicetimes
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
+import org.jdbi.v3.core.result.RowView
 import java.time.LocalTime
 import java.util.UUID
 
@@ -46,36 +48,29 @@ fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
 
     return this.createQuery(sql)
         .bind("childId", childId)
-        .map { rs, _ ->
-            val regular = rs.getBoolean("regular")
-            if (regular) {
-                DailyServiceTimes.RegularTimes(
-                    regularTimes = TimeRange(
-                        rs.getString("regular_start"),
-                        rs.getString("regular_end")
-                    )
-                )
-            } else {
-                DailyServiceTimes.IrregularTimes(
-                    monday = rs.getString("monday_start")?.let { start ->
-                        TimeRange(start, rs.getString("monday_end"))
-                    },
-                    tuesday = rs.getString("tuesday_start")?.let { start ->
-                        TimeRange(start, rs.getString("tuesday_end"))
-                    },
-                    wednesday = rs.getString("wednesday_start")?.let { start ->
-                        TimeRange(start, rs.getString("wednesday_end"))
-                    },
-                    thursday = rs.getString("thursday_start")?.let { start ->
-                        TimeRange(start, rs.getString("thursday_end"))
-                    },
-                    friday = rs.getString("friday_start")?.let { start ->
-                        TimeRange(start, rs.getString("friday_end"))
-                    },
-                )
-            }
-        }
+        .map { row -> toDailyServiceTimes(row) }
         .firstOrNull()
+}
+
+fun Database.Read.toDailyServiceTimes(row: RowView): DailyServiceTimes? {
+    val regular: Boolean? = row.mapColumn("regular")
+    if (regular == null) return null
+    if (regular) {
+        return DailyServiceTimes.RegularTimes(
+            regularTimes = TimeRange(
+                row.mapColumn<String>("regular_start"),
+                row.mapColumn<String>("regular_end")
+            )
+        )
+    } else {
+        return DailyServiceTimes.IrregularTimes(
+            monday = TimeRange(row.mapColumn<String>("monday_start"), row.mapColumn("monday_end")),
+            tuesday = TimeRange(row.mapColumn<String>("tuesday_start"), row.mapColumn("tuesday_end")),
+            wednesday = TimeRange(row.mapColumn<String>("wednesday_start"), row.mapColumn("wednesday_end")),
+            thursday = TimeRange(row.mapColumn<String>("thursday_start"), row.mapColumn("thursday_end")),
+            friday = TimeRange(row.mapColumn<String>("friday_start"), row.mapColumn("friday_end")),
+        )
+    }
 }
 
 fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes) {

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
@@ -11,6 +12,7 @@ import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
@@ -125,45 +127,85 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
     // language=sql
     val sql =
         """
-        SELECT 
-            pe.id,
-            pe.first_name,
-            pe.last_name,
-            ch.preferred_name,
-            pe.date_of_birth,
-            gp.daycare_group_id as group_id,
-            p.type as placement_type,
-            false AS backup
-        FROM daycare_group_placement gp
-        JOIN placement p ON p.id = gp.daycare_placement_id
-        JOIN person pe ON pe.id = p.child_id
-        JOIN child ch ON ch.id = p.child_id
-        WHERE p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :today AND NOT EXISTS (
-            SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+        WITH child_group_placement AS (
+            SELECT
+                gp.daycare_group_id as group_id,
+                p.child_id,
+                p.type as placement_type,
+                false AS backup
+            FROM daycare_group_placement gp
+            JOIN placement p ON p.id = gp.daycare_placement_id
+            WHERE
+                daterange(gp.start_date, gp.end_date, '[]') @> :today AND
+                NOT EXISTS (
+                    SELECT 1
+                    FROM backup_care bc
+                    WHERE
+                        bc.child_id = p.child_id AND
+                        daterange(bc.start_date, bc.end_date, '[]') @> :today
+                )
+
+            UNION ALL
+
+            SELECT
+                bc.group_id,
+                p.child_id,
+                p.type as placement_type,
+                true AS backup
+            FROM backup_care bc
+            JOIN placement p ON (
+                p.child_id = bc.child_id AND
+                daterange(p.start_date, p.end_date, '[]') @> :today
+            )
+            WHERE
+                bc.unit_id = :unitId AND
+                bc.group_id IS NOT NULL AND
+                daterange(bc.start_date, bc.end_date, '[]') @> :today
         )
-        
-        UNION ALL 
-        
-        SELECT 
+        SELECT
             pe.id,
             pe.first_name,
             pe.last_name,
             ch.preferred_name,
             pe.date_of_birth,
-            bc.group_id,
-            p.type as placement_type,
-            true AS backup
-        FROM backup_care bc
-        JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-        JOIN person pe ON pe.id = p.child_id
-        JOIN child ch ON ch.id = p.child_id
-        WHERE bc.unit_id = :unitId AND bc.group_id IS NOT NULL AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+            dst.regular,
+            dst.regular_start,
+            dst.regular_end,
+            dst.monday_start,
+            dst.monday_end,
+            dst.tuesday_start,
+            dst.tuesday_end,
+            dst.wednesday_start,
+            dst.wednesday_end,
+            dst.thursday_start,
+            dst.thursday_end,
+            dst.friday_start,
+            dst.friday_end,
+            c.group_id,
+            c.placement_type,
+            c.backup
+        FROM child_group_placement c
+        JOIN person pe ON pe.id = c.child_id
+        JOIN child ch ON ch.id = c.child_id
+        LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
         .bind("today", LocalDate.now(zoneId))
-        .mapTo<ChildBasics>()
+        .map { row ->
+            ChildBasics(
+                id = row.mapColumn("id"),
+                firstName = row.mapColumn("first_name"),
+                lastName = row.mapColumn("last_name"),
+                preferredName = row.mapColumn("preferred_name"),
+                dateOfBirth = row.mapColumn("date_of_birth"),
+                placementType = row.mapColumn("placement_type"),
+                dailyServiceTimes = toDailyServiceTimes(row),
+                groupId = row.mapColumn("group_id"),
+                backup = row.mapColumn("backup")
+            )
+        }
         .list()
 }
 
