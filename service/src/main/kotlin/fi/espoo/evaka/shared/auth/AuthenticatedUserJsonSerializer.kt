@@ -20,7 +20,8 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
             is AuthenticatedUser.Employee -> {
                 gen.writeObjectField("type", "employee")
                 gen.writeObjectField("id", value.id.toString())
-                gen.writeObjectField("roles", value.roles)
+                gen.writeObjectField("globalRoles", value.globalRoles)
+                gen.writeObjectField("allScopedRoles", value.allScopedRoles)
             }
             is AuthenticatedUser.MobileDevice -> {
                 gen.writeObjectField("type", "mobile")

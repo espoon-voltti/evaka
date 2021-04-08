@@ -29,7 +29,9 @@ sealed class AuthenticatedUser : RoleContainer {
         override val isEndUser = true
     }
 
-    data class Employee(override val id: UUID, override val roles: Set<UserRole>) : AuthenticatedUser() {
+    data class Employee private constructor(override val id: UUID, val globalRoles: Set<UserRole>, val allScopedRoles: Set<UserRole>) : AuthenticatedUser() {
+        constructor(id: UUID, roles: Set<UserRole>) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
+        override val roles: Set<UserRole> = globalRoles + allScopedRoles
         override val isAdmin = roles.contains(UserRole.ADMIN)
     }
 
