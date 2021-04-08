@@ -11,7 +11,7 @@ export default class EmployeeNav {
   constructor(private readonly page: Page) {}
 
   readonly #loginBtn = new RawElement(this.page, '[data-qa="login-btn"]')
-  readonly #logoutBtn = new RawElement(this.page, '[data-qa="logout-btn"]')
+  readonly #userNameBtn = new RawElement(this.page, '[data-qa="username"]')
 
   readonly #reportsTab = new RawElement(this.page, '[data-qa="reports-nav"]')
 
@@ -34,7 +34,7 @@ export default class EmployeeNav {
         })
         break
     }
-    await this.#logoutBtn.waitUntilVisible()
+    await this.#userNameBtn.waitUntilVisible()
   }
 
   async openTab(tab: 'reports') {

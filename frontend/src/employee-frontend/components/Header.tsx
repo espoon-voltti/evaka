@@ -4,16 +4,28 @@
 
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
-import { NavLink, RouteComponentProps, withRouter } from 'react-router-dom'
+import {
+  Link,
+  NavLink,
+  RouteComponentProps,
+  withRouter
+} from 'react-router-dom'
 import classNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import Title from 'lib-components/atoms/Title'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import colors from 'lib-components/colors'
+import { cityLogo } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
-import { cityLogo } from 'lib-customizations/employee'
 import { logoutUrl } from '../api/auth'
 import { RequireRole } from '../utils/roles'
-import Title from 'lib-components/atoms/Title'
 import { featureFlags } from '../config'
+import { isNotProduction } from 'employee-frontend/constants'
 
 const Img = styled.img`
   color: #0050bb;
@@ -57,13 +69,13 @@ const NavbarItem = styled.div`
 const LogoutLink = styled.a`
   cursor: pointer;
   text-decoration: none;
-  margin-left: 1rem;
   color: ${colors.blues.medium};
 `
 
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
+  const [popupVisible, setPopupVisible] = useState(false)
 
   const path = location.pathname
   const atCustomerInfo =
@@ -96,6 +108,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 oneOf={['SERVICE_WORKER', 'ADMIN', 'SPECIAL_EDUCATION_TEACHER']}
               >
                 <NavbarLink
+                  onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"
                   to="/applications"
                   data-qa="applications-nav"
@@ -116,6 +129,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 ]}
               >
                 <NavbarLink
+                  onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"
                   to="/units"
                   data-qa="units-nav"
@@ -126,6 +140,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 
               <RequireRole oneOf={['SERVICE_WORKER', 'FINANCE_ADMIN']}>
                 <NavbarLink
+                  onClick={() => setPopupVisible(false)}
                   className={`navbar-item is-tab ${
                     atCustomerInfo ? 'is-active' : ''
                   }`}
@@ -139,6 +154,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               <RequireRole oneOf={['FINANCE_ADMIN']}>
                 <>
                   <NavbarLink
+                    onClick={() => setPopupVisible(false)}
                     className="navbar-item is-tab"
                     to="/finance"
                     data-qa="finance-nav"
@@ -158,6 +174,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 ]}
               >
                 <NavbarLink
+                  onClick={() => setPopupVisible(false)}
                   className="navbar-item is-tab"
                   to="/reports"
                   data-qa="reports-nav"
@@ -169,6 +186,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               {featureFlags.messaging && (
                 <RequireRole oneOf={['UNIT_SUPERVISOR']}>
                   <NavbarLink
+                    onClick={() => setPopupVisible(false)}
                     className="navbar-item is-tab"
                     to="/messages"
                     data-qa="messages-nav"
@@ -183,16 +201,34 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           {loggedIn && user && (
             <NavbarItem>
               <NavbarEnd>
-                <span data-qa="username">{user.name}</span>
-                <LogoutLink
-                  data-qa="logout-btn"
-                  style={{ marginLeft: '1rem' }}
-                  href={logoutUrl}
-                >
-                  {i18n.header.logout}
-                </LogoutLink>
+                <InlineButton
+                  data-qa="username"
+                  onClick={() => setPopupVisible(!popupVisible)}
+                  text={user.name}
+                  iconRight
+                  icon={popupVisible ? faChevronUp : faChevronDown}
+                />
               </NavbarEnd>
             </NavbarItem>
+          )}
+          {popupVisible && (
+            <UserPopup>
+              <FixedSpaceColumn spacing={'m'}>
+                {isNotProduction() && (
+                  <Link to={`/pin-code`} onClick={() => setPopupVisible(false)}>
+                    {i18n.pinCode.link}
+                  </Link>
+                )}
+                <LogoutLink
+                  data-qa="logout-btn"
+                  href={logoutUrl}
+                  onClick={() => setPopupVisible(false)}
+                >
+                  <LogoutText>{i18n.header.logout}</LogoutText>
+                  <FontAwesomeIcon icon={faSignOut} />
+                </LogoutLink>
+              </FixedSpaceColumn>
+            </UserPopup>
           )}
         </StyledHeader>
       )}
@@ -203,6 +239,28 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
 const StyledHeader = styled(Header2)`
   @media print {
     display: none;
+  }
+`
+
+const LogoutText = styled.span`
+  margin-right: 16px;
+`
+
+const UserPopup = styled.div`
+  font-size: 16px;
+  line-height: 24px;
+  font-family: 'Open Sans', sans-serif;
+  position: absolute;
+  width: 320px;
+  right: 0px;
+  top: 148px;
+  z-index: 5;
+  padding: 24px 16px;
+  background: ${colors.greyscale.white};
+  box-shadow: 0px 4px 4px rgba(15, 15, 15, 0.25);
+
+  a {
+    color: ${colors.greyscale.darkest};
   }
 `
 

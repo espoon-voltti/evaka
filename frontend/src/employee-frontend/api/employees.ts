@@ -36,3 +36,10 @@ export async function getFinanceDecisionHandlers(): Promise<
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function updatePinCode(pinCode: string): Promise<Result<void>> {
+  return client
+    .post<void>(`/employee/pin-code`, { pin: pinCode })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

@@ -62,6 +62,7 @@ import PlacementSketching from './components/reports/PlacementSketching'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import { client } from './api/client'
 import MessagesPage from './components/messages/MessagesPage'
+import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -335,6 +336,12 @@ export default function App() {
               path="/reports/raw"
               component={ensureAuthenticated(ReportRaw)}
               title={i18n.titles.reports}
+            />
+            <RouteWithTitle
+              exact
+              path="/pin-code"
+              component={ensureAuthenticated(EmployeePinCodePage)}
+              title={i18n.titles.employeePinCode}
             />
             {redirectRoutes([
               {

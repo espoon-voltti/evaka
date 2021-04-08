@@ -23,7 +23,8 @@ export const fi = {
     reports: 'Raportit',
     messages: 'Viestit',
     caretakers: 'Henkilökunta',
-    createUnit: 'Luo uusi yksikkö'
+    createUnit: 'Luo uusi yksikkö',
+    employeePinCode: 'PIN-koodin hallinta'
   },
   common: {
     yes: 'Kyllä',
@@ -2260,5 +2261,22 @@ export const fi = {
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',
     editDraft: 'Muokkaa luonnosta'
+  },
+  pinCode: {
+    title: 'eVaka-mobiilin PIN-koodi',
+    title2: 'Aseta PIN-koodi',
+    text1:
+      'Tällä sivulla voit asettaa oman henkilökohtaisen PIN-koodisi Espoon varhaiskasvatuksen mobiilisovellusta varten. PIN-koodia käytetään eVaka-mobiilissa lukon',
+    text2: 'takana olevien tietojen tarkasteluun.',
+    text3: 'Huom!',
+    text4:
+      'Ethän luovuta PIN-koodiasi kenenkään toisen henkilön tietoon. Tarvittaessa voit vaihtaa PIN-koodin milloin vain.',
+    text5:
+      'PIN-koodin tulee sisältää neljä (4) numeroa. Yleisimmät numeroyhdistelmät (esim. 1234) eivät kelpaa.',
+    pinCode: 'PIN-koodi',
+    button: 'Tallenna PIN-koodi',
+    placeholder: '4 numeroa',
+    error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
+    link: 'eVaka-mobiilin PIN-koodi'
   }
 }

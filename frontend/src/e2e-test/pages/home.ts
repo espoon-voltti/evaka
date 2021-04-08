@@ -14,6 +14,7 @@ export default class Home {
   private readonly devLoginForm = new DevLoginForm()
   constructor(
     readonly loginBtn = Selector('[data-qa="login-btn"]'),
+    readonly userNameBtn = Selector('[data-qa="username"]'),
     readonly logoutBtn = Selector('[data-qa="logout-btn"]'),
     readonly logoWrapper = Selector('.logo-wrapper')
   ) {}
@@ -34,7 +35,7 @@ export default class Home {
   }
 
   isLoggedIn() {
-    return this.logoutBtn.exists
+    return this.userNameBtn.exists
   }
 
   async login(role: EvakaRole) {
@@ -55,10 +56,15 @@ export default class Home {
       case 'enduser':
         break
     }
-    await t.expect(this.logoutBtn.visible).ok()
+    if (role === 'enduser') {
+      await t.expect(this.logoutBtn.visible).ok()
+    } else {
+      await t.expect(this.userNameBtn.visible).ok()
+    }
   }
 
   async logout() {
+    await t.click(this.userNameBtn)
     await t.click(this.logoutBtn)
   }
 
