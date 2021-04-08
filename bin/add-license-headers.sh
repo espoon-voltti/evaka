@@ -15,6 +15,16 @@ if [ "$DEBUG" = "true" ]; then
     set -x
 fi
 
+# Figure out absolute path to git repository root
+REPO_ROOT=$(git rev-parse --show-superproject-working-tree) # first, let's assume the working directory is in a git submodule
+if [ -z "${REPO_ROOT}" ]; then
+  # not in a submodule -> just get the repository root
+  REPO_ROOT=$(git rev-parse --show-toplevel)
+fi
+
+# strip absolute git repository path from absolute working directory path
+REPO_PREFIX=${PWD#"${REPO_ROOT}"}
+
 if [ "${1:-X}" = '--help' ]; then
   echo 'Usage: ./bin/add-license-headers.sh [OPTIONS]'
   echo -e
@@ -29,7 +39,7 @@ if [ "${1:-X}" = '--help' ]; then
 fi
 
 function run_reuse() {
-    docker run --rm --volume "$(pwd):/data" "fsfe/reuse:${REUSE_VERSION}" "$@"
+    docker run --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "fsfe/reuse:${REUSE_VERSION}" "$@"
 }
 
 function addheader() {
