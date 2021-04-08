@@ -38,11 +38,17 @@ import InputField from '../../../lib-components/atoms/form/InputField'
 import Checkbox from '../../../lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
+import { NullableValues } from '../../types'
 
-interface Props {
-  id: UUID
-  open: boolean
-}
+const weekdays = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday'
+] as const
+
+type weekday = typeof weekdays[number]
 
 interface TimeInputRange {
   start: string
@@ -53,83 +59,40 @@ interface SelectableTimeInputRange extends TimeInputRange {
   selected: boolean
 }
 
-interface FormData {
+interface FormData extends Record<weekday, SelectableTimeInputRange> {
   type: 'REGULAR' | 'IRREGULAR' | 'NOT_SET'
   regular: TimeInputRange
-  monday: SelectableTimeInputRange
-  tuesday: SelectableTimeInputRange
-  wednesday: SelectableTimeInputRange
-  thursday: SelectableTimeInputRange
-  friday: SelectableTimeInputRange
+}
+
+const emptyRange = {
+  selected: false,
+  start: '',
+  end: ''
 }
 
 const emptyForm: FormData = {
   type: 'NOT_SET',
-  regular: {
-    start: '',
-    end: ''
-  },
-  monday: {
-    selected: false,
-    start: '',
-    end: ''
-  },
-  tuesday: {
-    selected: false,
-    start: '',
-    end: ''
-  },
-  wednesday: {
-    selected: false,
-    start: '',
-    end: ''
-  },
-  thursday: {
-    selected: false,
-    start: '',
-    end: ''
-  },
-  friday: {
-    selected: false,
-    start: '',
-    end: ''
-  }
+  regular: { start: '', end: '' },
+  monday: emptyRange,
+  tuesday: emptyRange,
+  wednesday: emptyRange,
+  thursday: emptyRange,
+  friday: emptyRange
 }
 
 interface ValidationResult {
-  regular: {
-    start: string | null
-    end: string | null
-  }
-  monday: {
-    start: string | null
-    end: string | null
-  }
-  tuesday: {
-    start: string | null
-    end: string | null
-  }
-  wednesday: {
-    start: string | null
-    end: string | null
-  }
-  thursday: {
-    start: string | null
-    end: string | null
-  }
-  friday: {
-    start: string | null
-    end: string | null
-  }
+  regular: NullableValues<TimeInputRange>
+  monday: NullableValues<TimeInputRange>
+  tuesday: NullableValues<TimeInputRange>
+  wednesday: NullableValues<TimeInputRange>
+  thursday: NullableValues<TimeInputRange>
+  friday: NullableValues<TimeInputRange>
 }
 
-const weekdays = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday'
-] as const
+interface Props {
+  id: UUID
+  open: boolean
+}
 
 const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   id,
@@ -278,7 +241,6 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   useEffect(validate, [formData])
 
   const onSubmit = () => {
-    validate()
     if (!formIsValid || !formData) return
 
     setSubmitting(true)
