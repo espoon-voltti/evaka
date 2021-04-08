@@ -226,6 +226,7 @@ function Applications() {
                     {reducePropertySum(filteredRows, (r) => r.over3Years)}
                   </Td>
                   <Td>{reducePropertySum(filteredRows, (r) => r.preschool)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.club)}</Td>
                   <Td>{reducePropertySum(filteredRows, (r) => r.total)}</Td>
                 </Tr>
               </TableFooter>
