@@ -5,12 +5,22 @@
 import createSamlRouter from './saml'
 import createSuomiFiStrategy from '../../auth/suomi-fi-saml'
 import { SessionType } from '../../session'
+import createEvakaCustomerSamlStrategy from '../../auth/customer-saml'
 
-export function createAuthEndpoints(sessionType: SessionType) {
+export function createSuomiFiAuthEndpoints(sessionType: SessionType) {
   return createSamlRouter({
     strategyName: 'suomifi',
     strategy: createSuomiFiStrategy(),
     sessionType,
     pathIdentifier: 'saml'
+  })
+}
+
+export function createKeycloakAuthEndpoints(sessionType: SessionType) {
+  return createSamlRouter({
+    strategyName: 'evaka-customer',
+    strategy: createEvakaCustomerSamlStrategy(),
+    sessionType,
+    pathIdentifier: 'evaka-customer'
   })
 }
