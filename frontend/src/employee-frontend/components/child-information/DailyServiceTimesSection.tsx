@@ -37,6 +37,7 @@ import Radio from '../../../lib-components/atoms/form/Radio'
 import InputField from '../../../lib-components/atoms/form/InputField'
 import Checkbox from '../../../lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
+import { RequireRole } from '../../utils/roles'
 
 interface Props {
   id: UUID
@@ -385,18 +386,20 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
         <>
           {!editing && (
             <>
-              <RightAlign>
-                <InlineButton
-                  text={i18n.common.edit}
-                  icon={faPen}
-                  onClick={() => {
-                    resetForm()
-                    setEditing(true)
-                  }}
-                />
-              </RightAlign>
+              <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+                <RightAlign>
+                  <InlineButton
+                    text={i18n.common.edit}
+                    icon={faPen}
+                    onClick={() => {
+                      resetForm()
+                      setEditing(true)
+                    }}
+                  />
+                </RightAlign>
 
-              <Gap size="s" />
+                <Gap size="s" />
+              </RequireRole>
 
               {apiData.value === null ? (
                 <FixedWidthLabel>

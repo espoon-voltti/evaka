@@ -29,7 +29,7 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement
 } from 'e2e-test-common/dev-api/types'
-import { enduserRole, seppoAdminRole } from '../../config/users'
+import { enduserRole } from '../../config/users'
 import CitizenHomepage from '../../pages/citizen/citizen-homepage'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'

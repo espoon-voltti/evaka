@@ -31,7 +31,7 @@ class DailyServiceTimesController(
     ): ResponseEntity<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF
+            UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF
         )
 
         return db.read { it.getChildDailyServiceTimes(childId) }.let {
@@ -50,7 +50,7 @@ class DailyServiceTimesController(
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR
         )
 
         db.transaction { it.upsertChildDailyServiceTimes(childId, body) }
@@ -66,7 +66,7 @@ class DailyServiceTimesController(
     ): ResponseEntity<Unit> {
         Audit.ChildDailyServiceTimesDelete.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(
-            UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR
         )
 
         db.transaction { it.deleteChildDailyServiceTimes(childId) }
