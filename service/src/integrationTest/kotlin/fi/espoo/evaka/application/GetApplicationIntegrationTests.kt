@@ -33,6 +33,7 @@ import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,7 +46,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     lateinit var stateService: ApplicationStateService
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val enduser = AuthenticatedUser.Citizen(testAdult_1.id)
+    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
     private val testDaycareSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf())
     private val testRoundTheClockDaycareSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
     private val testRoundTheClockDaycareSupervisor = AuthenticatedUser.Employee(UUID.randomUUID(), setOf())
@@ -201,16 +202,12 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `old drafts are removed`() {
-        val old = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED)
-        }
-
-        val id1 = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED)
-        }
-
-        val id2 = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_3.id, guardianId = testAdult_1.id)
+        val (old, id1, id2) = jdbi.handle { h ->
+            listOf(
+                insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                insertTestApplication(h = h, childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                insertTestApplication(h = h, childId = testChild_3.id, guardianId = testAdult_1.id)
+            )
         }
 
         jdbi.handle { h ->
@@ -282,12 +279,29 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         assertEquals(200, res.statusCode)
     }
 
+    @Test
+    fun `application attachments when service workers adds attachments, end user does not see attachments uploaded by service worker`() {
+        val applicationId = createPlacementProposalWithAttachments(testDaycare.id)
+
+        assertTrue(uploadAttachment(applicationId, serviceWorker))
+
+        val (_, _, serviceWorkerResult) = http.get("/v2/applications/$applicationId")
+            .asUser(serviceWorker)
+            .responseObject<ApplicationResponse>(objectMapper)
+        assertEquals(3, serviceWorkerResult.get().attachments.size)
+
+        val (_, _, endUserResult) = http.get("/citizen/applications/$applicationId")
+            .asUser(endUser)
+            .responseObject<ApplicationDetails>(objectMapper)
+        assertEquals(2, endUserResult.get().attachments.size)
+    }
+
     private fun createPlacementProposalWithAttachments(unitId: UUID): UUID {
         val applicationId = db.transaction { tx ->
             val applicationId = insertTestApplication(
                 tx.handle,
                 childId = testChild_1.id,
-                guardianId = enduser.id,
+                guardianId = endUser.id,
                 status = ApplicationStatus.CREATED
             )
             insertTestApplicationForm(
@@ -297,8 +311,8 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
             )
             applicationId
         }
-        uploadAttachment(applicationId, enduser, AttachmentType.URGENCY)
-        uploadAttachment(applicationId, enduser, AttachmentType.EXTENDED_CARE)
+        uploadAttachment(applicationId, endUser, AttachmentType.URGENCY)
+        uploadAttachment(applicationId, endUser, AttachmentType.EXTENDED_CARE)
         db.transaction { tx ->
             stateService.sendApplication(tx, serviceWorker, applicationId)
             stateService.moveToWaitingPlacement(tx, serviceWorker, applicationId)

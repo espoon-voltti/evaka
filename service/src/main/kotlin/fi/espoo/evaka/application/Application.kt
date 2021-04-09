@@ -177,12 +177,12 @@ data class CitizenApplicationSummary(
     val transferApplication: Boolean
 )
 
-fun fetchApplicationDetailsWithCurrentOtherGuardianInfo(
+fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     user: AuthenticatedUser,
     tx: Database.Transaction,
     personService: PersonService,
     applicationId: UUID
-): ApplicationDetails? = fetchApplicationDetails(tx.handle, applicationId)
+): ApplicationDetails? = fetchApplicationDetails(tx.handle, applicationId, includeCitizenAttachmentsOnly = true)
     ?.let { application ->
         application.copy(
             otherGuardianId = personService.getOtherGuardian(tx, user, application.guardianId, application.childId)?.id

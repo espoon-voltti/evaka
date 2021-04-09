@@ -85,7 +85,8 @@ abstract class FullApplicationTest {
     }
 
     fun uploadAttachment(applicationId: UUID, user: AuthenticatedUser, type: AttachmentType = AttachmentType.URGENCY): Boolean {
-        val (_, res, _) = http.upload("/attachments/citizen/applications/$applicationId", parameters = listOf("type" to type))
+        val path = if (user.isEndUser) "/attachments/citizen/applications/$applicationId" else "/attachments/applications/$applicationId"
+        val (_, res, _) = http.upload(path, parameters = listOf("type" to type))
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .response()
