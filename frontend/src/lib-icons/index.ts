@@ -64,6 +64,7 @@ export interface IconSet {
   faMoneyBillWave: IconDefinition
   faMoneyCheck: IconDefinition
   faMoneyCheckEdit: IconDefinition
+  faPaperclip: IconDefinition
   faPen: IconDefinition
   faPercentage: IconDefinition
   faPlay: IconDefinition
@@ -162,6 +163,7 @@ export const faMeh = iconSet.faMeh
 export const faMoneyBillWave = iconSet.faMoneyBillWave
 export const faMoneyCheck = iconSet.faMoneyCheck
 export const faMoneyCheckEdit = iconSet.faMoneyCheckEdit
+export const faPaperclip = iconSet.faPaperclip
 export const faPen = iconSet.faPen
 export const faPercentage = iconSet.faPercentage
 export const faPlay = iconSet.faPlay

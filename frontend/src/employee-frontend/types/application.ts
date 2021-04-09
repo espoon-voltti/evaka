@@ -74,6 +74,8 @@ export interface ApplicationListSummary {
   wasOnDaycare: boolean | null
   extendedCare: boolean
   duplicateApplication: boolean
+  urgent: boolean
+  attachmentCount: number
   placementProposalStatus: PlacementProposalStatus | null
   placementProposalUnitName: string | null
   currentPlacementUnit: Unit | null

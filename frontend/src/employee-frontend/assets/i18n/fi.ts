@@ -237,7 +237,9 @@ export const fi = {
       CLUB_CARE: 'Edellisenä toimintakautena ollut kerhopaikka',
       DAYCARE: 'On ilmoittanut luopuvansa päivähoitopaikasta',
       EXTENDED_CARE: 'Vuorotyö',
-      DUPLICATE_APPLICATION: 'Tuplahakemus'
+      DUPLICATE_APPLICATION: 'Tuplahakemus',
+      URGENT: 'Kiireellinen hakemus',
+      HAS_ATTACHMENTS: 'Hakemuksessa liite'
     },
     types: {
       PRESCHOOL: 'Esiopetushakemus',
