@@ -15,6 +15,13 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { Bulletin } from './types'
+import { SelectorChange } from 'employee-frontend/components/messages/receiver-selection-utils'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+
+type Option = {
+  label: string
+  value: string
+}
 
 type Props = {
   bulletin: Bulletin
@@ -22,6 +29,9 @@ type Props = {
   onDeleteDraft: () => void
   onClose: () => void
   onSend: () => void
+  selectedReceivers: Option[]
+  receiverOptions: Option[]
+  updateSelection: (selectorChange: SelectorChange) => void
 }
 
 export default React.memo(function MessageEditor({
@@ -29,7 +39,10 @@ export default React.memo(function MessageEditor({
   onChange,
   onDeleteDraft,
   onClose,
-  onSend
+  onSend,
+  selectedReceivers: selected,
+  receiverOptions: options,
+  updateSelection
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -41,19 +54,42 @@ export default React.memo(function MessageEditor({
       </TopBar>
       <FormArea>
         <div>
-          <div>
-            {bulletin.receiverUnits.map(({ unitName }) => unitName).join(',')}
-          </div>
-          <div>
-            {bulletin.receiverGroups
-              .map(({ groupName }) => `${groupName} (YKSIKÖN NIMI)`)
-              .join(',')}
-          </div>
-          <div>
-            {bulletin.receiverChildren.map(
-              ({ firstName, lastName }) => `${firstName} ${lastName}`
-            )}
-          </div>
+          <Gap size={'xs'} />
+          <div>{i18n.messages.messageEditor.receivers}</div>
+          <Gap size={'xs'} />
+          <MultiSelect
+            placeholder={i18n.common.search}
+            value={selected}
+            options={options}
+            onChange={(newSelection) => {
+              if (newSelection.length < selected.length) {
+                const values = newSelection.map((option) => option.value)
+                const deselected = selected.find(
+                  (option) => !values.includes(option.value)
+                )
+                if (deselected) {
+                  updateSelection({
+                    selectorId: deselected.value,
+                    selected: false
+                  })
+                }
+              } else {
+                const values = selected.map((option) => option.value)
+                const newlySelected = newSelection.find(
+                  (option) => !values.includes(option.value)
+                )
+                if (newlySelected) {
+                  updateSelection({
+                    selectorId: newlySelected.value,
+                    selected: true
+                  })
+                }
+              }
+            }}
+            noOptionsMessage={i18n.common.noResults}
+            getOptionId={({ value }) => value}
+            getOptionLabel={({ label }) => label}
+          />
         </div>
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.sender}</div>

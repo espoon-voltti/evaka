@@ -64,7 +64,8 @@ fun Database.Transaction.updateDraftBulletin(
     id: UUID,
     title: String,
     content: String,
-    sender: String
+    sender: String,
+    receivers: List<BulletinReceiverTriplet>
 ) {
     // language=sql
     val updateBulletinSQL = """
@@ -82,6 +83,36 @@ fun Database.Transaction.updateDraftBulletin(
         .execute()
 
     if (updated == 0) throw NotFound("No bulletin $id found by user ${user.id} in draft state")
+
+    else {
+        // language=sql
+        val deleteReceiversSQL = """
+            DELETE FROM bulletin_receiver
+            WHERE bulletin_id = :id
+        """.trimIndent()
+
+        this.createUpdate(deleteReceiversSQL).bind("id", id).execute()
+
+        // language=sql
+        val insertReceiversSQL = """
+        INSERT INTO bulletin_receiver
+        (bulletin_id, unit_id, group_id, child_id)
+        VALUES (:id, :unitId, :groupId, :childId)
+        """.trimIndent()
+
+        val batch = this.prepareBatch(insertReceiversSQL)
+
+        receivers.forEach { receiver ->
+            batch
+                .bind("id", id)
+                .bind("unitId", receiver.unitId)
+                .bind("groupId", receiver.groupId)
+                .bind("childId", receiver.personId)
+                .add()
+        }
+
+        batch.execute()
+    }
 }
 
 fun Database.Transaction.deleteDraftBulletin(
@@ -239,8 +270,8 @@ data class BulletinRaw(
     val sender: String,
     val title: String,
     val content: String,
-    val unitId: UUID,
-    val unitName: String,
+    val unitId: UUID?,
+    val unitName: String?,
     val groupId: UUID?,
     val groupName: String?,
     val childId: UUID?,
@@ -288,16 +319,16 @@ fun Database.Read.getBulletin(
 }
 
 private fun mapRawBulletin(rawBulletinsByBulletinId: List<BulletinRaw>): Bulletin? {
-    val receiverUnits = rawBulletinsByBulletinId.filter { it.groupId == null && it.childId == null }.map {
+    val receiverUnits = rawBulletinsByBulletinId.filter { it.unitId != null && it.unitName != null && it.groupId == null && it.childId == null }.map {
         ReceiverUnit(
-            unitId = it.unitId,
-            unitName = it.unitName
+            unitId = it.unitId!!,
+            unitName = it.unitName!!
         )
     }.distinctBy { it.unitId }
 
-    val receiverGroups = rawBulletinsByBulletinId.filter { it.groupId != null && it.childId == null }.map {
+    val receiverGroups = rawBulletinsByBulletinId.filter { it.unitId != null && it.groupId != null && it.childId == null }.map {
         ReceiverGroup(
-            unitId = it.unitId,
+            unitId = it.unitId!!,
             groupId = it.groupId!!,
             groupName = it.groupName!!
         )
@@ -336,28 +367,31 @@ fun Database.Read.getOwnBulletinDrafts(
 ): Paged<Bulletin> {
     // language=sql
     val sql = """
-        WITH limited_bulletins AS (
-        SELECT
-            COUNT(b.id) OVER (),
-            b.id,
-            b.sender,
-            b.title,
-            b.content,
-            b.sent_at,
-            b.created_by_employee,
-            concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        WITH own_bulletins AS (
+            SELECT DISTINCT b.id FROM bulletin b 
+            LEFT JOIN bulletin_receiver br ON br.bulletin_id = b.id
+            WHERE b.created_by_employee = :userId AND (br.unit_id = :unitId OR br.id IS NULL)
+        ),
+        limited_bulletins AS (
+            SELECT
+                COUNT(*) OVER (),
+                b.id,
+                b.sender,
+                b.title,
+                b.content,
+                b.sent_at,
+                b.created_by_employee,
+                b.updated,
+                concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
             FROM bulletin b 
             JOIN employee e on b.created_by_employee = e.id
-            JOIN (
-                SELECT DISTINCT bulletin_id FROM bulletin_receiver WHERE unit_id = :unitId
-            ) sub ON sub.bulletin_id = b.id
-            WHERE b.sent_at IS NULL AND b.created_by_employee = :userId
-            ORDER BY b.updated DESC
+            JOIN own_bulletins ob ON ob.id = b.id
+            WHERE b.sent_at IS NULL
+            ORDER BY updated DESC
             LIMIT :pageSize OFFSET (:page - 1) * :pageSize
         )
-        SELECT 
+        SELECT
             b.*,
-            br.bulletin_id,
             d.id as unit_id,
             d.name as unit_name,
             dg.id as group_id,
@@ -366,8 +400,8 @@ fun Database.Read.getOwnBulletinDrafts(
             c.first_name as child_first_name,
             c.last_name as child_last_name
         FROM limited_bulletins b
-        JOIN bulletin_receiver br ON br.bulletin_id = b.id
-        JOIN daycare d ON br.unit_id = d.id
+        LEFT JOIN bulletin_receiver br ON br.bulletin_id = b.id
+        LEFT JOIN daycare d ON br.unit_id = d.id
         LEFT JOIN daycare_group dg ON br.group_id = dg.id
         LEFT JOIN person c ON br.child_id = c.id
     """.trimIndent()

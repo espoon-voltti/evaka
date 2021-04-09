@@ -1,45 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import { UUID } from 'employee-frontend/types'
 import styled from 'styled-components'
-import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import { H1 } from 'lib-components/typography'
 import { Table, Tr, Th, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { defaultMargins } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Button from 'lib-components/atoms/buttons/Button'
 import colors from 'lib-components/colors'
-import { ReceiverTriplet, ReceiverGroup } from './types'
+import { ReceiverGroup } from './types'
 import { useTranslation } from '../../state/i18n'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faAngleUp } from 'lib-icons'
-import { getReceivers } from 'employee-frontend/components/messages/api'
-import {
-  getSelectorStatus,
-  getReceiverTriplets,
-  SelectorNode,
-  updateSelector
-} from 'employee-frontend/components/messages/receiver-selection-utils'
+import { SelectorChange } from 'employee-frontend/components/messages/receiver-selection-utils'
 
 interface Props {
   unitId: UUID
   onCreateNew: () => void
-  setReceiverTriplets: (value: ReceiverTriplet[]) => void
+  receivers: ReceiverGroup[]
+  isSelected: (id: UUID) => boolean
+  updateSelection: (selectorChange: SelectorChange) => void
 }
 
 export default React.memo(function ReceiverSelection({
   unitId,
   onCreateNew,
-  setReceiverTriplets
+  isSelected,
+  updateSelection,
+  receivers
 }: Props) {
   const { i18n } = useTranslation()
-
-  const [receiversResult, setReceiversResult] = useState<
-    Result<ReceiverGroup[]>
-  >(Loading.of())
-
-  const loadReceivers = useRestApi(getReceivers, setReceiversResult)
-  useEffect(() => loadReceivers(unitId), [])
 
   const [collapsedGroups, setCollapsedGroups] = useState<UUID[]>([])
 
@@ -54,38 +43,13 @@ export default React.memo(function ReceiverSelection({
   const toggleCollapsed = (groupId: UUID) =>
     isCollapsed(groupId) ? setNotCollapsed(groupId) : setCollapsed(groupId)
 
-  const [selectorChange, setSelectorChange] = useState<SelectorNode>()
-  const [receiverSelection, setReceiverSelection] = useState<SelectorNode>()
+  const [selectorChange, setSelectorChange] = useState<SelectorChange>()
 
   useEffect(() => {
-    if (receiversResult.isSuccess) {
-      setReceiverSelection({
-        selectorId: unitId,
-        selected: false,
-        childNodes: receiversResult.value.map((group) => ({
-          selectorId: group.groupId,
-          selected: false,
-          childNodes: group.receivers.map((child) => ({
-            selectorId: child.childId,
-            selected: false,
-            childNodes: undefined
-          }))
-        }))
-      })
-    }
-  }, [receiversResult])
-
-  useEffect(() => {
-    if (receiverSelection && selectorChange) {
-      setReceiverSelection(updateSelector(receiverSelection, selectorChange))
+    if (selectorChange) {
+      updateSelection(selectorChange)
     }
   }, [selectorChange])
-
-  useEffect(() => {
-    if (receiverSelection) {
-      setReceiverTriplets(getReceiverTriplets(receiverSelection))
-    }
-  }, [receiverSelection])
 
   return (
     <Container>
@@ -99,11 +63,7 @@ export default React.memo(function ReceiverSelection({
             <Th>
               <Checkbox
                 label={''}
-                checked={
-                  receiverSelection
-                    ? getSelectorStatus(unitId, receiverSelection)
-                    : false
-                }
+                checked={isSelected(unitId)}
                 onChange={(checked) =>
                   setSelectorChange({ selectorId: unitId, selected: checked })
                 }
@@ -111,88 +71,75 @@ export default React.memo(function ReceiverSelection({
             </Th>
           </Tr>
         </Thead>
-        {receiversResult.isSuccess &&
-          receiverSelection &&
-          receiversResult.value.map((receiverGroup) => (
-            <Tbody key={receiverGroup.groupId}>
-              <Tr>
-                <Td
-                  colSpan={3}
-                  onClick={() => toggleCollapsed(receiverGroup.groupId)}
-                >
-                  <IconWrapper>
-                    <FontAwesomeIcon
-                      icon={
-                        isCollapsed(receiverGroup.groupId)
-                          ? faAngleUp
-                          : faAngleDown
-                      }
-                    />
-                  </IconWrapper>
-                  <strong>{receiverGroup.groupName}</strong>
-                </Td>
-                <Td>
-                  <Checkbox
-                    label={''}
-                    checked={getSelectorStatus(
-                      receiverGroup.groupId,
-                      receiverSelection
-                    )}
-                    onChange={(checked) =>
-                      setSelectorChange({
-                        selectorId: receiverGroup.groupId,
-                        selected: checked
-                      })
+        {receivers.map((receiverGroup) => (
+          <Tbody key={receiverGroup.groupId}>
+            <Tr>
+              <Td
+                colSpan={3}
+                onClick={() => toggleCollapsed(receiverGroup.groupId)}
+              >
+                <IconWrapper>
+                  <FontAwesomeIcon
+                    icon={
+                      isCollapsed(receiverGroup.groupId)
+                        ? faAngleUp
+                        : faAngleDown
                     }
                   />
-                </Td>
-              </Tr>
-              {!isCollapsed(receiverGroup.groupId) &&
-                receiverGroup.receivers.map((receiverChild) => (
-                  <Tr key={receiverChild.childId}>
-                    <Td>
-                      {receiverChild.childFirstName}{' '}
-                      {receiverChild.childLastName}
-                    </Td>
-                    <Td>{receiverChild.childDateOfBirth.format()}</Td>
-                    <Td>
-                      {receiverChild.receiverPersons.map(
-                        ({
-                          receiverId,
-                          receiverFirstName,
-                          receiverLastName
-                        }) => (
-                          <div key={receiverId}>
-                            {receiverFirstName} {receiverLastName}
-                          </div>
-                        )
-                      )}
-                    </Td>
-                    <Td>
-                      <Checkbox
-                        label={''}
-                        checked={getSelectorStatus(
-                          receiverChild.childId,
-                          receiverSelection
-                        )}
-                        onChange={(checked) =>
-                          setSelectorChange({
-                            selectorId: receiverChild.childId,
-                            selected: checked
-                          })
-                        }
-                        dataQa={`check-receiver-${receiverChild.childId}`}
-                      />
-                    </Td>
-                  </Tr>
-                ))}
-            </Tbody>
-          ))}
+                </IconWrapper>
+                <strong>{receiverGroup.groupName}</strong>
+              </Td>
+              <Td>
+                <Checkbox
+                  label={''}
+                  checked={isSelected(receiverGroup.groupId)}
+                  onChange={(checked) =>
+                    setSelectorChange({
+                      selectorId: receiverGroup.groupId,
+                      selected: checked
+                    })
+                  }
+                />
+              </Td>
+            </Tr>
+            {!isCollapsed(receiverGroup.groupId) &&
+              receiverGroup.receivers.map((receiverChild) => (
+                <Tr key={receiverChild.childId}>
+                  <Td>
+                    {receiverChild.childFirstName} {receiverChild.childLastName}
+                  </Td>
+                  <Td>{receiverChild.childDateOfBirth.format()}</Td>
+                  <Td>
+                    {receiverChild.receiverPersons.map(
+                      ({ receiverId, receiverFirstName, receiverLastName }) => (
+                        <div key={receiverId}>
+                          {receiverFirstName} {receiverLastName}
+                        </div>
+                      )
+                    )}
+                  </Td>
+                  <Td>
+                    <Checkbox
+                      label={''}
+                      checked={isSelected(receiverChild.childId)}
+                      onChange={(checked) =>
+                        setSelectorChange({
+                          selectorId: receiverChild.childId,
+                          selected: checked
+                        })
+                      }
+                      dataQa={`check-receiver-${receiverChild.childId}`}
+                    />
+                  </Td>
+                </Tr>
+              ))}
+          </Tbody>
+        ))}
       </Table>
       <Button
         text={i18n.messages.receiverSelection.confirmText}
         primary
-        onClick={() => receiverSelection && onCreateNew()}
+        onClick={() => onCreateNew()}
       />
     </Container>
   )

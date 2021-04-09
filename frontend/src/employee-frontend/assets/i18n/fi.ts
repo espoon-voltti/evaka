@@ -2277,6 +2277,7 @@ export const fi = {
         noOptions: 'Ei ryhmiä'
       },
       sender: 'Lähettäjä',
+      receivers: 'Vastaanottajat',
       title: 'Otsikko',
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',

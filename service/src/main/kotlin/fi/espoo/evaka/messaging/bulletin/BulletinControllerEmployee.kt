@@ -127,7 +127,8 @@ class BulletinControllerEmployee(
     data class BulletinUpdate(
         val title: String,
         val content: String,
-        val sender: String
+        val sender: String,
+        val receivers: List<BulletinReceiverTriplet>
     )
 
     @PutMapping("/{id}")
@@ -146,7 +147,8 @@ class BulletinControllerEmployee(
                 id = id,
                 title = body.title,
                 content = body.content,
-                sender = body.sender
+                sender = body.sender,
+                receivers = body.receivers
             )
         }
 

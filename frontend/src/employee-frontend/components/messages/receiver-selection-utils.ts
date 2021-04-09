@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ReceiverTriplet } from 'employee-frontend/components/messages/types'
+import {
+  IdAndName,
+  ReceiverGroup,
+  ReceiverTriplet
+} from 'employee-frontend/components/messages/types'
 import { UUID } from 'employee-frontend/types'
 
 /*
@@ -17,7 +21,18 @@ import { UUID } from 'employee-frontend/types'
 export interface SelectorNode {
   selectorId: UUID
   selected: boolean
+  name: string
   childNodes?: SelectorNode[]
+}
+
+export interface SelectorChange {
+  selectorId: UUID
+  selected: boolean
+}
+
+interface ReactSelectOption {
+  label: string
+  value: string
 }
 
 export const getSelectorStatus = (id: UUID, selector: SelectorNode): boolean =>
@@ -27,13 +42,24 @@ export const getSelectorStatus = (id: UUID, selector: SelectorNode): boolean =>
         ?.map((childNode) => getSelectorStatus(id, childNode))
         .find((x) => x === true)
 
+export const getSelectorName = (
+  id: UUID,
+  selector: SelectorNode
+): string | undefined =>
+  id === selector.selectorId
+    ? selector.name
+    : selector.childNodes
+        ?.map((childNode) => getSelectorName(id, childNode))
+        .find((x) => x && x.length > 0)
+
 export const updateSelector = (
   selector: SelectorNode,
-  selectorChange: SelectorNode
+  selectorChange: SelectorChange
 ): SelectorNode => {
   if (selector.selectorId === selectorChange.selectorId) {
     return {
       ...selectorChange,
+      name: selector.name,
       childNodes: selector.childNodes?.map((childNode) =>
         updateSelector(childNode, {
           selectorId: childNode.selectorId,
@@ -51,6 +77,7 @@ export const updateSelector = (
     return {
       selectorId: selector.selectorId,
       selected: allChildNodesSelected,
+      name: selector.name,
       childNodes: updatedChildNodes
     }
   } else {
@@ -77,4 +104,69 @@ export const getReceiverTriplets = (
     groupId: x[1],
     personId: x[2]
   }))
+}
+
+export const getReceiverOptions = (
+  selectorNode: SelectorNode
+): ReactSelectOption[] => {
+  return [{ label: selectorNode.name, value: selectorNode.selectorId }].concat(
+    selectorNode.childNodes && !selectorNode.selected
+      ? selectorNode.childNodes.flatMap((childNode) =>
+          getReceiverOptions(childNode)
+        )
+      : []
+  )
+}
+
+export const getReceiverSelection = (
+  selectorNode: SelectorNode
+): ReactSelectOption[] => {
+  const ids = getReceiverTriplets(selectorNode).map((triplet) => {
+    if (triplet.personId) {
+      return triplet.personId
+    } else if (triplet.groupId) {
+      return triplet.groupId
+    } else {
+      return triplet.unitId
+    }
+  })
+  return ids.map((id) => ({
+    value: id,
+    label: getSelectorName(id, selectorNode) || ''
+  }))
+}
+
+export const deselectAll = (selectorNode: SelectorNode): SelectorNode => {
+  return {
+    ...selectorNode,
+    selected: false,
+    childNodes: selectorNode.childNodes?.map((childNode) =>
+      deselectAll(childNode)
+    )
+  }
+}
+
+export const unitAsSelectorNode = (
+  { id, name }: IdAndName,
+  receiverGroups: ReceiverGroup[],
+  allSelected: boolean
+): SelectorNode => {
+  return {
+    selectorId: id,
+    selected: allSelected,
+    name,
+    childNodes: receiverGroups.map(({ groupName, groupId, receivers }) => ({
+      selectorId: groupId,
+      selected: allSelected,
+      name: groupName,
+      childNodes: receivers.map(
+        ({ childId, childFirstName, childLastName }) => ({
+          selectorId: childId,
+          selected: allSelected,
+          name: `${childFirstName} ${childLastName}`,
+          childNodes: undefined
+        })
+      )
+    }))
+  }
 }
