@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -78,7 +78,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         insertTestApplicationForm(h, applicationId, form)
 
         if (attachment) {
-            uploadAttachment(applicationId, AuthenticatedUser(guardian.id, setOf(UserRole.END_USER)))
+            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id))
         }
     }
 }
