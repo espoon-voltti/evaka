@@ -158,12 +158,17 @@ export default React.memo(function AttendanceChildPage() {
                       active={child?.dailyNote || groupNote ? true : false}
                     />
                   </Link>
-                  <RoundIcon
-                    content={faInfo}
-                    color={colors.greyscale.medium}
-                    size="L"
-                    active={false}
-                  />
+                  <Link
+                    to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/pin`}
+                    data-qa={'link-child-sensitive-info'}
+                  >
+                    <RoundIcon
+                      content={faInfo}
+                      color={colors.greyscale.medium}
+                      size="L"
+                      active={false}
+                    />
+                  </Link>
                 </FixedSpaceRow>
               </IconWrapper>
             </FixedSpaceColumn>

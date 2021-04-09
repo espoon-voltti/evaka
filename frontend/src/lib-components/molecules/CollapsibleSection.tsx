@@ -73,7 +73,7 @@ const Content = styled.div`
 
 type CollapsibleSectionProps = BaseProps & {
   title: string
-  icon: IconDefinition
+  icon?: IconDefinition
   children: React.ReactNode
   startCollapsed?: boolean
   fitted?: boolean
@@ -102,9 +102,11 @@ function CollapsibleSection({
         onClick={() => setCollapsed(!collapsed)}
         className={classNames(className, { fitted })}
       >
-        <IconWrapper>
-          <FontAwesomeIcon icon={icon} />
-        </IconWrapper>
+        {icon && (
+          <IconWrapper>
+            <FontAwesomeIcon icon={icon} />
+          </IconWrapper>
+        )}
         <H3 fitted>{title}</H3>
         <ToggleWrapper
           onClick={() => setCollapsed(!collapsed)}

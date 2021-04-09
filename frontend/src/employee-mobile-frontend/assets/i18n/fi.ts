@@ -121,7 +121,38 @@ export const fi = {
       noNotes: 'Ei merkintöjä tälle päivälle',
       clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?'
     },
-    absenceTitle: 'Poissaolomerkintä'
+    absenceTitle: 'Poissaolomerkintä',
+    pin: {
+      header: 'Lukituksen avaaminen',
+      info: 'Anna PIN-koodi avataksesi lapsen tiedot',
+      selectStaff: 'Valitse käyttäjä',
+      staff: 'Käyttäjä',
+      noOptions: 'Ei vaihtoehtoja',
+      pinCode: 'PIN-koodi'
+    },
+    childInfo: {
+      header: 'Lapsen tiedot',
+      personalInfoHeader: 'Lapsen henkilötiedot',
+      childName: 'Lapsen nimi',
+      preferredName: 'Kutsumanimi',
+      ssn: 'Hetu',
+      address: 'Lapsen kotiosoite',
+      type: 'Sijoitusmuoto',
+      allergiesHeader: 'Allergiat, ruokavalio, lääkitys',
+      allergies: 'Allergiat',
+      diet: 'Ruokavalio',
+      medication: 'Lääkitys',
+      contactInfoHeader: 'Yhteystiedot',
+      contact1: 'Yhteyshenkilö 1',
+      name: 'Nimi',
+      phone: 'Puhelinnumero',
+      backupPhone: 'Varapuhelinnumero',
+      email: 'Sähköpostiosoite',
+      contact2: 'Yhteyshenkilö 2',
+      backupPicker1: 'Varahakija 1',
+      backupPickerName: 'Varahakijan nimi',
+      backupPicker2: 'Varahakija 2'
+    }
   },
   mobile: {
     landerText1:

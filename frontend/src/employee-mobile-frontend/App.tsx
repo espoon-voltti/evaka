@@ -24,6 +24,7 @@ import MarkPresent from './components/attendances/actions/MarkPresent'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
+import PinLogin from './components/attendances/child-info/PinLogin'
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()
@@ -62,6 +63,10 @@ export default function App() {
               <Route
                 path="/units/:unitId/groups/:groupId/childattendance/:childId/note"
                 component={ensureAuthenticated(DailyNoteEditor)}
+              />
+              <Route
+                path="/units/:unitId/groups/:groupId/childattendance/:childId/pin"
+                component={ensureAuthenticated(PinLogin)}
               />
               <Route
                 path="/units/:unitId/groups/:groupId/childattendance/:childId"
