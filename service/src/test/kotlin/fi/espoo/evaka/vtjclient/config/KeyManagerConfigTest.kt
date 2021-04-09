@@ -88,6 +88,19 @@ class KeyManagerConfigTest {
             }
     }
 
+    @Test
+    fun `private key bean factory and key should NOT be loaded with keystore location false`() {
+        contextRunner.withPropertyValues(
+            "spring.profiles.active=production",
+            "voltti.env=prod",
+            "fi.espoo.voltti.vtj.xroad.keyStore.location=false"
+        )
+            .run {
+                assertThat(it).doesNotHaveBean(KeyManagersFactoryBean::class.java)
+                assertThat(it).doesNotHaveBean(KeyStoreFactoryBean::class.java)
+            }
+    }
+
     @Configuration
     @Import(KeyManagerConfig::class)
     class KeyManagerTestConfig {
