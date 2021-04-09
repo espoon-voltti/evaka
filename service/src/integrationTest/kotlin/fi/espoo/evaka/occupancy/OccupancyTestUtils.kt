@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
@@ -113,7 +114,7 @@ fun createPlanOccupancyTestFixture(
 ) = { h: Handle ->
     h.insertTestPerson(DevPerson(id = childId, dateOfBirth = dateOfBirth))
     h.insertTestChild(DevChild(id = childId))
-    val applicationId = insertTestApplication(h, childId = childId)
+    val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
     insertTestPlacementPlan(
         h,
         applicationId = applicationId,

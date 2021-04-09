@@ -198,13 +198,12 @@ test('Notification on transfer application is visible', async (t) => {
   await runPendingAsyncJobs()
 
   const decisions = await getDecisionsByApplication(applicationId)
-  const decisionId = decisions[0]?.id
+  const decisionId = decisions.filter((d) => d.type === 'PRESCHOOL')[0]?.id
 
   await t.click(citizenHomePage.nav.decisions)
   await t.click(citizenDecisionsPage.goRespondToDecisionBtn(applicationId))
 
   await citizenDecisionResponsePage.acceptDecision(decisionId)
-
   await runPendingAsyncJobs()
 
   await t.click(citizenHomePage.nav.applications)

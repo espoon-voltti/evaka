@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -289,7 +290,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE_PART_TIME
             )(h)
-            val applicationId = insertTestApplication(h, childId = childId)
+            val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
             insertTestPlacementPlan(
                 h,
                 applicationId = applicationId,
@@ -329,7 +330,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
             )(h)
-            val applicationId = insertTestApplication(h, childId = childId)
+            val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
             insertTestPlacementPlan(
                 h,
                 applicationId = applicationId,
@@ -412,7 +413,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
             )(h)
-            val applicationId = insertTestApplication(h, childId = childId)
+            val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
             insertTestPlacementPlan(
                 h,
                 applicationId = applicationId,

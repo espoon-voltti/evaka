@@ -56,9 +56,10 @@ class AclIntegrationTest : PureJdbiTest() {
             val areaId = it.handle.insertTestCareArea(DevCareArea(name = "Test area"))
             daycareId = it.handle.insertTestDaycare(DevDaycare(areaId = areaId))
             groupId = it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
+            val guardianId = it.handle.insertTestPerson(DevPerson())
             childId = it.handle.insertTestPerson(DevPerson())
             it.handle.insertTestChild(DevChild(id = childId))
-            applicationId = insertTestApplication(it.handle, childId = childId)
+            applicationId = insertTestApplication(it.handle, childId = childId, guardianId = guardianId)
             decisionId = it.handle.insertTestDecision(
                 TestDecision(
                     createdBy = employeeId,

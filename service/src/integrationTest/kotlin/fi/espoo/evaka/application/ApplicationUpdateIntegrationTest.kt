@@ -16,6 +16,8 @@ import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -99,7 +101,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         dueDate: LocalDate,
         urgent: Boolean
     ): ApplicationDetails = jdbi.handle { h ->
-        val applicationId = insertTestApplication(h, status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate)
+        val applicationId = insertTestApplication(h, status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
         val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
         insertTestApplicationForm(h, applicationId, validDaycareForm.copy(urgent = urgent))
         fetchApplicationDetails(h, applicationId)!!
