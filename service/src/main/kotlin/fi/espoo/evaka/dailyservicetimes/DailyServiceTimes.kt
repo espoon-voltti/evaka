@@ -24,12 +24,11 @@ data class TimeRange(
 sealed class DailyServiceTimes(
     val regular: Boolean
 ) {
-
-    class RegularTimes(
+    data class RegularTimes(
         val regularTimes: TimeRange
     ) : DailyServiceTimes(regular = true)
 
-    class IrregularTimes(
+    data class IrregularTimes(
         val monday: TimeRange?,
         val tuesday: TimeRange?,
         val wednesday: TimeRange?,
