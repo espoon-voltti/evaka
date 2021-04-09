@@ -9,7 +9,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -38,7 +37,6 @@ const val attachmentsPath = "/"
 @RestController
 @RequestMapping("/attachments")
 class AttachmentsController(
-    private val acl: AccessControlList,
     private val documentClient: DocumentService,
     env: Environment
 ) {
@@ -54,7 +52,7 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
         Audit.AttachmentsUpload.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val id = handleFileUpload(db, user, applicationId, file, type)
         return ResponseEntity.ok(id)

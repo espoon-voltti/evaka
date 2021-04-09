@@ -96,9 +96,10 @@ export const deserializeApplicationDetails = (
   modifiedDate: json.modifiedDate ? new Date(json.modifiedDate) : null,
   sentDate: LocalDate.parseNullableIso(json.sentDate),
   dueDate: LocalDate.parseNullableIso(json.dueDate),
-  attachments: json.attachments.map(({ updated, ...rest }) => ({
+  attachments: json.attachments.map(({ updated, receivedAt, ...rest }) => ({
     ...rest,
-    updated: new Date(updated)
+    updated: new Date(updated),
+    receivedAt: new Date(receivedAt)
   }))
 })
 
@@ -217,5 +218,6 @@ export interface Attachment {
 
 export interface ApplicationAttachment extends Attachment {
   updated: Date
+  receivedAt: Date
   type: AttachmentType
 }
