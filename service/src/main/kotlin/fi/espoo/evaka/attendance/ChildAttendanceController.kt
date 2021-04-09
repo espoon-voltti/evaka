@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
+import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.utils.dateNow
 import fi.espoo.evaka.shared.utils.zoneId
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -47,6 +49,8 @@ val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
 val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
 val fiveYearOldFreeLimit: Duration = Duration.ofMinutes(4 * 60 + 15)
 
+private val logger = KotlinLogging.logger {}
+
 @RestController
 @RequestMapping("/attendances")
 class ChildAttendanceController(
@@ -59,6 +63,34 @@ class ChildAttendanceController(
         UserRole.STAFF,
         UserRole.MOBILE
     )
+
+    @GetMapping("/child/{childId}")
+    fun getChildSensitiveInfo(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID,
+        @RequestParam pin: String,
+        @RequestParam staffId: UUID
+    ): ResponseEntity<ChildResult> {
+        Audit.ChildSensitiveInfoRead.log(targetId = staffId)
+
+        db.read { it.handle.getEmployee(staffId) }?.let {
+            if (it.pin != pin) {
+                return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
+            }
+        } ?: ResponseEntity.ok(ChildResult(status = ChildResultStatus.NOT_FOUND, child = null))
+
+        return ResponseEntity.ok(
+            db.read { tx ->
+                tx.getChildSensitiveInfo(childId)
+            }?.let {
+                ChildResult(
+                    status = ChildResultStatus.SUCCESS,
+                    child = it
+                )
+            } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
+        )
+    }
 
     @GetMapping("/units/{unitId}")
     fun getAttendances(

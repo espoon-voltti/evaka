@@ -68,6 +68,7 @@ enum class Audit(
     ChildFeeAlterationsRead("evaka.child.fee-alterations.read"),
     ChildFeeAlterationsUpdate("evaka.child.fee-alterations.update"),
     ChildrenInDifferentAddressReportRead("evaka.children-in-different-address-report.read"),
+    ChildSensitiveInfoRead("evaka.child-sensitive-info.read"),
     ChildServiceNeedCreate("evaka.child.service-need.create"),
     ChildServiceNeedDelete("evaka.child.service-need.delete"),
     ChildServiceNeedRead("evaka.child.service-need.read"),

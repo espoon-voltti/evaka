@@ -12,6 +12,40 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
+data class ChildResult(
+    val status: ChildResultStatus,
+    val child: ChildSensitiveInformation? = null
+)
+
+enum class ChildResultStatus {
+    SUCCESS, WRONG_PIN, NOT_FOUND
+}
+
+data class ChildSensitiveInformation(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String?,
+    val ssn: String?,
+    val childAddress: String?,
+    val placementTypes: List<PlacementType>?,
+    val allergies: String?,
+    val diet: String?,
+    val medication: String?,
+    val contact1: ContactInfo?,
+    val contact2: ContactInfo?,
+    val backupPickup1: ContactInfo?,
+    val backupPickup2: ContactInfo?
+)
+
+data class ContactInfo(
+    val firstName: String?,
+    val lastName: String?,
+    val phone: String?,
+    val backupPhone: String?,
+    val email: String?,
+)
+
 data class AttendanceResponse(
     val unit: UnitInfo,
     val children: List<Child>
@@ -20,7 +54,8 @@ data class AttendanceResponse(
 data class UnitInfo(
     val id: UUID,
     val name: String,
-    val groups: List<GroupInfo>
+    val groups: List<GroupInfo>,
+    val staff: List<Staff>
 )
 
 data class GroupInfo(
@@ -75,7 +110,8 @@ data class ChildAbsence(
     val careType: CareType
 )
 
-data class ChildDaycareDailyNote(
+data class Staff(
     val id: UUID,
-    val childId: UUID
+    val firstName: String,
+    val lastName: String
 )

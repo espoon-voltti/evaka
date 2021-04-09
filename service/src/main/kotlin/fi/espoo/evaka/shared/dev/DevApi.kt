@@ -1133,7 +1133,8 @@ data class DevEmployee(
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
-    val roles: Set<UserRole> = setOf()
+    val roles: Set<UserRole> = setOf(),
+    val pin: String? = null
 )
 
 data class DevMobileDevice(

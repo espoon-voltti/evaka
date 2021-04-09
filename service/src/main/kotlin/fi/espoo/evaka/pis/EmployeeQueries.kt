@@ -45,7 +45,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
 private fun Handle.searchEmployees(id: UUID? = null) = createQuery(
     // language=SQL
     """
-SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
+SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles, pin
 FROM employee e
 LEFT JOIN mobile_device md on e.id = md.id 
 WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL

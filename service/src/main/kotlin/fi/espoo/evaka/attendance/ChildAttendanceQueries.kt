@@ -5,11 +5,14 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
+import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -113,12 +116,25 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
 
     val daycareDailyNotesForGroups = getDaycareDailyNotesForDaycareGroups(unitId)
 
+    val staff = createQuery(
+        """
+        SELECT e.first_name, e.last_name, e.id
+        FROM daycare_acl acl LEFT JOIN employee e ON acl.employee_id = e.id
+        WHERE acl.daycare_id = :id
+        AND acl.role = ANY('{STAFF, UNIT_SUPERVISOR}')
+        """.trimIndent()
+    )
+        .bind("id", unitId)
+        .mapTo<Staff>()
+        .list()
+
     return groups.map { group -> group.copy(dailyNote = daycareDailyNotesForGroups.find { note -> note.groupId == group.id }) }
         .let { grps ->
             UnitInfo(
                 id = unit.id,
                 name = unit.name,
-                groups = grps
+                groups = grps,
+                staff = staff
             )
         }
 }
@@ -338,4 +354,59 @@ fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
         .bind("childId", childId)
         .bind("today", LocalDate.now(zoneId))
         .execute()
+}
+
+fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
+    val person = handle.getPersonById(childId)
+    val child = handle.getChild(childId)
+    val backupPickups = getBackupPickupsForChild(childId)
+    val familyContacts = createQuery(
+        """
+SELECT first_name, last_name, phone, backup_phone, email
+FROM person
+WHERE id IN (
+    SELECT contact_person_id
+    FROM family_contact
+    WHERE child_id = :childId)
+        """.trimIndent()
+    )
+        .bind("childId", childId)
+        .mapTo<ContactInfo>()
+        .list()
+
+    return if (person != null) {
+        ChildSensitiveInformation(
+            id = person.id,
+            firstName = person.firstName ?: "",
+            lastName = person.lastName ?: "",
+            preferredName = child?.additionalInformation?.preferredName,
+            ssn = person.identity.toString(),
+            childAddress = person.streetAddress,
+            placementTypes = emptyList(), // TODO
+            allergies = child?.additionalInformation?.allergies,
+            diet = child?.additionalInformation?.diet,
+            medication = child?.additionalInformation?.medication,
+            contact1 = familyContacts.getOrNull(0),
+            contact2 = familyContacts.getOrNull(1),
+            backupPickup1 = backupPickups.getOrNull(0)?.let {
+                ContactInfo(
+                    firstName = it.name,
+                    lastName = null,
+                    phone = it.phone,
+                    backupPhone = null,
+                    email = null
+                )
+            },
+            backupPickup2 = backupPickups.getOrNull(1)?.let {
+                ContactInfo(
+                    firstName = it.name,
+                    lastName = null,
+                    phone = it.phone,
+                    backupPhone = null,
+                    email = null
+                )
+            }
+        )
+    } else
+        return null
 }

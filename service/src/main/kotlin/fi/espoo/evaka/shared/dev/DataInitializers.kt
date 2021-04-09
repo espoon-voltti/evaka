@@ -132,8 +132,8 @@ fun removeDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId) {
 fun Handle.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
-VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[])
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles, pin)
+VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :pin)
 RETURNING id
 """
 )
