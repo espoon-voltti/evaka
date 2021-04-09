@@ -31,7 +31,6 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
-import ChildPage from '../../pages/employee/mobile/child-page'
 import {
   ApplicationPersonDetail,
   DaycarePlacement

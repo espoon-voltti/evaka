@@ -6,6 +6,7 @@ import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers
 import Title from '../../../../lib-components/atoms/Title'
 import CollapsibleSection from '../../../../lib-components/molecules/CollapsibleSection'
 import { P, Label } from 'lib-components/typography'
+import { PlacementType } from '../../../types'
 
 interface Props {
   child: Child | null
@@ -22,6 +23,10 @@ const render = (label: string, value: string | null, dataQa: string) => {
 
 export default React.memo(function ChildSensitiveInfo({ child }: Props) {
   const { i18n } = useTranslation()
+
+  const placementTypesToText = (types: PlacementType[]): string => {
+    return types.map((type) => i18n.common.placement[type]).join(',')
+  }
 
   return (
     <>
@@ -56,6 +61,13 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                 i18n.attendances.childInfo.address,
                 child.childAddress,
                 'child-info-child-address'
+              )}
+
+              {child.placementType && child.placementType.length > 0 && (
+                <>
+                  <Label>{i18n.attendances.childInfo.type}</Label>
+                  <P>{placementTypesToText(child.placementType)}</P>
+                </>
               )}
             </CollapsibleSection>
           </ContentAreaWithShadow>

@@ -27,6 +27,17 @@ export const fi = {
       DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus',
       DAYCARE_5YO_PAID: 'Varhaiskasvatus (maksullinen)'
     },
+    placement: {
+      CLUB: 'Kerho',
+      DAYCARE: 'Varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus',
+      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
+      PREPARATORY: 'Valmistava',
+      PREPARATORY_DAYCARE: 'Valmistava',
+      TEMPORARY_DAYCARE: 'Väliaikainen',
+      TEMPORARY_DAYCARE_PART_DAY: 'Väliaikainen osa-aikainen'
+    },
     code: 'Koodi',
     children: 'Lapset',
     staff: 'Henkilökunta',

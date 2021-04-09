@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -358,6 +359,7 @@ fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
 
 fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
     val person = handle.getPersonById(childId)
+    val placementTypes = handle.getPlacementsForChild(childId).map { it.type }
     val child = handle.getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
     val familyContacts = createQuery(
@@ -382,7 +384,7 @@ WHERE id IN (
             preferredName = child?.additionalInformation?.preferredName,
             ssn = person.identity.toString(),
             childAddress = person.streetAddress,
-            placementTypes = emptyList(), // TODO
+            placementTypes = placementTypes,
             allergies = child?.additionalInformation?.allergies,
             diet = child?.additionalInformation?.diet,
             medication = child?.additionalInformation?.medication,
