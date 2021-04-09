@@ -57,6 +57,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
                 name: file.name,
                 contentType: file.type,
                 updated: new Date(),
+                receivedAt: new Date(),
                 type: 'EXTENDED_CARE'
               }
             ]

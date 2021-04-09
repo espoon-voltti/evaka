@@ -49,7 +49,8 @@ export async function getApplication(
       })),
       attachments: data.attachments.map((attachment) => ({
         ...attachment,
-        updated: new Date(attachment.updated)
+        updated: new Date(attachment.updated),
+        receivedAt: new Date(attachment.receivedAt)
       }))
     }))
     .then((v) => Success.of(v))

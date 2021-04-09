@@ -547,7 +547,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
         LEFT JOIN person c ON c.id = a.child_id
         LEFT JOIN person g1 ON g1.id = a.guardian_id
         LEFT JOIN (
-            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type, 'updated', updated, 'type', type)) json
+            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type, 'updated', updated, 'receivedAt', received_at, 'type', type)) json
             FROM attachment GROUP BY application_id
         ) att ON a.id = att.application_id
         WHERE a.id = :id
@@ -897,7 +897,7 @@ RETURNING id
     .toList()
 
 fun Database.Read.getApplicationAttachments(applicationId: UUID): List<Attachment> =
-    createQuery("SELECT id, name, content_type, updated, type FROM attachment WHERE application_id = :applicationId")
+    createQuery("SELECT id, name, content_type, updated, received_at, type FROM attachment WHERE application_id = :applicationId")
         .bind("applicationId", applicationId)
         .mapTo<Attachment>()
         .toList()
@@ -905,7 +905,7 @@ fun Database.Read.getApplicationAttachments(applicationId: UUID): List<Attachmen
 fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: UUID): List<Attachment> =
     createQuery(
         """
-SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.type
+SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type
 FROM attachment
 JOIN application ON application.id = attachment.application_id
 JOIN placement_plan ON placement_plan.application_id = application.id

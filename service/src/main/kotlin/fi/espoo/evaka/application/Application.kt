@@ -100,6 +100,7 @@ data class Attachment(
     val name: String,
     val contentType: String,
     val updated: OffsetDateTime,
+    val receivedAt: OffsetDateTime,
     val type: AttachmentType
 )
 
