@@ -348,6 +348,36 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
     }
 
+    @Test
+    fun `Sender options endpoint works for unit 1`() {
+        val (_, res, result) = http.get("/bulletins/sender-options?unitId=$unitId")
+            .asUser(supervisor)
+            .responseObject<List<String>>()
+
+        assertEquals(200, res.statusCode)
+
+        val senderOptions = result.get()
+
+        assertEquals(3, senderOptions.size)
+
+        assertEquals(setOf("Elina Esimies", "Testaajat", "Test Daycare"), senderOptions.toSet())
+    }
+
+    @Test
+    fun `Sender options endpoint works for unit 2`() {
+        val (_, res, result) = http.get("/bulletins/sender-options?unitId=$secondUnitId")
+            .asUser(supervisor)
+            .responseObject<List<String>>()
+
+        assertEquals(200, res.statusCode)
+
+        val senderOptions = result.get()
+
+        assertEquals(3, senderOptions.size)
+
+        assertEquals(setOf("Elina Esimies", "Koekaniinit", "Test Daycare 2"), senderOptions.toSet())
+    }
+
     private fun initBulletin(user: AuthenticatedUser, receivers: List<BulletinReceiverTriplet>): UUID {
         val (_, res, result) = http.post("/bulletins")
             .asUser(user)

@@ -404,6 +404,7 @@ fun Database.Read.getOwnBulletinDrafts(
         LEFT JOIN daycare d ON br.unit_id = d.id
         LEFT JOIN daycare_group dg ON br.group_id = dg.id
         LEFT JOIN person c ON br.child_id = c.id
+        ORDER BY b.updated DESC
     """.trimIndent()
 
     val pagedRawBulletinResults = this.createQuery(sql)
@@ -575,4 +576,30 @@ fun Database.Transaction.markBulletinRead(
         .bind("userId", user.id)
         .bind("readAt", OffsetDateTime.now(zoneId))
         .execute()
+}
+
+fun Database.Transaction.getPossibleSenders(
+    user: AuthenticatedUser,
+    unitId: UUID
+): List<String> {
+    val sql = """
+        SELECT name
+        FROM daycare
+        WHERE id = :unitId
+        UNION
+        SELECT name
+        FROM daycare_group
+        WHERE daycare_id = :unitId
+        UNION
+        SELECT concat_ws(' ', first_name, last_name) AS name
+        FROM employee
+        WHERE id = :userId
+        ORDER BY name
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("unitId", unitId)
+        .bind("userId", user.id)
+        .mapTo<String>()
+        .toList()
 }

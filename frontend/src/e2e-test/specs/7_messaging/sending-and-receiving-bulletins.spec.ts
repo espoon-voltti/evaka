@@ -103,7 +103,11 @@ test('Supervisor sends bulletin and guardian reads it', async (t) => {
 
   await t.click(messagesPage.unitsListUnit(daycareId))
 
-  await messagesPage.createNewBulletin('Test sender', 'Hello', 'This is a test')
+  await messagesPage.createNewBulletin(
+    'Alkuräjähdyksen päiväkoti',
+    'Hello',
+    'This is a test'
+  )
 
   await t.useRole(enduserRole)
 
@@ -116,8 +120,8 @@ test('Supervisor sends bulletin and guardian reads it', async (t) => {
 
   await t.expect(citizenMessages.messageReaderTitle.textContent).eql('Hello')
   await t
-    .expect(citizenMessages.messageReaderSender.textContent)
-    .eql('Test sender')
+    .expect(await citizenMessages.messageReaderSender.textContent)
+    .eql('Alkuräjähdyksen päiväkoti')
   await t
     .expect(citizenMessages.messageReaderContent.textContent)
     .eql('This is a test')
@@ -158,7 +162,11 @@ test('Admin sends bulletin and blocked guardian does not get it', async (t) => {
 
   await t.click(messagesPage.unitsListUnit(daycareId))
 
-  await messagesPage.createNewBulletin('Test sender', 'Hello', 'This is a test')
+  await messagesPage.createNewBulletin(
+    'Alkuräjähdyksen päiväkoti',
+    'Hello',
+    'This is a test'
+  )
 
   await t.useRole(enduserRole)
   await t.expect(citizenHome.nav.messages.textContent).notContains('1')

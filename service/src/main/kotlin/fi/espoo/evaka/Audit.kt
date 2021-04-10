@@ -130,6 +130,7 @@ enum class Audit(
     MessagingBulletinReceiversRead("messaging.bulletin.receivers.read"),
     MessagingBulletinMarkRead("messaging.bulletin.mark-read"),
     MessagingUnreadCountRead("messaging.bulletin.unread-count.read"),
+    MessagingSenderOptionsRead("messaging.bulletin.sender-options.read"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
     MissingServiceNeedReportRead("evaka.missing-service-need-report.read"),
     MobileDevicesList("evaka.mobile-devices.list"),
