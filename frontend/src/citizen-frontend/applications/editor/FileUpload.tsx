@@ -229,9 +229,16 @@ export default React.memo(function FileUpload({
   }
 
   const onDrop = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.stopPropagation()
+    event.preventDefault()
     if (event.dataTransfer && event.dataTransfer.files[0]) {
       void addAttachment(event.dataTransfer.files[0], onUpload)
     }
+  }
+
+  const onDragOver = (event: React.DragEvent<HTMLLabelElement>) => {
+    // without this, the browser wants to open the file in the current window
+    event.preventDefault()
   }
 
   const errorMessage = ({ error }: FileObject) => {
@@ -326,6 +333,7 @@ export default React.memo(function FileUpload({
       <FileInputLabel
         className="file-input-label"
         onDrop={onDrop}
+        onDragOver={onDragOver}
         htmlFor={ariaId}
         onKeyDown={onKeyDown}
       >
