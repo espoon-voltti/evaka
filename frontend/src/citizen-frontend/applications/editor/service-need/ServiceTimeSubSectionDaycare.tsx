@@ -13,8 +13,12 @@ import { useTranslation } from '../../../localization'
 import { H3, Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
-import FileUpload from '../FileUpload'
-import { deleteAttachment, saveAttachment } from '../../../applications/api'
+import FileUpload from '../../../../lib-components/molecules/FileUpload'
+import {
+  deleteAttachment,
+  getAttachmentBlob,
+  saveAttachment
+} from '../../../applications/api'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useParams } from 'react-router-dom'
@@ -209,6 +213,8 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             files={formData.shiftCareAttachments}
             onUpload={uploadExtendedCareAttachment}
             onDelete={deleteExtendedCareAttachment}
+            onDownloadFile={getAttachmentBlob}
+            i18n={{ upload: t.fileUpload, download: t.fileDownload }}
           />
         </>
       )}

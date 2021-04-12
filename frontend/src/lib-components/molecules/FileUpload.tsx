@@ -6,7 +6,6 @@ import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
-import { useTranslation } from '../../localization'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-components/colors'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
@@ -25,23 +24,43 @@ import { UUID } from 'lib-common/types'
 import { Result } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/application/ApplicationDetails'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { getAttachmentBlob } from '../../applications/api'
 
-export type FileUploadProps = {
+type FileUploadError = 'FILE_TOO_LARGE' | 'SERVER_ERROR'
+
+interface FileObject extends Attachment {
+  key: number
+  file: File | undefined
+  error: FileUploadError | undefined
+  progress: number
+}
+
+interface FileUploadI18n {
+  download: {
+    modalHeader: string
+    modalMessage: string
+  }
+  upload: {
+    deleteFile: string
+    input: {
+      title: string
+      text: string[]
+    }
+    loading: string
+    loaded: string
+    error: Record<FileUploadError, string>
+  }
+}
+
+export interface FileUploadProps {
   files: Attachment[]
   onUpload: (
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+  onDownloadFile: (id: UUID) => Promise<Result<BlobPart>>
+  i18n: FileUploadI18n
   dataQa?: string
-}
-
-interface FileObject extends Attachment {
-  key: number
-  file: File | undefined
-  error: 'FILE_TOO_LARGE' | 'SERVER_ERROR' | undefined
-  progress: number
 }
 
 const FileUploadContainer = styled.div`
@@ -205,13 +224,13 @@ const fileIcon = (file: FileObject): IconDefinition => {
 const inProgress = (file: FileObject): boolean => file.progress !== 100
 
 export default React.memo(function FileUpload({
+  i18n,
   files,
   onUpload,
   onDelete,
+  onDownloadFile,
   dataQa
 }: FileUploadProps) {
-  const t = useTranslation()
-
   const ariaId = Math.random().toString(36).substring(2, 15)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -242,8 +261,7 @@ export default React.memo(function FileUpload({
   }
 
   const errorMessage = ({ error }: FileObject) => {
-    const messages = t.fileUpload.error
-    return error && messages[error]
+    return error && i18n.upload.error[error]
   }
 
   const deleteFile = async (file: FileObject) => {
@@ -324,8 +342,8 @@ export default React.memo(function FileUpload({
     <FileUploadContainer data-qa={dataQa}>
       {modalVisible && (
         <InfoModal
-          title={t.fileDownload.modalHeader}
-          text={t.fileDownload.modalMessage}
+          title={i18n.download.modalHeader}
+          text={i18n.download.modalMessage}
           close={() => setModalVisible(false)}
           icon={faInfo}
         />
@@ -346,8 +364,8 @@ export default React.memo(function FileUpload({
             ref={inputRef}
             id={ariaId}
           />
-          <h4>{t.fileUpload.input.title}</h4>
-          <p>{t.fileUpload.input.text.join('\n')}</p>
+          <h4>{i18n.upload.input.title}</h4>
+          <p>{i18n.upload.input.text.join('\n')}</p>
         </span>
       </FileInputLabel>
       <Gap horizontal size={'s'} />
@@ -360,7 +378,7 @@ export default React.memo(function FileUpload({
                 {!inProgress(file) && !file.error ? (
                   <FileDownloadButton
                     file={file}
-                    fileFetchFn={getAttachmentBlob}
+                    fileFetchFn={onDownloadFile}
                     onFileUnavailable={() => setModalVisible(true)}
                     dataQa={'file-download-button'}
                   />
@@ -372,7 +390,7 @@ export default React.memo(function FileUpload({
                 <FileDeleteButton
                   icon={faTimes}
                   onClick={() => deleteFile(file)}
-                  altText={`${t.fileUpload.deleteFile} ${file.name}`}
+                  altText={`${i18n.upload.deleteFile} ${file.name}`}
                 />
               </FileHeader>
               {inProgress(file) && (
@@ -388,8 +406,8 @@ export default React.memo(function FileUpload({
                     <ProgressBarDetails>
                       <span>
                         {inProgress(file)
-                          ? t.fileUpload.loading
-                          : t.fileUpload.loaded}
+                          ? i18n.upload.loading
+                          : i18n.upload.loaded}
                       </span>
                       <span>{file.progress} %</span>
                     </ProgressBarDetails>
