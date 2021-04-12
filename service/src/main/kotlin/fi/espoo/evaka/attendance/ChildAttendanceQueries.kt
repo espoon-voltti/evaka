@@ -136,7 +136,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             FROM daycare_group_placement gp
             JOIN placement p ON p.id = gp.daycare_placement_id
             WHERE
-                daterange(gp.start_date, gp.end_date, '[]') @> :today AND
+                p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :today AND
                 NOT EXISTS (
                     SELECT 1
                     FROM backup_care bc
