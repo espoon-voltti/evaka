@@ -331,8 +331,10 @@ VALUES (:applicationId, :revision, :document, TRUE)
 fun Handle.insertTestChild(child: DevChild) = insertTestDataRow(
     child,
     """
-INSERT INTO child (id, allergies, diet, additionalinfo)
-VALUES (:id, :allergies, :diet, :additionalInfo)
+INSERT INTO child (id, allergies, diet, medication, additionalinfo, preferred_Name)
+VALUES (:id, :allergies, :diet, :medication, :additionalInfo, :preferredName)
+ON CONFLICT(id) DO UPDATE
+SET id = :id, allergies = :allergies, diet = :diet, medication = :medication, additionalInfo = :additionalInfo, preferred_name = :preferredName
 RETURNING id
     """
 )
@@ -830,3 +832,21 @@ WHERE application_id = :applicationId AND revision < :revision
 
     return id
 }
+
+data class DevFamilyContact(
+    val id: UUID,
+    val childId: UUID,
+    val contactPersonId: UUID,
+    val priority: Int
+)
+
+fun Handle.insertFamilyContact(contact: DevFamilyContact) = insertTestDataRow(
+    contact,
+    """
+INSERT INTO family_contact (id, child_id, contact_person_id, priority)
+VALUES (:id, :childId, :contactPersonId, :priority)
+RETURNING id
+"""
+)
+
+fun Handle.deleteFamilyContact(id: UUID) = createUpdate("DELETE FROM family_contact WHERE id = :id").bind("id", id).execute()

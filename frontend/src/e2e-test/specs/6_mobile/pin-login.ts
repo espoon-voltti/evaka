@@ -13,8 +13,10 @@ import {
   deleteEmployeeById,
   deleteMobileDevice,
   deletePairing,
+  insertChildFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
+  insertFamilyContacts,
   postMobileDevice,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
@@ -27,13 +29,17 @@ import {
   DaycareGroupBuilder,
   EmployeeBuilder,
   enduserChildFixtureJari,
+  enduserChildJariOtherGuardianFixture,
+  enduserGuardianFixture,
   Fixture,
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import {
   ApplicationPersonDetail,
-  DaycarePlacement
+  Child,
+  DaycarePlacement,
+  FamilyContact
 } from 'e2e-test-common/dev-api/types'
 
 let fixtures: AreaAndPersonFixtures
@@ -121,6 +127,32 @@ fixture('Mobile PIN login')
 const mobileGroupsPage = new MobileGroupsPage()
 
 test('User can login with PIN', async (t) => {
+  const childAdditionalInfo: Child = {
+    id: child.id,
+    allergies: 'Allergies',
+    diet: 'Diets',
+    medication: 'Medications'
+  }
+
+  await insertChildFixtures([childAdditionalInfo])
+
+  const contacts: FamilyContact[] = [
+    {
+      id: uuidv4(),
+      childId: child.id,
+      contactPersonId: enduserGuardianFixture.id,
+      priority: 1
+    },
+    {
+      id: uuidv4(),
+      childId: child.id,
+      contactPersonId: enduserChildJariOtherGuardianFixture.id,
+      priority: 2
+    }
+  ]
+
+  await insertFamilyContacts(contacts)
+
   await t
     .expect(mobileGroupsPage.childName(child.id).textContent)
     .eql(`${child.firstName} ${child.lastName}`)
@@ -143,4 +175,46 @@ test('User can login with PIN', async (t) => {
   await t
     .expect(mobileGroupsPage.childInfoChildAddress.textContent)
     .eql(child.streetAddress)
+
+  await t
+    .expect(mobileGroupsPage.childInfoAllergies.textContent)
+    .eql(childAdditionalInfo.allergies)
+
+  await t
+    .expect(mobileGroupsPage.childInfoDiet.textContent)
+    .eql(childAdditionalInfo.diet)
+
+  await t
+    .expect(mobileGroupsPage.childInfoMedication.textContent)
+    .eql(childAdditionalInfo.medication)
+
+  await t
+    .expect(mobileGroupsPage.childInfoContact1Name.textContent)
+    .eql(
+      `${enduserGuardianFixture.firstName} ${enduserGuardianFixture.lastName}`
+    )
+
+  await t
+    .expect(mobileGroupsPage.childInfoContact1Phone.textContent)
+    .eql(enduserGuardianFixture.phone)
+
+  await t
+    .expect(mobileGroupsPage.childInfoContact1Email.textContent)
+    .eql(enduserGuardianFixture.email)
+
+  await t
+    .expect(mobileGroupsPage.childInfoContact2Name.textContent)
+    .eql(
+      `${enduserChildJariOtherGuardianFixture.firstName} ${enduserChildJariOtherGuardianFixture.lastName}`
+    )
+
+  await t
+    .expect(mobileGroupsPage.childInfoContact2Phone.textContent)
+    .eql(enduserChildJariOtherGuardianFixture.phone)
+
+  await t
+    .expect(
+      mobileGroupsPage.childInfoContact2Email.with({ timeout: 2000 }).visible
+    )
+    .notOk()
 })

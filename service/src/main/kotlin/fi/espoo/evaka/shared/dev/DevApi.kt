@@ -246,7 +246,11 @@ class DevApi(
 
     @PostMapping("/children")
     fun createChildren(db: Database, @RequestBody children: List<DevChild>): ResponseEntity<Unit> {
-        db.transaction { children.forEach { child -> it.handle.insertTestChild(child) } }
+        db.transaction { tx ->
+            children.forEach {
+                tx.handle.insertTestChild(it)
+            }
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -816,6 +820,18 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/family-contact")
+    fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>): ResponseEntity<Unit> {
+        db.transaction { contacts.forEach { contact -> it.handle.insertFamilyContact(contact) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/family-contact/{id}")
+    fun deleteFamilyContact(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteFamilyContact(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -973,6 +989,8 @@ data class DevChild(
     val id: UUID,
     val allergies: String = "",
     val diet: String = "",
+    val preferredName: String = "",
+    val medication: String = "",
     val additionalInfo: String = ""
 )
 

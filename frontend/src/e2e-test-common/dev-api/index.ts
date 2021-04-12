@@ -29,7 +29,8 @@ import {
   SuomiFiMessage,
   UUID,
   VoucherValueDecision,
-  VtjPerson
+  VtjPerson,
+  FamilyContact
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -849,6 +850,24 @@ export async function deleteDaycareDailyNotes(): Promise<void> {
 export async function deleteAbsences(): Promise<void> {
   try {
     await devClient.delete(`/absences`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFamilyContacts(
+  fixture: FamilyContact[]
+): Promise<void> {
+  try {
+    await devClient.post(`/family-contact`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteFamilyContact(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/family-contact/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }

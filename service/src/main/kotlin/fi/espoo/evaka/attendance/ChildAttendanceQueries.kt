@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
+import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -369,7 +369,8 @@ FROM person
 WHERE id IN (
     SELECT contact_person_id
     FROM family_contact
-    WHERE child_id = :childId)
+    WHERE child_id = :childId
+    ORDER BY priority DESC)
         """.trimIndent()
     )
         .bind("childId", childId)
