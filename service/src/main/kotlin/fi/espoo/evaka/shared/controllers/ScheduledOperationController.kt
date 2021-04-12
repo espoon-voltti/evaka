@@ -12,6 +12,7 @@ import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.controller.parseUUID
+import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.messaging.daycarydailynote.deleteExpiredDaycareDailyNotes
 import fi.espoo.evaka.placement.deletePlacementPlans
@@ -39,6 +40,7 @@ class ScheduledOperationController(
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
+    private val voucherValueDecisionService: VoucherValueDecisionService,
     private val asyncJobRunner: AsyncJobRunner
 ) {
 
@@ -126,6 +128,13 @@ class ScheduledOperationController(
                 Instant.now()
             )
         }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/end-outdated-voucher-value-decisions")
+    fun endOutDatedVoucherValueDecisions(db: Database.Connection): ResponseEntity<Unit> {
+        val now = LocalDate.now()
+        db.transaction { voucherValueDecisionService.endDecisionsWithEndedPlacements(it, now) }
         return ResponseEntity.noContent().build()
     }
 
