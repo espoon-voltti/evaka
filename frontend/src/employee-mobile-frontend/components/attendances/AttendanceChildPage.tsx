@@ -27,6 +27,7 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'
 import AttendanceChildDeparted from './AttendanceChildDeparted'
+import AttendanceDailyServiceTimes from './AttendanceDailyServiceTimes'
 import {
   AttendanceChild,
   AttendanceStatus,
@@ -108,11 +109,7 @@ export default React.memo(function AttendanceChildPage() {
   }, [attendanceResponse])
 
   const loading = attendanceResponse.isLoading
-
-  const groupNote =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.unit.groups.find((g) => g.id === groupId)
-      ?.dailyNote
+  const groupNote = group?.dailyNote
 
   return (
     <Fragment>
@@ -172,6 +169,7 @@ export default React.memo(function AttendanceChildPage() {
             </FixedSpaceColumn>
 
             <FlexColumn>
+              <AttendanceDailyServiceTimes times={child.dailyServiceTimes} />
               {child.status === 'COMING' && (
                 <AttendanceChildComing
                   unitId={unitId}

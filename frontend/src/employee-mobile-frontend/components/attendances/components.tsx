@@ -118,6 +118,12 @@ export const CustomHorizontalLine = styled(HorizontalLine)`
   margin-top: 14px;
 `
 
+export const ServiceTime = styled.div`
+  padding: ${defaultMargins.s};
+  color: ${colors.greyscale.dark};
+  text-align: center;
+`
+
 export const Actions = styled.div`
   width: 100%;
   display: flex;

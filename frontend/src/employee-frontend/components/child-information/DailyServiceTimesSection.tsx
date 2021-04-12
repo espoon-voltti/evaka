@@ -18,7 +18,7 @@ import {
   isIrregular,
   RegularDailyServiceTimes,
   IrregularDailyServiceTimes
-} from '../../types/child'
+} from 'lib-common/api-types/child/common'
 import {
   deleteChildDailyServiceTimes,
   getChildDailyServiceTimes,

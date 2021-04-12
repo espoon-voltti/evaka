@@ -5,6 +5,7 @@
 import { JsonOf } from 'lib-common/json'
 import { Failure, Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
+import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AbsenceType, CareType } from '../types'
 import { PlacementType } from '../types'
 import { client } from './client'
@@ -41,6 +42,7 @@ export interface AttendanceChild {
   placementType: PlacementType
   attendance: Attendance | null
   absences: Absence[]
+  dailyServiceTimes: DailyServiceTimes | null
   entitledToFreeFiveYearsOldDaycare: boolean
   dailyNote: DailyNote | null
 }
@@ -248,7 +250,7 @@ export async function deleteDaycareDailyNote(
 function compareByProperty(
   a: JsonOf<AttendanceChild>,
   b: JsonOf<AttendanceChild>,
-  property: string
+  property: 'firstName' | 'lastName'
 ) {
   if (a[property] < b[property]) {
     return -1
@@ -281,7 +283,7 @@ function deserializeAttendanceResponse(
           }
         })
       },
-      children: data.children
+      children: [...data.children]
         .sort((a, b) => compareByProperty(a, b, 'lastName'))
         .sort((a, b) => compareByProperty(a, b, 'firstName'))
         .map((attendanceChild) => {
