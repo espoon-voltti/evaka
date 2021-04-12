@@ -1,8 +1,8 @@
+import { Failure, Result, Success } from 'lib-common/api'
+import { JsonOf } from 'lib-common/json'
+import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { UUID } from '../../types'
-import { Failure, Result, Success } from '../../../lib-common/api'
 import { client } from '../client'
-import { JsonOf } from '../../../lib-common/json'
-import { DailyServiceTimes } from '../../types/child'
 
 interface DailyServiceTimesResponse {
   dailyServiceTimes: DailyServiceTimes | null

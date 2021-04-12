@@ -5,11 +5,7 @@
 import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import { Translations } from '../../assets/i18n'
-import {
-  DailyServiceTimes,
-  DailyServiceTimesIrregular,
-  TimeRange
-} from '../../api/attendances'
+import { DailyServiceTimes, TimeRange } from 'lib-common/api-types/child/common'
 import { ServiceTime } from './components'
 
 const dayNames = [

@@ -5,6 +5,7 @@
 import { JsonOf } from 'lib-common/json'
 import { Failure, Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
+import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AbsenceType, CareType } from '../types'
 import { PlacementType } from '../types'
 import { client } from './client'
@@ -57,29 +58,6 @@ interface Absence {
   childId: string
   id: string
 }
-
-export type TimeRange = {
-  start: string
-  end: string
-}
-
-type DailyServiceTimesRegular = {
-  regular: true
-  regularTimes: TimeRange
-}
-
-type DailyServiceTimesIrregular = {
-  regular: false
-  monday: TimeRange | null
-  tuesday: TimeRange | null
-  wednesday: TimeRange | null
-  thursday: TimeRange | null
-  friday: TimeRange | null
-}
-
-export type DailyServiceTimes =
-  | DailyServiceTimesRegular
-  | DailyServiceTimesIrregular
 
 export interface DailyNote {
   id: string | null
