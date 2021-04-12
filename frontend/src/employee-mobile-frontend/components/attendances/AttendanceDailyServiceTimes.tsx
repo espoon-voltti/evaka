@@ -5,7 +5,11 @@
 import React from 'react'
 import { useTranslation } from '../../state/i18n'
 import { Translations } from '../../assets/i18n'
-import { DailyServiceTimes, TimeRange } from '../../api/attendances'
+import {
+  DailyServiceTimes,
+  DailyServiceTimesIrregular,
+  TimeRange
+} from '../../api/attendances'
 import { ServiceTime } from './components'
 
 const dayNames = [
@@ -18,8 +22,19 @@ const dayNames = [
 
 type DayName = typeof dayNames[number]
 
-function getToday(): DayName {
-  return dayNames[new Date().getDay()]
+function getToday(): DayName | undefined {
+  // Sunday is 0. Adjust to dayNames indexing by subtracting 1.
+  const dayIndex = new Date().getDay() - 1
+  return dayNames[dayIndex]
+}
+
+function getTodaysServiceTimes(times: DailyServiceTimes): TimeRange | null {
+  if (times.regular) return times.regularTimes
+
+  const today = getToday()
+  if (!today) return null
+
+  return times[today] ?? null
 }
 
 function formatTimeRange(i18n: Translations, range: TimeRange) {
@@ -42,7 +57,7 @@ export default React.memo(function AttendanceDailyServiceTimes({
     return <ServiceTime>{noServiceToday(i18n)}</ServiceTime>
   }
 
-  const timeRange = times.regular ? times.regularTimes : times[getToday()]
+  const timeRange = getTodaysServiceTimes(times)
   if (timeRange === null) {
     return <ServiceTime>{noServiceToday(i18n)}</ServiceTime>
   }
