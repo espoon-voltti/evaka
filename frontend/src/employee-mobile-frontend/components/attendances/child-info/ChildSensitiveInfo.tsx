@@ -15,6 +15,10 @@ interface Props {
 
 const KeyValue = styled.div``
 
+const Divider = styled.div`
+  border-bottom: 1px solid #d8d8d8;
+`
+
 const render = (label: string, value: string | null, dataQa: string) => {
   return value ? (
     <KeyValue>
@@ -114,7 +118,7 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
             >
               {child.contact1 && (
                 <>
-                  <Title>{i18n.attendances.childInfo.contact1}</Title>
+                  <Title size={4}>{i18n.attendances.childInfo.contact1}</Title>
                   <FixedSpaceColumn>
                     <KeyValue>
                       <Label>{i18n.attendances.childInfo.name}</Label>
@@ -140,13 +144,15 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                       child.contact1.email,
                       'child-info-contact1-email'
                     )}
+
+                    <Divider />
                   </FixedSpaceColumn>
                 </>
               )}
 
               {child.contact2 && (
                 <>
-                  <Title>{i18n.attendances.childInfo.contact2}</Title>
+                  <Title size={4}>{i18n.attendances.childInfo.contact2}</Title>
                   <FixedSpaceColumn>
                     <KeyValue>
                       <Label>{i18n.attendances.childInfo.name}</Label>
@@ -172,13 +178,17 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                       child.contact2.email,
                       'child-info-contact2-email'
                     )}
+
+                    <Divider />
                   </FixedSpaceColumn>
                 </>
               )}
 
               {child.backupPickup1 && (
                 <>
-                  <Title>{i18n.attendances.childInfo.backupPicker1}</Title>
+                  <Title size={4}>
+                    {i18n.attendances.childInfo.backupPicker1}
+                  </Title>
                   <FixedSpaceColumn>
                     {render(
                       i18n.attendances.childInfo.backupPickerName,
@@ -191,13 +201,17 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                       child.backupPickup1.phone,
                       'child-info-backup-pickup1-phone'
                     )}
+
+                    <Divider />
                   </FixedSpaceColumn>
                 </>
               )}
 
               {child.backupPickup2 && (
                 <>
-                  <Title>{i18n.attendances.childInfo.backupPicker2}</Title>
+                  <Title size={4}>
+                    {i18n.attendances.childInfo.backupPicker2}
+                  </Title>
                   <FixedSpaceColumn>
                     {render(
                       i18n.attendances.childInfo.backupPickerName,
@@ -208,8 +222,10 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                     {render(
                       i18n.attendances.childInfo.phone,
                       child.backupPickup2.phone,
-                      'child-info-backup-pickup2-name'
+                      'child-info-backup-pickup2-phone'
                     )}
+
+                    <Divider />
                   </FixedSpaceColumn>
                 </>
               )}

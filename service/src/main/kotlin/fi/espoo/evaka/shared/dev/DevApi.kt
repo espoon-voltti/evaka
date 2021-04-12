@@ -432,6 +432,8 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
             it.execute("DELETE FROM fridge_child WHERE head_of_child = ? OR child_id = ?", id, id)
             it.execute("DELETE FROM guardian WHERE (guardian_id = ? OR child_id = ?)", id, id)
             it.execute("DELETE FROM child WHERE id = ?", id)
+            it.execute("DELETE FROM backup_pickup WHERE child_id = ?", id)
+            it.execute("DELETE FROM family_contact WHERE child_id = ? OR contact_person_id = ?", id, id)
             it.execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
             it.execute("DELETE FROM messaging_blocklist WHERE (child_id = ? OR blocked_recipient = ?)", id, id)
             it.execute("DELETE FROM person WHERE id = ?", id)
@@ -832,6 +834,18 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.transaction { it.handle.deleteFamilyContact(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/backup-pickup")
+    fun createBackupPickup(db: Database, @RequestBody backupPickups: List<DevBackupPickup>): ResponseEntity<Unit> {
+        db.transaction { backupPickups.forEach { backupPickup -> it.handle.insertBackupPickup(backupPickup) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/backup-pickup/{id}")
+    fun deleteBackupPickup(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteBackupPickup(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -847,6 +861,8 @@ fun ensureFakeAdminExists(h: Handle) {
 }
 
 fun Handle.clearDatabase() = listOf(
+    "family_contact",
+    "backup_pickup",
     "messaging_blocklist",
     "attachment",
     "guardian",
@@ -953,6 +969,8 @@ fun Handle.deleteChild(id: UUID) {
         "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE child_id = ?)",
         id
     )
+    execute("DELETE FROM family_contact WHERE child_id = ?", id)
+    execute("DELETE FROM backup_pickup WHERE child_id = ?", id)
     execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
     execute("DELETE FROM absence WHERE child_id = ?", id)
     execute("DELETE FROM backup_care WHERE child_id = ?", id)

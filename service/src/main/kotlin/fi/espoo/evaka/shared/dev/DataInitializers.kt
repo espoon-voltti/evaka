@@ -850,3 +850,21 @@ RETURNING id
 )
 
 fun Handle.deleteFamilyContact(id: UUID) = createUpdate("DELETE FROM family_contact WHERE id = :id").bind("id", id).execute()
+
+data class DevBackupPickup(
+    val id: UUID,
+    val childId: UUID,
+    val name: String,
+    val phone: String
+)
+
+fun Handle.insertBackupPickup(pickup: DevBackupPickup) = insertTestDataRow(
+    pickup,
+    """
+INSERT INTO backup_pickup (id, child_id, name, phone)
+VALUES (:id, :childId, :name, :phone)
+RETURNING id
+"""
+)
+
+fun Handle.deleteBackupPickup(id: UUID) = createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).execute()

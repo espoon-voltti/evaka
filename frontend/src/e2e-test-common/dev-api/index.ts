@@ -30,7 +30,8 @@ import {
   UUID,
   VoucherValueDecision,
   VtjPerson,
-  FamilyContact
+  FamilyContact,
+  BackupPickup
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -868,6 +869,24 @@ export async function insertFamilyContacts(
 export async function deleteFamilyContact(id: string): Promise<void> {
   try {
     await devClient.delete(`/family-contact/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertBackupPickups(
+  fixture: BackupPickup[]
+): Promise<void> {
+  try {
+    await devClient.post(`/backup-pickup`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteBackupPickup(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/backup-pickup/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }

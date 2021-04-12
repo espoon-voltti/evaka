@@ -13,6 +13,7 @@ import {
   deleteEmployeeById,
   deleteMobileDevice,
   deletePairing,
+  insertBackupPickups,
   insertChildFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
@@ -37,6 +38,7 @@ import {
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import {
   ApplicationPersonDetail,
+  BackupPickup,
   Child,
   DaycarePlacement,
   FamilyContact
@@ -126,7 +128,7 @@ fixture('Mobile PIN login')
 
 const mobileGroupsPage = new MobileGroupsPage()
 
-test('User can login with PIN', async (t) => {
+test('User can login with PIN and see child hipsu s sensitive info', async (t) => {
   const childAdditionalInfo: Child = {
     id: child.id,
     allergies: 'Allergies',
@@ -152,6 +154,23 @@ test('User can login with PIN', async (t) => {
   ]
 
   await insertFamilyContacts(contacts)
+
+  const backupPickups: BackupPickup[] = [
+    {
+      id: uuidv4(),
+      childId: child.id,
+      name: 'Backup pickup 1',
+      phone: '1'
+    },
+    {
+      id: uuidv4(),
+      childId: child.id,
+      name: 'Backup pickup 2',
+      phone: '2'
+    }
+  ]
+
+  await insertBackupPickups(backupPickups)
 
   await t
     .expect(mobileGroupsPage.childName(child.id).textContent)
@@ -217,4 +236,20 @@ test('User can login with PIN', async (t) => {
       mobileGroupsPage.childInfoContact2Email.with({ timeout: 2000 }).visible
     )
     .notOk()
+
+  await t
+    .expect(mobileGroupsPage.childInfoBackupPickup1Name.textContent)
+    .eql(backupPickups[0].name)
+
+  await t
+    .expect(mobileGroupsPage.childInfoBackupPickup1Phone.textContent)
+    .eql(backupPickups[0].phone)
+
+  await t
+    .expect(mobileGroupsPage.childInfoBackupPickup2Name.textContent)
+    .eql(backupPickups[1].name)
+
+  await t
+    .expect(mobileGroupsPage.childInfoBackupPickup2Phone.textContent)
+    .eql(backupPickups[1].phone)
 })

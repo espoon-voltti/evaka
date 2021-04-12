@@ -561,3 +561,10 @@ export interface FamilyContact {
   contactPersonId: string
   priority: number
 }
+
+export interface BackupPickup {
+  id: string
+  childId: string
+  name: string
+  phone: string
+}
