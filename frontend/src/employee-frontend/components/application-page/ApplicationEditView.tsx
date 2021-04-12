@@ -263,7 +263,7 @@ export default React.memo(function ApplicationEditView({
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               <Checkbox
-                label={i18n.application.serviceNeed.shiftCareValue}
+                label={i18n.application.serviceNeed.shiftCareNeeded}
                 checked={serviceNeed.shiftCare}
                 onChange={(value) =>
                   setApplication(
