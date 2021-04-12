@@ -161,7 +161,14 @@ function ApplicationReadView({
                       {i18n.application.serviceNeed.isUrgentWithAttachments}
                     </span>
                   ) : (
-                    <span>{i18n.application.serviceNeed.isUrgent}</span>
+                    <>
+                      <span>
+                        {i18n.application.serviceNeed.isUrgent}{' '}
+                        <Dimmed>
+                          {i18n.application.serviceNeed.missingAttachment}
+                        </Dimmed>
+                      </span>
+                    </>
                   )}
                   {urgencyAttachments.map((attachment) => (
                     <Attachment
@@ -213,7 +220,14 @@ function ApplicationReadView({
                       {i18n.application.serviceNeed.shiftCareWithAttachments}
                     </span>
                   ) : (
-                    <span>{i18n.application.serviceNeed.shiftCareValue}</span>
+                    <>
+                      <span>
+                        {i18n.application.serviceNeed.shiftCareNeeded}{' '}
+                        <Dimmed>
+                          {i18n.application.serviceNeed.missingAttachment}
+                        </Dimmed>
+                      </span>
+                    </>
                   )}
                   {extendedCareAttachments.map((attachment) => (
                     <Attachment
