@@ -51,25 +51,31 @@ fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
         .firstOrNull()
 }
 
-fun Database.Read.toDailyServiceTimes(row: RowView): DailyServiceTimes? {
+fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
     val regular: Boolean? = row.mapColumn("regular")
     if (regular == null) return null
     if (regular) {
         return DailyServiceTimes.RegularTimes(
-            regularTimes = TimeRange(
-                row.mapColumn<String>("regular_start"),
-                row.mapColumn<String>("regular_end")
-            )
+            regularTimes = toTimeRange(row, "regular")!!
         )
     } else {
         return DailyServiceTimes.IrregularTimes(
-            monday = TimeRange(row.mapColumn<String>("monday_start"), row.mapColumn("monday_end")),
-            tuesday = TimeRange(row.mapColumn<String>("tuesday_start"), row.mapColumn("tuesday_end")),
-            wednesday = TimeRange(row.mapColumn<String>("wednesday_start"), row.mapColumn("wednesday_end")),
-            thursday = TimeRange(row.mapColumn<String>("thursday_start"), row.mapColumn("thursday_end")),
-            friday = TimeRange(row.mapColumn<String>("friday_start"), row.mapColumn("friday_end")),
+            monday = toTimeRange(row, "monday"),
+            tuesday = toTimeRange(row, "tuesday"),
+            wednesday = toTimeRange(row, "wednesday"),
+            thursday = toTimeRange(row, "thursday"),
+            friday = toTimeRange(row, "friday"),
         )
     }
+}
+
+fun toTimeRange(row: RowView, columnPrefix: String): TimeRange? {
+    val start: String? = row.mapColumn(columnPrefix + "_start")
+    val end: String? = row.mapColumn(columnPrefix + "_end")
+    if (start != null && end != null) {
+        return TimeRange(start, end)
+    }
+    return null
 }
 
 fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes) {
