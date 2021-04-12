@@ -232,7 +232,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             monday = TimeRange("08:15", "17:19"),
             tuesday = TimeRange("08:16", "17:19"),
             wednesday = TimeRange("08:17", "17:19"),
-            thursday = TimeRange("08:18", "17:19"),
+            thursday = null,
             friday = TimeRange("08:19", "17:19"),
         )
         db.transaction { tx ->
