@@ -268,7 +268,7 @@ fun fetchApplicationSummaries(
             COALESCE(f.document -> 'careDetails' ->> 'assistanceNeeded', f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as assistanceNeed,
             (f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean as wasOnClubCare,
             (f.document ->> 'wasOnDaycare')::boolean as wasOnDaycare,
-            (f.document ->> 'urgent')::boolean as urgent,
+            COALESCE((f.document ->> 'urgent')::boolean, false) as urgent,
             (SELECT COALESCE(array_length(attachments.attachment_ids, 1), 0)) AS attachmentCount,
             COALESCE((f.document ->> 'extendedCare')::boolean, false) as extendedCare,
             (SELECT COALESCE(array_length(duplicates.duplicate_application_ids, 1), 0) > 0) AS has_duplicates,
