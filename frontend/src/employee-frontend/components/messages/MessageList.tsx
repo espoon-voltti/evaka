@@ -9,7 +9,7 @@ import { Result } from 'lib-common/api'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import colors from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
-import { H1, H3 } from 'lib-components/typography'
+import { H1, H2, H3 } from 'lib-components/typography'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -21,6 +21,7 @@ import { Bulletin, IdAndName } from './types'
 
 interface Props {
   bulletins: Bulletin[]
+  unitName: string
   nextPage: Result<void>
   loadNextPage: () => void
   messageBoxType: MessageBoxType
@@ -30,6 +31,7 @@ interface Props {
 
 export default React.memo(function MessageList({
   bulletins,
+  unitName,
   nextPage,
   loadNextPage,
   messageBoxType,
@@ -65,6 +67,7 @@ export default React.memo(function MessageList({
     <Container>
       <HeaderContainer>
         <H1 noMargin>{i18n.messages.messageList.titles[messageBoxType]}</H1>
+        <H2>{unitName}</H2>
       </HeaderContainer>
       {bulletins.map((msg) => (
         <React.Fragment key={msg.id}>
