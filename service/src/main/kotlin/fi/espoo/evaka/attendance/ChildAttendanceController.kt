@@ -10,7 +10,8 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
-import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.dateNow
 import fi.espoo.evaka.shared.utils.zoneId
 import mu.KotlinLogging
@@ -74,22 +76,34 @@ class ChildAttendanceController(
     ): ResponseEntity<ChildResult> {
         Audit.ChildSensitiveInfoRead.log(targetId = staffId)
 
-        db.read { it.handle.getEmployee(staffId) }?.let {
-            if (it.pin != pin) {
+        val employeeUser = db.read { it.getEmployeeUser(staffId) }
+        if (employeeUser != null) {
+            try {
+                acl.getRolesForChild(AuthenticatedUser.Employee(employeeUser), childId).requireOneOfRoles(*authorizedRoles)
+            } catch (e: Forbidden) {
+                logger.warn("Unallowed user $staffId tried to access child info for $childId")
                 return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
             }
-        } ?: ResponseEntity.ok(ChildResult(status = ChildResultStatus.NOT_FOUND, child = null))
+        } else {
+            logger.warn("Unknown user $staffId tried to access child info for $childId")
+            return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
+        }
 
-        return ResponseEntity.ok(
-            db.read { tx ->
-                tx.getChildSensitiveInfo(childId)
-            }?.let {
-                ChildResult(
-                    status = ChildResultStatus.SUCCESS,
-                    child = it
-                )
-            } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
-        )
+        val result = db.read {
+            if (it.handle.employeePinIsCorrect(staffId, pin)) {
+                it.getChildSensitiveInfo(childId)?.let {
+                    ChildResult(
+                        status = ChildResultStatus.SUCCESS,
+                        child = it
+                    )
+                } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
+            } else {
+                // TODO: keep track of failed login attempts
+                ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
+            }
+        }
+
+        return ResponseEntity.ok(result)
     }
 
     @GetMapping("/units/{unitId}")

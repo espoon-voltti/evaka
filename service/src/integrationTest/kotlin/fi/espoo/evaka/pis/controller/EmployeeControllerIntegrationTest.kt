@@ -93,8 +93,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
         created = Instant.now(),
         updated = Instant.now(),
-        id = UUID.randomUUID(),
-        pin = null
+        id = UUID.randomUUID()
     )
 
     val employee2 = Employee(
@@ -104,7 +103,6 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
         created = Instant.now(),
         updated = Instant.now(),
-        id = UUID.randomUUID(),
-        pin = null
+        id = UUID.randomUUID()
     )
 }

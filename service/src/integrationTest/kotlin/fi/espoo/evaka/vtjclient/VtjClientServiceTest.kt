@@ -172,8 +172,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
         email = "integration-test@example.org",
         externalId = null,
         created = Instant.now(),
-        updated = null,
-        pin = null
+        updated = null
     )
 
     private fun vtjRequestType(requestType: RequestType): RequestMatcher =

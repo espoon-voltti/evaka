@@ -45,7 +45,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
 private fun Handle.searchEmployees(id: UUID? = null) = createQuery(
     // language=SQL
     """
-SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles, pin
+SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
 FROM employee e
 LEFT JOIN mobile_device md on e.id = md.id 
 WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
@@ -138,3 +138,17 @@ fun Database.Transaction.updatePinCode(
 
     if (updated == 0) throw NotFound("Could not update pin-code for $userId. User not found")
 }
+
+fun Handle.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
+"""
+SELECT EXISTS (
+    SELECT 1
+    FROM employee
+    WHERE id = :employeeId
+    AND pin = :pin
+)
+    """.trimIndent()
+).bind("employeeId", employeeId)
+    .bind("pin", pin)
+    .mapTo<Boolean>()
+    .first()

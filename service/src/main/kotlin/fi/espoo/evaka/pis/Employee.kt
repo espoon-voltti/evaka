@@ -15,6 +15,5 @@ data class Employee(
     val email: String?,
     val externalId: ExternalId?,
     val created: Instant,
-    val updated: Instant?,
-    val pin: String?
+    val updated: Instant?
 )
