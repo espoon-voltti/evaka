@@ -18,10 +18,18 @@ import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { getAttachmentBlob } from '../../api/applications'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { defaultMargins } from 'lib-components/white-space'
+import { Dimmed } from 'lib-components/typography'
+import LocalDate from 'lib-common/local-date'
 
 const AttachmentContainer = styled.div`
   display: flex;
   justify-content: flex-start;
+`
+
+const ReceivedAtText = styled(Dimmed)`
+  font-style: italic;
+  margin-left: ${defaultMargins.s};
 `
 
 interface Props {
@@ -68,6 +76,10 @@ function Attachment({ attachment, dataQa }: Props) {
           }
           dataQa={'attachment-download'}
         />
+        <ReceivedAtText>
+          {i18n.application.attachments.receivedAt}{' '}
+          {LocalDate.fromSystemTzDate(attachment.receivedAt).format()}
+        </ReceivedAtText>
       </FixedSpaceRow>
     </AttachmentContainer>
   )
