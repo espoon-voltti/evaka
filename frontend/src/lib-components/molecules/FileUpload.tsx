@@ -21,7 +21,7 @@ import {
 } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from 'lib-common/types'
-import { Result } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/application/ApplicationDetails'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
@@ -266,10 +266,13 @@ export default React.memo(function FileUpload({
 
   const deleteFile = async (file: FileObject) => {
     try {
-      if (!file.error) await onDelete(file.id)
-      setUploadedFiles((old: FileObject[]) => {
-        return old.filter((item) => item.id !== file.id)
-      })
+      const { isSuccess } = file.error
+        ? Success.of(true)
+        : await onDelete(file.id)
+      isSuccess &&
+        setUploadedFiles((old: FileObject[]) => {
+          return old.filter((item) => item.id !== file.id)
+        })
     } catch (e) {
       console.error(e)
     }
