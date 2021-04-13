@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { storiesOf } from '@storybook/react'
+import { Failure, Result, Success } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import React from 'react'
-import { Failure, Result, Success } from '../../lib-common/api'
-import { UUID } from '../../lib-common/types'
 import FileUpload from './FileUpload'
 
 const mockDownload = (_: string): Promise<Result<BlobPart>> =>

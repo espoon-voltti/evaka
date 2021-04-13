@@ -2,12 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
-import { set } from 'lodash/fp'
-import ReactSelect from 'react-select'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Result } from 'lib-common/api'
+import {
+  ApplicationAddress,
+  ApplicationDetails,
+  ApplicationFutureAddress,
+  ApplicationPersonBasics
+} from 'lib-common/api-types/application/ApplicationDetails'
+import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
+import colors from 'lib-components/colors'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import ListGrid from 'lib-components/layout/ListGrid'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { H4, Label } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import {
   faChild,
   faExclamationTriangle,
@@ -18,35 +36,21 @@ import {
   faUserFriends,
   faUsers
 } from 'lib-icons'
-import LocalDate from 'lib-common/local-date'
-import { Result } from 'lib-common/api'
-import { H4, Label } from 'lib-components/typography'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { Gap } from 'lib-components/white-space'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import ListGrid from 'lib-components/layout/ListGrid'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import AddButton from 'lib-components/atoms/buttons/AddButton'
-import InputField from 'lib-components/atoms/form/InputField'
-import Radio from 'lib-components/atoms/form/Radio'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { TextArea } from 'lib-components/atoms/form/InputField'
-import colors from 'lib-components/colors'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { set } from 'lodash/fp'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
+import { AttachmentType } from '../../../lib-common/api-types/application/enums'
+import { getAttachmentBlob } from '../../api/applications'
+import { deleteAttachment, saveAttachment } from '../../api/attachments'
+import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
 import ApplicationTitle from '../../components/application-page/ApplicationTitle'
 import VTJGuardian from '../../components/application-page/VTJGuardian'
-import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
-import { useTranslation, Translations } from '../../state/i18n'
-import { formatName } from '../../utils'
-import { InputWarning } from '../../components/common/InputWarning'
+import { Translations, useTranslation } from '../../state/i18n'
 import { PersonDetails } from '../../types/person'
-import {
-  ApplicationAddress,
-  ApplicationDetails,
-  ApplicationFutureAddress,
-  ApplicationPersonBasics
-} from 'lib-common/api-types/application/ApplicationDetails'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { formatName } from '../../utils'
+import { InputWarning } from '../common/InputWarning'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -57,6 +61,11 @@ interface PreschoolApplicationProps {
   units: Result<PublicUnit[]>
   guardians: PersonDetails[]
 }
+
+const FileUploadGridContainer = styled.div`
+  grid-column: 1 / span 2;
+  margin: 8px 0;
+`
 
 export default React.memo(function ApplicationEditView({
   application,
@@ -90,7 +99,8 @@ export default React.memo(function ApplicationEditView({
     childId,
     guardianId,
     childRestricted,
-    guardianRestricted
+    guardianRestricted,
+    attachments
   } = application
 
   const preferencesInUnitsList = units
@@ -108,6 +118,45 @@ export default React.memo(function ApplicationEditView({
     formatName(person.firstName, person.lastName, i18n, true)
   const formatAddress = (a: ApplicationAddress) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
+
+  const onUploadAttachment = (type: AttachmentType) => (
+    file: File,
+    onUploadProgress: (progressEvent: ProgressEvent) => void
+  ): Promise<Result<UUID>> =>
+    saveAttachment(application.id, file, type, onUploadProgress).then((res) => {
+      res.isSuccess &&
+        setApplication(
+          (prev) =>
+            prev && {
+              ...prev,
+              attachments: [
+                ...prev.attachments,
+                {
+                  contentType: file.type,
+                  id: res.value,
+                  name: file.name,
+                  receivedAt: new Date(),
+                  type: type,
+                  updated: new Date()
+                }
+              ]
+            }
+        )
+      return res
+    })
+
+  const onDeleteAttachment = (id: UUID) =>
+    deleteAttachment(id).then((res) => {
+      res.isSuccess &&
+        setApplication(
+          (prev) =>
+            prev && {
+              ...prev,
+              attachments: prev.attachments.filter((a) => a.id !== id)
+            }
+        )
+      return res
+    })
 
   return (
     <div data-qa="application-edit-view">
@@ -154,6 +203,18 @@ export default React.memo(function ApplicationEditView({
                 }
                 dataQa="checkbox-urgent"
               />
+
+              {urgent && (
+                <FileUploadGridContainer>
+                  <FileUpload
+                    onUpload={onUploadAttachment('URGENCY')}
+                    onDelete={onDeleteAttachment}
+                    onDownloadFile={getAttachmentBlob}
+                    i18n={i18n.fileUpload}
+                    files={attachments.filter((a) => a.type === 'URGENCY')}
+                  />
+                </FileUploadGridContainer>
+              )}
 
               {serviceNeed !== null && (
                 <>
@@ -272,6 +333,20 @@ export default React.memo(function ApplicationEditView({
                 }
                 dataQa="checkbox-service-need-shift-care"
               />
+
+              {serviceNeed.shiftCare && (
+                <FileUploadGridContainer>
+                  <FileUpload
+                    onUpload={onUploadAttachment('EXTENDED_CARE')}
+                    onDelete={onDeleteAttachment}
+                    onDownloadFile={getAttachmentBlob}
+                    i18n={i18n.fileUpload}
+                    files={attachments.filter(
+                      (a) => a.type === 'EXTENDED_CARE'
+                    )}
+                  />
+                </FileUploadGridContainer>
+              )}
             </>
           )}
 

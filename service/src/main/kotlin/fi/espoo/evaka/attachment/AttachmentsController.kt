@@ -150,6 +150,17 @@ class AttachmentsController(
         return ResponseEntity.noContent().build()
     }
 
+    @DeleteMapping("/{id}")
+    fun deleteAttachmentEmployee(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
+        Audit.AttachmentsDelete.log(targetId = id)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
+        if (!db.read { it.isSelfUploadedAttachment(id, user) }) throw Forbidden("Permission denied")
+
+        db.transaction { deleteAttachment(it, id) }
+
+        return ResponseEntity.noContent().build()
+    }
+
     fun deleteAttachment(db: Database.Transaction, id: UUID) {
         db.deleteAttachment(id)
         documentClient.delete(filesBucket, "$id")
