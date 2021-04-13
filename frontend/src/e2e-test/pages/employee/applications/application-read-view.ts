@@ -10,6 +10,7 @@ export default class ApplicationReadView {
   readonly url = config.employeeUrl
   readonly view = Selector('[data-qa="application-read-view"]')
   readonly title = this.view.find('h1')
+  readonly editButton = Selector('[data-qa="edit-application"]')
   readonly vtjGuardianName = Selector('[data-qa="vtj-guardian-name"]')
   readonly vtjGuardianPhone = Selector('[data-qa="vtj-guardian-phone"]')
   readonly vtjGuardianEmail = Selector('[data-qa="vtj-guardian-email"]')
@@ -113,5 +114,9 @@ export default class ApplicationReadView {
         Selector(`[data-qa="extended-care-attachment-${fileName}"]`).exists
       )
       .ok()
+  }
+
+  async startEditing() {
+    await t.click(this.editButton)
   }
 }

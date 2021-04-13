@@ -2244,6 +2244,31 @@ export const fi = {
       ophOrganizationOid: 'Organisaation OID puuttuu'
     }
   },
+  fileUpload: {
+    upload: {
+      loading: 'Ladataan...',
+      loaded: 'Ladattu',
+      error: {
+        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+        SERVER_ERROR: 'Lataus ei onnistunut'
+      },
+      input: {
+        title: 'Lisää liite',
+        text: [
+          'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+          'Tiedoston maksimikoko: 10MB.',
+          'Sallitut tiedostomuodot:',
+          'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+        ]
+      },
+      deleteFile: 'Poista tiedosto'
+    },
+    download: {
+      modalHeader: 'Tiedoston käsittely on kesken',
+      modalMessage:
+        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
+    }
+  },
   messages: {
     inboxTitle: 'Viestit',
     unitList: {

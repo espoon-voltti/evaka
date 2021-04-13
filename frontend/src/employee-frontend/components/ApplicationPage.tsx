@@ -13,7 +13,7 @@ import ApplicationReadView from '../components/application-page/ApplicationReadV
 import ApplicationActionsBar from '../components/application-page/ApplicationActionsBar'
 import { getApplication } from '../api/applications'
 import { getApplicationUnits } from '../api/daycare'
-import { renderResult } from '../components/async-rendering'
+import { renderResult } from './async-rendering'
 import { TitleContext, TitleState } from '../state/title'
 import { useTranslation, Translations } from '../state/i18n'
 import { Container, ContentArea } from 'lib-components/layout/Container'
