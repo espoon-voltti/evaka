@@ -11,12 +11,10 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
-// import ReportsPage from 'e2e-playwright/pages/employee/reports'
 import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
-// let reports: ReportsPage
 let nav: EmployeeNav
 let childInfo: ChildInformationPage
 
@@ -28,7 +26,6 @@ beforeEach(async () => {
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
   childInfo = new ChildInformationPage(page)
-  // reports = new ReportsPage(page)
 })
 afterEach(async () => {
   await page.close()
