@@ -83,7 +83,7 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         val application = db.transaction { tx ->
-            fetchApplicationDetailsWithCurrentOtherGuardianInfo(user, tx, personService, applicationId)
+            fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(user, tx, personService, applicationId)
         }
 
         return if (application?.guardianId == user.id && !application.hideFromGuardian)
