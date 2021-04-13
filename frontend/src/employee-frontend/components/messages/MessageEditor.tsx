@@ -17,6 +17,7 @@ import { useTranslation } from '../../state/i18n'
 import { Bulletin } from './types'
 import { SelectorChange } from 'employee-frontend/components/messages/receiver-selection-utils'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Select from '../common/Select'
 
 type Option = {
   label: string
@@ -25,6 +26,7 @@ type Option = {
 
 type Props = {
   bulletin: Bulletin
+  senderOptions: string[]
   onChange: (change: Partial<Bulletin>) => void
   onDeleteDraft: () => void
   onClose: () => void
@@ -36,6 +38,7 @@ type Props = {
 
 export default React.memo(function MessageEditor({
   bulletin,
+  senderOptions,
   onChange,
   onDeleteDraft,
   onClose,
@@ -45,6 +48,11 @@ export default React.memo(function MessageEditor({
   updateSelection
 }: Props) {
   const { i18n } = useTranslation()
+
+  const mappedSenderOptions = senderOptions.map((name) => ({
+    value: name,
+    label: name
+  }))
 
   return (
     <Container>
@@ -94,10 +102,19 @@ export default React.memo(function MessageEditor({
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.sender}</div>
         <Gap size={'xs'} />
-        <InputField
-          value={bulletin.sender}
-          onChange={(sender) => onChange({ sender })}
-          data-qa={'input-sender'}
+        <Select
+          options={mappedSenderOptions}
+          onChange={(selected) =>
+            selected &&
+            'value' in selected &&
+            onChange({ sender: selected.value })
+          }
+          value={
+            mappedSenderOptions.find(
+              ({ value }) => value === bulletin.sender
+            ) || null
+          }
+          data-qa="select-sender"
         />
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.title}</div>

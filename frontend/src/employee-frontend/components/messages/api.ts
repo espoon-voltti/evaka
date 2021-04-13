@@ -116,3 +116,14 @@ export async function getReceivers(
     )
     .catch((e) => Failure.fromError(e))
 }
+
+export async function getSenderOptions(
+  unitId: UUID
+): Promise<Result<string[]>> {
+  return client
+    .get<JsonOf<string[]>>('/bulletins/sender-options', {
+      params: { unitId }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

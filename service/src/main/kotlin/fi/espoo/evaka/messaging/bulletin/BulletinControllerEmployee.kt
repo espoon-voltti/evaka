@@ -189,6 +189,20 @@ class BulletinControllerEmployee(
         return ResponseEntity.noContent().build()
     }
 
+    @GetMapping("/sender-options")
+    fun getSenderOptions(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestParam unitId: UUID
+    ): ResponseEntity<List<String>> {
+        Audit.MessagingSenderOptionsRead.log(user.id)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
+        return db.transaction { tx ->
+            tx.getPossibleSenders(user, unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
     private fun authorizeAdminSupervisorOrStaff(user: AuthenticatedUser) {
         if (!user.hasOneOfRoles(UserRole.ADMIN)) {
             if (acl.getAuthorizedUnits(user).ids?.isEmpty() != false) {
