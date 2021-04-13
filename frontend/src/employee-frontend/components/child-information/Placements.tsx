@@ -81,7 +81,7 @@ const Placements = React.memo(function Placements({ id, open }: Props) {
         icon={faMapMarkerAlt}
         title={i18n.childInformation.placements.title}
         startCollapsed={!open}
-        dataQa="child-placements-collapsible"
+        data-qa="child-placements-collapsible"
       >
         <RequireRole
           oneOf={[
