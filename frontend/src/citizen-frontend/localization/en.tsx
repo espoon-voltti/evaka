@@ -754,8 +754,10 @@ const en: Translations = {
                     view{"'"}.
                   </P>
                   <P>
-                    When applying to a service voucher unit, the unit’s
-                    supervisor will also be informed of the application.
+                    Apply for a service voucher by selecting the service voucher
+                    unit to which you want to apply as your preferred unit. When
+                    applying to a service voucher unit, the unit’s supervisor
+                    will also be informed of the application.
                   </P>
                 </>
               )
@@ -774,8 +776,10 @@ const en: Translations = {
                     view{"'"}.
                   </P>
                   <P>
-                    When applying to a service voucher unit, the unit’s
-                    supervisor will also be informed of the application.
+                    Apply for a service voucher by selecting the service voucher
+                    unit to which you want to apply as your preferred unit. When
+                    applying to a service voucher unit, the unit’s supervisor
+                    will also be informed of the application.
                   </P>
                 </>
               )

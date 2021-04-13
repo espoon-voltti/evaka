@@ -712,8 +712,10 @@ const sv: Translations = {
                     välja <i>Enheter på kartan</i>.
                   </P>
                   <P>
-                    När familjen ansöker till en servicesedel enhet får även
-                    ledaren inom småbarnspedagogik informationen.
+                    Du ansöker om en servicesedel genom att som
+                    ansökningsönskemål välja den servicesedelenhet du vill söka
+                    till. När familjen ansöker till en servicesedel enhet får
+                    även ledaren inom småbarnspedagogik informationen.
                   </P>
                 </>
               )
@@ -729,8 +731,10 @@ const sv: Translations = {
                     välja <i>Enheter på kartan</i>.
                   </P>
                   <P>
-                    När familjen ansöker till en servicesedel enhet får även
-                    ledaren inom småbarnspedagogik informationen.
+                    Du ansöker om en servicesedel genom att som
+                    ansökningsönskemål välja den servicesedelenhet du vill söka
+                    till. När familjen ansöker till en servicesedel enhet får
+                    även ledaren inom småbarnspedagogik informationen.
                   </P>
                 </>
               )
