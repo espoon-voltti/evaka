@@ -157,26 +157,26 @@ function ApplicationReadView({
               ) : (
                 <AttachmentContainer>
                   {urgencyAttachments.length ? (
-                    <span>
-                      {i18n.application.serviceNeed.isUrgentWithAttachments}
-                    </span>
-                  ) : (
                     <>
                       <span>
-                        {i18n.application.serviceNeed.isUrgent}{' '}
-                        <Dimmed>
-                          {i18n.application.serviceNeed.missingAttachment}
-                        </Dimmed>
+                        {i18n.application.serviceNeed.isUrgentWithAttachments}
                       </span>
+                      {urgencyAttachments.map((attachment) => (
+                        <Attachment
+                          key={attachment.id}
+                          attachment={attachment}
+                          dataQa={`urgent-attachment-${attachment.name}`}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <span>{i18n.application.serviceNeed.isUrgent}</span>
+                      <Dimmed>
+                        {i18n.application.serviceNeed.missingAttachment}
+                      </Dimmed>
                     </>
                   )}
-                  {urgencyAttachments.map((attachment) => (
-                    <Attachment
-                      key={attachment.id}
-                      attachment={attachment}
-                      dataQa={`urgent-attachment-${attachment.name}`}
-                    />
-                  ))}
                 </AttachmentContainer>
               )}
 
@@ -216,26 +216,28 @@ function ApplicationReadView({
               ) : (
                 <AttachmentContainer>
                   {extendedCareAttachments.length ? (
-                    <span>
-                      {i18n.application.serviceNeed.shiftCareWithAttachments}
-                    </span>
+                    <>
+                      <span>
+                        {i18n.application.serviceNeed.shiftCareWithAttachments}
+                      </span>
+                      {extendedCareAttachments.map((attachment) => (
+                        <Attachment
+                          key={attachment.id}
+                          attachment={attachment}
+                          dataQa={`extended-care-attachment-${attachment.name}`}
+                        />
+                      ))}
+                    </>
                   ) : (
                     <>
                       <span>
-                        {i18n.application.serviceNeed.shiftCareNeeded}{' '}
-                        <Dimmed>
-                          {i18n.application.serviceNeed.missingAttachment}
-                        </Dimmed>
+                        {i18n.application.serviceNeed.shiftCareNeeded}
                       </span>
+                      <Dimmed>
+                        {i18n.application.serviceNeed.missingAttachment}
+                      </Dimmed>
                     </>
                   )}
-                  {extendedCareAttachments.map((attachment) => (
-                    <Attachment
-                      key={attachment.id}
-                      attachment={attachment}
-                      dataQa={`extended-care-attachment-${attachment.name}`}
-                    />
-                  ))}
                 </AttachmentContainer>
               )}
             </>
