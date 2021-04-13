@@ -547,8 +547,18 @@ const sv: Translations = {
                   utöver förskoleundervisningen (fyra timmar per dag) på morgnar
                   och eftermiddagar på samma ställe som förskoleundervisningen.
                   Om barnet börjar senare, meddela detta under{' '}
-                  <i>Tilläggsuppgifter</i>. Du får ett separat skriftligt beslut
-                  om platsen inom småbarnspedagogik. Beslutet delges i tjänsten
+                  <i>Tilläggsuppgifter</i>.
+                </P>
+                <P>
+                  Plats i anslutning till förskoleundervisningen i en privat
+                  enhet för småbarnspedagogik ska sökas direkt hos enheten (med
+                  undantag för servicesedelenheter), enheten informerar om hur
+                  man ansöker. I dessa fall omvandlar servicehänvisningen
+                  ansökan till en ansökan om endast förskoleundervisning.
+                </P>
+                <P>
+                  Du får ett separat skriftligt beslut om platsen inom
+                  småbarnspedagogik. Beslutet delges i tjänsten
                   Suomi.fi-meddelanden eller per post, om du inte har tagit
                   tjänsten i bruk.
                 </P>

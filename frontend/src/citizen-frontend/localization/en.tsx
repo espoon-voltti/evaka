@@ -572,10 +572,13 @@ const en: Translations = {
                   field.
                 </P>
                 <P>
-                  Private kindergartens and some of the private kindergartens
-                  need a separate application for related early childhood
-                  education. Espoo{"'"}s early childhood education is in contact
-                  with those applicants who are affected.
+                  When you apply for a place at a private pre-primary education
+                  unit, you must apply for connected early childhood education
+                  directly from the unit (with the exception of service voucher
+                  units). The units will provide you with application
+                  instructions. In these cases, the service guidance team will
+                  convert the application into an application for pre-primary
+                  education only.
                 </P>
                 <P>
                   A separate written decision will be issued on the early
