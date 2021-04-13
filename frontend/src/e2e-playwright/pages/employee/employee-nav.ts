@@ -13,7 +13,15 @@ export default class EmployeeNav {
   readonly #loginBtn = new RawElement(this.page, '[data-qa="login-btn"]')
   readonly #userNameBtn = new RawElement(this.page, '[data-qa="username"]')
 
-  readonly #reportsTab = new RawElement(this.page, '[data-qa="reports-nav"]')
+  readonly applicationsTab = new RawElement(
+    this.page,
+    '[data-qa="applications-nav"]'
+  )
+  readonly unitsTab = new RawElement(this.page, '[data-qa="units-nav"]')
+  readonly searchTab = new RawElement(this.page, '[data-qa="search-nav"]')
+  readonly financeTab = new RawElement(this.page, '[data-qa="finance-nav"]')
+  readonly reportsTab = new RawElement(this.page, '[data-qa="reports-nav"]')
+  readonly messagesTab = new RawElement(this.page, '[data-qa="messages-nav"]')
 
   readonly #employeesLink = new RawElement(
     this.page,
@@ -24,11 +32,21 @@ export default class EmployeeNav {
     '[data-qa="user-popup-pin-code"]'
   )
 
-  async login(role: 'manager' | 'admin') {
+  async login(
+    role:
+      | 'manager'
+      | 'admin'
+      | 'serviceWorker'
+      | 'financeAdmin'
+      | 'director'
+      | 'staff'
+      | 'unitSupervisor'
+      | 'specialEducationTeacher'
+  ) {
     await this.#loginBtn.click()
 
     const form = new DevLoginForm(this.page)
-
+    debugger
     switch (role) {
       case 'manager':
         await form.login({
@@ -41,6 +59,24 @@ export default class EmployeeNav {
           aad: config.adminAad,
           roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
         })
+        break
+      case 'serviceWorker':
+        await form.loginAsUser(config.serviceWorkerAad)
+        break
+      case 'financeAdmin':
+        await form.loginAsUser(config.financeAdminAad)
+        break
+      case 'director':
+        await form.loginAsUser(config.directorAad)
+        break
+      case 'staff':
+        await form.loginAsUser(config.staffAad)
+        break
+      case 'unitSupervisor':
+        await form.loginAsUser(config.unitSupervisorAad)
+        break
+      case 'specialEducationTeacher':
+        await form.loginAsUser(config.specialEducationTeacher)
         break
     }
     await this.#userNameBtn.waitUntilVisible()
@@ -63,8 +99,24 @@ export default class EmployeeNav {
   async openTab(tab: 'reports') {
     switch (tab) {
       case 'reports':
-        await this.#reportsTab.click()
+        await this.reportsTab.click()
         break
     }
+  }
+
+  async tabsVisible(params: {
+    applications: boolean
+    units: boolean
+    search: boolean
+    finance: boolean
+    reports: boolean
+    messages: boolean
+  }) {
+    expect(await this.applicationsTab.visible).toBe(params.applications)
+    expect(await this.unitsTab.visible).toBe(params.units)
+    expect(await this.searchTab.visible).toBe(params.search)
+    expect(await this.financeTab.visible).toBe(params.finance)
+    expect(await this.reportsTab.visible).toBe(params.reports)
+    expect(await this.messagesTab.visible).toBe(params.messages)
   }
 }

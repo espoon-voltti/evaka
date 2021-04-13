@@ -72,4 +72,10 @@ export default class DevLoginForm {
     expect(afterStates).toEqual(wantedStates)
     await this.#submit.click()
   }
+
+  async loginAsUser(aad: UUID) {
+    const id = `\\30 ${aad.substring(1)}`
+    await new RawRadio(this.page, `#${id}`).click()
+    await this.#submit.click()
+  }
 }
