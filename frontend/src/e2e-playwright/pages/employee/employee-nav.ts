@@ -46,7 +46,6 @@ export default class EmployeeNav {
     await this.#loginBtn.click()
 
     const form = new DevLoginForm(this.page)
-    debugger
     switch (role) {
       case 'manager':
         await form.login({
