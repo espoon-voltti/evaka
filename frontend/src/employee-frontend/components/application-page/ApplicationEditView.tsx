@@ -212,6 +212,7 @@ export default React.memo(function ApplicationEditView({
                     onDownloadFile={getAttachmentBlob}
                     i18n={i18n.fileUpload}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
+                    dataQa="file-upload-urgent"
                   />
                 </FileUploadGridContainer>
               )}
@@ -344,6 +345,7 @@ export default React.memo(function ApplicationEditView({
                     files={attachments.filter(
                       (a) => a.type === 'EXTENDED_CARE'
                     )}
+                    dataQa="file-upload-shift-care"
                   />
                 </FileUploadGridContainer>
               )}

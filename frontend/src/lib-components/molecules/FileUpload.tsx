@@ -394,6 +394,7 @@ export default React.memo(function FileUpload({
                   icon={faTimes}
                   onClick={() => deleteFile(file)}
                   altText={`${i18n.upload.deleteFile} ${file.name}`}
+                  dataQa={`file-delete-button-${file.name}`}
                 />
               </FileHeader>
               {inProgress(file) && (
