@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
+import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -362,51 +363,54 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
     val placementTypes = handle.getPlacementsForChild(childId).map { it.type }
     val child = handle.getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
-    val familyContacts = createQuery(
-        """
-SELECT first_name, last_name, phone, backup_phone, email
-FROM person
-WHERE id IN (
-    SELECT contact_person_id
-    FROM family_contact
-    WHERE child_id = :childId
-    ORDER BY priority DESC)
-        """.trimIndent()
-    )
-        .bind("childId", childId)
-        .mapTo<ContactInfo>()
-        .list()
+    val familyContacts = fetchFamilyContacts(childId)
 
     return if (person != null) {
         ChildSensitiveInformation(
             id = person.id,
             firstName = person.firstName ?: "",
             lastName = person.lastName ?: "",
-            preferredName = child?.additionalInformation?.preferredName,
+            preferredName = child?.additionalInformation?.preferredName ?: "",
             ssn = person.identity.toString(),
-            childAddress = person.streetAddress,
+            childAddress = person.streetAddress ?: "",
             placementTypes = placementTypes,
-            allergies = child?.additionalInformation?.allergies,
-            diet = child?.additionalInformation?.diet,
-            medication = child?.additionalInformation?.medication,
-            contact1 = familyContacts.getOrNull(0),
-            contact2 = familyContacts.getOrNull(1),
+            allergies = child?.additionalInformation?.allergies ?: "",
+            diet = child?.additionalInformation?.diet ?: "",
+            medication = child?.additionalInformation?.medication ?: "",
+            contact1 = familyContacts.getOrNull(0)?.let {
+                ContactInfo(
+                    firstName = it.firstName ?: "",
+                    lastName = it.lastName ?: "",
+                    phone = it.phone ?: "",
+                    backupPhone = it.backupPhone ?: "",
+                    email = it.email ?: ""
+                )
+            },
+            contact2 = familyContacts.getOrNull(1)?.let {
+                ContactInfo(
+                    firstName = it.firstName ?: "",
+                    lastName = it.lastName ?: "",
+                    phone = it.phone ?: "",
+                    backupPhone = it.backupPhone ?: "",
+                    email = it.email ?: ""
+                )
+            },
             backupPickup1 = backupPickups.getOrNull(0)?.let {
                 ContactInfo(
                     firstName = it.name,
-                    lastName = null,
+                    lastName = "",
                     phone = it.phone,
-                    backupPhone = null,
-                    email = null
+                    backupPhone = "",
+                    email = ""
                 )
             },
             backupPickup2 = backupPickups.getOrNull(1)?.let {
                 ContactInfo(
                     firstName = it.name,
-                    lastName = null,
+                    lastName = "",
                     phone = it.phone,
-                    backupPhone = null,
-                    email = null
+                    backupPhone = "",
+                    email = ""
                 )
             }
         )

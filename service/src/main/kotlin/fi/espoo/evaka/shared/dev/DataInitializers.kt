@@ -868,3 +868,41 @@ RETURNING id
 )
 
 fun Handle.deleteBackupPickup(id: UUID) = createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).execute()
+
+data class DevFridgeChild(
+    val id: UUID,
+    val childId: UUID,
+    val headOfChild: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
+
+fun Handle.insertFridgeChild(pickup: DevFridgeChild) = insertTestDataRow(
+    pickup,
+    """
+INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date)
+VALUES (:id, :childId, :headOfChild, :startDate, :endDate)
+RETURNING id
+"""
+)
+
+fun Handle.deleteFridgeChild(id: UUID) = createUpdate("DELETE FROM fridge_child WHERE id = :id").bind("id", id).execute()
+
+data class DevFridgePartner(
+    val partnershipId: UUID,
+    val indx: Int,
+    val personId: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
+
+fun Handle.insertFridgePartner(pickup: DevFridgePartner) = insertTestDataRow(
+    pickup,
+    """
+INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
+VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
+RETURNING partnership_id
+"""
+)
+
+fun Handle.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()

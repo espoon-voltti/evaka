@@ -568,3 +568,19 @@ export interface BackupPickup {
   name: string
   phone: string
 }
+
+export interface FridgeChild {
+  id: string
+  childId: string
+  headOfChild: string
+  startDate: LocalDate
+  endDate: LocalDate
+}
+
+export interface FridgePartner {
+  partnershipId: string
+  indx: number
+  personId: string
+  startDate: LocalDate
+  endDate: LocalDate
+}

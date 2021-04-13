@@ -31,7 +31,9 @@ import {
   VoucherValueDecision,
   VtjPerson,
   FamilyContact,
-  BackupPickup
+  BackupPickup,
+  FridgeChild,
+  FridgePartner
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -887,6 +889,42 @@ export async function insertBackupPickups(
 export async function deleteBackupPickup(id: string): Promise<void> {
   try {
     await devClient.delete(`/backup-pickup/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFridgeChildren(
+  fixture: FridgeChild[]
+): Promise<void> {
+  try {
+    await devClient.post(`/fridge-child`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteFridgeChild(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/fridge-child/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFridgePartners(
+  fixture: FridgePartner[]
+): Promise<void> {
+  try {
+    await devClient.post(`/fridge-partner`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteFridgePartner(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/fridge-partner/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }

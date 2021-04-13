@@ -25,13 +25,13 @@ data class ChildSensitiveInformation(
     val id: UUID,
     val firstName: String,
     val lastName: String,
-    val preferredName: String?,
-    val ssn: String?,
-    val childAddress: String?,
-    val placementTypes: List<PlacementType>?,
-    val allergies: String?,
-    val diet: String?,
-    val medication: String?,
+    val preferredName: String,
+    val ssn: String,
+    val childAddress: String,
+    val placementTypes: List<PlacementType>,
+    val allergies: String,
+    val diet: String,
+    val medication: String,
     val contact1: ContactInfo?,
     val contact2: ContactInfo?,
     val backupPickup1: ContactInfo?,
@@ -39,11 +39,11 @@ data class ChildSensitiveInformation(
 )
 
 data class ContactInfo(
-    val firstName: String?,
-    val lastName: String?,
-    val phone: String?,
-    val backupPhone: String?,
-    val email: String?,
+    val firstName: String,
+    val lastName: String,
+    val phone: String,
+    val backupPhone: String,
+    val email: String,
 )
 
 data class AttendanceResponse(

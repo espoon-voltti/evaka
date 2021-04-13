@@ -846,6 +846,30 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.transaction { it.handle.deleteBackupPickup(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/fridge-child")
+    fun createFridgeChild(db: Database, @RequestBody fridgeChildren: List<DevFridgeChild>): ResponseEntity<Unit> {
+        db.transaction { fridgeChildren.forEach { child -> it.handle.insertFridgeChild(child) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/fridge-child/{id}")
+    fun deleteFridgeChild(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteFridgeChild(id) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/fridge-partner")
+    fun createFridgePartner(db: Database, @RequestBody fridgePartners: List<DevFridgePartner>): ResponseEntity<Unit> {
+        db.transaction { fridgePartners.forEach { partner -> it.handle.insertFridgePartner(partner) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/fridge-partner/{id}")
+    fun deleteFridgePartner(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteFridgePartner(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {

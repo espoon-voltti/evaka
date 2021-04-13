@@ -18,6 +18,8 @@ import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertFamilyContacts,
+  insertFridgeChildren,
+  insertFridgePartners,
   postMobileDevice,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
@@ -43,6 +45,7 @@ import {
   DaycarePlacement,
   FamilyContact
 } from 'e2e-test-common/dev-api/types'
+import LocalDate from '../../../lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
@@ -171,6 +174,34 @@ test('User can login with PIN and see child hipsu s sensitive info', async (t) =
   ]
 
   await insertBackupPickups(backupPickups)
+
+  await insertFridgeChildren([
+    {
+      id: uuidv4(),
+      childId: child.id,
+      headOfChild: enduserGuardianFixture.id,
+      startDate: LocalDate.today(),
+      endDate: LocalDate.today()
+    }
+  ])
+
+  const parentshipId = uuidv4()
+  await insertFridgePartners([
+    {
+      partnershipId: parentshipId,
+      indx: 1,
+      personId: enduserGuardianFixture.id,
+      startDate: LocalDate.today(),
+      endDate: LocalDate.today()
+    },
+    {
+      partnershipId: parentshipId,
+      indx: 2,
+      personId: enduserChildJariOtherGuardianFixture.id,
+      startDate: LocalDate.today(),
+      endDate: LocalDate.today()
+    }
+  ])
 
   await t
     .expect(mobileGroupsPage.childName(child.id).textContent)

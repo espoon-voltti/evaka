@@ -117,7 +117,7 @@ INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (:chil
         .execute()
 }
 
-private fun Database.Read.fetchFamilyContacts(childId: UUID): List<FamilyContact> {
+fun Database.Read.fetchFamilyContacts(childId: UUID): List<FamilyContact> {
     // language=sql
     val sql =
         """
