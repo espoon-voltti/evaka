@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.config
 
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.vtjclient.properties.XRoadProperties
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -23,6 +24,7 @@ import javax.net.ssl.X509TrustManager
 @Configuration
 class FuelManagerConfig {
     @Bean
+    @ConditionalOnMissingBean
     fun fuel(env: Environment, xRoadProperties: XRoadProperties): FuelManager {
         return when (env.getProperty("fuel.certificate.check", Boolean::class.java, true)) {
             true -> certCheckFuelManager(xRoadProperties)
