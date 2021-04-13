@@ -532,10 +532,11 @@ export default {
                   “Muut lisätiedot” -kohtaan.
                 </P>
                 <P>
-                  Yksityisiin päiväkoteihin ja osaan ostopalvelupäiväkodeista on
-                  tehtävä erillinen hakemus liittyvään varhaiskasvatukseen.
-                  Espoon varhaiskasvatus on yhteydessä niihin hakijoihin, joita
-                  tämä koskee.
+                  Yksityisiin esiopetusyksiköihin haettassa, liittyvä
+                  varhaiskasvatus haetaan suoraan yksiköstä (pois lukien
+                  palveluseteliyksiköt), yksiköt informoivat asiakkaita
+                  hakutavasta. Näissä tapauksissa palveluohjaus muuttaa
+                  hakemuksen pelkäksi esiopetushakemukseksi.
                 </P>
                 <P>
                   Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen,
@@ -706,6 +707,8 @@ export default {
                     ‘Yksiköt kartalla’.
                   </P>
                   <P>
+                    Palveluseteliä haetaan valitsemalla hakutoiveeksi se
+                    palveluseteliyksikkö, johon halutaan hakea.
                     Palveluseteliyksikköön haettaessa myös yksikön esimies saa
                     tiedon hakemuksesta.
                   </P>
@@ -726,6 +729,8 @@ export default {
                     kartalla’.
                   </P>
                   <P>
+                    Palveluseteliä haetaan valitsemalla hakutoiveeksi se
+                    palveluseteliyksikkö, johon halutaan hakea.
                     Palveluseteliyksikköön haettaessa myös yksikön esimies saa
                     tiedon hakemuksesta.
                   </P>
