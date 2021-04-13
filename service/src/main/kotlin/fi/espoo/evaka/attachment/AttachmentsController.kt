@@ -6,6 +6,7 @@ package fi.espoo.evaka.attachment
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
@@ -38,6 +39,7 @@ const val attachmentsPath = "/"
 @RequestMapping("/attachments")
 class AttachmentsController(
     private val documentClient: DocumentService,
+    private val stateService: ApplicationStateService,
     env: Environment
 ) {
     private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
@@ -111,6 +113,8 @@ class AttachmentsController(
                 contentType
             )
         }
+        db.transaction { stateService.reCalculateDueDate(it, applicationId) }
+
         return id
     }
 

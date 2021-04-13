@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
+import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -105,7 +106,8 @@ class ApplicationStateService(
             application.type,
             sentDate,
             application.form.preferences.urgent,
-            applicationFlags.isTransferApplication
+            applicationFlags.isTransferApplication,
+            application.attachments,
         )
         updateApplicationDates(tx.handle, application.id, sentDate, dueDate)
 
@@ -467,21 +469,29 @@ class ApplicationStateService(
 
         updateForm(handle, original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
         setCheckedByAdminToDefault(handle, original.id, updatedForm)
-        updateDueDate(original, updatedForm)
+        updateDueDate(original, updatedForm.preferences.urgent)
     }
 
-    private fun Database.Transaction.updateDueDate(original: ApplicationDetails, updated: ApplicationForm) {
-        if (original.sentDate == null || original.form.preferences.urgent == updated.preferences.urgent) return
+    private fun Database.Transaction.updateDueDate(original: ApplicationDetails, urgent: Boolean) {
+        if (original.sentDate == null) return
 
         // If an application is flagged as urgent afterwards, the new due date is calculated from current date
-        val sentDate = if (updated.preferences.urgent) LocalDate.now() else original.sentDate
+        val sentDate = if (urgent && !original.form.preferences.urgent) LocalDate.now() else original.sentDate
         val newDueDate =
-            calculateDueDate(original.type, sentDate, updated.preferences.urgent, original.transferApplication)
+            calculateDueDate(original.type, sentDate, urgent, original.transferApplication, original.attachments)
+
+        if (newDueDate == original.dueDate) return
 
         createUpdate("UPDATE application SET duedate = :dueDate WHERE id = :id")
             .bind("id", original.id)
             .bind("dueDate", newDueDate)
             .execute()
+    }
+
+    fun reCalculateDueDate(tx: Database.Transaction, applicationId: UUID) {
+        val application = fetchApplicationDetails(tx.handle, applicationId)
+            ?: throw NotFound("Application $applicationId was not found")
+        tx.updateDueDate(application, application.form.preferences.urgent)
     }
 
     // HELPERS
@@ -540,7 +550,8 @@ class ApplicationStateService(
         applicationType: ApplicationType,
         sentDate: LocalDate,
         isUrgent: Boolean,
-        isTransferApplication: Boolean
+        isTransferApplication: Boolean,
+        attachments: List<Attachment>
     ): LocalDate? {
         return if (isTransferApplication) {
             null
@@ -548,7 +559,11 @@ class ApplicationStateService(
             sentDate // todo: is this correct? seems weird
         } else {
             if (isUrgent) {
-                sentDate.plusWeeks(2)
+                // due date should not be set at all if attachments are missing
+                if (attachments.isEmpty()) return null
+                // due date is two weeks from application.sentDate or the first attachment, whichever is later
+                val minAttachmentDate = attachments.map { it.receivedAt }.minOrNull()?.toHelsinkiLocalDateTime()?.toLocalDate()
+                listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
             } else {
                 sentDate.plusMonths(4)
             }
