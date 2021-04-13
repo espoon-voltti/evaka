@@ -105,8 +105,8 @@ class AsyncJobQueriesTest : PureJdbiTest() {
     fun testLegacyUserRoleDeserialization() {
         val user = db.read {
             it.createQuery(
-                "SELECT jsonb_build_object('id', '44e1ff31-fce4-4ca1-922a-a385fb21c69e', 'roles', jsonb_build_array('ROLE_EVAKA_ESPOO_FINANCEADMIN')) AS user"
-            ).map { row -> row.mapJsonColumn<AuthenticatedUser>("user") }.asSequence().first()
+                "SELECT jsonb_build_object('id', '44e1ff31-fce4-4ca1-922a-a385fb21c69e', 'roles', jsonb_build_array('FINANCE_ADMIN')) AS user"
+            ).map { row -> row.mapJsonColumn<AuthenticatedUser>("user") }.first()
         }
         assertEquals(
             AuthenticatedUser.Employee(

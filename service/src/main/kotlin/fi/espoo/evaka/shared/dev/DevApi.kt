@@ -94,7 +94,7 @@ import java.time.ZoneId
 import java.util.UUID
 
 private val fakeAdmin = AuthenticatedUser.Employee(
-    id = UUID.fromString("00000000-0000-0000-0000-000000000000"),
+    id = UUID.fromString("00000000-0000-0000-0000-000000000001"),
     roles = setOf(UserRole.ADMIN)
 )
 

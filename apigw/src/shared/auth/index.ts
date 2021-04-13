@@ -31,15 +31,37 @@ export function requireAuthentication(
   return next()
 }
 
-export function createAuthHeader(user: SamlUser): string {
-  const roles =
-    user.roles ?? concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
-  const token = createJwt({
+function createJwtToken(user: SamlUser): string {
+  const type =
+    user.userType ?? (gatewayRole === 'enduser' ? 'ENDUSER' : 'EMPLOYEE')
+
+  const common = {
     kind: gatewayRole === 'enduser' ? 'SuomiFI' : 'AD',
-    sub: user.id,
-    scope: roles
-      .map((role) => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))
-      .join(' ')
-  })
-  return `Bearer ${token}`
+    sub: user.id
+  } as const
+
+  switch (type) {
+    case 'ENDUSER':
+      return createJwt({ ...common, evaka_type: 'citizen' })
+    case 'MOBILE':
+      return createJwt({ ...common, evaka_type: 'mobile' })
+    case 'SYSTEM':
+      return createJwt({ ...common, evaka_type: 'system' })
+    case 'EMPLOYEE':
+      const roles =
+        user.roles ?? concat(user.globalRoles ?? [], user.allScopedRoles ?? [])
+      return createJwt({
+        ...common,
+        evaka_type: 'employee',
+        scope: roles
+          .map((role) => (role.startsWith('ROLE_') ? role : `ROLE_${role}`))
+          .join(' ')
+      })
+    default:
+      throw new Error(`Unsupported user type ${type}`)
+  }
+}
+
+export function createAuthHeader(user: SamlUser): string {
+  return `Bearer ${createJwtToken(user)}`
 }
