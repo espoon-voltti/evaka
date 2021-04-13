@@ -1248,9 +1248,9 @@ export const fi = {
       daycareDailyNote: {
         header: 'Päivän muistiinpanot',
         groupNoteHeader: 'Päivän muistiinpanot koko ryhmälle',
-        notesHeader: 'Päivän tapahtumia',
+        notesHeader: 'Päivän tapahtumia (ei terveystietoja)',
         groupNotesHeader: 'Koko ryhmää koskeva muistiinpano',
-        notesHint: 'Kirjoita muistiinpano (ei terveystietoja)',
+        notesHint: 'Mitä tänään opin, leikin, oivalsin.',
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
         sleepingHint: 'esim 1,5h',

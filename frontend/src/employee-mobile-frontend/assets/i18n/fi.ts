@@ -97,7 +97,7 @@ export const fi = {
     notes: {
       dailyNotes: 'Päivän muistiinpanot',
       labels: {
-        note: 'Päivän tapahtumia',
+        note: 'Päivän tapahtumia (ei terveystietoja)',
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
         reminderNote: 'Muistettavia asioita',
@@ -114,7 +114,7 @@ export const fi = {
         LAUNDRY: 'Repussa pyykkiä'
       },
       placeholders: {
-        note: 'Kirjoita muistiinpano (Ei terveystietoja).',
+        note: 'Mitä tänään opin, leikin, oivalsin.',
         reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
         sleepingTime: 'Esim 1,5'
       },
