@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.dvv
 
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -14,6 +16,12 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
     fun `get modification token for today`() {
         val response = dvvModificationsServiceClient.getFirstModificationToken(LocalDate.now())
         assertEquals(true, response!!.latestModificationToken > 0)
+    }
+
+    @Test
+    fun `customizer is called in first modification token request`() {
+        dvvModificationsServiceClient.getFirstModificationToken(LocalDate.now())
+        verify(requestCustomizerMock).customize(any())
     }
 
     @Test
@@ -84,5 +92,11 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
         assertEquals("AKTIIVI", ssnModified.voimassaolo)
         assertEquals("010281-999C", ssnModified.aktiivinenHenkilotunnus)
         assertEquals("010181-999K", ssnModified.edellisetHenkilotunnukset.get(0))
+    }
+
+    @Test
+    fun `customizer is called in modifications request`() {
+        dvvModificationsServiceClient.getModifications("100000000", listOf("020180-999Y"))
+        verify(requestCustomizerMock).customize(any())
     }
 }
