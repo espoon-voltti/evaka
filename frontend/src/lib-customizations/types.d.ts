@@ -16,6 +16,8 @@ export interface CitizenCustomizations {
 interface CitizenLocalizations {
   footer: {
     cityLabel: string
+    privacyPolicyLink: string
+    sendFeedbackLink: string
   }
 }
 

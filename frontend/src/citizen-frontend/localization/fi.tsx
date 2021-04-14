@@ -60,11 +60,9 @@ export default {
   footer: {
     cityLabel: fiCustomizations.footer.cityLabel,
     privacyPolicy: 'Tietosuojaselosteet',
-    privacyPolicyLink:
-      'https://www.espoo.fi/fi-FI/Asioi_verkossa/Tietosuoja/Tietosuojaselosteet',
+    privacyPolicyLink: fiCustomizations.footer.privacyPolicyLink,
     sendFeedback: 'Lähetä palautetta',
-    sendFeedbackLink:
-      'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+    sendFeedbackLink: fiCustomizations.footer.sendFeedbackLink
   },
   map: {
     title: 'Yksiköt kartalla',
