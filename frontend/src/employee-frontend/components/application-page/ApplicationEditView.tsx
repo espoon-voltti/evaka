@@ -135,9 +135,9 @@ export default React.memo(function ApplicationEditView({
                   contentType: file.type,
                   id: res.value,
                   name: file.name,
-                  receivedAt: new Date(),
-                  type: type,
-                  updated: new Date()
+                  type,
+                  updated: new Date(),
+                  receivedAt: new Date()
                 }
               ]
             }

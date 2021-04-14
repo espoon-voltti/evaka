@@ -102,6 +102,12 @@ export default class ApplicationReadView {
       .ok()
   }
 
+  async assertReceivedAtTextExists(fileName: string) {
+    await t
+      .expect(Selector(`[data-qa="attachment-${fileName}-received-at"]`).exists)
+      .ok()
+  }
+
   async assertUrgentAttachmentDoesNotExists(fileName: string) {
     await t
       .expect(Selector(`[data-qa="urgent-attachment-${fileName}"]`).exists)

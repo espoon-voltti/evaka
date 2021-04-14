@@ -422,7 +422,8 @@ export const fi = {
       none: 'Hakemukseen ei liity liitteitä',
       name: 'Tiedostonimi',
       updated: 'Muutettu',
-      contentType: 'Tyyppi'
+      contentType: 'Tyyppi',
+      receivedAt: 'Liite lähetetty'
     },
     state: {
       title: 'Hakemuksen tila',
