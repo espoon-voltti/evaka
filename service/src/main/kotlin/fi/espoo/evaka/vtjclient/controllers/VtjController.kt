@@ -11,12 +11,8 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
-import fi.espoo.evaka.vtjclient.dto.Placement
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
@@ -53,7 +49,7 @@ class VtjController(
         return when (vtjData) {
             is PersonResult.Error -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
             is PersonResult.NotFound -> ResponseEntity.notFound().build()
-            is PersonResult.Result -> ResponseEntity.ok(db.read { withChildPlacements(it, vtjData.vtjPersonDTO) })
+            is PersonResult.Result -> ResponseEntity.ok(vtjData.vtjPersonDTO)
         }
     }
 
@@ -88,34 +84,6 @@ class VtjController(
         return guardianResult
             ?.let(PersonResult::Result)
             ?: PersonResult.NotFound()
-    }
-
-    private fun withChildPlacements(tx: Database.Read, guardian: VtjPersonDTO): VtjPersonDTO {
-        val sql =
-            "SELECT child_id, start_date, end_date, type FROM placement WHERE child_id = ANY(:children) AND end_date > current_date"
-
-        val placements = tx.createQuery(sql)
-            .bind("children", guardian.children.map { it.id }.toTypedArray())
-            .map { rs, _ ->
-                rs.getUUID("child_id") to Placement(
-                    period = FiniteDateRange(
-                        rs.getDate("start_date").toLocalDate(),
-                        rs.getDate("end_date").toLocalDate()
-                    ),
-                    type = rs.getEnum("type")
-                )
-            }
-
-        return guardian.copy(
-            children = guardian.children.map { child ->
-                val childPlacements = placements
-                    .filter { (id, _) -> id == child.id }
-                    .map { (_, placement) -> placement }
-                    .sortedBy { it.period.start }
-
-                child.copy(existingPlacements = childPlacements)
-            }.toMutableList()
-        )
     }
 
     private fun mapPisPerson(person: PersonDTO): VtjPersonDTO {
