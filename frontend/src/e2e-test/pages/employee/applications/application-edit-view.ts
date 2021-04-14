@@ -163,7 +163,7 @@ export default class ApplicationEditView {
       .find('[data-qa="file-download-button"]')
       .withText(fileName)
     visible
-      ? await t.expect(baseSelector.visible).ok()
+      ? await t.expect(baseSelector.exists).ok()
       : await t.expect(baseSelector.with({ timeout: 50 }).exists).notOk()
   }
 
