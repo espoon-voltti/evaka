@@ -159,12 +159,12 @@ export default class ApplicationEditView {
     fileName: string,
     visible = true
   ) {
-    await t
-      .expect(
-        selector.find('[data-qa="file-download-button"]').withText(fileName)
-          .visible
-      )
-      .eql(visible)
+    const baseSelector = selector
+      .find('[data-qa="file-download-button"]')
+      .withText(fileName)
+    visible
+      ? await t.expect(baseSelector.visible).ok()
+      : await t.expect(baseSelector.with({ timeout: 50 }).exists).notOk()
   }
 
   async assertUploadedUrgentFile(fileName: string) {
