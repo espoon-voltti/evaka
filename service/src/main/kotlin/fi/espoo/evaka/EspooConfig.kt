@@ -6,6 +6,8 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
+import fi.espoo.evaka.shared.message.EvakaMessageProvider
+import fi.espoo.evaka.shared.message.IMessageProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -20,4 +22,7 @@ class EspooConfig {
             InvoiceIntegrationClient.Client(env, objectMapper)
         else
             InvoiceIntegrationClient.MockClient(objectMapper)
+
+    @Bean
+    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 }

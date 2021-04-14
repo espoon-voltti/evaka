@@ -21,6 +21,8 @@ import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
+import fi.espoo.evaka.shared.message.EvakaMessageProvider
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
@@ -153,4 +155,7 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun invoiceIntegrationClient(objectMapper: ObjectMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(objectMapper)
+
+    @Bean
+    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 }

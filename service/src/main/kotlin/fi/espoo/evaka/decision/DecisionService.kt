@@ -23,7 +23,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
+import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageType
 import fi.espoo.evaka.shared.message.SuomiFiMessage
+import fi.espoo.evaka.shared.message.langWithDefault
 import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
@@ -44,6 +47,7 @@ class DecisionService(
     private val personService: PersonService,
     private val s3Client: DocumentService,
     private val pdfService: PDFService,
+    private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
@@ -231,8 +235,8 @@ class DecisionService(
             postOffice = sendAddress.postOffice,
             ssn = guardian.identity.ssn,
             language = lang,
-            messageHeader = messageHeader.getValue(langWithDefault(lang)),
-            messageContent = messageContent.getValue(langWithDefault(lang))
+            messageHeader = messageProvider.get(MessageType.DECISION_HEADER, langWithDefault(lang)),
+            messageContent = messageProvider.get(MessageType.DECISION_CONTENT, langWithDefault(lang))
         )
 
         evakaMessageClient.send(message)
@@ -279,36 +283,6 @@ class DecisionService(
             }
         }
     }
-
-    private fun langWithDefault(lang: String): String = if (lang.toLowerCase() == "sv") "sv" else "fi"
-
-    val messageHeader = mapOf(
-        "fi" to """Espoon varhaiskasvatukseen liittyvät päätökset""",
-        "sv" to """Beslut gällande Esbos småbarnspedagogik"""
-    )
-
-    val messageContent = mapOf(
-        "fi" to """Olette hakenut lapsellenne Espoon kaupungin varhaiskasvatus-, esiopetus- ja/tai kerhopaikkaa. Koska olette ottanut Suomi.fi viestit -palvelun käyttöönne, on päätös luettavissa alla olevista liitteistä.
-
-Päätös on hakemuksen tehneen huoltajan hyväksyttävissä/hylättävissä Espoon kaupungin varhaiskasvatuksen sähköisessä palvelussa osoitteessa espoonvarhaiskasvatus.fi . Suomi.fi -palvelussa ei voi antaa vastausta sähköisesti, mutta päätöksen yhteydestä voi tulostaa paperisen vastauslomakkeen.
-
-Huomioittehan, että vastaus päätökseen tulee antaa kahden viikon kuluessa.
-
-
-
-In English:
-
-You have applied for a place in the City of Espoo’s early childhood education, pre-primary education and/or a club for your child. As you are a user of Suomi.fi Messages, you can find the decision in the attachments below.
-
-The guardian who submitted the application can accept or reject the decision through the online service of the City of Espoo Early Childhood Education at espoonvarhaiskasvatus.fi. You cannot respond to the decision online through the Suomi.fi service, but you can print out a response form that is attached to the decision.
-
-Please note that you have to respond to the decision within two weeks.""",
-        "sv" to """Du har ansökt om plats i Esbo stads småbarnspedagogiska verksamhet, förskoleundervisning och/eller klubbverksamhet. Eftersom du har tagit i bruk Suomi.fi-meddelandetjänsten kan du läsa beslutet från bilagorna nedan.
-
-Vårdnadshavaren, som har gjort ansökan om plats inom småbarnspedagogik, kan godkänna eller avstå från platsen i Esbo stads elektroniska tjänst på adressen espoonvarhaiskasvatus.fi. I tjänsten Suomi.fi kan du inte svara elektroniskt, men du kan skriva ut en svarsblankett.
-
-Vänligen observera att du ska ge ditt svar till beslutet inom två veckor."""
-    )
 }
 
 fun createDecisionPdf(
