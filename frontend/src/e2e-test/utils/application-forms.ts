@@ -5,6 +5,7 @@
 import { ApplicationFormData } from 'citizen-frontend/applications/editor/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
+import LocalDate from '../../lib-common/local-date'
 
 function assertEquals<T>(expected: T, actual: T) {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -52,7 +53,7 @@ export const minimalDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: LocalDate.today().addMonths(5).format('d.M.yyyy'),
       startTime: '09:00',
       endTime: '17:00'
     },
@@ -115,7 +116,7 @@ export const fullDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: LocalDate.today().addMonths(5).format('d.M.yyyy'),
       urgent: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -241,7 +242,7 @@ export const minimalClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021'
+      preferredStartDate: LocalDate.today().addMonths(5).format('d.M.yyyy')
     },
     unitPreference: {
       preferredUnits: [
@@ -300,7 +301,7 @@ export const fullClubForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: LocalDate.today().addMonths(5).format('d.M.yyyy'),
       wasOnClubCare: true,
       wasOnDaycare: true,
       assistanceNeeded: true,
@@ -391,7 +392,7 @@ export const minimalPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021'
+      preferredStartDate: LocalDate.today().addMonths(5).format('d.M.yyyy')
     },
     unitPreference: {
       preferredUnits: [
@@ -452,7 +453,7 @@ export const fullPreschoolForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: LocalDate.today().addMonths(5).format('d.M.yyyy'),
       connectedDaycare: true,
       startTime: '09:00',
       endTime: '17:00',
