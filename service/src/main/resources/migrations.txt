@@ -62,3 +62,4 @@ V61__add_received_date_to_attachment.sql
 V62__add_indexes_to_attachment.sql
 V63__remove_voucher_decision_parts.sql
 V64__range_merge_aggregate.sql
+V65__new_service_needs.sql
