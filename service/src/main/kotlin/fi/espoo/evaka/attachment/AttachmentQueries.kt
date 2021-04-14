@@ -59,14 +59,24 @@ fun Database.Read.isOwnAttachment(attachmentId: UUID, user: AuthenticatedUser): 
         .first()
 }
 
+fun Database.Read.isSelfUploadedAttachment(attachmentId: UUID, user: AuthenticatedUser): Boolean {
+    val sql =
+        """
+        SELECT EXISTS
+            (SELECT 1 FROM attachment
+             WHERE id = :attachmentId
+             AND (uploaded_by_employee = :userId OR uploaded_by_person = :userId))
+        """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("attachmentId", attachmentId)
+        .bind("userId", user.id)
+        .mapTo<Boolean>()
+        .first()
+}
+
 fun Database.Transaction.deleteAttachment(id: UUID) {
     this.createUpdate("DELETE FROM attachment WHERE id = :id")
         .bind("id", id)
         .execute()
 }
-
-fun Database.Read.getApplicationAttachments(applicationId: UUID): List<UUID> = this
-    .createQuery("SELECT id FROM attachment WHERE application_id = :id")
-    .bind("id", applicationId)
-    .mapTo<UUID>()
-    .toList()

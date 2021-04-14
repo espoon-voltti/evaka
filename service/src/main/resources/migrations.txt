@@ -60,3 +60,5 @@ V59__child_service_time.sql
 V60__application_person_foreign_keys.sql
 V61__add_received_date_to_attachment.sql
 V62__add_indexes_to_attachment.sql
+V63__remove_voucher_decision_parts.sql
+V64__range_merge_aggregate.sql

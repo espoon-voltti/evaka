@@ -637,6 +637,7 @@ export const feeDecisionsFixture = (
 })
 
 export const voucherValueDecisionsFixture = (
+  id: UUID,
   adultId: UUID,
   childId: UUID,
   daycareId: UUID,
@@ -644,7 +645,7 @@ export const voucherValueDecisionsFixture = (
   validFrom = LocalDate.today().subYears(1).formatIso(),
   validTo = LocalDate.today().addYears(1).formatIso()
 ): VoucherValueDecision => ({
-  id: 'ed462aca-f74e-4384-910f-628823201023',
+  id,
   status,
   validFrom,
   validTo,
@@ -660,20 +661,20 @@ export const voucherValueDecisionsFixture = (
     minThreshold6: 381300,
     thresholdIncrease6Plus: 14200
   },
-  parts: [
-    {
-      child: { id: childId, dateOfBirth: '2017-06-30' },
-      placement: {
-        unit: daycareId,
-        type: 'DAYCARE',
-        serviceNeed: 'GTE_35'
-      },
-      baseCoPayment: 28900,
-      coPayment: 28900,
-      siblingDiscount: 0.0,
-      feeAlterations: []
-    }
-  ]
+  child: { id: childId, dateOfBirth: '2017-06-30' },
+  placement: {
+    unit: daycareId,
+    type: 'DAYCARE',
+    serviceNeed: 'GTE_35'
+  },
+  baseCoPayment: 28900,
+  coPayment: 28900,
+  siblingDiscount: 0.0,
+  feeAlterations: [],
+  baseValue: 87000,
+  ageCoefficient: 100,
+  serviceCoefficient: 100,
+  value: 87000
 })
 
 export const invoiceFixture = (

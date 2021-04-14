@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.messaging
 
-import fi.espoo.evaka.invoicing.service.DecisionGenerator
+import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.async.NotifyFeeAlterationUpdated
@@ -20,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class FeeDecisionGenerationJobProcessor(
-    private val generator: DecisionGenerator,
+    private val generator: FinanceDecisionGenerator,
     asyncJobRunner: AsyncJobRunner
 ) {
     init {

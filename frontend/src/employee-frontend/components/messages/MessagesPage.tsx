@@ -17,6 +17,7 @@ import {
   getDraftBulletins,
   getGroups,
   getReceivers,
+  getSenderOptions,
   getSentBulletins,
   getUnits,
   initNewBulletin,
@@ -67,8 +68,16 @@ export default React.memo(function MessagesPage() {
   >(Loading.of())
 
   const loadReceivers = useRestApi(getReceivers, setReceiversResult)
+
+  const [senderOptions, setSenderOptions] = useState<string[]>([])
+  const loadSenderOptions = useRestApi(
+    getSenderOptions,
+    (result) => result.isSuccess && setSenderOptions(result.value)
+  )
+
   useEffect(() => {
     selectedUnit && loadReceivers(selectedUnit.id)
+    selectedUnit && loadSenderOptions(selectedUnit.id)
   }, [selectedUnit])
 
   const [receiverSelection, setReceiverSelection] = useState<SelectorNode>()
@@ -281,6 +290,7 @@ export default React.memo(function MessagesPage() {
                   selectedReceivers={getReceiverSelection(receiverSelection)}
                   receiverOptions={getReceiverOptions(receiverSelection)}
                   updateSelection={updateSelection}
+                  senderOptions={senderOptions}
                 />
               )}
             </div>

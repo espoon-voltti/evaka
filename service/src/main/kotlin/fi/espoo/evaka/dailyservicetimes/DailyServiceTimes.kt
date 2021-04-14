@@ -3,6 +3,8 @@ package fi.espoo.evaka.dailyservicetimes
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
+import org.jdbi.v3.core.result.RowView
 import java.time.LocalTime
 import java.util.UUID
 
@@ -22,12 +24,11 @@ data class TimeRange(
 sealed class DailyServiceTimes(
     val regular: Boolean
 ) {
-
-    class RegularTimes(
+    data class RegularTimes(
         val regularTimes: TimeRange
     ) : DailyServiceTimes(regular = true)
 
-    class IrregularTimes(
+    data class IrregularTimes(
         val monday: TimeRange?,
         val tuesday: TimeRange?,
         val wednesday: TimeRange?,
@@ -46,36 +47,35 @@ fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
 
     return this.createQuery(sql)
         .bind("childId", childId)
-        .map { rs, _ ->
-            val regular = rs.getBoolean("regular")
-            if (regular) {
-                DailyServiceTimes.RegularTimes(
-                    regularTimes = TimeRange(
-                        rs.getString("regular_start"),
-                        rs.getString("regular_end")
-                    )
-                )
-            } else {
-                DailyServiceTimes.IrregularTimes(
-                    monday = rs.getString("monday_start")?.let { start ->
-                        TimeRange(start, rs.getString("monday_end"))
-                    },
-                    tuesday = rs.getString("tuesday_start")?.let { start ->
-                        TimeRange(start, rs.getString("tuesday_end"))
-                    },
-                    wednesday = rs.getString("wednesday_start")?.let { start ->
-                        TimeRange(start, rs.getString("wednesday_end"))
-                    },
-                    thursday = rs.getString("thursday_start")?.let { start ->
-                        TimeRange(start, rs.getString("thursday_end"))
-                    },
-                    friday = rs.getString("friday_start")?.let { start ->
-                        TimeRange(start, rs.getString("friday_end"))
-                    },
-                )
-            }
-        }
+        .map { row -> toDailyServiceTimes(row) }
         .firstOrNull()
+}
+
+fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
+    val regular: Boolean? = row.mapColumn("regular")
+    if (regular == null) return null
+    if (regular) {
+        return DailyServiceTimes.RegularTimes(
+            regularTimes = toTimeRange(row, "regular")!!
+        )
+    } else {
+        return DailyServiceTimes.IrregularTimes(
+            monday = toTimeRange(row, "monday"),
+            tuesday = toTimeRange(row, "tuesday"),
+            wednesday = toTimeRange(row, "wednesday"),
+            thursday = toTimeRange(row, "thursday"),
+            friday = toTimeRange(row, "friday"),
+        )
+    }
+}
+
+fun toTimeRange(row: RowView, columnPrefix: String): TimeRange? {
+    val start: String? = row.mapColumn(columnPrefix + "_start")
+    val end: String? = row.mapColumn(columnPrefix + "_end")
+    if (start != null && end != null) {
+        return TimeRange(start, end)
+    }
+    return null
 }
 
 fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: DailyServiceTimes) {

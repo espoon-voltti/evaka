@@ -5,7 +5,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
-import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -132,9 +131,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
             createVoucherDecision(janFirst, testDaycare.id, 52200, 28800, testAdult_2.id, testChild_2),
             createVoucherDecision(janFirst, testDaycare.id, 134850, 0, testAdult_3.id, testChild_3)
         ).sumBy { decision ->
-            decision.parts.sumBy { part ->
-                part.value - part.coPayment
-            }
+            decision.value - decision.coPayment
         }
     }
 
@@ -150,21 +147,16 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), zoneId).toInstant()
     ): VoucherValueDecision {
         val decision = db.transaction {
-            val parts = listOf(
-                createVoucherValueDecisionPartFixture(
-                    childId = child.id,
-                    dateOfBirth = child.dateOfBirth,
-                    unitId = unitId,
-                    value = value,
-                    coPayment = coPayment
-                )
-            )
             val decision = createVoucherValueDecisionFixture(
                 status = VoucherValueDecisionStatus.DRAFT,
                 validFrom = validFrom,
                 validTo = null,
                 headOfFamilyId = adultId,
-                parts = parts
+                childId = child.id,
+                dateOfBirth = child.dateOfBirth,
+                unitId = unitId,
+                value = value,
+                coPayment = coPayment
             )
             it.handle.upsertValueDecisions(objectMapper, listOf(decision))
 

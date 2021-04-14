@@ -2,7 +2,7 @@
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALUES ('00000000-0000-0000-0000-000000000000', 'Päivi', 'Pääkäyttäjä', 'paivi.paakayttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0000-000000000000', '{ADMIN, SERVICE_WORKER, FINANCE_ADMIN}'::user_role[]);
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALUES ('00000000-0000-0000-0000-000000000001', 'Päivi', 'Pääkäyttäjä', 'paivi.paakayttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0000-000000000001', '{ADMIN, SERVICE_WORKER, FINANCE_ADMIN}'::user_role[]);
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALUES ('00000000-0000-0000-0001-000000000000', 'Paula', 'Palveluohjaaja', 'paula.palveluohjaaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0001-000000000000', '{SERVICE_WORKER}'::user_role[]);
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALUES ('00000000-0000-0000-0002-000000000000', 'Lasse', 'Laskuttaja', 'lasse.laskuttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0002-000000000000', '{FINANCE_ADMIN}'::user_role[]);
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALUES ('00000000-0000-0000-0003-000000000000', 'Raisa', 'Raportoija', 'raisa.raportoija@espoo.fi', 'espoo-ad:00000000-0000-0000-0003-000000000000', '{DIRECTOR}'::user_role[]);

@@ -7,12 +7,11 @@ package fi.espoo.evaka.invoicing.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
-import fi.espoo.evaka.invoicing.data.deleteValueDecisions
-import fi.espoo.evaka.invoicing.data.findValueDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
-import fi.espoo.evaka.invoicing.data.lockValueDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
@@ -169,10 +168,10 @@ fun sendVoucherValueDecisions(
 
     val conflicts = decisions
         .flatMap {
-            tx.handle.lockValueDecisionsForHeadOfFamily(it.headOfFamily.id)
-            tx.handle.findValueDecisionsForHeadOfFamily(
+            tx.handle.lockValueDecisionsForChild(it.child.id)
+            tx.handle.findValueDecisionsForChild(
                 objectMapper,
-                it.headOfFamily.id,
+                it.child.id,
                 DateRange(it.validFrom, it.validTo),
                 listOf(VoucherValueDecisionStatus.SENT)
             )
@@ -183,11 +182,7 @@ fun sendVoucherValueDecisions(
     val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
     tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
 
-    val (emptyDecisions, validDecisions) = decisions
-        .partition { it.parts.isEmpty() }
-    tx.handle.deleteValueDecisions(emptyDecisions.map { it.id })
-
-    val validIds = validDecisions.map { it.id }
+    val validIds = decisions.map { it.id }
     tx.handle.approveValueDecisionDraftsForSending(validIds, user.id, now)
     asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
 }

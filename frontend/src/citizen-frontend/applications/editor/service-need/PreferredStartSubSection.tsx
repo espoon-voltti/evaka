@@ -8,16 +8,16 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { useLang, useTranslation } from '../../../localization'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import FileUpload from '../FileUpload'
-import { deleteAttachment, saveAttachment } from '../../../applications/api'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { deleteAttachment, getAttachmentBlob, saveAttachment } from '../../api'
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useParams } from 'react-router-dom'
 import { errorToInputInfo } from '../../../form-validation'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
+import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { isValidPreferredStartDate } from '../../../applications/editor/validations'
+import { isValidPreferredStartDate } from '../validations'
 import LocalDate from 'lib-common/local-date'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -199,6 +199,8 @@ export default React.memo(function PreferredStartSubSection({
                     files={formData.urgencyAttachments}
                     onUpload={uploadUrgencyAttachment}
                     onDelete={deleteUrgencyAttachment}
+                    onDownloadFile={getAttachmentBlob}
+                    i18n={{ upload: t.fileUpload, download: t.fileDownload }}
                     dataQa={'urgent-file-upload'}
                   />
                 </>

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
@@ -34,6 +35,7 @@ data class ChildBasics(
     val lastName: String,
     val preferredName: String?,
     val dateOfBirth: LocalDate,
+    val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
     val groupId: UUID,
     val backup: Boolean
@@ -50,6 +52,7 @@ data class Child(
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>,
+    val dailyServiceTimes: DailyServiceTimes?,
     val entitledToFreeFiveYearsOldDaycare: Boolean,
     val dailyNote: DaycareDailyNote?
 )

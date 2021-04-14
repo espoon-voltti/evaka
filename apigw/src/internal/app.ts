@@ -108,7 +108,10 @@ function internalApiRouter() {
   router.all('/public/*', createProxy())
   router.use(requireAuthentication)
   router.use(csrf)
-  router.post('/attachments', createProxy({ multipart: true }))
+  router.post(
+    '/attachments/applications/:applicationId',
+    createProxy({ multipart: true })
+  )
   router.use(createProxy())
   return router
 }

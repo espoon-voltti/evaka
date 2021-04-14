@@ -20,7 +20,6 @@ import java.util.UUID
 
 data class VoucherValueDecision(
     override val id: UUID,
-    override val parts: List<VoucherValueDecisionPart>,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
     override val headOfFamily: PersonData.JustId,
@@ -31,33 +30,6 @@ data class VoucherValueDecision(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
-    val documentKey: String? = null,
-    val createdAt: Instant = Instant.now(),
-    val approvedBy: PersonData.JustId? = null,
-    val approvedAt: Instant? = null,
-    val sentAt: Instant? = null
-) : FinanceDecision<VoucherValueDecisionPart, VoucherValueDecision>, MergeableDecision<VoucherValueDecisionPart, VoucherValueDecision> {
-    override fun withParts(parts: List<VoucherValueDecisionPart>) = this.copy(parts = parts)
-    override fun withRandomId() = this.copy(id = UUID.randomUUID())
-    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
-    override fun contentEquals(decision: VoucherValueDecision): Boolean {
-        return this.parts.toSet() == decision.parts.toSet() &&
-            this.headOfFamily == decision.headOfFamily &&
-            this.partner == decision.partner &&
-            this.headOfFamilyIncome == decision.headOfFamilyIncome &&
-            this.partnerIncome == decision.partnerIncome &&
-            this.familySize == decision.familySize &&
-            this.pricing == decision.pricing
-    }
-
-    override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
-    override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
-
-    fun totalCoPayment(): Int = parts.fold(0) { sum, part -> sum + part.finalCoPayment() }
-    fun totalValue(): Int = parts.fold(0) { sum, part -> sum + part.value }
-}
-
-data class VoucherValueDecisionPart(
     val child: PersonData.WithDateOfBirth,
     val placement: PermanentPlacementWithHours,
     val baseCoPayment: Int,
@@ -67,9 +39,36 @@ data class VoucherValueDecisionPart(
     val baseValue: Int,
     val ageCoefficient: Int,
     val serviceCoefficient: Int,
-    val value: Int
-) : FinanceDecisionPart {
-    fun finalCoPayment(): Int = coPayment + feeAlterations.sumBy { it.effect }
+    val value: Int,
+    val documentKey: String? = null,
+    val createdAt: Instant = Instant.now(),
+    val approvedBy: PersonData.JustId? = null,
+    val approvedAt: Instant? = null,
+    val sentAt: Instant? = null
+) : FinanceDecision<VoucherValueDecision> {
+    override fun withRandomId() = this.copy(id = UUID.randomUUID())
+    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
+    override fun contentEquals(decision: VoucherValueDecision): Boolean {
+        return this.headOfFamily == decision.headOfFamily &&
+            this.partner == decision.partner &&
+            this.headOfFamilyIncome == decision.headOfFamilyIncome &&
+            this.partnerIncome == decision.partnerIncome &&
+            this.familySize == decision.familySize &&
+            this.child == decision.child &&
+            this.placement == decision.placement &&
+            this.baseCoPayment == decision.baseCoPayment &&
+            this.siblingDiscount == decision.siblingDiscount &&
+            this.coPayment == decision.coPayment &&
+            this.feeAlterations == decision.feeAlterations &&
+            this.baseValue == decision.baseValue &&
+            this.ageCoefficient == decision.ageCoefficient &&
+            this.serviceCoefficient == decision.serviceCoefficient &&
+            this.value == decision.value
+    }
+
+    override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
+    override fun isEmpty(): Boolean = false
+    override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
 }
 
 enum class VoucherValueDecisionStatus {
@@ -89,8 +88,7 @@ enum class VoucherValueDecisionStatus {
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VoucherValueDecisionDetailed(
-    override val id: UUID,
-    override val parts: List<VoucherValueDecisionPartDetailed>,
+    val id: UUID,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
@@ -101,21 +99,25 @@ data class VoucherValueDecisionDetailed(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
+    val child: PersonData.Detailed,
+    val placement: PermanentPlacementWithHours,
+    val placementUnit: UnitData.Detailed,
+    val baseCoPayment: Int,
+    val siblingDiscount: Int,
+    val coPayment: Int,
+    val feeAlterations: List<FeeAlterationWithEffect>,
+    val baseValue: Int,
+    val childAge: Int,
+    val ageCoefficient: Int,
+    val serviceCoefficient: Int,
+    val value: Int,
     val documentKey: String? = null,
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
     val financeDecisionHandlerName: String?
-) : MergeableDecision<VoucherValueDecisionPartDetailed, VoucherValueDecisionDetailed> {
-    override fun withParts(parts: List<VoucherValueDecisionPartDetailed>) = this.copy(parts = parts)
-
-    @JsonProperty("totalCoPayment")
-    fun totalCoPayment() = parts.fold(0) { sum, part -> sum + part.finalCoPayment() }
-
-    @JsonProperty("totalValue")
-    fun totalValue() = parts.fold(0) { sum, part -> sum + part.value }
-
+) {
     @JsonProperty("incomeEffect")
     fun incomeEffect(): IncomeEffect =
         getTotalIncomeEffect(partner != null, headOfFamilyIncome?.effect, partnerIncome?.effect)
@@ -148,23 +150,7 @@ data class VoucherValueDecisionDetailed(
 
     @JsonProperty("feePercent")
     fun feePercent(): BigDecimal = pricing.multiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
-}
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class VoucherValueDecisionPartDetailed(
-    val child: PersonData.Detailed,
-    val placement: PermanentPlacementWithHours,
-    val placementUnit: UnitData.Detailed,
-    val baseCoPayment: Int,
-    val siblingDiscount: Int,
-    val coPayment: Int,
-    val feeAlterations: List<FeeAlterationWithEffect>,
-    val baseValue: Int,
-    val childAge: Int,
-    val ageCoefficient: Int,
-    val serviceCoefficient: Int,
-    val value: Int
-) : FinanceDecisionPart {
     @JsonProperty("finalCoPayment")
     fun finalCoPayment(): Int = coPayment + feeAlterations.sumBy { it.effect }
 
@@ -174,26 +160,19 @@ data class VoucherValueDecisionPartDetailed(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VoucherValueDecisionSummary(
-    override val id: UUID,
-    override val parts: List<VoucherValueDecisionPartSummary>,
+    val id: UUID,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
     val headOfFamily: PersonData.Basic,
-    val totalCoPayment: Int,
-    val totalValue: Int,
+    val child: PersonData.Basic,
+    val finalCoPayment: Int,
+    val value: Int,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null
-) : MergeableDecision<VoucherValueDecisionPartSummary, VoucherValueDecisionSummary> {
-    override fun withParts(parts: List<VoucherValueDecisionPartSummary>) = this.copy(parts = parts)
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class VoucherValueDecisionPartSummary(
-    val child: PersonData.Basic
-) : FinanceDecisionPart
+)
 
 fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): Int {
     val thirdBirthday = dateOfBirth.plusYears(3)

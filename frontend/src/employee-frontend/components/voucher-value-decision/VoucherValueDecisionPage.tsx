@@ -61,14 +61,12 @@ export default React.memo(function VoucherValueDecisionPage() {
         <>
           <ContentArea opaque>
             <VoucherValueDecisionHeading {...decision.value} />
-            {decision.value.parts.map(({ child, placement, placementUnit }) => (
-              <VoucherValueDecisionChildSection
-                key={child.id}
-                child={child}
-                placement={placement}
-                placementUnit={placementUnit}
-              />
-            ))}
+            <VoucherValueDecisionChildSection
+              key={decision.value.child.id}
+              child={decision.value.child}
+              placement={decision.value.placement}
+              placementUnit={decision.value.placementUnit}
+            />
             <VoucherValueDecisionSummary decision={decision.value} />
           </ContentArea>
           <VoucherValueDecisionActionBar

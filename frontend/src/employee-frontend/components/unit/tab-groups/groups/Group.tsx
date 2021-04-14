@@ -623,28 +623,31 @@ function Group({
                   })}
                 </Tbody>
               </Table>
-              <GroupNoteLinkContainer>
-                <InlineButton
-                  icon={getGroupNote(group.id) ? farStickyNote : faStickyNote}
-                  text={
-                    getGroupNote(group.id)
-                      ? i18n.unit.groups.daycareDailyNote
-                          .groupNoteModalModifyLink
-                      : i18n.unit.groups.daycareDailyNote.groupNoteModalAddLink
-                  }
-                  onClick={() => {
-                    setSelectedDaycareDailyNote({
-                      daycareDailyNote: getGroupNote(group.id) ?? null,
-                      groupId: group.id,
-                      childId: null,
-                      childFirstName: '',
-                      childLastName: ''
-                    })
-                    toggleUiMode(`daycare-daily-note-edit-${group.id}`)
-                  }}
-                  dataQa="btn-create-group-note"
-                />
-              </GroupNoteLinkContainer>
+              {(isNotProduction() || isPilotUnit(unit.id)) && (
+                <GroupNoteLinkContainer>
+                  <InlineButton
+                    icon={getGroupNote(group.id) ? farStickyNote : faStickyNote}
+                    text={
+                      getGroupNote(group.id)
+                        ? i18n.unit.groups.daycareDailyNote
+                            .groupNoteModalModifyLink
+                        : i18n.unit.groups.daycareDailyNote
+                            .groupNoteModalAddLink
+                    }
+                    onClick={() => {
+                      setSelectedDaycareDailyNote({
+                        daycareDailyNote: getGroupNote(group.id) ?? null,
+                        groupId: group.id,
+                        childId: null,
+                        childFirstName: '',
+                        childLastName: ''
+                      })
+                      toggleUiMode(`daycare-daily-note-edit-${group.id}`)
+                    }}
+                    dataQa="btn-create-group-note"
+                  />
+                </GroupNoteLinkContainer>
+              )}
             </div>
           ) : (
             <p data-qa="no-children-placeholder">

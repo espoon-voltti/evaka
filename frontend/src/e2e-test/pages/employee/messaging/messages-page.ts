@@ -11,11 +11,11 @@ export default class MessagesPage {
 
   async createNewBulletin(sender: string, title: string, content: string) {
     await t.click(Selector('[data-qa="new-bulletin-btn"]'))
-    await t.typeText(Selector('[data-qa="input-sender"]'), sender, {
-      replace: true
-    })
     await t.typeText(Selector('[data-qa="input-title"]'), title)
     await t.typeText(Selector('[data-qa="input-content"]'), content)
+    await t.click(Selector('[data-qa="select-sender"]'))
+    await t.typeText(Selector('[data-qa="select-sender"]'), sender)
+    await t.pressKey('enter')
     await t.click(Selector('[data-qa="send-bulletin-btn"]'))
   }
 }

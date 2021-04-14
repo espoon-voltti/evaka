@@ -6,6 +6,9 @@ package fi.espoo.evaka.attendance
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.TimeRange
+import fi.espoo.evaka.dailyservicetimes.upsertChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -204,6 +207,44 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
     }
 
+    @Test
+    fun `child has no daily service times`() {
+        val child = expectOneChild()
+        assertNull(child.dailyServiceTimes)
+    }
+
+    @Test
+    fun `child has regular daily service times`() {
+        val testTimes = DailyServiceTimes.RegularTimes(regularTimes = TimeRange("08:15", "17:19"))
+        db.transaction { tx ->
+            tx.upsertChildDailyServiceTimes(
+                childId = testChild_1.id,
+                times = testTimes
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(testTimes, child.dailyServiceTimes)
+    }
+
+    @Test
+    fun `child has irregular daily service times`() {
+        val testTimes = DailyServiceTimes.IrregularTimes(
+            monday = TimeRange("08:15", "17:19"),
+            tuesday = TimeRange("08:16", "17:19"),
+            wednesday = TimeRange("08:17", "17:19"),
+            thursday = null,
+            friday = TimeRange("08:19", "17:19"),
+        )
+        db.transaction { tx ->
+            tx.upsertChildDailyServiceTimes(
+                childId = testChild_1.id,
+                times = testTimes
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(testTimes, child.dailyServiceTimes)
+    }
+
     private fun fetchAttendances(): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
             .asUser(mobileUser)
@@ -212,7 +253,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(200, res.statusCode)
         return result.get()
     }
-
     private fun expectOneChild(): Child {
         val response = fetchAttendances()
         assertEquals(1, response.children.size)

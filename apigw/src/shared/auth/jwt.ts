@@ -11,7 +11,8 @@ const privateKey = readFileSync(jwtPrivateKey)
 export function createJwt(payload: {
   kind: 'SuomiFI' | 'AD' | 'AdDummy'
   sub: string
-  scope: string
+  scope?: string
+  evaka_type: 'citizen' | 'employee' | 'mobile' | 'system'
 }): string {
   return jwt.sign(payload, privateKey, {
     algorithm: 'RS256',

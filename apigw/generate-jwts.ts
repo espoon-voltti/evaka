@@ -8,6 +8,7 @@ const token = createJwt({
   kind: 'AD',
   // user UUID
   sub: '70c93dbc-217d-11ea-84c9-1bc36b5e1f74',
+  evaka_type: 'employee',
   // list of roles that are added to the user separated by space
   // includes all roles copied from a comment in daycare-service
   scope:

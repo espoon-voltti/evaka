@@ -42,6 +42,12 @@ export default class ApplicationEditView {
       `[data-qa="radio-other-guardian-agreement-status-${status ?? 'null'}"]`,
       { timeout: 50 }
     )
+  readonly urgentCheckbox = Selector('[data-qa="checkbox-urgent"] label')
+  readonly urgentFileUpload = Selector('[data-qa="file-upload-urgent"]')
+  readonly shiftCareCheckbox = Selector(
+    '[data-qa="checkbox-service-need-shift-care"] label'
+  )
+  readonly shiftCareFileUpload = Selector('[data-qa="file-upload-shift-care"]')
   readonly saveButton = Selector('[data-qa="save-application"]')
 
   async assertPageTitle(expectedTitle: string) {
@@ -124,5 +130,58 @@ export default class ApplicationEditView {
 
   async saveApplication() {
     await t.click(this.saveButton)
+  }
+
+  async setUrgent() {
+    await scrollThenClick(t, this.urgentCheckbox)
+  }
+
+  async setShiftCareNeeded() {
+    await scrollThenClick(t, this.shiftCareCheckbox)
+  }
+
+  async uploadFile(selector: Selector, file: string) {
+    await t.setFilesToUpload(selector.find('[data-qa="btn-upload-file"]'), [
+      file
+    ])
+  }
+
+  async uploadUrgentFile(file: string) {
+    await this.uploadFile(this.urgentFileUpload, file)
+  }
+
+  async uploadShiftCareFile(file: string) {
+    await this.uploadFile(this.shiftCareFileUpload, file)
+  }
+
+  async assertFileUploaded(
+    selector: Selector,
+    fileName: string,
+    visible = true
+  ) {
+    await t
+      .expect(
+        selector
+          .find('[data-qa="file-download-button"]')
+          .with({ timeout: 50 })
+          .withText(fileName).visible
+      )
+      .eql(visible)
+  }
+
+  async assertUploadedUrgentFile(fileName: string) {
+    await this.assertFileUploaded(this.urgentFileUpload, fileName)
+  }
+
+  async assertUploadedShiftCareFile(fileName: string, visible = true) {
+    await this.assertFileUploaded(this.shiftCareFileUpload, fileName, visible)
+  }
+
+  async deleteFile(selector: Selector, fileName: string) {
+    await t.click(selector.find(`[data-qa="file-delete-button-${fileName}"`))
+  }
+
+  async deleteShiftCareFile(fileName: string) {
+    await this.deleteFile(this.shiftCareFileUpload, fileName)
   }
 }

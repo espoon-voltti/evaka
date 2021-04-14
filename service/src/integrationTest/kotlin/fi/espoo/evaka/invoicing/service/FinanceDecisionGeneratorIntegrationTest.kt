@@ -13,7 +13,6 @@ import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.toFeeDecision
 import fi.espoo.evaka.invoicing.data.toVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
-import fi.espoo.evaka.invoicing.data.voucherValueDecisionQueryBase
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -70,9 +69,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-class DecisionGeneratorIntegrationTest : FullApplicationTest() {
+class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
-    private lateinit var generator: DecisionGenerator
+    private lateinit var generator: FinanceDecisionGenerator
 
     @BeforeEach
     fun beforeEach() {
@@ -1805,17 +1804,13 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(5800, decision.totalCoPayment())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(testVoucherDaycare.id, part.placement.unit)
-                assertEquals(5800, part.coPayment)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(100, part.serviceCoefficient)
-                assertEquals(87000, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(testVoucherDaycare.id, decision.placement.unit)
+            assertEquals(5800, decision.coPayment)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(100, decision.serviceCoefficient)
+            assertEquals(87000, decision.value)
         }
     }
 
@@ -1863,29 +1858,21 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(testChild_1.dateOfBirth.plusYears(3).minusDays(1), decision.validTo)
-            assertEquals(134850, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_1.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(155, part.ageCoefficient)
-                assertEquals(100, part.serviceCoefficient)
-                assertEquals(134850, part.value)
-            }
+            assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(155, decision.ageCoefficient)
+            assertEquals(100, decision.serviceCoefficient)
+            assertEquals(134850, decision.value)
         }
         voucherValueDecisions.last().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(testChild_1.dateOfBirth.plusYears(3), decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(87000, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_1.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(100, part.serviceCoefficient)
-                assertEquals(87000, part.value)
-            }
+            assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(100, decision.serviceCoefficient)
+            assertEquals(87000, decision.value)
         }
     }
 
@@ -1905,29 +1892,21 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(serviceNeedPeriod.start.minusDays(1), decision.validTo)
-            assertEquals(87000, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(100, part.serviceCoefficient)
-                assertEquals(87000, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(100, decision.serviceCoefficient)
+            assertEquals(87000, decision.value)
         }
         voucherValueDecisions.last().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(serviceNeedPeriod.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(52200, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(60, part.serviceCoefficient)
-                assertEquals(52200, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(60, decision.serviceCoefficient)
+            assertEquals(52200, decision.value)
         }
     }
 
@@ -1946,15 +1925,11 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(43500, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(50, part.serviceCoefficient)
-                assertEquals(43500, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(50, decision.serviceCoefficient)
+            assertEquals(43500, decision.value)
         }
     }
 
@@ -1972,15 +1947,11 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(43500, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(50, part.serviceCoefficient)
-                assertEquals(43500, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(50, decision.serviceCoefficient)
+            assertEquals(43500, decision.value)
         }
     }
 
@@ -1998,15 +1969,11 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(87000, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(100, part.serviceCoefficient)
-                assertEquals(87000, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(100, decision.serviceCoefficient)
+            assertEquals(87000, decision.value)
         }
     }
 
@@ -2025,15 +1992,44 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
-            assertEquals(52200, decision.totalValue())
-            assertEquals(1, decision.parts.size)
-            decision.parts.first().let { part ->
-                assertEquals(testChild_2.id, part.child.id)
-                assertEquals(87000, part.baseValue)
-                assertEquals(100, part.ageCoefficient)
-                assertEquals(60, part.serviceCoefficient)
-                assertEquals(52200, part.value)
-            }
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(60, decision.serviceCoefficient)
+            assertEquals(52200, decision.value)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions for a family of two children placed in voucher units`() {
+        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_2.id, period.copy(start = period.start.plusMonths(1)), DAYCARE, testVoucherDaycare.id)
+
+        jdbi.handle { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
+        assertEquals(2, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_1.id, decision.child.id)
+            assertEquals(87000, decision.value)
+            assertEquals(28900, decision.coPayment)
+        }
+        voucherValueDecisions.last().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start.plusMonths(1), decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.value)
+            assertEquals(28900, decision.baseCoPayment)
+            // testChild_2 is older than testChild_1
+            assertEquals(50, decision.siblingDiscount)
+            assertEquals(PlacementType.FIVE_YEARS_OLD_DAYCARE, decision.placement.type)
+            assertEquals(11600, decision.coPayment)
         }
     }
 
@@ -2128,18 +2124,18 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return jdbi.handle { h ->
-            h.createQuery(feeDecisionQueryBase)
+        return db.read { tx ->
+            tx.createQuery(feeDecisionQueryBase)
                 .map(toFeeDecision(objectMapper))
                 .let { it.merge() }
         }
     }
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
-        return jdbi.handle { h ->
-            h.createQuery(voucherValueDecisionQueryBase)
+        return db.read { tx ->
+            tx.createQuery("SELECT * FROM voucher_value_decision")
                 .map(toVoucherValueDecision(objectMapper))
-                .let { it.merge() }
+                .toList()
         }
     }
 }

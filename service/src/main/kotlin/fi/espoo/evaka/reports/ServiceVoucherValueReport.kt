@@ -119,15 +119,15 @@ fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int
 
     // language=sql
     val sql = """
-        INSERT INTO voucher_value_report_decision_part (voucher_value_report_snapshot_id, decision_part_id, realized_amount, realized_period, type)
-        VALUES (:voucherValueReportSnapshotId, :decisionPartId, :realizedAmount, :realizedPeriod, :type)
+        INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
+        VALUES (:voucherValueReportSnapshotId, :decisionId, :realizedAmount, :realizedPeriod, :type)
     """.trimIndent()
     val batch = tx.prepareBatch(sql)
 
     rows.forEach { row ->
         batch
             .bind("voucherValueReportSnapshotId", voucherValueReportSnapshotId)
-            .bind("decisionPartId", row.serviceVoucherPartId)
+            .bind("decisionId", row.serviceVoucherDecisionId)
             .bind("realizedAmount", row.realizedAmount)
             .bind("realizedPeriod", row.realizedPeriod)
             .bind("type", row.type)
@@ -166,7 +166,7 @@ data class ServiceVoucherValueRow(
     val unitName: String,
     val areaId: UUID,
     val areaName: String,
-    val serviceVoucherPartId: UUID,
+    val serviceVoucherDecisionId: UUID,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
     val serviceVoucherServiceCoefficient: Int,
@@ -205,41 +205,38 @@ WITH min_voucher_decision_date AS (
     FROM generate_series((SELECT month FROM min_change_month), :reportDate, '1 month') t
     JOIN include_corrections ON should_include OR t = :reportDate
 ), original AS (
-    SELECT p.period, daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period, part.id AS part_id
+    SELECT p.period, daterange(decision.valid_from, decision.valid_to, '[]') * p.period AS realized_period, decision.id AS decision_id
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
-    JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[]) AND lower(p.period) = :reportDate
 ), correction_targets AS (
-    SELECT DISTINCT part.child, p.year, p.month, p.period
+    SELECT DISTINCT decision.child, p.year, p.month, p.period
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
-    JOIN voucher_value_decision_part part on decision.id = part.voucher_value_decision_id
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
       AND decision.approved_at > (SELECT coalesce(max(taken_at), '-infinity'::timestamptz) FROM voucher_value_report_snapshot)
       AND lower(p.period) < :reportDate
 ), corrections AS (
-    SELECT ct.*, part.id AS part_id, daterange(decision.valid_from, decision.valid_to, '[]') * ct.period AS realized_period
+    SELECT ct.*, decision.id AS decision_id, daterange(decision.valid_from, decision.valid_to, '[]') * ct.period AS realized_period
     FROM correction_targets ct
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && ct.period
-    JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id AND part.child = ct.child
+    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && ct.period AND decision.child = ct.child
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
 ), refunds AS (
     SELECT
         ct.period,
-        part.id AS part_id,
-        sn_part.realized_amount,
-        sn_part.realized_period,
-        rank() OVER (PARTITION BY part.child ORDER BY sn.year desc, sn.month desc) AS rank
+        decision.id AS decision_id,
+        sn_decision.realized_amount,
+        sn_decision.realized_period,
+        rank() OVER (PARTITION BY decision.child ORDER BY sn.year desc, sn.month desc) AS rank
     FROM correction_targets ct
-    JOIN voucher_value_report_decision_part sn_part ON extract(year from lower(sn_part.realized_period)) = ct.year AND extract(month from lower(sn_part.realized_period)) = ct.month
-    JOIN voucher_value_decision_part part on part.id = sn_part.decision_part_id AND part.child = ct.child
-    JOIN voucher_value_report_snapshot sn on sn_part.voucher_value_report_snapshot_id = sn.id
-    JOIN voucher_value_decision vvd on part.voucher_value_decision_id = vvd.id
-    WHERE sn_part.type != 'REFUND'
+    JOIN voucher_value_report_decision sn_decision ON extract(year from lower(sn_decision.realized_period)) = ct.year
+        AND extract(month from lower(sn_decision.realized_period)) = ct.month
+    JOIN voucher_value_report_snapshot sn ON sn_decision.voucher_value_report_snapshot_id = sn.id
+    JOIN voucher_value_decision decision ON sn_decision.decision_id = decision.id AND decision.child = ct.child
+    WHERE sn_decision.type != 'REFUND'
 ), report_rows AS (
     SELECT
-        part_id,
+        decision_id,
         period,
         realized_period,
         upper(realized_period) - lower(realized_period) AS number_of_days,
@@ -252,7 +249,7 @@ WITH min_voucher_decision_date AS (
     UNION
 
     SELECT
-        part_id,
+        decision_id,
         period,
         realized_period,
         upper(realized_period) - lower(realized_period) AS number_of_days,
@@ -264,7 +261,7 @@ WITH min_voucher_decision_date AS (
     UNION
 
     SELECT
-        part_id,
+        decision_id,
         period,
         realized_period,
         upper(realized_period) - lower(realized_period) AS number_of_days,
@@ -283,36 +280,37 @@ SELECT
     unit.name AS unit_name,
     area.id AS area_id,
     area.name AS area_name,
-    part.id AS service_voucher_part_id,
-    part.voucher_value AS service_voucher_value,
-    part.co_payment AS service_voucher_co_payment,
-    part.service_coefficient AS service_voucher_service_coefficient,
-    part.hours_per_week AS service_voucher_hours_per_week,
+    decision.id AS service_voucher_decision_id,
+    decision.voucher_value AS service_voucher_value,
+    decision.co_payment AS service_voucher_co_payment,
+    decision.service_coefficient AS service_voucher_service_coefficient,
+    decision.hours_per_week AS service_voucher_hours_per_week,
     coalesce(
         row.realized_amount,
-        round((part.voucher_value - part.co_payment) * (row.number_of_days::numeric(10, 8) / (upper(row.period) - lower(row.period))))
+        round((decision.voucher_value - decision.co_payment) * (row.number_of_days::numeric(10, 8) / (upper(row.period) - lower(row.period))))
     ) AS realized_amount,
     row.realized_period,
     row.number_of_days,
     row.type,
     NOT EXISTS (
-        SELECT 1 FROM voucher_value_report_decision_part old_snapshot_part
-        WHERE old_snapshot_part.decision_part_id = part.id
+        SELECT 1 FROM voucher_value_report_decision old_snapshot_decision
+        WHERE old_snapshot_decision.decision_id = decision.id
     ) AS is_new
 FROM report_rows row
-JOIN voucher_value_decision_part part ON row.part_id = part.id
-JOIN person child ON part.child = child.id
-JOIN daycare unit ON part.placement_unit = unit.id
+JOIN voucher_value_decision decision ON row.decision_id = decision.id
+JOIN person child ON decision.child = child.id
+JOIN daycare unit ON decision.placement_unit = unit.id
 JOIN care_area area ON unit.care_area_id = area.id
 LEFT JOIN LATERAL (
-    SELECT p.child_id, STRING_AGG(dg.name, ', ') AS name
+    SELECT STRING_AGG(dg.name, ', ') AS name
     FROM placement p
     JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
     JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') && row.realized_period
-      AND p.unit_id = part.placement_unit
+      AND p.unit_id = decision.placement_unit
+      AND p.child_id = child.id
     GROUP BY p.child_id
-) child_group ON child.id = child_group.child_id
+) child_group ON true
 WHERE (:areaId::uuid IS NULL OR area.id = :areaId) AND (:unitIds::uuid[] IS NULL OR unit.id = ANY(:unitIds))
 ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 """
@@ -354,36 +352,37 @@ private fun Database.Read.getSnapshotVoucherValues(
             unit.name AS unit_name,
             area.id AS area_id,
             area.name AS area_name,
-            part.id AS service_voucher_part_id,
-            part.voucher_value AS service_voucher_value,
-            part.co_payment AS service_voucher_co_payment,
-            part.service_coefficient AS service_voucher_service_coefficient,
-            part.hours_per_week service_voucher_hours_per_week,
-            sn_part.realized_amount,
-            sn_part.realized_period,
-            upper(sn_part.realized_period) - lower(sn_part.realized_period) AS number_of_days,
-            sn_part.type,
+            decision.id AS service_voucher_decision_id,
+            decision.voucher_value AS service_voucher_value,
+            decision.co_payment AS service_voucher_co_payment,
+            decision.service_coefficient AS service_voucher_service_coefficient,
+            decision.hours_per_week service_voucher_hours_per_week,
+            sn_decision.realized_amount,
+            sn_decision.realized_period,
+            upper(sn_decision.realized_period) - lower(sn_decision.realized_period) AS number_of_days,
+            sn_decision.type,
             NOT EXISTS (
-                SELECT 1 FROM voucher_value_report_decision_part old_snapshot_part
-                JOIN voucher_value_report_snapshot old_snapshot ON old_snapshot_part.voucher_value_report_snapshot_id = old_snapshot.id
-                WHERE old_snapshot_part.decision_part_id = part.id
+                SELECT 1 FROM voucher_value_report_decision old_snapshot_decision
+                JOIN voucher_value_report_snapshot old_snapshot ON old_snapshot_decision.voucher_value_report_snapshot_id = old_snapshot.id
+                WHERE old_snapshot_decision.decision_id = decision.id
                 AND make_date(old_snapshot.year, old_snapshot.month, 1) < make_date(:year, :month, 1)
             ) AS is_new
         FROM voucher_value_report_snapshot sn
-        JOIN voucher_value_report_decision_part sn_part ON sn.id = sn_part.voucher_value_report_snapshot_id
-        JOIN voucher_value_decision_part part ON part.id = sn_part.decision_part_id
-        JOIN person child ON part.child = child.id
-        JOIN daycare unit ON part.placement_unit = unit.id
+        JOIN voucher_value_report_decision sn_decision ON sn.id = sn_decision.voucher_value_report_snapshot_id
+        JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id
+        JOIN person child ON decision.child = child.id
+        JOIN daycare unit ON decision.placement_unit = unit.id
         JOIN care_area area ON unit.care_area_id = area.id
         LEFT JOIN LATERAL (
-            SELECT p.child_id, STRING_AGG(dg.name, ', ') AS name
+            SELECT STRING_AGG(dg.name, ', ') AS name
             FROM placement p
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-            WHERE daterange(dgp.start_date, dgp.end_date, '[]') && sn_part.realized_period
-            AND p.unit_id = part.placement_unit
+            WHERE daterange(dgp.start_date, dgp.end_date, '[]') && sn_decision.realized_period
+                AND p.unit_id = decision.placement_unit
+                AND p.child_id = child.id
             GROUP BY p.child_id
-        ) child_group ON child.id = child_group.child_id
+        ) child_group ON true
         WHERE sn.year = :year AND sn.month = :month
         AND (:areaId::uuid IS NULL OR area.id = :areaId)
         AND (:unitIds::uuid[] IS NULL OR unit.id = ANY(:unitIds))

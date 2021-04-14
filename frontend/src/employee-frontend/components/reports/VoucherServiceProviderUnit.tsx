@@ -373,7 +373,7 @@ function VoucherServiceProviderUnit() {
                   (row: VoucherServiceProviderUnitRow) => (
                     <Tr
                       key={`${
-                        row.serviceVoucherPartId
+                        row.serviceVoucherDecisionId
                       }:${row.realizedPeriod.start.formatIso()}`}
                     >
                       <StyledTd

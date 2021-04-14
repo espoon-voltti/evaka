@@ -16,12 +16,8 @@ import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPart
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartDetailed
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
-import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
@@ -40,75 +36,90 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
 
-// language=sql
-val voucherValueDecisionQueryBase =
-    """
-    SELECT
-        decision.*,
-        part.child,
-        part.date_of_birth,
-        part.placement_unit,
-        part.placement_type,
-        part.service_need,
-        part.hours_per_week,
-        part.base_co_payment,
-        part.sibling_discount,
-        part.co_payment,
-        part.fee_alterations,
-        part.base_value,
-        part.age_coefficient,
-        part.service_coefficient,
-        part.voucher_value
-    FROM voucher_value_decision as decision
-    LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
-    """.trimIndent()
-
 fun Handle.upsertValueDecisions(mapper: ObjectMapper, decisions: List<VoucherValueDecision>) {
-    upsertDecisions(mapper, decisions)
-    replaceParts(mapper, decisions)
-}
-
-private fun Handle.upsertDecisions(mapper: ObjectMapper, decisions: List<VoucherValueDecision>) {
     val sql =
+        // language=sql
         """
-        INSERT INTO voucher_value_decision (
-            id,
-            status,
-            valid_from,
-            valid_to,
-            decision_number,
-            head_of_family,
-            partner,
-            head_of_family_income,
-            partner_income,
-            family_size,
-            pricing,
-            created_at
-        ) VALUES (
-            :id,
-            :status::voucher_value_decision_status,
-            :valid_from,
-            :valid_to,
-            :decision_number,
-            :head_of_family,
-            :partner,
-            :head_of_family_income,
-            :partner_income,
-            :family_size,
-            :pricing,
-            :created_at
-        ) ON CONFLICT (id) DO UPDATE SET
-            status = :status::voucher_value_decision_status,
-            decision_number = :decision_number,
-            valid_from = :valid_from,
-            valid_to = :valid_to,
-            head_of_family = :head_of_family,
-            partner = :partner,
-            head_of_family_income = :head_of_family_income,
-            partner_income = :partner_income,
-            family_size = :family_size,
-            pricing = :pricing
-        """
+INSERT INTO voucher_value_decision (
+    id,
+    status,
+    valid_from,
+    valid_to,
+    decision_number,
+    head_of_family,
+    partner,
+    head_of_family_income,
+    partner_income,
+    family_size,
+    pricing,
+    child,
+    date_of_birth,
+    placement_unit,
+    placement_type,
+    service_need,
+    hours_per_week,
+    base_co_payment,
+    sibling_discount,
+    co_payment,
+    fee_alterations,
+    base_value,
+    age_coefficient,
+    service_coefficient,
+    voucher_value,
+    created_at
+) VALUES (
+    :id,
+    :status::voucher_value_decision_status,
+    :valid_from,
+    :valid_to,
+    :decision_number,
+    :head_of_family,
+    :partner,
+    :head_of_family_income,
+    :partner_income,
+    :family_size,
+    :pricing,
+    :child,
+    :date_of_birth,
+    :placement_unit,
+    :placement_type,
+    :service_need,
+    :hours_per_week,
+    :base_co_payment,
+    :sibling_discount,
+    :co_payment,
+    :fee_alterations,
+    :base_value,
+    :age_coefficient,
+    :service_coefficient,
+    :voucher_value,
+    :created_at
+) ON CONFLICT (id) DO UPDATE SET
+    status = :status::voucher_value_decision_status,
+    decision_number = :decision_number,
+    valid_from = :valid_from,
+    valid_to = :valid_to,
+    head_of_family = :head_of_family,
+    partner = :partner,
+    head_of_family_income = :head_of_family_income,
+    partner_income = :partner_income,
+    family_size = :family_size,
+    pricing = :pricing,
+    child = :child,
+    date_of_birth = :date_of_birth,
+    placement_unit = :placement_unit,
+    placement_type = :placement_type,
+    service_need = :service_need,
+    hours_per_week = :hours_per_week,
+    base_co_payment = :base_co_payment,
+    sibling_discount = :sibling_discount,
+    co_payment = :co_payment,
+    fee_alterations = :fee_alterations,
+    base_value = :base_value,
+    age_coefficient = :age_coefficient,
+    service_coefficient = :service_coefficient,
+    voucher_value = :voucher_value
+"""
 
     val batch = prepareBatch(sql)
     decisions.forEach { decision ->
@@ -141,6 +152,23 @@ private fun Handle.upsertDecisions(mapper: ObjectMapper, decisions: List<Voucher
                             value = mapper.writeValueAsString(it)
                         }
                     },
+                    "child" to decision.child.id,
+                    "date_of_birth" to decision.child.dateOfBirth,
+                    "placement_unit" to decision.placement.unit,
+                    "placement_type" to decision.placement.type.name,
+                    "service_need" to decision.placement.serviceNeed.name,
+                    "hours_per_week" to decision.placement.hours,
+                    "base_co_payment" to decision.baseCoPayment,
+                    "sibling_discount" to decision.siblingDiscount,
+                    "co_payment" to decision.coPayment,
+                    "fee_alterations" to PGobject().apply {
+                        type = "jsonb"
+                        value = mapper.writeValueAsString(decision.feeAlterations)
+                    },
+                    "base_value" to decision.baseValue,
+                    "age_coefficient" to decision.ageCoefficient,
+                    "service_coefficient" to decision.serviceCoefficient,
+                    "voucher_value" to decision.value,
                     "created_at" to decision.createdAt.atOffset(ZoneOffset.UTC)
                 )
             )
@@ -149,128 +177,34 @@ private fun Handle.upsertDecisions(mapper: ObjectMapper, decisions: List<Voucher
     batch.execute()
 }
 
-private fun Handle.replaceParts(mapper: ObjectMapper, decisions: List<VoucherValueDecision>) {
-    val partsWithDecisionIds = decisions.map { it.id to it.parts }
-    deleteParts(partsWithDecisionIds.map { it.first })
-    insertParts(mapper, partsWithDecisionIds)
-}
-
-private fun Handle.insertParts(mapper: ObjectMapper, decisions: List<Pair<UUID, List<VoucherValueDecisionPart>>>) {
-    val sql =
-        """
-        INSERT INTO voucher_value_decision_part (
-            id,
-            voucher_value_decision_id,
-            child,
-            date_of_birth,
-            placement_unit,
-            placement_type,
-            service_need,
-            hours_per_week,
-            base_co_payment,
-            sibling_discount,
-            co_payment,
-            fee_alterations,
-            base_value,
-            age_coefficient,
-            service_coefficient,
-            voucher_value
-        ) VALUES (
-            :id,
-            :value_decision_id,
-            :child,
-            :date_of_birth,
-            :placement_unit,
-            :placement_type,
-            :service_need,
-            :hours_per_week,
-            :base_co_payment,
-            :sibling_discount,
-            :co_payment,
-            :fee_alterations,
-            :base_value,
-            :age_coefficient,
-            :service_coefficient,
-            :voucher_value
-        )
-    """
-
-    val batch = prepareBatch(sql)
-    decisions.forEach { (decisionId, parts) ->
-        parts.forEach { part ->
-            batch
-                .bindMap(
-                    mapOf(
-                        "id" to UUID.randomUUID(),
-                        "value_decision_id" to decisionId,
-                        "child" to part.child.id,
-                        "date_of_birth" to part.child.dateOfBirth,
-                        "placement_unit" to part.placement.unit,
-                        "placement_type" to part.placement.type.name,
-                        "service_need" to part.placement.serviceNeed.name,
-                        "hours_per_week" to part.placement.hours,
-                        "base_co_payment" to part.baseCoPayment,
-                        "sibling_discount" to part.siblingDiscount,
-                        "co_payment" to part.coPayment,
-                        "fee_alterations" to PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(part.feeAlterations)
-                        },
-                        "base_value" to part.baseValue,
-                        "age_coefficient" to part.ageCoefficient,
-                        "service_coefficient" to part.serviceCoefficient,
-                        "voucher_value" to part.value
-                    )
-                )
-                .add()
-        }
-    }
-    batch.execute()
-}
-
-private fun Handle.deleteParts(decisionIds: List<UUID>) {
-    if (decisionIds.isEmpty()) return
-
-    createUpdate("DELETE FROM voucher_value_decision_part WHERE voucher_value_decision_id = ANY(:decisionIds)")
-        .bind("decisionIds", decisionIds.toTypedArray())
-        .execute()
-}
-
 fun Handle.getValueDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<VoucherValueDecision> {
-    // language=sql
-    val sql =
-        """
-        $voucherValueDecisionQueryBase
-        WHERE decision.id = ANY(:ids)
-        """
-
-    return createQuery(sql)
+    return createQuery("SELECT * FROM voucher_value_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .map(toVoucherValueDecision(mapper))
-        .let { it.merge() }
+        .toList()
 }
 
-fun Handle.findValueDecisionsForHeadOfFamily(
+fun Handle.findValueDecisionsForChild(
     mapper: ObjectMapper,
-    headOfFamily: UUID,
+    child: UUID,
     period: DateRange?,
     statuses: List<VoucherValueDecisionStatus>?
 ): List<VoucherValueDecision> {
     // language=sql
     val sql =
         """
-        $voucherValueDecisionQueryBase
-        WHERE decision.head_of_family = :headOfFamily
-        AND (:period::daterange IS NULL OR daterange(decision.valid_from, decision.valid_to, '[]') && :period)
-        AND (:statuses::text[] IS NULL OR decision.status = ANY(:statuses::voucher_value_decision_status[]))
-        """
+SELECT * FROM voucher_value_decision
+WHERE child = :child
+AND (:period::daterange IS NULL OR daterange(valid_from, valid_to, '[]') && :period)
+AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision_status[]))
+"""
 
     return createQuery(sql)
-        .bind("headOfFamily", headOfFamily)
+        .bind("child", child)
         .bindNullable("period", period)
         .bindNullable("statuses", statuses)
         .map(toVoucherValueDecision(mapper))
-        .let { it.merge() }
+        .toList()
 }
 
 fun Handle.deleteValueDecisions(ids: List<UUID>) {
@@ -308,83 +242,55 @@ fun Database.Read.searchValueDecisions(
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
 
-    val youngestChildQuery =
-        """
-        WITH youngest_child AS (
-            SELECT
-                voucher_value_decision_part.voucher_value_decision_id AS decision_id,
-                care_area.short_name AS area,
-                row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
-            FROM voucher_value_decision_part
-            LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
-            LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-        )
-        """.trimIndent()
-    val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
-    val youngestChildAnd = "AND youngest_child.area = ANY(:areas)"
-
-    // language=sql
-
     val sql =
         // language=sql
         """
-        WITH decision_ids AS (
-            ${if (areas.isNotEmpty()) youngestChildQuery else ""}
-            SELECT decision.id, count(*) OVER (), max(sums.co_payment) total_co_payment, max(sums.voucher_value) total_value
-            FROM voucher_value_decision AS decision
-            LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
-            LEFT JOIN person AS head ON decision.head_of_family = head.id
-            LEFT JOIN person AS partner ON decision.head_of_family = partner.id
-            LEFT JOIN person AS child ON part.child = child.id
-            ${if (areas.isNotEmpty()) youngestChildJoin else ""}
-            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
-            LEFT JOIN (
-                SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
-                FROM (
-                    SELECT vd.id, coalesce(vdp.co_payment + coalesce(sum(effects.effect), 0), 0) AS final_co_payment, voucher_value
-                    FROM voucher_value_decision vd
-                    LEFT JOIN voucher_value_decision_part vdp ON vd.id = vdp.voucher_value_decision_id
-                    LEFT JOIN (
-                        SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
-                        FROM voucher_value_decision_part
-                    ) effects ON vdp.id = effects.id
-                    GROUP BY vd.id, vdp.id, vdp.co_payment, vdp.voucher_value
-                ) final_co_payments
-                GROUP BY final_co_payments.id
-            ) sums ON decision.id = sums.id
-            WHERE
-                status = :status::voucher_value_decision_status
-                ${if (areas.isNotEmpty()) youngestChildAnd else ""}
-                AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
-                AND $freeTextQuery
-                AND (:financeDecisionHandlerId::uuid IS NULL OR placement_unit.finance_decision_handler = :financeDecisionHandlerId)
-            GROUP BY decision.id
-            -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
-            ORDER BY max($sortColumn) $sortDirection, decision.id
-            LIMIT :pageSize OFFSET :pageSize * :page
-        )
-        SELECT
-            decision_ids.count,
-            decision_ids.total_co_payment,
-            decision_ids.total_value,
-            decision.*,
-            part.child,
-            part.date_of_birth,
-            head.date_of_birth AS head_date_of_birth,
-            head.first_name AS head_first_name,
-            head.last_name AS head_last_name,
-            head.social_security_number AS head_ssn,
-            head.force_manual_fee_decisions AS head_force_manual_fee_decisions,
-            child.first_name AS child_first_name,
-            child.last_name AS child_last_name,
-            child.social_security_number AS child_ssn
-        FROM decision_ids
-            LEFT JOIN voucher_value_decision AS decision ON decision_ids.id = decision.id
-            LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
-            LEFT JOIN person AS head ON decision.head_of_family = head.id
-            LEFT JOIN person AS child ON part.child = child.id
-        ORDER BY $sortColumn $sortDirection, decision.id, part.date_of_birth DESC
-        """.trimIndent()
+SELECT
+    count(*) OVER () AS count,
+    decision.id,
+    decision.status,
+    decision.decision_number,
+    decision.valid_from,
+    decision.valid_to,
+    decision.head_of_family,
+    decision.child,
+    decision.date_of_birth,
+    decision.voucher_value,
+    decision.approved_at,
+    decision.created_at,
+    decision.sent_at,
+    sums.final_co_payment,
+    head.date_of_birth AS head_date_of_birth,
+    head.first_name AS head_first_name,
+    head.last_name AS head_last_name,
+    head.social_security_number AS head_ssn,
+    head.force_manual_fee_decisions AS head_force_manual_fee_decisions,
+    child.first_name AS child_first_name,
+    child.last_name AS child_last_name,
+    child.social_security_number AS child_ssn
+FROM voucher_value_decision AS decision
+LEFT JOIN person AS head ON decision.head_of_family = head.id
+LEFT JOIN person AS child ON decision.child = child.id
+LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_unit
+LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
+LEFT JOIN (
+    SELECT vd.id, coalesce(vd.co_payment + coalesce(sum(effects.effect), 0), 0) AS final_co_payment
+    FROM voucher_value_decision vd
+    LEFT JOIN (
+        SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
+        FROM voucher_value_decision
+    ) effects ON vd.id = effects.id
+    GROUP BY vd.id, vd.co_payment
+) sums ON decision.id = sums.id
+WHERE
+    decision.status = :status::voucher_value_decision_status
+    AND (:unit::uuid IS NULL OR decision.placement_unit = :unit)
+    AND (:areas::text[] = '{}' OR area.short_name = ANY(:areas))
+    AND $freeTextQuery
+    AND (:financeDecisionHandlerId::uuid IS NULL OR placement_unit.finance_decision_handler = :financeDecisionHandlerId)
+ORDER BY $sortColumn $sortDirection, decision.id DESC
+LIMIT :pageSize OFFSET :pageSize * :page
+"""
 
     return this.createQuery(sql)
         .bindMap(params + freeTextParams)
@@ -392,80 +298,62 @@ fun Database.Read.searchValueDecisions(
             WithCount(rs.getInt("count"), toVoucherValueDecisionSummary(rs, ctx))
         }
         .let(mapToPaged(pageSize))
-        .let { it.copy(data = it.data.merge()) }
 }
 
 fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValueDecisionDetailed? {
     // language=sql
     val sql =
         """
-        SELECT
-            decision.*,
-            part.child,
-            part.date_of_birth,
-            part.placement_unit,
-            part.placement_type,
-            part.service_need,
-            part.hours_per_week,
-            part.base_co_payment,
-            part.sibling_discount,
-            part.co_payment,
-            part.fee_alterations,
-            part.base_value,
-            date_part('year', age(decision.valid_from, part.date_of_birth)) child_age,
-            part.age_coefficient,
-            part.service_coefficient,
-            part.voucher_value,
-            head.date_of_birth as head_date_of_birth,
-            head.first_name as head_first_name,
-            head.last_name as head_last_name,
-            head.social_security_number as head_ssn,
-            head.street_address as head_street_address,
-            head.postal_code as head_postal_code,
-            head.post_office as head_post_office,
-            head.language as head_language,
-            head.restricted_details_enabled as head_restricted_details_enabled,
-            head.force_manual_fee_decisions as head_force_manual_fee_decisions,
-            partner.date_of_birth as partner_date_of_birth,
-            partner.first_name as partner_first_name,
-            partner.last_name as partner_last_name,
-            partner.social_security_number as partner_ssn,
-            partner.street_address as partner_street_address,
-            partner.postal_code as partner_postal_code,
-            partner.post_office as partner_post_office,
-            partner.restricted_details_enabled as partner_restricted_details_enabled,
-            approved_by.first_name as approved_by_first_name,
-            approved_by.last_name as approved_by_last_name,
-            child.first_name as child_first_name,
-            child.last_name as child_last_name,
-            child.social_security_number as child_ssn,
-            child.street_address as child_address,
-            child.postal_code as child_postal_code,
-            child.post_office as child_post_office,
-            child.restricted_details_enabled as child_restricted_details_enabled,
-            daycare.name as placement_unit_name,
-            daycare.language as placement_unit_lang,
-            care_area.id as placement_unit_area_id,
-            care_area.name as placement_unit_area_name,
-            finance_decision_handler.first_name AS finance_decision_handler_first_name,
-            finance_decision_handler.last_name AS finance_decision_handler_last_name
-        FROM voucher_value_decision as decision
-            LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
-            LEFT JOIN person as head ON decision.head_of_family = head.id
-            LEFT JOIN person as partner ON decision.partner = partner.id
-            LEFT JOIN person as child ON part.child = child.id
-            LEFT JOIN daycare ON part.placement_unit = daycare.id
-            LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-            LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
-            LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
-        WHERE decision.id = :id
-        ORDER BY part.date_of_birth DESC
-    """
+SELECT
+    decision.*,
+    date_part('year', age(decision.valid_from, decision.date_of_birth)) child_age,
+    head.date_of_birth as head_date_of_birth,
+    head.first_name as head_first_name,
+    head.last_name as head_last_name,
+    head.social_security_number as head_ssn,
+    head.street_address as head_street_address,
+    head.postal_code as head_postal_code,
+    head.post_office as head_post_office,
+    head.language as head_language,
+    head.restricted_details_enabled as head_restricted_details_enabled,
+    head.force_manual_fee_decisions as head_force_manual_fee_decisions,
+    partner.date_of_birth as partner_date_of_birth,
+    partner.first_name as partner_first_name,
+    partner.last_name as partner_last_name,
+    partner.social_security_number as partner_ssn,
+    partner.street_address as partner_street_address,
+    partner.postal_code as partner_postal_code,
+    partner.post_office as partner_post_office,
+    partner.restricted_details_enabled as partner_restricted_details_enabled,
+    approved_by.first_name as approved_by_first_name,
+    approved_by.last_name as approved_by_last_name,
+    child.first_name as child_first_name,
+    child.last_name as child_last_name,
+    child.social_security_number as child_ssn,
+    child.street_address as child_address,
+    child.postal_code as child_postal_code,
+    child.post_office as child_post_office,
+    child.restricted_details_enabled as child_restricted_details_enabled,
+    daycare.name as placement_unit_name,
+    daycare.language as placement_unit_lang,
+    care_area.id as placement_unit_area_id,
+    care_area.name as placement_unit_area_name,
+    finance_decision_handler.first_name AS finance_decision_handler_first_name,
+    finance_decision_handler.last_name AS finance_decision_handler_last_name
+FROM voucher_value_decision as decision
+JOIN person as head ON decision.head_of_family = head.id
+LEFT JOIN person as partner ON decision.partner = partner.id
+JOIN person as child ON decision.child = child.id
+JOIN daycare ON decision.placement_unit = daycare.id
+JOIN care_area ON daycare.care_area_id = care_area.id
+LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
+LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
+WHERE decision.id = :id
+"""
 
     return createQuery(sql)
         .bind("id", id)
         .map(toVoucherValueDecisionDetailed(mapper))
-        .let { it.merge() }
         .singleOrNull()
 }
 
@@ -473,25 +361,17 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
     // language=sql
     val sql =
         """
-        WITH youngest_child AS (
-            SELECT
-                voucher_value_decision_part.voucher_value_decision_id AS decision_id,
-                daycare.finance_decision_handler AS finance_decision_handler_id,
-                row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
-            FROM voucher_value_decision_part
-            LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
-        )
         UPDATE voucher_value_decision SET
             status = :status::voucher_value_decision_status,
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
-            decision_handler = CASE
-                WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
+            decision_handler = (CASE
+                WHEN daycare.finance_decision_handler IS NOT NULL THEN daycare.finance_decision_handler
                 ELSE :approvedBy
-                END,
+            END),
             approved_at = :approvedAt
         FROM voucher_value_decision AS vd
-        LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
+        JOIN daycare ON vd.placement_unit = daycare.id
         WHERE vd.id = :id AND voucher_value_decision.id = vd.id
         """.trimIndent()
 
@@ -560,9 +440,9 @@ fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisio
         .execute()
 }
 
-fun Handle.lockValueDecisionsForHeadOfFamily(headOfFamily: UUID) {
-    createUpdate("SELECT id FROM voucher_value_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
-        .bind("headOfFamily", headOfFamily)
+fun Handle.lockValueDecisionsForChild(child: UUID) {
+    createUpdate("SELECT id FROM voucher_value_decision WHERE child = :child FOR UPDATE")
+        .bind("child", child)
         .execute()
 }
 
@@ -585,31 +465,24 @@ fun toVoucherValueDecision(mapper: ObjectMapper) = { rs: ResultSet, _: Statement
         partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
         familySize = rs.getInt("family_size"),
         pricing = mapper.readValue(rs.getString("pricing")),
-        // child is not nullable so if it's missing there was nothing to join to the decision
-        parts = rs.getString("child")?.let {
-            listOf(
-                VoucherValueDecisionPart(
-                    child = PersonData.WithDateOfBirth(
-                        id = rs.getUUID("child"),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
-                    ),
-                    placement = PermanentPlacementWithHours(
-                        unit = rs.getUUID("placement_unit"),
-                        type = PlacementType.valueOf(rs.getString("placement_type")),
-                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need")),
-                        hours = rs.getDouble("hours_per_week")
-                    ),
-                    baseCoPayment = rs.getInt("base_co_payment"),
-                    siblingDiscount = rs.getInt("sibling_discount"),
-                    coPayment = rs.getInt("co_payment"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
-                    baseValue = rs.getInt("base_value"),
-                    ageCoefficient = rs.getInt("age_coefficient"),
-                    serviceCoefficient = rs.getInt("service_coefficient"),
-                    value = rs.getInt("voucher_value")
-                )
-            )
-        } ?: emptyList(),
+        child = PersonData.WithDateOfBirth(
+            id = rs.getUUID("child"),
+            dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
+        ),
+        placement = PermanentPlacementWithHours(
+            unit = rs.getUUID("placement_unit"),
+            type = PlacementType.valueOf(rs.getString("placement_type")),
+            serviceNeed = ServiceNeed.valueOf(rs.getString("service_need")),
+            hours = rs.getBigDecimal("hours_per_week")?.toDouble()
+        ),
+        baseCoPayment = rs.getInt("base_co_payment"),
+        siblingDiscount = rs.getInt("sibling_discount"),
+        coPayment = rs.getInt("co_payment"),
+        feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
+        baseValue = rs.getInt("base_value"),
+        ageCoefficient = rs.getInt("age_coefficient"),
+        serviceCoefficient = rs.getInt("service_coefficient"),
+        value = rs.getInt("voucher_value"),
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()
@@ -630,22 +503,15 @@ val toVoucherValueDecisionSummary = { rs: ResultSet, _: StatementContext ->
             lastName = rs.getString("head_last_name"),
             ssn = rs.getString("head_ssn")
         ),
-        // child is not nullable so if it's missing there was nothing to join to the decision
-        parts = rs.getString("child")?.let {
-            listOf(
-                VoucherValueDecisionPartSummary(
-                    child = PersonData.Basic(
-                        id = rs.getUUID("child"),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn")
-                    )
-                )
-            )
-        } ?: emptyList(),
-        totalCoPayment = rs.getInt("total_co_payment"),
-        totalValue = rs.getInt("total_value"),
+        child = PersonData.Basic(
+            id = rs.getUUID("child"),
+            dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
+            firstName = rs.getString("child_first_name"),
+            lastName = rs.getString("child_last_name"),
+            ssn = rs.getString("child_ssn")
+        ),
+        finalCoPayment = rs.getInt("final_co_payment"),
+        value = rs.getInt("voucher_value"),
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()
@@ -689,46 +555,39 @@ fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: S
         partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
         familySize = rs.getInt("family_size"),
         pricing = mapper.readValue(rs.getString("pricing")),
-        // child is not nullable so if it's missing there was nothing to join to the decision
-        parts = rs.getString("child")?.let {
-            listOf(
-                VoucherValueDecisionPartDetailed(
-                    child = PersonData.Detailed(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn"),
-                        streetAddress = rs.getString("child_address"),
-                        postalCode = rs.getString("child_postal_code"),
-                        postOffice = rs.getString("child_post_office"),
-                        restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
-                    ),
-                    placement = PermanentPlacementWithHours(
-                        unit = UUID.fromString(rs.getString("placement_unit")),
-                        type = PlacementType.valueOf(rs.getString("placement_type")),
-                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need")),
-                        hours = rs.getDouble("hours_per_week")
-                    ),
-                    placementUnit = UnitData.Detailed(
-                        id = UUID.fromString(rs.getString("placement_unit")),
-                        name = rs.getString("placement_unit_name"),
-                        language = rs.getString("placement_unit_lang"),
-                        areaId = UUID.fromString(rs.getString("placement_unit_area_id")),
-                        areaName = rs.getString("placement_unit_area_name")
-                    ),
-                    baseCoPayment = rs.getInt("base_co_payment"),
-                    siblingDiscount = rs.getInt("sibling_discount"),
-                    coPayment = rs.getInt("co_payment"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
-                    baseValue = rs.getInt("base_value"),
-                    childAge = rs.getInt("child_age"),
-                    ageCoefficient = rs.getInt("age_coefficient"),
-                    serviceCoefficient = rs.getInt("service_coefficient"),
-                    value = rs.getInt("voucher_value")
-                )
-            )
-        } ?: emptyList(),
+        child = PersonData.Detailed(
+            id = UUID.fromString(rs.getString("child")),
+            dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
+            firstName = rs.getString("child_first_name"),
+            lastName = rs.getString("child_last_name"),
+            ssn = rs.getString("child_ssn"),
+            streetAddress = rs.getString("child_address"),
+            postalCode = rs.getString("child_postal_code"),
+            postOffice = rs.getString("child_post_office"),
+            restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
+        ),
+        placement = PermanentPlacementWithHours(
+            unit = UUID.fromString(rs.getString("placement_unit")),
+            type = PlacementType.valueOf(rs.getString("placement_type")),
+            serviceNeed = ServiceNeed.valueOf(rs.getString("service_need")),
+            hours = rs.getBigDecimal("hours_per_week")?.toDouble()
+        ),
+        placementUnit = UnitData.Detailed(
+            id = UUID.fromString(rs.getString("placement_unit")),
+            name = rs.getString("placement_unit_name"),
+            language = rs.getString("placement_unit_lang"),
+            areaId = UUID.fromString(rs.getString("placement_unit_area_id")),
+            areaName = rs.getString("placement_unit_area_name")
+        ),
+        baseCoPayment = rs.getInt("base_co_payment"),
+        siblingDiscount = rs.getInt("sibling_discount"),
+        coPayment = rs.getInt("co_payment"),
+        feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
+        baseValue = rs.getInt("base_value"),
+        childAge = rs.getInt("child_age"),
+        ageCoefficient = rs.getInt("age_coefficient"),
+        serviceCoefficient = rs.getInt("service_coefficient"),
+        value = rs.getInt("voucher_value"),
         documentKey = rs.getString("document_key"),
         approvedBy = rs.getString("approved_by")?.let { id ->
             PersonData.WithName(

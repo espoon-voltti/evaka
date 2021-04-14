@@ -106,13 +106,13 @@ export default React.memo(function VoucherValueDecisions({
               <NameWithSsn {...item.headOfFamily} i18n={i18n} />
             </Td>
             <Td>
-              <ChildrenCell people={item.parts.map(({ child }) => child)} />
+              <ChildrenCell people={[item.child]} />
             </Td>
             <Td>{`${item.validFrom.format()} - ${
               item.validTo?.format() ?? ''
             }`}</Td>
-            <Td>{formatCents(item.totalValue)}</Td>
-            <Td>{formatCents(item.totalCoPayment)}</Td>
+            <Td>{formatCents(item.value)}</Td>
+            <Td>{formatCents(item.finalCoPayment)}</Td>
             <Td>{item.decisionNumber}</Td>
             <Td>{formatDate(item.createdAt)}</Td>
             <Td>{formatDate(item.sentAt)}</Td>
@@ -160,7 +160,7 @@ export default React.memo(function VoucherValueDecisions({
             >
               {i18n.valueDecisions.table.head}
             </SortableTh>
-            <Th>{i18n.valueDecisions.table.children}</Th>
+            <Th>{i18n.valueDecisions.table.child}</Th>
             <Th>{i18n.valueDecisions.table.validity}</Th>
             <Th>{i18n.valueDecisions.table.totalValue}</Th>
             <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>

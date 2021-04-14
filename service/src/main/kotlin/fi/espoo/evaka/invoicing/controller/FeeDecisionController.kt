@@ -14,8 +14,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.service.DecisionGenerator
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
+import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
@@ -66,7 +66,7 @@ enum class DistinctiveParams {
 class FeeDecisionController(
     private val objectMapper: ObjectMapper,
     private val service: FeeDecisionService,
-    private val generator: DecisionGenerator,
+    private val generator: FinanceDecisionGenerator,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping("/search")

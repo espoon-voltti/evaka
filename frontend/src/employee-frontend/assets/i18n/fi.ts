@@ -317,12 +317,13 @@ export const fi = {
       startTimePlaceholder: '08:00',
       endTimePlaceholder: '16:00',
       shiftCareLabel: 'Ilta- ja vuorohoito',
-      shiftCareValue: 'Tarvitaan ilta- ja vuorohoitoa',
+      shiftCareNeeded: 'Tarvitaan ilta- ja vuorohoitoa',
       shiftCareWithAttachments: 'Tarvitaan ilta- ja vuorohoitoa, liitteet:',
       urgentLabel: 'Kiireellinen hakemus',
       notUrgent: 'Ei',
-      isUrgent: 'On',
+      isUrgent: 'On kiireellinen',
       isUrgentWithAttachments: 'On kiireellinen, liitteet:',
+      missingAttachment: 'Liite puuttuu',
       preparatoryLabel: 'Valmistava opetus',
       preparatoryValue: 'Haen myös valmistavaan opetukseen',
       assistanceLabel: 'Tuen tarve',
@@ -1247,9 +1248,9 @@ export const fi = {
       daycareDailyNote: {
         header: 'Päivän muistiinpanot',
         groupNoteHeader: 'Päivän muistiinpanot koko ryhmälle',
-        notesHeader: 'Päivän tapahtumia',
+        notesHeader: 'Päivän tapahtumia (ei terveystietoja)',
         groupNotesHeader: 'Koko ryhmää koskeva muistiinpano',
-        notesHint: 'Kirjoita muistiinpano (ei terveystietoja)',
+        notesHint: 'Mitä tänään opin, leikin, oivalsin.',
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
         sleepingHint: 'esim 1,5h',
@@ -1429,7 +1430,7 @@ export const fi = {
       rowCount: (count: number) =>
         count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
       head: 'Päämies',
-      children: 'Lapset',
+      child: 'Lapsi',
       validity: 'Arvopäätös voimassa',
       totalValue: 'PS-Arvo',
       totalCoPayment: 'Omavastuu',
@@ -1664,11 +1665,10 @@ export const fi = {
     },
     summary: {
       title: 'Kooste arvopäätöksen perusteista',
-      parts: 'Kooste perheen lasten omavastuuosuuksista',
+      coPayment: 'Omavastuuosuus',
       sum: 'Summa',
       siblingDiscount: 'Sisarusalennus',
-      totalCoPayment: 'Perheen omavastuu yhteensä',
-      totalValue: 'Perheen palvelusetelien arvo yhteensä',
+      totalValue: 'Palvelusetelin arvo omavastuun jälkeen',
       income: {
         title: 'Kooste perheen tuloista',
         effect: {
@@ -1707,7 +1707,7 @@ export const fi = {
         feePercent: 'Maksuprosentti',
         minThreshold: 'Vähimmäisbruttoraja'
       },
-      values: 'Kooste perheen palvelusetelien arvoista',
+      value: 'Palvelusetelin arvo',
       age: {
         LESS_THAN_3: 'Alle 3-vuotias',
         OVER_3: 'Vähintään 3-vuotias'
@@ -2241,6 +2241,31 @@ export const fi = {
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
       ophOrganizationOid: 'Organisaation OID puuttuu'
+    }
+  },
+  fileUpload: {
+    upload: {
+      loading: 'Ladataan...',
+      loaded: 'Ladattu',
+      error: {
+        FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+        SERVER_ERROR: 'Lataus ei onnistunut'
+      },
+      input: {
+        title: 'Lisää liite',
+        text: [
+          'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+          'Tiedoston maksimikoko: 10MB.',
+          'Sallitut tiedostomuodot:',
+          'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+        ]
+      },
+      deleteFile: 'Poista tiedosto'
+    },
+    download: {
+      modalHeader: 'Tiedoston käsittely on kesken',
+      modalMessage:
+        'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
     }
   },
   messages: {

@@ -6,21 +6,27 @@ package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
+import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
+import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Base64
@@ -94,6 +100,64 @@ class VoucherValueDecisionService(
         tx.markVoucherValueDecisionsSent(listOf(decision.id), Instant.now())
     }
 
+    fun endDecisionsWithEndedPlacements(tx: Database.Transaction, now: LocalDate) {
+        val decisionIds = tx.createQuery(
+            """
+SELECT id FROM voucher_value_decision decision
+LEFT JOIN LATERAL (
+    SELECT range_merge(daterange(placement.start_date, placement.end_date, '[]')) combined_range
+    FROM placement
+    JOIN daycare ON daycare.id = placement.unit_id
+    WHERE placement.child_id = decision.child
+    AND daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER'::unit_provider_type
+    AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(placement.start_date, placement.end_date, '[]')
+) placements ON true
+WHERE decision.status = 'SENT'::voucher_value_decision_status
+AND daterange(decision.valid_from, decision.valid_to, '[]') != placements.combined_range
+AND placements.combined_range << daterange(:now, null)
+"""
+        ).bind("now", now).mapTo<UUID>().toList()
+
+        tx.handle.lockValueDecisions(decisionIds)
+
+        tx.handle
+            .getValueDecisionsByIds(objectMapper, decisionIds)
+            .forEach { decision ->
+                val mergedPlacementPeriods = tx
+                    .createQuery(
+                        """
+SELECT start_date AS start, end_date AS end
+FROM placement
+WHERE child_id = :childId AND unit_id = :unitId AND :dateRange && daterange(start_date, end_date, '[]')
+ORDER BY start_date ASC
+"""
+                    )
+                    .bind("childId", decision.child.id)
+                    .bind("unitId", decision.placement.unit)
+                    .bind("dateRange", DateRange(decision.validFrom, decision.validTo))
+                    .mapTo<FiniteDateRange>()
+                    .fold(listOf<FiniteDateRange>()) { periods, period ->
+                        when {
+                            periods.isEmpty() -> listOf(period)
+                            periods.last().end.plusDays(1) == period.start ->
+                                periods.dropLast(1) + periods.last().copy(end = period.end)
+                            else -> periods + period
+                        }
+                    }
+
+                when {
+                    mergedPlacementPeriods.isEmpty() -> {
+                        val annulled = decision.annul()
+                        tx.updateVoucherValueDecisionStatusAndDates(listOf(annulled))
+                    }
+                    mergedPlacementPeriods.first().end < decision.validTo -> {
+                        val withUpdatedEndDate = decision.copy(validTo = mergedPlacementPeriods.first().end)
+                        tx.updateVoucherValueDecisionStatusAndDates(listOf(withUpdatedEndDate))
+                    }
+                }
+            }
+    }
+
     private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =
         tx.handle.getVoucherValueDecision(objectMapper, decisionId)
             ?: error("No voucher value decision found with ID ($decisionId)")
@@ -150,36 +214,29 @@ private fun coverPage(decision: VoucherValueDecisionDetailed): String {
         <div class="content">
             <h1>PÄÄTÖS VARHAISKASVATUKSEN PALVELUSETELIN ARVOSTA</h1>
             <table>
-                ${decision.parts.joinToString(transform = ::tablePart)}
+                <tr>
+                    <td colspan="2">${decision.child.firstName} ${decision.child.lastName}</td>
+                </tr>
+                <tr>
+                    <td>Yksikkö</td>
+                    <td>${decision.placementUnit.name}</td>
+                </tr>
+                <tr>
+                    <td>Palveluntarve</td>
+                    <td>${decision.placement.hours ?: "ei asetettu"}</td>
+                </tr>
+                <tr>
+                    <td>Palvelusetelin enimmäisarvo</td>
+                    <td>${decision.value / 100},${decision.value % 100} €</td>
+                </tr>
+                <tr>
+                    <td>Omavastuu</td>
+                    <td>${decision.coPayment / 100},${decision.coPayment % 100} €</td>
+                </tr>
             </table>
         </div>
     </body>
 </html>
-    """.trimIndent()
-}
-
-private fun tablePart(part: VoucherValueDecisionPartDetailed): String {
-    // language=html
-    return """
-        <tr>
-            <td colspan="2">${part.child.firstName} ${part.child.lastName}</td>
-        </tr>
-        <tr>
-            <td>Yksikkö</td>
-            <td>${part.placementUnit.name}</td>
-        </tr>
-        <tr>
-            <td>Palveluntarve</td>
-            <td>${part.placement.hours ?: "ei asetettu"}</td>
-        </tr>
-        <tr>
-            <td>Palvelusetelin enimmäisarvo</td>
-            <td>${part.value / 100},${part.value % 100} €</td>
-        </tr>
-        <tr>
-            <td>Omavastuu</td>
-            <td>${part.coPayment / 100},${part.coPayment % 100} €</td>
-        </tr>
     """.trimIndent()
 }
 

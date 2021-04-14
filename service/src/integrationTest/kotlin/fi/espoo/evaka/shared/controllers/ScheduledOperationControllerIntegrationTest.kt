@@ -10,8 +10,8 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.application.getApplicationAttachments
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.attachment.getApplicationAttachments
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
@@ -34,8 +34,9 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -81,18 +82,18 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         }
 
         db.read {
-            Assertions.assertEquals(1, it.getApplicationAttachments(id_to_be_deleted).size)
-            Assertions.assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
+            assertEquals(1, it.getApplicationAttachments(id_to_be_deleted).size)
+            assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
         }
 
         scheduledOperationController.removeOldDraftApplications(db)
 
         db.read {
-            Assertions.assertNull(fetchApplicationDetails(it.handle, id_to_be_deleted))
-            Assertions.assertEquals(0, it.getApplicationAttachments(id_to_be_deleted).size)
+            assertNull(fetchApplicationDetails(it.handle, id_to_be_deleted))
+            assertEquals(0, it.getApplicationAttachments(id_to_be_deleted).size)
 
-            Assertions.assertNotNull(fetchApplicationDetails(it.handle, id_not_to_be_deleted)!!)
-            Assertions.assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
+            assertNotNull(fetchApplicationDetails(it.handle, id_not_to_be_deleted)!!)
+            assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
         }
     }
 
