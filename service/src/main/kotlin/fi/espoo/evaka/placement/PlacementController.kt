@@ -56,7 +56,7 @@ class PlacementController(
             value = "to",
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate? = null
-    ): ResponseEntity<Set<DaycarePlacementWithGroups>> {
+    ): ResponseEntity<Set<DaycarePlacementWithDetails>> {
         Audit.PlacementSearch.log(targetId = daycareId ?: childId)
 
         val roles = when {
@@ -69,7 +69,7 @@ class PlacementController(
         val authorizedDaycares = auth.ids ?: emptySet()
 
         return db.read {
-            it.getDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
+            it.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
                 if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id))
                     placement.copy(isRestrictedFromUser = true)
                 else placement

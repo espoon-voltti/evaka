@@ -45,19 +45,19 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun setUp() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = childId,
                 unitId = daycareId,
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            h.insertTestDaycareGroup(testDaycareGroup)
-            testPlacement = h.getDaycarePlacements(daycareId, null, null, null).first()
-            updateDaycareAclWithEmployee(h, daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.handle.insertTestDaycareGroup(testDaycareGroup)
+            testPlacement = tx.getDaycarePlacements(daycareId, null, null, null).first()
+            updateDaycareAclWithEmployee(tx.handle, daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -65,7 +65,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun `get placements works with daycareId and without dates`() {
         val (_, res, result) = http.get("/placements?daycareId=$daycareId")
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
@@ -94,7 +94,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             }"
         )
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(1)
@@ -108,7 +108,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             }&to=${LocalDate.now().minusDays(300)}"
         )
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(0)
@@ -118,17 +118,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun `get placements returns an empty list if daycare is not found`() {
         val (_, res, result) = http.get("/placements?daycareId=${UUID.randomUUID()}")
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get()).isEqualTo(setOf<DaycarePlacementWithGroups>())
+        Assertions.assertThat(result.get()).isEqualTo(setOf<DaycarePlacementWithDetails>())
     }
 
     @Test
     fun `get placements works with childId and without dates`() {
         val (_, res, result) = http.get("/placements?childId=$childId")
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
@@ -151,7 +151,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             }"
         )
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(1)
@@ -165,7 +165,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             }&to=${LocalDate.now().minusDays(300)}"
         )
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(0)
@@ -388,7 +388,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
             val (_, _, result) = http.get("/placements?daycareId=$daycareId")
                 .asUser(unitSupervisor)
-                .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+                .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
             val groupPlacementsAfter = result.get().toList()[0].groupPlacements
             Assertions.assertThat(groupPlacementsAfter).hasSize(1)
@@ -409,7 +409,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
             val (_, res, result) = http.get("/placements?childId=$childId")
                 .asUser(unitSupervisor)
-                .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+                .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
 
             org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
 
@@ -561,7 +561,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     private fun getGroupPlacements(childId: UUID, daycareId: UUID): List<DaycareGroupPlacement> {
         return http.get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
             .third
             .get()
             .toList()

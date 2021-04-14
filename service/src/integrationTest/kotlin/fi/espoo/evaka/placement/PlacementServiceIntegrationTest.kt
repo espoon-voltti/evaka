@@ -655,7 +655,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         }
 
         val groupPlacements = db.read {
-            it.getDaycarePlacements(
+            it.getDetailedDaycarePlacements(
                 daycareId = unitId,
                 childId = childId,
                 startDate = null,
@@ -681,7 +681,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         db.transaction { it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate) }
 
         val groupPlacements = db.read {
-            it.getDaycarePlacements(
+            it.getDetailedDaycarePlacements(
                 daycareId = unitId,
                 childId = childId,
                 startDate = null,
@@ -717,11 +717,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val placements = db.read { it.getDaycarePlacements(testDaycare2.id, null, null, null) }
+        val placements = db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
-                DaycarePlacementWithGroups(
+                DaycarePlacementWithDetails(
                     id = daycarePlacementId,
                     child = ChildBasics(
                         id = testChild_2.id,
@@ -743,7 +743,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                             startDate = daycarePlacementStartDate,
                             endDate = daycarePlacementEndDate
                         )
-                    )
+                    ),
+                    serviceNeeds = emptyList()
                 )
             ),
             placements
@@ -793,11 +794,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             }
         }
 
-        val placements = db.read { it.getDaycarePlacements(testDaycare2.id, null, null, null) }
+        val placements = db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
-                DaycarePlacementWithGroups(
+                DaycarePlacementWithDetails(
                     id = daycarePlacementId,
                     child = ChildBasics(
                         id = testChild_2.id,
@@ -875,7 +876,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                             startDate = date(19),
                             endDate = date(20)
                         )
-                    )
+                    ),
+                    serviceNeeds = emptyList()
                 )
             ),
             placements

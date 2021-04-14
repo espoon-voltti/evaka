@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.getDaycareGroup
+import fi.espoo.evaka.serviceneednew.NewServiceNeed
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -63,7 +64,7 @@ fun Database.Transaction.createGroupPlacement(
     if (endDate.isBefore(startDate))
         throw BadRequest("Must not end before even starting")
 
-    if (handle.getDaycareGroupPlacements(daycarePlacementId, startDate, endDate, groupId).isNotEmpty())
+    if (getDaycareGroupPlacements(daycarePlacementId, startDate, endDate, groupId).isNotEmpty())
         throw BadRequest("Group placement must not overlap with existing group placement")
 
     val daycarePlacement = handle.getDaycarePlacement(daycarePlacementId)
@@ -206,22 +207,26 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
     }
 }
 
-fun Database.Read.getDaycarePlacements(
+fun Database.Read.getDetailedDaycarePlacements(
     daycareId: UUID?,
     childId: UUID?,
     startDate: LocalDate?,
     endDate: LocalDate?
-): Set<DaycarePlacementWithGroups> {
-    val daycarePlacements = handle.getDaycarePlacements(daycareId, childId, startDate, endDate)
+): Set<DaycarePlacementWithDetails> {
+    val daycarePlacements = getDaycarePlacements(daycareId, childId, startDate, endDate)
     val minDate = daycarePlacements.map { it.startDate }.minOrNull() ?: return emptySet()
     val maxDate = daycarePlacements.map { it.endDate }.maxOrNull() ?: endDate
 
     val groupPlacements =
-        if (daycareId != null) handle.getDaycareGroupPlacements(daycareId, minDate, maxDate, null) else listOf()
+        when {
+            daycareId != null -> getDaycareGroupPlacements(daycareId, minDate, maxDate, null)
+            childId != null -> getChildGroupPlacements(childId)
+            else -> listOf()
+        }
 
     return daycarePlacements
         .map { daycarePlacement ->
-            DaycarePlacementWithGroups(
+            DaycarePlacementWithDetails(
                 id = daycarePlacement.id,
                 child = daycarePlacement.child,
                 daycare = daycarePlacement.daycare,
@@ -229,14 +234,15 @@ fun Database.Read.getDaycarePlacements(
                 endDate = daycarePlacement.endDate,
                 type = daycarePlacement.type,
                 missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
-                groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id }
+                groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
+                serviceNeeds = emptyList()
             )
         }
         .map(::addMissingGroupPlacements)
         .toSet()
 }
 
-private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithGroups): DaycarePlacementWithGroups {
+private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithDetails): DaycarePlacementWithDetails {
     // calculate unique sorted events from start dates and exclusive end dates
     val eventDates = setOf<LocalDate>(
         daycarePlacement.startDate,
@@ -283,7 +289,7 @@ data class DaycarePlacementDetails(
     val missingServiceNeedDays: Int
 )
 
-data class DaycarePlacementWithGroups(
+data class DaycarePlacementWithDetails(
     val id: UUID,
     val child: ChildBasics,
     val daycare: DaycareBasics,
@@ -292,6 +298,7 @@ data class DaycarePlacementWithGroups(
     val type: PlacementType,
     val missingServiceNeedDays: Int,
     val groupPlacements: List<DaycareGroupPlacement>,
+    val serviceNeeds: List<NewServiceNeed>,
     val isRestrictedFromUser: Boolean = false
 )
 
