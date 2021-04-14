@@ -246,9 +246,6 @@ test('A validation warning is shown if preferred start date is not valid', async
     )
   )
 
-  await citizenApplicationEditor.assertPreferredStartDateProcessingWarningIsShown(
-    false
-  )
   await citizenApplicationEditor.assertPreferredStartDateInputInfo(false)
 })
 
