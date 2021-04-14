@@ -50,6 +50,9 @@ fun Handle.runDevScript(devScriptName: String) {
 
 fun Handle.resetDatabase() {
     execute("SELECT reset_database()")
+
+    // Preschool terms are not inserted by fixtures
+    runDevScript("preschool-terms.sql")
 }
 
 fun Handle.ensureDevData() {

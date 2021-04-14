@@ -15,6 +15,7 @@ import {
   getApplication,
   getDecisionsByApplication,
   insertApplications,
+  resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import {
@@ -23,8 +24,7 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
-  daycareFixture,
-  Fixture
+  daycareFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import {
   FormInput,
@@ -55,20 +55,16 @@ const citizenDecisionResponsePage = new CitizenDecisionResponsePage()
 
 let applicationId: string
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Citizen daycare applications create')
   .meta({ type: 'regression', subType: 'citizen-applications-create' })
   .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
     if (applicationId) await deleteApplication(applicationId)
-  })
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
   })
 
 test('Sending invalid daycare application gives validation error', async (t) => {

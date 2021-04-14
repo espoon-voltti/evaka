@@ -8,12 +8,15 @@ import CitizenNewApplicationPage from '../../pages/citizen/citizen-application-n
 import CitizenApplicationEditor from '../../pages/citizen/citizen-application-editor'
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
-import { deleteApplication, getApplication } from 'e2e-test-common/dev-api'
+import {
+  deleteApplication,
+  getApplication,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   fullPreschoolForm,
   minimalPreschoolForm
@@ -26,20 +29,16 @@ const citizenApplicationEditor = new CitizenApplicationEditor()
 
 let applicationId: string
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Citizen preschool applications create')
   .meta({ type: 'regression', subType: 'citizen-applications-create' })
   .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
     await deleteApplication(applicationId)
-  })
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
   })
 
 test('Sending invalid preschool application gives validation error', async (t) => {

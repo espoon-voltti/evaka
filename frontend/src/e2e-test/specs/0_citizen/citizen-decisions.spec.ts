@@ -14,12 +14,12 @@ import {
   execSimpleApplicationActions,
   getDecisionsByApplication,
   insertApplications,
+  resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import {
   applicationFixture,
   enduserChildFixtureJari,
-  Fixture,
   daycareFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
@@ -32,20 +32,16 @@ const citizenDecisionResponsePage = new CitizenDecisionResponsePage()
 
 let applicationId: string
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Citizen decisions')
   .meta({ type: 'regression', subType: 'citizen-decisions' })
   .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
     await deleteApplication(applicationId)
-  })
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
   })
 
 test('Citizen sees her decisions, accepts preschool and rejects preschool daycare', async (t) => {
