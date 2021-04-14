@@ -374,6 +374,14 @@ export async function deleteAclForDaycare(
   }
 }
 
+export async function resetDatabase(): Promise<void> {
+  try {
+    await devClient.post(`/reset-db`, null)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function cleanUpInvoicingDatabase(): Promise<void> {
   try {
     await devClient.post(`/clean-up`, null)
