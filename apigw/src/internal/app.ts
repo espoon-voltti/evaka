@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
 import helmet from 'helmet'
@@ -42,7 +41,7 @@ app.use(
 )
 app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
-app.use(bodyParser.json({ limit: '8mb' }))
+app.use(express.json({ limit: '8mb' }))
 app.use(session('employee', redisClient))
 app.use(cookieParser(cookieSecret))
 app.use(passport.initialize())

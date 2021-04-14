@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { Router } from 'express'
+import express, { Router, urlencoded } from 'express'
 import passport from 'passport'
-import { urlencoded } from 'body-parser'
 import { logAuditEvent, logDebug } from '../../../logging'
 import { devLoginEnabled, gatewayRole, nodeEnv } from '../../../config'
 import { parseDescriptionFromSamlError } from './error-utils'
