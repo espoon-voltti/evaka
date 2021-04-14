@@ -232,6 +232,7 @@ commands:
           name: Start up compose stack
           working_directory: *workspace_compose
           command: |
+            docker-compose build
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
       - run:
           name: Install Node.js and yarn
@@ -306,6 +307,7 @@ commands:
           name: Start up compose stack
           working_directory: *workspace_compose
           command: |
+            docker-compose build
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
       - run:
           name: Install Node.js and yarn
