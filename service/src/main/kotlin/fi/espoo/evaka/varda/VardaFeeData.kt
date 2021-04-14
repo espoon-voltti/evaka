@@ -182,8 +182,7 @@ JOIN LATERAL (
         UNION ALL
         SELECT approved_at
         FROM voucher_value_decision d
-        JOIN voucher_value_decision_part p ON d.id = p.voucher_value_decision_id AND p.child = varda_child.person_id
-        WHERE d.status = ANY(:effectiveVoucherValueDecision::voucher_value_decision_status[])
+        WHERE d.child = varda_child.person_id AND d.status = ANY(:effectiveVoucherValueDecision::voucher_value_decision_status[])
     ) decisions
 ) latest_finance_decision ON true
 JOIN LATERAL (
@@ -268,24 +267,23 @@ SELECT
     vfd.varda_id AS varda_id,
     GREATEST(d.valid_from, :decisionStartDate) AS start_date,
     LEAST(d.valid_to, :decisionEndDate) AS end_date,
-    (p.co_payment + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
-    p.voucher_value / 100.0 AS voucher_value,
+    (d.co_payment + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
+    d.voucher_value / 100.0 AS voucher_value,
     d.family_size AS family_size,
-    p.placement_type AS placement_type
+    d.placement_type AS placement_type
 FROM varda_child vc
-JOIN voucher_value_decision_part p ON vc.person_id = p.child
-JOIN voucher_value_decision d ON p.voucher_value_decision_id = d.id
+JOIN voucher_value_decision d ON vc.person_id = d.child
     AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
     AND d.status = ANY(:effective::voucher_value_decision_status[])
 LEFT JOIN (
-    SELECT voucher_value_decision_part.id, SUM(effects.effect) sum
-    FROM voucher_value_decision_part
+    SELECT voucher_value_decision.id, SUM(effects.effect) sum
+    FROM voucher_value_decision
     JOIN (
         SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
-        FROM voucher_value_decision_part
-    ) effects ON voucher_value_decision_part.id = effects.id
-    GROUP BY voucher_value_decision_part.id
-) alterations ON p.id = alterations.id
+        FROM voucher_value_decision
+    ) effects ON voucher_value_decision.id = effects.id
+    GROUP BY voucher_value_decision.id
+) alterations ON d.id = alterations.id
 JOIN varda_decision vd ON vd.varda_decision_id = :decisionId
 LEFT JOIN varda_fee_data vfd ON d.id = vfd.evaka_voucher_value_decision_id AND vd.id = vfd.varda_decision_id AND vc.id = vfd.varda_child_id
 WHERE vc.varda_child_id = :childVardaId

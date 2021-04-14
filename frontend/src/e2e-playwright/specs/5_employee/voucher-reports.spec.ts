@@ -37,6 +37,7 @@ beforeEach(async () => {
   await cleanUpInvoicingDatabase()
   await insertVoucherValueDecisionFixtures([
     voucherValueDecisionsFixture(
+      'e2d75fa4-7359-406b-81b8-1703785ca649',
       fixtures.enduserGuardianFixture.id,
       fixtures.enduserChildFixtureKaarina.id,
       fixtures.daycareFixture.id,
@@ -45,6 +46,7 @@ beforeEach(async () => {
       '2020-12-31'
     ),
     voucherValueDecisionsFixture(
+      'ed462aca-f74e-4384-910f-628823201023',
       fixtures.enduserGuardianFixture.id,
       fixtures.enduserChildFixtureJari.id,
       daycare2Fixture.id,
@@ -82,7 +84,7 @@ describe('Reporting - voucher reports', () => {
     await reports.assertVoucherServiceProviderRow(
       daycareFixture.id,
       '1',
-      '-289,00'
+      '581,00'
     )
 
     const report = await reports.getCsvReport()

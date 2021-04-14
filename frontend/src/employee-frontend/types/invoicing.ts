@@ -295,23 +295,6 @@ export interface VoucherValueDecisionDetailed {
   headOfFamilyIncome: Income | null
   partnerIncome: Income | null
   familySize: number
-  parts: VoucherValueDecisionPartDetailed[]
-  documentKey: string | null
-  approvedAt: Date | null
-  createdAt: Date
-  sentAt: Date | null
-  financeDecisionHandlerName: string | null
-  minThreshold: number
-  feePercent: number
-  totalCoPayment: number
-  totalValue: number
-  incomeEffect: IncomeEffect | 'NOT_AVAILABLE'
-  totalIncome: number | null
-  requiresManualSending: boolean
-  isRetroactive: boolean
-}
-
-export interface VoucherValueDecisionPartDetailed {
   child: PersonDetailed
   placement: PlacementWithHours
   placementUnit: UnitDetailed
@@ -326,6 +309,17 @@ export interface VoucherValueDecisionPartDetailed {
   ageCoefficient: number
   serviceCoefficient: number
   value: number
+  documentKey: string | null
+  approvedAt: Date | null
+  createdAt: Date
+  sentAt: Date | null
+  financeDecisionHandlerName: string | null
+  minThreshold: number
+  feePercent: number
+  incomeEffect: IncomeEffect | 'NOT_AVAILABLE'
+  totalIncome: number | null
+  requiresManualSending: boolean
+  isRetroactive: boolean
 }
 
 export interface VoucherValueDecisionSummary {
@@ -335,10 +329,10 @@ export interface VoucherValueDecisionSummary {
   validTo: LocalDate | null
   decisionNumber: number | null
   headOfFamily: PersonBasic
-  parts: Array<{ child: PersonBasic }>
+  child: PersonBasic
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
-  totalCoPayment: number
-  totalValue: number
+  finalCoPayment: number
+  value: number
 }

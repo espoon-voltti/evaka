@@ -186,10 +186,7 @@ export async function getVoucherValueDecision(
         partnerIncome: json.partnerIncome
           ? deserializeIncome(json.partnerIncome)
           : null,
-        parts: json.parts.map((partJson) => ({
-          ...partJson,
-          child: deserializePersonDetailed(partJson.child)
-        })),
+        child: deserializePersonDetailed(json.child),
         createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
@@ -299,12 +296,10 @@ export async function getVoucherValueDecisions(
         validFrom: LocalDate.parseIso(json.validFrom),
         validTo: LocalDate.parseNullableIso(json.validTo),
         headOfFamily: deserializePersonBasic(json.headOfFamily),
-        parts: json.parts.map((partJson) => ({
-          child: {
-            ...partJson.child,
-            dateOfBirth: LocalDate.parseIso(partJson.child.dateOfBirth)
-          }
-        })),
+        child: {
+          ...json.child,
+          dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
+        },
         createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null

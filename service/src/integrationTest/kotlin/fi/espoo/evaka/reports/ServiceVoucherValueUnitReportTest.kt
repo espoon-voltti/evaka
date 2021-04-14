@@ -6,7 +6,6 @@ import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
-import fi.espoo.evaka.invoicing.createVoucherValueDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -296,21 +295,16 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), zoneId).toInstant()
     ): VoucherValueDecision {
         val decision = db.transaction {
-            val parts = listOf(
-                createVoucherValueDecisionPartFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    unitId = unitId,
-                    value = value,
-                    coPayment = coPayment
-                )
-            )
             val decision = createVoucherValueDecisionFixture(
                 status = VoucherValueDecisionStatus.DRAFT,
                 validFrom = validFrom,
                 validTo = null,
                 headOfFamilyId = testAdult_1.id,
-                parts = parts
+                childId = testChild_1.id,
+                dateOfBirth = testChild_1.dateOfBirth,
+                unitId = unitId,
+                value = value,
+                coPayment = coPayment
             )
             it.handle.upsertValueDecisions(objectMapper, listOf(decision))
 

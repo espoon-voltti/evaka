@@ -4,76 +4,66 @@
 
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { H3, H4 } from 'lib-components/typography'
+import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from '../../utils/money'
-import { formatName } from '../../utils'
 
 type Props = {
   decision: VoucherValueDecisionDetailed
 }
 
 export default React.memo(function VoucherValueDecisionCoPaymentSection({
-  decision
+  decision: {
+    placement,
+    serviceNeedMultiplier,
+    siblingDiscount,
+    coPayment,
+    feeAlterations,
+    finalCoPayment
+  }
 }: Props) {
   const { i18n } = useTranslation()
 
+  const mainDescription = `${
+    i18n.placement.type[placement.type]
+  }, ${i18n.placement.serviceNeed[
+    placement.serviceNeed
+  ].toLowerCase()} (${serviceNeedMultiplier} %)${
+    siblingDiscount
+      ? `, ${i18n.valueDecision.summary.siblingDiscount} ${siblingDiscount}%`
+      : ''
+  }`
+
   return (
     <section>
-      <H3 noMargin>{i18n.valueDecision.summary.parts}</H3>
+      <H3 noMargin>{i18n.valueDecision.summary.coPayment}</H3>
       <Gap size="s" />
-      {decision.parts.map(
-        ({
-          child,
-          placement,
-          coPayment,
-          siblingDiscount,
-          serviceNeedMultiplier,
-          feeAlterations,
-          finalCoPayment
-        }) => {
-          const mainDescription = `${
-            i18n.placement.type[placement.type]
-          }, ${i18n.placement.serviceNeed[
-            placement.serviceNeed
-          ].toLowerCase()} (${serviceNeedMultiplier} %)${
-            siblingDiscount
-              ? `, ${i18n.valueDecision.summary.siblingDiscount} ${siblingDiscount}%`
-              : ''
-          }`
-
-          return (
-            <Part key={child.id}>
-              <H4 noMargin>
-                {formatName(child.firstName, child.lastName, i18n)}
-              </H4>
-              <Gap size="xs" />
-              <PartRow>
-                <span>{mainDescription}</span>
-                <b>{`${formatCents(coPayment) ?? ''} €`}</b>
-              </PartRow>
-              <Gap size="xs" />
-              {feeAlterations.map((feeAlteration, index) => (
-                <Fragment key={index}>
-                  <PartRow>
-                    <span>{`${i18n.feeAlteration[feeAlteration.type]} ${
-                      feeAlteration.amount
-                    }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
-                    <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
-                  </PartRow>
-                  <Gap size="xs" />
-                </Fragment>
-              ))}
-              <PartRow>
-                <b>{i18n.valueDecision.summary.sum}</b>
-                <b>{formatCents(finalCoPayment)} €</b>
-              </PartRow>
-            </Part>
-          )
-        }
-      )}
+      <Part>
+        <PartRow>
+          <span>{mainDescription}</span>
+          <b>{`${formatCents(coPayment) ?? ''} €`}</b>
+        </PartRow>
+        <Gap size="xs" />
+        {feeAlterations.map((feeAlteration, index) => (
+          <Fragment key={index}>
+            <PartRow>
+              <span>{`${i18n.feeAlteration[feeAlteration.type]} ${
+                feeAlteration.amount
+              }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
+              <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
+            </PartRow>
+            <Gap size="xs" />
+          </Fragment>
+        ))}
+        {feeAlterations.length > 0 ? (
+          <PartRow>
+            <b>{i18n.valueDecision.summary.sum}</b>
+            <b>{formatCents(finalCoPayment)} €</b>
+          </PartRow>
+        ) : null}
+      </Part>
     </section>
   )
 })
@@ -87,6 +77,5 @@ const PartRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-left: 5vw;
-  margin-right: 30px;
+  margin: 0 30px;
 `

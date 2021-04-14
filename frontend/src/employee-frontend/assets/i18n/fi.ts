@@ -1430,7 +1430,7 @@ export const fi = {
       rowCount: (count: number) =>
         count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
       head: 'Päämies',
-      children: 'Lapset',
+      child: 'Lapsi',
       validity: 'Arvopäätös voimassa',
       totalValue: 'PS-Arvo',
       totalCoPayment: 'Omavastuu',
@@ -1665,11 +1665,10 @@ export const fi = {
     },
     summary: {
       title: 'Kooste arvopäätöksen perusteista',
-      parts: 'Kooste perheen lasten omavastuuosuuksista',
+      coPayment: 'Omavastuuosuus',
       sum: 'Summa',
       siblingDiscount: 'Sisarusalennus',
-      totalCoPayment: 'Perheen omavastuu yhteensä',
-      totalValue: 'Perheen palvelusetelien arvo yhteensä',
+      totalValue: 'Palvelusetelin arvo omavastuun jälkeen',
       income: {
         title: 'Kooste perheen tuloista',
         effect: {
@@ -1708,7 +1707,7 @@ export const fi = {
         feePercent: 'Maksuprosentti',
         minThreshold: 'Vähimmäisbruttoraja'
       },
-      values: 'Kooste perheen palvelusetelien arvoista',
+      value: 'Palvelusetelin arvo',
       age: {
         LESS_THAN_3: 'Alle 3-vuotias',
         OVER_3: 'Vähintään 3-vuotias'
