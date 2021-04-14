@@ -5,10 +5,11 @@
 package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
+import com.nhaarman.mockito_kotlin.mock
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.PersonService
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
@@ -26,12 +27,14 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
 
     protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
     protected lateinit var dvvModificationsService: DvvModificationsService
+    protected lateinit var requestCustomizerMock: DvvModificationRequestCustomizer
 
-    @BeforeAll
+    @BeforeEach
     protected fun initDvvModificationService() {
         assert(httpPort > 0)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv"
-        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), env, mockDvvBaseUrl)
+        requestCustomizerMock = mock()
+        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), env, mockDvvBaseUrl)
         dvvModificationsService = DvvModificationsService(dvvModificationsServiceClient, personService, fridgeFamilyService)
     }
 

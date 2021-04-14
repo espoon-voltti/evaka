@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
+import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import mu.KotlinLogging
@@ -26,6 +27,7 @@ private val logger = KotlinLogging.logger {}
 class DvvModificationsServiceClient(
     private val objectMapper: ObjectMapper,
     private val fuel: FuelManager,
+    private val customizers: List<DvvModificationRequestCustomizer>,
     private val env: Environment,
     private val serviceUrl: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.url")
 ) {
@@ -42,6 +44,7 @@ class DvvModificationsServiceClient(
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword)
             .header("X-Road-Client", dvvXroadClientId)
+            .apply { customizers.forEach { it.customize(this) } }
             .responseString()
 
         return when (result) {
@@ -75,6 +78,7 @@ class DvvModificationsServiceClient(
                 }
                 """.trimIndent()
             )
+            .apply { customizers.forEach { it.customize(this) } }
             .responseString()
 
         return when (result) {
@@ -98,3 +102,10 @@ data class DvvModificationServiceModificationTokenResponse(
     @JsonProperty("viimeisinKirjausavain")
     var latestModificationToken: Long
 )
+
+/**
+ * Callback interface that can be implemented by beans wishing to customize the HTTP requests.
+ */
+fun interface DvvModificationRequestCustomizer {
+    fun customize(request: Request)
+}
