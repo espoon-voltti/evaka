@@ -17,8 +17,4 @@ if [ "$1" = "up" ]; then
     cp -r "$LOCAL_DIR/dist/bundle/citizen-frontend" "$S3_DIR/citizen"
 fi
 
-if [ "${E2E_KEYCLOAK:-false}" = "true" ]; then
-    docker-compose -f docker-compose.yml -f docker-compose.keycloak.yml -f docker-compose.e2e.yml $@
-else
-    docker-compose -f docker-compose.yml -f docker-compose.e2e.yml $@
-fi
+docker-compose -f docker-compose.yml -f docker-compose.e2e.yml $@

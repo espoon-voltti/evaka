@@ -137,27 +137,6 @@ Access the frontends at
 - <http://localhost:9999/employee> – Frontend for the employee
 - <http://localhost:9999/employee/mobile> – Frontend for the employee mobile
 
-## KeyCloak
-
-### Usage
-
-```bash
-./compose-keycloak up
-```
-
-### Access
-
-KeyCloak at <http://localhost:8080/> with credentials `admin:admin`
-
-Emails at <http://localhost:8025/>
-
-### Configure
-
-KeyCloak Evaka realm is imported from `keycloak/evaka.json`. To make
-modifications to KeyCloak realm, export the realm and replace
-the content of `keycloak/evaka.json`. To reload the realm just delete
-realm from interface and restart the docker-compose.
-
 ## Troubleshooting
 
 ### Database
