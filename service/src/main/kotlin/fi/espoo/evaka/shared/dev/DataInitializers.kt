@@ -132,8 +132,8 @@ fun removeDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId) {
 fun Handle.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
-VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[])
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles, pin)
+VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :pin)
 RETURNING id
 """
 )
@@ -331,8 +331,10 @@ VALUES (:applicationId, :revision, :document, TRUE)
 fun Handle.insertTestChild(child: DevChild) = insertTestDataRow(
     child,
     """
-INSERT INTO child (id, allergies, diet, additionalinfo)
-VALUES (:id, :allergies, :diet, :additionalInfo)
+INSERT INTO child (id, allergies, diet, medication, additionalinfo, preferred_Name)
+VALUES (:id, :allergies, :diet, :medication, :additionalInfo, :preferredName)
+ON CONFLICT(id) DO UPDATE
+SET id = :id, allergies = :allergies, diet = :diet, medication = :medication, additionalInfo = :additionalInfo, preferred_name = :preferredName
 RETURNING id
     """
 )
@@ -830,3 +832,77 @@ WHERE application_id = :applicationId AND revision < :revision
 
     return id
 }
+
+data class DevFamilyContact(
+    val id: UUID,
+    val childId: UUID,
+    val contactPersonId: UUID,
+    val priority: Int
+)
+
+fun Handle.insertFamilyContact(contact: DevFamilyContact) = insertTestDataRow(
+    contact,
+    """
+INSERT INTO family_contact (id, child_id, contact_person_id, priority)
+VALUES (:id, :childId, :contactPersonId, :priority)
+RETURNING id
+"""
+)
+
+fun Handle.deleteFamilyContact(id: UUID) = createUpdate("DELETE FROM family_contact WHERE id = :id").bind("id", id).execute()
+
+data class DevBackupPickup(
+    val id: UUID,
+    val childId: UUID,
+    val name: String,
+    val phone: String
+)
+
+fun Handle.insertBackupPickup(pickup: DevBackupPickup) = insertTestDataRow(
+    pickup,
+    """
+INSERT INTO backup_pickup (id, child_id, name, phone)
+VALUES (:id, :childId, :name, :phone)
+RETURNING id
+"""
+)
+
+fun Handle.deleteBackupPickup(id: UUID) = createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).execute()
+
+data class DevFridgeChild(
+    val id: UUID,
+    val childId: UUID,
+    val headOfChild: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
+
+fun Handle.insertFridgeChild(pickup: DevFridgeChild) = insertTestDataRow(
+    pickup,
+    """
+INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date)
+VALUES (:id, :childId, :headOfChild, :startDate, :endDate)
+RETURNING id
+"""
+)
+
+fun Handle.deleteFridgeChild(id: UUID) = createUpdate("DELETE FROM fridge_child WHERE id = :id").bind("id", id).execute()
+
+data class DevFridgePartner(
+    val partnershipId: UUID,
+    val indx: Int,
+    val personId: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
+
+fun Handle.insertFridgePartner(pickup: DevFridgePartner) = insertTestDataRow(
+    pickup,
+    """
+INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
+VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
+RETURNING partnership_id
+"""
+)
+
+fun Handle.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()

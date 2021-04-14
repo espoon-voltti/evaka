@@ -23,6 +23,13 @@ export interface Unit {
   id: string
   name: string
   groups: Group[]
+  staff: Staff[]
+}
+
+export interface Staff {
+  firstName: string
+  lastName: string
+  id: string
 }
 
 export interface Group {
@@ -83,6 +90,51 @@ interface ArrivalInfoResponse {
 }
 
 export type AttendanceStatus = 'COMING' | 'PRESENT' | 'DEPARTED' | 'ABSENT'
+
+export interface Child {
+  id: string
+  firstName: string
+  lastName: string
+  preferredName: string | null
+  ssn: string | null
+  childAddress: string | null
+  placementType: PlacementType[] | null
+  allergies: string | null
+  diet: string | null
+  medication: string | null
+  contacts: ContactInfo[] | null
+  backupPickups: ContactInfo[] | null
+}
+
+export interface ContactInfo {
+  id: string
+  firstName: string | null
+  lastName: string | null
+  phone: string | null
+  backupPhone: string | null
+  email: string | null
+}
+
+type ChildResultStatus = 'SUCCESS' | 'WRONG_PIN'
+
+export interface ChildResult {
+  status: ChildResultStatus
+  child: Child | null
+}
+
+export async function getChildSensitiveInformation(
+  childId: string,
+  staffId: string,
+  pin: string
+): Promise<Result<ChildResult>> {
+  return client
+    .get<JsonOf<ChildResult>>(
+      `/attendances/child/${childId}?pin=${pin}&staffId=${staffId}`
+    )
+    .then((res) => res.data)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
 
 export async function getDaycareAttendances(
   unitId: string

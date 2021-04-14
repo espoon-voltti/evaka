@@ -60,7 +60,6 @@ class FamilyController(
             )
         return db
             .read { it.fetchFamilyContacts(childId) }
-            .let { addDefaultPriorities(it) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -117,7 +116,7 @@ INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (:chil
         .execute()
 }
 
-private fun Database.Read.fetchFamilyContacts(childId: UUID): List<FamilyContact> {
+fun Database.Read.fetchFamilyContacts(childId: UUID): List<FamilyContact> {
     // language=sql
     val sql =
         """
@@ -191,10 +190,12 @@ FROM contact
 ORDER BY priority ASC, role_order ASC
     """
 
-    return createQuery(sql)
-        .bind("id", childId)
-        .mapTo<FamilyContact>()
-        .toList()
+    return addDefaultPriorities(
+        createQuery(sql)
+            .bind("id", childId)
+            .mapTo<FamilyContact>()
+            .toList()
+    )
 }
 
 private val defaultContacts = setOf(LOCAL_GUARDIAN, REMOTE_GUARDIAN)

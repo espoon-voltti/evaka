@@ -230,7 +230,7 @@ export const enduserChildJariOtherGuardianFixture: ApplicationPersonDetail = {
   firstName: 'Ville',
   lastName: 'Vilkas',
   email: '',
-  phone: '',
+  phone: '555-2580',
   language: 'fi',
   dateOfBirth: '1999-12-31',
   streetAddress: 'Toistie 33',

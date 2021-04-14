@@ -138,3 +138,17 @@ fun Database.Transaction.updatePinCode(
 
     if (updated == 0) throw NotFound("Could not update pin-code for $userId. User not found")
 }
+
+fun Handle.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
+"""
+SELECT EXISTS (
+    SELECT 1
+    FROM employee
+    WHERE id = :employeeId
+    AND pin = :pin
+)
+    """.trimIndent()
+).bind("employeeId", employeeId)
+    .bind("pin", pin)
+    .mapTo<Boolean>()
+    .first()

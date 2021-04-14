@@ -10,6 +10,8 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
+import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -18,8 +20,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.dateNow
 import fi.espoo.evaka.shared.utils.zoneId
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -47,6 +51,8 @@ val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
 val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
 val fiveYearOldFreeLimit: Duration = Duration.ofMinutes(4 * 60 + 15)
 
+private val logger = KotlinLogging.logger {}
+
 @RestController
 @RequestMapping("/attendances")
 class ChildAttendanceController(
@@ -59,6 +65,46 @@ class ChildAttendanceController(
         UserRole.STAFF,
         UserRole.MOBILE
     )
+
+    @GetMapping("/child/{childId}")
+    fun getChildSensitiveInfo(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID,
+        @RequestParam pin: String,
+        @RequestParam staffId: UUID
+    ): ResponseEntity<ChildResult> {
+        Audit.ChildSensitiveInfoRead.log(targetId = childId, objectId = staffId)
+
+        val employeeUser = db.read { it.getEmployeeUser(staffId) }
+        if (employeeUser != null) {
+            try {
+                acl.getRolesForChild(AuthenticatedUser.Employee(employeeUser), childId).requireOneOfRoles(*authorizedRoles)
+            } catch (e: Forbidden) {
+                logger.warn("Unallowed user $staffId tried to access child info for $childId")
+                return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
+            }
+        } else {
+            logger.warn("Unknown user $staffId tried to access child info for $childId")
+            return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
+        }
+
+        val result = db.read {
+            if (it.handle.employeePinIsCorrect(staffId, pin)) {
+                it.getChildSensitiveInfo(childId)?.let {
+                    ChildResult(
+                        status = ChildResultStatus.SUCCESS,
+                        child = it
+                    )
+                } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
+            } else {
+                // TODO: keep track of failed login attempts
+                ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
+            }
+        }
+
+        return ResponseEntity.ok(result)
+    }
 
     @GetMapping("/units/{unitId}")
     fun getAttendances(

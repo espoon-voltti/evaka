@@ -235,7 +235,9 @@ export interface DaycareCaretakers {
 
 export interface Child {
   id: UUID
-  // todo: could add support for allergies etc
+  allergies?: string
+  diet?: string
+  medication?: string
 }
 
 type PlacementType = 'DAYCARE' | 'PRESCHOOL' | 'PRESCHOOL_DAYCARE'
@@ -297,6 +299,7 @@ export interface EmployeeDetail {
   externalId?: string
   email?: string
   roles: UserRole[]
+  pin?: string
 }
 
 export type UserRole =
@@ -550,4 +553,34 @@ export interface DaycareDailyNote {
   reminderNote: string | null
   modifiedAt?: Date | null
   modifiedBy: string | null
+}
+
+export interface FamilyContact {
+  id: string
+  childId: string
+  contactPersonId: string
+  priority: number
+}
+
+export interface BackupPickup {
+  id: string
+  childId: string
+  name: string
+  phone: string
+}
+
+export interface FridgeChild {
+  id: string
+  childId: string
+  headOfChild: string
+  startDate: LocalDate
+  endDate: LocalDate
+}
+
+export interface FridgePartner {
+  partnershipId: string
+  indx: number
+  personId: string
+  startDate: LocalDate
+  endDate: LocalDate
 }

@@ -27,6 +27,17 @@ export const fi = {
       DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus',
       DAYCARE_5YO_PAID: 'Varhaiskasvatus (maksullinen)'
     },
+    placement: {
+      CLUB: 'Kerho',
+      DAYCARE: 'Varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus',
+      PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
+      PREPARATORY: 'Valmistava',
+      PREPARATORY_DAYCARE: 'Valmistava',
+      TEMPORARY_DAYCARE: 'Väliaikainen',
+      TEMPORARY_DAYCARE_PART_DAY: 'Väliaikainen osa-aikainen'
+    },
     code: 'Koodi',
     children: 'Lapset',
     staff: 'Henkilökunta',
@@ -121,7 +132,36 @@ export const fi = {
       noNotes: 'Ei merkintöjä tälle päivälle',
       clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?'
     },
-    absenceTitle: 'Poissaolomerkintä'
+    absenceTitle: 'Poissaolomerkintä',
+    pin: {
+      header: 'Lukituksen avaaminen',
+      info: 'Anna PIN-koodi avataksesi lapsen tiedot',
+      selectStaff: 'Valitse käyttäjä',
+      staff: 'Käyttäjä',
+      noOptions: 'Ei vaihtoehtoja',
+      pinCode: 'PIN-koodi'
+    },
+    childInfo: {
+      header: 'Lapsen tiedot',
+      personalInfoHeader: 'Lapsen henkilötiedot',
+      childName: 'Lapsen nimi',
+      preferredName: 'Kutsumanimi',
+      ssn: 'Hetu',
+      address: 'Lapsen kotiosoite',
+      type: 'Sijoitusmuoto',
+      allergiesHeader: 'Allergiat, ruokavalio, lääkitys',
+      allergies: 'Allergiat',
+      diet: 'Ruokavalio',
+      medication: 'Lääkitys',
+      contactInfoHeader: 'Yhteystiedot',
+      contact: 'Yhteyshenkilö',
+      name: 'Nimi',
+      phone: 'Puhelinnumero',
+      backupPhone: 'Varapuhelinnumero',
+      email: 'Sähköpostiosoite',
+      backupPickup: 'Varahakija',
+      backupPickupName: 'Varahakijan nimi'
+    }
   },
   mobile: {
     landerText1:

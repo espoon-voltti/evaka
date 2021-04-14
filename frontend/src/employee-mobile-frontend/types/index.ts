@@ -28,6 +28,8 @@ export type PlacementType =
   | 'PRESCHOOL_DAYCARE'
   | 'PREPARATORY'
   | 'PREPARATORY_DAYCARE'
+  | 'TEMPORARY_DAYCARE'
+  | 'TEMPORARY_DAYCARE_PART_DAY'
 
 export type AbsenceType =
   | 'OTHER_ABSENCE'

@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.auth
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import fi.espoo.evaka.pis.EmployeeUser
 import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
 
@@ -31,6 +32,7 @@ sealed class AuthenticatedUser : RoleContainer {
 
     data class Employee private constructor(override val id: UUID, val globalRoles: Set<UserRole>, val allScopedRoles: Set<UserRole>) : AuthenticatedUser() {
         constructor(id: UUID, roles: Set<UserRole>) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
+        constructor(employeeUser: EmployeeUser) : this(employeeUser.id, employeeUser.globalRoles, employeeUser.allScopedRoles)
         override val roles: Set<UserRole> = globalRoles + allScopedRoles
         override val isAdmin = roles.contains(UserRole.ADMIN)
     }

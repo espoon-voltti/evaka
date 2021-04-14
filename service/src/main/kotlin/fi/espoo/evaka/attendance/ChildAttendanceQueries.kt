@@ -4,12 +4,17 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.backuppickup.getBackupPickupsForChild
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareGroups
+import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -113,12 +118,25 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
 
     val daycareDailyNotesForGroups = getDaycareDailyNotesForDaycareGroups(unitId)
 
+    val staff = createQuery(
+        """
+        SELECT e.first_name, e.last_name, e.id
+        FROM daycare_acl acl LEFT JOIN employee e ON acl.employee_id = e.id
+        WHERE acl.daycare_id = :id
+        AND acl.role = ANY('{STAFF, UNIT_SUPERVISOR}')
+        """.trimIndent()
+    )
+        .bind("id", unitId)
+        .mapTo<Staff>()
+        .list()
+
     return groups.map { group -> group.copy(dailyNote = daycareDailyNotesForGroups.find { note -> note.groupId == group.id }) }
         .let { grps ->
             UnitInfo(
                 id = unit.id,
                 name = unit.name,
-                groups = grps
+                groups = grps,
+                staff = staff
             )
         }
 }
@@ -338,4 +356,50 @@ fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
         .bind("childId", childId)
         .bind("today", LocalDate.now(zoneId))
         .execute()
+}
+
+fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
+    val person = handle.getPersonById(childId)
+    val placementTypes = handle.getPlacementsForChild(childId).map { it.type }
+    val child = handle.getChild(childId)
+    val backupPickups = getBackupPickupsForChild(childId)
+    val familyContacts = fetchFamilyContacts(childId)
+
+    return if (person != null) {
+        ChildSensitiveInformation(
+            id = person.id,
+            firstName = person.firstName ?: "",
+            lastName = person.lastName ?: "",
+            preferredName = child?.additionalInformation?.preferredName ?: "",
+            ssn = person.identity.toString(),
+            childAddress = person.streetAddress ?: "",
+            placementTypes = placementTypes,
+            allergies = child?.additionalInformation?.allergies ?: "",
+            diet = child?.additionalInformation?.diet ?: "",
+            medication = child?.additionalInformation?.medication ?: "",
+            contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
+                ContactInfo(
+                    id = it.id.toString(),
+                    firstName = it.firstName ?: "",
+                    lastName = it.lastName ?: "",
+                    phone = it.phone ?: "",
+                    backupPhone = it.backupPhone ?: "",
+                    email = it.email ?: "",
+                    priority = it.priority
+                )
+            },
+            backupPickups = backupPickups.map {
+                ContactInfo(
+                    id = it.id.toString(),
+                    firstName = it.name,
+                    lastName = "",
+                    phone = it.phone,
+                    backupPhone = "",
+                    email = "",
+                    priority = 1
+                )
+            }
+        )
+    } else
+        return null
 }

@@ -29,7 +29,11 @@ import {
   SuomiFiMessage,
   UUID,
   VoucherValueDecision,
-  VtjPerson
+  VtjPerson,
+  FamilyContact,
+  BackupPickup,
+  FridgeChild,
+  FridgePartner
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -849,6 +853,78 @@ export async function deleteDaycareDailyNotes(): Promise<void> {
 export async function deleteAbsences(): Promise<void> {
   try {
     await devClient.delete(`/absences`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFamilyContacts(
+  fixture: FamilyContact[]
+): Promise<void> {
+  try {
+    await devClient.post(`/family-contact`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteFamilyContact(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/family-contact/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertBackupPickups(
+  fixture: BackupPickup[]
+): Promise<void> {
+  try {
+    await devClient.post(`/backup-pickup`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteBackupPickup(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/backup-pickup/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFridgeChildren(
+  fixture: FridgeChild[]
+): Promise<void> {
+  try {
+    await devClient.post(`/fridge-child`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteFridgeChild(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/fridge-child/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFridgePartners(
+  fixture: FridgePartner[]
+): Promise<void> {
+  try {
+    await devClient.post(`/fridge-partner`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteFridgePartner(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/fridge-partner/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
