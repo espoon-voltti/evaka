@@ -101,8 +101,8 @@ data class Attachment(
     val id: UUID,
     val name: String,
     val contentType: String,
-    val updated: Instant,
-    val receivedAt: Instant,
+    val updated: OffsetDateTime,
+    val receivedAt: OffsetDateTime,
     val type: AttachmentType
 )
 
