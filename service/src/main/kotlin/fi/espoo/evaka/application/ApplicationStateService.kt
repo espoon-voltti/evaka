@@ -16,7 +16,6 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
-import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -562,7 +561,7 @@ class ApplicationStateService(
                 // due date should not be set at all if attachments are missing
                 if (attachments.isEmpty()) return null
                 // due date is two weeks from application.sentDate or the first attachment, whichever is later
-                val minAttachmentDate = attachments.map { it.receivedAt }.minOrNull()?.toHelsinkiLocalDateTime()?.toLocalDate()
+                val minAttachmentDate = attachments.map { it.receivedAt }.minOrNull()?.let { LocalDate.ofInstant(it, zoneId) }
                 listOfNotNull(minAttachmentDate, sentDate).maxOrNull()?.plusWeeks(2)
             } else {
                 sentDate.plusMonths(4)
