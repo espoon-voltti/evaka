@@ -170,6 +170,7 @@ export interface ApplicationGuardian {
   futureAddress: ApplicationFutureAddress | null
   phoneNumber: string
   email: string
+  noEmail: boolean | null
 }
 
 export interface ApplicationGuardianUpdate {

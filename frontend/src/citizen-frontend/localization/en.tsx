@@ -937,6 +937,8 @@ const en: Translations = {
             </P>
           )
         },
+        emailInfoText:
+          'The email address is used for notifying about new eVaka messages. The current email address has been fetched from the eVaka customer records. In case you modify it, the old email will be updated once the application is sent.',
         childInfoTitle: "Child's information",
         childFirstName: "Child's first name(s)",
         childLastName: "Child's last name",
@@ -951,8 +953,9 @@ const en: Translations = {
         guardianLastName: 'Guardian last name',
         guardianSSN: 'Guardian personal identity code',
         phone: 'Phone number',
-        emailAddress: 'Email',
+        verifyEmail: 'Verify email',
         email: 'Email',
+        noEmail: "I don't have an email address",
         secondGuardianInfoTitle: 'Second guardian information',
         secondGuardianInfo:
           'Second guardian information is automatically fetched from VTJ',
@@ -1184,7 +1187,8 @@ const en: Translations = {
     validDate: 'Valid date format is pp.kk.vvvv',
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Valid time format is hh:mm',
-    unitNotSelected: 'Pick at least one choice'
+    unitNotSelected: 'Pick at least one choice',
+    emailsDoNotMatch: 'The emails do not match'
   }
 }
 

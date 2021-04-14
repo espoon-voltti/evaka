@@ -9,7 +9,7 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { H3, Label } from 'lib-components/typography'
+import { H3, Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../form-validation'
@@ -73,23 +73,79 @@ export default React.memo(function GuardianSubSection({
               required={true}
             />
           </FixedSpaceColumn>
+        </AdaptiveFlex>
+      </FixedSpaceRow>
+      <Gap size={'m'} />
+
+      <FixedSpaceRow spacing={'XL'}>
+        <AdaptiveFlex breakpoint="860px">
           <FixedSpaceColumn spacing={'xs'}>
             <Label htmlFor={'guardian-email'}>
-              {t.applications.editor.contactInfo.emailAddress}
+              {t.applications.editor.contactInfo.email + ' *'}
             </Label>
             <InputField
               id={'guardian-email'}
               value={formData.guardianEmail}
               dataQa={'guardianEmail-input'}
-              onChange={(value) => updateFormData({ guardianEmail: value })}
+              onChange={(value) =>
+                updateFormData({ guardianEmail: value, noGuardianEmail: false })
+              }
               info={errorToInputInfo(errors.guardianEmail, t.validationErrors)}
               hideErrorsBeforeTouched={!verificationRequested}
               placeholder={t.applications.editor.contactInfo.email}
               width={'L'}
+              required={true}
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Checkbox
+              label={t.applications.editor.contactInfo.noEmail + ' *'}
+              checked={formData.noGuardianEmail}
+              dataQa={'noGuardianEmail-input'}
+              onChange={(checked) =>
+                updateFormData({
+                  guardianEmail: '',
+                  guardianEmailVerification: '',
+                  noGuardianEmail: checked
+                })
+              }
             />
           </FixedSpaceColumn>
         </AdaptiveFlex>
       </FixedSpaceRow>
+      <Gap size={'m'} />
+
+      <FixedSpaceRow spacing={'XL'}>
+        <AdaptiveFlex breakpoint="860px">
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label htmlFor={'verify-guardian-email'}>
+              {t.applications.editor.contactInfo.verifyEmail + ' *'}
+            </Label>
+            <InputField
+              id={'verify-guardian-email'}
+              value={formData.guardianEmailVerification}
+              dataQa={'guardianEmailVerification-input'}
+              onChange={(value) =>
+                updateFormData({
+                  guardianEmailVerification: value,
+                  noGuardianEmail: false
+                })
+              }
+              info={errorToInputInfo(
+                errors.guardianEmailVerification,
+                t.validationErrors
+              )}
+              hideErrorsBeforeTouched={!verificationRequested}
+              placeholder={t.applications.editor.contactInfo.verifyEmail}
+              width={'L'}
+              required={true}
+            />
+          </FixedSpaceColumn>
+        </AdaptiveFlex>
+      </FixedSpaceRow>
+      <Gap size={'m'} />
+
+      <P>{t.applications.editor.contactInfo.emailInfoText}</P>
       <Gap size={'m'} />
 
       <ExpandingInfo
