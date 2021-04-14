@@ -7,6 +7,8 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.serviceneednew.NewServiceNeed
+import fi.espoo.evaka.serviceneednew.getServiceNeedsByChild
+import fi.espoo.evaka.serviceneednew.getServiceNeedsByUnit
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -224,6 +226,13 @@ fun Database.Read.getDetailedDaycarePlacements(
             else -> listOf()
         }
 
+    val serviceNeeds =
+        when {
+            daycareId != null -> getServiceNeedsByUnit(daycareId, minDate, maxDate)
+            childId != null -> getServiceNeedsByChild(childId)
+            else -> listOf()
+        }
+
     return daycarePlacements
         .map { daycarePlacement ->
             DaycarePlacementWithDetails(
@@ -235,7 +244,7 @@ fun Database.Read.getDetailedDaycarePlacements(
                 type = daycarePlacement.type,
                 missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
                 groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
-                serviceNeeds = emptyList()
+                serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
             )
         }
         .map(::addMissingGroupPlacements)
