@@ -112,7 +112,7 @@ class ApplicationControllerCitizen(
             val guardian = personService.getUpToDatePerson(tx, user, user.id)
                 ?: throw IllegalStateException("Guardian not found")
 
-            if (getGuardianChildIds(tx.handle, user.id).none { it == body.childId }) {
+            if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
                 throw IllegalStateException("User is not child's guardian")
             }
 

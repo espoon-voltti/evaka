@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.pis.service
 
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import java.util.UUID
 
-fun insertGuardian(h: Handle, guardianId: UUID, childId: UUID) {
+fun Database.Transaction.insertGuardian(guardianId: UUID, childId: UUID) {
     //language=sql
     val sql =
         """
@@ -22,13 +22,13 @@ fun insertGuardian(h: Handle, guardianId: UUID, childId: UUID) {
       ON CONFLICT DO NOTHING
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("guardianId", guardianId)
         .bind("childId", childId)
         .execute()
 }
 
-fun getChildGuardians(h: Handle, childId: UUID): List<UUID> {
+fun Database.Read.getChildGuardians(childId: UUID): List<UUID> {
     //language=sql
     val sql =
         """
@@ -37,13 +37,13 @@ fun getChildGuardians(h: Handle, childId: UUID): List<UUID> {
         where child_id = :childId
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .mapTo(UUID::class.java)
         .list()
 }
 
-fun getGuardianChildIds(h: Handle, guardianId: UUID): List<UUID> {
+fun Database.Read.getGuardianChildIds(guardianId: UUID): List<UUID> {
     //language=sql
     val sql =
         """
@@ -52,13 +52,13 @@ fun getGuardianChildIds(h: Handle, guardianId: UUID): List<UUID> {
         where guardian_id = :guardianId
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("guardianId", guardianId)
         .mapTo(UUID::class.java)
         .list()
 }
 
-fun deleteGuardianChildRelationShips(h: Handle, guardianId: UUID): Int {
+fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: UUID): Int {
     //language=sql
     val sql =
         """
@@ -66,12 +66,12 @@ fun deleteGuardianChildRelationShips(h: Handle, guardianId: UUID): Int {
         WHERE guardian_id = :guardianId
         """.trimIndent()
 
-    return h.createUpdate(sql)
+    return createUpdate(sql)
         .bind("guardianId", guardianId)
         .execute()
 }
 
-fun deleteChildGuardianRelationships(h: Handle, childId: UUID): Int {
+fun Database.Transaction.deleteChildGuardianRelationships(childId: UUID): Int {
     //language=sql
     val sql =
         """
@@ -79,7 +79,7 @@ fun deleteChildGuardianRelationships(h: Handle, childId: UUID): Int {
         WHERE child_id = :childId
         """.trimIndent()
 
-    return h.createUpdate(sql)
+    return createUpdate(sql)
         .bind("childId", childId)
         .execute()
 }

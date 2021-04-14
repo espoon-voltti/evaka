@@ -126,7 +126,7 @@ fun Handle.createEmptyPerson(): PersonDTO {
         .first()
 }
 
-fun Handle.createPersonFromVtj(person: PersonDTO): PersonDTO {
+fun Database.Transaction.createPersonFromVtj(person: PersonDTO): PersonDTO {
     val sql =
         """
         INSERT INTO person (
@@ -162,7 +162,7 @@ fun Handle.createPersonFromVtj(person: PersonDTO): PersonDTO {
             :updatedFromVtj
         )
         RETURNING *
-        """.trimIndent()
+        """
 
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = Instant.now()))
@@ -170,7 +170,7 @@ fun Handle.createPersonFromVtj(person: PersonDTO): PersonDTO {
         .first()
 }
 
-fun Handle.updatePersonFromVtj(person: PersonDTO): PersonDTO {
+fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     // language=SQL
     val sql =
         """
@@ -190,7 +190,7 @@ fun Handle.updatePersonFromVtj(person: PersonDTO): PersonDTO {
             updated_from_vtj = :updatedFromVtj
         WHERE id = :id
         RETURNING *
-        """.trimIndent()
+        """
 
     return createQuery(sql)
         .bindKotlin(person.copy(updatedFromVtj = Instant.now()))

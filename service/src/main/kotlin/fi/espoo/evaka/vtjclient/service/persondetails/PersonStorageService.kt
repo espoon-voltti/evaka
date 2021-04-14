@@ -66,13 +66,13 @@ class PersonStorageService {
     }
 
     private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: UUID, childIds: List<UUID>) {
-        deleteGuardianChildRelationShips(tx.handle, guardianId)
-        childIds.forEach { childId -> insertGuardian(tx.handle, guardianId, childId) }
+        tx.deleteGuardianChildRelationShips(guardianId)
+        childIds.forEach { childId -> tx.insertGuardian(guardianId, childId) }
     }
 
     private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId: UUID, guardianIds: List<UUID>) {
-        deleteChildGuardianRelationships(tx.handle, childId)
-        guardianIds.forEach { guardianId -> insertGuardian(tx.handle, guardianId, childId) }
+        tx.deleteChildGuardianRelationships(childId)
+        guardianIds.forEach { guardianId -> tx.insertGuardian(guardianId, childId) }
     }
 
     private fun createOrUpdateOnePerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): VtjPersonDTO {
@@ -84,10 +84,10 @@ class PersonStorageService {
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
-            map(tx.handle.createPersonFromVtj(newPerson), inputPerson.source)
+            map(tx.createPersonFromVtj(newPerson), inputPerson.source)
         } else {
             val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
-            map(tx.handle.updatePersonFromVtj(updatedPerson), inputPerson.source)
+            map(tx.updatePersonFromVtj(updatedPerson), inputPerson.source)
         }
     }
 

@@ -98,7 +98,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
             startDate = placementStart,
             endDate = placementEnd
         )
-        insertGuardian(tx.handle, guardianId, childId)
+        tx.insertGuardian(guardianId, childId)
     }
 
     @BeforeEach

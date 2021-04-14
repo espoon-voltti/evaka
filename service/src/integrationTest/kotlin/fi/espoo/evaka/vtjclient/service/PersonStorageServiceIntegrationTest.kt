@@ -69,7 +69,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
 
-        val guardianChildren = db.read { getGuardianChildIds(it.handle, createdPerson.id) }
+        val guardianChildren = db.read { it.getGuardianChildIds(createdPerson.id) }
         assertEquals(1, guardianChildren.size)
         assertEquals(createdPerson.children.first().id, guardianChildren.first())
     }
@@ -94,7 +94,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild2.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
 
-        val guardianChildren = db.read { getGuardianChildIds(it.handle, createdPerson.id) }
+        val guardianChildren = db.read { it.getGuardianChildIds(createdPerson.id) }
         assertEquals(1, guardianChildren.size)
         assertEquals(createdPerson.children.first().id, guardianChildren.first())
     }

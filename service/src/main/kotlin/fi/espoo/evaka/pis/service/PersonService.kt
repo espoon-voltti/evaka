@@ -144,7 +144,7 @@ class PersonService(
         return when (child.identity) {
             is ExternalIdentifier.NoID -> emptyList()
             is ExternalIdentifier.SSN -> {
-                val evakaGuardians = getChildGuardians(tx.handle, id).mapNotNull { guardianId -> tx.handle.getPersonById(guardianId) }
+                val evakaGuardians = tx.getChildGuardians(id).mapNotNull { guardianId -> tx.handle.getPersonById(guardianId) }
 
                 if (evakaGuardians.size > 1 && evakaGuardians.all { guardian ->
                     if (guardian.updatedFromVtj != null) guardian.updatedFromVtj.isAfter(Instant.now().minusSeconds(SECONDS_IN_30_DAYS)) else false

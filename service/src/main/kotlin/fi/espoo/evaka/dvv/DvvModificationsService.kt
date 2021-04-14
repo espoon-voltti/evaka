@@ -93,7 +93,7 @@ class DvvModificationsService(
         tx.handle.getPersonBySSN(ssn)?.let {
             val dateOfDeath = deathDvvInfoGroup.kuolinpv?.asLocalDate() ?: LocalDate.now()
             logger.info("Dvv modification for ${it.id}: marking dead since $dateOfDeath")
-            tx.handle.updatePersonFromVtj(it.copy(dateOfDeath = dateOfDeath))
+            tx.updatePersonFromVtj(it.copy(dateOfDeath = dateOfDeath))
         }
     }
 
@@ -104,7 +104,7 @@ class DvvModificationsService(
     ) = db.transaction { tx ->
         tx.handle.getPersonBySSN(ssn)?.let {
             logger.info("Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}")
-            tx.handle.updatePersonFromVtj(
+            tx.updatePersonFromVtj(
                 it.copy(
                     restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
                     restrictedDetailsEndDate = restrictedInfoDvvInfoGroup.turvaLoppuPv?.asLocalDate(),
@@ -134,7 +134,7 @@ class DvvModificationsService(
                     )
                 ) {
                     logger.info("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.muutosattribuutti}")
-                    tx.handle.updatePersonFromVtj(
+                    tx.updatePersonFromVtj(
                         it.copy(
                             streetAddress = addressDvvInfoGroup.katuosoite(),
                             postalCode = addressDvvInfoGroup.postinumero ?: "",
@@ -153,7 +153,7 @@ class DvvModificationsService(
         if (residenceCodeDvvInfoGroup.muutosattribuutti.equals("LISATTY")) {
             tx.handle.getPersonBySSN(ssn)?.let {
                 logger.info("Dvv modification for ${it.id}: residence code change")
-                tx.handle.updatePersonFromVtj(
+                tx.updatePersonFromVtj(
                     it.copy(
                         residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus
                     )
