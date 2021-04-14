@@ -13,19 +13,24 @@ interface Props {
   child: Child | null
 }
 
-const KeyValue = styled.div``
+const KeyValue = styled.div`
+  display: flex;
+  flex-direction: column;
+`
 
 const Divider = styled.div`
   border-bottom: 1px solid #d8d8d8;
 `
 
-const render = (label: string, value: string | null, dataQa: string) => {
+const renderKeyValue = (
+  label: string,
+  value: string | null,
+  dataQa: string
+) => {
   return value ? (
     <KeyValue>
       <Label>{label}</Label>
-      <P fitted data-qa={dataQa}>
-        {value}
-      </P>
+      <span data-qa={dataQa}>{value}</span>
     </KeyValue>
   ) : null
 }
@@ -64,13 +69,13 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                   >{`${child.firstName} ${child.lastName}`}</P>
                 </KeyValue>
 
-                {render(
+                {renderKeyValue(
                   i18n.attendances.childInfo.preferredName,
                   child.preferredName,
                   'child-info-preferred-name'
                 )}
 
-                {render(
+                {renderKeyValue(
                   i18n.attendances.childInfo.address,
                   child.childAddress,
                   'child-info-child-address'
@@ -91,19 +96,19 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
               title={i18n.attendances.childInfo.allergiesHeader}
             >
               <FixedSpaceColumn>
-                {render(
+                {renderKeyValue(
                   i18n.attendances.childInfo.allergies,
                   child.allergies,
                   'child-info-allergies'
                 )}
 
-                {render(
+                {renderKeyValue(
                   i18n.attendances.childInfo.diet,
                   child.diet,
                   'child-info-diet'
                 )}
 
-                {render(
+                {renderKeyValue(
                   i18n.attendances.childInfo.medication,
                   child.medication,
                   'child-info-medication'
@@ -127,19 +132,19 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                       } ${child.contact1.lastName || ''}`}</P>
                     </KeyValue>
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.phone,
                       child.contact1.phone,
                       'child-info-contact1-phone'
                     )}
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.backupPhone,
                       child.contact1.backupPhone,
                       'child-info-contact1-backup-phone'
                     )}
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.email,
                       child.contact1.email,
                       'child-info-contact1-email'
@@ -161,19 +166,19 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                       } ${child.contact2.lastName || ''}`}</P>
                     </KeyValue>
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.phone,
                       child.contact2.phone,
                       'child-info-contact2-phone'
                     )}
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.backupPhone,
                       child.contact2.backupPhone,
                       'child-info-contact2-backup-phone'
                     )}
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.email,
                       child.contact2.email,
                       'child-info-contact2-email'
@@ -190,13 +195,13 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                     {i18n.attendances.childInfo.backupPicker1}
                   </Title>
                   <FixedSpaceColumn>
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.backupPickerName,
                       child.backupPickup1.firstName,
                       'child-info-backup-pickup1-name'
                     )}
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.phone,
                       child.backupPickup1.phone,
                       'child-info-backup-pickup1-phone'
@@ -213,13 +218,13 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                     {i18n.attendances.childInfo.backupPicker2}
                   </Title>
                   <FixedSpaceColumn>
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.backupPickerName,
                       child.backupPickup2.firstName,
                       'child-info-backup-pickup2-name'
                     )}
 
-                    {render(
+                    {renderKeyValue(
                       i18n.attendances.childInfo.phone,
                       child.backupPickup2.phone,
                       'child-info-backup-pickup2-phone'

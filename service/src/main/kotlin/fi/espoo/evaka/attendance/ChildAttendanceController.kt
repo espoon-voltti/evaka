@@ -74,7 +74,7 @@ class ChildAttendanceController(
         @RequestParam pin: String,
         @RequestParam staffId: UUID
     ): ResponseEntity<ChildResult> {
-        Audit.ChildSensitiveInfoRead.log(targetId = staffId)
+        Audit.ChildSensitiveInfoRead.log(targetId = childId, objectId = staffId)
 
         val employeeUser = db.read { it.getEmployeeUser(staffId) }
         if (employeeUser != null) {
