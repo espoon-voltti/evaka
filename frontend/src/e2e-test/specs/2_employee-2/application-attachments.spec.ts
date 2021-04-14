@@ -67,4 +67,8 @@ test('Employee can add and remove attachments', async (t) => {
 
   await applicationEditView.deleteShiftCareFile(testFileName)
   await applicationEditView.assertUploadedShiftCareFile(testFileName, false)
+  await applicationEditView.saveApplication()
+
+  await applicationReadView.openApplicationByLink(applicationFixtureId)
+  await applicationReadView.assertReceivedAtTextExists(testFileName)
 })
