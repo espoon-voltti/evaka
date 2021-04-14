@@ -183,7 +183,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         // when
         assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id)))
         db.transaction { tx ->
-            tx.createUpdate("UPDATE attachment set received_at = :receivedAt")
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
+                .bind("applicationId", applicationId)
                 .bind("receivedAt", Instant.now().minus(Period.ofWeeks(1)))
                 .execute()
         }
@@ -214,12 +215,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         // when
         db.transaction { tx ->
-            tx.createUpdate("UPDATE attachment set received_at = :receivedAt WHERE type = :type")
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
                 .bind("type", AttachmentType.EXTENDED_CARE)
+                .bind("applicationId", applicationId)
                 .bind("receivedAt", Instant.now().plus(Period.ofWeeks(1)))
                 .execute()
-            tx.createUpdate("UPDATE attachment set received_at = :receivedAt WHERE type = :type")
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
                 .bind("type", AttachmentType.URGENCY)
+                .bind("applicationId", applicationId)
                 .bind("receivedAt", Instant.now().plus(Period.ofDays(3)))
                 .execute()
         }
