@@ -161,10 +161,8 @@ export default class ApplicationEditView {
   ) {
     await t
       .expect(
-        selector
-          .find('[data-qa="file-download-button"]')
-          .with({ timeout: 50 })
-          .withText(fileName).visible
+        selector.find('[data-qa="file-download-button"]').withText(fileName)
+          .visible
       )
       .eql(visible)
   }
