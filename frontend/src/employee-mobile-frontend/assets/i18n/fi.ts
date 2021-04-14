@@ -154,15 +154,13 @@ export const fi = {
       diet: 'Ruokavalio',
       medication: 'Lääkitys',
       contactInfoHeader: 'Yhteystiedot',
-      contact1: 'Yhteyshenkilö 1',
+      contact: 'Yhteyshenkilö',
       name: 'Nimi',
       phone: 'Puhelinnumero',
       backupPhone: 'Varapuhelinnumero',
       email: 'Sähköpostiosoite',
-      contact2: 'Yhteyshenkilö 2',
-      backupPicker1: 'Varahakija 1',
-      backupPickerName: 'Varahakijan nimi',
-      backupPicker2: 'Varahakija 2'
+      backupPickup: 'Varahakija',
+      backupPickupName: 'Varahakijan nimi'
     }
   },
   mobile: {

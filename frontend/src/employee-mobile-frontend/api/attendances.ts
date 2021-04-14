@@ -102,13 +102,12 @@ export interface Child {
   allergies: string | null
   diet: string | null
   medication: string | null
-  contact1: ContactInfo | null
-  contact2: ContactInfo | null
-  backupPickup1: ContactInfo | null
-  backupPickup2: ContactInfo | null
+  contacts: ContactInfo[] | null
+  backupPickups: ContactInfo[] | null
 }
 
 export interface ContactInfo {
+  id: string
   firstName: string | null
   lastName: string | null
   phone: string | null

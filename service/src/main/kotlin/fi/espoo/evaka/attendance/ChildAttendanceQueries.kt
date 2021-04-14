@@ -377,40 +377,26 @@ fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformatio
             allergies = child?.additionalInformation?.allergies ?: "",
             diet = child?.additionalInformation?.diet ?: "",
             medication = child?.additionalInformation?.medication ?: "",
-            contact1 = familyContacts.getOrNull(0)?.let {
+            contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
                 ContactInfo(
+                    id = it.id.toString(),
                     firstName = it.firstName ?: "",
                     lastName = it.lastName ?: "",
                     phone = it.phone ?: "",
                     backupPhone = it.backupPhone ?: "",
-                    email = it.email ?: ""
+                    email = it.email ?: "",
+                    priority = it.priority
                 )
             },
-            contact2 = familyContacts.getOrNull(1)?.let {
+            backupPickups = backupPickups.map {
                 ContactInfo(
-                    firstName = it.firstName ?: "",
-                    lastName = it.lastName ?: "",
-                    phone = it.phone ?: "",
-                    backupPhone = it.backupPhone ?: "",
-                    email = it.email ?: ""
-                )
-            },
-            backupPickup1 = backupPickups.getOrNull(0)?.let {
-                ContactInfo(
+                    id = it.id.toString(),
                     firstName = it.name,
                     lastName = "",
                     phone = it.phone,
                     backupPhone = "",
-                    email = ""
-                )
-            },
-            backupPickup2 = backupPickups.getOrNull(1)?.let {
-                ContactInfo(
-                    firstName = it.name,
-                    lastName = "",
-                    phone = it.phone,
-                    backupPhone = "",
-                    email = ""
+                    email = "",
+                    priority = 1
                 )
             }
         )

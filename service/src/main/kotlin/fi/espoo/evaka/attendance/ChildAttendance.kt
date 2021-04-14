@@ -32,18 +32,18 @@ data class ChildSensitiveInformation(
     val allergies: String,
     val diet: String,
     val medication: String,
-    val contact1: ContactInfo?,
-    val contact2: ContactInfo?,
-    val backupPickup1: ContactInfo?,
-    val backupPickup2: ContactInfo?
+    val contacts: List<ContactInfo>,
+    val backupPickups: List<ContactInfo>
 )
 
 data class ContactInfo(
+    val id: String,
     val firstName: String,
     val lastName: String,
     val phone: String,
     val backupPhone: String,
     val email: String,
+    val priority: Int?
 )
 
 data class AttendanceResponse(
