@@ -23,7 +23,6 @@ import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
-import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -45,8 +44,7 @@ class PersonService(
                     IPersonDetailsService.DetailsQuery(user, person.identity)
                 )
             if (personDetails is PersonDetails.Result) {
-                val personResult = PersonResult.Result(personDetails.vtjPerson.mapToDto())
-                personStorageService.upsertVtjPerson(tx, personResult)
+                personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
                 tx.handle.getPersonById(id)
             } else {
                 hideNonDisclosureInfo(person)
@@ -89,21 +87,9 @@ class PersonService(
 
         return when (guardian.identity) {
             is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
-            is ExternalIdentifier.SSN ->
-                getPersonWithDependants(user, guardian.identity)
-                    ?.let {
-                        personStorageService.upsertVtjGuardianAndChildren(
-                            tx,
-                            PersonResult.Result(it)
-                        )
-                    }
-                    ?.let {
-                        when (it) {
-                            is PersonResult.Error -> throw IllegalStateException(it.msg)
-                            is PersonResult.NotFound -> null
-                            is PersonResult.Result -> toPersonWithChildrenDTO(it.vtjPersonDTO)
-                        }
-                    }
+            is ExternalIdentifier.SSN -> getPersonWithDependants(user, guardian.identity)
+                ?.let { personStorageService.upsertVtjGuardianAndChildren(tx, it) }
+                ?.let { toPersonWithChildrenDTO(it) }
         }
     }
 
@@ -122,16 +108,10 @@ class PersonService(
 
         return when (child.identity) {
             is ExternalIdentifier.NoID -> emptyList()
-            is ExternalIdentifier.SSN ->
-                getPersonWithGuardians(user, child.identity)
-                    ?.let { personStorageService.upsertVtjChildAndGuardians(tx, PersonResult.Result(it)) }
-                    ?.let {
-                        when (it) {
-                            is PersonResult.Error -> throw IllegalStateException(it.msg)
-                            is PersonResult.NotFound -> emptyList()
-                            is PersonResult.Result -> it.vtjPersonDTO.guardians.map(::toPersonDTO)
-                        }
-                    } ?: emptyList()
+            is ExternalIdentifier.SSN -> getPersonWithGuardians(user, child.identity)
+                ?.let { personStorageService.upsertVtjChildAndGuardians(tx, it) }
+                ?.let { it.guardians.map(::toPersonDTO) }
+                ?: emptyList()
         }
     }
 
@@ -153,14 +133,9 @@ class PersonService(
                     evakaGuardians
                 else
                     getPersonWithGuardians(user, child.identity)
-                        ?.let { personStorageService.upsertVtjChildAndGuardians(tx, PersonResult.Result(it)) }
-                        ?.let {
-                            when (it) {
-                                is PersonResult.Error -> throw IllegalStateException(it.msg)
-                                is PersonResult.NotFound -> emptyList()
-                                is PersonResult.Result -> it.vtjPersonDTO.guardians.map(::toPersonDTO)
-                            }
-                        } ?: emptyList()
+                        ?.let { personStorageService.upsertVtjChildAndGuardians(tx, it) }
+                        ?.let { it.guardians.map(::toPersonDTO) }
+                        ?: emptyList()
             }
         }
     }
@@ -178,8 +153,7 @@ class PersonService(
                 IPersonDetailsService.DetailsQuery(user, ssn)
             )
             if (personDetails is PersonDetails.Result) {
-                val personResult = PersonResult.Result(personDetails.vtjPerson.mapToDto())
-                personStorageService.upsertVtjPerson(tx, personResult)
+                personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
                 tx.handle.getPersonBySSN(ssn.ssn)
             } else {
                 hideNonDisclosureInfo(person)

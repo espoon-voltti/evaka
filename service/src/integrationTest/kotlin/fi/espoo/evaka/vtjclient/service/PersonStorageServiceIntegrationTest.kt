@@ -13,9 +13,7 @@ import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
-import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -36,9 +34,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     @Test
     fun `upsert new person with no children creates new person`() {
         val testGuardian = generatePerson(ssn = "130535-531K")
-        val personResult = db.transaction { service.upsertVtjPerson(it, PersonResult.Result(testGuardian)) }
-        assertTrue(personResult is PersonResult.Result)
-        val createdPerson = (personResult as PersonResult.Result).vtjPersonDTO
+        val createdPerson = db.transaction { service.upsertVtjPerson(it, testGuardian) }
         assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
         assertEquals(0, createdPerson.children.size)
     }
@@ -46,13 +42,10 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     @Test
     fun `upsert existing person with no children updates person`() {
         val testGuardian = generatePerson(ssn = "130535-531K")
-        val modifiedPersonResult = db.transaction {
-            service.upsertVtjPerson(it, PersonResult.Result(testGuardian))
-            service.upsertVtjPerson(it, PersonResult.Result(testGuardian.copy(streetAddress = "Modified")))
+        val modifiedPerson = db.transaction {
+            service.upsertVtjPerson(it, testGuardian)
+            service.upsertVtjPerson(it, testGuardian.copy(streetAddress = "Modified"))
         }
-
-        assertTrue(modifiedPersonResult is PersonResult.Result)
-        val modifiedPerson = (modifiedPersonResult as PersonResult.Result).vtjPersonDTO
         assertEquals("Modified", modifiedPerson.streetAddress)
     }
 
@@ -61,10 +54,8 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         val testChild = generatePerson("020319A123K")
         val testGuardian = generatePerson(ssn = "130535-531K", children = mutableListOf(testChild))
 
-        val personResult =
-            db.transaction { service.upsertVtjGuardianAndChildren(it, PersonResult.Result(testGuardian)) }
-        assertTrue(personResult is PersonResult.Result)
-        val createdPerson = (personResult as PersonResult.Result).vtjPersonDTO
+        val createdPerson =
+            db.transaction { service.upsertVtjGuardianAndChildren(it, testGuardian) }
         assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
@@ -78,18 +69,16 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     fun `upsert person with children updates guardian relationships`() {
         val testGuardian = generatePerson(ssn = "130535-531K", children = mutableListOf(generatePerson("020319A123K")))
 
-        db.transaction { service.upsertVtjGuardianAndChildren(it, PersonResult.Result(testGuardian)) }
+        db.transaction { service.upsertVtjGuardianAndChildren(it, testGuardian) }
 
         val testChild2 = generatePerson("241220A321N")
-        val personResult = db.transaction {
+        val createdPerson = db.transaction {
             service.upsertVtjGuardianAndChildren(
                 it,
-                PersonResult.Result(testGuardian.copy(children = mutableListOf(testChild2)))
+                testGuardian.copy(children = mutableListOf(testChild2))
             )
         }
 
-        assertTrue(personResult is PersonResult.Result)
-        val createdPerson = (personResult as PersonResult.Result).vtjPersonDTO
         assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild2.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
