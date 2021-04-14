@@ -10,8 +10,8 @@ import {
   voucherValueDecisionsFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import {
-  cleanUpInvoicingDatabase,
-  insertVoucherValueDecisionFixtures
+  insertVoucherValueDecisionFixtures,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
@@ -28,13 +28,12 @@ let fixtures: AreaAndPersonFixtures
 
 let page: Page
 let reports: ReportsPage
-beforeAll(async () => {
+beforeEach(async () => {
+  await resetDatabase()
   ;[fixtures] = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-})
-beforeEach(async () => {
-  await cleanUpInvoicingDatabase()
+
   await insertVoucherValueDecisionFixtures([
     voucherValueDecisionsFixture(
       'e2d75fa4-7359-406b-81b8-1703785ca649',
@@ -66,10 +65,6 @@ beforeEach(async () => {
 })
 afterEach(async () => {
   await page.close()
-})
-afterAll(async () => {
-  await cleanUpInvoicingDatabase()
-  await Fixture.cleanup()
 })
 
 describe('Reporting - voucher reports', () => {
