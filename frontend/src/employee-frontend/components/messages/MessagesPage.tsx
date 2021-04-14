@@ -196,7 +196,7 @@ export default React.memo(function MessagesPage() {
           selectUnit={selectUnit}
         />
 
-        {selectedUnit && (
+        {selectedUnit && receiverSelection && (
           <>
             <MessageBoxes
               activeMessageBox={activeMessageBox}
@@ -206,9 +206,10 @@ export default React.memo(function MessagesPage() {
                 setReceiverSelectionShown(false)
               }}
               messageCounts={messageCounts}
-              onCreateNew={() =>
+              onCreateNew={() => {
+                setReceiverSelection(deselectAll(receiverSelection))
                 onCreateNew(selectedUnit.name, [{ unitId: selectedUnit.id }])
-              }
+              }}
               createNewDisabled={!selectUnit || groups?.isSuccess !== true}
               showReceiverSelection={() => {
                 setReceiverSelectionShown(true)
@@ -222,6 +223,7 @@ export default React.memo(function MessagesPage() {
               receiversResult.isSuccess && (
                 <ReceiverSelection
                   unitId={selectedUnit.id}
+                  unitName={selectedUnit.name}
                   onCreateNew={() =>
                     onCreateNew(selectedUnit.name, receiverTriplets)
                   }
@@ -260,6 +262,7 @@ export default React.memo(function MessagesPage() {
             ) : (
               <MessageList
                 bulletins={bulletins}
+                unitName={selectedUnit.name}
                 nextPage={nextPage}
                 loadNextPage={loadNextPage}
                 messageBoxType={activeMessageBox}

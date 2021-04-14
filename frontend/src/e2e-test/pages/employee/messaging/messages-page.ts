@@ -16,6 +16,8 @@ export default class MessagesPage {
     await t.click(Selector('[data-qa="select-sender"]'))
     await t.typeText(Selector('[data-qa="select-sender"]'), sender)
     await t.pressKey('enter')
+    await t.click(Selector('[data-qa="select-receiver"]'))
+    await t.pressKey('enter')
     await t.click(Selector('[data-qa="send-bulletin-btn"]'))
   }
 }

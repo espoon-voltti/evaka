@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { UUID } from 'employee-frontend/types'
 import styled from 'styled-components'
-import { H1 } from 'lib-components/typography'
+import { H1, H2 } from 'lib-components/typography'
 import { Table, Tr, Th, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import { defaultMargins } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -15,6 +15,7 @@ import { SelectorChange } from 'employee-frontend/components/messages/receiver-s
 
 interface Props {
   unitId: UUID
+  unitName: string
   onCreateNew: () => void
   receivers: ReceiverGroup[]
   isSelected: (id: UUID) => boolean
@@ -23,6 +24,7 @@ interface Props {
 
 export default React.memo(function ReceiverSelection({
   unitId,
+  unitName,
   onCreateNew,
   isSelected,
   updateSelection,
@@ -53,7 +55,8 @@ export default React.memo(function ReceiverSelection({
 
   return (
     <Container>
-      <H1>{i18n.messages.receiverSelection.title}</H1>
+      <H1 noMargin>{i18n.messages.receiverSelection.title}</H1>
+      <H2>{unitName}</H2>
       <Table>
         <Thead>
           <Tr>

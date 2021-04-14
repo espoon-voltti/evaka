@@ -97,6 +97,7 @@ export default React.memo(function MessageEditor({
             noOptionsMessage={i18n.common.noResults}
             getOptionId={({ value }) => value}
             getOptionLabel={({ label }) => label}
+            data-qa="select-receiver"
           />
         </div>
         <Gap size={'xs'} />

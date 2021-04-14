@@ -2280,7 +2280,7 @@ export const fi = {
         DRAFT: 'Luonnokset'
       },
       receivers: 'Vastaanottajat',
-      newBulletin: 'Uusi tiedote'
+      newBulletin: 'Uusi viesti'
     },
     messageList: {
       titles: {
@@ -2296,7 +2296,7 @@ export const fi = {
       confirmText: 'Lähetä viesti valituille'
     },
     messageEditor: {
-      newBulletin: 'Uusi tiedote',
+      newBulletin: 'Uusi viesti',
       to: {
         label: 'Vastaanottaja',
         placeholder: 'Valitse ryhmä',
