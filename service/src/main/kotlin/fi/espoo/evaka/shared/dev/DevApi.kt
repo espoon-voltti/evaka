@@ -113,7 +113,12 @@ class DevApi(
 
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database): ResponseEntity<Unit> {
-        db.transaction { it.handle.resetDatabase() }
+        db.transaction {
+            it.handle.resetDatabase()
+
+            // Preschool terms are not inserted by fixtures
+            it.handle.runDevScript("preschool-terms.sql")
+        }
         return ResponseEntity.noContent().build()
     }
 
