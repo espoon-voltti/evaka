@@ -19,6 +19,8 @@ import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
@@ -67,10 +69,8 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
                     migrate()
                 }
             Jdbi.create(it).handle { h ->
-                val initDbSql =
-                    SharedIntegrationTestConfig::class.java.getResource("/evaka-integration-test/init_db.sql")
-                        .readText()
-                h.execute(initDbSql)
+                h.runDevScript("reset-database.sql")
+                h.resetDatabase()
             }
         }
     ).also {
