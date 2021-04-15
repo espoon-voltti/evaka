@@ -749,6 +749,13 @@ export const fi = {
       warning: {
         overlap: 'Ajalle on jo sijoitus',
         ghostUnit: 'Yksikkö on merkitty haamuyksiköksi.'
+      },
+      serviceNeeds: {
+        title: 'Sijoituksen palveluntarpeet (alpha-testaus)',
+        noServiceNeeds: 'Ei palveluntarpeita',
+        period: 'Aikaväli',
+        description: 'Kuvaus',
+        shiftCare: 'Vuorohoito'
       }
     },
     fridgeParents: {

@@ -93,6 +93,20 @@ export interface AdditionalInformation {
   medication: string
 }
 
+interface ServiceNeedOptionSummary {
+  id: UUID
+  name: string
+}
+
+export interface NewServiceNeed {
+  id: UUID
+  placementId: UUID
+  startDate: LocalDate
+  endDate: LocalDate
+  option: ServiceNeedOptionSummary
+  shiftCare: boolean
+}
+
 export interface Placement {
   id: UUID
   startDate: LocalDate
@@ -104,6 +118,7 @@ export interface Placement {
     area: string
   }
   missingServiceNeedDays: number
+  serviceNeeds: NewServiceNeed[]
   isRestrictedFromUser: boolean
 }
 

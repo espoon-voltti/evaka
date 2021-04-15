@@ -21,10 +21,10 @@ import fi.espoo.evaka.occupancy.OccupancyResponse
 import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriods
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
-import fi.espoo.evaka.placement.DaycarePlacementWithGroups
+import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
-import fi.espoo.evaka.placement.getDaycarePlacements
+import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -66,7 +66,7 @@ class UnitsView(private val acl: AccessControlList) {
         val period = FiniteDateRange(from, to)
         val unitData = db.read {
             val groups = it.handle.getDaycareGroups(unitId, from, to)
-            val placements = it.getDaycarePlacements(unitId, null, from, to).toList()
+            val placements = it.getDetailedDaycarePlacements(unitId, null, from, to).toList()
             val backupCares = it.handle.getBackupCaresForDaycare(unitId, period)
             val missingGroupPlacements = it.handle.getMissingGroupPlacements(unitId)
             val caretakers = Caretakers(
@@ -106,7 +106,7 @@ class UnitsView(private val acl: AccessControlList) {
 
 data class UnitDataResponse(
     val groups: List<DaycareGroup>,
-    val placements: List<DaycarePlacementWithGroups>,
+    val placements: List<DaycarePlacementWithDetails>,
     val backupCares: List<UnitBackupCare>,
     val missingGroupPlacements: List<MissingGroupPlacement>,
     val caretakers: Caretakers,

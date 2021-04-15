@@ -50,7 +50,12 @@ export async function getPlacements(
       data.map((p) => ({
         ...p,
         startDate: LocalDate.parseIso(p.startDate),
-        endDate: LocalDate.parseIso(p.endDate)
+        endDate: LocalDate.parseIso(p.endDate),
+        serviceNeeds: p.serviceNeeds.map((sn) => ({
+          ...sn,
+          startDate: LocalDate.parseIso(sn.startDate),
+          endDate: LocalDate.parseIso(sn.endDate)
+        }))
       }))
     )
     .then((v) => Success.of(v))

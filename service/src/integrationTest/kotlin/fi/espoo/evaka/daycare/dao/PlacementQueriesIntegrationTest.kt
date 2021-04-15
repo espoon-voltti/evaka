@@ -41,7 +41,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `get daycare placements returns correct data`() = jdbi.handle { h ->
+    fun `get daycare placements returns correct data`() = db.read { h ->
         val placements = h.getDaycarePlacements(daycareId, null, null, null)
         assertThat(placements).hasSize(1)
         val placement = placements.first()
@@ -58,7 +58,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #01`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #01`() = db.read { h ->
         val fromDate = null
         val toDate = null
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -71,7 +71,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #02`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #02`() = db.read { h ->
         val fromDate = null
         val toDate = placementStart.minusDays(100)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -84,7 +84,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #03`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #03`() = db.read { h ->
         val fromDate = null
         val toDate = placementStart.plusDays(100)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -97,7 +97,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #04`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #04`() = db.read { h ->
         val fromDate = null
         val toDate = placementEnd.plusDays(100)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -110,7 +110,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #05`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #05`() = db.read { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = null
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -123,7 +123,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #06`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #06`() = db.read { h ->
         val fromDate = placementStart.plusDays(100)
         val toDate = null
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -136,7 +136,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #07`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #07`() = db.read { h ->
         val fromDate = placementEnd.plusDays(100)
         val toDate = null
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -149,7 +149,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #08`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #08`() = db.read { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementStart.minusDays(1)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -162,7 +162,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #09`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #09`() = db.read { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementStart.plusDays(100)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -175,7 +175,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #09b`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #09b`() = db.read { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementStart
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -188,7 +188,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #10`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #10`() = db.read { h ->
         val fromDate = placementStart.plusDays(100)
         val toDate = placementEnd.plusDays(100)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -201,7 +201,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #11`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #11`() = db.read { h ->
         val fromDate = placementEnd
         val toDate = placementEnd.plusDays(150)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -214,7 +214,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #12`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #12`() = db.read { h ->
         val fromDate = placementEnd.plusDays(1)
         val toDate = placementEnd.plusDays(150)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
@@ -227,7 +227,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #13`() = jdbi.handle { h ->
+    fun `get daycare placements overlap test #13`() = db.read { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementEnd.plusDays(100)
         val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)

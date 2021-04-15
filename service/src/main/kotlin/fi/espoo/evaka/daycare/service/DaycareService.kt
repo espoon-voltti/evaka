@@ -48,7 +48,7 @@ class DaycareService {
     }
 
     fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {
-        val isEmpty = tx.handle.getDaycareGroupPlacements(
+        val isEmpty = tx.getDaycareGroupPlacements(
             daycareId = daycareId,
             groupId = groupId,
             startDate = null,

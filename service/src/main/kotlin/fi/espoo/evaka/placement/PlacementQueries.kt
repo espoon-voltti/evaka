@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
@@ -219,7 +220,7 @@ fun Handle.clearGroupPlacementsBefore(placementId: UUID, date: LocalDate) {
         .execute()
 }
 
-fun Handle.getDaycarePlacements(
+fun Database.Read.getDaycarePlacements(
     daycareId: UUID?,
     childId: UUID?,
     startDate: LocalDate?,
@@ -344,7 +345,7 @@ fun Handle.getIdenticalPostcedingGroupPlacement(
         .firstOrNull()
 }
 
-fun Handle.getDaycareGroupPlacements(
+fun Database.Read.getDaycareGroupPlacements(
     daycareId: UUID,
     startDate: LocalDate?,
     endDate: LocalDate?,
@@ -369,6 +370,24 @@ fun Handle.getDaycareGroupPlacements(
         .bind("startDate", startDate ?: PGConstants.minDate)
         .bind("endDate", endDate ?: PGConstants.maxDate)
         .bindNullable("groupId", groupId)
+        .mapTo<DaycareGroupPlacement>()
+        .toList()
+}
+
+fun Database.Read.getChildGroupPlacements(
+    childId: UUID
+): List<DaycareGroupPlacement> {
+    // language=SQL
+    val sql =
+        """
+        SELECT dgp.id, dgp.daycare_group_id AS group_id, dgp.daycare_placement_id, dgp.start_date, dgp.end_date
+        FROM daycare_group_placement dgp
+        JOIN placement pl ON pl.id = dgp.daycare_placement_id
+        WHERE pl.child_id = :childId
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
         .mapTo<DaycareGroupPlacement>()
         .toList()
 }
