@@ -26,7 +26,7 @@ import Title from '../../../../lib-components/atoms/Title'
 import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from '../../../../lib-components/white-space'
 import colors from '../../../../lib-components/colors'
-import { faArrowLeft, faArrowRight } from '../../../../lib-icons'
+import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 
 export default React.memo(function PinLogin() {
@@ -76,15 +76,27 @@ export default React.memo(function PinLogin() {
           paddingHorizontal={'zero'}
           paddingVertical={'zero'}
         >
-          <BackButton
-            onClick={() => history.goBack()}
-            icon={faArrowLeft}
-            text={
-              childBasicInfo
-                ? `${childBasicInfo.firstName} ${childBasicInfo.lastName}`
-                : i18n.common.back
-            }
-          />
+          <TopBarContainer>
+            <BackButton
+              onClick={() => history.goBack()}
+              icon={faArrowLeft}
+              text={
+                childBasicInfo
+                  ? `${childBasicInfo.firstName} ${childBasicInfo.lastName}`
+                  : i18n.common.back
+              }
+            />
+            <LogoutButtonWrapper>
+              <IconButton
+                size={'L'}
+                icon={faUserUnlock}
+                onClick={() => {
+                  setSelectedPin('')
+                  history.goBack()
+                }}
+              />
+            </LogoutButtonWrapper>
+          </TopBarContainer>
           {childResult &&
           childResult.isSuccess &&
           childResult.value.status === 'SUCCESS' ? (
@@ -150,9 +162,22 @@ export default React.memo(function PinLogin() {
   )
 })
 
+const TopBarContainer = styled.div`
+  display: grid;
+  grid-template-columns: auto 50px;
+`
+
 const BackButton = styled(InlineButton)`
   color: ${colors.blues.dark};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
   margin-bottom: ${defaultMargins.s};
+`
+
+const LogoutButtonWrapper = styled.div`
+  width: 40px;
+  margin-left: auto;
+  margin-right: 40px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 `
