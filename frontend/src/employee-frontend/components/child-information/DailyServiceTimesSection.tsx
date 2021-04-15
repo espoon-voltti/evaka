@@ -24,18 +24,18 @@ import {
   getChildDailyServiceTimes,
   putChildDailyServiceTimes
 } from '../../api/child/daily-service-times'
-import { faClock, faPen } from '../../../lib-icons'
+import { faClock, faPen } from 'lib-icons'
 import styled from 'styled-components'
-import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Button from '../../../lib-components/atoms/buttons/Button'
+import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import Radio from '../../../lib-components/atoms/form/Radio'
-import InputField from '../../../lib-components/atoms/form/InputField'
-import Checkbox from '../../../lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import InputField from 'lib-components/atoms/form/InputField'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
@@ -82,6 +82,7 @@ const emptyForm: FormData = {
 
 interface ValidationResult {
   regular: NullableValues<TimeInputRange>
+  irregular: true | null
   monday: NullableValues<TimeInputRange>
   tuesday: NullableValues<TimeInputRange>
   wednesday: NullableValues<TimeInputRange>
@@ -195,6 +196,11 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
           end:
             formData.type === 'REGULAR' ? required(formData.regular.end) : null
         },
+        irregular:
+          formData.type === 'IRREGULAR' &&
+          !weekdays.some((day) => formData[day].selected)
+            ? true
+            : null,
         monday: validateWeekday(formData, 'monday'),
         tuesday: validateWeekday(formData, 'tuesday'),
         wednesday: validateWeekday(formData, 'wednesday'),
@@ -283,6 +289,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
 
   const formIsValid =
     validationResult !== null &&
+    validationResult.irregular === null &&
     Object.values(validationResult.regular).find((v) => v !== null) ===
       undefined &&
     Object.values(validationResult.monday).find((v) => v !== null) ===
