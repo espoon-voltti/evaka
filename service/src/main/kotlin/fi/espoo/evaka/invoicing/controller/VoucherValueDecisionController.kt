@@ -29,8 +29,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.shared.utils.parseEnum
-import fi.espoo.evaka.shared.utils.zoneId
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -112,7 +112,7 @@ class VoucherValueDecisionController(
                 objectMapper = objectMapper,
                 asyncJobRunner = asyncJobRunner,
                 user = user,
-                now = ZonedDateTime.now(zoneId).toInstant(),
+                now = ZonedDateTime.now(europeHelsinki).toInstant(),
                 ids = decisionIds
             )
         }

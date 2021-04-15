@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -125,7 +125,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_CHALLENGE,
             challengeKey = "foo",
             responseKey = null,
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingChallengeAssertOk(pairing.challengeKey)
@@ -144,7 +144,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_CHALLENGE,
             challengeKey = "foo",
             responseKey = null,
-            expires = ZonedDateTime.now(zoneId).minusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).minusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingChallengeAssertFail(pairing.challengeKey, 404)
@@ -158,7 +158,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingChallengeAssertFail(pairing.challengeKey, 404)
@@ -172,7 +172,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingResponseAssertOk(pairing.id, pairing.challengeKey, pairing.responseKey!!)
@@ -186,7 +186,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingResponseAssertFail(UUID.randomUUID(), pairing.challengeKey, pairing.responseKey!!, 404)
@@ -200,7 +200,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingResponseAssertFail(pairing.id, "wrong", pairing.responseKey!!, 404)
@@ -214,7 +214,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingResponseAssertFail(pairing.id, pairing.challengeKey, "wrong", 404)
@@ -228,7 +228,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingResponseAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -242,7 +242,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant()
         )
         givenPairing(pairing, attempts = 101)
         postPairingResponseAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -256,7 +256,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).minusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(europeHelsinki).minusMinutes(1).toInstant()
         )
         givenPairing(pairing)
         postPairingResponseAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -270,7 +270,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
@@ -285,7 +285,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
@@ -300,7 +300,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
@@ -315,7 +315,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
@@ -330,7 +330,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.PAIRED,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
@@ -345,7 +345,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).plusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing, attempts = 101)
@@ -360,7 +360,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).minusMinutes(1).toInstant(),
+            expires = ZonedDateTime.now(europeHelsinki).minusMinutes(1).toInstant(),
             mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)

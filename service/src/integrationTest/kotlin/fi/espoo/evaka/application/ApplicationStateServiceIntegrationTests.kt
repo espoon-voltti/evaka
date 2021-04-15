@@ -41,7 +41,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
@@ -153,7 +153,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.read {
             val application = fetchApplicationDetails(it.handle, applicationId)!!
             if (expected != null) {
-                assertEquals(LocalDate.ofInstant(expected, zoneId), application.dueDate)
+                assertEquals(LocalDate.ofInstant(expected, europeHelsinki), application.dueDate)
             } else {
                 assertNull(application.dueDate)
             }

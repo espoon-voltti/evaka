@@ -22,7 +22,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.dateNow
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
@@ -145,7 +145,7 @@ class ChildAttendanceController(
                 tx.insertAttendance(
                     childId = childId,
                     unitId = unitId,
-                    arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.arrived), zoneId).toInstant(),
+                    arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(body.arrived), europeHelsinki).toInstant(),
                     departed = null
                 )
             } catch (e: Exception) {
@@ -211,7 +211,7 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
-            val arrived = LocalTime.ofInstant(attendance.arrived, zoneId)
+            val arrived = LocalTime.ofInstant(attendance.arrived, europeHelsinki)
             DepartureInfoResponse(
                 absentFrom = getPartialAbsenceCareTypes(placementBasics, arrived, time)
             )
@@ -243,7 +243,7 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
-            val absentFrom = getPartialAbsenceCareTypes(placementBasics, LocalTime.ofInstant(attendance.arrived, zoneId), body.departed)
+            val absentFrom = getPartialAbsenceCareTypes(placementBasics, LocalTime.ofInstant(attendance.arrived, europeHelsinki), body.departed)
             tx.deleteCurrentDayAbsences(childId)
             if (absentFrom.isNotEmpty()) {
                 if (body.absenceType == null) {
@@ -251,7 +251,7 @@ class ChildAttendanceController(
                 }
 
                 absentFrom.forEach { careType ->
-                    tx.insertAbsence(user, childId, LocalDate.now(zoneId), careType, body.absenceType)
+                    tx.insertAbsence(user, childId, LocalDate.now(europeHelsinki), careType, body.absenceType)
                 }
             } else if (body.absenceType != null) {
                 throw BadRequest("Request defines absenceType but child was not absent.")
@@ -260,7 +260,7 @@ class ChildAttendanceController(
             try {
                 tx.updateAttendanceEnd(
                     attendanceId = attendance.id,
-                    departed = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.departed), zoneId).toInstant()
+                    departed = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(body.departed), europeHelsinki).toInstant()
                 )
             } catch (e: Exception) {
                 throw mapPSQLException(e)

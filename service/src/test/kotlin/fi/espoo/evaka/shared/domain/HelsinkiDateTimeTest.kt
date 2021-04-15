@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.domain
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import fi.espoo.evaka.shared.config.defaultObjectMapper
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -16,8 +16,8 @@ import java.time.ZonedDateTime
 
 class HelsinkiDateTimeTest {
     private val objectMapper = defaultObjectMapper()
-    private val summerValue = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2021, 4, 14), LocalTime.of(16, 2), zoneId))
-    private val winterValue = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 12, 1), LocalTime.of(23, 59), zoneId))
+    private val summerValue = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2021, 4, 14), LocalTime.of(16, 2), europeHelsinki))
+    private val winterValue = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 12, 1), LocalTime.of(23, 59), europeHelsinki))
 
     @Test
     fun `a JSON timestamp with +3 offset (with DST) is deserialized correctly`() {

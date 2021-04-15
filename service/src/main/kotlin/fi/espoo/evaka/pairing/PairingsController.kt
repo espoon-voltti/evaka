@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -54,7 +54,7 @@ class PairingsController(
                 tx = tx,
                 payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
                 runAt = ZonedDateTime
-                    .ofInstant(pairing.expires, zoneId)
+                    .ofInstant(pairing.expires, europeHelsinki)
                     .plusDays(1)
                     .toInstant()
             )

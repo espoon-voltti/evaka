@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
@@ -133,7 +133,7 @@ class JdbiExtensionsTest : PureJdbiTest() {
 
     @Test
     fun testHelsinkiDateTime() {
-        val input = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), zoneId))
+        val input = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), europeHelsinki))
 
         val match = db.read { it.checkMatch("SELECT :input = '2020-05-07T10:59Z'", input) }
         assertTrue(match)
@@ -160,7 +160,7 @@ class JdbiExtensionsTest : PureJdbiTest() {
         val result = db.read {
             it.createQuery("SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb").mapTo<QueryResult>().single()
         }
-        val expected = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), zoneId))
+        val expected = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), europeHelsinki))
         assertEquals(expected, result.jsonb.value)
     }
 }

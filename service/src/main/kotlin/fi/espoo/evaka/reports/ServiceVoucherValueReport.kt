@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -330,7 +330,7 @@ private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
         .bind("month", month)
         .mapTo<Instant>()
         .firstOrNull()
-        ?.let { LocalDate.ofInstant(it, zoneId) }
+        ?.let { LocalDate.ofInstant(it, europeHelsinki) }
 }
 
 private fun Database.Read.getSnapshotVoucherValues(

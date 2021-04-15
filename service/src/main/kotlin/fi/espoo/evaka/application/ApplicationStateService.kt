@@ -62,7 +62,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -514,7 +514,7 @@ class ApplicationStateService(
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
             val canApplyForPreferredDate = tx.getActivePreschoolTermAt(preferredStartDate)
-                ?.isApplicationAccepted(LocalDate.now(zoneId))
+                ?.isApplicationAccepted(LocalDate.now(europeHelsinki))
                 ?: false
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")

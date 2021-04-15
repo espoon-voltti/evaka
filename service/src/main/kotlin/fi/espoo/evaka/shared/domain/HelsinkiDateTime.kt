@@ -7,7 +7,7 @@ package fi.espoo.evaka.shared.domain
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -25,7 +25,7 @@ fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from
 @JsonDeserialize(converter = HelsinkiDateTime.FromJson::class)
 data class HelsinkiDateTime private constructor(private val instant: Instant) : Comparable<HelsinkiDateTime> {
     fun toInstant(): Instant = this.instant
-    fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId)
+    fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(instant, europeHelsinki)
 
     fun update(f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(f(toZonedDateTime()).toInstant())
 
@@ -33,8 +33,8 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     override fun toString(): String = toZonedDateTime().toString()
 
     companion object {
-        fun of(date: LocalDate, time: LocalTime): HelsinkiDateTime = from(ZonedDateTime.of(date, time, zoneId))
-        fun of(dateTime: LocalDateTime): HelsinkiDateTime = from(ZonedDateTime.of(dateTime, zoneId))
+        fun of(date: LocalDate, time: LocalTime): HelsinkiDateTime = from(ZonedDateTime.of(date, time, europeHelsinki))
+        fun of(dateTime: LocalDateTime): HelsinkiDateTime = from(ZonedDateTime.of(dateTime, europeHelsinki))
         fun now(clock: Clock? = Clock.systemUTC()): HelsinkiDateTime = HelsinkiDateTime(Instant.now(clock))
         fun from(value: Instant): HelsinkiDateTime = HelsinkiDateTime(value)
         fun from(value: ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(value.toInstant())
