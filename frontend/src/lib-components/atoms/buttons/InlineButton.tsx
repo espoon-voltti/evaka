@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import colors, { greyscale } from '../../colors'
+import colors, { blueColors, greyscale } from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
@@ -43,6 +43,10 @@ const StyledButton = styled.button<{ color?: string }>`
     cursor: not-allowed;
   }
 
+  &.darker:not(.disabled) {
+    color: ${blueColors.dark};
+  }
+
   svg {
     margin-right: ${defaultMargins.xs};
     font-size: 1.25em;
@@ -63,6 +67,7 @@ interface InlineButtonProps extends BaseProps {
   color?: string
   icon?: IconDefinition
   disabled?: boolean
+  darker?: boolean
   iconRight?: boolean
 }
 
@@ -74,13 +79,14 @@ function InlineButton({
   altText,
   icon,
   disabled = false,
+  darker = false,
   color,
   iconRight,
   'data-qa': dataQa2
 }: InlineButtonProps) {
   return (
     <StyledButton
-      className={classNames(className, { disabled })}
+      className={classNames(className, { disabled, darker })}
       data-qa={dataQa2 ?? dataQa}
       onClick={onClick}
       disabled={disabled}

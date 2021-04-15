@@ -27,9 +27,18 @@ const StyledButton = styled.button`
 
   &.disabled {
     color: ${colors.greyscale.dark};
+    cursor: not-allowed;
 
     .icon-wrapper-inner {
       background: ${colors.greyscale.dark};
+    }
+  }
+
+  &.darker:not(.disabled) {
+    color: ${colors.primaryActive};
+
+    .icon-wrapper-inner {
+      background: ${colors.primaryActive};
     }
   }
 
@@ -78,6 +87,7 @@ interface AddButtonProps extends BaseProps {
   onClick: () => unknown
   disabled?: boolean
   flipped?: boolean
+  darker?: boolean
   'data-qa'?: string
 }
 
@@ -88,11 +98,12 @@ function AddButton({
   onClick,
   disabled = false,
   flipped = false,
+  darker = false,
   'data-qa': dataQa2
 }: AddButtonProps) {
   return (
     <StyledButton
-      className={classNames(className, { disabled, flipped })}
+      className={classNames(className, { disabled, flipped, darker })}
       data-qa={dataQa2 ?? dataQa}
       onClick={onClick}
       disabled={disabled}
