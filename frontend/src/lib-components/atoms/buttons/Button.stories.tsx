@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
-import { faPen, faTrash } from 'lib-icons'
+import { storiesOf } from '@storybook/react'
+import { faChevronLeft, faPen, faTrash } from 'lib-icons'
+import React from 'react'
 import { H3 } from '../../typography'
 import { Gap } from '../../white-space'
 import AddButton from './AddButton'
@@ -41,7 +41,7 @@ storiesOf('evaka/atoms/buttons', module)
       <InlineButton onClick={onClick} text="Muokkaa" />
       <Gap />
 
-      <H3>Disabled</H3>
+      <H3>Default, disabled</H3>
       <InlineButton onClick={onClick} text="Poista" disabled />
       <Gap />
 
@@ -51,6 +51,34 @@ storiesOf('evaka/atoms/buttons', module)
 
       <H3>With icon, disabled</H3>
       <InlineButton onClick={onClick} text="Poista" icon={faTrash} disabled />
+      <Gap />
+
+      <H3>Darker</H3>
+      <p>Darker inline button is used on grey background.</p>
+      <InlineButton onClick={onClick} text="Palaa" darker />
+      <Gap />
+
+      <H3>Darker, disabled</H3>
+      <InlineButton onClick={onClick} text="Palaa" darker disabled />
+      <Gap />
+
+      <H3>Darker, with icon</H3>
+      <InlineButton
+        onClick={onClick}
+        text="Palaa"
+        icon={faChevronLeft}
+        darker
+      />
+      <Gap />
+
+      <H3>Darker, with icon, disabled</H3>
+      <InlineButton
+        onClick={onClick}
+        text="Palaa"
+        icon={faChevronLeft}
+        darker
+        disabled
+      />
       <Gap />
     </div>
   ))
@@ -78,62 +106,67 @@ storiesOf('evaka/atoms/buttons', module)
       <H3>Flipped</H3>
       <AddButton onClick={onClick} text="Luo uusi sijoitus" flipped />
       <Gap />
+
+      <H3>Darker</H3>
+      <AddButton onClick={onClick} text="Luo uusi sijoitus" darker />
+
+      <H3>Darker, disabled</H3>
+      <AddButton onClick={onClick} text="Luo uusi sijoitus" darker disabled />
+      <Gap />
     </div>
   ))
-  .add('AsyncButton', () => {
-    return (
-      <div>
-        <H3>Default (Success)</H3>
-        <AsyncButton
-          onClick={() =>
-            new Promise<void>((resolve) => void setTimeout(resolve, 2000))
-          }
-          onSuccess={() => undefined}
-          text="Save"
-          textInProgress="Saving"
-          textDone="Saved"
-        />
-        <Gap />
+  .add('AsyncButton', () => (
+    <div>
+      <H3>Default (Success)</H3>
+      <AsyncButton
+        onClick={() =>
+          new Promise<void>((resolve) => void setTimeout(resolve, 2000))
+        }
+        onSuccess={() => undefined}
+        text="Save"
+        textInProgress="Saving"
+        textDone="Saved"
+      />
+      <Gap />
 
-        <H3>Default (Failure)</H3>
-        <AsyncButton
-          onClick={() =>
-            new Promise<void>((resolve) => void setTimeout(resolve, 2000)).then(
-              () => {
-                throw 'Error'
-              }
-            )
-          }
-          onSuccess={() => undefined}
-          text="Save"
-          textInProgress="Saving"
-          textDone="Saved"
-        />
-        <Gap />
+      <H3>Default (Failure)</H3>
+      <AsyncButton
+        onClick={() =>
+          new Promise<void>((resolve) => void setTimeout(resolve, 2000)).then(
+            () => {
+              throw 'Error'
+            }
+          )
+        }
+        onSuccess={() => undefined}
+        text="Save"
+        textInProgress="Saving"
+        textDone="Saved"
+      />
+      <Gap />
 
-        <H3>Primary</H3>
-        <AsyncButton
-          onClick={() =>
-            new Promise<void>((resolve) => void setTimeout(resolve, 2000))
-          }
-          onSuccess={() => undefined}
-          text="Save"
-          textInProgress="Saving"
-          textDone="Saved"
-          primary
-        />
-        <Gap />
+      <H3>Primary</H3>
+      <AsyncButton
+        onClick={() =>
+          new Promise<void>((resolve) => void setTimeout(resolve, 2000))
+        }
+        onSuccess={() => undefined}
+        text="Save"
+        textInProgress="Saving"
+        textDone="Saved"
+        primary
+      />
+      <Gap />
 
-        <H3>Disabled</H3>
-        <AsyncButton
-          onClick={() => new Promise(() => undefined)}
-          onSuccess={() => undefined}
-          text="Save"
-          textInProgress="Saving"
-          textDone="Saved"
-          disabled
-        />
-        <Gap />
-      </div>
-    )
-  })
+      <H3>Disabled</H3>
+      <AsyncButton
+        onClick={() => new Promise(() => undefined)}
+        onSuccess={() => undefined}
+        text="Save"
+        textInProgress="Saving"
+        textDone="Saved"
+        disabled
+      />
+      <Gap />
+    </div>
+  ))
