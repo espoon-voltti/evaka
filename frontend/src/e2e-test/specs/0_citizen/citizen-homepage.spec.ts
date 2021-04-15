@@ -6,22 +6,17 @@ import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
 import CitizenHomePage from '../../pages/citizen/citizen-homepage'
 import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 
 const citizenHomePage = new CitizenHomePage()
-
-let cleanUp: () => Promise<void>
 
 fixture('Citizen page')
   .meta({ type: 'regression', subType: 'citizen-homepage' })
   .before(async () => {
-    ;[, cleanUp] = await initializeAreaAndPersonData()
+    await resetDatabase()
+    await initializeAreaAndPersonData()
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
-  })
 
 test('Citizen can change the UI language', async (t) => {
   await t.useRole(enduserRole)

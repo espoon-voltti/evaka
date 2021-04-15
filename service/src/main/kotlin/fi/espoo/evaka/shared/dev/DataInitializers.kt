@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -29,10 +30,33 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
 import org.postgresql.util.PGobject
+import org.springframework.core.io.ClassPathResource
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+
+private val logger = KotlinLogging.logger { }
+
+fun Handle.runDevScript(devScriptName: String) {
+    val path = "dev-data/" + devScriptName
+    logger.info("Running SQL script: " + path)
+    ClassPathResource(path).inputStream.use {
+        it.bufferedReader().readText().let { content ->
+            execute(content)
+        }
+    }
+}
+
+fun Handle.resetDatabase() {
+    execute("SELECT reset_database()")
+}
+
+fun Handle.ensureDevData() {
+    if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
+        listOf("espoo-dev-data.sql", "employees.sql", "preschool-terms.sql").forEach { runDevScript(it) }
+    }
+}
 
 /**
  * Insert one row of data to the database.

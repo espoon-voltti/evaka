@@ -12,7 +12,8 @@ import {
 import { Daycare } from 'e2e-test-common/dev-api/types'
 import {
   DigitransitFeature,
-  putDigitransitAutocomplete
+  putDigitransitAutocomplete,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
@@ -45,6 +46,7 @@ const testStreet: DigitransitFeature = {
 let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
+  await resetDatabase()
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
   await Fixture.daycare().with(clubFixture).careArea(careArea).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
@@ -58,9 +60,6 @@ beforeEach(async () => {
 })
 afterEach(async () => {
   await page.close()
-})
-afterAll(async () => {
-  await Fixture.cleanup()
 })
 
 describe('Citizen map page', () => {

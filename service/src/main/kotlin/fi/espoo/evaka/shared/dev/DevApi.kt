@@ -111,6 +111,17 @@ class DevApi(
 ) {
     private val digitransit = MockDigitransit()
 
+    @PostMapping("/reset-db")
+    fun resetDatabase(db: Database): ResponseEntity<Unit> {
+        db.transaction {
+            it.handle.resetDatabase()
+
+            // Preschool terms are not inserted by fixtures
+            it.handle.runDevScript("preschool-terms.sql")
+        }
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/clean-up")
     fun cleanUpDatabase(db: Database): ResponseEntity<Unit> {
         db.transaction { it.handle.clearDatabase() }

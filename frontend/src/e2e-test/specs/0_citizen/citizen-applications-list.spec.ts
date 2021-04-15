@@ -13,11 +13,11 @@ import {
   deleteApplication,
   execSimpleApplicationActions,
   insertApplications,
+  resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import {
   applicationFixture,
-  Fixture,
   daycareFixture
 } from 'e2e-test-common/dev-api/fixtures'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
@@ -28,20 +28,16 @@ const citizenApplicationsPage = new CitizenApplicationsPage()
 
 let applicationId: string
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Citizen applications list')
   .meta({ type: 'regression', subType: 'citizen-applications-list' })
   .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
     await deleteApplication(applicationId)
-  })
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
   })
 
 test('Citizen sees her children and applications', async (t) => {
