@@ -44,12 +44,7 @@ function NewServiceNeeds({ serviceNeeds }: Props) {
                 <Td>{sn.option.name}</Td>
                 <Td>{sn.shiftCare ? i18n.common.yes : i18n.common.no}</Td>
                 <Td>
-                  <StatusLabel
-                    status={getStatusLabelByDateRange({
-                      startDate: sn.startDate,
-                      endDate: sn.endDate
-                    })}
-                  />
+                  <StatusLabel status={getStatusLabelByDateRange(sn)} />
                 </Td>
               </Tr>
             ))}

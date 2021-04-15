@@ -37,8 +37,7 @@ fun Database.Read.getServiceNeedsByUnit(
         FROM new_service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
-        WHERE pl.unit_id = :unitId
-            AND ((:start IS NULL AND :end IS NULL) OR daterange(:start, :end, '[]') && daterange(sn.start_date, sn.end_date, '[]'))
+        WHERE pl.unit_id = :unitId AND daterange(:start, :end, '[]') && daterange(sn.start_date, sn.end_date, '[]')
         """.trimIndent()
 
     return createQuery(sql)
