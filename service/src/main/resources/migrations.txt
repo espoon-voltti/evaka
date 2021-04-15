@@ -63,3 +63,4 @@ V62__add_indexes_to_attachment.sql
 V63__remove_voucher_decision_parts.sql
 V64__range_merge_aggregate.sql
 V65__new_service_needs.sql
+V66__new_service_need_hours.sql
