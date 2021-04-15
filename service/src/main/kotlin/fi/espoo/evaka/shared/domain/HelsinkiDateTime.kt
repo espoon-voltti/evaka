@@ -9,10 +9,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import java.time.Clock
+import java.time.DayOfWeek
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Month
 import java.time.ZonedDateTime
 
 fun Instant.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from(this)
@@ -24,10 +27,57 @@ fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from
 @JsonSerialize(converter = HelsinkiDateTime.ToJson::class)
 @JsonDeserialize(converter = HelsinkiDateTime.FromJson::class)
 data class HelsinkiDateTime private constructor(private val instant: Instant) : Comparable<HelsinkiDateTime> {
-    fun toInstant(): Instant = this.instant
+    val year: Int
+        get() = toZonedDateTime().year
+    val month: Month
+        get() = toZonedDateTime().month
+    val dayOfMonth: Int
+        get() = toZonedDateTime().dayOfMonth
+    val dayOfWeek: DayOfWeek
+        get() = toZonedDateTime().dayOfWeek
+    val hour: Int
+        get() = toZonedDateTime().hour
+    val minute: Int
+        get() = toZonedDateTime().minute
+    val second: Int
+        get() = toZonedDateTime().second
+
+    fun minusYears(years: Long): HelsinkiDateTime = update { it.minusYears(years) }
+    fun minusMonths(months: Long): HelsinkiDateTime = update { it.minusMonths(months) }
+    fun minusWeeks(weeks: Long): HelsinkiDateTime = update { it.minusWeeks(weeks) }
+    fun minusDays(days: Long): HelsinkiDateTime = update { it.minusDays(days) }
+    fun minusHours(hours: Long): HelsinkiDateTime = update { it.minusHours(hours) }
+    fun minusMinutes(minutes: Long): HelsinkiDateTime = update { it.minusMinutes(minutes) }
+    fun minusSeconds(seconds: Long): HelsinkiDateTime = update { it.minusSeconds(seconds) }
+
+    fun plusYears(years: Long): HelsinkiDateTime = update { it.plusYears(years) }
+    fun plusMonths(months: Long): HelsinkiDateTime = update { it.plusMonths(months) }
+    fun plusWeeks(weeks: Long): HelsinkiDateTime = update { it.plusWeeks(weeks) }
+    fun plusDays(days: Long): HelsinkiDateTime = update { it.plusDays(days) }
+    fun plusHours(hours: Long): HelsinkiDateTime = update { it.plusHours(hours) }
+    fun plusMinutes(minutes: Long): HelsinkiDateTime = update { it.plusMinutes(minutes) }
+    fun plusSeconds(seconds: Long): HelsinkiDateTime = update { it.plusSeconds(seconds) }
+
+    fun isAfter(other: HelsinkiDateTime): Boolean = this.instant.isAfter(other.instant)
+    fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
+
+    fun toLocalDateTime(): LocalDateTime = LocalDateTime.ofInstant(instant, europeHelsinki)
+    fun toLocalTime(): LocalTime = LocalTime.ofInstant(instant, europeHelsinki)
+    fun toLocalDate(): LocalDate = LocalDate.ofInstant(instant, europeHelsinki)
+    fun toInstant(): Instant = instant
     fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(instant, europeHelsinki)
 
-    fun update(f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(f(toZonedDateTime()).toInstant())
+    /**
+     * Returns the amount of time elapsed since the given timestamp
+     */
+    fun durationSince(other: HelsinkiDateTime): Duration = Duration.between(other.toZonedDateTime(), this.toZonedDateTime())
+
+    /**
+     * Returns the amount of time elapsed since this timestamp
+     */
+    fun elapsed(clock: Clock? = Clock.systemUTC()): Duration = now(clock).durationSince(this)
+
+    private inline fun update(crossinline f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime = from(f(toZonedDateTime()).toInstant())
 
     override fun compareTo(other: HelsinkiDateTime): Int = this.instant.compareTo(other.instant)
     override fun toString(): String = toZonedDateTime().toString()

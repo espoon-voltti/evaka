@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.Clock
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
@@ -60,5 +62,19 @@ class HelsinkiDateTimeTest {
     fun `serialization to a JSON timestamp works`() {
         assertEquals("\"2021-04-14T16:02:00+03:00\"", objectMapper.writeValueAsString(summerValue))
         assertEquals("\"2020-12-01T23:59:00+02:00\"", objectMapper.writeValueAsString(winterValue))
+    }
+
+    @Test
+    fun `plus and minus functions work correctly()`() {
+        val value = summerValue.plusYears(1).plusMonths(1).plusWeeks(1).plusDays(1).plusHours(1).plusMinutes(1).plusSeconds(1)
+        assertEquals(HelsinkiDateTime.of(LocalDate.of(2022, 5, 22), LocalTime.of(17, 3, 1)), value)
+        assertEquals(summerValue, value.minusYears(1).minusMonths(1).minusWeeks(1).minusDays(1).minusHours(1).minusMinutes(1).minusSeconds(1))
+    }
+
+    @Test
+    fun `elapsed works correctly`() {
+        val end = winterValue.toZonedDateTime().plusDays(42).plusSeconds(1)
+        val clock = Clock.fixed(end.toInstant(), europeHelsinki)
+        assertEquals(Duration.ofDays(42).plusSeconds(1), winterValue.elapsed(clock))
     }
 }
