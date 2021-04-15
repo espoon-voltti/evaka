@@ -526,6 +526,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
               }
             : undefined
         }
+        hideErrorsBeforeTouched
         width="s"
       />
       <span> - </span>
@@ -543,6 +544,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
               }
             : undefined
         }
+        hideErrorsBeforeTouched
         width="s"
       />
     </>
