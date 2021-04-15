@@ -25,37 +25,34 @@ import java.time.LocalDate
 import java.util.Optional
 import java.util.function.Function
 
-val finiteDateRangeArgumentFactory = PgObjectArgumentFactory.of<FiniteDateRange> {
+val finiteDateRangeArgumentFactory = pgObjectArgumentFactory<FiniteDateRange> {
     PGobject().apply {
         type = "daterange"
         value = "[${it.start},${it.end}]"
     }
 }
-val dateRangeArgumentFactory = PgObjectArgumentFactory.of<DateRange> {
+val dateRangeArgumentFactory = pgObjectArgumentFactory<DateRange> {
     PGobject().apply {
         type = "daterange"
         value = "[${it.start},${it.end ?: ""}]"
     }
 }
 
-val coordinateArgumentFactory = PgObjectArgumentFactory.of<Coordinate> {
+val coordinateArgumentFactory = pgObjectArgumentFactory<Coordinate> {
     PGpoint().apply {
         y = it.lat
         x = it.lon
     }
 }
 
-val identityArgumentFactory = PgObjectArgumentFactory.of<ExternalIdentifier> {
-    PGobject().apply {
-        type = "text"
-        value = when (it) {
-            is ExternalIdentifier.SSN -> it.ssn
-            is ExternalIdentifier.NoID -> null
-        }
+val identityArgumentFactory = customArgumentFactory<ExternalIdentifier>(Types.VARCHAR) {
+    when (it) {
+        is ExternalIdentifier.SSN -> CustomStringArgument(it.ssn)
+        is ExternalIdentifier.NoID -> null
     }
 }
 
-val externalIdArgumentFactory = ToStringArgumentFactory.of<ExternalId>()
+val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
 val finiteDateRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
@@ -89,64 +86,41 @@ val coordinateColumnMapper = PgObjectColumnMapper {
 val externalIdColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getString(columnNumber)?.let { ExternalId.parse(it) } }
 
-class PgObjectArgumentFactory<T>(
-    private val clazz: Class<T>,
-    private val serializer: (T) -> PGobject
-) : ArgumentFactory.Preparable {
-    override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = if (type == clazz) {
-        Optional.of(
-            Function { nullableValue ->
-                if (nullableValue == null) NullArgument(Types.OTHER)
-                else (clazz.cast(nullableValue))?.let { value -> PgObjectArgument(serializer(value)) }!!
-            }
-        )
-    } else {
-        Optional.empty()
-    }
-
-    override fun prePreparedTypes(): MutableCollection<out Type> = mutableListOf(clazz)
-
-    companion object {
-        inline fun <reified T> of(noinline serializer: (T) -> PGobject) =
-            PgObjectArgumentFactory(T::class.java, serializer)
-    }
+class CustomArgumentFactory<T>(private val clazz: Class<T>, private val sqlType: Int, private inline val f: (T) -> Argument?) : ArgumentFactory.Preparable {
+    override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = Optional.ofNullable(
+        if (type == clazz) {
+            Function { nullableValue -> clazz.cast(nullableValue)?.let(f) ?: NullArgument(sqlType) }
+        } else {
+            null
+        }
+    )
 }
 
-class PgObjectArgument(val value: PGobject) : Argument {
+class CustomObjectArgument(val value: Any) : Argument {
     override fun apply(position: Int, statement: PreparedStatement, ctx: StatementContext) =
         statement.setObject(position, value)
-
     override fun toString(): String = value.toString()
 }
 
-class PgObjectColumnMapper<T>(private val deserializer: (PGobject) -> T?) : ColumnMapper<T> {
+class CustomStringArgument(val value: String) : Argument {
+    override fun apply(position: Int, statement: PreparedStatement, ctx: StatementContext) =
+        statement.setString(position, value)
+
+    override fun toString(): String = value
+}
+
+inline fun <reified T> customArgumentFactory(sqlType: Int, noinline f: (T) -> Argument?): CustomArgumentFactory<T> = CustomArgumentFactory(T::class.java, sqlType, f)
+
+inline fun <reified T> pgObjectArgumentFactory(noinline serializer: (T) -> PGobject) = customArgumentFactory<T>(Types.OTHER) {
+    CustomObjectArgument(serializer(it))
+}
+
+inline fun <reified T> toStringArgumentFactory() = customArgumentFactory<T>(Types.VARCHAR) {
+    CustomStringArgument(it.toString())
+}
+
+class PgObjectColumnMapper<T>(private inline val deserializer: (PGobject) -> T?) : ColumnMapper<T> {
     override fun map(r: ResultSet, columnNumber: Int, ctx: StatementContext): T? = r.getObject(columnNumber)?.let {
         deserializer(it as PGobject)
     }
-}
-
-class ToStringArgumentFactory<T>(private val clazz: Class<T>) : ArgumentFactory.Preparable {
-    override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = if (type == clazz) {
-        Optional.of(
-            Function { nullableValue ->
-                if (nullableValue == null) NullArgument(Types.VARCHAR)
-                else (clazz.cast(nullableValue))?.let { value -> ToStringArgument(value) }!!
-            }
-        )
-    } else {
-        Optional.empty()
-    }
-
-    override fun prePreparedTypes(): MutableCollection<out Type> = mutableListOf(clazz)
-
-    companion object {
-        inline fun <reified T> of() = ToStringArgumentFactory(T::class.java)
-    }
-}
-
-class ToStringArgument<T>(val value: T) : Argument {
-    override fun apply(position: Int, statement: PreparedStatement, ctx: StatementContext) =
-        statement.setString(position, value.toString())
-
-    override fun toString(): String = value.toString()
 }
