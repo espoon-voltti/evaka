@@ -4,6 +4,7 @@
 
 import {
   Profile,
+  SamlConfig,
   Strategy as SamlStrategy,
   VerifiedCallback
 } from 'passport-saml'
@@ -14,34 +15,40 @@ import fs from 'fs'
 import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 
-export default function createKeycloakSamlStrategy(
-  redisClient?: RedisClient
-): SamlStrategy {
+export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
+  if (Array.isArray(evakaSamlConfig.publicCert))
+    throw new Error('Expected a single string as publicCert')
   const publicCert = fs.readFileSync(evakaSamlConfig.publicCert, {
     encoding: 'utf8'
   })
   const privateCert = fs.readFileSync(evakaSamlConfig.privateCert, {
     encoding: 'utf8'
   })
+  return {
+    acceptedClockSkewMs: 0,
+    audience: evakaSamlConfig.issuer,
+    cacheProvider: redisClient
+      ? redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+      : undefined,
+    callbackUrl: evakaSamlConfig.callbackUrl,
+    cert: publicCert,
+    decryptionPvk: privateCert,
+    entryPoint: evakaSamlConfig.entryPoint,
+    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    issuer: evakaSamlConfig.issuer,
+    logoutUrl: evakaSamlConfig.entryPoint,
+    privateCert: privateCert,
+    signatureAlgorithm: 'sha256',
+    validateInResponseTo: true
+  }
+}
+
+export default function createKeycloakSamlStrategy(
+  config: SamlConfig
+): SamlStrategy {
   return new SamlStrategy(
-    {
-      acceptedClockSkewMs: 0,
-      audience: evakaSamlConfig.issuer,
-      cacheProvider: redisClient
-        ? redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
-        : undefined,
-      callbackUrl: evakaSamlConfig.callbackUrl,
-      cert: publicCert,
-      decryptionPvk: privateCert,
-      entryPoint: evakaSamlConfig.entryPoint,
-      identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-      issuer: evakaSamlConfig.issuer,
-      logoutUrl: evakaSamlConfig.entryPoint,
-      privateCert: privateCert,
-      signatureAlgorithm: 'sha256',
-      validateInResponseTo: true
-    },
+    config,
     (profile: Profile, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       verifyKeycloakProfile(profile as KeycloakProfile)

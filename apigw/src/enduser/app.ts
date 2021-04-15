@@ -8,8 +8,12 @@ import helmet from 'helmet'
 import nocache from 'nocache'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createEvakaCustomerSamlStrategy from '../shared/auth/customer-saml'
-import createSuomiFiStrategy from '../shared/auth/suomi-fi-saml'
+import createEvakaCustomerSamlStrategy, {
+  createSamlConfig as createEvakaCustomerSamlConfig
+} from '../shared/auth/customer-saml'
+import createSuomiFiStrategy, {
+  createSamlConfig as createSuomiFiSamlConfig
+} from '../shared/auth/suomi-fi-saml'
 import { nodeEnv } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
@@ -51,18 +55,22 @@ function apiRouter() {
   const router = Router()
 
   router.use(publicRoutes)
+  const suomifiSamlConfig = createSuomiFiSamlConfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'suomifi',
-      strategy: createSuomiFiStrategy(redisClient),
+      strategy: createSuomiFiStrategy(suomifiSamlConfig),
+      samlConfig: suomifiSamlConfig,
       sessionType: 'enduser',
       pathIdentifier: 'saml'
     })
   )
+  const evakaCustomerSamlConfig = createEvakaCustomerSamlConfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'evaka-customer',
-      strategy: createEvakaCustomerSamlStrategy(redisClient),
+      strategy: createEvakaCustomerSamlStrategy(evakaCustomerSamlConfig),
+      samlConfig: evakaCustomerSamlConfig,
       sessionType: 'enduser',
       pathIdentifier: 'evaka-customer'
     })

@@ -8,8 +8,12 @@ import helmet from 'helmet'
 import nocache from 'nocache'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createAdSamlStrategy from '../shared/auth/ad-saml'
-import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
+import createAdSamlStrategy, {
+  createSamlConfig as createAdSamlConfig
+} from '../shared/auth/ad-saml'
+import createEvakaSamlStrategy, {
+  createSamlConfig as createEvakaSalmconfig
+} from '../shared/auth/keycloak-saml'
 import { cookieSecret, enableDevApi, nodeEnv } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
@@ -71,19 +75,23 @@ function internalApiRouter() {
     next()
   })
 
+  const adSamlConfig = createAdSamlConfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'ead',
-      strategy: createAdSamlStrategy(redisClient),
+      strategy: createAdSamlStrategy(adSamlConfig),
+      samlConfig: adSamlConfig,
       sessionType: 'employee',
       pathIdentifier: 'saml'
     })
   )
 
+  const evakaSamlConfig = createEvakaSalmconfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'evaka',
-      strategy: createEvakaSamlStrategy(redisClient),
+      strategy: createEvakaSamlStrategy(evakaSamlConfig),
+      samlConfig: evakaSamlConfig,
       sessionType: 'employee',
       pathIdentifier: 'evaka'
     })

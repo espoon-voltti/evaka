@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Strategy } from 'passport-saml'
+import type { SamlConfig, Strategy } from 'passport-saml'
 import type { Strategy as DummyStrategy } from 'passport-dummy'
 import type { SessionType } from '../../../session'
 import type { UserType } from '../../../service-client'
@@ -10,6 +10,7 @@ import type { UserType } from '../../../service-client'
 export interface SamlEndpointConfig {
   strategyName: string
   strategy: Strategy | DummyStrategy
+  samlConfig: SamlConfig
   sessionType: SessionType
   pathIdentifier: string
 }

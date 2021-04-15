@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { differenceInMonths } from 'date-fns'
-import certificates from '../certificates'
+import certificates, { TrustedCertificates } from '../certificates'
 import { pki } from 'node-forge'
 
 describe('SAML certificates', () => {
   test('at least one certificate must exist', () => {
     expect(Object.keys(certificates).length).toBeGreaterThan(0)
   })
-  for (const certificateName of Object.keys(certificates) as Array<
-    keyof typeof certificates
-  >) {
+  for (const certificateName of Object.keys(
+    certificates
+  ) as Array<TrustedCertificates>) {
     test(`${certificateName} must decode successfully`, () => {
       const computeHash = false
       const strict = true
