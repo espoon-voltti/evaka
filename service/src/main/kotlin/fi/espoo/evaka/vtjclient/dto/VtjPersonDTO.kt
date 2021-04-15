@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.vtjclient.dto
 
-import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -38,17 +36,10 @@ data class VtjPersonDTO(
     val source: PersonDataSource,
 
     val streetAddressSe: String = "",
-    val citySe: String = "",
-
-    val existingPlacements: List<Placement> = listOf()
+    val citySe: String = ""
 )
 
 enum class PersonDataSource {
     VTJ,
     DATABASE
 }
-
-data class Placement(
-    val period: FiniteDateRange,
-    val type: PlacementType
-)

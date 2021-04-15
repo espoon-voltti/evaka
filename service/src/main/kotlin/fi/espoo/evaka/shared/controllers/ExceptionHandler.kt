@@ -79,18 +79,6 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         )
     }
 
-    @ExceptionHandler(
-        value = [
-            fi.espoo.evaka.vtjclient.controllers.UseCaseDeniedException::class
-        ]
-    )
-    fun useCaseDenied(req: HttpServletRequest, ex: RuntimeException): ResponseEntity<ErrorResponse> {
-        logger.warn("Forbidden (${ex.message})")
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ErrorResponse()
-        )
-    }
-
     @ExceptionHandler(value = [MaxUploadSizeExceededException::class])
     fun maxUploadSizeExceeded(req: HttpServletRequest, ex: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> {
         logger.warn("Max upload size exceeded (${ex.message})")

@@ -16,66 +16,44 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
-import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
 class PersonStorageService {
-    fun upsertVtjPerson(tx: Database.Transaction, personResult: PersonResult): PersonResult {
-        return when (personResult) {
-            is PersonResult.Result -> PersonResult.Result(createOrUpdateOnePerson(tx, personResult.vtjPersonDTO))
-            else -> personResult
-        }
+    fun upsertVtjChildAndGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+        val child = upsertVtjPerson(tx, vtjPersonDTO)
+        child.guardians.addAll(vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }.map { upsertVtjPerson(tx, it) })
+        createOrReplaceChildRelationships(
+            tx,
+            childId = child.id,
+            guardianIds = child.guardians.map { guardian -> guardian.id }
+        )
+        return child
     }
 
-    fun upsertVtjGuardianAndChildren(tx: Database.Transaction, personResult: PersonResult): PersonResult {
-        return when (personResult) {
-            is PersonResult.Result -> upsertVtjGuardianAndChildren(tx, personResult.vtjPersonDTO)
-            else -> personResult
-        }
-    }
-
-    fun upsertVtjChildAndGuardians(tx: Database.Transaction, personResult: PersonResult): PersonResult {
-        return when (personResult) {
-            is PersonResult.Result -> {
-                val child = createOrUpdateOnePerson(tx, personResult.vtjPersonDTO)
-                child.guardians.addAll(personResult.vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }.map { createOrUpdateOnePerson(tx, it) })
-                createOrReplaceChildRelationships(
-                    tx,
-                    childId = child.id,
-                    guardianIds = child.guardians.map { guardian -> guardian.id }
-                )
-
-                return PersonResult.Result(child)
-            }
-            else -> personResult
-        }
-    }
-
-    private fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): PersonResult {
-        val guardian = createOrUpdateOnePerson(tx, vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }.map { createOrUpdateOnePerson(tx, it) })
+    fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+        val guardian = upsertVtjPerson(tx, vtjPersonDTO)
+        guardian.children.addAll(vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }.map { upsertVtjPerson(tx, it) })
         createOrReplaceGuardianRelationships(
             tx,
             guardianId = guardian.id,
             childIds = guardian.children.map { child -> child.id }
         )
-
-        return PersonResult.Result(guardian)
+        return guardian
     }
 
     private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: UUID, childIds: List<UUID>) {
-        deleteGuardianChildRelationShips(tx.handle, guardianId)
-        childIds.forEach { childId -> insertGuardian(tx.handle, guardianId, childId) }
+        tx.deleteGuardianChildRelationShips(guardianId)
+        childIds.forEach { childId -> tx.insertGuardian(guardianId, childId) }
     }
 
     private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId: UUID, guardianIds: List<UUID>) {
-        deleteChildGuardianRelationships(tx.handle, childId)
-        guardianIds.forEach { guardianId -> insertGuardian(tx.handle, guardianId, childId) }
+        tx.deleteChildGuardianRelationships(childId)
+        guardianIds.forEach { guardianId -> tx.insertGuardian(guardianId, childId) }
     }
 
-    private fun createOrUpdateOnePerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): VtjPersonDTO {
+    fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): VtjPersonDTO {
         if (inputPerson.source != PersonDataSource.VTJ) {
             return inputPerson
         }
@@ -84,10 +62,10 @@ class PersonStorageService {
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
-            map(tx.handle.createPersonFromVtj(newPerson), inputPerson.source)
+            map(tx.createPersonFromVtj(newPerson), inputPerson.source)
         } else {
             val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
-            map(tx.handle.updatePersonFromVtj(updatedPerson), inputPerson.source)
+            map(tx.updatePersonFromVtj(updatedPerson), inputPerson.source)
         }
     }
 

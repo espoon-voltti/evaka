@@ -400,9 +400,9 @@ RETURNING id
             val personDTO = body.toPersonDTO()
 
             if (person != null) {
-                tx.handle.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+                tx.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
             } else {
-                tx.handle.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+                tx.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
             }
         }
     }
@@ -413,7 +413,7 @@ RETURNING id
             val personId = tx.handle.insertTestPerson(body)
             val dto = body.copy(id = personId).toPersonDTO()
             if (dto.identity is ExternalIdentifier.SSN) {
-                tx.handle.updatePersonFromVtj(dto)
+                tx.updatePersonFromVtj(dto)
             }
             ResponseEntity.ok(personId)
         }
