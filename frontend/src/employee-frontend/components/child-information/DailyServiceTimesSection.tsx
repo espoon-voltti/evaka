@@ -339,6 +339,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     text={i18n.common.edit}
                     icon={faPen}
                     onClick={startEditing}
+                    dataQa="edit-button"
                   />
                 </RightAlign>
 
@@ -346,17 +347,17 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
               </RequireRole>
 
               {apiData.value === null ? (
-                <FixedWidthLabel>
+                <FixedWidthLabel data-qa="times-type">
                   {i18n.childInformation.dailyServiceTimes.types.notSet}
                 </FixedWidthLabel>
               ) : (
                 <>
                   {isRegular(apiData.value) && (
                     <FixedSpaceRow>
-                      <FixedWidthLabel>
+                      <FixedWidthLabel data-qa="times-type">
                         {i18n.childInformation.dailyServiceTimes.types.regular}
                       </FixedWidthLabel>
-                      <div>
+                      <div data-qa="times">
                         {i18n.childInformation.dailyServiceTimes.weekdays.monday.toLowerCase()}
                         -
                         {i18n.childInformation.dailyServiceTimes.weekdays.friday.toLowerCase()}{' '}
@@ -367,13 +368,13 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                   )}
                   {isIrregular(apiData.value) && (
                     <FixedSpaceRow>
-                      <FixedWidthLabel>
+                      <FixedWidthLabel data-qa="times-type">
                         {
                           i18n.childInformation.dailyServiceTimes.types
                             .irregular
                         }
                       </FixedWidthLabel>
-                      <div>
+                      <div data-qa="times">
                         {weekdays
                           .map((wd) =>
                             apiData.value &&
@@ -404,6 +405,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     label={i18n.childInformation.dailyServiceTimes.types.notSet}
                     checked={formData.type === 'NOT_SET'}
                     onChange={setType('NOT_SET')}
+                    data-qa="radio-not-set"
                   />
                   <Radio
                     label={
@@ -411,6 +413,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     }
                     checked={formData.type === 'REGULAR'}
                     onChange={setType('REGULAR')}
+                    dataQa="radio-regular"
                   />
                   {formData.type === 'REGULAR' && (
                     <FixedSpaceRow style={{ marginLeft: defaultMargins.XXL }}>
@@ -435,6 +438,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     }
                     checked={formData.type === 'IRREGULAR'}
                     onChange={setType('IRREGULAR')}
+                    dataQa="radio-irregular"
                   />
                   {formData.type === 'IRREGULAR' && (
                     <FixedSpaceColumn>
@@ -451,6 +455,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                               }
                               checked={formData[wd].selected}
                               onChange={setWeekdaySelected(wd)}
+                              dataQa={`${wd}-checkbox`}
                             />
                           </div>
                           <FixedSpaceRow
@@ -492,6 +497,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     onClick={onSubmit}
                     disabled={submitting || !formIsValid}
                     primary
+                    dataQa="submit-button"
                   />
                 </FixedSpaceRow>
               </RightAlign>
