@@ -45,8 +45,8 @@ export const StyledButton = styled.button`
   }
 
   &.disabled {
-    color: ${greyscale.medium};
-    border-color: ${greyscale.medium};
+    color: ${greyscale.dark};
+    border-color: ${greyscale.dark};
   }
 
   &.primary {
@@ -62,6 +62,7 @@ export const StyledButton = styled.button`
     }
 
     &.disabled {
+      border-color: ${greyscale.medium};
       background: ${greyscale.medium};
     }
   }

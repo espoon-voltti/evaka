@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import colors from 'lib-components/colors'
 
 export const CheckedRowsInfo = styled.div`
-  color: ${colors.greyscale.medium};
+  color: ${colors.greyscale.dark};
   font-style: italic;
   font-weight: bold;
   margin: 0 20px;

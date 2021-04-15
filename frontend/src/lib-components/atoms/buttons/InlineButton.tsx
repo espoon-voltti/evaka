@@ -39,7 +39,7 @@ const StyledButton = styled.button<{ color?: string }>`
   }
 
   &.disabled {
-    color: ${greyscale.medium};
+    color: ${greyscale.dark};
     cursor: not-allowed;
   }
 

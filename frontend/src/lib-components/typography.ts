@@ -108,5 +108,5 @@ export const P = styled.p<ParagraphProps>`
   }
 `
 export const Dimmed = styled.span`
-  color: ${greyscale.medium};
+  color: ${greyscale.dark};
 `

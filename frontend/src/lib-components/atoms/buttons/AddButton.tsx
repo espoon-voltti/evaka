@@ -26,10 +26,10 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &.disabled {
-    color: ${colors.greyscale.medium};
+    color: ${colors.greyscale.dark};
 
-    .icon-wrapper {
-      background: ${colors.greyscale.medium};
+    .icon-wrapper-inner {
+      background: ${colors.greyscale.dark};
     }
   }
 
