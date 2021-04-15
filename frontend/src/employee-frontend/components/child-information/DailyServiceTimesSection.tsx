@@ -453,7 +453,13 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                               onChange={setWeekdaySelected(wd)}
                             />
                           </div>
-                          <FixedSpaceRow>
+                          <FixedSpaceRow
+                            style={
+                              !formData[wd].selected
+                                ? { display: 'none' }
+                                : undefined
+                            }
+                          >
                             <TimeRangeInput
                               value={formData[wd]}
                               onChange={setTimes(wd)}
