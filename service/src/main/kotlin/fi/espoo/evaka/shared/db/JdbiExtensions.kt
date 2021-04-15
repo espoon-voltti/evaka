@@ -9,6 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.argument.NullArgument
@@ -22,6 +23,7 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.Optional
 import java.util.function.Function
 
@@ -54,6 +56,10 @@ val identityArgumentFactory = customArgumentFactory<ExternalIdentifier>(Types.VA
 
 val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
+val helsinkiDateTimeArgumentFactory = customArgumentFactory<HelsinkiDateTime>(Types.TIMESTAMP_WITH_TIMEZONE) {
+    CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
+}
+
 val finiteDateRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
     it.value?.let { value ->
@@ -85,6 +91,9 @@ val coordinateColumnMapper = PgObjectColumnMapper {
 
 val externalIdColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getString(columnNumber)?.let { ExternalId.parse(it) } }
+
+val helsinkiDateTimeColumnMapper =
+    ColumnMapper { r, columnNumber, _ -> r.getObject(columnNumber, OffsetDateTime::class.java)?.let { HelsinkiDateTime.from(it.toInstant()) } }
 
 class CustomArgumentFactory<T>(private val clazz: Class<T>, private val sqlType: Int, private inline val f: (T) -> Argument?) : ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = Optional.ofNullable(

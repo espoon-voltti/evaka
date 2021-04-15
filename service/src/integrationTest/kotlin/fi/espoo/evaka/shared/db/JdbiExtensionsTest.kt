@@ -9,13 +9,18 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.utils.zoneId
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZonedDateTime
 
 private inline fun <reified T : Any> Database.Read.passThrough(input: T) = createQuery(
     // language=SQL
@@ -124,5 +129,38 @@ class JdbiExtensionsTest : PureJdbiTest() {
             it.createQuery("SELECT NULL::text AS value").mapTo<QueryResult>().single()
         }
         assertNull(result.value)
+    }
+
+    @Test
+    fun testHelsinkiDateTime() {
+        val input = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), zoneId))
+
+        val match = db.read { it.checkMatch("SELECT :input = '2020-05-07T10:59Z'", input) }
+        assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+    }
+
+    @Test
+    fun testNullHelsinkiDateTime() {
+        data class QueryResult(val value: HelsinkiDateTime?)
+
+        val result = db.read {
+            it.createQuery("SELECT NULL::timestamptz AS value").mapTo<QueryResult>().single()
+        }
+        assertNull(result.value)
+    }
+
+    @Test
+    fun testHelsinkiDateTimeInJsonb() {
+        data class JsonbObject(val value: HelsinkiDateTime)
+        data class QueryResult(@Json val jsonb: JsonbObject)
+
+        val result = db.read {
+            it.createQuery("SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb").mapTo<QueryResult>().single()
+        }
+        val expected = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), zoneId))
+        assertEquals(expected, result.jsonb.value)
     }
 }
