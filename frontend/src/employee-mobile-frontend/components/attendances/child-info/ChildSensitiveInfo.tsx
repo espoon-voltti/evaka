@@ -2,20 +2,25 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { P, Label } from 'lib-components/typography'
-import Title from 'lib-components/atoms/Title'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { faPhone } from 'lib-icons'
 
 import { Child } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import { ContentAreaWithShadow } from '../../mobile/components'
+import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers'
+import Title from '../../../../lib-components/atoms/Title'
+import CollapsibleSection from '../../../../lib-components/molecules/CollapsibleSection'
 import { PlacementType } from '../../../types'
 
 interface Props {
   child: Child | null
 }
+
+const Key = styled.span`
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+`
 
 const KeyValue = styled.div`
   display: flex;
@@ -39,7 +44,7 @@ const renderKeyValue = (
 ) => {
   return value ? (
     <KeyValue>
-      <Label>{label}</Label>
+      <Key>{label}</Key>
       {phone ? (
         <Phone>
           <span data-qa={dataQa}>{value}</span>
@@ -81,11 +86,10 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
             >
               <FixedSpaceColumn>
                 <KeyValue>
-                  <Label>{i18n.attendances.childInfo.childName}</Label>
-                  <P
-                    fitted
+                  <Key>{i18n.attendances.childInfo.childName}</Key>
+                  <span
                     data-qa={'child-info-name'}
-                  >{`${child.firstName} ${child.lastName}`}</P>
+                  >{`${child.firstName} ${child.lastName}`}</span>
                 </KeyValue>
 
                 {renderKeyValue(
@@ -102,8 +106,8 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
 
                 {child.placementType && child.placementType.length > 0 && (
                   <KeyValue>
-                    <Label>{i18n.attendances.childInfo.type}</Label>
-                    <P fitted>{placementTypesToText(child.placementType)}</P>
+                    <Key>{i18n.attendances.childInfo.type}</Key>
+                    <span>{placementTypesToText(child.placementType)}</span>
                   </KeyValue>
                 )}
               </FixedSpaceColumn>
@@ -147,13 +151,10 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                   }`}</Title>
                   <FixedSpaceColumn>
                     <KeyValue>
-                      <Label>{i18n.attendances.childInfo.name}</Label>
-                      <P
-                        fitted
-                        data-qa={`child-info-contact${index + 1}-name`}
-                      >{`${contact.firstName || ''} ${
-                        contact.lastName || ''
-                      }`}</P>
+                      <Key>{i18n.attendances.childInfo.name}</Key>
+                      <span data-qa={`child-info-contact${index + 1}-name`}>{`${
+                        contact.firstName || ''
+                      } ${contact.lastName || ''}`}</span>
                     </KeyValue>
 
                     {renderKeyValue(
