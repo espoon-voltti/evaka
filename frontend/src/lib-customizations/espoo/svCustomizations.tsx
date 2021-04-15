@@ -4,6 +4,10 @@
 
 export default {
   footer: {
-    cityLabel: '© Esbo stad'
+    cityLabel: '© Esbo stad',
+    privacyPolicyLink:
+      'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   }
 }

@@ -61,11 +61,9 @@ const en: Translations = {
   footer: {
     cityLabel: enCustomizations.footer.cityLabel,
     privacyPolicy: 'Privacy Notices',
-    privacyPolicyLink:
-      'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
+    privacyPolicyLink: enCustomizations.footer.privacyPolicyLink,
     sendFeedback: 'Give feedback',
-    sendFeedbackLink:
-      'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+    sendFeedbackLink: enCustomizations.footer.sendFeedbackLink
   },
   map: {
     title: 'Units on the map',
