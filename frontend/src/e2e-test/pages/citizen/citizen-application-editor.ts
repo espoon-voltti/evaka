@@ -194,7 +194,7 @@ export default class CitizenApplicationEditor {
 
   async assertUrgentFileHasBeenUploaded(filename: string) {
     await t
-      .expect(this.urgentAttachmentDownloadButton(filename).visible)
+      .expect(this.urgentAttachmentDownloadButton(filename).exists)
       .ok({ timeout: 2000 }) // Uploading test files shouldn't take very long
   }
 

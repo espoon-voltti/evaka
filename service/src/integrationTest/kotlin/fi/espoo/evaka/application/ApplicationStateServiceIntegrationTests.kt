@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
@@ -56,11 +57,14 @@ import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.util.UUID
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
@@ -145,12 +149,24 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
     }
 
+    private fun assertDueDate(applicationId: UUID, expected: Instant?) {
+        db.read {
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            if (expected != null) {
+                assertEquals(LocalDate.ofInstant(expected, zoneId), application.dueDate)
+            } else {
+                assertNull(application.dueDate)
+            }
+        }
+    }
+
     @Test
-    fun `sendApplication - daycare has due date after 2 weeks if urgent`() {
+    fun `sendApplication - daycare has due date after 2 weeks if urgent and has attachments`() {
         db.transaction { tx ->
             // given
             insertApplication(
                 tx.handle,
+                guardian = testAdult_1,
                 appliedType = PlacementType.DAYCARE,
                 urgent = true,
                 applicationId = applicationId,
@@ -161,11 +177,61 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when
             service.sendApplication(tx, serviceWorker, applicationId)
         }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(LocalDate.now().plusWeeks(2), application.dueDate)
+        // then
+        assertDueDate(applicationId, null) // missing attachment
+
+        // when
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id)))
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
+                .bind("applicationId", applicationId)
+                .bind("receivedAt", Instant.now().minus(Period.ofWeeks(1)))
+                .execute()
         }
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id)))
+        // then
+        assertDueDate(applicationId, Instant.now().plus(Period.ofWeeks(2))) // end date >= earliest attachment.receivedAt
+    }
+
+    @Test
+    fun `sendApplication - urgent daycare application gets due date from first received attachment`() {
+        db.transaction { tx ->
+            // given
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_1,
+                appliedType = PlacementType.DAYCARE,
+                urgent = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
+        }
+        // when
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id), AttachmentType.EXTENDED_CARE))
+        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id), AttachmentType.URGENCY))
+
+        // then
+        assertDueDate(applicationId, null) // application not sent
+
+        // when
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
+                .bind("type", AttachmentType.EXTENDED_CARE)
+                .bind("applicationId", applicationId)
+                .bind("receivedAt", Instant.now().plus(Period.ofWeeks(1)))
+                .execute()
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
+                .bind("type", AttachmentType.URGENCY)
+                .bind("applicationId", applicationId)
+                .bind("receivedAt", Instant.now().plus(Period.ofDays(3)))
+                .execute()
+        }
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
+        // then
+        assertDueDate(applicationId, Instant.now().plus(Period.ofDays(14 + 3))) // attachments received after application sent
     }
 
     @Test

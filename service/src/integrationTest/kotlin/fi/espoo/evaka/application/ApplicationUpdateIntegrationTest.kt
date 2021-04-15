@@ -20,6 +20,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -57,7 +58,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `when application update sets urgent to true, the new due date is calculated from current date`() {
+    fun `when application update sets urgent to true, new due date is calculated`() {
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
@@ -73,8 +74,15 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val result = jdbi.handle { fetchApplicationDetails(it, application.id) }
-        assertEquals(LocalDate.now().plusWeeks(2), result?.dueDate)
+        val beforeSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        assertNull(beforeSendingAttachment?.dueDate)
+
+        // when
+        uploadAttachment(applicationId = application.id, serviceWorker)
+
+        // then
+        val afterSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        assertEquals(LocalDate.now().plusWeeks(2), afterSendingAttachment?.dueDate)
     }
 
     @Test
@@ -83,6 +91,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 1, 15)
         val application = insertSentApplication(sentDate, originalDueDate, true)
+
+        uploadAttachment(applicationId = application.id, serviceWorker)
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
+                .bind("receivedAt", sentDate).bind("applicationId", application.id).execute()
+        }
 
         // when
         val (_, res, _) = http.put("/v2/applications/${application.id}")
