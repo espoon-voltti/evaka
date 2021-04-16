@@ -179,10 +179,12 @@ tasks {
 
 tasks {
     test {
+        useJUnitPlatform()
         systemProperty("spring.profiles.active", "test")
     }
 
     create("integrationTest", Test::class) {
+        useJUnitPlatform()
         group = "verification"
         systemProperty("spring.profiles.active", "integration-test")
         testClassesDirs = sourceSets["integrationTest"].output.classesDirs

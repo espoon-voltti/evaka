@@ -8,12 +8,12 @@ import fi.espoo.evaka.msg.async.AsyncJobRunner
 import fi.espoo.evaka.msg.async.SendMessage
 import fi.espoo.evaka.msg.controllers.PdfSendMessage
 import org.jdbi.v3.core.Jdbi
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.util.UUID
@@ -45,13 +45,13 @@ class AsyncJobRunnerTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var jdbi: Jdbi
 
-    @Before
+    @BeforeAll
     fun before() {
         asyncJobRunner = AsyncJobRunner(jdbi)
     }
 
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     fun clean() {
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
     }
