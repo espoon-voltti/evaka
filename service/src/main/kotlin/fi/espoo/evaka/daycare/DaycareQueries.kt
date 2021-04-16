@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -288,7 +288,7 @@ ORDER BY name ASC
     """.trimIndent()
 
     return createQuery(sql)
-        .bind("date", LocalDate.now(zoneId))
+        .bind("date", LocalDate.now(europeHelsinki))
         .mapTo<PublicUnit>()
         .toList()
 }

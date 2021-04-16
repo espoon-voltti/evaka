@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -56,7 +56,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val febFirst = LocalDate.of(2020, 2, 1)
 
-    private val janFreeze = ZonedDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0), zoneId).toInstant()
+    private val janFreeze = ZonedDateTime.of(LocalDateTime.of(2020, 1, 21, 22, 0), europeHelsinki).toInstant()
 
     @Test
     fun `unfrozen area voucher report includes value decisions that begin in the beginning of reports month`() {
@@ -144,7 +144,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         coPayment: Int,
         adultId: UUID,
         child: PersonData.Detailed,
-        approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), zoneId).toInstant()
+        approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), europeHelsinki).toInstant()
     ): VoucherValueDecision {
         val decision = db.transaction {
             val decision = createVoucherValueDecisionFixture(

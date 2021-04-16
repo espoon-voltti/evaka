@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
@@ -146,7 +146,7 @@ fun Database.Transaction.sendBulletin(
     val sent = this.createUpdate(updateBulletinSql)
         .bind("id", id)
         .bind("userId", user.id)
-        .bind("sentAt", OffsetDateTime.now(zoneId))
+        .bind("sentAt", OffsetDateTime.now(europeHelsinki))
         .execute()
 
     if (sent == 0) throw NotFound("No bulletin $id found by user ${user.id} in draft state")
@@ -201,7 +201,7 @@ fun Database.Transaction.sendBulletin(
 
     this.createUpdate(insertBulletinInstancesSql)
         .bind("bulletinId", id)
-        .bind("date", LocalDate.now(zoneId))
+        .bind("date", LocalDate.now(europeHelsinki))
         .execute()
 }
 
@@ -485,7 +485,7 @@ fun Database.Read.getReceiversForNewBulletin(
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("date", LocalDate.now(zoneId))
+        .bind("date", LocalDate.now(europeHelsinki))
         .bind("userId", user.id)
         .bind("unitId", unitId)
         .mapTo<BulletinReceiversResult>()
@@ -574,7 +574,7 @@ fun Database.Transaction.markBulletinRead(
     this.createUpdate(sql)
         .bind("id", id)
         .bind("userId", user.id)
-        .bind("readAt", OffsetDateTime.now(zoneId))
+        .bind("readAt", OffsetDateTime.now(europeHelsinki))
         .execute()
 }
 

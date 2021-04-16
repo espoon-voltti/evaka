@@ -13,14 +13,12 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.utils.zoneId
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @RestController
@@ -53,10 +51,7 @@ class PairingsController(
             asyncJobRunner.plan(
                 tx = tx,
                 payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
-                runAt = ZonedDateTime
-                    .ofInstant(pairing.expires, zoneId)
-                    .plusDays(1)
-                    .toInstant()
+                runAt = pairing.expires.plusDays(1).toInstant()
             )
 
             pairing

@@ -5,7 +5,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -122,7 +122,7 @@ fun fetchRecipients(tx: Database.Read, now: Instant, childId: UUID): List<Recipi
 
     return tx.createQuery(sql)
         .bind("childId", childId)
-        .bind("date", LocalDate.ofInstant(now, zoneId))
+        .bind("date", LocalDate.ofInstant(now, europeHelsinki))
         .mapTo<Recipient>()
         .list()
 }

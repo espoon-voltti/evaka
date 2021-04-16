@@ -54,7 +54,7 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -580,7 +580,7 @@ private fun getActivePaidPlacements(h: Handle, childId: UUID, from: LocalDate): 
         .toList()
 }
 
-fun isEntitledToFreeFiveYearsOldDaycare(dateOfBirth: LocalDate, date: LocalDate = LocalDate.now(zoneId)): Boolean {
+fun isEntitledToFreeFiveYearsOldDaycare(dateOfBirth: LocalDate, date: LocalDate = LocalDate.now(europeHelsinki)): Boolean {
     return getFiveYearOldTerm(dateOfBirth).includes(date)
 }
 

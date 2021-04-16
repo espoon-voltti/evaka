@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -111,8 +111,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,
                 groupId = groupId2,
-                startDate = LocalDate.now(zoneId),
-                endDate = LocalDate.now(zoneId)
+                startDate = LocalDate.now(europeHelsinki),
+                endDate = LocalDate.now(europeHelsinki)
             )
         }
         val response = fetchAttendances()
@@ -127,8 +127,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 groupId = groupId,
-                startDate = LocalDate.now(zoneId),
-                endDate = LocalDate.now(zoneId)
+                startDate = LocalDate.now(europeHelsinki),
+                endDate = LocalDate.now(europeHelsinki)
             )
         }
         val child = expectOneChild()

@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
@@ -61,7 +61,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         // test with daylight saving time change on 25.10.2020
         val arrived = ZonedDateTime.of(
             LocalDate.of(2020, 10, 25).atTime(LocalTime.of(9, 0)),
-            zoneId
+            europeHelsinki
         ).toInstant()
 
         db.transaction {
@@ -91,7 +91,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         assertEquals(1, attendances.size)
         val expectedDeparted = ZonedDateTime.of(
             LocalDate.of(2020, 10, 25).atTime(LocalTime.of(23, 59)),
-            zoneId
+            europeHelsinki
         ).toInstant()
         assertEquals(expectedDeparted, attendances.first().departed)
     }

@@ -6,7 +6,7 @@ package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
@@ -37,9 +37,9 @@ fun Database.Read.getActivePreschoolTermAt(date: LocalDate): PreschoolTerm? {
 }
 
 fun Database.Read.getCurrentPreschoolTerm(): PreschoolTerm? {
-    return getActivePreschoolTermAt(LocalDate.now(zoneId))
+    return getActivePreschoolTermAt(LocalDate.now(europeHelsinki))
 }
 
 fun Database.Read.getNextPreschoolTerm(): PreschoolTerm? {
-    return getPreschoolTerms().firstOrNull { it.extendedTerm.start.isAfter(LocalDate.now(zoneId)) }
+    return getPreschoolTerms().firstOrNull { it.extendedTerm.start.isAfter(LocalDate.now(europeHelsinki)) }
 }

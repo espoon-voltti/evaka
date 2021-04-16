@@ -13,6 +13,7 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.generic.GenericType
@@ -77,10 +78,12 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)
     jdbi.registerArgument(externalIdArgumentFactory)
+    jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
     jdbi.registerColumnMapper(FiniteDateRange::class.java, finiteDateRangeColumnMapper)
     jdbi.registerColumnMapper(DateRange::class.java, dateRangeColumnMapper)
     jdbi.registerColumnMapper(Coordinate::class.java, coordinateColumnMapper)
     jdbi.registerColumnMapper(ExternalId::class.java, externalIdColumnMapper)
+    jdbi.registerColumnMapper(HelsinkiDateTime::class.java, helsinkiDateTimeColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     return jdbi
 }

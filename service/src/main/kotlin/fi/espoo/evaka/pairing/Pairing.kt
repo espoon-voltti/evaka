@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.pairing
 
-import java.time.Instant
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
 data class Pairing(
@@ -12,7 +12,7 @@ data class Pairing(
     val unitId: UUID,
     val challengeKey: String,
     val responseKey: String?,
-    val expires: Instant,
+    val expires: HelsinkiDateTime,
     val status: PairingStatus,
     val mobileDeviceId: UUID? = null
 )

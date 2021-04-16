@@ -5,11 +5,10 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
 import java.security.SecureRandom
-import java.time.ZonedDateTime
 import java.util.UUID
 
 const val maxAttempts = 100 // additional brute-force protection
@@ -26,7 +25,7 @@ fun Database.Transaction.initPairing(unitId: UUID): Pairing {
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("expires", ZonedDateTime.now(zoneId).plusMinutes(expiresInMinutes).toInstant())
+        .bind("expires", HelsinkiDateTime.now().plusMinutes(expiresInMinutes))
         .bind("challenge", generatePairingKey())
         .mapTo<Pairing>()
         .first()
@@ -44,7 +43,7 @@ fun Database.Transaction.challengePairing(challengeKey: String): Pairing {
     return createQuery(sql)
         .bind("challenge", challengeKey)
         .bind("response", generatePairingKey())
-        .bind("now", ZonedDateTime.now(zoneId).toInstant())
+        .bind("now", HelsinkiDateTime.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
@@ -84,7 +83,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: UUID, challenge
         .bind("challenge", challengeKey)
         .bind("response", responseKey)
         .bind("name", defaultDeviceName)
-        .bind("now", ZonedDateTime.now(zoneId).toInstant())
+        .bind("now", HelsinkiDateTime.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
@@ -108,7 +107,7 @@ RETURNING id, long_term_token
         .bind("id", id)
         .bind("challenge", challengeKey)
         .bind("response", responseKey)
-        .bind("now", ZonedDateTime.now(zoneId).toInstant())
+        .bind("now", HelsinkiDateTime.now())
         .bind("maxAttempts", maxAttempts)
         .bind("longTermToken", UUID.randomUUID())
         .mapTo<MobileDeviceIdentity>()
@@ -125,7 +124,7 @@ fun Database.Read.fetchPairingStatus(id: UUID): PairingStatus {
 
     return createQuery(sql)
         .bind("id", id)
-        .bind("now", ZonedDateTime.now(zoneId).toInstant())
+        .bind("now", HelsinkiDateTime.now())
         .bind("maxAttempts", maxAttempts)
         .mapTo<PairingStatus>()
         .list()
