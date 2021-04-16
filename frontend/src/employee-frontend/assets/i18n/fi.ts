@@ -423,7 +423,8 @@ export const fi = {
       name: 'Tiedostonimi',
       updated: 'Muutettu',
       contentType: 'Tyyppi',
-      receivedAt: 'Liite lähetetty'
+      receivedByPaperAt: 'Toimitettu paperisena',
+      receivedAt: 'Toimitettu sähköisesti'
     },
     state: {
       title: 'Hakemuksen tila',

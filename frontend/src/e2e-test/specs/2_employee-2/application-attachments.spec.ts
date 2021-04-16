@@ -70,5 +70,7 @@ test('Employee can add and remove attachments', async (t) => {
   await applicationEditView.saveApplication()
 
   await applicationReadView.openApplicationByLink(applicationFixtureId)
-  await applicationReadView.assertReceivedAtTextExists(testFileName)
+  await applicationReadView.assertUrgencyAttachmentReceivedAtVisible(
+    testFileName
+  )
 })

@@ -76,8 +76,10 @@ function Attachment({ attachment, dataQa }: Props) {
           }
           dataQa={'attachment-download'}
         />
-        <ReceivedAtText data-qa={`attachment-${attachment.name}-received-at`}>
-          {i18n.application.attachments.receivedAt}{' '}
+        <ReceivedAtText data-qa={`attachment-received-at`}>
+          {attachment.uploadedByEmployee
+            ? i18n.application.attachments.receivedByPaperAt
+            : i18n.application.attachments.receivedAt}{' '}
           {LocalDate.fromSystemTzDate(attachment.receivedAt).format()}
         </ReceivedAtText>
       </FixedSpaceRow>
