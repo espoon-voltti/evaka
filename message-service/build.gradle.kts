@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -35,7 +35,6 @@ plugins {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
