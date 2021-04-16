@@ -8,7 +8,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath(files("custom-ktlint-rules/custom-ktlint-rules.jar"))
@@ -31,7 +31,6 @@ plugins {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 

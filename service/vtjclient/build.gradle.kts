@@ -4,7 +4,7 @@
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -20,7 +20,6 @@ plugins {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
