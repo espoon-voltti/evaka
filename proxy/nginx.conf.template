@@ -267,11 +267,14 @@ server {
   }
 
   <% if ENV.key?("KEYCLOAK_URL") && ENV["KEYCLOAK_URL"] != "" %>
-
   set $authUrl "<%= ENV["KEYCLOAK_URL"] %>";
   set $formActionUrl "<%= ENV["FORM_ACTION_URL"] %>";
 
   location /auth {
+    <% if ENV.key?("KEYCLOAK_PARAMETERS") && ENV["KEYCLOAK_PARAMETERS"] != "" %>
+    <%= ENV["KEYCLOAK_PARAMETERS"] %>
+    <% end %>
+
     <% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
     auth_basic "off";
     <% end %>
