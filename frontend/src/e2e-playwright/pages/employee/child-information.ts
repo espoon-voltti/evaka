@@ -1,27 +1,16 @@
 import { Page } from 'playwright'
 import { RawElement } from 'e2e-playwright/utils/element'
 
-export type Collapsible = 'dailyServiceTimes'
-
 export default class ChildInformationPage {
   constructor(private readonly page: Page) {}
 
-  readonly #collapsibles: Record<Collapsible, RawElement> = {
-    dailyServiceTimes: new RawElement(
-      this.page,
-      '[data-qa="child-daily-service-times-collapsible"]'
-    )
-  }
-
-  async openCollapsible(collapsible: Collapsible) {
-    const element = this.#collapsibles[collapsible]
+  async openCollapsible<C extends Collapsible>(
+    collapsible: C
+  ): Promise<SectionFor<C>> {
+    const { selector, section } = collapsibles[collapsible]
+    const element = new RawElement(this.page, selector)
     await element.click()
-    return element
-  }
-
-  async openDailyServiceTimesCollapsible() {
-    const element = await this.openCollapsible('dailyServiceTimes')
-    return new DailyServiceTimeSection(element)
+    return new section(element) as SectionFor<C>
   }
 }
 
@@ -88,3 +77,16 @@ export class DailyServiceTimesSectionEdit {
     await this.#submitButton.click()
   }
 }
+
+const collapsibles = {
+  dailyServiceTimes: {
+    selector: '[data-qa="child-daily-service-times-collapsible"]',
+    section: DailyServiceTimeSection
+  }
+}
+
+type Collapsibles = typeof collapsibles
+type Collapsible = keyof Collapsibles
+type SectionFor<C extends Collapsible> = InstanceType<
+  Collapsibles[C]['section']
+>

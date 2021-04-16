@@ -54,7 +54,7 @@ beforeEach(async () => {
 describe('Child Information - daily service times', () => {
   let section: DailyServiceTimeSection
   beforeEach(async () => {
-    section = await childInformationPage.openDailyServiceTimesCollapsible()
+    section = await childInformationPage.openCollapsible('dailyServiceTimes')
   })
 
   test('no service times initially', async () => {
