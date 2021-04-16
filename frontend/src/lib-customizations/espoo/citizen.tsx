@@ -7,6 +7,7 @@ import EspooLogo from './espoo-logo.svg'
 import enCustomizations from './enCustomizations'
 import fiCustomizations from './fiCustomizations'
 import svCustomizations from './svCustomizations'
+import mapConfig from './mapConfig'
 import featureFlags from './featureFlags'
 
 const customizations: CitizenCustomizations = {
@@ -17,6 +18,7 @@ const customizations: CitizenCustomizations = {
     src: EspooLogo,
     alt: 'Espoo Logo'
   },
+  mapConfig,
   featureFlags
 }
 

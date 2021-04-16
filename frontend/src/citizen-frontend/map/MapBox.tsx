@@ -17,9 +17,10 @@ import { formatDistance, UnitWithDistance } from '../map/distances'
 import { useTranslation } from '../localization'
 import { formatCareTypes } from './format'
 import { MapAddress } from '../map/MapView'
-import { addressZoom, initialZoom, mapViewBreakpoint } from '../map/const'
+import { mapViewBreakpoint } from '../map/const'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
+import { mapConfig } from 'lib-customizations/citizen'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
@@ -30,7 +31,7 @@ export interface Props {
 export default React.memo(function MapBox(props: Props) {
   return (
     <Wrapper className="map-box">
-      <Map center={[60.184147, 24.704897]} zoom={initialZoom}>
+      <Map center={mapConfig.center} zoom={mapConfig.initialZoom}>
         <MapContents {...props} />
       </Map>
       <FooterWrapper>
@@ -66,7 +67,9 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
     if (selectedAddress) {
       const { lat, lon } = selectedAddress.coordinates
       map.stop()
-      map.flyTo([lat, lon], addressZoom, { animate: !isAutomatedTest })
+      map.flyTo([lat, lon], mapConfig.addressZoom, {
+        animate: !isAutomatedTest
+      })
     }
   }, [selectedAddress])
 
