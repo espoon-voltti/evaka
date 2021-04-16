@@ -32,6 +32,10 @@ export class RawElement {
     return this.page.isVisible(this.selector)
   }
 
+  get disabled(): Promise<boolean> {
+    return this.page.isDisabled(this.selector)
+  }
+
   async click(): Promise<void> {
     await this.page.click(this.selector)
   }
@@ -42,6 +46,10 @@ export class RawElement {
 
   find(descendant: string): RawElement {
     return new RawElement(this.page, `${this.selector} ${descendant}`)
+  }
+
+  findInput(descendant: string): RawTextInput {
+    return new RawTextInput(this.page, `${this.selector} ${descendant}`)
   }
 }
 
@@ -72,6 +80,11 @@ export const WithTextInput = <T extends Constructor<RawElement>>(
     async type(text: string): Promise<void> {
       await this.page.type(this.#input, text)
     }
+
+    async fill(text: string): Promise<void> {
+      await this.page.fill(this.#input, text)
+    }
+
     async clear(): Promise<void> {
       await this.page.click(this.#input, { clickCount: 3 })
       await this.page.keyboard.press('Backspace')

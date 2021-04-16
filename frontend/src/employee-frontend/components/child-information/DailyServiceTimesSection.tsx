@@ -17,25 +17,26 @@ import {
   DailyServiceTimes,
   isIrregular,
   RegularDailyServiceTimes,
-  IrregularDailyServiceTimes
+  IrregularDailyServiceTimes,
+  TimeRange
 } from 'lib-common/api-types/child/common'
 import {
   deleteChildDailyServiceTimes,
   getChildDailyServiceTimes,
   putChildDailyServiceTimes
 } from '../../api/child/daily-service-times'
-import { faClock, faPen } from '../../../lib-icons'
+import { faClock, faPen } from 'lib-icons'
 import styled from 'styled-components'
-import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import Button from '../../../lib-components/atoms/buttons/Button'
+import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import Radio from '../../../lib-components/atoms/form/Radio'
-import InputField from '../../../lib-components/atoms/form/InputField'
-import Checkbox from '../../../lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import InputField from 'lib-components/atoms/form/InputField'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
@@ -82,6 +83,7 @@ const emptyForm: FormData = {
 
 interface ValidationResult {
   regular: NullableValues<TimeInputRange>
+  irregular: true | null
   monday: NullableValues<TimeInputRange>
   tuesday: NullableValues<TimeInputRange>
   wednesday: NullableValues<TimeInputRange>
@@ -195,6 +197,11 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
           end:
             formData.type === 'REGULAR' ? required(formData.regular.end) : null
         },
+        irregular:
+          formData.type === 'IRREGULAR' &&
+          !weekdays.some((day) => formData[day].selected)
+            ? true
+            : null,
         monday: validateWeekday(formData, 'monday'),
         tuesday: validateWeekday(formData, 'tuesday'),
         wednesday: validateWeekday(formData, 'wednesday'),
@@ -281,8 +288,20 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     }
   }
 
+  const setType = (type: 'NOT_SET' | 'REGULAR' | 'IRREGULAR') => () =>
+    setFormData((old) => (old !== null ? { ...old, type } : null))
+
+  const setTimes = (wd: 'regular' | Weekday) => (value: TimeRange) =>
+    setFormData((old) => (old !== null ? { ...old, [wd]: value } : null))
+
+  const setWeekdaySelected = (wd: Weekday) => (value: boolean) =>
+    setFormData((old) =>
+      old !== null ? { ...old, [wd]: { ...old[wd], selected: value } } : null
+    )
+
   const formIsValid =
     validationResult !== null &&
+    validationResult.irregular === null &&
     Object.values(validationResult.regular).find((v) => v !== null) ===
       undefined &&
     Object.values(validationResult.monday).find((v) => v !== null) ===
@@ -319,9 +338,8 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                   <InlineButton
                     text={i18n.common.edit}
                     icon={faPen}
-                    onClick={() => {
-                      startEditing()
-                    }}
+                    onClick={startEditing}
+                    dataQa="edit-button"
                   />
                 </RightAlign>
 
@@ -329,17 +347,17 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
               </RequireRole>
 
               {apiData.value === null ? (
-                <FixedWidthLabel>
+                <FixedWidthLabel data-qa="times-type">
                   {i18n.childInformation.dailyServiceTimes.types.notSet}
                 </FixedWidthLabel>
               ) : (
                 <>
                   {isRegular(apiData.value) && (
                     <FixedSpaceRow>
-                      <FixedWidthLabel>
+                      <FixedWidthLabel data-qa="times-type">
                         {i18n.childInformation.dailyServiceTimes.types.regular}
                       </FixedWidthLabel>
-                      <div>
+                      <div data-qa="times">
                         {i18n.childInformation.dailyServiceTimes.weekdays.monday.toLowerCase()}
                         -
                         {i18n.childInformation.dailyServiceTimes.weekdays.friday.toLowerCase()}{' '}
@@ -350,13 +368,13 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                   )}
                   {isIrregular(apiData.value) && (
                     <FixedSpaceRow>
-                      <FixedWidthLabel>
+                      <FixedWidthLabel data-qa="times-type">
                         {
                           i18n.childInformation.dailyServiceTimes.types
                             .irregular
                         }
                       </FixedWidthLabel>
-                      <div>
+                      <div data-qa="times">
                         {weekdays
                           .map((wd) =>
                             apiData.value &&
@@ -386,32 +404,16 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                   <Radio
                     label={i18n.childInformation.dailyServiceTimes.types.notSet}
                     checked={formData.type === 'NOT_SET'}
-                    onChange={() =>
-                      setFormData((old) =>
-                        old !== null
-                          ? {
-                              ...old,
-                              type: 'NOT_SET'
-                            }
-                          : null
-                      )
-                    }
+                    onChange={setType('NOT_SET')}
+                    data-qa="radio-not-set"
                   />
                   <Radio
                     label={
                       i18n.childInformation.dailyServiceTimes.types.regular
                     }
                     checked={formData.type === 'REGULAR'}
-                    onChange={() =>
-                      setFormData((old) =>
-                        old !== null
-                          ? {
-                              ...old,
-                              type: 'REGULAR'
-                            }
-                          : null
-                      )
-                    }
+                    onChange={setType('REGULAR')}
+                    dataQa="radio-regular"
                   />
                   {formData.type === 'REGULAR' && (
                     <FixedSpaceRow style={{ marginLeft: defaultMargins.XXL }}>
@@ -421,62 +423,11 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                         {i18n.childInformation.dailyServiceTimes.weekdays.friday.toLowerCase()}
                       </span>
                       <FixedSpaceRow>
-                        <InputField
-                          value={formData.regular.start}
-                          onChange={(value) =>
-                            setFormData((old) =>
-                              old !== null
-                                ? {
-                                    ...old,
-                                    regular: {
-                                      ...old.regular,
-                                      start: value
-                                    }
-                                  }
-                                : null
-                            )
-                          }
-                          type="time"
-                          required
-                          dataQa="regular-start"
-                          info={
-                            validationResult?.regular?.start
-                              ? {
-                                  status: 'warning',
-                                  text: validationResult.regular.start
-                                }
-                              : undefined
-                          }
-                          width="s"
-                        />
-                        <span> - </span>
-                        <InputField
-                          value={formData.regular.end}
-                          onChange={(value) =>
-                            setFormData((old) =>
-                              old !== null
-                                ? {
-                                    ...old,
-                                    regular: {
-                                      ...old.regular,
-                                      end: value
-                                    }
-                                  }
-                                : null
-                            )
-                          }
-                          type="time"
-                          required
-                          dataQa="regular-end"
-                          info={
-                            validationResult?.regular?.end
-                              ? {
-                                  status: 'warning',
-                                  text: validationResult.regular.end
-                                }
-                              : undefined
-                          }
-                          width="s"
+                        <TimeRangeInput
+                          value={formData.regular}
+                          onChange={setTimes('regular')}
+                          error={validationResult?.regular}
+                          dataQaPrefix="regular"
                         />
                       </FixedSpaceRow>
                     </FixedSpaceRow>
@@ -486,16 +437,8 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                       i18n.childInformation.dailyServiceTimes.types.irregular
                     }
                     checked={formData.type === 'IRREGULAR'}
-                    onChange={() =>
-                      setFormData((old) =>
-                        old !== null
-                          ? {
-                              ...old,
-                              type: 'IRREGULAR'
-                            }
-                          : null
-                      )
-                    }
+                    onChange={setType('IRREGULAR')}
+                    dataQa="radio-irregular"
                   />
                   {formData.type === 'IRREGULAR' && (
                     <FixedSpaceColumn>
@@ -511,78 +454,26 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                                   .weekdays[wd]
                               }
                               checked={formData[wd].selected}
-                              onChange={(checked) =>
-                                setFormData((old) =>
-                                  old !== null
-                                    ? {
-                                        ...old,
-                                        [wd]: {
-                                          ...old[wd],
-                                          selected: checked
-                                        }
-                                      }
-                                    : null
-                                )
-                              }
+                              onChange={setWeekdaySelected(wd)}
+                              dataQa={`${wd}-checkbox`}
                             />
                           </div>
-                          <FixedSpaceRow>
-                            <InputField
-                              value={formData[wd].start}
-                              onChange={(value) =>
-                                setFormData((old) =>
-                                  old !== null
-                                    ? {
-                                        ...old,
-                                        [wd]: {
-                                          ...old[wd],
-                                          start: value
-                                        }
-                                      }
-                                    : null
-                                )
-                              }
-                              type="time"
-                              required
-                              dataQa={`${wd}-start`}
-                              info={
-                                validationResult && validationResult[wd].start
-                                  ? {
-                                      status: 'warning',
-                                      text: validationResult[wd].start || ''
-                                    }
+                          <FixedSpaceRow
+                            style={
+                              !formData[wd].selected
+                                ? { display: 'none' }
+                                : undefined
+                            }
+                          >
+                            <TimeRangeInput
+                              value={formData[wd]}
+                              onChange={setTimes(wd)}
+                              error={
+                                validationResult
+                                  ? validationResult[wd]
                                   : undefined
                               }
-                              width="s"
-                            />
-                            <span> - </span>
-                            <InputField
-                              value={formData[wd].end}
-                              onChange={(value) =>
-                                setFormData((old) =>
-                                  old !== null
-                                    ? {
-                                        ...old,
-                                        [wd]: {
-                                          ...old[wd],
-                                          end: value
-                                        }
-                                      }
-                                    : null
-                                )
-                              }
-                              type="time"
-                              required
-                              dataQa={`${wd}-end`}
-                              info={
-                                validationResult && validationResult[wd].end
-                                  ? {
-                                      status: 'warning',
-                                      text: validationResult[wd].end || ''
-                                    }
-                                  : undefined
-                              }
-                              width="s"
+                              dataQaPrefix={wd}
                             />
                           </FixedSpaceRow>
                         </FixedSpaceRow>
@@ -606,6 +497,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     onClick={onSubmit}
                     disabled={submitting || !formIsValid}
                     primary
+                    dataQa="submit-button"
                   />
                 </FixedSpaceRow>
               </RightAlign>
@@ -614,6 +506,60 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
         </>
       )}
     </CollapsibleSection>
+  )
+})
+
+interface TimeRangeInputProps {
+  value: TimeRange
+  onChange: (value: TimeRange) => void
+  error: NullableValues<TimeRange> | undefined
+  dataQaPrefix: string
+}
+
+const TimeRangeInput = React.memo(function TimeRangeInput({
+  value,
+  onChange,
+  error,
+  dataQaPrefix
+}: TimeRangeInputProps) {
+  return (
+    <>
+      <InputField
+        value={value.start}
+        onChange={(start) => onChange({ ...value, start })}
+        type="time"
+        required
+        dataQa={`${dataQaPrefix}-start`}
+        info={
+          error && error.start
+            ? {
+                status: 'warning',
+                text: error.start
+              }
+            : undefined
+        }
+        hideErrorsBeforeTouched
+        width="s"
+      />
+      <span> - </span>
+      <InputField
+        value={value.end}
+        onChange={(end) => onChange({ ...value, end })}
+        type="time"
+        required
+        dataQa={`${dataQaPrefix}-end`}
+        info={
+          error && error.end
+            ? {
+                status: 'warning',
+                text: error.end
+              }
+            : undefined
+        }
+        hideErrorsBeforeTouched
+        width="s"
+      />
+    </>
   )
 })
 

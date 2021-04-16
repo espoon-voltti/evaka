@@ -4,7 +4,6 @@
 
 import React from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Translations } from '../../assets/i18n'
 import { DailyServiceTimes, TimeRange } from 'lib-common/api-types/child/common'
 import { ServiceTime } from './components'
 
@@ -24,21 +23,17 @@ function getToday(): DayName | undefined {
   return dayNames[dayIndex]
 }
 
-function getTodaysServiceTimes(times: DailyServiceTimes): TimeRange | null {
+function getTodaysServiceTimes(
+  times: DailyServiceTimes | null
+): TimeRange | 'not_today' | 'not_set' {
+  if (times === null) return 'not_set'
+
   if (times.regular) return times.regularTimes
 
   const today = getToday()
-  if (!today) return null
+  if (!today) return 'not_today'
 
-  return times[today] ?? null
-}
-
-function formatTimeRange(i18n: Translations, range: TimeRange) {
-  return i18n.attendances.serviceTime.serviceToday(range.start, range.end)
-}
-
-function noServiceToday(i18n: Translations): string {
-  return i18n.attendances.serviceTime.noServiceToday
+  return times[today] ?? 'not_today'
 }
 
 interface Props {
@@ -49,14 +44,20 @@ export default React.memo(function AttendanceDailyServiceTimes({
   times
 }: Props) {
   const { i18n } = useTranslation()
-  if (times === null) {
-    return <ServiceTime>{noServiceToday(i18n)}</ServiceTime>
-  }
 
-  const timeRange = getTodaysServiceTimes(times)
-  if (timeRange === null) {
-    return <ServiceTime>{noServiceToday(i18n)}</ServiceTime>
-  }
-
-  return <ServiceTime>{formatTimeRange(i18n, timeRange)}</ServiceTime>
+  const todaysTimes = getTodaysServiceTimes(times)
+  return (
+    <ServiceTime>
+      {todaysTimes === 'not_set' ? (
+        <em>{i18n.attendances.serviceTime.notSet}</em>
+      ) : todaysTimes === 'not_today' ? (
+        i18n.attendances.serviceTime.noServiceToday
+      ) : (
+        i18n.attendances.serviceTime.serviceToday(
+          todaysTimes.start,
+          todaysTimes.end
+        )
+      )}
+    </ServiceTime>
+  )
 })
