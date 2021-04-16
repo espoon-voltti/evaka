@@ -8,7 +8,11 @@ import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecision2
+import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
+import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
+import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
@@ -25,6 +29,7 @@ import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.service.DaycareCodes
@@ -267,6 +272,27 @@ fun createFeeDecisionPartFixture(
     feeAlterations = feeAlterations
 )
 
+fun createFeeDecisionChildFixture(
+    childId: UUID,
+    dateOfBirth: LocalDate,
+    placementUnitId: UUID,
+    placementType: fi.espoo.evaka.placement.PlacementType = fi.espoo.evaka.placement.PlacementType.DAYCARE,
+    serviceNeed: FeeDecisionServiceNeed = FeeDecisionServiceNeed("Kokopäiväinen", BigDecimal("1.00")),
+    baseFee: Int = 28900,
+    siblingDiscount: Int = 0,
+    fee: Int = 28900,
+    feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+) = FeeDecisionChild(
+    child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
+    placement = FeeDecisionPlacement(UnitData.JustId(placementUnitId), placementType),
+    serviceNeed = serviceNeed,
+    baseFee = baseFee,
+    siblingDiscount = siblingDiscount,
+    fee = fee,
+    feeAlterations = feeAlterations,
+    finalFee = fee + feeAlterations.sumBy { it.effect }
+)
+
 fun createFeeDecisionFixture(
     status: FeeDecisionStatus,
     decisionType: FeeDecisionType,
@@ -288,6 +314,28 @@ fun createFeeDecisionFixture(
     familySize = parts.size + 1,
     pricing = pricing,
     parts = parts
+)
+
+fun createFeeDecision2Fixture(
+    status: FeeDecisionStatus,
+    decisionType: FeeDecisionType,
+    period: DateRange,
+    headOfFamilyId: UUID,
+    children: List<FeeDecisionChild>,
+    pricing: Pricing = testPricing,
+    headOfFamilyIncome: DecisionIncome? = null
+) = FeeDecision2(
+    id = UUID.randomUUID(),
+    status = status,
+    decisionType = decisionType,
+    validDuring = period,
+    headOfFamily = PersonData.JustId(headOfFamilyId),
+    partner = null,
+    headOfFamilyIncome = headOfFamilyIncome,
+    partnerIncome = null,
+    familySize = children.size + 1,
+    pricing = pricing,
+    children = children
 )
 
 fun createVoucherValueDecisionFixture(

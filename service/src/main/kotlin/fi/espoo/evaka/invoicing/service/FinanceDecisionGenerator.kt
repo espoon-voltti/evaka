@@ -83,6 +83,14 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
                     it.partner,
                     it.children
                 )
+                handleFeeDecisionChanges2(
+                    h,
+                    objectMapper,
+                    maxOf(period.start, it.period.start),
+                    it.headOfFamily,
+                    it.partner,
+                    it.children
+                )
             }
     }
 
@@ -125,6 +133,14 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
         families.filter { it.period.overlaps(period) }
             .forEach { family ->
                 handleFeeDecisionChanges(
+                    h,
+                    objectMapper,
+                    maxOf(feeDecisionMinDate, period.start, family.period.start),
+                    family.headOfFamily,
+                    family.partner,
+                    family.children
+                )
+                handleFeeDecisionChanges2(
                     h,
                     objectMapper,
                     maxOf(feeDecisionMinDate, period.start, family.period.start),
@@ -252,7 +268,7 @@ private fun handleValueDecisionChanges(
     h.upsertValueDecisions(objectMapper, updatedDecisions)
 }
 
-private fun addECHAFeeAlterations(
+internal fun addECHAFeeAlterations(
     children: List<PersonData.WithDateOfBirth>,
     incomes: List<Income>
 ): List<FeeAlteration> {
@@ -464,7 +480,7 @@ private fun generateNewValueDecisions(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun getUnitsThatAreInvoiced(h: Handle): List<UUID> {
+internal fun getUnitsThatAreInvoiced(h: Handle): List<UUID> {
     // language=sql
     return h.createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
         .map { rs, _ -> rs.getUUID("id") }

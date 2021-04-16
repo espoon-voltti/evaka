@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
@@ -434,6 +435,38 @@ fun insertTestServiceNeed(
                 "updatedBy" to updatedBy
             )
         )
+        .execute()
+    return id
+}
+
+fun insertTestNewServiceNeed(
+    h: Handle,
+    placementId: UUID,
+    period: FiniteDateRange,
+    optionName: String,
+    shiftCare: Boolean = false,
+    id: UUID = UUID.randomUUID()
+): UUID {
+    h
+        .createUpdate(
+            """
+INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care)
+VALUES (
+    :id,
+    :placementId,
+    :startDate,
+    :endDate,
+    (SELECT id FROM service_need_option WHERE name = :optionName),
+    :shiftCare
+)
+"""
+        )
+        .bind("id", id)
+        .bind("placementId", placementId)
+        .bind("startDate", period.start)
+        .bind("endDate", period.end)
+        .bind("optionName", optionName)
+        .bind("shiftCare", shiftCare)
         .execute()
     return id
 }

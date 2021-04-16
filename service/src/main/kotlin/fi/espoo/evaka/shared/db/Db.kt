@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.invoicing.domain.FeeDecision2
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -65,14 +66,15 @@ inline fun <T> Jdbi.transaction(crossinline f: (Handle) -> T): T {
 }
 
 fun configureJdbi(jdbi: Jdbi): Jdbi {
-    jdbi.installPlugin(KotlinPlugin())
-        .installPlugin(PostgresPlugin())
-        .installPlugin(Jackson2Plugin())
-    jdbi.getConfig(Jackson2Config::class.java).mapper = ObjectMapper()
+    val objectMapper = ObjectMapper()
         .registerModule(JavaTimeModule())
         .registerModule(Jdk8Module())
         .registerModule(ParameterNamesModule())
         .registerModule(KotlinModule())
+    jdbi.installPlugin(KotlinPlugin())
+        .installPlugin(PostgresPlugin())
+        .installPlugin(Jackson2Plugin())
+    jdbi.getConfig(Jackson2Config::class.java).mapper = objectMapper
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
@@ -85,6 +87,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerColumnMapper(ExternalId::class.java, externalIdColumnMapper)
     jdbi.registerColumnMapper(HelsinkiDateTime::class.java, helsinkiDateTimeColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
+    jdbi.registerRowMapper(FeeDecision2::class.java, feeDecisionRowMapper(objectMapper))
     return jdbi
 }
 

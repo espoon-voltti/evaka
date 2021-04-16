@@ -432,6 +432,8 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
             it.execute("DELETE FROM fee_decision_part WHERE child = ?", id)
             it.execute("DELETE FROM fee_decision WHERE head_of_family = ?", id)
+            it.execute("DELETE FROM new_fee_decision_child WHERE child_id = ?", id)
+            it.execute("DELETE FROM new_fee_decision WHERE head_of_family_id = ?", id)
             it.execute("DELETE FROM income WHERE person_id = ?", id)
             it.execute("DELETE FROM absence WHERE child_id = ?", id)
             it.execute("DELETE FROM backup_care WHERE child_id = ?", id)
@@ -946,6 +948,17 @@ WITH deleted_ids AS (
 """,
         id
     )
+    execute(
+        """
+WITH deleted_ids AS (
+    DELETE FROM new_fee_decision_child
+    WHERE placement_unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)
+    RETURNING fee_decision_id
+) DELETE FROM new_fee_decision WHERE id IN (SELECT fee_decision_id FROM deleted_ids)
+""",
+        id
+    )
+
     execute(
         "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?))",
         id

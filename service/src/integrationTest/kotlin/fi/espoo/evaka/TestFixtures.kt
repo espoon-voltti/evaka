@@ -540,6 +540,8 @@ fun insertGeneralTestFixtures(h: Handle) {
     )
 
     h.insertPreschoolTerms()
+
+    h.insertServiceNeedOptions()
 }
 
 fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
@@ -590,6 +592,45 @@ VALUES (
 
     createUpdate(sql).execute()
 }
+
+fun Handle.insertServiceNeedOptions() = execute(
+    // language=sql
+    """
+INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week) VALUES
+    ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, TRUE, TRUE),
+    ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, TRUE),
+    ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, TRUE),
+    ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE),
+    ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, TRUE),
+    ('Valmistava opetus ja liittyvä varhaiskasvatus', 'PREPARATORY_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE),
+    ('Kerho', 'CLUB', TRUE, 0.0, 0.0, 1.0, 0, TRUE, TRUE),
+    ('Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 0.0, 1.0, 35, FALSE, TRUE),
+    ('Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.0, 0.54, 25, TRUE, TRUE),
+    ('Kokopäiväinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, FALSE),
+    ('Kokopäiväinen, 25-35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, FALSE),
+    ('Osaviikkoinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, TRUE),
+    ('Osaviikkoinen, 25-35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, TRUE),
+    ('Osaviikkoinen, enintään 25h', 'DAYCARE', FALSE, 0.6, 0.6, 1.0, 25, FALSE, TRUE),
+    ('Osapäiväinen', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, FALSE),
+    ('Osapäiväinen ja osaviikkoinen', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, TRUE),
+    ('Kokopäiväinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE),
+    ('Osaviikkoinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE),
+    ('Osaviikkoinen liittyvä, yhteensä 35-45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE),
+    ('Osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE),
+    ('Osapäiväinen liittyvä, yhteensä 35-45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE),
+    ('Osapäiväinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä 35-45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE),
+    ('Kokopäiväinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE),
+    ('Osaviikkoinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE),
+    ('Osaviikkoinen liittyvä, yhteensä 40-50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE),
+    ('Osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE),
+    ('Osapäiväinen liittyvä, yhteensä 40-50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE),
+    ('Osapäiväinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä 40-50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE);
+"""
+)
 
 fun insertTestVardaOrganizer(h: Handle) {
     //language=SQL
