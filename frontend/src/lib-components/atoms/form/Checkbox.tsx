@@ -34,8 +34,14 @@ const Wrapper = styled.div`
     }
   }
 
-  &:hover:not(.disabled) input {
-    border-color: ${colors.greyscale.darkest};
+  &:hover:not(.disabled) {
+    input:checked {
+      border-color: ${colors.primaryHover};
+      background-color: ${colors.primaryHover};
+    }
+    input:not(:checked) {
+      border-color: ${colors.greyscale.darkest};
+    }
   }
 `
 
