@@ -111,6 +111,7 @@ enum class Audit(
     FeeDecisionRead("evaka.fee-decision.read"),
     FeeDecisionSearch("evaka.fee-decision.search"),
     FeeDecisionSetType("evaka.fee-decision.set-type"),
+    InvalidServiceNeedReportRead("evaka.invalid-service-need-report.read"),
     InvoicesCreate("evaka.invoices.create"),
     InvoicesDeleteDrafts("evaka.invoices.delete-drafts"),
     InvoicesMarkSent("evaka.invoices.mark-sent"),

@@ -150,6 +150,17 @@ export interface MissingServiceNeedReportRow {
   daysWithoutServiceNeed: number
 }
 
+export interface InvalidServiceNeedReportRow {
+  careAreaName: string
+  unitId: UUID
+  unitName: string
+  childId: UUID
+  firstName: string | null
+  lastName: string | null
+  startDate: LocalDate
+  endDate: LocalDate
+}
+
 export interface PartnersInDifferentAddressReportRow {
   careAreaName: string
   unitId: UUID

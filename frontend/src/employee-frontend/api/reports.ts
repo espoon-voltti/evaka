@@ -24,7 +24,8 @@ import {
   PlacementSketchingRow,
   AssistanceNeedsAndActionsReportRow,
   VoucherServiceProviderUnitReport,
-  VoucherServiceProviderReport
+  VoucherServiceProviderReport,
+  InvalidServiceNeedReportRow
 } from '../types/reports'
 import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
@@ -134,6 +135,22 @@ export async function getMissingServiceNeedReport(
       }
     )
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getInvalidServiceNeedReport(): Promise<
+  Result<InvalidServiceNeedReportRow[]>
+> {
+  return client
+    .get<JsonOf<InvalidServiceNeedReportRow[]>>('/reports/invalid-service-need')
+    .then((res) =>
+      res.data.map((row) => ({
+        ...row,
+        startDate: LocalDate.parseIso(row.startDate),
+        endDate: LocalDate.parseIso(row.endDate)
+      }))
+    )
+    .then((rows) => Success.of(rows))
     .catch((e) => Failure.fromError(e))
 }
 
