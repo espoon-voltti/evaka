@@ -289,3 +289,39 @@ test('User can login with PIN and see child hipsu s sensitive info', async (t) =
     .expect(mobileGroupsPage.childInfoBackupPickup2Phone.textContent)
     .eql(backupPickups[1].phone)
 })
+
+test('Wrong pin shows error, and user can log in with correct pin after that', async (t) => {
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t.click(mobileGroupsPage.pinLoginStaffSelector)
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  await t.typeText(mobileGroupsPage.pinInput, '9999')
+  await t.click(mobileGroupsPage.submitPin)
+
+  await t.expect(mobileGroupsPage.pinInputInfo.visible).ok()
+
+  await t
+    .expect(mobileGroupsPage.pinInputInfo.textContent)
+    .eql('Väärä PIN-koodi')
+
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin, {
+    replace: true
+  })
+  await t.click(mobileGroupsPage.submitPin)
+
+  await t
+    .expect(mobileGroupsPage.childInfoName.textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+})

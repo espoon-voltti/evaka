@@ -33,6 +33,7 @@ export default class MobileGroupsPage {
   readonly pinLoginStaffSelector = Selector('[data-qa="select-staff"]')
   readonly pinInput = Selector('[data-qa="set-pin"]')
   readonly submitPin = Selector('[data-qa="submit-pin"]')
+  readonly pinInputInfo = Selector('[data-qa="set-pin-info"]')
 
   readonly comingTab = Selector('[data-qa="coming-tab"]')
   readonly presentTab = Selector('[data-qa="present-tab"]')

@@ -50,7 +50,6 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeByExternalId
 import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
@@ -486,7 +485,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @DeleteMapping("/employee/{id}")
     fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployee(id) }
+        db.transaction { it.handle.deleteAndCascadeEmployee(id) }
         return ResponseEntity.ok().build()
     }
 
@@ -948,6 +947,11 @@ fun Handle.deleteApplication(id: UUID) {
     execute("DELETE FROM placement_plan WHERE application_id = ?", id)
     execute("DELETE FROM application_form WHERE application_id = ?", id)
     execute("DELETE FROM application WHERE id = ?", id)
+}
+
+fun Handle.deleteAndCascadeEmployee(id: UUID) {
+    execute("DELETE FROM employee_pin WHERE user_id = ?", id)
+    execute("DELETE FROM employee WHERE id = ?", id)
 }
 
 fun Handle.deleteCareArea(id: UUID) {
