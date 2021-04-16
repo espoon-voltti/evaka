@@ -220,4 +220,6 @@ export interface ApplicationAttachment extends Attachment {
   updated: Date
   receivedAt: Date
   type: AttachmentType
+  uploadedByEmployee?: UUID
+  uploadedByPerson?: UUID
 }

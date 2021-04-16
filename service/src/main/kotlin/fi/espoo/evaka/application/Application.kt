@@ -103,7 +103,9 @@ data class Attachment(
     val contentType: String,
     val updated: OffsetDateTime,
     val receivedAt: OffsetDateTime,
-    val type: AttachmentType
+    val type: AttachmentType,
+    val uploadedByEmployee: UUID?,
+    val uploadedByPerson: UUID?
 )
 
 enum class ApplicationType {

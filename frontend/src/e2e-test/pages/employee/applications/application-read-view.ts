@@ -102,10 +102,19 @@ export default class ApplicationReadView {
       .ok()
   }
 
-  async assertReceivedAtTextExists(fileName: string) {
-    await t
-      .expect(Selector(`[data-qa="attachment-${fileName}-received-at"]`).exists)
-      .ok()
+  async assertUrgencyAttachmentReceivedAtVisible(
+    fileName: string,
+    byPaper = true
+  ) {
+    const attachment = Selector(`[data-qa="urgent-attachment-${fileName}"]`)
+    await t.expect(attachment.exists).ok()
+
+    const text = attachment.find(`[data-qa="attachment-received-at"]`)
+    await t.expect(text.visible).ok()
+
+    byPaper
+      ? await t.expect(text.textContent).match(/^Toimitettu paperisena/)
+      : await t.expect(text.textContent).match(/^Toimitettu sähköisesti/)
   }
 
   async assertUrgentAttachmentDoesNotExists(fileName: string) {
