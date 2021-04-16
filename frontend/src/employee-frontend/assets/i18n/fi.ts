@@ -1977,6 +1977,11 @@ export const fi = {
         'Raportti listaa lapset, joiden sijoituksen ajalta puuttuu palveluntarve.',
       daysWithoutServiceNeed: 'Puutteellisia päiviä'
     },
+    invalidServiceNeed: {
+      title: 'Virheelliset palveluntarpeet',
+      description:
+        'Raportti listaa palveluntarpeet, joissa vaikuttaisi olevan virhe.'
+    },
     partnersInDifferentAddress: {
       title: 'Puoliso eri osoitteessa',
       description:
