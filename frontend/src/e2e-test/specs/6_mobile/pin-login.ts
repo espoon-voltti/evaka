@@ -31,6 +31,7 @@ import {
   DaycareBuilder,
   DaycareGroupBuilder,
   EmployeeBuilder,
+  EmployeePinBuilder,
   enduserChildFixtureJari,
   enduserChildJariOtherGuardianFixture,
   enduserGuardianFixture,
@@ -63,6 +64,8 @@ let careArea: CareAreaBuilder
 let employee: EmployeeBuilder
 
 let child: ApplicationPersonDetail
+let employeePin: EmployeePinBuilder
+
 const pin = '2580'
 
 fixture('Mobile PIN login')
@@ -80,11 +83,13 @@ fixture('Mobile PIN login')
         firstName: 'Yrjö',
         lastName: 'Yksikkö',
         email: 'yy@example.com',
-        roles: [],
-        pin: pin
+        roles: []
       })
       .save()
 
+    employeePin = await Fixture.employeePin()
+      .with({ userId: employee.data.id, pin })
+      .save()
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()
     daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
@@ -215,7 +220,7 @@ test('User can login with PIN and see child hipsu s sensitive info', async (t) =
     .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
     .pressKey('tab')
 
-  await t.typeText(mobileGroupsPage.pinInput, pin)
+  await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin)
   await t.click(mobileGroupsPage.submitPin)
 
   await t

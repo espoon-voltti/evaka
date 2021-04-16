@@ -24,7 +24,8 @@ import {
   PlacementPlan,
   VoucherValueDecision,
   UUID,
-  DaycareGroupPlacement
+  DaycareGroupPlacement,
+  EmployeePin
 } from './types'
 import {
   deleteCareAreaFixture,
@@ -32,6 +33,7 @@ import {
   deleteDaycareGroup,
   deleteDecisionFixture,
   deleteEmployeeById,
+  deleteEmployeePin,
   deletePersonFixture,
   deleteVtjPerson,
   insertCareAreaFixtures,
@@ -39,6 +41,7 @@ import {
   insertDaycareGroupFixtures,
   insertDecisionFixtures,
   insertEmployeeFixture,
+  insertEmployeePins,
   insertPersonFixture,
   insertVtjPersonFixture,
   PersonDetailWithDependantsAndGuardians
@@ -795,7 +798,8 @@ export const uuidv4 = (): string => {
   })
 }
 
-export const uniqueLabel = (): string => Math.random().toString(36).substring(7)
+export const uniqueLabel = (l = 7): string =>
+  Math.random().toString(36).substring(0, l)
 
 type CleanupOperation = () => Promise<void>
 
@@ -900,6 +904,14 @@ export class Fixture {
       type: 'DAYCARE',
       startDate: '2020-01-01',
       endDate: '2021-01-01'
+    })
+  }
+
+  static employeePin(): EmployeePinBuilder {
+    return new EmployeePinBuilder({
+      id: uuidv4(),
+      userId: 'not_set',
+      pin: uniqueLabel(4)
     })
   }
 }
@@ -1145,5 +1157,39 @@ export class DecisionBuilder {
   // Note: shallow copy
   copy(): DecisionBuilder {
     return new DecisionBuilder({ ...this.data })
+  }
+}
+
+export class EmployeePinBuilder {
+  data: EmployeePin
+
+  constructor(data: EmployeePin) {
+    this.data = data
+  }
+
+  with(value: Partial<EmployeePin>): EmployeePinBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<EmployeePinBuilder> {
+    await insertEmployeePins([this.data])
+    Fixture.cleanupOperations.push(async () => {
+      await deleteEmployeePin(this.data.id)
+    })
+    return this
+  }
+
+  async delete(): Promise<EmployeePinBuilder> {
+    await deleteEmployeePin(this.data.id)
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): EmployeePinBuilder {
+    return new EmployeePinBuilder({ ...this.data })
   }
 }

@@ -192,35 +192,57 @@ WHERE external_id = :externalId
 ).bind("externalId", externalId)
     .execute()
 
-fun Database.Transaction.updatePinCode(
+fun Database.Transaction.upsertPinCode(
     userId: UUID,
     pinCode: PinCode
 ) {
+    // Note: according to spec, setting a pin resets the failure and opens a locked pin
     // language=sql
     val sql = """
-        UPDATE employee
-        SET
-            pin = :pin_code
-        WHERE id = :userId
+INSERT INTO employee_pin(user_id, pin)
+VALUES(:userId, :pin)
+ON CONFLICT (user_id) DO UPDATE SET
+        user_id = :userId,
+        pin = :pin,
+        locked = false,
+        failure_count = 0
     """.trimIndent()
     val updated = this.createUpdate(sql)
         .bind("userId", userId)
-        .bind("pin_code", pinCode.pin)
+        .bind("pin", pinCode.pin)
         .execute()
 
-    if (updated == 0) throw NotFound("Could not update pin-code for $userId. User not found")
+    if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
 fun Handle.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
 """
 SELECT EXISTS (
     SELECT 1
-    FROM employee
-    WHERE id = :employeeId
+    FROM employee_pin
+    WHERE user_id = :employeeId
     AND pin = :pin
 )
     """.trimIndent()
 ).bind("employeeId", employeeId)
     .bind("pin", pin)
+    .mapTo<Boolean>()
+    .first()
+
+fun Handle.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: UUID): Boolean = createQuery(
+"""
+UPDATE employee_pin
+SET 
+    failure_count = failure_count + 1,
+    locked = 
+        CASE 
+            WHEN failure_count < (4 + 1) THEN false
+            ELSE true
+        end    
+WHERE 
+    user_id = :employeeId
+RETURNING locked
+    """.trimIndent()
+).bind("employeeId", employeeId)
     .mapTo<Boolean>()
     .first()

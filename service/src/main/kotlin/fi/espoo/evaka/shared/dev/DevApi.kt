@@ -883,6 +883,18 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.transaction { it.handle.deleteFridgePartner(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/employee-pin")
+    fun createEmployeePins(db: Database, @RequestBody employeePins: List<DevEmployeePin>): ResponseEntity<Unit> {
+        db.transaction { employeePins.forEach { employeePin -> it.handle.insertEmployeePin(employeePin) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/employee-pin/{id}")
+    fun deleteEmployeePin(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeePin(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -898,6 +910,7 @@ fun ensureFakeAdminExists(h: Handle) {
 }
 
 fun Handle.clearDatabase() = listOf(
+    "employee_pin",
     "family_contact",
     "backup_pickup",
     "messaging_blocklist",
@@ -1217,8 +1230,7 @@ data class DevEmployee(
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
-    val roles: Set<UserRole> = setOf(),
-    val pin: String? = null
+    val roles: Set<UserRole> = setOf()
 )
 
 data class DevMobileDevice(

@@ -157,8 +157,8 @@ fun removeDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId) {
 fun Handle.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles, pin)
-VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :pin)
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
+VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[])
 RETURNING id
 """
 )
@@ -956,3 +956,20 @@ RETURNING partnership_id
 )
 
 fun Handle.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()
+
+data class DevEmployeePin(
+    val id: UUID,
+    val userId: UUID,
+    val pin: String
+)
+
+fun Handle.insertEmployeePin(emoployeePin: DevEmployeePin) = insertTestDataRow(
+    emoployeePin,
+    """
+INSERT INTO employee_pin (id, user_id, pin)
+VALUES (:id, :userId, :pin)
+RETURNING id
+"""
+)
+
+fun Handle.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()

@@ -18,7 +18,7 @@ data class ChildResult(
 )
 
 enum class ChildResultStatus {
-    SUCCESS, WRONG_PIN, NOT_FOUND
+    SUCCESS, WRONG_PIN, PIN_LOCKED, NOT_FOUND
 }
 
 data class ChildSensitiveInformation(

@@ -18,7 +18,9 @@ import { Result } from '../../../../lib-common/api'
 import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import Loader from '../../../../lib-components/atoms/Loader'
-import InputField from '../../../../lib-components/atoms/form/InputField'
+import InputField, {
+  InputInfo
+} from '../../../../lib-components/atoms/form/InputField'
 import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
 import { ContentAreaWithShadow, TallContentArea } from '../../mobile/components'
 import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
@@ -66,6 +68,15 @@ export default React.memo(function PinLogin() {
   const formatName = (firstName: string, lastName: string) =>
     `${lastName} ${firstName}`
 
+  const getInputInfo = (): InputInfo | undefined => {
+    return !childResult || !childResult.isSuccess
+      ? undefined
+      : {
+          text: i18n.attendances.pin.status[childResult.value.status],
+          status: 'warning'
+        }
+  }
+
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
@@ -87,14 +98,16 @@ export default React.memo(function PinLogin() {
               }
             />
             <LogoutButtonWrapper>
-              <IconButton
-                size={'L'}
-                icon={faUserUnlock}
-                onClick={() => {
-                  setSelectedPin('')
-                  history.goBack()
-                }}
-              />
+              {childResult && (
+                <IconButton
+                  size={'L'}
+                  icon={faUserUnlock}
+                  onClick={() => {
+                    setSelectedPin('')
+                    history.goBack()
+                  }}
+                />
+              )}
             </LogoutButtonWrapper>
           </TopBarContainer>
           {childResult &&
@@ -139,6 +152,7 @@ export default React.memo(function PinLogin() {
                         placeholder={i18n.attendances.pin.pinCode}
                         onChange={setSelectedPin}
                         value={selectedPin || ''}
+                        info={getInputInfo()}
                         width="s"
                         type="password"
                         data-qa="set-pin"

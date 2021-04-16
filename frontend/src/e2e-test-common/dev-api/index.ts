@@ -33,7 +33,8 @@ import {
   FamilyContact,
   BackupPickup,
   FridgeChild,
-  FridgePartner
+  FridgePartner,
+  EmployeePin
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -933,6 +934,24 @@ export async function insertFridgePartners(
 export async function deleteFridgePartner(id: string): Promise<void> {
   try {
     await devClient.delete(`/fridge-partner/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertEmployeePins(
+  fixture: EmployeePin[]
+): Promise<void> {
+  try {
+    await devClient.post(`/employee-pin`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteEmployeePin(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/employee-pin/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
