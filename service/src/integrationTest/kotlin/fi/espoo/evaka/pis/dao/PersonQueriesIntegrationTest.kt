@@ -20,8 +20,8 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
-import junit.framework.TestCase
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -152,7 +152,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             invoicingPostOffice = "Espoo"
         )
 
-        TestCase.assertTrue(db.transaction { it.handle.updatePersonContactInfo(originalPerson.id, contactInfo) })
+        assertTrue(db.transaction { it.handle.updatePersonContactInfo(originalPerson.id, contactInfo) })
 
         val actual = db.read { it.handle.getPersonById(originalPerson.id) }
         Assertions.assertEquals(contactInfo.email, actual?.email)
