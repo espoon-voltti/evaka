@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -14,6 +13,7 @@ import { useTranslation } from '../../state/i18n'
 import { InvalidServiceNeedReportRow } from '../../types/reports'
 import { getInvalidServiceNeedReport } from '../../api/reports'
 import { RowCountInfo, TableScrollable } from './common'
+import { getEmployeeUrlPrefix } from '../../constants'
 
 function InvalidServiceNeed() {
   const { i18n } = useTranslation()
@@ -54,12 +54,26 @@ function InvalidServiceNeed() {
                   >
                     <Td>{row.careAreaName}</Td>
                     <Td>
-                      <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
+                      <a
+                        href={`${getEmployeeUrlPrefix()}/employee/units/${
+                          row.unitId
+                        }`}
+                        target={'_blank'}
+                        rel={'noreferrer'}
+                      >
+                        {row.unitName}
+                      </a>
                     </Td>
                     <Td>
-                      <Link to={`/child-information/${row.childId}`}>
+                      <a
+                        href={`${getEmployeeUrlPrefix()}/employee/child-information/${
+                          row.childId
+                        }`}
+                        target={'_blank'}
+                        rel={'noreferrer'}
+                      >
                         {row.lastName} {row.firstName}
-                      </Link>
+                      </a>
                     </Td>
                     <Td>
                       {row.startDate.format()} - {row.endDate.format()}
