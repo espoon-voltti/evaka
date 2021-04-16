@@ -61,10 +61,33 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     fun isAfter(other: HelsinkiDateTime): Boolean = this.instant.isAfter(other.instant)
     fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
 
+    /**
+     * Returns the Europe/Helsinki local date+time at the point in time represented by this timestamp
+     */
     fun toLocalDateTime(): LocalDateTime = LocalDateTime.ofInstant(instant, europeHelsinki)
+
+    /**
+     * Returns the Europe/Helsinki local time at the point in time represented by this timestamp
+     */
     fun toLocalTime(): LocalTime = LocalTime.ofInstant(instant, europeHelsinki)
+
+    /**
+     * Returns the Europe/Helsinki local date at the point in time represented by this timestamp
+     */
     fun toLocalDate(): LocalDate = LocalDate.ofInstant(instant, europeHelsinki)
+
+    /**
+     * Converts this timestamp to an `Instant`.
+     *
+     * The returned value represents the same point in time as this timestamp.
+     */
     fun toInstant(): Instant = instant
+
+    /**
+     * Converts this timestamp to a `ZonedDateTime`.
+     *
+     * The returned value represents the same point in time as this timestamp, and is guaranteed to use the Europe/Helsinki timezone.
+     */
     fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(instant, europeHelsinki)
 
     /**
@@ -83,10 +106,29 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     override fun toString(): String = toZonedDateTime().toString()
 
     companion object {
+        /**
+         * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time matches the given values
+         */
         fun of(date: LocalDate, time: LocalTime): HelsinkiDateTime = from(ZonedDateTime.of(date, time, europeHelsinki))
+
+        /**
+         * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time matches the given value
+         */
         fun of(dateTime: LocalDateTime): HelsinkiDateTime = from(ZonedDateTime.of(dateTime, europeHelsinki))
+
+        /**
+         * Returns the current `HelsinkiDateTime` based on the given clock, or the system default clock
+         */
         fun now(clock: Clock? = Clock.systemUTC()): HelsinkiDateTime = HelsinkiDateTime(Instant.now(clock))
+
+        /**
+         * Converts an `Instant` to `HelsinkiDateTime` by reinterpreting its timestamp in Europe/Helsinki timezone
+         */
         fun from(value: Instant): HelsinkiDateTime = HelsinkiDateTime(value)
+
+        /**
+         * Converts a `ZonedDateTime` to `HelsinkiDateTime` by reinterpreting its timestamp in Europe/Helsinki timezone
+         */
         fun from(value: ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(value.toInstant())
     }
 
