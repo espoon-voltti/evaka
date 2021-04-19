@@ -6,10 +6,13 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -111,9 +114,19 @@ fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeU
     .mapTo<EmployeeUser>()
     .singleOrNull()
 
-fun Handle.getEmployeesWithDaycareRoles(): List<EmployeeWithDaycareRoles> = createQuery(
+fun getEmployeesPaged(
+    tx: Database.Read,
+    page: Int,
+    pageSize: Int
+): Paged<EmployeeWithDaycareRoles> {
+
+    val params = mapOf(
+        "offset" to (page - 1) * pageSize,
+        "pageSize" to pageSize
+    )
+
     // language=SQL
-    """
+    val sql = """
 SELECT
     id,
     created,
@@ -126,12 +139,17 @@ SELECT
         FROM daycare_acl_view dav
         JOIN daycare d ON dav.daycare_id = d.id
         WHERE dav.employee_id = employee.id
-    ) AS daycare_roles
+    ) AS daycare_roles,
+    count(*) OVER () AS count
 FROM employee
+ORDER BY created DESC
+LIMIT :pageSize OFFSET :offset
     """.trimIndent()
-)
-    .mapTo<EmployeeWithDaycareRoles>()
-    .toList()
+    return tx.createQuery(sql)
+        .bindMap(params)
+        .map(withCountMapper<EmployeeWithDaycareRoles>())
+        .let(mapToPaged(pageSize))
+}
 
 fun Handle.deleteEmployee(employeeId: UUID) = createUpdate(
     // language=SQL

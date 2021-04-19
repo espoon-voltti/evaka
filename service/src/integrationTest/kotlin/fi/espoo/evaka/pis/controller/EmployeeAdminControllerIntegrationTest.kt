@@ -39,17 +39,20 @@ class EmployeeAdminControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `admin gets employees`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.getEmployees(db, user)
+        val response = controller.getEmployees(db, user, page = 1, pageSize = 3)
         assertEquals(HttpStatus.OK, response.statusCode)
-        assertEquals(3, response.body?.size)
+        val body = response.body ?: fail("missing body")
+        assertEquals(3, body.total)
+        assertEquals(1, body.pages)
 
-        val decisionMaker = response.body?.get(0) ?: fail("missing decision maker")
+        val decisionMaker = body.data[2]
         assertEquals(testDecisionMaker_1.id, decisionMaker.id)
         assertEquals(listOf(UserRole.SERVICE_WORKER), decisionMaker.globalRoles)
+        assertEquals(0, decisionMaker.daycareRoles.size)
 
-        val supervisor = response.body?.get(2) ?: fail("missing supervisor")
+        val supervisor = body.data[0]
         assertEquals(unitSupervisorOfTestDaycare.id, supervisor.id)
-        assertEquals(1, supervisor.daycareRoles.size)
+        assertEquals(0, supervisor.globalRoles.size)
         assertEquals(
             listOf(DaycareRole(daycareId = testDaycare.id, daycareName = testDaycare.name, role = UserRole.UNIT_SUPERVISOR)),
             supervisor.daycareRoles
