@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -117,7 +117,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application = insertSentApplication(sentDate, originalDueDate, false)
-        val manuallySetDueDate = LocalDate.now(europeHelsinki).plusMonths(4)
+        val manuallySetDueDate = HelsinkiDateTime.now().plusMonths(4).toLocalDate()
 
         // when
         val (_, res, _) = http.put("/v2/applications/${application.id}")
