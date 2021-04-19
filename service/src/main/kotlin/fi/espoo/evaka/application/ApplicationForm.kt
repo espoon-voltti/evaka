@@ -21,8 +21,34 @@ data class ApplicationFormUpdate(
     val preferences: Preferences,
     val maxFeeAccepted: Boolean,
     val otherInfo: String,
-    val clubDetails: ClubDetails?
-)
+    val clubDetails: ClubDetails?,
+) {
+    companion object {
+        fun from(form: ApplicationForm): ApplicationFormUpdate {
+            return ApplicationFormUpdate(
+                child = ChildDetailsUpdate(
+                    futureAddress = form.child.futureAddress,
+                    allergies = form.child.allergies,
+                    diet = form.child.diet,
+                    assistanceNeeded = form.child.assistanceNeeded,
+                    assistanceDescription = form.child.assistanceDescription
+                ),
+                guardian = GuardianUpdate(
+                    futureAddress = form.guardian.futureAddress,
+                    phoneNumber = form.guardian.phoneNumber,
+                    email = form.guardian.email
+                ),
+                secondGuardian = form.secondGuardian,
+                otherPartner = form.otherPartner,
+                otherChildren = form.otherChildren,
+                preferences = form.preferences,
+                maxFeeAccepted = form.maxFeeAccepted,
+                otherInfo = form.otherInfo,
+                clubDetails = form.clubDetails,
+            )
+        }
+    }
+}
 
 data class ApplicationForm(
     val child: ChildDetails,

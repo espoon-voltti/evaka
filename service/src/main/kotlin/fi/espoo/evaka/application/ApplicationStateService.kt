@@ -61,6 +61,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
@@ -452,27 +453,38 @@ class ApplicationStateService(
         return getApplication(tx, applicationId)
     }
 
-    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate) {
+    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate) {
         val original = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
-        val updatedForm = original.form.update(update)
+        val updatedForm = original.form.update(update.form)
         validateApplication(tx, original.type, updatedForm, strict = false)
 
-        tx.updateApplicationContents(original, updatedForm)
+        tx.updateApplicationContents(original, updatedForm, manuallySetDueDate = update.dueDate)
     }
 
-    private fun Database.Transaction.updateApplicationContents(original: ApplicationDetails, updatedForm: ApplicationForm) {
+    private fun Database.Transaction.updateApplicationContents(original: ApplicationDetails, updatedForm: ApplicationForm, manuallySetDueDate: LocalDate? = null) {
         if (!listOf(CREATED, SENT).contains(original.status))
             throw BadRequest("Cannot update application with status ${original.status}")
 
         updateForm(handle, original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
         setCheckedByAdminToDefault(handle, original.id, updatedForm)
-        updateDueDate(original, updatedForm.preferences.urgent)
+        when (manuallySetDueDate) {
+            null -> calculateAndUpdateDueDate(original, updatedForm.preferences.urgent)
+            else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
+        }
     }
 
-    private fun Database.Transaction.updateDueDate(original: ApplicationDetails, urgent: Boolean) {
-        if (original.sentDate == null) return
+    private fun Database.Transaction.updateManuallySetDueDate(applicationId: UUID, manuallySetDueDate: LocalDate) {
+        createUpdate("UPDATE application SET duedate = :dueDate, duedate_set_manually_at = :dueDateSetManuallyAt WHERE id = :id")
+            .bind("id", applicationId)
+            .bind("dueDate", manuallySetDueDate)
+            .bind("dueDateSetManuallyAt", HelsinkiDateTime.now())
+            .execute()
+    }
+
+    private fun Database.Transaction.calculateAndUpdateDueDate(original: ApplicationDetails, urgent: Boolean) {
+        if (original.sentDate == null || original.dueDateSetManuallyAt != null) return
 
         // If an application is flagged as urgent afterwards, the new due date is calculated from current date
         val sentDate = if (urgent && !original.form.preferences.urgent) LocalDate.now() else original.sentDate
@@ -490,7 +502,7 @@ class ApplicationStateService(
     fun reCalculateDueDate(tx: Database.Transaction, applicationId: UUID) {
         val application = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
-        tx.updateDueDate(application, application.form.preferences.urgent)
+        tx.calculateAndUpdateDueDate(application, application.form.preferences.urgent)
     }
 
     // HELPERS

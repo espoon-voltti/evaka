@@ -85,10 +85,12 @@ export async function getApplications(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function updateApplication(
-  application: ApplicationDetails
-): Promise<void> {
-  return client.put(`v2/applications/${application.id}`, application.form)
+export async function updateApplication({
+  dueDate,
+  form,
+  id
+}: ApplicationDetails): Promise<void> {
+  return client.put(`v2/applications/${id}`, { form, dueDate })
 }
 
 export async function createPaperApplication(
