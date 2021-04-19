@@ -214,14 +214,18 @@ export async function getChildAgeLanguageReport(
 }
 
 export async function getServiceNeedReport(
-  filters: DateFilters
+  filters: DateFilters,
+  v2?: boolean
 ): Promise<Result<ServiceNeedReportRow[]>> {
   return client
-    .get<JsonOf<ServiceNeedReportRow[]>>('/reports/service-need', {
-      params: {
-        date: filters.date.formatIso()
+    .get<JsonOf<ServiceNeedReportRow[]>>(
+      `/reports/service-need${v2 ? '/v2' : ''}`,
+      {
+        params: {
+          date: filters.date.formatIso()
+        }
       }
-    })
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

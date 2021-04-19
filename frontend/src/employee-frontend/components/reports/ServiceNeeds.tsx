@@ -20,6 +20,8 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import LocalDate from 'lib-common/local-date'
+import { RequireRole } from '../../utils/roles'
+import Checkbox from '../../../lib-components/atoms/form/Checkbox'
 
 interface DisplayFilters {
   careArea: string
@@ -35,6 +37,7 @@ function ServiceNeeds() {
   const [filters, setFilters] = useState<DateFilters>({
     date: LocalDate.today()
   })
+  const [v2, setV2] = useState(false)
 
   const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
     emptyDisplayFilters
@@ -48,8 +51,8 @@ function ServiceNeeds() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getServiceNeedReport(filters).then(setRows)
-  }, [filters])
+    void getServiceNeedReport(filters, v2).then(setRows)
+  }, [filters, v2])
 
   const filteredRows: ServiceNeedReportRow[] = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
@@ -68,6 +71,16 @@ function ServiceNeeds() {
             onChange={(date) => setFilters({ date })}
           />
         </FilterRow>
+
+        <RequireRole oneOf={['ADMIN']}>
+          <FilterRow>
+            <Checkbox
+              label="Käytä uusia palveluntarpeita"
+              checked={v2}
+              onChange={setV2}
+            />
+          </FilterRow>
+        </RequireRole>
 
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
