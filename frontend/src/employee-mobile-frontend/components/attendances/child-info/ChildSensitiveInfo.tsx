@@ -1,13 +1,17 @@
 import React from 'react'
+import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import { P, Label } from 'lib-components/typography'
+import Title from 'lib-components/atoms/Title'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { faPhone } from 'lib-icons'
+
 import { Child } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import { ContentAreaWithShadow } from '../../mobile/components'
-import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers'
-import Title from '../../../../lib-components/atoms/Title'
-import CollapsibleSection from '../../../../lib-components/molecules/CollapsibleSection'
-import { P, Label } from 'lib-components/typography'
 import { PlacementType } from '../../../types'
-import styled from 'styled-components'
 
 interface Props {
   child: Child | null
@@ -22,15 +26,30 @@ const Divider = styled.div`
   border-bottom: 1px solid #d8d8d8;
 `
 
+const Phone = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
+
 const renderKeyValue = (
   label: string,
   value: string | null,
-  dataQa: string
+  dataQa: string,
+  phone?: boolean
 ) => {
   return value ? (
     <KeyValue>
       <Label>{label}</Label>
-      <span data-qa={dataQa}>{value}</span>
+      {phone ? (
+        <Phone>
+          <span data-qa={dataQa}>{value}</span>
+          <a href={`tel:${value}`}>
+            <FontAwesomeIcon icon={faPhone} />
+          </a>
+        </Phone>
+      ) : (
+        <span data-qa={dataQa}>{value}</span>
+      )}
     </KeyValue>
   ) : null
 }
@@ -140,13 +159,15 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                     {renderKeyValue(
                       i18n.attendances.childInfo.phone,
                       contact.phone,
-                      `child-info-contact${index + 1}-phone`
+                      `child-info-contact${index + 1}-phone`,
+                      true
                     )}
 
                     {renderKeyValue(
                       i18n.attendances.childInfo.backupPhone,
                       contact.backupPhone,
-                      `child-info-contact${index + 1}-backup-phone`
+                      `child-info-contact${index + 1}-backup-phone`,
+                      true
                     )}
 
                     {renderKeyValue(
