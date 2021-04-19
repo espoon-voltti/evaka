@@ -130,6 +130,15 @@ export default React.memo(function PinLogin() {
                         width="s"
                         type="password"
                         data-qa="set-pin"
+                        info={
+                          childResult?.isSuccess &&
+                          childResult.value.status === 'WRONG_PIN'
+                            ? {
+                                text: i18n.attendances.pin.wrongPin,
+                                status: 'warning'
+                              }
+                            : undefined
+                        }
                       />
                       {selectedPin && selectedPin.length >= 4 && (
                         <IconButton
