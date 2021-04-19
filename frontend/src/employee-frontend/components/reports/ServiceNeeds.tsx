@@ -123,7 +123,7 @@ function ServiceNeeds() {
               </Thead>
               <Tbody>
                 {filteredRows.map((row: ServiceNeedReportRow) => (
-                  <Tr key={row.unitName}>
+                  <Tr key={`${row.unitName}:${row.age}`}>
                     <Td>{row.careAreaName}</Td>
                     <Td>{row.unitName}</Td>
                     <Td>
