@@ -122,11 +122,12 @@ export interface MissingServiceNeedReportFilters {
 }
 
 export async function getMissingServiceNeedReport(
-  filters: MissingServiceNeedReportFilters
+  filters: MissingServiceNeedReportFilters,
+  v2?: boolean
 ): Promise<Result<MissingServiceNeedReportRow[]>> {
   return client
     .get<JsonOf<MissingServiceNeedReportRow[]>>(
-      '/reports/missing-service-need',
+      `/reports/missing-service-need${v2 ? '/v2' : ''}`,
       {
         params: {
           from: filters.startDate.formatIso(),
