@@ -8,10 +8,12 @@ import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.util.UUID
 
 data class NewEmployee(
@@ -28,6 +30,23 @@ data class EmployeeUser(
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
     val allScopedRoles: Set<UserRole> = setOf()
+)
+
+data class DaycareRole(
+    val daycareId: UUID,
+    val daycareName: String,
+    val role: UserRole
+)
+
+data class EmployeeWithDaycareRoles(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime?,
+    val globalRoles: List<UserRole> = listOf(),
+    @Json
+    val daycareRoles: List<DaycareRole> = listOf()
 )
 
 fun Handle.createEmployee(employee: NewEmployee): Employee = createUpdate(
@@ -91,6 +110,28 @@ fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeU
     .bind("externalId", externalId)
     .mapTo<EmployeeUser>()
     .singleOrNull()
+
+fun Handle.getEmployeesWithDaycareRoles(): List<EmployeeWithDaycareRoles> = createQuery(
+    // language=SQL
+    """
+SELECT
+    id,
+    created,
+    updated,
+    first_name,
+    last_name,
+    employee.roles AS global_roles,
+    (
+        SELECT jsonb_agg(json_build_object('daycareId', dav.daycare_id, 'daycareName', d.name, 'role', dav.role))
+        FROM daycare_acl_view dav
+        JOIN daycare d ON dav.daycare_id = d.id
+        WHERE dav.employee_id = employee.id
+    ) AS daycare_roles
+FROM employee
+    """.trimIndent()
+)
+    .mapTo<EmployeeWithDaycareRoles>()
+    .toList()
 
 fun Handle.deleteEmployee(employeeId: UUID) = createUpdate(
     // language=SQL

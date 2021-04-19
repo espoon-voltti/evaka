@@ -454,7 +454,8 @@ fun insertGeneralTestFixtures(h: Handle) {
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
-                lastName = it.lastName
+                lastName = it.lastName,
+                roles = setOf(UserRole.SERVICE_WORKER)
             )
         )
     }
