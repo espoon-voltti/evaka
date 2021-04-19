@@ -134,13 +134,10 @@ function createLogoutHandler({
         await logoutExpress(req, res, sessionType)
         return res.redirect(redirectUrl)
       } catch (err) {
-        const description =
-          parseDescriptionFromSamlError(err, req) ||
-          'Could not parse SAML error.'
         logAuditEvent(
           `evaka.saml.${strategyName}.sign_out_failed`,
           req,
-          `Log out failed. Description: ${description}. Error: ${err}.`
+          `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err}.`
         )
         throw err
       }
