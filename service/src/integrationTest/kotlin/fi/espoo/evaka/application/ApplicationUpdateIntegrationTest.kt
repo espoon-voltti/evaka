@@ -22,6 +22,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -128,7 +129,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         // then
         assertEquals(204, res.statusCode)
         val beforeSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
-        assertEquals(manuallySetDueDate, beforeSendingAttachment?.dueDate)
+        assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
+        assertTrue(HelsinkiDateTime.now().durationSince(beforeSendingAttachment.dueDateSetManuallyAt ?: throw Error("dueDateSetManuallyAt should have been set")).seconds <= 5, "dueDateSetManuallyAt should have been about now")
 
         // when
         uploadAttachment(applicationId = application.id, serviceWorker)
