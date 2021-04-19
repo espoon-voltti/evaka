@@ -65,11 +65,6 @@ const RadioInput = styled.input<SizeProps>`
   border-color: ${colors.greyscale.dark};
   margin: 0;
 
-  &:focus {
-    border-width: 2px;
-    border-color: ${colors.accents.petrol};
-  }
-
   &:checked {
     border-color: ${colors.primary};
     background-color: ${colors.primary};
@@ -77,6 +72,11 @@ const RadioInput = styled.input<SizeProps>`
     &:disabled {
       background-color: ${colors.greyscale.medium};
     }
+  }
+
+  &:focus {
+    border-width: 2px;
+    border-color: ${colors.accents.petrol};
   }
 
   &:disabled {
