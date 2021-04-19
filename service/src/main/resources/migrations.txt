@@ -69,3 +69,4 @@ V68__fee_decisions_with_new_service_needs.sql
 V69__five_year_old_daycare_placement_types.sql
 V70__employee_pin.sql
 V71__club_term_table.sql
+V72__staff_attendance_other.sql
