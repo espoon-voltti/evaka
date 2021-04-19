@@ -30,6 +30,7 @@ import { defaultMargins, Gap } from '../../../../lib-components/white-space'
 import colors from '../../../../lib-components/colors'
 import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
+import PinLogout from './PinLogout'
 
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
@@ -41,6 +42,7 @@ export default React.memo(function PinLogin() {
   const [selectedStaff, setSelectedStaff] = useState<string>()
   const [selectedPin, setSelectedPin] = useState<string>('')
   const [childResult, setChildResult] = useState<Result<ChildResult>>()
+  const [loggingOut, setLoggingOut] = useState<boolean>(false)
 
   const { childId, unitId } = useParams<{
     unitId: string
@@ -68,6 +70,17 @@ export default React.memo(function PinLogin() {
   const formatName = (firstName: string, lastName: string) =>
     `${lastName} ${firstName}`
 
+  const loggedInStaffName = (): string => {
+    const loggedInStaff = attendanceResponse.isSuccess
+      ? attendanceResponse.value.unit.staff.find(
+          (staff) => staff.id === selectedStaff
+        )
+      : null
+    return loggedInStaff
+      ? formatName(loggedInStaff.firstName, loggedInStaff.lastName)
+      : ''
+  }
+
   const getInputInfo = (): InputInfo | undefined => {
     return !childResult || !childResult.isSuccess
       ? undefined
@@ -75,6 +88,15 @@ export default React.memo(function PinLogin() {
           text: i18n.attendances.pin.status[childResult.value.status],
           status: 'warning'
         }
+  }
+
+  const logout = () => {
+    setSelectedPin('')
+    history.goBack()
+  }
+
+  const cancelLogout = () => {
+    setLoggingOut(false)
   }
 
   return (
@@ -88,23 +110,24 @@ export default React.memo(function PinLogin() {
           paddingVertical={'zero'}
         >
           <TopBarContainer>
-            <BackButton
-              onClick={() => history.goBack()}
-              icon={faArrowLeft}
-              text={
-                childBasicInfo
-                  ? `${childBasicInfo.firstName} ${childBasicInfo.lastName}`
-                  : i18n.common.back
-              }
-            />
+            <BackButtonWrapper>
+              <BackButton
+                onClick={() => history.goBack()}
+                icon={faArrowLeft}
+                text={
+                  childBasicInfo
+                    ? `${childBasicInfo.firstName} ${childBasicInfo.lastName}`
+                    : i18n.common.back
+                }
+              />
+            </BackButtonWrapper>
             <LogoutButtonWrapper>
               {childResult && (
                 <IconButton
                   size={'L'}
                   icon={faUserUnlock}
                   onClick={() => {
-                    setSelectedPin('')
-                    history.goBack()
+                    setLoggingOut(true)
                   }}
                 />
               )}
@@ -113,7 +136,16 @@ export default React.memo(function PinLogin() {
           {childResult &&
           childResult.isSuccess &&
           childResult.value.status === 'SUCCESS' ? (
-            <ChildSensitiveInfo child={childResult.value.child} />
+            <>
+              {loggingOut && (
+                <PinLogout
+                  loggedInStaffName={loggedInStaffName()}
+                  logout={logout}
+                  cancel={cancelLogout}
+                />
+              )}
+              <ChildSensitiveInfo child={childResult.value.child} />
+            </>
           ) : (
             <ContentAreaWithShadow
               opaque={true}
@@ -181,11 +213,20 @@ const TopBarContainer = styled.div`
   grid-template-columns: auto 50px;
 `
 
+const BackButtonWrapper = styled.div`
+  width: calc(100% - 50px);
+`
+
 const BackButton = styled(InlineButton)`
   color: ${colors.blues.dark};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
   margin-bottom: ${defaultMargins.s};
+  text-overflow: ellipsis;
+
+  & span {
+    white-space: normal;
+  }
 `
 
 const LogoutButtonWrapper = styled.div`

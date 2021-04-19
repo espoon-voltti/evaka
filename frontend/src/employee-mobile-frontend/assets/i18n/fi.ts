@@ -146,7 +146,8 @@ export const fi = {
         WRONG_PIN: 'Väärä PIN-koodi',
         PIN_LOCKED: 'PIN-koodi on lukittu',
         NOT_FOUND: 'Tuntematon käyttäjä'
-      }
+      },
+      logOut: 'Kirjaudu ulos'
     },
     childInfo: {
       header: 'Lapsen tiedot',
