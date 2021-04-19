@@ -45,14 +45,10 @@ class AsyncJobRunnerTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var jdbi: Jdbi
 
-    @BeforeAll
-    fun before() {
-        asyncJobRunner = AsyncJobRunner(jdbi)
-    }
-
     @BeforeEach
     @AfterEach
     fun clean() {
+        asyncJobRunner = AsyncJobRunner(jdbi)
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
     }
 
