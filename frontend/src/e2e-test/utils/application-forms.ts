@@ -65,7 +65,8 @@ export const minimalDaycareForm: {
       ]
     },
     contactInfo: {
-      guardianPhone: '(+358) 50-1234567'
+      guardianPhone: '(+358) 50-1234567',
+      noGuardianEmail: true
     }
   },
   validateResult: (res) => {
@@ -145,6 +146,7 @@ export const fullDaycareForm: {
       guardianFutureAddressEqualsChild: true,
       guardianPhone: '(+358) 50-1234567',
       guardianEmail: 'johannes.karhula@example.com',
+      guardianEmailVerification: 'johannes.karhula@example.com',
       otherPartnerExists: true,
       otherPartnerFirstName: 'Heikki',
       otherPartnerLastName: 'Heppuli',
@@ -252,7 +254,8 @@ export const minimalClubForm: {
       ]
     },
     contactInfo: {
-      guardianPhone: '(+358) 50-1234567'
+      guardianPhone: '(+358) 50-1234567',
+      noGuardianEmail: true
     }
   },
   validateResult: (res) => {
@@ -326,7 +329,8 @@ export const fullClubForm: {
       guardianFutureAddressExists: true,
       guardianFutureAddressEqualsChild: true,
       guardianPhone: '(+358) 50-1234567',
-      guardianEmail: 'johannes.karhula@example.com'
+      guardianEmail: 'johannes.karhula@example.com',
+      guardianEmailVerification: 'johannes.karhula@example.com'
     },
     additionalDetails: {
       otherInfo: 'Olipa hakeminen helppoa!'
@@ -403,6 +407,7 @@ export const minimalPreschoolForm: {
     },
     contactInfo: {
       guardianPhone: '(+358) 50-1234567',
+      noGuardianEmail: true,
       otherGuardianAgreementStatus: 'AGREED'
     }
   },
@@ -482,6 +487,7 @@ export const fullPreschoolForm: {
       guardianFutureAddressEqualsChild: true,
       guardianPhone: '(+358) 50-1234567',
       guardianEmail: 'johannes.karhula@example.com',
+      guardianEmailVerification: 'johannes.karhula@example.com',
       otherGuardianAgreementStatus: 'NOT_AGREED',
       otherGuardianPhone: '1234567890',
       otherGuardianEmail: 'g2@example.com',

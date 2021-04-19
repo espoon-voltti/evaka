@@ -34,6 +34,7 @@ export default class CitizenApplicationEditor {
   readonly childStreetAddress = Selector('[data-qa="child-street-address"]')
 
   readonly urgentAttachmentsUpload = Selector('[data-qa="urgent-file-upload"]')
+  readonly noGuardianEmailButton = Selector('[data-qa="noGuardianEmail-input"]')
 
   readonly urgentAttachmentDownloadButton = (file: string) =>
     this.urgentAttachmentsUpload

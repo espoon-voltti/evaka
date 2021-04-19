@@ -255,8 +255,8 @@ data class ApplicationForm(
                         postOffice = guardian.postOffice ?: ""
                     ),
                     futureAddress = null,
-                    phoneNumber = "",
-                    email = ""
+                    phoneNumber = guardian.phone ?: "",
+                    email = guardian.email ?: ""
                 ),
                 secondGuardian = null,
                 otherPartner = null,
