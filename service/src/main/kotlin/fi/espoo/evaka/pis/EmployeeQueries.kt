@@ -229,6 +229,15 @@ SELECT EXISTS (
     .mapTo<Boolean>()
     .first()
 
+fun Handle.resetEmployeePinFailureCount(employeeId: UUID) = createUpdate(
+    """
+UPDATE employee_pin
+SET failure_count = 0, locked = false
+WHERE user_id = :employeeId
+    """.trimIndent()
+).bind("employeeId", employeeId)
+    .execute()
+
 fun Handle.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: UUID): Boolean = createQuery(
 """
 UPDATE employee_pin
