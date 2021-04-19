@@ -140,8 +140,7 @@ export const fi = {
       selectStaff: 'Valitse käyttäjä',
       staff: 'Käyttäjä',
       noOptions: 'Ei vaihtoehtoja',
-      pinCode: 'PIN-koodi',
-      wrongPin: 'Väärä PIN-koodi'
+      pinCode: 'PIN-koodi'
     },
     childInfo: {
       header: 'Lapsen tiedot',
