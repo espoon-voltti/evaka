@@ -48,7 +48,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 passport.serializeUser<Express.User>((user, done) => done(null, user))
 passport.deserializeUser<Express.User>((user, done) => done(null, user))
-app.use(refreshLogoutToken('enduser'))
+app.use(refreshLogoutToken())
 setupLoggingMiddleware(app)
 
 function apiRouter() {

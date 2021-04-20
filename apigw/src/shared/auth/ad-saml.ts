@@ -65,6 +65,7 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
 }
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
+  if (devLoginEnabled) return {}
   if (!adConfig) throw Error('Missing AD SAML configuration')
   return {
     acceptedClockSkewMs: 0,

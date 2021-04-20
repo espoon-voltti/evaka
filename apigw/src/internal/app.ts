@@ -52,7 +52,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 passport.serializeUser<Express.User>((user, done) => done(null, user))
 passport.deserializeUser<Express.User>((user, done) => done(null, user))
-app.use(refreshLogoutToken('employee'))
+app.use(refreshLogoutToken())
 setupLoggingMiddleware(app)
 
 app.use('/api/csp', csp)
@@ -69,7 +69,7 @@ function internalApiRouter() {
   router.all('/system/*', (req, res) => res.sendStatus(404))
 
   router.all('/auth/*', (req: express.Request, res, next) => {
-    if (req.session?.logoutToken?.idpProvider === 'evaka') {
+    if (req.session?.idpProvider === 'evaka') {
       req.url = req.url.replace('saml', 'evaka')
     }
     next()

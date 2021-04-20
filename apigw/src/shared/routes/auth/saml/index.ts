@@ -13,7 +13,7 @@ import { logoutExpress, saveLogoutToken } from '../../../session'
 import { fromCallback } from '../../../promise-utils'
 import { getEmployees } from '../../../dev-api'
 import _ from 'lodash'
-import type { AuthenticateOptions } from 'passport-saml'
+import { AuthenticateOptions, SAML } from 'passport-saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -53,8 +53,7 @@ function getRedirectUrl(req: express.Request): string {
 }
 
 function createLoginHandler({
-  strategyName,
-  sessionType
+  strategyName
 }: SamlEndpointConfig): express.RequestHandler {
   return (req, res, next) => {
     logAuditEvent(
@@ -93,7 +92,7 @@ function createLoginHandler({
             req,
             'User logged in successfully'
           )
-          await saveLogoutToken(req, res, sessionType, strategyName)
+          await saveLogoutToken(req, strategyName)
           const redirectUrl = getRedirectUrl(req)
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
@@ -115,10 +114,14 @@ function createLoginHandler({
 }
 
 function createLogoutHandler({
+  samlConfig,
   strategy,
   strategyName,
   sessionType
 }: SamlEndpointConfig): express.RequestHandler {
+  // For parsing SAML messages outside the strategy
+  const saml = new SAML(samlConfig)
+
   return toRequestHandler(async (req, res) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out_requested`,
@@ -131,7 +134,7 @@ function createLogoutHandler({
           strategy.logout(req, cb)
         )
         logDebug('Logging user out from passport.', req)
-        await logoutExpress(req, res, sessionType)
+        await logoutExpress(req, res, sessionType, saml)
         return res.redirect(redirectUrl)
       } catch (err) {
         logAuditEvent(
@@ -148,7 +151,7 @@ function createLogoutHandler({
         'User signed out'
       )
       logDebug('Logging user out from passport.', req)
-      await logoutExpress(req, res, sessionType)
+      await logoutExpress(req, res, sessionType, saml)
       res.redirect(getRedirectUrl(req))
     }
   })
@@ -161,7 +164,9 @@ function createLogoutHandler({
 // * HTTP redirect: the browser makes a GET request with query parameters
 // * HTTP POST: the browser makes a POST request with URI-encoded form body
 export default function createSamlRouter(config: SamlEndpointConfig): Router {
-  const { strategyName, strategy, pathIdentifier } = config
+  const { strategyName, strategy, samlConfig, pathIdentifier } = config
+  // For parsing SAML messages outside the strategy
+  const saml = new SAML(samlConfig)
 
   passport.use(strategyName, strategy)
 
@@ -173,7 +178,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
       req,
       'Logout callback called'
     )
-    await logoutExpress(req, res, config.sessionType)
+    await logoutExpress(req, res, config.sessionType, saml)
   })
 
   const router = Router()
