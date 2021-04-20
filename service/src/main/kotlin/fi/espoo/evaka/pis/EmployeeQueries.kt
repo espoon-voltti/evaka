@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.controllers.PinCode
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
@@ -118,13 +119,22 @@ fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeU
 fun getEmployeesPaged(
     tx: Database.Read,
     page: Int,
-    pageSize: Int
+    pageSize: Int,
+    searchTerm: String = ""
 ): Paged<EmployeeWithDaycareRoles> {
+
+    val (freeTextQuery, freeTextParams) = freeTextSearchQueryForColumns(listOf("employee"), listOf("first_name", "last_name"), searchTerm)
 
     val params = mapOf(
         "offset" to (page - 1) * pageSize,
         "pageSize" to pageSize
     )
+
+    val conditions = listOfNotNull(
+        if (searchTerm.isNotBlank()) freeTextQuery else null,
+    )
+
+    val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"
 
     // language=SQL
     val sql = """
@@ -144,11 +154,12 @@ SELECT
     ) AS daycare_roles,
     count(*) OVER () AS count
 FROM employee
+WHERE $whereClause
 ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
     """.trimIndent()
     return tx.createQuery(sql)
-        .bindMap(params)
+        .bindMap(params + freeTextParams)
         .map(withCountMapper<EmployeeWithDaycareRoles>())
         .let(mapToPaged(pageSize))
 }

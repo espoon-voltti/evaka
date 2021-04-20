@@ -39,7 +39,7 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `admin searches employees`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.searchEmployees(db, user, page = 1, pageSize = 3)
+        val response = controller.searchEmployees(db, user, page = 1, pageSize = 3, searchTerm = null)
         assertEquals(HttpStatus.OK, response.statusCode)
         val body = response.body ?: fail("missing body")
         assertEquals(3, body.total)
@@ -55,5 +55,16 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
             listOf(DaycareRole(daycareId = testDaycare.id, daycareName = testDaycare.name, role = UserRole.UNIT_SUPERVISOR)),
             supervisor.daycareRoles
         )
+    }
+
+    @Test
+    fun `admin searches employees with free text`() {
+        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
+        val response = controller.searchEmployees(db, user, page = 1, pageSize = 10, searchTerm = "super")
+        assertEquals(HttpStatus.OK, response.statusCode)
+        val body = response.body ?: fail("missing body")
+        assertEquals(1, body.data.size)
+        assertEquals("Sammy", body.data[0].firstName)
+        assertEquals("Supervisor", body.data[0].lastName)
     }
 }

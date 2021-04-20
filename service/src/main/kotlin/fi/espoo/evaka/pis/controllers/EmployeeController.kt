@@ -102,11 +102,12 @@ class EmployeeController {
         user: AuthenticatedUser,
         @RequestParam(required = false) page: Int?,
         @RequestParam(required = false) pageSize: Int?,
+        @RequestParam(required = false) searchTerm: String?,
     ): ResponseEntity<Paged<EmployeeWithDaycareRoles>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(UserRole.ADMIN)
         return db.read { tx ->
-            getEmployeesPaged(tx, page ?: 1, pageSize ?: 50)
+            getEmployeesPaged(tx, page ?: 1, (pageSize ?: 50).coerceAtMost(100), searchTerm ?: "")
         }.let { ResponseEntity.ok(it) }
     }
 }
