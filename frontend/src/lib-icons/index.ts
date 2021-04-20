@@ -100,6 +100,7 @@ export interface IconSet {
   fasArrowUp: IconDefinition
   farUser: IconDefinition
   faTruck: IconDefinition
+  faPhone: IconDefinition
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -199,3 +200,4 @@ export const fasArrowDown = iconSet.fasArrowDown
 export const fasArrowUp = iconSet.fasArrowUp
 export const farUser = iconSet.farUser
 export const faTruck = iconSet.faTruck
+export const faPhone = iconSet.faPhone

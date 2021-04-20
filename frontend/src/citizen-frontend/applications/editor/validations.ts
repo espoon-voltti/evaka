@@ -4,6 +4,7 @@
 
 import {
   email,
+  emailVerificationCheck,
   ErrorKey,
   ErrorsOf,
   getErrorCount,
@@ -195,7 +196,20 @@ export const validateApplication = (
         ? validate(form.contactInfo.childFuturePostOffice, required)
         : undefined,
       guardianPhone: validate(form.contactInfo.guardianPhone, required, phone),
-      guardianEmail: validate(form.contactInfo.guardianEmail, email),
+      guardianEmail:
+        form.contactInfo.noGuardianEmail &&
+        form.contactInfo.guardianEmail.length === 0
+          ? undefined
+          : validate(form.contactInfo.guardianEmail, email, required),
+      guardianEmailVerification:
+        form.contactInfo.noGuardianEmail &&
+        form.contactInfo.guardianEmailVerification.length === 0
+          ? undefined
+          : validate(
+              form.contactInfo.guardianEmailVerification,
+              email,
+              emailVerificationCheck(form.contactInfo.guardianEmail)
+            ),
       guardianMoveDate: form.contactInfo.guardianFutureAddressExists
         ? validate(form.contactInfo.guardianMoveDate, required, validDate)
         : undefined,

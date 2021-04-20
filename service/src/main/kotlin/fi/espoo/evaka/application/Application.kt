@@ -10,10 +10,16 @@ import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
+
+data class ApplicationUpdate(
+    val form: ApplicationFormUpdate,
+    val dueDate: LocalDate? = null
+)
 
 data class ApplicationSummary(
     val id: UUID,
@@ -60,7 +66,7 @@ data class PersonApplicationSummary(
     val childName: String?,
     val childSsn: String?,
     val guardianName: String,
-    val startDate: LocalDate?,
+    val preferredStartDate: LocalDate?,
     val sentDate: LocalDate?,
     val type: String,
     val status: ApplicationStatus,
@@ -86,6 +92,7 @@ data class ApplicationDetails(
     val modifiedDate: OffsetDateTime?,
     val sentDate: LocalDate?,
     val dueDate: LocalDate?,
+    val dueDateSetManuallyAt: HelsinkiDateTime?,
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
     val hideFromGuardian: Boolean,

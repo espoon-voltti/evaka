@@ -32,3 +32,8 @@ You can generate PNG, SVG or even AsciiArt files from [PlantUML](https://plantum
 1. Check out the generated image from `diagrams/svg/` directory
 
 See also: [official documentation for the command line tool](https://plantuml.com/command-line)
+
+
+# eVaka database schema
+
+[eVaka database schema diagram](./evaka_db_schema.png)

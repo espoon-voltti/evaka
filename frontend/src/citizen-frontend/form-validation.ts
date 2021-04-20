@@ -26,6 +26,7 @@ export type ErrorKey =
   | 'timeFormat'
   | 'unitNotSelected'
   | 'preferredStartDate'
+  | 'emailsDoNotMatch'
 
 export const required = (
   val: string,
@@ -84,6 +85,11 @@ export const validDate = (
   val: string,
   err: ErrorKey = 'validDate'
 ): ErrorKey | undefined => (!LocalDate.parseFiOrNull(val) ? err : undefined)
+
+export const emailVerificationCheck = (
+  verification: string
+): StandardValidator => (val, err: ErrorKey = 'emailsDoNotMatch') =>
+  val === verification ? undefined : err
 
 type StandardValidator = (val: string, err?: ErrorKey) => ErrorKey | undefined
 export const validate = (

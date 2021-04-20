@@ -423,7 +423,7 @@ fun fetchApplicationSummariesForGuardian(h: Handle, guardianId: UUID): List<Pers
     val sql =
         """
         SELECT
-            a.id, a.preferredUnit, a.startDate, a.sentDate, a.document->>'type' AS type,
+            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.document->>'type' AS type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.first_name, ' ', p.last_name) as guardianName,
             a.connecteddaycare,
@@ -449,7 +449,7 @@ fun fetchApplicationSummariesForChild(h: Handle, childId: UUID): List<PersonAppl
     val sql =
         """
         SELECT
-            a.id, a.preferredUnit, a.startDate, a.sentDate, a.document->>'type' AS type,
+            a.id, a.preferredUnit, a.preferredStartDate, a.sentDate, a.document->>'type' AS type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.first_name, ' ', p.last_name) as guardianName,
             a.connecteddaycare,
@@ -526,7 +526,7 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
         childName = rs.getString("childName"),
         childSsn = rs.getString("childSsn"),
         guardianName = rs.getString("guardianName"),
-        startDate = rs.getDate("startDate")?.toLocalDate(),
+        preferredStartDate = rs.getDate("preferredStartDate")?.toLocalDate(),
         sentDate = rs.getDate("sentDate")?.toLocalDate(),
         type = rs.getString("type"),
         status = rs.getEnum("application_status"),
@@ -559,6 +559,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
             f.updated,
             a.sentdate,
             a.duedate,
+            a.duedate_set_manually_at,
             a.checkedbyadmin,
             coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
@@ -603,6 +604,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
                 modifiedDate = row.mapColumn("updated"),
                 sentDate = row.mapColumn("sentdate"),
                 dueDate = row.mapColumn("duedate"),
+                dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
                 attachments = row.mapJsonColumn<Array<Attachment>>("attachments").toList()

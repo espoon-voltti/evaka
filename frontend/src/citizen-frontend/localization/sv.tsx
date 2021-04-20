@@ -891,6 +891,8 @@ const sv: Translations = {
             </P>
           )
         },
+        emailInfoText:
+          'E-postadressen används för att meddela om nya eVaka-meddelanden. Den aktuella e-postadressen har hämtats från eVakas kundregister. Om du ändrar det kommer det gamla e-postmeddelandet att uppdateras när ansökan har skickats.',
         childInfoTitle: 'Barnets information',
         childFirstName: 'Alla förnamn',
         childLastName: 'Efternamn',
@@ -905,8 +907,9 @@ const sv: Translations = {
         guardianLastName: 'Efternamn',
         guardianSSN: 'Personbeteckning',
         phone: 'Telefonnummer',
-        emailAddress: 'E-postadress',
+        verifyEmail: 'Verifiera e-postadress',
         email: 'E-postadress',
+        noEmail: 'Jag har inte en e-postadress',
         secondGuardianInfoTitle: 'Uppgifter om den andra vårdnadshavaren',
         secondGuardianInfo:
           'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
@@ -1131,7 +1134,8 @@ const sv: Translations = {
     validDate: 'Ange i format dd.mm.åååå',
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Ange i format hh:mm',
-    unitNotSelected: 'Välj minst en enhet'
+    unitNotSelected: 'Välj minst en enhet',
+    emailsDoNotMatch: 'E-postadresserna är olika'
   }
 }
 

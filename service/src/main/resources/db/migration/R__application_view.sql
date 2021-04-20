@@ -12,6 +12,7 @@ CREATE OR REPLACE VIEW application_view (
   status,
   type,
   urgent,
+  preferredStartDate,
   startDate,
   childName,
   childFirstName,
@@ -57,6 +58,7 @@ SELECT
   status,
   type,
   urgent,
+  preferredStartDate,
   startDate,
   childFirstName || ' ' || childLastName AS childName,
   childFirstName,
@@ -132,6 +134,7 @@ SELECT
   appl.other_guardian_id                                                                      AS otherGuardianId,
   data.document ->> 'type'                                                                    AS type,
   (data.document ->> 'urgent') :: BOOLEAN                                                     AS urgent,
+  (data.document ->> 'preferredStartDate')::DATE                                              AS preferredStartDate,
   COALESCE(
       (SELECT min(coalesce(d.requested_start_date, d.start_date)) FROM decision d WHERE d.application_id = appl.id AND d.status != 'REJECTED'),
       placement_plan.start_date,

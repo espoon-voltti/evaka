@@ -15,12 +15,14 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -47,7 +49,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val updatedApplication =
             application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(updatedApplication.form))
+            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -68,7 +70,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val updatedApplication =
             application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = true)))
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(updatedApplication.form))
+            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -100,7 +102,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // when
         val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(objectMapper.writeValueAsString(application.form))
+            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form))))
             .asUser(serviceWorker)
             .responseString()
 
@@ -108,6 +110,34 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
         val result = jdbi.handle { fetchApplicationDetails(it, application.id) }
         assertEquals(originalDueDate, result?.dueDate)
+    }
+
+    @Test
+    fun `when due date is set manually by service worker, new attachments do not re-calculate the due date`() {
+        // given
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 5, 1)
+        val application = insertSentApplication(sentDate, originalDueDate, false)
+        val manuallySetDueDate = HelsinkiDateTime.now().plusMonths(4).toLocalDate()
+
+        // when
+        val (_, res, _) = http.put("/v2/applications/${application.id}")
+            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form), dueDate = manuallySetDueDate)))
+            .asUser(serviceWorker)
+            .responseString()
+
+        // then
+        assertEquals(204, res.statusCode)
+        val beforeSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
+        assertTrue(HelsinkiDateTime.now().durationSince(beforeSendingAttachment.dueDateSetManuallyAt ?: throw Error("dueDateSetManuallyAt should have been set")).seconds <= 5, "dueDateSetManuallyAt should have been about now")
+
+        // when
+        uploadAttachment(applicationId = application.id, serviceWorker)
+
+        // then
+        val afterSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        assertEquals(manuallySetDueDate, afterSendingAttachment?.dueDate)
     }
 
     private fun insertSentApplication(

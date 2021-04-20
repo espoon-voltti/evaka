@@ -876,6 +876,8 @@ export default {
             </P>
           )
         },
+        emailInfoText:
+          'Sähköpostiosoitteen avulla saat tiedon uusista viesteistä eVakassa. Esitäytetty sähköpostiosoite on haettu eVakan asiakastiedoista. Mikäli muokkaat sitä, päivitetään vanha sähköpostiosoite, kun hakemus lähetetään.',
         childInfoTitle: 'Lapsen tiedot',
         childFirstName: 'Lapsen etunimet',
         childLastName: 'Lapsen sukunimi',
@@ -890,8 +892,9 @@ export default {
         guardianLastName: 'Huoltajan sukunimi',
         guardianSSN: 'Huoltajan henkilötunnus',
         phone: 'Puhelinnumero',
-        emailAddress: 'Sähköpostiosoite',
-        email: 'Sähköposti',
+        verifyEmail: 'Vahvista sähköpostiosoite',
+        email: 'Sähköpostiosoite',
+        noEmail: 'Minulla ei ole sähköpostiosoitetta',
         secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
         secondGuardianInfo:
           'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
@@ -1118,6 +1121,7 @@ export default {
     validDate: 'Anna muodossa pp.kk.vvvv',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Anna muodossa hh:mm',
-    unitNotSelected: 'Valitse vähintään yksi hakutoive'
+    unitNotSelected: 'Valitse vähintään yksi hakutoive',
+    emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
   }
 }

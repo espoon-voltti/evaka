@@ -53,6 +53,8 @@ export type ContactInfoFormData = {
   guardianHomeAddress: string
   guardianPhone: string
   guardianEmail: string
+  noGuardianEmail: boolean
+  guardianEmailVerification: string
   guardianFutureAddressExists: boolean
   guardianFutureAddressEqualsChild: boolean
   guardianMoveDate: string
@@ -220,6 +222,8 @@ export function apiDataToFormData(
       guardianHomeAddress: application.form.guardian.address?.street || '',
       guardianPhone: application.form.guardian.phoneNumber || '',
       guardianEmail: application.form.guardian.email || '',
+      guardianEmailVerification: application.form.guardian.email || '',
+      noGuardianEmail: !!application.form.guardian.noEmail,
       guardianFutureAddressExists:
         application.form.guardian.futureAddress !== null,
       guardianFutureAddressEqualsChild:

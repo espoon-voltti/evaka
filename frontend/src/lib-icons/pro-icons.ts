@@ -79,7 +79,8 @@ import {
   faUserFriends,
   faUsers,
   faComments,
-  faTruck
+  faTruck,
+  faPhone
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
 } from '@fortawesome/pro-light-svg-icons'
@@ -201,7 +202,8 @@ const icons: IconSet = {
   farStickyNote,
   farUser: faUser,
   faComments,
-  faTruck
+  faTruck,
+  faPhone
 }
 
 export default icons

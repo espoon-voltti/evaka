@@ -11,12 +11,14 @@ import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 
-type Props = {
+interface Props {
   application: ApplicationDetails
+  dueDateEditor?: JSX.Element
 }
 
 export default React.memo(function ApplicationStatusSection({
-  application
+  application,
+  dueDateEditor
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -45,10 +47,12 @@ export default React.memo(function ApplicationStatusSection({
             : ''}
         </span>
 
-        <Label>{i18n.application.state.due}</Label>
-        <span data-qa="application-due-date">
-          {application.dueDate?.format()}
-        </span>
+        <Label inputRow={!!dueDateEditor}>{i18n.application.state.due}</Label>
+        {dueDateEditor || (
+          <span data-qa="application-due-date">
+            {application.dueDate?.format()}
+          </span>
+        )}
       </ListGrid>
     </CollapsibleSection>
   )
