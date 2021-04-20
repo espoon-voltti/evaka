@@ -38,14 +38,14 @@ export default React.memo(function PinLogout({
             <IconButton
               icon={faTimes}
               size={'m'}
-              data-qa={'cancel-logout'}
+              data-qa={'button-cancel-logout'}
               onClick={cancel}
             />
           </CancelContainer>
           <FixedSpaceColumn spacing={'m'}>
             <Key>{i18n.attendances.pin.staff}</Key>
             <span>{loggedInStaffName}</span>
-            <LogoutButton data-qa="logout-button" onClick={logout}>
+            <LogoutButton data-qa="button-accept-logout" onClick={logout}>
               {i18n.attendances.pin.logOut}
             </LogoutButton>
           </FixedSpaceColumn>

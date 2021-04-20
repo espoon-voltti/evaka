@@ -126,6 +126,7 @@ export default React.memo(function PinLogin() {
                 <IconButton
                   size={'L'}
                   icon={faUserUnlock}
+                  dataQa={'button-logout'}
                   onClick={() => {
                     setLoggingOut(true)
                   }}

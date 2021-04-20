@@ -325,3 +325,40 @@ test('Wrong pin shows error, and user can log in with correct pin after that', a
     .expect(mobileGroupsPage.childInfoName.textContent)
     .eql(`${child.firstName} ${child.lastName}`)
 })
+
+test('After successful PIN login user can log out after which new PIN is required', async (t) => {
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin, {
+    replace: true
+  })
+  await t.click(mobileGroupsPage.submitPin)
+
+  await t
+    .expect(mobileGroupsPage.childInfoName.textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.logoutButton)
+  await t.expect(mobileGroupsPage.acceptLogoutButton.visible).ok()
+
+  // Click logout modal away and check that info still shows
+  await t.click(mobileGroupsPage.cancelLogoutButton)
+  await t
+    .expect(mobileGroupsPage.childInfoName.textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  // Click logout modal, log out and check we are back at child page
+  await t.click(mobileGroupsPage.logoutButton)
+  await t.click(mobileGroupsPage.acceptLogoutButton)
+
+  await t.expect(mobileGroupsPage.childSensitiveInfoLink.visible).ok()
+})
