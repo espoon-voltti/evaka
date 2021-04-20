@@ -53,6 +53,7 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
                     date_part('year', p.date_of_birth) as birth_year,
                     date_part('year', age(t::date, p.date_of_birth)) as age,
                     p.language,
+                    p.post_office,
             
                     pl.type as placement_type,
             
@@ -108,6 +109,7 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
                 date_of_birth,
                 age,
                 language,
+                post_office,
             
                 placement_type,
             
@@ -165,6 +167,7 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
                 dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
                 age = rs.getInt("age"),
                 language = rs.getString("language"),
+                postOffice = rs.getString("post_office"),
                 placementType = rs.getEnum("placement_type"),
                 unitId = rs.getUUID("unit_id"),
                 unitName = rs.getString("unit_name"),
@@ -196,6 +199,7 @@ data class RawReportRow(
     val day: LocalDate,
     val childId: UUID,
     val dateOfBirth: LocalDate,
+    val postOffice: String,
     val age: Int,
     val language: String?,
     val placementType: PlacementType,

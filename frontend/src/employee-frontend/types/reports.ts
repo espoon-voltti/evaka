@@ -77,6 +77,7 @@ export interface RawReportRow {
   dateOfBirth: LocalDate
   age: number
   language: string | null
+  postOffice: string
   placementType:
     | 'CLUB'
     | 'DAYCARE'

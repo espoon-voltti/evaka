@@ -89,6 +89,7 @@ function Raw() {
                   data={rows.value.map((row) => ({
                     ...row,
                     day: row.day.format(),
+                    childLink: `https://espoonvarhaiskasvatus.fi/employee/child-information/${row.childId}`,
                     dateOfBirth: row.dateOfBirth?.format(),
                     placementType: i18n.placement.type[row.placementType],
                     unitType:
@@ -119,9 +120,11 @@ function Raw() {
                   headers={[
                     { label: 'Päivämäärä', key: 'day' },
                     { label: 'Lapsen id', key: 'childId' },
+                    { label: 'Linkki lapseen', key: 'childLink' },
                     { label: 'Syntymäaika', key: 'dateOfBirth' },
                     { label: 'Ikä', key: 'age' },
                     { label: 'Kieli', key: 'language' },
+                    { label: 'Kotikunta', key: 'postOffice' },
                     { label: 'Sijoitustyyppi', key: 'placementType' },
                     { label: 'Sijoitettu yksikköön', key: 'unitId' },
                     { label: 'Yksikkö', key: 'unitName' },
