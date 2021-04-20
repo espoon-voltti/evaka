@@ -40,8 +40,15 @@ import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
 import FreeTextSearch from '../common/FreeTextSearch'
 import TopBar from '../common/TopBar'
+import BottomNavbar, { NavItem } from '../common/BottomNavbar'
 
-export default React.memo(function AttendancePageWrapper() {
+export interface Props {
+  onNavigate: (page: NavItem) => void
+}
+
+export default React.memo(function AttendancePageWrapper({
+  onNavigate
+}: Props) {
   const { i18n } = useTranslation()
   const { unitId, groupId: groupIdOrAll } = useParams<{
     unitId: string
@@ -306,6 +313,7 @@ export default React.memo(function AttendancePageWrapper() {
               <Route path="/" component={RedirectToUnitPage} />
             </Switch>
           </FullHeightContentArea>
+          <BottomNavbar selected="child" onChange={onNavigate} />
         </>
       )}
     </>

@@ -71,11 +71,12 @@ type BottomTextProps = {
   text: string
   children: React.ReactNode
   selected: boolean
+  onClick: () => void
 }
 
-const BottomText = ({ text, children, selected }: BottomTextProps) => {
+const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
   return (
-    <FixedSpaceColumn spacing="3px">
+    <FixedSpaceColumn spacing="3px" onClick={onClick}>
       <FixedSpaceRow justifyContent="center" marginBottom="zero">
         {children}
       </FixedSpaceRow>
@@ -89,11 +90,13 @@ const BottomText = ({ text, children, selected }: BottomTextProps) => {
 type BottomNavbarProps = {
   selected?: NavItem
   messageCount?: number
+  onChange?: (value: NavItem) => void
 }
 
 export default function BottomNavbar({
   selected,
-  messageCount
+  messageCount,
+  onChange
 }: BottomNavbarProps) {
   const { i18n } = useTranslation()
 
@@ -106,21 +109,22 @@ export default function BottomNavbar({
           <BottomText
             text={i18n.common.children}
             selected={selected === 'child'}
+            onClick={() =>
+              selected !== 'child' && onChange && onChange('child')
+            }
           >
-            <CustomIcon
-              icon={faChild}
-              onClick={() => null}
-              selected={selected === 'child'}
-            />
+            <CustomIcon icon={faChild} selected={selected === 'child'} />
           </BottomText>
         </Button>
         <Button>
-          <BottomText text={i18n.common.staff} selected={selected === 'staff'}>
-            <CustomIcon
-              icon={faUser}
-              onClick={() => null}
-              selected={selected === 'staff'}
-            />
+          <BottomText
+            text={i18n.common.staff}
+            selected={selected === 'staff'}
+            onClick={() =>
+              selected !== 'staff' && onChange && onChange('staff')
+            }
+          >
+            <CustomIcon icon={faUser} selected={selected === 'staff'} />
           </BottomText>
         </Button>
         <div style={{ display: 'none' }}>
@@ -129,10 +133,12 @@ export default function BottomNavbar({
             <BottomText
               text={i18n.common.messages}
               selected={selected === 'messages'}
+              onClick={() =>
+                selected !== 'messages' && onChange && onChange('messages')
+              }
             >
               <CustomIcon
                 icon={faComments}
-                onClick={() => null}
                 selected={selected === 'messages'}
               />
               {messageCount || 0 > 0 ? <Circle>{messageCount}</Circle> : null}

@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ComponentType, useContext } from 'react'
-import { Redirect, RouteComponentProps } from 'react-router-dom'
+import { Redirect } from 'react-router-dom'
 import { UserContext } from '../state/user'
 
-export default function ensureAuthenticated<P>(
-  Component: ComponentType<RouteComponentProps<P>>
-) {
-  return function Authenticated(props: RouteComponentProps<P>) {
+export default function ensureAuthenticated<P>(Component: ComponentType<P>) {
+  return function Authenticated(props: P) {
     const { loggedIn } = useContext(UserContext)
 
     if (!loggedIn) {
