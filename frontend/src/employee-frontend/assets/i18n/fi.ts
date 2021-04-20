@@ -2343,7 +2343,7 @@ export const fi = {
     error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
     link: 'eVaka-mobiilin PIN-koodi'
   },
-  users: {
+  employees: {
     title: 'Käyttäjät',
     name: 'Nimi',
     rights: 'Oikeudet'

@@ -4,51 +4,51 @@ import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 import React, { useCallback, useEffect, useState } from 'react'
-import { getUsers } from '../../api/users'
+import { searchEmployees } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
-import { Employee } from '../../types/users'
-import { UsersList } from './UsersList'
+import { EmployeeUser as Employee } from '../../types/employee'
+import { EmployeeList } from './EmployeeList'
 
-const pageSize = 50
+const PAGE_SIZE = 50
 
-export default React.memo(function UsersPage() {
+export default function EmployeesPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState<number>(1)
-  const [totalUsers, setTotalUsers] = useState<number>()
+  const [totalEmployees, setTotalEmployees] = useState<number>()
   const [totalPages, setTotalPages] = useState<number>()
-  const [users, setUsers] = useState<Result<Employee[]>>()
+  const [employees, setEmployees] = useState<Result<Employee[]>>()
 
-  const setUsersResult = useCallback(
+  const setEmployeesResult = useCallback(
     (result: Result<Paged<Employee>>) => {
-      setUsers(result.map((r) => r.data))
+      setEmployees(result.map((r) => r.data))
       if (result.isSuccess) {
-        setTotalUsers(result.value.total)
+        setTotalEmployees(result.value.total)
         setTotalPages(result.value.pages)
       }
     },
     [page]
   )
 
-  const reloadUsers = useRestApi(getUsers, setUsersResult)
+  const reloadEmployees = useRestApi(searchEmployees, setEmployeesResult)
 
-  const loadUsers = useCallback(() => {
-    reloadUsers(page, pageSize)
-  }, [page, pageSize])
+  const loadEmployees = useCallback(() => {
+    reloadEmployees(page, PAGE_SIZE)
+  }, [page, PAGE_SIZE])
 
   useEffect(() => {
-    loadUsers()
-  }, [loadUsers])
+    loadEmployees()
+  }, [loadEmployees])
 
   return (
     <Container>
       <Gap size={'L'} />
       <ContentArea opaque>
-        <Title>{i18n.users.title}</Title>
-        <section>TODO Add filters here</section>
+        <Title>{i18n.employees.title}</Title>
+        <section>TODO Add search field here</section>
         <Gap size="L" />
-        <UsersList
-          users={users}
-          total={totalUsers}
+        <EmployeeList
+          employees={employees}
+          total={totalEmployees}
           currentPage={page}
           pages={totalPages}
           setPage={setPage}
@@ -56,4 +56,4 @@ export default React.memo(function UsersPage() {
       </ContentArea>
     </Container>
   )
-})
+}

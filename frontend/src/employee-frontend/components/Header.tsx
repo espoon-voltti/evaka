@@ -213,8 +213,11 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             <UserPopup>
               <FixedSpaceColumn spacing={'m'}>
                 <RequireRole oneOf={['ADMIN']}>
-                  <Link to={`/users`} onClick={() => setPopupVisible(false)}>
-                    {i18n.users.title}
+                  <Link
+                    to={`/employees`}
+                    onClick={() => setPopupVisible(false)}
+                  >
+                    {i18n.employees.title}
                   </Link>
                 </RequireRole>
                 {isNotProduction() && (

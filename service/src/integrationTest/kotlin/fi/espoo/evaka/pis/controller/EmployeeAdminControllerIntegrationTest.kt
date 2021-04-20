@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.DaycareRole
-import fi.espoo.evaka.pis.controllers.EmployeeAdminController
+import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -23,10 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import java.util.UUID
 
-class EmployeeAdminControllerIntegrationTest : AbstractIntegrationTest() {
+class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
 
     @Autowired
-    lateinit var controller: EmployeeAdminController
+    lateinit var controller: EmployeeController
 
     @BeforeEach
     override fun beforeEach() {
@@ -37,9 +37,9 @@ class EmployeeAdminControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `admin gets employees`() {
+    fun `admin searches employees`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val response = controller.getEmployees(db, user, page = 1, pageSize = 3)
+        val response = controller.searchEmployees(db, user, page = 1, pageSize = 3)
         assertEquals(HttpStatus.OK, response.statusCode)
         val body = response.body ?: fail("missing body")
         assertEquals(3, body.total)
