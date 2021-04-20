@@ -4,12 +4,13 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import {
+  matchPath,
   Redirect,
   Route,
   Switch,
   useHistory,
-  useLocation,
-  useParams
+  useParams,
+  useRouteMatch
 } from 'react-router-dom'
 import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
@@ -46,8 +47,12 @@ export default React.memo(function AttendancePageWrapper() {
     unitId: string
     groupId: string
   }>()
-  const location = useLocation()
+  const { path, url } = useRouteMatch()
   const history = useHistory()
+
+  const currentPage = matchPath<{ page: string }>(history.location.pathname, {
+    path: `${path}/:page`
+  })?.params.page
 
   const { attendanceResponse, setAttendanceResponse } = useContext(
     AttendanceUIContext
@@ -67,7 +72,7 @@ export default React.memo(function AttendancePageWrapper() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [groupIdOrAll, location])
+  }, [groupIdOrAll, unitId, currentPage])
 
   useEffect(() => {
     if (freeText === '') {
@@ -97,10 +102,6 @@ export default React.memo(function AttendancePageWrapper() {
     }
   }, [attendanceResponse])
 
-  const currentPage = location.pathname
-    .split('/')
-    .filter((elem) => elem.length > 0)
-    .pop()
   const totalAttendances = attendanceResponse.isSuccess
     ? groupIdOrAll === 'all'
       ? attendanceResponse.value.children.length
@@ -148,7 +149,7 @@ export default React.memo(function AttendancePageWrapper() {
   const tabs = [
     {
       id: 'coming',
-      link: `/units/${unitId}/attendance/${groupIdOrAll}/coming`,
+      link: `${url}/coming`,
       label: (
         <Bold>
           {i18n.attendances.types.COMING}
@@ -159,7 +160,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'present',
-      link: `/units/${unitId}/attendance/${groupIdOrAll}/present`,
+      link: `${url}/present`,
       label: (
         <Bold>
           {i18n.attendances.types.PRESENT}
@@ -170,7 +171,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'departed',
-      link: `/units/${unitId}/attendance/${groupIdOrAll}/departed`,
+      link: `${url}/departed`,
       label: (
         <Bold>
           {i18n.attendances.types.DEPARTED}
@@ -181,7 +182,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'absent',
-      link: `/units/${unitId}/attendance/${groupIdOrAll}/absent`,
+      link: `${url}/absent`,
       label: (
         <Bold>
           {i18n.attendances.types.ABSENT}
@@ -268,7 +269,7 @@ export default React.memo(function AttendancePageWrapper() {
             <Switch>
               <Route
                 exact
-                path="/units/:unitId/attendance/:groupId/coming"
+                path={`${path}/coming`}
                 render={() => (
                   <AttendanceComingPage
                     attendanceResponse={attendanceResponse}
@@ -277,7 +278,7 @@ export default React.memo(function AttendancePageWrapper() {
               />
               <Route
                 exact
-                path="/units/:unitId/attendance/:groupId/present"
+                path={`${path}/present`}
                 render={() => (
                   <AttendancePresentPage
                     attendanceResponse={attendanceResponse}
@@ -286,7 +287,7 @@ export default React.memo(function AttendancePageWrapper() {
               />
               <Route
                 exact
-                path="/units/:unitId/attendance/:groupId/departed"
+                path={`${path}/departed`}
                 render={() => (
                   <AttendanceDepartedPage
                     attendanceResponse={attendanceResponse}
@@ -295,7 +296,7 @@ export default React.memo(function AttendancePageWrapper() {
               />
               <Route
                 exact
-                path="/units/:unitId/attendance/:groupId/absent"
+                path={`${path}/absent`}
                 render={() => (
                   <AttendanceAbsentPage
                     attendanceResponse={attendanceResponse}
