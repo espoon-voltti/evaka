@@ -44,7 +44,6 @@ export default function EmployeesPage() {
       <Gap size={'L'} />
       <ContentArea opaque>
         <Title>{i18n.employees.title}</Title>
-        <section>TODO Add search field here</section>
         <Gap size="L" />
         <EmployeeList
           employees={employees}
