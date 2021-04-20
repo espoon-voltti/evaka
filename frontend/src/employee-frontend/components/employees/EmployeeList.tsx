@@ -1,7 +1,6 @@
 import { Result } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import Pagination from 'lib-components/Pagination'
 import { sortBy } from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
@@ -20,18 +19,9 @@ const Email = styled.div`
 
 interface Props {
   employees?: Result<Employee[]>
-  total?: number
-  pages?: number
-  currentPage: number
-  setPage: (page: number) => void
 }
 
-export function EmployeeList({
-  employees,
-  pages,
-  currentPage,
-  setPage
-}: Props) {
+export function EmployeeList({ employees }: Props) {
   const { i18n } = useTranslation()
 
   const rows =
@@ -73,14 +63,6 @@ export function EmployeeList({
         </Thead>
         <Tbody>{rows}</Tbody>
       </Table>
-      {employees?.isSuccess && (
-        <Pagination
-          pages={pages}
-          currentPage={currentPage}
-          setPage={setPage}
-          label={i18n.common.page}
-        />
-      )}
       {employees?.isLoading && <Loader />}
       {employees?.isFailure && <div>{i18n.common.error.unknown}</div>}
     </>

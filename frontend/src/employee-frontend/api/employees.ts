@@ -46,11 +46,12 @@ export async function updatePinCode(pinCode: string): Promise<Result<void>> {
 
 export function searchEmployees(
   page: number,
-  pageSize: number
+  pageSize: number,
+  searchTerm?: string
 ): Promise<Result<Paged<EmployeeUser>>> {
   return client
     .get<JsonOf<Paged<EmployeeUser>>>('/employee/search', {
-      params: { page, pageSize }
+      params: { page, pageSize, searchTerm }
     })
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))

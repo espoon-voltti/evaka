@@ -103,6 +103,8 @@ export const fi = {
       invoicingAddress: 'Laskutusosoite',
       addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi'
     },
+    resultCount: (count: number) =>
+      count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
     ok: 'Selvä!',
     tryAgain: 'Yritä uudestaan',
     checkDates: 'Tarkista päivämäärät',
@@ -1410,8 +1412,6 @@ export const fi = {
   feeDecisions: {
     table: {
       title: 'Maksupäätökset',
-      rowCount: (count: number) =>
-        count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
       head: 'Päämies',
       children: 'Lapset',
       validity: 'Maksupäätös voimassa',
@@ -1436,8 +1436,6 @@ export const fi = {
   valueDecisions: {
     table: {
       title: 'Arvopäätökset',
-      rowCount: (count: number) =>
-        count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
       head: 'Päämies',
       child: 'Lapsi',
       validity: 'Arvopäätös voimassa',
@@ -2346,7 +2344,8 @@ export const fi = {
   employees: {
     title: 'Käyttäjät',
     name: 'Nimi',
-    rights: 'Oikeudet'
+    rights: 'Oikeudet',
+    findByName: 'Etsi nimellä'
   },
   roles: {
     adRoles: {
