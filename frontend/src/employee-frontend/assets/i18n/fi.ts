@@ -2354,9 +2354,9 @@ export const fi = {
       DIRECTOR: 'Raportointi',
       FINANCE_ADMIN: 'Talous',
       SERVICE_WORKER: 'Palveluohjaus',
-      SPECIAL_EDUCATION_TEACHER: 'Varhaiskasvatuksen erityisopettaja',
+      SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',
       STAFF: 'Henkilökunta',
-      UNIT_SUPERVISOR: 'Yksikön johtaja',
+      UNIT_SUPERVISOR: 'Johtaja',
       MOBILE: 'Mobiili'
     }
   }
