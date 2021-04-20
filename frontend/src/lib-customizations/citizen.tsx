@@ -14,6 +14,7 @@ const {
   svCustomizations,
   cityLogo,
   mapConfig,
+  mapSearchAreaRect,
   featureFlags
 }: CitizenCustomizations = customizations
 export {
@@ -22,5 +23,6 @@ export {
   svCustomizations,
   cityLogo,
   mapConfig,
+  mapSearchAreaRect,
   featureFlags
 }

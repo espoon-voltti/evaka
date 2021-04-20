@@ -13,6 +13,7 @@ import { MapAddress } from '../map/MapView'
 import { UnitWithDistance, UnitWithStraightDistance } from '../map/distances'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { mapSearchAreaRect } from 'lib-customizations/citizen'
 
 export async function fetchUnits(
   type: ApplicationType
@@ -49,10 +50,10 @@ export const queryAutocomplete = async (
       params: {
         text,
         layers: 'address',
-        'boundary.rect.min_lon': 24.271362626190594,
-        'boundary.rect.max_lon': 25.32055693401933,
-        'boundary.rect.min_lat': 59.9451623086072,
-        'boundary.rect.max_lat': 60.35391259995084
+        'boundary.rect.min_lon': mapSearchAreaRect.minLongitude,
+        'boundary.rect.max_lon': mapSearchAreaRect.maxLongitude,
+        'boundary.rect.min_lat': mapSearchAreaRect.minLatitude,
+        'boundary.rect.max_lat': mapSearchAreaRect.maxLatitude
       }
     })
     .then((res) =>
