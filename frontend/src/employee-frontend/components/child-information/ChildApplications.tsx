@@ -56,7 +56,7 @@ const ChildApplications = React.memo(function ChildApplications({
     } else
       return _.orderBy(
         applications.value,
-        ['startDate', 'preferredUnitName'],
+        ['preferredStartDate', 'preferredUnitName'],
         ['desc', 'desc']
       ).map((application: ApplicationSummary) => {
         return (

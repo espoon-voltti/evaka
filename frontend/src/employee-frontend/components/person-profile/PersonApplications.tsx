@@ -44,7 +44,7 @@ const PersonApplications = React.memo(function PersonApplications({
     applications.isSuccess
       ? _.orderBy(
           applications.value,
-          ['startDate', 'preferredUnitName'],
+          ['preferredStartDate', 'preferredUnitName'],
           ['desc', 'desc']
         ).map((application: ApplicationSummary) => {
           return (
