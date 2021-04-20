@@ -53,4 +53,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2021-22696</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Not a high enough risk in our use case (containerized workloads and hardly any file reads).
+        Not worth effort for upgrading right now.
+        ]]></notes>
+        <cve>CVE-2021-29425</cve>
+    </suppress>
 </suppressions>
