@@ -108,7 +108,7 @@ export async function getGuardianApplicationSummaries(
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        startDate: LocalDate.parseIso(data.startDate),
+        preferredStartDate: LocalDate.parseIso(data.preferredStartDate),
         sentDate: LocalDate.parseNullableIso(data.sentDate)
       }))
     )
@@ -124,7 +124,7 @@ export async function getChildApplicationSummaries(
     .then((res) =>
       res.data.map((data) => ({
         ...data,
-        startDate: LocalDate.parseIso(data.startDate),
+        preferredStartDate: LocalDate.parseIso(data.preferredStartDate),
         sentDate: LocalDate.parseNullableIso(data.sentDate)
       }))
     )
