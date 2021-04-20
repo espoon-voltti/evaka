@@ -1,3 +1,4 @@
+import { sortBy } from 'lodash'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -42,8 +43,8 @@ export function UsersList({ users, pages, currentPage, setPage }: Props) {
         </Td>
         <Td>
           {[
-            ...user.globalRoles.map((r) => <>{i18n.roles.adRoles[r]}</>),
-            ...user.daycareRoles.map((r) => (
+            ...sortBy(user.globalRoles.map((r) => i18n.roles.adRoles[r])),
+            ...sortBy(user.daycareRoles, 'daycareName').map((r) => (
               <>
                 <Link to={`/units/${r.daycareId}`}>{r.daycareName}</Link> (
                 {i18n.roles.adRoles[r.role]?.toLowerCase()})
