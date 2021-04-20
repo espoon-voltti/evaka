@@ -75,7 +75,7 @@ const ChildApplications = React.memo(function ChildApplications({
               </Link>
             </Td>
             <DateTd data-qa="application-start-date">
-              {application.startDate.format()}
+              {application.preferredStartDate.format()}
             </DateTd>
             <DateTd data-qa="application-sent-date">
               {application.sentDate?.format()}

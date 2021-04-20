@@ -66,7 +66,7 @@ data class PersonApplicationSummary(
     val childName: String?,
     val childSsn: String?,
     val guardianName: String,
-    val startDate: LocalDate?,
+    val preferredStartDate: LocalDate?,
     val sentDate: LocalDate?,
     val type: String,
     val status: ApplicationStatus,

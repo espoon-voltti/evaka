@@ -63,7 +63,7 @@ const PersonApplications = React.memo(function PersonApplications({
                 </Link>
               </Td>
               <DateTd data-qa="application-start-date">
-                {application.startDate.format()}
+                {application.preferredStartDate.format()}
               </DateTd>
               <DateTd data-qa="application-sent-date">
                 {application.sentDate?.format()}

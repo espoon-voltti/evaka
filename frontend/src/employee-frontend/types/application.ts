@@ -28,7 +28,7 @@ export interface ApplicationSummary {
   childName: string
   childSsn: string
   guardianName: string
-  startDate: LocalDate
+  preferredStartDate: LocalDate
   sentDate: LocalDate | null
   preferredUnitId: UUID
   preferredUnitName: string
