@@ -290,12 +290,12 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
-        @RequestBody applicationForm: ApplicationFormUpdate
+        @RequestBody application: ApplicationUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
-        db.transaction { applicationStateService.updateApplicationContentsServiceWorker(it, user, applicationId, applicationForm) }
+        db.transaction { applicationStateService.updateApplicationContentsServiceWorker(it, user, applicationId, application) }
         return ResponseEntity.noContent().build()
     }
 

@@ -1054,7 +1054,15 @@ export default React.memo(function ApplicationEditView({
         )}
       </CollapsibleSection>
 
-      <ApplicationStatusSection application={application} />
+      <ApplicationStatusSection
+        application={application}
+        dueDateEditor={
+          <DatePickerDeprecated
+            date={application.dueDate || undefined}
+            onChange={(value) => setApplication(set('dueDate', value))}
+          />
+        }
+      />
     </div>
   )
 })

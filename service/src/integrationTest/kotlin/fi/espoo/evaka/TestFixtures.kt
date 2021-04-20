@@ -706,6 +706,7 @@ fun insertApplication(
         modifiedDate = OffsetDateTime.now(),
         sentDate = null,
         dueDate = null,
+        dueDateSetManuallyAt = null,
         transferApplication = false,
         additionalDaycareApplication = false,
         otherGuardianId = null,

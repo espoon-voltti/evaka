@@ -559,6 +559,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
             f.updated,
             a.sentdate,
             a.duedate,
+            a.duedate_set_manually_at,
             a.checkedbyadmin,
             coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
@@ -603,6 +604,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
                 modifiedDate = row.mapColumn("updated"),
                 sentDate = row.mapColumn("sentdate"),
                 dueDate = row.mapColumn("duedate"),
+                dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
                 attachments = row.mapJsonColumn<Array<Attachment>>("attachments").toList()
