@@ -43,10 +43,11 @@ data class DaycareRole(
 
 data class EmployeeWithDaycareRoles(
     val id: UUID,
-    val firstName: String,
-    val lastName: String,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
+    val firstName: String,
+    val lastName: String,
+    val email: String?,
     val globalRoles: List<UserRole> = listOf(),
     @Json
     val daycareRoles: List<DaycareRole> = listOf()
@@ -133,6 +134,7 @@ SELECT
     updated,
     first_name,
     last_name,
+    email,
     employee.roles AS global_roles,
     (
         SELECT jsonb_agg(json_build_object('daycareId', dav.daycare_id, 'daycareName', d.name, 'role', dav.role))
@@ -142,7 +144,7 @@ SELECT
     ) AS daycare_roles,
     count(*) OVER () AS count
 FROM employee
-ORDER BY created DESC
+ORDER BY last_name, first_name DESC
 LIMIT :pageSize OFFSET :offset
     """.trimIndent()
     return tx.createQuery(sql)

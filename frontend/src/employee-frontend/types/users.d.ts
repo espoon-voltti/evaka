@@ -11,6 +11,7 @@ export interface Employee {
   id: UUID
   firstName: string
   lastName: string
+  email?: string
   globalRoles: AdRole[]
   daycareRoles: DaycareRole[]
 }

@@ -38,7 +38,7 @@ export function UsersList({ users, pages, currentPage, setPage }: Props) {
     users.value.map((user) => (
       <Tr key={user.id}>
         <Td>
-          {user.firstName} {user.lastName}
+          {user.lastName} {user.firstName}
         </Td>
         <Td>
           {[
