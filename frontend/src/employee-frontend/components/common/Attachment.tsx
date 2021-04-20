@@ -35,6 +35,7 @@ const ReceivedAtText = styled(Dimmed)`
 interface Props {
   attachment: ApplicationAttachment
   dataQa: string
+  receivedAt: Date
 }
 
 const contentTypeIcon = (contentType: string) => {
@@ -51,7 +52,7 @@ const contentTypeIcon = (contentType: string) => {
   }
 }
 
-function Attachment({ attachment, dataQa }: Props) {
+function Attachment({ attachment, dataQa, receivedAt }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
 
@@ -80,7 +81,7 @@ function Attachment({ attachment, dataQa }: Props) {
           {attachment.uploadedByEmployee
             ? i18n.application.attachments.receivedByPaperAt
             : i18n.application.attachments.receivedAt}{' '}
-          {LocalDate.fromSystemTzDate(attachment.receivedAt).format()}
+          {LocalDate.fromSystemTzDate(receivedAt).format()}
         </ReceivedAtText>
       </FixedSpaceRow>
     </AttachmentContainer>
