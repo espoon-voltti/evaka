@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   Redirect,
   Route,
@@ -18,10 +18,9 @@ import Tabs from 'lib-components/molecules/Tabs'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-components/colors'
-import { faAngleDown, faAngleUp, faSearch, faTimes } from 'lib-icons'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { faTimes } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -38,8 +37,8 @@ import {
 } from '../../api/attendances'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
-import FreeTextSearch from '../../components/common/FreeTextSearch'
-import GroupSelector from './GroupSelector'
+import FreeTextSearch from '../common/FreeTextSearch'
+import TopBar from '../common/TopBar'
 
 export default React.memo(function AttendancePageWrapper() {
   const { i18n } = useTranslation()
@@ -55,7 +54,6 @@ export default React.memo(function AttendancePageWrapper() {
   )
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<AttendanceChild[]>([])
   const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(
@@ -198,35 +196,30 @@ export default React.memo(function AttendancePageWrapper() {
     return <Redirect to={`/units/${unitId}/attendance/all/coming`} />
   }
 
-  function changeGroup(groupOrAll: Group | 'all') {
+  function changeGroup(group: Group | undefined) {
     if (attendanceResponse.isSuccess) {
-      if (currentPage && groupOrAll !== 'all') {
+      if (currentPage && group !== undefined) {
         history.push(
-          `/units/${attendanceResponse.value.unit.id}/attendance/${groupOrAll.id}/${currentPage}`
+          `/units/${attendanceResponse.value.unit.id}/attendance/${group.id}/${currentPage}`
         )
-        setSelectedGroup(groupOrAll)
-      } else if (currentPage && groupOrAll === 'all') {
+        setSelectedGroup(group)
+      } else if (currentPage && group === undefined) {
         history.push(
           `/units/${attendanceResponse.value.unit.id}/attendance/all/${currentPage}`
         )
         setSelectedGroup(undefined)
       }
-      setShowGroupSelector(false)
     }
   }
 
   const containerSpring = useSpring<{ x: number }>({ x: showSearch ? 1 : 0 })
-  const groupSelectorSpring = useSpring<{ x: number }>({
-    x: showGroupSelector ? 1 : 0,
-    config: { duration: 100 }
-  })
 
   return (
-    <Fragment>
+    <>
       {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isLoading && <Loader />}
       {attendanceResponse.isSuccess && (
-        <Fragment>
+        <>
           <SearchBar
             style={{
               height: containerSpring.x.interpolate((x) => `${100 * x}%`)
@@ -259,35 +252,12 @@ export default React.memo(function AttendancePageWrapper() {
               />
             </ContentArea>
           </SearchBar>
-          <Name>
-            <NoMarginTitle size={1} centered smaller bold>
-              {attendanceResponse.value.unit.name}{' '}
-              <IconButton
-                onClick={() => setShowSearch(!showSearch)}
-                icon={faSearch}
-              />
-            </NoMarginTitle>
-          </Name>
-          <GroupSelectorWrapper
-            style={{
-              maxHeight: groupSelectorSpring.x.interpolate((x) => `${100 * x}%`)
-            }}
-          >
-            <GroupSelectorButton
-              text={selectedGroup ? selectedGroup.name : i18n.common.all}
-              onClick={() => {
-                setShowGroupSelector(!showGroupSelector)
-              }}
-              icon={showGroupSelector ? faAngleUp : faAngleDown}
-              iconRight
-            />
-            <GroupSelector
-              groupIdOrAll={groupIdOrAll}
-              selectedGroup={selectedGroup}
-              changeGroup={changeGroup}
-            />
-          </GroupSelectorWrapper>
-          <Gap size={'XL'} />
+          <TopBar
+            unitName={attendanceResponse.value.unit.name}
+            selectedGroup={selectedGroup}
+            onChangeGroup={changeGroup}
+            onSearch={() => setShowSearch(!showSearch)}
+          />
           <Tabs tabs={tabs} mobile />
 
           <FullHeightContentArea
@@ -335,36 +305,11 @@ export default React.memo(function AttendancePageWrapper() {
               <Route path="/" component={RedirectToUnitPage} />
             </Switch>
           </FullHeightContentArea>
-        </Fragment>
+        </>
       )}
-    </Fragment>
+    </>
   )
 })
-
-const Name = styled.div`
-  background: ${colors.greyscale.white};
-`
-
-const GroupSelectorButton = styled(InlineButton)`
-  width: 100%;
-  border: none;
-  font-family: Montserrat, sans-serif;
-  font-size: 20px;
-  height: 48px;
-  flex-shrink: 0;
-`
-
-const GroupSelectorWrapper = animated(styled.div`
-  box-shadow: 0px 2px 6px 0px ${colors.greyscale.lighter};
-  position: absolute;
-  z-index: 1;
-  display: flex;
-  background-color: ${colors.greyscale.white};
-  flex-direction: column;
-  overflow-y: hidden;
-  min-height: 48px;
-  width: 100%;
-`)
 
 const NoMarginTitle = styled(Title)`
   margin-top: 0;

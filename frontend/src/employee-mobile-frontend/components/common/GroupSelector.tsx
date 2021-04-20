@@ -14,15 +14,13 @@ import { AttendanceResponse, Group } from '../../api/attendances'
 import colors from 'lib-components/colors'
 
 interface GroupSelectorProps {
-  groupIdOrAll: string | 'all'
   selectedGroup: Group | undefined
-  changeGroup: (groupOrAll: Group | 'all') => void
+  onChangeGroup: (group: Group | undefined) => void
 }
 
 export default function GroupSelector({
-  groupIdOrAll,
   selectedGroup,
-  changeGroup
+  onChangeGroup
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
@@ -55,8 +53,8 @@ export default function GroupSelector({
                 return child.status === 'PRESENT'
               }).length
             }/${attendanceResponse.value.children.length})`}
-            selected={groupIdOrAll === 'all' ? true : false}
-            onChange={() => changeGroup('all')}
+            selected={selectedGroup ? false : true}
+            onChange={() => onChangeGroup(undefined)}
           />
           <Gap horizontal size={'xxs'} />
           {attendanceResponse.value.unit.groups.map((group) => (
@@ -68,7 +66,7 @@ export default function GroupSelector({
                 )}/${getTotalChildren(group.id)})`}
                 selected={selectedGroup ? selectedGroup.id === group.id : false}
                 onChange={() => {
-                  changeGroup(group)
+                  onChangeGroup(group)
                 }}
               />
               <Gap horizontal size={'xxs'} />
