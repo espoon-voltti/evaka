@@ -2,30 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import { isNotProduction } from 'employee-frontend/constants'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Title from 'lib-components/atoms/Title'
+import colors from 'lib-components/colors'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { cityLogo } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
 import React, { useContext, useState } from 'react'
-import styled from 'styled-components'
 import {
   Link,
   NavLink,
   RouteComponentProps,
   withRouter
 } from 'react-router-dom'
-import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-import Title from 'lib-components/atoms/Title'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import colors from 'lib-components/colors'
-import { cityLogo } from 'lib-customizations/employee'
-import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-
+import styled from 'styled-components'
+import { logoutUrl } from '../api/auth'
+import { featureFlags } from '../config'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
-import { logoutUrl } from '../api/auth'
 import { RequireRole } from '../utils/roles'
-import { featureFlags } from '../config'
-import { isNotProduction } from 'employee-frontend/constants'
 
 const Img = styled.img`
   color: #0050bb;
@@ -214,6 +212,11 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           {popupVisible && (
             <UserPopup>
               <FixedSpaceColumn spacing={'m'}>
+                <RequireRole oneOf={['ADMIN']}>
+                  <Link to={`/users`} onClick={() => setPopupVisible(false)}>
+                    {i18n.users.title}
+                  </Link>
+                </RequireRole>
                 {isNotProduction() && (
                   <Link to={`/pin-code`} onClick={() => setPopupVisible(false)}>
                     {i18n.pinCode.link}

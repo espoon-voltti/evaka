@@ -2342,5 +2342,22 @@ export const fi = {
     placeholder: '4 numeroa',
     error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
     link: 'eVaka-mobiilin PIN-koodi'
+  },
+  users: {
+    title: 'Käyttäjät',
+    name: 'Nimi',
+    rights: 'Oikeudet'
+  },
+  roles: {
+    adRoles: {
+      ADMIN: 'Pääkäyttäjä',
+      DIRECTOR: 'Raportointi',
+      FINANCE_ADMIN: 'Talous',
+      SERVICE_WORKER: 'Palveluohjaus',
+      SPECIAL_EDUCATION_TEACHER: 'Varhaiskasvatuksen erityisopettaja',
+      STAFF: 'Henkilökunta',
+      UNIT_SUPERVISOR: 'Yksikön johtaja',
+      MOBILE: 'Mobiili'
+    }
   }
 }
