@@ -13,6 +13,7 @@ const {
   enCustomizations,
   svCustomizations,
   cityLogo,
+  mapConfig,
   featureFlags
 }: CitizenCustomizations = customizations
 export {
@@ -20,5 +21,6 @@ export {
   enCustomizations,
   svCustomizations,
   cityLogo,
+  mapConfig,
   featureFlags
 }

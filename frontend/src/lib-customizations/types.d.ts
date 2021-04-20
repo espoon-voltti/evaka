@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { LatLngExpression } from 'leaflet'
+
 export interface CitizenCustomizations {
   fiCustomizations: CitizenLocalizations
   enCustomizations: CitizenLocalizations
@@ -10,6 +12,7 @@ export interface CitizenCustomizations {
     src: string
     alt: string
   }
+  mapConfig: MapConfig
   featureFlags: FeatureFlags
 }
 
@@ -19,6 +22,12 @@ interface CitizenLocalizations {
     privacyPolicyLink: string
     sendFeedbackLink: string
   }
+}
+
+interface MapConfig {
+  center: LatLngExpression
+  initialZoom: number
+  addressZoom: number
 }
 
 interface FeatureFlags {
