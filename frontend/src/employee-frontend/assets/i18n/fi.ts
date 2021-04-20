@@ -1899,7 +1899,7 @@ export const fi = {
         MUNICIPAL: 'Kunnallinen',
         PURCHASED: 'Ostopalvelu',
         PRIVATE: 'Yksityinen',
-        MUNICIPAL_SCHOOL: 'Kunnallinen',
+        MUNICIPAL_SCHOOL: 'Suko',
         PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
       },
       period: 'Ajanjakso',
