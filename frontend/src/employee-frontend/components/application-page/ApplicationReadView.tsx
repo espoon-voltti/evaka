@@ -29,6 +29,7 @@ import ApplicationDecisionsSection from '../../components/application-page/Appli
 import Attachment from '../../components/common/Attachment'
 import {
   ApplicationAddress,
+  ApplicationAttachment,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
 
@@ -136,6 +137,14 @@ function ApplicationReadView({
       applicationGuardian.residenceCode === otherGuardian.residenceCode) ||
     false
 
+  const attachmentReceivedAt = (attachment: ApplicationAttachment): Date => {
+    const { sentDate } = application.application
+    if (!sentDate) return attachment.receivedAt
+    else if (sentDate.toSystemTzDate() > attachment.receivedAt)
+      return sentDate.toSystemTzDate()
+    else return attachment.receivedAt
+  }
+
   return (
     <div data-qa="application-read-view">
       <ApplicationTitle application={application.application} />
@@ -165,6 +174,7 @@ function ApplicationReadView({
                         <Attachment
                           key={attachment.id}
                           attachment={attachment}
+                          receivedAt={attachmentReceivedAt(attachment)}
                           dataQa={`urgent-attachment-${attachment.name}`}
                         />
                       ))}
@@ -223,6 +233,7 @@ function ApplicationReadView({
                       {extendedCareAttachments.map((attachment) => (
                         <Attachment
                           key={attachment.id}
+                          receivedAt={attachmentReceivedAt(attachment)}
                           attachment={attachment}
                           dataQa={`extended-care-attachment-${attachment.name}`}
                         />
