@@ -17,6 +17,10 @@ export interface CitizenCustomizations {
 }
 
 interface CitizenLocalizations {
+  applicationsList: {
+    title: string
+    summary: string
+  }
   footer: {
     cityLabel: string
     privacyPolicyLink: string

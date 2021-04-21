@@ -1057,16 +1057,9 @@ const sv: Translations = {
     }
   },
   applicationsList: {
-    title: 'Ansökan till småbarnspedagogik eller anmälan till förskolan',
+    title: svCustomizations.applicationsList.title,
     summary: function ApplicationListSummaryText() {
-      return (
-        <P width="800px">
-          Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka
-          om plats i småbarnspedagogisk verksamhet. Uppgifter om
-          vårdnadshavarens barn kommer automatiskt från befolkningsdatabasen
-          till denna sida.
-        </P>
-      )
+      return <P width="800px">{svCustomizations.applicationsList.summary}</P>
     },
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Inga ansökningar',
