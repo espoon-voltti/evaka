@@ -34,7 +34,7 @@ export function EmployeeList({ employees }: Props) {
       ({ daycareRoles, email, firstName, globalRoles, id, lastName }) => (
         <Tr key={id}>
           <Td>
-            <Name>
+            <Name data-qa="employee-name">
               {lastName} {firstName}
             </Name>
             <Email>{email}</Email>

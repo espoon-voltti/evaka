@@ -15,6 +15,15 @@ export default class EmployeeNav {
 
   readonly #reportsTab = new RawElement(this.page, '[data-qa="reports-nav"]')
 
+  readonly #employeesLink = new RawElement(
+    this.page,
+    '[data-qa="user-popup-employees"]'
+  )
+  readonly #pinCodeLink = new RawElement(
+    this.page,
+    '[data-qa="user-popup-pin-code"]'
+  )
+
   async login(role: 'manager' | 'admin') {
     await this.#loginBtn.click()
 
@@ -35,6 +44,20 @@ export default class EmployeeNav {
         break
     }
     await this.#userNameBtn.waitUntilVisible()
+  }
+
+  async openDropdownMenu() {
+    await this.#userNameBtn.click()
+  }
+
+  async openAndClickDropdownMenuItem(item: 'employees' | 'pinCode') {
+    await this.openDropdownMenu()
+    switch (item) {
+      case 'employees':
+        return await this.#employeesLink.click()
+      case 'pinCode':
+        return await this.#pinCodeLink.click()
+    }
   }
 
   async openTab(tab: 'reports') {

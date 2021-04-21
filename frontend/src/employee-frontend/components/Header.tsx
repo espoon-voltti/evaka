@@ -216,12 +216,17 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   <Link
                     to={`/employees`}
                     onClick={() => setPopupVisible(false)}
+                    data-qa="user-popup-employees"
                   >
                     {i18n.employees.title}
                   </Link>
                 </RequireRole>
                 {isNotProduction() && (
-                  <Link to={`/pin-code`} onClick={() => setPopupVisible(false)}>
+                  <Link
+                    to={`/pin-code`}
+                    onClick={() => setPopupVisible(false)}
+                    data-qa="user-popup-pin-code"
+                  >
                     {i18n.pinCode.link}
                   </Link>
                 )}
