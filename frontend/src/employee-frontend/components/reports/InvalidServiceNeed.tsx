@@ -39,30 +39,30 @@ function InvalidServiceNeed() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
-                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.invalidServiceNeed.unit}</Th>
                   <Th>{i18n.reports.common.childName}</Th>
                   <Th>{i18n.reports.common.period}</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {rows.value.map((row: InvalidServiceNeedReportRow) => (
-                  <Tr
-                    key={`${row.unitId}:${
-                      row.childId
-                    }:${row.startDate.formatIso()}`}
-                  >
-                    <Td>{row.careAreaName}</Td>
+                  <Tr key={`${row.childId}:${row.startDate.formatIso()}`}>
                     <Td>
-                      <a
-                        href={`${getEmployeeUrlPrefix()}/employee/units/${
-                          row.unitId
-                        }`}
-                        target={'_blank'}
-                        rel={'noreferrer'}
-                      >
-                        {row.unitName}
-                      </a>
+                      {row.currentUnitId && row.currentUnitName ? (
+                        <a
+                          href={`${getEmployeeUrlPrefix()}/employee/units/${
+                            row.currentUnitId
+                          }`}
+                          target={'_blank'}
+                          rel={'noreferrer'}
+                        >
+                          {row.currentUnitName}
+                        </a>
+                      ) : (
+                        <span>
+                          {i18n.reports.invalidServiceNeed.noCurrentUnit}
+                        </span>
+                      )}
                     </Td>
                     <Td>
                       <a
