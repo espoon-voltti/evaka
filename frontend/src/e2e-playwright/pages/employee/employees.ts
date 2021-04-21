@@ -10,8 +10,9 @@ export class EmployeesPage {
   )
 
   get visibleUsers(): Promise<string[]> {
-    return this.page
-      .$$('[data-qa="employee-name"]')
-      .then((val) => Promise.all(val.map((ele) => ele.innerText())))
+    return this.page.$$eval<string[], HTMLElement>(
+      '[data-qa="employee-name"]',
+      (list) => list.map((ele) => ele.innerText)
+    )
   }
 }
