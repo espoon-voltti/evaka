@@ -21,7 +21,9 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.SuomiFiMessage
+import fi.espoo.evaka.shared.message.langWithDefault
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -37,6 +39,7 @@ class VoucherValueDecisionService(
     private val objectMapper: ObjectMapper,
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
+    private val messageProvider: IMessageProvider,
     private val messageClient: IEvakaMessageClient,
     env: Environment
 ) {
@@ -76,8 +79,8 @@ class VoucherValueDecisionService(
 
         val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
         val documentDisplayName = suomiFiDocumentFileName(lang)
-        val messageHeader = suomiFiMessageHeader(lang)
-        val messageContent = suomiFiMessageContent(lang)
+        val messageHeader = messageProvider.getVoucherValueDecisionHeader(langWithDefault(lang))
+        val messageContent = messageProvider.getVoucherValueDecisionContent(langWithDefault(lang))
         val documentUri = s3Client.getDocumentUri(bucket, decision.documentKey)
         messageClient.send(
             SuomiFiMessage(
@@ -178,28 +181,6 @@ ORDER BY start_date ASC
 private fun suomiFiDocumentFileName(lang: String) =
     if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf"
     else "Varhaiskasvatuksen_maksupäätös.pdf"
-
-private fun suomiFiMessageHeader(lang: String) =
-    if (lang == "sv") "Beslut gällande Esbos småbarnspedagogik"
-    else "Espoon varhaiskasvatukseen liittyvät päätökset"
-
-private fun suomiFiMessageContent(lang: String) =
-    if (lang == "sv") """
-Klientavgifterna för kommunal småbarnspedagogik varierar enligt familjens storlek och inkomster samt tiden för småbarnspedagogiken. Vårdnadshavarna får ett skriftligt beslut om avgifterna för småbarnspedagogik. Avgifterna faktureras i mitten av den månad som följer på den månad då servicen getts.
-
-Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är skyldig att meddela om familjens inkomster väsentligt förändras (+/- 10 %). Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du läsa beslutet i bilagorna nedan.
-"""
-    else """
-Kunnallisen varhaiskasvatuksen asiakasmaksut vaihtelevat perheen koon ja tulojen sekä varhaiskasvatusajan mukaan. Huoltajat saavat varhaiskasvatuksen maksuista kirjallisen päätöksen. Maksut laskutetaan palvelun antamisesta seuraavan kuukauden puolivälissä.
-
-Varhaiskasvatuksen asiakasmaksu on voimassa toistaiseksi ja perheellä on velvollisuus ilmoittaa, mikäli perheen tulot olennaisesti muuttuvat (+/- 10 %). Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös luettavissa alla olevista liitteistä.
-
-In English:
-
-The client fees for municipal early childhood education vary according to family size, income and the number of hours the child spends attending early childhood education. The City of Espoo sends the guardians a written decision on early childhood education fees. The fees are invoiced in the middle of the month following the provision of the service.
-
-The early childhood education fee will remain in force until further notice. Your family has an obligation to notify the City of Espoo if the family’s income changes substantially (+/– 10%). As you are a user of Suomi.fi, you can find the decision in the attachments below.
-"""
 
 private fun coverPage(decision: VoucherValueDecisionDetailed): String {
     // language=html
