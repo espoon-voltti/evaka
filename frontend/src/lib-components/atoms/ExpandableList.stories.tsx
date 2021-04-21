@@ -21,6 +21,7 @@ storiesOf('evaka/atoms/ExpandableList', module).add('all', () => {
             <div key={i}>Lorem ipsum</div>
           ))}
         </ExpandableList>
+        <Gap size={'m'} />
       </>
     )
   }
@@ -28,11 +29,8 @@ storiesOf('evaka/atoms/ExpandableList', module).add('all', () => {
   return (
     <>
       <Story lorems={0} show={3} />
-      <Gap size={'m'} />
       <Story lorems={3} show={3} />
-      <Gap size={'m'} />
       <Story lorems={4} show={3} />
-      <Gap size={'m'} />
       <Story lorems={10} show={3} />
     </>
   )

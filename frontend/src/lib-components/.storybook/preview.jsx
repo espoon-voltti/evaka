@@ -8,6 +8,8 @@ import * as React from 'react'
 import { addDecorator, addParameters } from '@storybook/react'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
+import '../../citizen-frontend/index.css'
+
 const storyWrapper = (story) => (
   <Container>
     <ContentArea opaque>{story()}</ContentArea>
