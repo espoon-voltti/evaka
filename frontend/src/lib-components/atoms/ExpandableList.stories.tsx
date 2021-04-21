@@ -14,7 +14,7 @@ storiesOf('evaka/atoms/ExpandableList', module).add('all', () => {
     return (
       <>
         <H3>
-          {lorems} lorems, rows {rows}
+          {lorems} lorems, {rows} rows
         </H3>
         <ExpandableList rowsToOccupy={rows} i18n={{ others: 'muuta' }}>
           {range(lorems).map((i) => (
