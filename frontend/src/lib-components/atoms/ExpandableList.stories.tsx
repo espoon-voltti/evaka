@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { storiesOf } from '@storybook/react'
+import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { range } from 'lodash'
 import React from 'react'
@@ -11,11 +12,16 @@ import { ExpandableList } from './ExpandableList'
 storiesOf('evaka/atoms/ExpandableList', module).add('all', () => {
   function Story({ lorems, show }: { lorems: number; show: number }) {
     return (
-      <ExpandableList show={show} i18n={{ others: 'muuta' }}>
-        {range(lorems).map((i) => (
-          <div key={i}>Lorem ipsum</div>
-        ))}
-      </ExpandableList>
+      <>
+        <H3>
+          {lorems} lorems, show {show}
+        </H3>
+        <ExpandableList show={show} i18n={{ others: 'muuta' }}>
+          {range(lorems).map((i) => (
+            <div key={i}>Lorem ipsum</div>
+          ))}
+        </ExpandableList>
+      </>
     )
   }
 
