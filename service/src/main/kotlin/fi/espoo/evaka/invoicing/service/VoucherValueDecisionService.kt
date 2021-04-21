@@ -129,7 +129,7 @@ AND placements.combined_range << daterange(:now, null)
                 val mergedPlacementPeriods = tx
                     .createQuery(
                         """
-SELECT start_date AS start, end_date AS end
+SELECT daterange(start_date, end_date, '[]')
 FROM placement
 WHERE child_id = :childId AND unit_id = :unitId AND :dateRange && daterange(start_date, end_date, '[]')
 ORDER BY start_date ASC
