@@ -200,10 +200,6 @@ export default React.memo(function AttendancePageWrapper({
     }
   ]
 
-  function RedirectToUnitPage() {
-    return <Redirect to={`/units/${unitId}/attendance/all/coming`} />
-  }
-
   function changeGroup(group: Group | undefined) {
     if (attendanceResponse.isSuccess) {
       if (currentPage && group !== undefined) {
@@ -310,7 +306,7 @@ export default React.memo(function AttendancePageWrapper({
                   />
                 )}
               />
-              <Route path="/" component={RedirectToUnitPage} />
+              <Redirect to={`${path}/coming`} />
             </Switch>
           </FullHeightContentArea>
           <BottomNavbar selected="child" onChange={onNavigate} />

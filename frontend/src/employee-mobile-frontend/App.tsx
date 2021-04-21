@@ -25,11 +25,12 @@ import MarkPresent from './components/attendances/actions/MarkPresent'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
+import StaffPage from './components/staff/StaffPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
 import { NavItem } from './components/common/BottomNavbar'
 import { History } from 'history'
 
-type RouteParams = { unitId: string; groupId: string }
+export type RouteParams = { unitId: string; groupId: string }
 type RouteProps = RouteComponentProps<RouteParams>
 
 export default function App() {
@@ -85,6 +86,17 @@ export default function App() {
                 path="/units/:unitId/groups/:groupId/childattendance/:childId"
                 component={ensureAuthenticated(AttendanceChildPage)}
               />
+              <Route
+                path="/units/:unitId/staff/:groupId"
+                render={({ match, history }: RouteProps) => {
+                  const Component = ensureAuthenticated(StaffPage)
+                  return (
+                    <Component
+                      onNavigate={navBarNavigate(match.params, history)}
+                    />
+                  )
+                }}
+              />
               <Route component={RedirectToMainPage} />
             </Switch>
           </Router>
@@ -123,14 +135,14 @@ function useAuthState(): [AuthStatus | undefined, () => Promise<void>] {
   return [authStatus, refreshAuthStatus]
 }
 
-function getPagePath(page: NavItem, { unitId, groupId }: RouteParams) {
+export function getPagePath(page: NavItem, { unitId, groupId }: RouteParams) {
   switch (page) {
     case 'child':
       return `/units/${unitId}/attendance/${groupId}`
     case 'staff':
       return `/units/${unitId}/staff/${groupId}`
     default:
-      return undefined
+      throw new Error('Messages not implemented')
   }
 }
 

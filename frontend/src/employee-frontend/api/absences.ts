@@ -5,10 +5,12 @@
 import { client } from './client'
 import { Failure, Result, Success, Response } from 'lib-common/api'
 import {
+  StaffAttendanceGroup,
+  StaffAttendance
+} from 'lib-common/api-types/staffAttendances'
+import {
   Group,
   AbsencePayload,
-  StaffAttendanceGroup,
-  StaffAttendance,
   deserializeChild,
   AbsenceType,
   CareType
@@ -93,6 +95,7 @@ export async function getStaffAttendances(
 export async function postStaffAttendance(
   staffAttendance: StaffAttendance
 ): Promise<Result<void>> {
+  console.error('staff attendance', staffAttendance)
   return client
     .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
     .then((res) => Success.of(res.data))

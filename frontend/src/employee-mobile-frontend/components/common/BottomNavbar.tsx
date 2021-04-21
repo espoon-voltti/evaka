@@ -90,12 +90,14 @@ const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
 type BottomNavbarProps = {
   selected?: NavItem
   messageCount?: number
+  staffCount?: { count: number; countOther: number }
   onChange?: (value: NavItem) => void
 }
 
 export default function BottomNavbar({
   selected,
   messageCount,
+  staffCount,
   onChange
 }: BottomNavbarProps) {
   const { i18n } = useTranslation()
@@ -125,6 +127,7 @@ export default function BottomNavbar({
             }
           >
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
+            {staffCount?.count} {staffCount?.countOther}
           </BottomText>
         </Button>
         <div style={{ display: 'none' }}>

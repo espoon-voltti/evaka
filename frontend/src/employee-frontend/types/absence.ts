@@ -153,17 +153,3 @@ export interface AbsenceBackupCare {
   childId: UUID
   date: LocalDate
 }
-
-export interface StaffAttendance {
-  groupId: UUID
-  date: LocalDate
-  count: number | undefined
-}
-
-export interface StaffAttendanceGroup {
-  groupId: UUID
-  groupName: string
-  startDate: LocalDate
-  endDate: LocalDate | null
-  attendances: { [key: string]: StaffAttendance }
-}

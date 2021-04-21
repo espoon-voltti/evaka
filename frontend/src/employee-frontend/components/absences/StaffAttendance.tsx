@@ -15,7 +15,10 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { DisabledCell } from '../../components/absences/AbsenceCell'
 import { useTranslation } from '../../state/i18n'
 import { AbsencesContext } from '../../state/absence'
-import { StaffAttendance, StaffAttendanceGroup } from '../../types/absence'
+import {
+  StaffAttendance,
+  StaffAttendanceGroup
+} from 'lib-common/api-types/staffAttendances'
 import { Loading, Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import { useDebounce } from 'lib-common/utils/useDebounce'

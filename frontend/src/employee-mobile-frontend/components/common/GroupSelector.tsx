@@ -15,11 +15,13 @@ import colors from 'lib-components/colors'
 
 interface GroupSelectorProps {
   selectedGroup: Group | undefined
+  allowAllGroups: boolean
   onChangeGroup: (group: Group | undefined) => void
 }
 
 export default function GroupSelector({
   selectedGroup,
+  allowAllGroups,
   onChangeGroup
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
@@ -47,16 +49,20 @@ export default function GroupSelector({
     <GroupChipWrapper>
       {attendanceResponse.isSuccess && (
         <>
-          <ChoiceChip
-            text={`${i18n.common.all} (${
-              attendanceResponse.value.children.filter((child) => {
-                return child.status === 'PRESENT'
-              }).length
-            }/${attendanceResponse.value.children.length})`}
-            selected={selectedGroup ? false : true}
-            onChange={() => onChangeGroup(undefined)}
-          />
-          <Gap horizontal size={'xxs'} />
+          {allowAllGroups && (
+            <>
+              <ChoiceChip
+                text={`${i18n.common.all} (${
+                  attendanceResponse.value.children.filter((child) => {
+                    return child.status === 'PRESENT'
+                  }).length
+                }/${attendanceResponse.value.children.length})`}
+                selected={selectedGroup ? false : true}
+                onChange={() => onChangeGroup(undefined)}
+              />
+              <Gap horizontal size={'xxs'} />
+            </>
+          )}
           {attendanceResponse.value.unit.groups.map((group) => (
             <Fragment key={group.id}>
               <ChoiceChip

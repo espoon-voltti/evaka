@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export function formatDecimal(decimal: number): string
-export function formatDecimal(decimal: number | undefined): string | undefined
-export function formatDecimal(decimal?: number) {
+export function formatDecimal(
+  decimal: number | undefined | null
+): string | undefined
+export function formatDecimal(decimal?: number | null): string | undefined {
   return decimal?.toString().replace('.', ',')
 }
 
