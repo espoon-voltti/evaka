@@ -5,16 +5,12 @@
 package fi.espoo.evaka.shared.message
 
 interface IMessageProvider {
-    fun get(type: MessageType, lang: MessageLanguage): String
-}
-
-enum class MessageType {
-    DECISION_HEADER,
-    DECISION_CONTENT,
-    FEE_DECISION_HEADER,
-    FEE_DECISION_CONTENT,
-    VOUCHER_VALUE_DECISION_HEADER,
-    VOUCHER_VALUE_DECISION_CONTENT,
+    fun getDecisionHeader(lang: MessageLanguage): String
+    fun getDecisionContent(lang: MessageLanguage): String
+    fun getFeeDecisionHeader(lang: MessageLanguage): String
+    fun getFeeDecisionContent(lang: MessageLanguage): String
+    fun getVoucherValueDecisionHeader(lang: MessageLanguage): String
+    fun getVoucherValueDecisionContent(lang: MessageLanguage): String
 }
 
 enum class MessageLanguage {

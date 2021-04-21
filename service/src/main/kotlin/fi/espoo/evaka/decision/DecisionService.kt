@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageType
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import fi.espoo.voltti.pdfgen.PDFService
@@ -235,8 +234,8 @@ class DecisionService(
             postOffice = sendAddress.postOffice,
             ssn = guardian.identity.ssn,
             language = lang,
-            messageHeader = messageProvider.get(MessageType.DECISION_HEADER, langWithDefault(lang)),
-            messageContent = messageProvider.get(MessageType.DECISION_CONTENT, langWithDefault(lang))
+            messageHeader = messageProvider.getDecisionHeader(langWithDefault(lang)),
+            messageContent = messageProvider.getDecisionContent(langWithDefault(lang))
         )
 
         evakaMessageClient.send(message)

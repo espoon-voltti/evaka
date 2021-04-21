@@ -35,7 +35,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageType
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
@@ -163,8 +162,8 @@ class FeeDecisionService(
             postalCode = sendAddress.postalCode,
             postOffice = sendAddress.postOffice,
             ssn = recipient.ssn!!,
-            messageHeader = messageProvider.get(MessageType.FEE_DECISION_HEADER, langWithDefault(lang)),
-            messageContent = messageProvider.get(MessageType.FEE_DECISION_CONTENT, langWithDefault(lang))
+            messageHeader = messageProvider.getFeeDecisionHeader(langWithDefault(lang)),
+            messageContent = messageProvider.getFeeDecisionContent(langWithDefault(lang))
         )
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")

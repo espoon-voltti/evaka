@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageType
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import org.jdbi.v3.core.kotlin.mapTo
@@ -80,8 +79,8 @@ class VoucherValueDecisionService(
 
         val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
         val documentDisplayName = suomiFiDocumentFileName(lang)
-        val messageHeader = messageProvider.get(MessageType.VOUCHER_VALUE_DECISION_HEADER, langWithDefault(lang))
-        val messageContent = messageProvider.get(MessageType.VOUCHER_VALUE_DECISION_CONTENT, langWithDefault(lang))
+        val messageHeader = messageProvider.getVoucherValueDecisionHeader(langWithDefault(lang))
+        val messageContent = messageProvider.getVoucherValueDecisionContent(langWithDefault(lang))
         val documentUri = s3Client.getDocumentUri(bucket, decision.documentKey)
         messageClient.send(
             SuomiFiMessage(
