@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
-import java.time.ZonedDateTime
 import java.util.UUID
 
 class AsyncJobQueriesTest : PureJdbiTest() {
@@ -36,11 +36,12 @@ class AsyncJobQueriesTest : PureJdbiTest() {
                 JobParams(
                     NotifyDecisionCreated(id, user, sendAsMessage = false),
                     1234,
-                    Duration.ofMinutes(42)
+                    Duration.ofMinutes(42),
+                    HelsinkiDateTime.now()
                 )
             )
         }
-        val runAt = db.read { it.createQuery("SELECT run_at FROM async_job").mapTo<ZonedDateTime>().one() }
+        val runAt = db.read { it.createQuery("SELECT run_at FROM async_job").mapTo<HelsinkiDateTime>().one() }
 
         val ref = db.transaction { it.claimJob(listOf(AsyncJobType.DECISION_CREATED))!! }
         assertEquals(AsyncJobType.DECISION_CREATED, ref.jobType)
@@ -58,7 +59,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         }
 
         val completedAt =
-            db.read { it.createQuery("SELECT completed_at FROM async_job").mapTo<ZonedDateTime>().one() }
+            db.read { it.createQuery("SELECT completed_at FROM async_job").mapTo<HelsinkiDateTime>().one() }
         assertTrue(completedAt > runAt)
     }
 
@@ -66,7 +67,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
     fun testParallelClaimContention() {
         val payloads = (0..1).map { NotifyDecisionCreated(UUID.randomUUID(), user, sendAsMessage = false) }
         db.transaction { tx ->
-            payloads.map { tx.insertJob(JobParams(it, 999, Duration.ZERO)) }
+            payloads.map { tx.insertJob(JobParams(it, 999, Duration.ZERO, HelsinkiDateTime.now())) }
         }
         val handles = (0..2).map { jdbi.open() }
         try {
@@ -117,5 +118,5 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         )
     }
 
-    data class Retry(val runAt: ZonedDateTime, val retryCount: Long)
+    data class Retry(val runAt: HelsinkiDateTime, val retryCount: Long)
 }

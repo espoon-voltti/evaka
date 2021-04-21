@@ -51,7 +51,7 @@ class PairingsController(
             asyncJobRunner.plan(
                 tx = tx,
                 payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
-                runAt = pairing.expires.plusDays(1).toInstant()
+                runAt = pairing.expires.plusDays(1)
             )
 
             pairing
