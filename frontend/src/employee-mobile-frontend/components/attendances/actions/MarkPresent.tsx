@@ -113,6 +113,7 @@ export default React.memo(function MarkPresent() {
                 />
                 <AsyncButton
                   primary
+                  quick
                   text={i18n.common.confirm}
                   onClick={() => childArrives()}
                   onSuccess={() => history.go(-2)}
