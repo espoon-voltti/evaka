@@ -6,19 +6,21 @@ import React, { ReactNodeArray, useState } from 'react'
 
 interface Props {
   children: ReactNodeArray
-  show: number
+  rowsToOccupy: number
   i18n: { others: string }
 }
 
 export const ExpandableList = React.memo(function ExpandableList({
   children,
-  show,
+  rowsToOccupy,
   i18n
 }: Props) {
   const [expanded, setExpanded] = useState(false)
 
-  const needsExpansion = !expanded && children.length > show
-  const elementsToShow = needsExpansion ? children.slice(0, show) : children
+  const needsExpansion = !expanded && children.length > rowsToOccupy
+  const elementsToShow = needsExpansion
+    ? children.slice(0, rowsToOccupy - 1)
+    : children
   return (
     <div>
       {elementsToShow}
@@ -31,7 +33,7 @@ export const ExpandableList = React.memo(function ExpandableList({
               setExpanded(true)
             }}
           >
-            + {children.length - show} {i18n.others}
+            + {children.length - rowsToOccupy + 1} {i18n.others}
           </a>
         </div>
       )}

@@ -41,7 +41,7 @@ export function EmployeeList({ employees }: Props) {
             <Email>{email}</Email>
           </Td>
           <Td>
-            <ExpandableList show={3} i18n={i18n.common.expandableList}>
+            <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
               {[
                 ...sortBy(globalRoles.map((r) => i18n.roles.adRoles[r])),
                 ...sortBy(daycareRoles, 'daycareName').map((r, i) => (

@@ -10,13 +10,13 @@ import React from 'react'
 import { ExpandableList } from './ExpandableList'
 
 storiesOf('evaka/atoms/ExpandableList', module).add('all', () => {
-  function Story({ lorems, show }: { lorems: number; show: number }) {
+  function Story({ lorems, rows }: { lorems: number; rows: number }) {
     return (
       <>
         <H3>
-          {lorems} lorems, show {show}
+          {lorems} lorems, rows {rows}
         </H3>
-        <ExpandableList show={show} i18n={{ others: 'muuta' }}>
+        <ExpandableList rowsToOccupy={rows} i18n={{ others: 'muuta' }}>
           {range(lorems).map((i) => (
             <div key={i}>Lorem ipsum</div>
           ))}
@@ -28,10 +28,10 @@ storiesOf('evaka/atoms/ExpandableList', module).add('all', () => {
 
   return (
     <>
-      <Story lorems={0} show={3} />
-      <Story lorems={3} show={3} />
-      <Story lorems={4} show={3} />
-      <Story lorems={10} show={3} />
+      <Story lorems={0} rows={3} />
+      <Story lorems={3} rows={3} />
+      <Story lorems={4} rows={3} />
+      <Story lorems={10} rows={3} />
     </>
   )
 })
