@@ -164,7 +164,7 @@ export default React.memo(function AttendanceChildPage() {
                   >
                     <RoundIcon
                       content={faInfo}
-                      color={colors.greyscale.medium}
+                      color={colors.accents.petrol}
                       size="L"
                       active={false}
                     />

@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -6,7 +12,6 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Label, P } from 'lib-components/typography'
 import ReactSelect from 'react-select'
 
 import {
@@ -44,6 +49,8 @@ export default React.memo(function PinLogin() {
   const [childResult, setChildResult] = useState<Result<ChildResult>>()
   const [loggingOut, setLoggingOut] = useState<boolean>(false)
 
+  const pinInputRef = useRef<HTMLInputElement>(null)
+
   const { childId, unitId } = useParams<{
     unitId: string
     childId: string
@@ -62,6 +69,12 @@ export default React.memo(function PinLogin() {
   useEffect(() => {
     void getDaycareAttendances(unitId).then(setAttendanceResponse)
   }, [])
+
+  useLayoutEffect(() => {
+    if (selectedStaff && pinInputRef && pinInputRef.current) {
+      pinInputRef.current.focus()
+    }
+  }, [selectedStaff])
 
   const childBasicInfo =
     attendanceResponse.isSuccess &&
@@ -155,11 +168,11 @@ export default React.memo(function PinLogin() {
             >
               <FixedSpaceColumn alignItems={'center'} spacing={'m'}>
                 <Title>{i18n.attendances.pin.header}</Title>
-                <P>{i18n.attendances.pin.info}</P>
+                <span>{i18n.attendances.pin.info}</span>
               </FixedSpaceColumn>
               <Gap />
               <FixedSpaceColumn spacing={'m'}>
-                <Title>{i18n.attendances.pin.staff}</Title>
+                <Key>{i18n.attendances.pin.staff}</Key>
                 <div data-qa={'select-staff'}>
                   <ReactSelect
                     placeholder={i18n.attendances.pin.selectStaff}
@@ -178,8 +191,8 @@ export default React.memo(function PinLogin() {
                   />
                 </div>
                 {selectedStaff && (
-                  <Label>
-                    {i18n.attendances.pin.pinCode}
+                  <>
+                    <Key>{i18n.attendances.pin.pinCode}</Key>
                     <FixedSpaceRow spacing={'m'} alignItems={'center'}>
                       <InputField
                         placeholder={i18n.attendances.pin.pinCode}
@@ -188,6 +201,7 @@ export default React.memo(function PinLogin() {
                         info={getInputInfo()}
                         width="s"
                         type="password"
+                        inputRef={pinInputRef}
                         data-qa="set-pin"
                       />
                       {selectedPin && selectedPin.length >= 4 && (
@@ -198,7 +212,7 @@ export default React.memo(function PinLogin() {
                         />
                       )}
                     </FixedSpaceRow>
-                  </Label>
+                  </>
                 )}
               </FixedSpaceColumn>
             </ContentAreaWithShadow>
@@ -228,6 +242,12 @@ const BackButton = styled(InlineButton)`
   & span {
     white-space: normal;
   }
+`
+
+const Key = styled.span`
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
 `
 
 const LogoutButtonWrapper = styled.div`
