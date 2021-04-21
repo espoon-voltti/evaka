@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { eq } from 'lodash'
+import { isEqual } from 'lodash'
 import { differenceInSeconds } from 'date-fns'
 import config from 'e2e-test-common/config'
 
@@ -24,7 +24,7 @@ const WAIT_LOOP_INTERVAL_MS = 100
 export async function waitUntilEqual<T>(f: () => Promise<T>, expected: T) {
   const startTimestamp = new Date()
 
-  while (!eq(await f(), expected)) {
+  while (!isEqual(await f(), expected)) {
     await delay(WAIT_LOOP_INTERVAL_MS)
     const now = new Date()
     if (differenceInSeconds(now, startTimestamp) > WAIT_TIMEOUT_SECONDS) {

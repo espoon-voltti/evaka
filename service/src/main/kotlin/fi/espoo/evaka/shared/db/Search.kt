@@ -44,6 +44,17 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     return DBQuery(wholeQuery, allParams)
 }
 
+fun freeTextSearchQueryForColumns(tables: List<String>, columns: List<String>, searchText: String): DBQuery {
+    val query = listOfNotNull(
+        "true",
+        freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() }
+    )
+        .joinToString(" AND ")
+    val params =
+        listOfNotNull((freeTextParamName to freeTextParamsToTsQuery(searchText)).takeIf { searchText.isNotBlank() }).toMap()
+    return DBQuery(query, params)
+}
+
 fun disjointNumberQuery(table: String, column: String, params: Collection<String>): Pair<String, Map<String, String>> {
     val numberParamName = { index: Int -> "${table}_${column}_$index" }
     val numberParams = params.mapIndexed { index, param -> numberParamName(index) to param }.toMap()
@@ -57,11 +68,9 @@ fun disjointNumberQuery(table: String, column: String, params: Collection<String
 private val freeTextSearchColumns =
     listOf("first_name", "last_name", "street_address", "postal_code")
 
-private fun freeTextQuery(tables: List<String>, param: String): String {
+private fun freeTextQuery(tables: List<String>, param: String, columns: List<String> = freeTextSearchColumns): String {
     val tsVector = tables
-        .flatMap { table ->
-            freeTextSearchColumns.map { column -> "$table.$column" }
-        }
+        .flatMap { table -> columns.map { column -> "$table.$column" } }
         .map { column -> "to_tsvector('simple', coalesce(unaccent($column), ''))" }
         .joinToString("\n|| ", "(", ")")
 
