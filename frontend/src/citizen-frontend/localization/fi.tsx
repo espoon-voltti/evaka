@@ -149,6 +149,8 @@ export default {
       },
       create: 'Tee hakemus',
       daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+      daycare2weekWarning:
+        'Kiireellisen hakemuksen käsittelyaika on 2 viikkoa.',
       applicationInfo: function ApplicationInfoText() {
         return (
           <P>

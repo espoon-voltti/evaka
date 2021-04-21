@@ -73,14 +73,16 @@ export default React.memo(function PreferredStartSubSection({
       return result
     })
 
-  const showDaycare4MonthWarning = (): boolean => {
+  const showDaycarePreferredStartDateWarning = (): boolean => {
     const preferredStartDate = LocalDate.parseFiOrNull(
       formData.preferredStartDate
     )
     return (
       type === 'DAYCARE' &&
       preferredStartDate !== null &&
-      preferredStartDate.isBefore(LocalDate.today().addMonths(4))
+      (formData.urgent
+        ? preferredStartDate.isBefore(LocalDate.today().addWeeks(2))
+        : preferredStartDate.isBefore(LocalDate.today().addMonths(4)))
     )
   }
 
@@ -146,7 +148,8 @@ export default React.memo(function PreferredStartSubSection({
               date,
               originalPreferredStartDate,
               status,
-              type
+              type,
+              formData.urgent
             )
           }
           data-qa={'preferredStartDate-input'}
@@ -154,11 +157,15 @@ export default React.memo(function PreferredStartSubSection({
           required={true}
         />
 
-        {showDaycare4MonthWarning() ? (
+        {showDaycarePreferredStartDateWarning() ? (
           <>
             <Gap size="xs" />
             <AlertBox
-              message={t.applications.creation.daycare4monthWarning}
+              message={
+                formData.urgent
+                  ? t.applications.creation.daycare2weekWarning
+                  : t.applications.creation.daycare4monthWarning
+              }
               data-qa={'daycare-processing-time-warning'}
             />
           </>

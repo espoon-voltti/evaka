@@ -150,6 +150,8 @@ const en: Translations = {
       },
       create: 'Apply',
       daycare4monthWarning: 'The application processing time is 4 months.',
+      daycare2weekWarning:
+        'The application processing time is 2 weeks for urgent applications',
       applicationInfo: function ApplicationInfoText() {
         return (
           <P>

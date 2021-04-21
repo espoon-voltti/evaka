@@ -40,16 +40,20 @@ export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
 const minPreferredStartDate = (
   status: ApplicationStatus,
   type: ApplicationType,
-  originalPreferredStartDate: LocalDate | null
+  originalPreferredStartDate: LocalDate | null,
+  isUrgent: boolean
 ): LocalDate => {
   if (status !== 'CREATED') {
     return originalPreferredStartDate
       ? originalPreferredStartDate
       : LocalDate.today()
   } else {
+    const today = LocalDate.today()
     return type === 'DAYCARE'
-      ? LocalDate.today().addDays(14)
-      : LocalDate.today()
+      ? isUrgent
+        ? today.addWeeks(2)
+        : today.addMonths(4)
+      : today
   }
 }
 
@@ -70,11 +74,12 @@ export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
   status: ApplicationStatus,
-  type: ApplicationType
+  type: ApplicationType,
+  isUrgent: boolean
 ): boolean => {
   if (
     date.isBefore(
-      minPreferredStartDate(status, type, originalPreferredStartDate)
+      minPreferredStartDate(status, type, originalPreferredStartDate, isUrgent)
     )
   )
     return false
@@ -114,14 +119,21 @@ export const isValidDecisionStartDate = (
 const preferredStartDateValidator = (
   originalPreferredStartDate: LocalDate | null,
   status: ApplicationStatus,
-  type: ApplicationType
+  type: ApplicationType,
+  isUrgent: boolean
 ) => (
   val: string,
   err: ErrorKey = 'preferredStartDate'
 ): ErrorKey | undefined => {
   const date = LocalDate.parseFiOrNull(val)
   return date &&
-    isValidPreferredStartDate(date, originalPreferredStartDate, status, type)
+    isValidPreferredStartDate(
+      date,
+      originalPreferredStartDate,
+      status,
+      type,
+      isUrgent
+    )
     ? undefined
     : err
 }
@@ -146,7 +158,8 @@ export const validateApplication = (
         preferredStartDateValidator(
           apiData.form.preferences.preferredStartDate,
           apiData.status,
-          apiData.type
+          apiData.type,
+          form.serviceNeed.urgent
         )
       ),
       startTime:

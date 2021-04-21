@@ -5,6 +5,7 @@
 import { ApplicationFormData } from 'citizen-frontend/applications/editor/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { clubFixture, daycareFixture } from 'e2e-test-common/dev-api/fixtures'
+import LocalDate from 'lib-common/local-date'
 
 function assertEquals<T>(expected: T, actual: T) {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -46,13 +47,16 @@ export type FormInput = {
   >
 }
 
+const daycareStartDate = LocalDate.today().addMonths(4).format()
+const urgentDaycareStartDate = LocalDate.today().addWeeks(2).format()
+
 export const minimalDaycareForm: {
   form: FormInput
   validateResult: (result: ApplicationDetails) => void
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: daycareStartDate,
       startTime: '09:00',
       endTime: '17:00'
     },
@@ -91,7 +95,7 @@ export const minimalDaycareForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      daycareStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
@@ -116,7 +120,7 @@ export const fullDaycareForm: {
 } = {
   form: {
     serviceNeed: {
-      preferredStartDate: '13.8.2021',
+      preferredStartDate: urgentDaycareStartDate,
       urgent: true,
       startTime: '09:00',
       endTime: '17:00',
@@ -217,7 +221,7 @@ export const fullDaycareForm: {
     assertEquals(1, res.form.preferences.preferredUnits.length)
     assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
-      '13.08.2021',
+      urgentDaycareStartDate,
       res.form.preferences.preferredStartDate?.format()
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)

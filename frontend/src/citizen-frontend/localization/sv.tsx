@@ -151,6 +151,8 @@ const sv: Translations = {
       },
       create: 'Ny ansökan',
       daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.',
+      daycare2weekWarning:
+        'Behandlingstiden för brådskande ansökningen är 2 veckar.',
       applicationInfo: function ApplicationInfoText() {
         return (
           <P>
