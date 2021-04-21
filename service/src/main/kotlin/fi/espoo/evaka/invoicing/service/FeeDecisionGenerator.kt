@@ -159,7 +159,7 @@ private fun generateNewFeeDecisions2(
                         FeeDecisionChild(
                             child,
                             FeeDecisionPlacement(UnitData.JustId(placement.unitId), placement.type,),
-                            FeeDecisionServiceNeed(placement.serviceNeed.name, placement.serviceNeed.feeCoefficient),
+                            FeeDecisionServiceNeed(placement.serviceNeed.id, placement.serviceNeed.feeCoefficient),
                             baseFee,
                             siblingDiscount,
                             feeBeforeAlterations,
@@ -201,7 +201,7 @@ private fun getPaidPlacements2(
         val serviceNeeds = h.createQuery(
             // language=sql
             """
-SELECT sn.start_date AS start, sn.end_date AS end, sno.name, sno.fee_coefficient, sno.voucher_value_coefficient
+SELECT sn.start_date AS start, sn.end_date AS end, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient
 FROM new_service_need sn
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
@@ -215,7 +215,7 @@ WHERE sn.placement_id = ANY(:placementIds)
 
         val defaultServiceNeeds = h.createQuery(
             // language=sql
-            "SELECT valid_placement_type, name, fee_coefficient, voucher_value_coefficient FROM service_need_option WHERE default_option"
+            "SELECT valid_placement_type, id, fee_coefficient, voucher_value_coefficient FROM service_need_option WHERE default_option"
         )
             .map { row ->
                 row.getColumn("valid_placement_type", fi.espoo.evaka.placement.PlacementType::class.java) to row.getRow(

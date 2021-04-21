@@ -22,7 +22,7 @@ val feeDecisionQueryBase2 =
         child.child_date_of_birth,
         child.placement_unit_id,
         child.placement_type,
-        child.service_need_name,
+        child.service_need_option_id,
         child.service_need_fee_coefficient,
         child.base_fee,
         child.sibling_discount,
@@ -105,7 +105,7 @@ private fun insertChildren2(h: Handle, decisions: List<Pair<UUID, List<FeeDecisi
             child_date_of_birth,
             placement_unit_id,
             placement_type,
-            service_need_name,
+            service_need_option_id,
             service_need_fee_coefficient,
             base_fee,
             sibling_discount,
@@ -119,7 +119,7 @@ private fun insertChildren2(h: Handle, decisions: List<Pair<UUID, List<FeeDecisi
             :childDateOfBirth,
             :placementUnitId,
             :placementType,
-            :serviceNeedName,
+            :serviceNeedOptionId,
             :serviceNeedFeeCoefficient,
             :baseFee,
             :siblingDiscount,
@@ -140,7 +140,7 @@ private fun insertChildren2(h: Handle, decisions: List<Pair<UUID, List<FeeDecisi
                 .bind("childDateOfBirth", child.child.dateOfBirth)
                 .bind("placementUnitId", child.placement.unit.id)
                 .bind("placementType", child.placement.type)
-                .bind("serviceNeedName", child.serviceNeed.name)
+                .bind("serviceNeedOptionId", child.serviceNeed.optionId)
                 .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
                 .add()
         }

@@ -1,4 +1,6 @@
-ALTER TABLE service_need_option ADD COLUMN default_option bool NOT NULL DEFAULT false;
+ALTER TABLE service_need_option
+    ADD COLUMN default_option bool NOT NULL DEFAULT false,
+    ALTER COLUMN daycare_hours_per_week TYPE int USING daycare_hours_per_week::int;
 
 CREATE UNIQUE INDEX service_need_option_one_default_per_placement_type ON service_need_option (valid_placement_type) WHERE default_option;
 
@@ -47,8 +49,10 @@ CREATE TABLE new_fee_decision_child (
     sibling_discount integer NOT NULL,
     placement_unit_id uuid NOT NULL REFERENCES daycare (id),
     placement_type placement_type NOT NULL,
-    service_need_name text NOT NULL,
+    service_need_option_id uuid NOT NULL REFERENCES service_need_option (id),
     service_need_fee_coefficient numeric(4,2) NOT NULL,
+    service_need_description_fi text,
+    service_need_description_sv text,
     base_fee integer NOT NULL,
     fee integer NOT NULL,
     fee_alterations jsonb NOT NULL,

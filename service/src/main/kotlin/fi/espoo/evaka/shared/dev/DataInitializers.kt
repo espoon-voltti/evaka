@@ -443,7 +443,7 @@ fun insertTestNewServiceNeed(
     h: Handle,
     placementId: UUID,
     period: FiniteDateRange,
-    optionName: String,
+    optionId: UUID,
     shiftCare: Boolean = false,
     id: UUID = UUID.randomUUID()
 ): UUID {
@@ -451,21 +451,14 @@ fun insertTestNewServiceNeed(
         .createUpdate(
             """
 INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care)
-VALUES (
-    :id,
-    :placementId,
-    :startDate,
-    :endDate,
-    (SELECT id FROM service_need_option WHERE name = :optionName),
-    :shiftCare
-)
+VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare)
 """
         )
         .bind("id", id)
         .bind("placementId", placementId)
         .bind("startDate", period.start)
         .bind("endDate", period.end)
-        .bind("optionName", optionName)
+        .bind("optionId", optionId)
         .bind("shiftCare", shiftCare)
         .execute()
     return id

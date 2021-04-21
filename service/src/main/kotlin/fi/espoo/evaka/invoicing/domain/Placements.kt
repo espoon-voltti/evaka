@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import org.jdbi.v3.core.mapper.Nested
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -92,12 +91,11 @@ data class PlacementWithoutServiceNeed(
 data class PlacementWithServiceNeed(
     val unitId: UUID,
     val type: fi.espoo.evaka.placement.PlacementType,
-    @Nested
     val serviceNeed: ServiceNeedValue
 )
 
 data class ServiceNeedValue(
-    val name: String,
+    val id: UUID,
     val feeCoefficient: BigDecimal,
     val voucherValueCoefficient: BigDecimal
 )
