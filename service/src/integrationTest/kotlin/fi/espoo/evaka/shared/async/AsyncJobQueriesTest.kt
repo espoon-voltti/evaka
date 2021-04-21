@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 class AsyncJobQueriesTest : PureJdbiTest() {
@@ -118,5 +121,49 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         )
     }
 
-    data class Retry(val runAt: HelsinkiDateTime, val retryCount: Long)
+    @Test
+    fun testRemoveOldAsyncJobs() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2020, 9, 1), LocalTime.of(12, 0))
+        val ancient = LocalDate.of(2019, 1, 1)
+        val recent = LocalDate.of(2020, 7, 1)
+        val future = LocalDate.of(2020, 9, 2)
+        db.transaction { tx ->
+            listOf(ancient, recent)
+                .flatMap { listOf(TestJobParams(it, completed = false), TestJobParams(it, completed = true)) }
+                .forEach { params ->
+                    tx.insertTestJob(params)
+                }
+            tx.insertTestJob(TestJobParams(future, completed = false))
+        }
+
+        db.removeOldAsyncJobs(now)
+
+        val remainingJobs = db.read {
+            it.createQuery("SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2")
+                .map { row -> TestJobParams(runAt = row.mapColumn<HelsinkiDateTime>("run_at").toLocalDate(), completed = row.mapColumn("completed")) }
+                .toList()
+        }
+        assertEquals(
+            listOf(
+                TestJobParams(recent, completed = false),
+                TestJobParams(future, completed = false),
+            ),
+            remainingJobs
+        )
+    }
+
+    private data class Retry(val runAt: HelsinkiDateTime, val retryCount: Long)
 }
+
+private data class TestJobParams(val runAt: LocalDate, val completed: Boolean)
+
+private fun Database.Transaction.insertTestJob(params: TestJobParams) = createUpdate(
+    """
+INSERT INTO async_job (type, run_at, retry_count, retry_interval, payload, claimed_at, claimed_by, completed_at)
+VALUES ('TEST', :runAt, 0, interval '1 hours', '{}', :completedAt, :claimedBy, :completedAt)
+    """
+)
+    .bind("runAt", HelsinkiDateTime.of(params.runAt, LocalTime.of(12, 0)))
+    .bind("completedAt", HelsinkiDateTime.of(params.runAt, LocalTime.of(14, 0)).takeIf { params.completed })
+    .bind("claimedBy", 42.takeIf { params.completed })
+    .execute()

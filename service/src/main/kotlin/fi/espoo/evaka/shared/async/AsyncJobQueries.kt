@@ -5,11 +5,15 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
 import java.util.UUID
+
+private val logger = KotlinLogging.logger { }
 
 fun <T : AsyncJobPayload> Database.Transaction.insertJob(jobParams: JobParams<T>): UUID = createUpdate(
     // language=SQL
@@ -101,3 +105,29 @@ WHERE id = :jobId
 """
 ).bindKotlin(job)
     .execute()
+
+fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int = createUpdate(
+"""
+DELETE FROM async_job
+WHERE completed_at < :completedBefore
+"""
+).bind("completedBefore", completedBefore)
+    .execute()
+
+fun Database.Transaction.removeJobs(runBefore: HelsinkiDateTime): Int = createUpdate(
+    """
+DELETE FROM async_job
+WHERE run_at < :runBefore
+"""
+).bind("runBefore", runBefore)
+    .execute()
+
+fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
+    val completedBefore = now.minusMonths(1)
+    val completedCount = transaction { it.removeCompletedJobs(completedBefore) }
+    logger.info { "Removed $completedCount async jobs completed before $completedBefore" }
+
+    val runBefore = now.minusMonths(6)
+    val oldCount = transaction { it.removeJobs(runBefore = runBefore) }
+    logger.info("Removed $oldCount async jobs originally planned to be run before $runBefore")
+}
