@@ -103,6 +103,9 @@ export const fi = {
       invoicingAddress: 'Laskutusosoite',
       addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi'
     },
+    expandableList: {
+      others: 'muuta'
+    },
     resultCount: (count: number) =>
       count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
     ok: 'Selvä!',

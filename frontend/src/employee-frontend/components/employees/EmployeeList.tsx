@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Result } from 'lib-common/api'
+import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 import Loader from 'lib-components/atoms/Loader'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { sortBy } from 'lodash'
@@ -40,17 +41,19 @@ export function EmployeeList({ employees }: Props) {
             <Email>{email}</Email>
           </Td>
           <Td>
-            {[
-              ...sortBy(globalRoles.map((r) => i18n.roles.adRoles[r])),
-              ...sortBy(daycareRoles, 'daycareName').map((r) => (
-                <>
-                  <Link to={`/units/${r.daycareId}`}>{r.daycareName}</Link> (
-                  {i18n.roles.adRoles[r.role]?.toLowerCase()})
-                </>
-              ))
-            ].map((role, i) => (
-              <div key={i}>{role}</div>
-            ))}
+            <ExpandableList show={3} i18n={i18n.common.expandableList}>
+              {[
+                ...sortBy(globalRoles.map((r) => i18n.roles.adRoles[r])),
+                ...sortBy(daycareRoles, 'daycareName').map((r, i) => (
+                  <>
+                    <Link to={`/units/${r.daycareId}`}>{r.daycareName}</Link> (
+                    {i18n.roles.adRoles[r.role]?.toLowerCase()})
+                  </>
+                ))
+              ].map((role, i) => (
+                <div key={i}>{role}</div>
+              ))}
+            </ExpandableList>
           </Td>
         </Tr>
       )
