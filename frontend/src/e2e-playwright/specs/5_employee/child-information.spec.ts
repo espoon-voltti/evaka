@@ -46,7 +46,7 @@ beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
-  await nav.login('admin')
+  await nav.login('ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
 })
