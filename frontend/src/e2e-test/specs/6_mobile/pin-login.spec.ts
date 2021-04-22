@@ -362,3 +362,37 @@ test('After successful PIN login user can log out after which new PIN is require
 
   await t.expect(mobileGroupsPage.childSensitiveInfoLink.visible).ok()
 })
+
+const submitPin = (pin: string, expectedError) => async () => {
+  await t.typeText(mobileGroupsPage.pinInput, '1111', {
+    replace: true
+  })
+  await t.click(mobileGroupsPage.submitPin)
+  await t.expect(mobileGroupsPage.pinInputInfo.textContent).eql(expectedError)
+}
+
+test('After 5 unsuccessful tries user is locked and cannot login with correct PIN', async (t) => {
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  for (const f of [
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi')
+  ]) {
+    await f()
+  }
+
+  await submitPin('1111', 'PIN-koodi on lukittu')()
+  await submitPin(employeePin.data.pin, 'PIN-koodi on lukittu')()
+})

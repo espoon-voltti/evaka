@@ -222,6 +222,7 @@ SELECT EXISTS (
     FROM employee_pin
     WHERE user_id = :employeeId
     AND pin = :pin
+    AND locked = false
 )
     """.trimIndent()
 ).bind("employeeId", employeeId)
