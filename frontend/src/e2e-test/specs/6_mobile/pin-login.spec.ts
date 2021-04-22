@@ -31,6 +31,7 @@ import {
   DaycareBuilder,
   DaycareGroupBuilder,
   EmployeeBuilder,
+  EmployeePinBuilder,
   enduserChildFixtureJari,
   enduserChildJariOtherGuardianFixture,
   enduserGuardianFixture,
@@ -63,6 +64,8 @@ let careArea: CareAreaBuilder
 let employee: EmployeeBuilder
 
 let child: ApplicationPersonDetail
+let employeePin: EmployeePinBuilder
+
 const pin = '2580'
 
 fixture('Mobile PIN login')
@@ -80,11 +83,13 @@ fixture('Mobile PIN login')
         firstName: 'Yrjö',
         lastName: 'Yksikkö',
         email: 'yy@example.com',
-        roles: [],
-        pin: pin
+        roles: []
       })
       .save()
 
+    employeePin = await Fixture.employeePin()
+      .with({ userId: employee.data.id, pin })
+      .save()
     careArea = await Fixture.careArea().save()
     daycare = await Fixture.daycare().careArea(careArea).save()
     daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
@@ -215,7 +220,7 @@ test('User can login with PIN and see child hipsu s sensitive info', async (t) =
     .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
     .pressKey('tab')
 
-  await t.typeText(mobileGroupsPage.pinInput, pin)
+  await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin)
   await t.click(mobileGroupsPage.submitPin)
 
   await t
@@ -283,4 +288,111 @@ test('User can login with PIN and see child hipsu s sensitive info', async (t) =
   await t
     .expect(mobileGroupsPage.childInfoBackupPickup2Phone.textContent)
     .eql(backupPickups[1].phone)
+})
+
+test('Wrong pin shows error, and user can log in with correct pin after that', async (t) => {
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t.click(mobileGroupsPage.pinLoginStaffSelector)
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  await t.typeText(mobileGroupsPage.pinInput, '9999')
+  await t.click(mobileGroupsPage.submitPin)
+
+  await t.expect(mobileGroupsPage.pinInputInfo.visible).ok()
+
+  await t
+    .expect(mobileGroupsPage.pinInputInfo.textContent)
+    .eql('Väärä PIN-koodi')
+
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin, {
+    replace: true
+  })
+  await t.click(mobileGroupsPage.submitPin)
+
+  await t
+    .expect(mobileGroupsPage.childInfoName.textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+})
+
+test('After successful PIN login user can log out after which new PIN is required', async (t) => {
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  await t.typeText(mobileGroupsPage.pinInput, employeePin.data.pin, {
+    replace: true
+  })
+  await t.click(mobileGroupsPage.submitPin)
+
+  await t
+    .expect(mobileGroupsPage.childInfoName.textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.logoutButton)
+  await t.expect(mobileGroupsPage.acceptLogoutButton.visible).ok()
+
+  // Click logout modal away and check that info still shows
+  await t.click(mobileGroupsPage.cancelLogoutButton)
+  await t
+    .expect(mobileGroupsPage.childInfoName.textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  // Click logout modal, log out and check we are back at child page
+  await t.click(mobileGroupsPage.logoutButton)
+  await t.click(mobileGroupsPage.acceptLogoutButton)
+
+  await t.expect(mobileGroupsPage.childSensitiveInfoLink.visible).ok()
+})
+
+const submitPin = (pin: string, expectedError) => async () => {
+  await t.typeText(mobileGroupsPage.pinInput, '1111', {
+    replace: true
+  })
+  await t.click(mobileGroupsPage.submitPin)
+  await t.expect(mobileGroupsPage.pinInputInfo.textContent).eql(expectedError)
+}
+
+test('After 5 unsuccessful tries user is locked and cannot login with correct PIN', async (t) => {
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t
+    .typeText(mobileGroupsPage.pinLoginStaffSelector, employee.data.lastName)
+    .pressKey('tab')
+
+  for (const f of [
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi'),
+    submitPin('1111', 'Väärä PIN-koodi')
+  ]) {
+    await f()
+  }
+
+  await submitPin('1111', 'PIN-koodi on lukittu')()
+  await submitPin(employeePin.data.pin, 'PIN-koodi on lukittu')()
 })

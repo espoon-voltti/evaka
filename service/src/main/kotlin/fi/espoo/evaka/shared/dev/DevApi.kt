@@ -50,7 +50,6 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeByExternalId
 import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
@@ -486,7 +485,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @DeleteMapping("/employee/{id}")
     fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployee(id) }
+        db.transaction { it.handle.deleteAndCascadeEmployee(id) }
         return ResponseEntity.ok().build()
     }
 
@@ -883,6 +882,18 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.transaction { it.handle.deleteFridgePartner(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/employee-pin")
+    fun createEmployeePins(db: Database, @RequestBody employeePins: List<DevEmployeePin>): ResponseEntity<Unit> {
+        db.transaction { employeePins.forEach { employeePin -> it.handle.insertEmployeePin(employeePin) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/employee-pin/{id}")
+    fun deleteEmployeePin(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeePin(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -898,6 +909,7 @@ fun ensureFakeAdminExists(h: Handle) {
 }
 
 fun Handle.clearDatabase() = listOf(
+    "employee_pin",
     "family_contact",
     "backup_pickup",
     "messaging_blocklist",
@@ -926,7 +938,6 @@ fun Database.Transaction.deletePairing(id: UUID) {
 
 fun Database.Transaction.deleteMobileDevice(id: UUID) {
     execute("DELETE FROM mobile_device WHERE id = ?", id)
-    execute("DELETE FROM employee WHERE id = ?", id)
 }
 
 fun Handle.deleteApplication(id: UUID) {
@@ -935,6 +946,12 @@ fun Handle.deleteApplication(id: UUID) {
     execute("DELETE FROM placement_plan WHERE application_id = ?", id)
     execute("DELETE FROM application_form WHERE application_id = ?", id)
     execute("DELETE FROM application WHERE id = ?", id)
+}
+
+fun Handle.deleteAndCascadeEmployee(id: UUID) {
+    execute("DELETE FROM mobile_device WHERE id = ?", id)
+    execute("DELETE FROM employee_pin WHERE user_id = ?", id)
+    execute("DELETE FROM employee WHERE id = ?", id)
 }
 
 fun Handle.deleteCareArea(id: UUID) {
@@ -1217,8 +1234,7 @@ data class DevEmployee(
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
-    val roles: Set<UserRole> = setOf(),
-    val pin: String? = null
+    val roles: Set<UserRole> = setOf()
 )
 
 data class DevMobileDevice(

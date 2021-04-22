@@ -586,3 +586,9 @@ export interface FridgePartner {
   startDate: LocalDate
   endDate: LocalDate
 }
+
+export interface EmployeePin {
+  id: string
+  userId: string
+  pin: string
+}

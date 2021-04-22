@@ -14,7 +14,7 @@ import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
-import fi.espoo.evaka.pis.updatePinCode
+import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -81,14 +81,14 @@ class EmployeeController {
     }
 
     @PostMapping("/pin-code")
-    fun updatePinCode(
+    fun upsertPinCode(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PinCode
     ): ResponseEntity<Unit> {
         Audit.PinCodeUpdate.log(targetId = user.id)
         return db.transaction { tx ->
-            tx.updatePinCode(
+            tx.upsertPinCode(
                 user.id, body
             )
         }.let {

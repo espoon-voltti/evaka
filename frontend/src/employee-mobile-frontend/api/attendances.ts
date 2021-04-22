@@ -115,7 +115,7 @@ export interface ContactInfo {
   email: string | null
 }
 
-type ChildResultStatus = 'SUCCESS' | 'WRONG_PIN'
+type ChildResultStatus = 'SUCCESS' | 'WRONG_PIN' | 'PIN_LOCKED' | 'NOT_FOUND'
 
 export interface ChildResult {
   status: ChildResultStatus

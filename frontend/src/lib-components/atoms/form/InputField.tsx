@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { RefObject, useState } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import TextareaAutosize from 'react-autosize-textarea'
@@ -175,6 +175,7 @@ interface TextInputProps extends BaseProps {
   'aria-describedby'?: string
   hideErrorsBeforeTouched?: boolean
   required?: boolean
+  inputRef?: RefObject<HTMLInputElement>
 }
 
 function InputField({
@@ -198,6 +199,7 @@ function InputField({
   step,
   hideErrorsBeforeTouched,
   id,
+  inputRef,
   'data-qa': dataQa2,
   'aria-describedby': ariaId,
   required
@@ -239,6 +241,7 @@ function InputField({
           id={id}
           aria-describedby={ariaId}
           required={required ?? false}
+          ref={inputRef}
         />
         {clearable && !icon && (
           <InputIcon onClick={() => onChange && onChange('')}>
