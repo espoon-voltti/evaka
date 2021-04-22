@@ -6,6 +6,13 @@ Files: .github/*
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
 
+Files: apigw/.yarn/*
+Copyright: 2016-present Yarn Contributors
+Comment: Directory also includes code with other licenses and other copyright holders but those are clearly identified
+  in the source code with prefixed comments. Only the not-explicitly licensed portions are licensed with information
+  described here.
+License: BSD-2-Clause
+
 Files: apigw/config/certificates/*
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later

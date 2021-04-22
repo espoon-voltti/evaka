@@ -44,7 +44,7 @@ export function EmployeeList({ employees }: Props) {
             <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
               {[
                 ...sortBy(globalRoles.map((r) => i18n.roles.adRoles[r])),
-                ...sortBy(daycareRoles, 'daycareName').map((r, i) => (
+                ...sortBy(daycareRoles, 'daycareName').map((r) => (
                   <>
                     <Link to={`/units/${r.daycareId}`}>{r.daycareName}</Link> (
                     {i18n.roles.adRoles[r.role]?.toLowerCase()})
