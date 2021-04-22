@@ -31,6 +31,8 @@ import fi.espoo.evaka.invoicing.oldTestPricing
 import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
@@ -268,6 +270,36 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(1, decision.parts.size)
             decision.parts[0].let { part ->
                 assertEquals(fiveYearOld, part.child.id)
+                assertEquals(28900, part.baseFee)
+                assertEquals(PlacementType.FIVE_YEARS_OLD_DAYCARE, part.placement.type)
+                assertEquals(ServiceNeed.LTE_15, part.placement.serviceNeed)
+                assertEquals(0, part.siblingDiscount)
+                assertEquals(10100, part.fee)
+                assertEquals(10100, part.finalFee())
+            }
+        }
+    }
+
+    @Test
+    fun `fee decision generation works as expected with a DAYCARE_FIVE_YEAR_OLDS placement`() {
+        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertPlacement(testChild_1.id, placementPeriod, DAYCARE_FIVE_YEAR_OLDS, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
+        insertServiceNeed(testChild_1.id, listOf(placementPeriod to 30.0))
+
+        jdbi.handle { generator.handlePlacement(it, testChild_1.id, placementPeriod) }
+
+        val result = getAllFeeDecisions()
+
+        assertEquals(1, result.size)
+        result[0].let { decision ->
+            assertEquals(2, decision.familySize)
+            assertEquals(placementPeriod.start, decision.validFrom)
+            assertEquals(placementPeriod.end, decision.validTo)
+            assertEquals(10100, decision.totalFee())
+            assertEquals(1, decision.parts.size)
+            decision.parts[0].let { part ->
+                assertEquals(testChild_1.id, part.child.id)
                 assertEquals(28900, part.baseFee)
                 assertEquals(PlacementType.FIVE_YEARS_OLD_DAYCARE, part.placement.type)
                 assertEquals(ServiceNeed.LTE_15, part.placement.serviceNeed)
@@ -1901,6 +1933,52 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         voucherValueDecisions.last().let { decision ->
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(serviceNeedPeriod.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(60, decision.serviceCoefficient)
+            assertEquals(52200, decision.value)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions with five year olds daycare placement`() {
+        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
+        insertPlacement(testChild_2.id, period, DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id)
+        insertServiceNeed(testChild_2.id, listOf(period to 40.0))
+
+        jdbi.handle { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions()
+        assertEquals(1, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(testChild_2.id, decision.child.id)
+            assertEquals(87000, decision.baseValue)
+            assertEquals(100, decision.ageCoefficient)
+            assertEquals(100, decision.serviceCoefficient)
+            assertEquals(87000, decision.value)
+        }
+    }
+
+    @Test
+    fun `voucher value decisions with part day five year olds daycare placement`() {
+        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
+        insertPlacement(testChild_2.id, period, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, testVoucherDaycare.id)
+        insertServiceNeed(testChild_2.id, listOf(period to 25.0))
+
+        jdbi.handle { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions()
+        assertEquals(1, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
             assertEquals(testChild_2.id, decision.child.id)
             assertEquals(87000, decision.baseValue)
