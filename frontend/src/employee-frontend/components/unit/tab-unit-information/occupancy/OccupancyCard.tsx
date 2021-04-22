@@ -10,7 +10,7 @@ import Title from 'lib-components/atoms/Title'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'lib-icons'
 import Tooltip from '../../../../components/common/Tooltip'
-import { formatPercentage } from '../../../../components/utils'
+import { formatPercentage } from 'lib-common/utils/number'
 import { OccupancyResponse } from '../../../../api/unit'
 
 interface CardProps {

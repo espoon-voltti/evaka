@@ -24,7 +24,7 @@ import colors from 'lib-components/colors'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { faCheck } from 'lib-icons'
 
-import { formatPercentage } from '../utils'
+import { formatPercentage } from 'lib-common/utils/number'
 import { Occupancy } from '../../types/unit'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { Unit } from '../../state/placementdraft'
