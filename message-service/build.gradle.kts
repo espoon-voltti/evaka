@@ -204,6 +204,10 @@ tasks {
     }
 
     dependencyCheck {
+        cve.apply {
+            urlBase = "https://freedumbytes.gitlab.io/setup/nist-nvd-mirror/nvdcve-1.1-%d.json.gz"
+            urlModified = "https://freedumbytes.gitlab.io/setup/nist-nvd-mirror/nvdcve-1.1-modified.json.gz"
+        }
         failBuildOnCVSS = 0.0f
         analyzers.apply {
             assemblyEnabled = false

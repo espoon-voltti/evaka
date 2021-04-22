@@ -78,6 +78,7 @@ const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
         icon={faUser}
         title={i18n.childInformation.fridgeParents.title}
         startCollapsed={!open}
+        data-qa="fridge-parents-collapsible"
       >
         {renderFridgeParents()}
       </CollapsibleSection>

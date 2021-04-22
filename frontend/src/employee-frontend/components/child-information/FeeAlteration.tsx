@@ -90,6 +90,7 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
         icon={faMoneyCheckEdit}
         title={i18n.childInformation.feeAlteration.title}
         startCollapsed={!open}
+        data-qa="fee-alteration-collapsible"
       >
         <AddButtonRow
           text={i18n.childInformation.feeAlteration.create}

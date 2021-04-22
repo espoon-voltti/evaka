@@ -66,7 +66,7 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
         icon={faClock}
         title={i18n.childInformation.serviceNeed.title}
         startCollapsed={!open}
-        dataQa="service-need-collapsible"
+        data-qa="service-need-collapsible"
       >
         <RequireRole oneOf={['UNIT_SUPERVISOR', 'ADMIN']}>
           <AddButtonRow
