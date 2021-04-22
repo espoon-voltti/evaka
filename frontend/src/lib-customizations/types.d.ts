@@ -28,6 +28,12 @@ interface MapConfig {
   center: LatLngExpression
   initialZoom: number
   addressZoom: number
+  searchAreaRect: {
+    minLongitude: number
+    maxLongitude: number
+    minLatitude: number
+    maxLatitude: number
+  }
 }
 
 interface FeatureFlags {
