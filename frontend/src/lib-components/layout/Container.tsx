@@ -42,6 +42,7 @@ type ContentAreaProps = {
   opaque: boolean
   paddingVertical?: SpacingSize
   paddingHorizontal?: SpacingSize
+  fullHeight?: boolean
 }
 
 export const ContentArea = styled.section<ContentAreaProps>`
@@ -55,6 +56,7 @@ export const ContentArea = styled.section<ContentAreaProps>`
     }`};
   background-color: ${(props) => (props.opaque ? 'white' : 'transparent')};
   position: relative;
+  ${(p) => (p.fullHeight ? `min-height: 100vh` : '')}
 `
 
 type CollapsibleContentAreaProps = ContentAreaProps & {
