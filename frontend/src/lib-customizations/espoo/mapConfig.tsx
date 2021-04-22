@@ -12,7 +12,7 @@ const mapConfig: MapConfig = {
     maxLatitude: 60.35391259995084,
     minLatitude: 59.9451623086072,
     maxLongitude: 25.32055693401933,
-    minLongitude: 24.271362626190594,
+    minLongitude: 24.271362626190594
   }
 }
 
