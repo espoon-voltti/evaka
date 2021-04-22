@@ -636,6 +636,9 @@ private fun getPlacementType(placement: Placement, isFiveYearOld: Boolean): Plac
         fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME ->
             if (isFiveYearOld) PlacementType.FIVE_YEARS_OLD_DAYCARE
             else PlacementType.DAYCARE
+        fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+        fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+            PlacementType.FIVE_YEARS_OLD_DAYCARE
         fi.espoo.evaka.placement.PlacementType.PRESCHOOL -> PlacementType.PRESCHOOL
         fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL_WITH_DAYCARE
         fi.espoo.evaka.placement.PlacementType.PREPARATORY -> PlacementType.PREPARATORY
