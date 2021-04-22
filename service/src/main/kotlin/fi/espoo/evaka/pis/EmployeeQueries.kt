@@ -233,7 +233,7 @@ SELECT EXISTS (
 fun Handle.resetEmployeePinFailureCount(employeeId: UUID) = createUpdate(
     """
 UPDATE employee_pin
-SET failure_count = 0, locked = false
+SET failure_count = 0
 WHERE user_id = :employeeId
     """.trimIndent()
 ).bind("employeeId", employeeId)
