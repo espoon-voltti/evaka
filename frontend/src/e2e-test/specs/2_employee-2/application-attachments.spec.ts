@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import path from 'path'
 import {
   deleteApplication,
@@ -53,7 +57,7 @@ fixture('Employee attachments')
     await cleanUp()
   })
 
-test('Employee can add and remove attachments', async (t) => {
+test('Employee can add and remove attachments', async () => {
   await applicationReadView.openApplicationByLink(applicationFixtureId)
   await applicationReadView.startEditing()
 
