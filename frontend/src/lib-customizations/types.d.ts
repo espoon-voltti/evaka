@@ -13,12 +13,6 @@ export interface CitizenCustomizations {
     alt: string
   }
   mapConfig: MapConfig
-  mapSearchAreaRect: {
-    minLongitude: number
-    maxLongitude: number
-    minLatitude: number
-    maxLatitude: number
-  }
   featureFlags: FeatureFlags
 }
 
@@ -35,7 +29,15 @@ interface MapConfig {
   initialZoom: number
   addressZoom: number
   searchAreaRect: {
-    minLonyAttachmentsEnabled: boolean
+    minLongitude: number
+    maxLongitude: number
+    minLatitude: number
+    maxLatitude: number
+  }
+}
+
+interface FeatureFlags {
+  urgencyAttachmentsEnabled: boolean
 }
 
 export interface EmployeeCustomizations {
