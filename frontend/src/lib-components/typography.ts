@@ -14,10 +14,12 @@ type HeadingProps = BaseProps & {
   noMargin?: boolean
   smaller?: boolean
   bold?: boolean
+  primary?: boolean
 }
 
 export const H1 = styled.h1<HeadingProps>`
-  color: ${blueColors.dark};
+  color: ${(p) =>
+    p.primary || p.primary === undefined ? blueColors.dark : greyscale.dark};
   font-size: ${(p) => (p.smaller ? '24px' : '36px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 200)};
@@ -34,7 +36,7 @@ export const H1 = styled.h1<HeadingProps>`
 `
 
 export const H2 = styled.h2<HeadingProps>`
-  color: ${greyscale.dark};
+  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
   font-size: ${(p) => (p.smaller ? '20px' : '24px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 300)};
@@ -44,7 +46,7 @@ export const H2 = styled.h2<HeadingProps>`
 `
 
 export const H3 = styled.h3<HeadingProps>`
-  color: ${greyscale.dark};
+  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
   font-size: ${(p) => (p.smaller ? '18px' : '20px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -54,7 +56,7 @@ export const H3 = styled.h3<HeadingProps>`
 `
 
 export const H4 = styled.h4<HeadingProps>`
-  color: ${greyscale.dark};
+  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
   font-size: ${(p) => (p.smaller ? '16px' : '18px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -64,7 +66,7 @@ export const H4 = styled.h4<HeadingProps>`
 `
 
 export const H5 = styled.h4<HeadingProps>`
-  color: ${greyscale.dark};
+  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
   font-size: ${(p) => (p.smaller ? '14px' : '16px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
