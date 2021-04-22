@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RawElement } from 'e2e-playwright/utils/element'
-import config from 'e2e-test-common/config'
-import DevLoginForm from 'e2e-playwright/pages/dev-login-form'
 import { Page } from 'playwright'
+
+import config from 'e2e-test-common/config'
+import { UserRole } from 'e2e-test-common/dev-api/types'
+
+import { RawElement } from 'e2e-playwright/utils/element'
+import DevLoginForm from 'e2e-playwright/pages/dev-login-form'
 
 export default class EmployeeNav {
   constructor(private readonly page: Page) {}
@@ -32,49 +35,39 @@ export default class EmployeeNav {
     '[data-qa="user-popup-pin-code"]'
   )
 
-  async login(
-    role:
-      | 'manager'
-      | 'admin'
-      | 'serviceWorker'
-      | 'financeAdmin'
-      | 'director'
-      | 'staff'
-      | 'unitSupervisor'
-      | 'specialEducationTeacher'
-  ) {
+  async login(role: UserRole) {
     await this.#loginBtn.click()
 
     const form = new DevLoginForm(this.page)
     switch (role) {
-      case 'manager':
+      case 'MANAGER':
         await form.login({
           aad: config.supervisorAad,
           roles: []
         })
         break
-      case 'admin':
+      case 'ADMIN':
         await form.login({
           aad: config.adminAad,
           roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
         })
         break
-      case 'serviceWorker':
+      case 'SERVICE_WORKER':
         await form.loginAsUser(config.serviceWorkerAad)
         break
-      case 'financeAdmin':
+      case 'FINANCE_ADMIN':
         await form.loginAsUser(config.financeAdminAad)
         break
-      case 'director':
+      case 'DIRECTOR':
         await form.loginAsUser(config.directorAad)
         break
-      case 'staff':
+      case 'STAFF':
         await form.loginAsUser(config.staffAad)
         break
-      case 'unitSupervisor':
+      case 'UNIT_SUPERVISOR':
         await form.loginAsUser(config.unitSupervisorAad)
         break
-      case 'specialEducationTeacher':
+      case 'SPECIAL_EDUCATION_TEACHER':
         await form.loginAsUser(config.specialEducationTeacher)
         break
     }

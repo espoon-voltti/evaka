@@ -36,7 +36,7 @@ afterAll(async () => {
 
 describe('Child information page', () => {
   test('Admin sees every tab', async () => {
-    await nav.login('admin')
+    await nav.login('ADMIN')
     await nav.tabsVisible({
       applications: true,
       units: true,
@@ -48,7 +48,7 @@ describe('Child information page', () => {
   })
 
   test('Service worker sees applications, units, search and reports tabs', async () => {
-    await nav.login('serviceWorker')
+    await nav.login('SERVICE_WORKER')
     await nav.tabsVisible({
       applications: true,
       units: true,
@@ -60,7 +60,7 @@ describe('Child information page', () => {
   })
 
   test('FinanceAdmin sees units, search, finance and reports tabs', async () => {
-    await nav.login('financeAdmin')
+    await nav.login('FINANCE_ADMIN')
     await nav.tabsVisible({
       applications: false,
       units: true,
@@ -72,7 +72,7 @@ describe('Child information page', () => {
   })
 
   test('Director sees only the reports tab', async () => {
-    await nav.login('director')
+    await nav.login('DIRECTOR')
     await nav.tabsVisible({
       applications: false,
       units: false,
@@ -84,7 +84,7 @@ describe('Child information page', () => {
   })
 
   test('Staff sees only the units tab', async () => {
-    await nav.login('staff')
+    await nav.login('STAFF')
     await nav.tabsVisible({
       applications: false,
       units: true,
@@ -96,7 +96,7 @@ describe('Child information page', () => {
   })
 
   test('Unit supervisor sees units, reports and messaging tabs', async () => {
-    await nav.login('unitSupervisor')
+    await nav.login('UNIT_SUPERVISOR')
     await nav.tabsVisible({
       applications: false,
       units: true,
@@ -110,7 +110,7 @@ describe('Child information page', () => {
 
 describe('Child information page sections', () => {
   test('Admin sees every collapsible sections', async () => {
-    await nav.login('admin')
+    await nav.login('ADMIN')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -130,7 +130,7 @@ describe('Child information page sections', () => {
   })
 
   test('Service worker sees guardians, parents, placements, backup care, service need, assistance, applicaitons and family contact sections ', async () => {
-    await nav.login('serviceWorker')
+    await nav.login('SERVICE_WORKER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -150,7 +150,7 @@ describe('Child information page sections', () => {
   })
 
   test('FinanceAdmin sees fee alterations, guardians, parents, placements backup cares and service need sections', async () => {
-    await nav.login('financeAdmin')
+    await nav.login('FINANCE_ADMIN')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -170,7 +170,7 @@ describe('Child information page sections', () => {
   })
 
   test('Staff sees family contacts, placements, backup care and service need sections', async () => {
-    await nav.login('staff')
+    await nav.login('STAFF')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -190,7 +190,7 @@ describe('Child information page sections', () => {
   })
 
   test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance, applications and family contacts sections', async () => {
-    await nav.login('unitSupervisor')
+    await nav.login('UNIT_SUPERVISOR')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -210,7 +210,7 @@ describe('Child information page sections', () => {
   })
 
   test('Special education techer sees family contacts, backup pickups, placements, backup care, service need and assistance sections', async () => {
-    await nav.login('specialEducationTeacher')
+    await nav.login('SPECIAL_EDUCATION_TEACHER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
