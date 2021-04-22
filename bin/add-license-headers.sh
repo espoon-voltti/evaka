@@ -39,13 +39,14 @@ if [ "${1:-X}" = '--help' ]; then
 fi
 
 function run_reuse() {
-    docker run --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "fsfe/reuse:${REUSE_VERSION}" "$@"
+    run_args=("$@")
+    docker run --rm --volume "${REPO_ROOT}:/data" --workdir "/data${REPO_PREFIX}" "fsfe/reuse:${REUSE_VERSION}" "${run_args[@]}"
 }
 
 function addheader() {
     local file="$1"
-    shift
-    run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "$@" "$file"
+    local cmd_args=("$@")
+    run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "${cmd_args[@]}" "$file"
 }
 
 set +e
@@ -89,7 +90,7 @@ done
 # TODO: Remove excludes when we have reuse-compatible licensing info for them
 NONCOMPLIANT_FILES=$(echo "$REUSE_OUTPUT" \
     | awk '/^$/ {next} /following/ {next} /resources\/wsdl/ {next} /espoo-logo/ {next} /EspooLogo/ {next} /MISSING COPYRIGHT AND LICENSING INFORMATION/{flag=1; next} /SUMMARY/{flag=0} flag' \
-    | cut -d' ' -f2
+    | cut -d' ' -f2-
 )
 
 while IFS= read -r file; do
@@ -99,7 +100,8 @@ while IFS= read -r file; do
 
     # Explicitly define styles for some common files not yet recognized by a released version of reuse:
     if [[ "$file" = *svg ]] || [[ "$file" = *json ]]; then
-        addheader "$file" --explicit-license
+        cmd_args=('--explicit-license')
+        addheader "$file" "${cmd_args[@]}"
     else
         addheader "$file"
     fi
