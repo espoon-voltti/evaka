@@ -14,7 +14,8 @@ import fi.espoo.evaka.application.persistence.daycare.Child as DaycareFormChild
 
 fun PlacementType.toApplicationType(): ApplicationType = when (this) {
     PlacementType.CLUB -> ApplicationType.CLUB
-    PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
+    PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
+    PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> ApplicationType.DAYCARE
     PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE,
     PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
     PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->

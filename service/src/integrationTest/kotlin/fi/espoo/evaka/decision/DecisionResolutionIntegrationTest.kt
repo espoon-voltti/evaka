@@ -383,8 +383,8 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
                     applicationId = applicationId,
                     type = when (type) {
                         PlacementType.CLUB -> DecisionType.CLUB
-                        PlacementType.DAYCARE -> DecisionType.DAYCARE
-                        PlacementType.DAYCARE_PART_TIME -> DecisionType.DAYCARE_PART_TIME
+                        PlacementType.DAYCARE, PlacementType.DAYCARE_FIVE_YEAR_OLDS -> DecisionType.DAYCARE
+                        PlacementType.DAYCARE_PART_TIME, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> DecisionType.DAYCARE_PART_TIME
                         PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE -> DecisionType.PRESCHOOL
                         PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> DecisionType.PREPARATORY_EDUCATION
                         PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
