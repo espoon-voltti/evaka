@@ -18,6 +18,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.daycare.getDaycare
@@ -130,8 +131,12 @@ class ApplicationStateService(
                 tx.handle.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
             if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language)))
+                asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
             }
+        }
+
+        if (!application.hideFromGuardian && application.type == ApplicationType.CLUB) {
+            asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
         }
 
         updateApplicationStatus(tx.handle, application.id, SENT)

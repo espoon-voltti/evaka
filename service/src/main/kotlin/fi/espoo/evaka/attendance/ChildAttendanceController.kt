@@ -12,6 +12,8 @@ import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
+import fi.espoo.evaka.pis.resetEmployeePinFailureCount
+import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -89,8 +91,9 @@ class ChildAttendanceController(
             return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
         }
 
-        val result = db.read {
+        val result = db.transaction {
             if (it.handle.employeePinIsCorrect(staffId, pin)) {
+                it.handle.resetEmployeePinFailureCount(staffId)
                 it.getChildSensitiveInfo(childId)?.let {
                     ChildResult(
                         status = ChildResultStatus.SUCCESS,
@@ -98,8 +101,11 @@ class ChildAttendanceController(
                     )
                 } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
             } else {
-                // TODO: keep track of failed login attempts
-                ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
+                if (it.handle.updateEmployeePinFailureCountAndCheckIfLocked(staffId)) {
+                    ChildResult(status = ChildResultStatus.PIN_LOCKED, child = null)
+                } else {
+                    ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
+                }
             }
         }
 
@@ -428,6 +434,10 @@ private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> 
             listOf(CareType.PRESCHOOL)
         PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
             listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
+        PlacementType.DAYCARE_FIVE_YEAR_OLDS ->
+            return listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+            return listOf(CareType.DAYCARE_5YO_FREE)
         PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
         PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
             listOf(CareType.DAYCARE)

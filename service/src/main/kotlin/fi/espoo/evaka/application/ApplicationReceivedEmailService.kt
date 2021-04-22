@@ -21,14 +21,26 @@ class ApplicationReceivedEmailService(private val emailClient: IEmailClient, env
     private val senderAddressSv = env.getProperty("application.email.address.sv", "")
     private val senderNameSv = env.getProperty("application.email.name.sv", "")
 
-    fun sendApplicationEmail(personId: UUID, toAddress: String, language: Language) {
+    fun sendApplicationEmail(personId: UUID, toAddress: String, language: Language, type: ApplicationType) {
         val fromAddress = when (language) {
             Language.sv -> "$senderNameSv <$senderAddressSv>"
             else -> "$senderNameFi <$senderAddressFi>"
         }
 
+        val html = when (type) {
+            ApplicationType.DAYCARE -> getHtmlForDaycare(language)
+            ApplicationType.CLUB -> getHtmlForClub()
+            else -> throw Exception("Application type $type not supported for sending confirmation email")
+        }
+
+        val text = when (type) {
+            ApplicationType.DAYCARE -> getTextForDaycare(language)
+            ApplicationType.CLUB -> getTextForClub()
+            else -> throw Exception("Application type $type not supported for sending confirmation email")
+        }
+
         logger.info { "Sending application email (personId: $personId)" }
-        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, getSubject(language), getHtml(language), getText(language))
+        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, getSubject(language), html, text)
     }
 
     private fun getSubject(language: Language): String {
@@ -40,7 +52,39 @@ class ApplicationReceivedEmailService(private val emailClient: IEmailClient, env
         }
     }
 
-    private fun getHtml(language: Language): String {
+    private fun getHtmlForClub(): String {
+        return """
+            <p>Hyvä(t) huoltaja(t),</p>
+
+            <p>Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
+
+            <p>Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.</p>
+
+            <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
+
+            <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
+
+            <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
+        """.trimIndent()
+    }
+
+    private fun getTextForClub(): String {
+        return """
+            Hyvä(t) huoltaja(t),
+
+            Lapsenne kerhohakemus on vastaanotettu.Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kunnes se on otettu käsittelyyn.
+
+            Syksyllä alkaviin kerhoihin tehdään päätöksiä kevään aikana hakuajan (1-31.3.) päättymisen jälkeen paikkatilanteen mukaan.
+
+            Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.
+
+            Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
+
+            Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. 
+        """.trimIndent()
+    }
+
+    private fun getHtmlForDaycare(language: Language): String {
         return when (language) {
             Language.sv -> """
 <p>
@@ -137,7 +181,7 @@ Information about applying to private early childhood education units: <a href="
         }
     }
 
-    private fun getText(language: Language): String {
+    private fun getTextForDaycare(language: Language): String {
         return when (language) {
             Language.sv -> """
 Bästa vårdnadshavare,

@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
@@ -156,8 +157,8 @@ fun removeDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId) {
 fun Handle.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, external_id, roles, pin)
-VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[], :pin)
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
+VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[])
 RETURNING id
 """
 )
@@ -434,6 +435,31 @@ fun insertTestServiceNeed(
                 "updatedBy" to updatedBy
             )
         )
+        .execute()
+    return id
+}
+
+fun insertTestNewServiceNeed(
+    h: Handle,
+    placementId: UUID,
+    period: FiniteDateRange,
+    optionId: UUID,
+    shiftCare: Boolean = false,
+    id: UUID = UUID.randomUUID()
+): UUID {
+    h
+        .createUpdate(
+            """
+INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care)
+VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare)
+"""
+        )
+        .bind("id", id)
+        .bind("placementId", placementId)
+        .bind("startDate", period.start)
+        .bind("endDate", period.end)
+        .bind("optionId", optionId)
+        .bind("shiftCare", shiftCare)
         .execute()
     return id
 }
@@ -930,3 +956,20 @@ RETURNING partnership_id
 )
 
 fun Handle.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()
+
+data class DevEmployeePin(
+    val id: UUID,
+    val userId: UUID,
+    val pin: String
+)
+
+fun Handle.insertEmployeePin(emoployeePin: DevEmployeePin) = insertTestDataRow(
+    emoployeePin,
+    """
+INSERT INTO employee_pin (id, user_id, pin)
+VALUES (:id, :userId, :pin)
+RETURNING id
+"""
+)
+
+fun Handle.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()

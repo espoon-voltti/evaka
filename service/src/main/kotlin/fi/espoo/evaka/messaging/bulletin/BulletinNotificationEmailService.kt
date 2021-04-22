@@ -9,11 +9,11 @@ import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SendUnreadBulletinNotificationEmail
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -83,7 +83,7 @@ class BulletinNotificationEmailService(
                             language = getLanguage(notification.language)
                         )
                     ),
-                    runAt = Instant.now(),
+                    runAt = HelsinkiDateTime.now(),
                     retryCount = 10
                 )
             } else {

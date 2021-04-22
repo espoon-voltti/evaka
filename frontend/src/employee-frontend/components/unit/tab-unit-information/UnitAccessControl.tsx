@@ -532,7 +532,7 @@ function UnitAccessControl({ unitId }: Props) {
           closeModal={closePairMobileDeviceModal}
         />
       )}
-      <RequireRole oneOf={['ADMIN']}>
+      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
         <ContentArea opaque data-qa="daycare-acl-supervisors">
           <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
           {loading && <Loader />}
@@ -546,15 +546,16 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclSupervisor
                 })
               }
+              rolesAllowedToRemoveRows={['ADMIN']}
             />
           )}
-          <AddAcl
-            employees={candidateEmployees}
-            onAddAclRow={addUnitSupervisor}
-          />
+          <RequireRole oneOf={['ADMIN']}>
+            <AddAcl
+              employees={candidateEmployees}
+              onAddAclRow={addUnitSupervisor}
+            />
+          </RequireRole>
         </ContentArea>
-      </RequireRole>
-      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
         <ContentArea opaque data-qa="daycare-acl-set">
           <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
           {loading && <Loader />}
@@ -578,8 +579,6 @@ function UnitAccessControl({ unitId }: Props) {
             />
           </RequireRole>
         </ContentArea>
-      </RequireRole>
-      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
         <ContentArea opaque data-qa="daycare-acl-staff">
           <H2>{i18n.unit.accessControl.staff}</H2>
           {loading && <Loader />}
@@ -597,10 +596,7 @@ function UnitAccessControl({ unitId }: Props) {
           )}
           <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
         </ContentArea>
-      </RequireRole>
-
-      {(isNotProduction() || isPilotUnit(unitId)) && (
-        <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+        {(isNotProduction() || isPilotUnit(unitId)) && (
           <ContentArea opaque data-qa="daycare-mobile-devices">
             <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
             {loading && <Loader />}
@@ -621,8 +617,8 @@ function UnitAccessControl({ unitId }: Props) {
               </Fragment>
             )}
           </ContentArea>
-        </RequireRole>
-      )}
+        )}
+      </RequireRole>
     </>
   )
 }

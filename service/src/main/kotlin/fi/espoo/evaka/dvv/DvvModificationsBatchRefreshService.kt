@@ -9,10 +9,10 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.time.Instant
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -46,7 +46,7 @@ class DvvModificationsBatchRefreshService(
                         requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
                     )
                 ),
-                runAt = Instant.now(),
+                runAt = HelsinkiDateTime.now(),
                 retryCount = 10
             )
 
@@ -66,9 +66,7 @@ private fun Database.Transaction.deleteOldJobs() =
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> = createQuery(
     //language=sql
     """
-SELECT DISTINCT(social_security_number) from PERSON p JOIN (
-SELECT head_of_child FROM fridge_child
-WHERE daterange(start_date, end_date, '[]') @> current_date AND conflict = false) hoc ON p.id = hoc.head_of_child
+SELECT DISTINCT(social_security_number) FROM person
     """.trimIndent()
 )
     .mapTo<String>()

@@ -6,12 +6,18 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.controllers.PinCode
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.freeTextSearchQueryForColumns
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import java.util.UUID
 
 data class NewEmployee(
@@ -28,6 +34,24 @@ data class EmployeeUser(
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
     val allScopedRoles: Set<UserRole> = setOf()
+)
+
+data class DaycareRole(
+    val daycareId: UUID,
+    val daycareName: String,
+    val role: UserRole
+)
+
+data class EmployeeWithDaycareRoles(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val updated: HelsinkiDateTime?,
+    val firstName: String,
+    val lastName: String,
+    val email: String?,
+    val globalRoles: List<UserRole> = listOf(),
+    @Json
+    val daycareRoles: List<DaycareRole> = listOf()
 )
 
 fun Handle.createEmployee(employee: NewEmployee): Employee = createUpdate(
@@ -92,6 +116,54 @@ fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeU
     .mapTo<EmployeeUser>()
     .singleOrNull()
 
+fun getEmployeesPaged(
+    tx: Database.Read,
+    page: Int,
+    pageSize: Int,
+    searchTerm: String = ""
+): Paged<EmployeeWithDaycareRoles> {
+
+    val (freeTextQuery, freeTextParams) = freeTextSearchQueryForColumns(listOf("employee"), listOf("first_name", "last_name"), searchTerm)
+
+    val params = mapOf(
+        "offset" to (page - 1) * pageSize,
+        "pageSize" to pageSize
+    )
+
+    val conditions = listOfNotNull(
+        if (searchTerm.isNotBlank()) freeTextQuery else null,
+    )
+
+    val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"
+
+    // language=SQL
+    val sql = """
+SELECT
+    id,
+    created,
+    updated,
+    first_name,
+    last_name,
+    email,
+    employee.roles AS global_roles,
+    (
+        SELECT jsonb_agg(json_build_object('daycareId', dav.daycare_id, 'daycareName', d.name, 'role', dav.role))
+        FROM daycare_acl_view dav
+        JOIN daycare d ON dav.daycare_id = d.id
+        WHERE dav.employee_id = employee.id
+    ) AS daycare_roles,
+    count(*) OVER () AS count
+FROM employee
+WHERE $whereClause
+ORDER BY last_name, first_name DESC
+LIMIT :pageSize OFFSET :offset
+    """.trimIndent()
+    return tx.createQuery(sql)
+        .bindMap(params + freeTextParams)
+        .map(withCountMapper<EmployeeWithDaycareRoles>())
+        .let(mapToPaged(pageSize))
+}
+
 fun Handle.deleteEmployee(employeeId: UUID) = createUpdate(
     // language=SQL
     """
@@ -120,35 +192,67 @@ WHERE external_id = :externalId
 ).bind("externalId", externalId)
     .execute()
 
-fun Database.Transaction.updatePinCode(
+fun Database.Transaction.upsertPinCode(
     userId: UUID,
     pinCode: PinCode
 ) {
+    // Note: according to spec, setting a pin resets the failure and opens a locked pin
     // language=sql
     val sql = """
-        UPDATE employee
-        SET
-            pin = :pin_code
-        WHERE id = :userId
+INSERT INTO employee_pin(user_id, pin)
+VALUES(:userId, :pin)
+ON CONFLICT (user_id) DO UPDATE SET
+        user_id = :userId,
+        pin = :pin,
+        locked = false,
+        failure_count = 0
     """.trimIndent()
     val updated = this.createUpdate(sql)
         .bind("userId", userId)
-        .bind("pin_code", pinCode.pin)
+        .bind("pin", pinCode.pin)
         .execute()
 
-    if (updated == 0) throw NotFound("Could not update pin-code for $userId. User not found")
+    if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
 fun Handle.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
 """
 SELECT EXISTS (
     SELECT 1
-    FROM employee
-    WHERE id = :employeeId
+    FROM employee_pin
+    WHERE user_id = :employeeId
     AND pin = :pin
+    AND locked = false
 )
     """.trimIndent()
 ).bind("employeeId", employeeId)
     .bind("pin", pin)
+    .mapTo<Boolean>()
+    .first()
+
+fun Handle.resetEmployeePinFailureCount(employeeId: UUID) = createUpdate(
+    """
+UPDATE employee_pin
+SET failure_count = 0
+WHERE user_id = :employeeId
+    """.trimIndent()
+).bind("employeeId", employeeId)
+    .execute()
+
+fun Handle.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: UUID): Boolean = createQuery(
+"""
+UPDATE employee_pin
+SET 
+    failure_count = failure_count + 1,
+    locked = 
+        CASE 
+            WHEN failure_count < (4 + 1) THEN false
+            ELSE true
+        end    
+WHERE 
+    user_id = :employeeId
+RETURNING locked
+    """.trimIndent()
+).bind("employeeId", employeeId)
     .mapTo<Boolean>()
     .first()

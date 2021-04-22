@@ -65,3 +65,6 @@ V64__range_merge_aggregate.sql
 V65__new_service_needs.sql
 V66__new_service_need_hours.sql
 V67__application_manual_due_date.sql
+V68__fee_decisions_with_new_service_needs.sql
+V69__five_year_old_daycare_placement_types.sql
+V70__employee_pin.sql

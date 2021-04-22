@@ -103,6 +103,11 @@ export const fi = {
       invoicingAddress: 'Laskutusosoite',
       addressRestricted: 'Osoite ei ole saatavilla turvakiellon vuoksi'
     },
+    expandableList: {
+      others: 'muuta'
+    },
+    resultCount: (count: number) =>
+      count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
     ok: 'Selvä!',
     tryAgain: 'Yritä uudestaan',
     checkDates: 'Tarkista päivämäärät',
@@ -1410,8 +1415,6 @@ export const fi = {
   feeDecisions: {
     table: {
       title: 'Maksupäätökset',
-      rowCount: (count: number) =>
-        count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
       head: 'Päämies',
       children: 'Lapset',
       validity: 'Maksupäätös voimassa',
@@ -1436,8 +1439,6 @@ export const fi = {
   valueDecisions: {
     table: {
       title: 'Arvopäätökset',
-      rowCount: (count: number) =>
-        count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
       head: 'Päämies',
       child: 'Lapsi',
       validity: 'Arvopäätös voimassa',
@@ -1980,7 +1981,9 @@ export const fi = {
     invalidServiceNeed: {
       title: 'Virheelliset palveluntarpeet',
       description:
-        'Raportti listaa palveluntarpeet, joissa vaikuttaisi olevan virhe.'
+        'Raportti listaa palveluntarpeet, joissa vaikuttaisi olevan virhe.',
+      unit: 'Nykyinen yksikkö',
+      noCurrentUnit: 'Lopettanut'
     },
     partnersInDifferentAddress: {
       title: 'Puoliso eri osoitteessa',
@@ -2342,5 +2345,23 @@ export const fi = {
     placeholder: '4 numeroa',
     error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
     link: 'eVaka-mobiilin PIN-koodi'
+  },
+  employees: {
+    title: 'Käyttäjät',
+    name: 'Nimi',
+    rights: 'Oikeudet',
+    findByName: 'Etsi nimellä'
+  },
+  roles: {
+    adRoles: {
+      ADMIN: 'Pääkäyttäjä',
+      DIRECTOR: 'Raportointi',
+      FINANCE_ADMIN: 'Talous',
+      SERVICE_WORKER: 'Palveluohjaus',
+      SPECIAL_EDUCATION_TEACHER: 'Erityisopettaja',
+      STAFF: 'Henkilökunta',
+      UNIT_SUPERVISOR: 'Johtaja',
+      MOBILE: 'Mobiili'
+    }
   }
 }

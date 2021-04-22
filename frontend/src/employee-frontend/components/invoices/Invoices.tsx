@@ -87,7 +87,7 @@ export default React.memo(function Invoices({
         <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
         {invoices?.isSuccess && (
           <ResultsContainer>
-            <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
+            <div>{total ? i18n.common.resultCount(total) : null}</div>
             <Pagination
               pages={pages}
               currentPage={currentPage}

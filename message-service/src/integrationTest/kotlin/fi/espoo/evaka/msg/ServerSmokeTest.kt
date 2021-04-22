@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.msg
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.web.client.HttpClientErrorException

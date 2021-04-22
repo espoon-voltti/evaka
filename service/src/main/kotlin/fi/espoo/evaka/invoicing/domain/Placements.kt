@@ -5,6 +5,8 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.UUID
 
 sealed class Placement(open val unit: UUID)
@@ -78,3 +80,22 @@ fun calculateServiceNeed(type: PlacementType, hours: Double?): ServiceNeed {
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> ServiceNeed.LTE_0
     }
 }
+
+data class PlacementWithoutServiceNeed(
+    val unitId: UUID,
+    val type: PlacementType,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
+
+data class PlacementWithServiceNeed(
+    val unitId: UUID,
+    val type: fi.espoo.evaka.placement.PlacementType,
+    val serviceNeed: ServiceNeedValue
+)
+
+data class ServiceNeedValue(
+    val id: UUID,
+    val feeCoefficient: BigDecimal,
+    val voucherValueCoefficient: BigDecimal
+)

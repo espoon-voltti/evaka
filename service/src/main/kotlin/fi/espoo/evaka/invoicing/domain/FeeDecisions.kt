@@ -319,6 +319,17 @@ fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement
     }
 }
 
+fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscount: Int): Int {
+    val siblingDiscountMultiplier =
+        BigDecimal(1) - BigDecimal(siblingDiscount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+    val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
+    val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedCoefficient).toInt()
+    return feeBeforeRounding.let { fee ->
+        if (fee < minFee) 0
+        else fee
+    }
+}
+
 fun getServiceNeedPercentage(placement: PermanentPlacement): Int {
     val unexpectedCombination =
         { error("Unexpected placement and service need combination: ${placement.type} ${placement.serviceNeed}") }

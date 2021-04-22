@@ -50,7 +50,6 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeByExternalId
 import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
@@ -432,6 +431,8 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
             it.execute("DELETE FROM fee_decision_part WHERE child = ?", id)
             it.execute("DELETE FROM fee_decision WHERE head_of_family = ?", id)
+            it.execute("DELETE FROM new_fee_decision_child WHERE child_id = ?", id)
+            it.execute("DELETE FROM new_fee_decision WHERE head_of_family_id = ?", id)
             it.execute("DELETE FROM income WHERE person_id = ?", id)
             it.execute("DELETE FROM absence WHERE child_id = ?", id)
             it.execute("DELETE FROM backup_care WHERE child_id = ?", id)
@@ -484,7 +485,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @DeleteMapping("/employee/{id}")
     fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployee(id) }
+        db.transaction { it.handle.deleteAndCascadeEmployee(id) }
         return ResponseEntity.ok().build()
     }
 
@@ -881,6 +882,18 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         db.transaction { it.handle.deleteFridgePartner(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/employee-pin")
+    fun createEmployeePins(db: Database, @RequestBody employeePins: List<DevEmployeePin>): ResponseEntity<Unit> {
+        db.transaction { employeePins.forEach { employeePin -> it.handle.insertEmployeePin(employeePin) } }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/employee-pin/{id}")
+    fun deleteEmployeePin(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeePin(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -896,6 +909,7 @@ fun ensureFakeAdminExists(h: Handle) {
 }
 
 fun Handle.clearDatabase() = listOf(
+    "employee_pin",
     "family_contact",
     "backup_pickup",
     "messaging_blocklist",
@@ -924,7 +938,6 @@ fun Database.Transaction.deletePairing(id: UUID) {
 
 fun Database.Transaction.deleteMobileDevice(id: UUID) {
     execute("DELETE FROM mobile_device WHERE id = ?", id)
-    execute("DELETE FROM employee WHERE id = ?", id)
 }
 
 fun Handle.deleteApplication(id: UUID) {
@@ -933,6 +946,12 @@ fun Handle.deleteApplication(id: UUID) {
     execute("DELETE FROM placement_plan WHERE application_id = ?", id)
     execute("DELETE FROM application_form WHERE application_id = ?", id)
     execute("DELETE FROM application WHERE id = ?", id)
+}
+
+fun Handle.deleteAndCascadeEmployee(id: UUID) {
+    execute("DELETE FROM mobile_device WHERE id = ?", id)
+    execute("DELETE FROM employee_pin WHERE user_id = ?", id)
+    execute("DELETE FROM employee WHERE id = ?", id)
 }
 
 fun Handle.deleteCareArea(id: UUID) {
@@ -946,6 +965,17 @@ WITH deleted_ids AS (
 """,
         id
     )
+    execute(
+        """
+WITH deleted_ids AS (
+    DELETE FROM new_fee_decision_child
+    WHERE placement_unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)
+    RETURNING fee_decision_id
+) DELETE FROM new_fee_decision WHERE id IN (SELECT fee_decision_id FROM deleted_ids)
+""",
+        id
+    )
+
     execute(
         "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?))",
         id
@@ -1204,8 +1234,7 @@ data class DevEmployee(
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
-    val roles: Set<UserRole> = setOf(),
-    val pin: String? = null
+    val roles: Set<UserRole> = setOf()
 )
 
 data class DevMobileDevice(

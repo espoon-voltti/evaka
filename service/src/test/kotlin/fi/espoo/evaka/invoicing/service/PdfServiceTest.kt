@@ -7,12 +7,17 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
+import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
+import fi.espoo.evaka.invoicing.testPlacement
 import fi.espoo.evaka.shared.config.PDFConfig
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -86,7 +91,7 @@ class PdfServiceTest {
                 placement = it.placement,
                 placementUnit = UnitData.Detailed(
                     id = UUID.randomUUID(),
-                    name = "Test Daycare",
+                    name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                     language = lang,
                     areaId = UUID.randomUUID(),
                     areaName = "Test Area"
@@ -100,6 +105,74 @@ class PdfServiceTest {
     )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
+
+    private val normalVoucherValueDecision = VoucherValueDecisionDetailed(
+        id = testDecision1.id,
+        approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
+        approvedBy = PersonData.WithName(
+            UUID.randomUUID(),
+            "Erkki",
+            "Pelimerkki"
+        ),
+        decisionNumber = testDecision1.decisionNumber,
+        status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
+        familySize = 3,
+        headOfFamily = PersonData.Detailed(
+            id = UUID.randomUUID(),
+            dateOfBirth = LocalDate.of(1980, 1, 1),
+            firstName = "Anselmi Aataminpoika",
+            lastName = "Guggenheim",
+            streetAddress = "Huhdannevanpolku 24 A 3",
+            postalCode = "02770",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false
+        ),
+        partner = PersonData.Detailed(
+            id = UUID.randomUUID(),
+            dateOfBirth = LocalDate.of(1980, 1, 1),
+            firstName = "Cynthia Elisabeth",
+            lastName = "Maalahti-Guggenheim",
+            streetAddress = "Huhdannevanpolku 24 A 3",
+            postalCode = "02770",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false
+        ),
+        validFrom = LocalDate.of(2020, 1, 1),
+        validTo = null,
+        financeDecisionHandlerName = null,
+        pricing = testPricing,
+        headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
+        partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
+        child = PersonData.Detailed(
+            id = UUID.randomUUID(),
+            dateOfBirth = LocalDate.of(2017, 1, 1),
+            firstName = "Iisakki Anselminpoika",
+            lastName = "Guggenheim",
+            restrictedDetailsEnabled = false
+        ),
+        childAge = 3,
+        placement = PermanentPlacementWithHours(
+            testPlacement.unit,
+            testPlacement.type,
+            testPlacement.serviceNeed,
+            35.0
+        ),
+        placementUnit = UnitData.Detailed(
+            id = UUID.randomUUID(),
+            name = "Test Daycare",
+            language = lang,
+            areaId = UUID.randomUUID(),
+            areaName = "Test Area"
+        ),
+        value = 120000,
+        ageCoefficient = 1,
+        baseCoPayment = 900,
+        baseValue = 90000,
+        coPayment = 12000,
+        feeAlterations = emptyList(),
+        siblingDiscount = 0,
+        serviceCoefficient = 1
+    )
 
     @Test
     fun `variables are ok with normal decision`() {
@@ -202,6 +275,19 @@ class PdfServiceTest {
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
         // File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
+
+        assertNotNull(pdfBytes)
+    }
+
+    @Test
+    fun `generateVoucherValueDecisionPdf smoke test`() {
+
+        val voucherValueDecisionPdfData = VoucherValueDecisionPdfData(
+            decision = normalVoucherValueDecision,
+            lang = lang
+        )
+        val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
+        // File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
 
         assertNotNull(pdfBytes)
     }

@@ -53,6 +53,7 @@ function FamilyContacts({ id, open }: FamilyContactsProps) {
       icon={faUsers}
       title={i18n.childInformation.familyContacts.title}
       startCollapsed={!open}
+      data-qa="family-contacts-collapsible"
     >
       {result.isLoading && <SpinnerSegment />}
       {result.isFailure && <ErrorSegment />}

@@ -311,6 +311,8 @@ export type UserRole =
   | 'END_USER'
   | 'DIRECTOR'
   | 'MOBILE'
+  | 'MANAGER'
+  | 'SPECIAL_EDUCATION_TEACHER'
 
 export interface Application {
   id: UUID
@@ -583,4 +585,10 @@ export interface FridgePartner {
   personId: string
   startDate: LocalDate
   endDate: LocalDate
+}
+
+export interface EmployeePin {
+  id: string
+  userId: string
+  pin: string
 }

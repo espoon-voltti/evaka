@@ -74,7 +74,7 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
         icon={faFemale}
         title={i18n.personProfile.guardians}
         startCollapsed={!open}
-        dataQa="person-guardians-collapsible"
+        data-qa="person-guardians-collapsible"
       >
         <Table data-qa="table-of-guardians">
           <Thead>

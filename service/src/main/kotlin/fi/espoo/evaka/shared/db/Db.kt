@@ -9,15 +9,13 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
-import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.invoicing.domain.FeeDecision2
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.generic.GenericType
 import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.jdbi.v3.core.mapper.ColumnMapper
+import org.jdbi.v3.core.mapper.SingleColumnMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.SqlStatement
@@ -64,27 +62,36 @@ inline fun <T> Jdbi.transaction(crossinline f: (Handle) -> T): T {
     return this.open().use { h -> h.inTransaction<T, Exception> { f(it) } }
 }
 
+private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) {
+    registerColumnMapper(T::class.java, columnMapper)
+    // Support mapping a single column result.
+    // We need an explicit row mapper for T, or JDBI KotlinMapper will try to map it field-by-field, even in the single column case
+    registerRowMapper(T::class.java, SingleColumnMapper(columnMapper))
+}
+
 fun configureJdbi(jdbi: Jdbi): Jdbi {
-    jdbi.installPlugin(KotlinPlugin())
-        .installPlugin(PostgresPlugin())
-        .installPlugin(Jackson2Plugin())
-    jdbi.getConfig(Jackson2Config::class.java).mapper = ObjectMapper()
+    val objectMapper = ObjectMapper()
         .registerModule(JavaTimeModule())
         .registerModule(Jdk8Module())
         .registerModule(ParameterNamesModule())
         .registerModule(KotlinModule())
+    jdbi.installPlugin(KotlinPlugin())
+        .installPlugin(PostgresPlugin())
+        .installPlugin(Jackson2Plugin())
+    jdbi.getConfig(Jackson2Config::class.java).mapper = objectMapper
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)
     jdbi.registerArgument(externalIdArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
-    jdbi.registerColumnMapper(FiniteDateRange::class.java, finiteDateRangeColumnMapper)
-    jdbi.registerColumnMapper(DateRange::class.java, dateRangeColumnMapper)
-    jdbi.registerColumnMapper(Coordinate::class.java, coordinateColumnMapper)
-    jdbi.registerColumnMapper(ExternalId::class.java, externalIdColumnMapper)
-    jdbi.registerColumnMapper(HelsinkiDateTime::class.java, helsinkiDateTimeColumnMapper)
+    jdbi.register(finiteDateRangeColumnMapper)
+    jdbi.register(dateRangeColumnMapper)
+    jdbi.register(coordinateColumnMapper)
+    jdbi.register(externalIdColumnMapper)
+    jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
+    jdbi.registerRowMapper(FeeDecision2::class.java, feeDecisionRowMapper(objectMapper))
     return jdbi
 }
 

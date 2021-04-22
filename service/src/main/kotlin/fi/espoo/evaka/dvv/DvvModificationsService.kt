@@ -70,7 +70,7 @@ class DvvModificationsService(
                                 infoGroup
                             )
                             is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
-                            else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
+                            else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map{it.tietoryhma}.joinToString(", ")})")
                         }
                     } catch (e: Throwable) {
                         logger.error(e) {

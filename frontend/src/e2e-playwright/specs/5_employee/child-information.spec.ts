@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import {
@@ -46,7 +50,7 @@ beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
-  await nav.login('admin')
+  await nav.login('ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
 })

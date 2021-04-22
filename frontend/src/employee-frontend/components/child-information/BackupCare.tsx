@@ -39,7 +39,7 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
 
   return (
     <CollapsibleSection
-      dataQa="backup-cares-collapsible"
+      data-qa="backup-cares-collapsible"
       icon={faHiking}
       title={i18n.childInformation.backupCares.title}
       startCollapsed={!open}

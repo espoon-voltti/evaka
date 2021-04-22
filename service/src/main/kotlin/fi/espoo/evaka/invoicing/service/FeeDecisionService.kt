@@ -34,7 +34,9 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.SuomiFiMessage
+import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -48,6 +50,7 @@ class FeeDecisionService(
     private val objectMapper: ObjectMapper,
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
+    private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient
 ) {
     fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: Instant): List<UUID> {
@@ -159,8 +162,8 @@ class FeeDecisionService(
             postalCode = sendAddress.postalCode,
             postOffice = sendAddress.postOffice,
             ssn = recipient.ssn!!,
-            messageHeader = messageHeader.getValue(langWithDefault(lang)),
-            messageContent = messageContent.getValue(langWithDefault(lang))
+            messageHeader = messageProvider.getFeeDecisionHeader(langWithDefault(lang)),
+            messageContent = messageProvider.getFeeDecisionContent(langWithDefault(lang))
         )
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
@@ -168,18 +171,6 @@ class FeeDecisionService(
         evakaMessageClient.send(message)
         setFeeDecisionSent(tx.handle, listOf(decision.id))
     }
-
-    private fun langWithDefault(lang: String): String = if (lang.toLowerCase() == "sv") "sv" else "fi"
-
-    val messageHeader = mapOf(
-        "fi" to """Espoon varhaiskasvatukseen liittyvät päätökset""",
-        "sv" to """Beslut gällande Esbos småbarnspedagogik"""
-    )
-
-    val messageContent = mapOf(
-        "fi" to """Kunnallisen varhaiskasvatuksen asiakasmaksut vaihtelevat perheen koon ja tulojen sekä varhaiskasvatusajan mukaan. Huoltajat saavat varhaiskasvatuksen maksuista kirjallisen päätöksen. Maksut laskutetaan palvelun antamisesta seuraavan kuukauden puolivälissä.\n\nVarhaiskasvatuksen asiakasmaksu on voimassa toistaiseksi ja perheellä on velvollisuus ilmoittaa, mikäli perheen tulot olennaisesti muuttuvat (+/- 10 %). Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös luettavissa alla olevista liitteistä.\n\nIn English:\n\nThe client fees for municipal early childhood education vary according to family size, income and the number of hours the child spends attending early childhood education. The City of Espoo sends the guardians a written decision on early childhood education fees. The fees are invoiced in the middle of the month following the provision of the service.\n\nThe early childhood education fee will remain in force until further notice. Your family has an obligation to notify the City of Espoo if the family’s income changes substantially (+/– 10%). As you are a user of Suomi.fi, you can find the decision in the attachments below.""",
-        "sv" to """Klientavgifterna för kommunal småbarnspedagogik varierar enligt familjens storlek och inkomster samt tiden för småbarnspedagogiken. Vårdnadshavarna får ett skriftligt beslut om avgifterna för småbarnspedagogik. Avgifterna faktureras i mitten av den månad som följer på den månad då servicen getts.\n\nKlientavgiften för småbarnspedagogik gäller tills vidare och familjen är skyldig att meddela om familjens inkomster väsentligt förändras (+/- 10 %). Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du läsa beslutet i bilagorna nedan."""
-    )
 
     fun setSent(tx: Database.Transaction, ids: List<UUID>) {
         val decisions = getDetailedFeeDecisionsByIds(tx.handle, objectMapper, ids)

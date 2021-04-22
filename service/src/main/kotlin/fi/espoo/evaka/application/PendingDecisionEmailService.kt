@@ -10,12 +10,12 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SendPendingDecisionEmail
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.Duration
-import java.time.Instant
 import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
@@ -86,7 +86,7 @@ GROUP BY application.guardian_id
                                     decisionIds = pendingDecision.decisionIds
                                 )
                             ),
-                            runAt = Instant.now(),
+                            runAt = HelsinkiDateTime.now(),
                             retryCount = 3,
                             retryInterval = Duration.ofHours(1)
                         )

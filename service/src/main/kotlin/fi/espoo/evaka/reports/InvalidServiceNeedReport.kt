@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.serviceneednew.migrationSqlCases
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -40,9 +41,6 @@ private fun Database.Read.getInvalidServiceNeedRows(
         """
 WITH data AS (
     SELECT
-        ca.name AS care_area_name, 
-        u.name AS unit_name,
-        p.unit_id,
         p.child_id,
         ch.first_name,
         ch.last_name,
@@ -52,16 +50,20 @@ WITH data AS (
     FROM placement p
     JOIN service_need sn ON p.child_id = sn.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
     JOIN person ch ON ch.id = p.child_id
-    JOIN daycare u ON u.id = unit_id
-    JOIN care_area ca ON ca.id = u.care_area_id
-    ${if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:units)" else ""}
 )
-SELECT * FROM data
-WHERE option_name = 'undefined' 
-ORDER BY care_area_name, unit_name, last_name, first_name, start_date
+SELECT 
+    data.*,
+    pl.unit_id as current_unit_id,
+    u.name as current_unit_name
+FROM data
+LEFT JOIN placement pl ON pl.child_id = data.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> :today
+LEFT JOIN daycare u ON pl.unit_id = u.id
+WHERE option_name = 'undefined' ${if (authorizedUnits != AclAuthorization.All) "AND u.id = ANY(:units)" else ""}
+ORDER BY u.name, last_name, first_name, start_date
         """.trimIndent()
 
     return createQuery(sql)
+        .bind("today", LocalDate.now(helsinkiZone))
         .applyIf(authorizedUnits != AclAuthorization.All) {
             bind("units", authorizedUnits.ids?.toTypedArray())
         }
@@ -70,9 +72,8 @@ ORDER BY care_area_name, unit_name, last_name, first_name, start_date
 }
 
 data class InvalidServiceNeedReportRow(
-    val careAreaName: String,
-    val unitId: UUID,
-    val unitName: String,
+    val currentUnitId: UUID?,
+    val currentUnitName: String?,
     val childId: UUID,
     val firstName: String?,
     val lastName: String?,

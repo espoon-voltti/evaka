@@ -58,7 +58,7 @@ beforeEach(async () => {
   page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
-  await nav.login('admin')
+  await nav.login('ADMIN')
   await nav.openTab('reports')
 
   reports = new ReportsPage(page)

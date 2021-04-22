@@ -46,6 +46,7 @@ import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -454,7 +455,8 @@ fun insertGeneralTestFixtures(h: Handle) {
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
-                lastName = it.lastName
+                lastName = it.lastName,
+                roles = setOf(UserRole.SERVICE_WORKER)
             )
         )
     }
@@ -540,6 +542,8 @@ fun insertGeneralTestFixtures(h: Handle) {
     )
 
     h.insertPreschoolTerms()
+
+    h.insertServiceNeedOptions()
 }
 
 fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
@@ -591,6 +595,20 @@ VALUES (
     createUpdate(sql).execute()
 }
 
+fun Handle.insertServiceNeedOptions() {
+    val batch = prepareBatch(
+        // language=sql
+        """
+INSERT INTO service_need_option (id, name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week)
+VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :daycareHoursPerWeek, :partDay, :partWeek)
+"""
+    )
+    serviceNeedTestFixtures.forEach { fixture ->
+        batch.bindKotlin(fixture).add()
+    }
+    batch.execute()
+}
+
 fun insertTestVardaOrganizer(h: Handle) {
     //language=SQL
     val sql =
@@ -639,6 +657,7 @@ fun insertApplication(
         id = applicationId,
         type = when (appliedType) {
             PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
             PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
             PlacementType.CLUB -> ApplicationType.CLUB
             PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->

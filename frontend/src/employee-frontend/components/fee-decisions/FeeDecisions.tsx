@@ -142,7 +142,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
         <SectionTitle size={1}>{i18n.feeDecisions.table.title}</SectionTitle>
         {decisions?.isSuccess && (
           <ResultsContainer>
-            <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
+            <div>{total ? i18n.common.resultCount(total) : null}</div>
             <Pagination
               pages={pages}
               currentPage={currentPage}

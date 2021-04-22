@@ -1,0 +1,145 @@
+<!--
+SPDX-FileCopyrightText: 2017-2021 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <style th:replace="~{shared/common.html :: css}"></style>
+    <style th:replace="~{fee-decision/fee-decision-css.html}"></style>
+</head>
+
+<body>
+
+<header th:replace="~{ shared/common :: feeDecisionHeader}"></header>
+
+<div class="page first-page">
+    <div class="address">
+        <div th:text="${headFullName}"></div>
+        <div th:text="${sendAddress.streetAddress}"></div>
+        <div th:if="${hasPoBox}" th:text="${sendAddress.poBox}"></div>
+        <div th:text="${sendAddress.postalCode} + ' ' + ${sendAddress.postOffice}"></div>
+    </div>
+
+    <h1 th:text="#{text.title}"></h1>
+
+    <p th:text="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}, ${#temporals.format(validFrom, 'd.M.yyyy')})}"></p>
+
+    <p th:utext="${placementUnit.name}" ></p>
+
+    <table class="loose narrow">
+        <tbody>
+        <tr>
+            <td th:text="#{decision.serviceNeed}"></td>
+
+            <td class="text-right" th:switch="${placement.serviceNeed.name}">
+                <span th:case="'GTE_35'" th:text="#{text.serviceNeed.GTE_35}"></span>
+                <span th:case="'GTE_25'" th:text="#{text.serviceNeed.GTE_25}"></span>
+                <span th:case="'GT_25_LT_35'" th:text="#{text.serviceNeed.GT_25_LT_35}"></span>
+                <span th:case="'GT_15_LT_25'" th:text="#{text.serviceNeed.GT_15_LT_25}"></span>
+                <span th:case="'LTE_25'" th:text="#{text.serviceNeed.LTE_25}"></span>
+                <span th:case="'LTE_15'" th:text="#{text.serviceNeed.LTE_15}"></span>
+            </td>
+        </tr>
+        <tr>
+            <td th:text="#{decision.familySize}"></td>
+            <td class="text-right" th:text="${familySize}"></td>
+        </tr>
+        <tr>
+            <td th:text="#{decision.baseValue}"></td>
+            <td class="text-right" th:text="${value}"></td>
+        </tr>
+        <tr>
+            <td th:text="#{decision.coPayment}"></td>
+            <td class="text-right">– <span th:text="${coPayment}"></span></td>
+        </tr>
+
+
+        </tbody>
+    </table>
+
+    <p th:text="#{decision.instructionsForCalculation}"></p>
+
+    <table class="loose narrow">
+        <tbody>
+        <tr>
+            <td th:text="${headFullName}"></td>
+
+            <td class="text-right" th:switch="${headIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{decision.income.maxFeeAccepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{decision.income.notAvailable}"></span>
+                <span th:case="'INCOME'" th:text="${headIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{decision.income.notAvailable}"></span>
+            </td>
+
+        </tr>
+        <tr th:if="${hasPartner}">
+            <td th:text="${partnerFullName}"></td>
+            <td class="text-right" th:switch="${partnerIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{decision.income.maxFeeAccepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{decision.income.notAvailable}"></span>
+                <span th:case="'INCOME'" th:text="${partnerIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{decision.income.notAvailable}"></span>
+            </td>
+        </tr>
+
+        <tr th:if="${showTotalIncome}">
+            <td th:text="#{decision.combined}"></td>
+            <td class="text-right" th:text="${totalIncome}"></td>
+        </tr>
+
+
+        </tbody>
+    </table>
+
+    <table class="loose narrow">
+        <tbody>
+            <tr>
+                <td th:text="#{decision.amountOfVoucherForProvider}"></td>
+                <td class="text-right"><strong th:text="${serviceProviderValue}"></strong></td>
+            </tr>
+        </tbody>
+
+    </table>
+
+    <p th:utext="#{decision.details.customerFeeInfo}"></p>
+    <p th:utext="#{decision.details.incomeChanges}"></p>
+
+
+</div>
+
+<div class="page">
+
+    <div th:utext="#{decision.legalInstructions}"></div>
+
+    <div class="decision-details-container">
+        <p>
+            <strong th:text="#{decision.sentDate}">Päätöspäivä</strong>
+            <span th:text="${approvedAt}"></span>
+        </p>
+        <p>
+            <strong th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
+        </p>
+        <div>
+            <span th:text="${approverFirstName}"></span>
+            <span th:text="${approverLastName}"></span>
+        </div>
+        <div th:utext="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
+        <div th:utext="#{decision.approver.title}">Varhaiskasvatuksen palveluohjaaja</div>
+        <div th:utext="#{decision.approver.unit}">Varhaiskasvatuksen palveluohjaus</div>
+
+    </div>
+
+
+</div>
+
+<div class="page last-page">
+    <div th:replace="~{shared/daycare-correction :: correction}"></div>
+</div>
+
+
+</body>
+</html>

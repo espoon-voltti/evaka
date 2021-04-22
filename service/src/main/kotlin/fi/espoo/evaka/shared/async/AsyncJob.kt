@@ -4,12 +4,13 @@
 
 package fi.espoo.evaka.shared.async
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -47,7 +48,7 @@ data class GarbageCollectPairing(val pairingId: UUID) : AsyncJobPayload {
     override val user: AuthenticatedUser? = null
 }
 
-data class SendApplicationEmail(val guardianId: UUID, val language: Language) : AsyncJobPayload {
+data class SendApplicationEmail(val guardianId: UUID, val language: Language, val type: ApplicationType = ApplicationType.DAYCARE) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_APPLICATION_EMAIL
     override val user: AuthenticatedUser? = null
 }
@@ -162,7 +163,7 @@ data class JobParams<T : AsyncJobPayload>(
     val payload: T,
     val retryCount: Int,
     val retryInterval: Duration,
-    val runAt: Instant = Instant.now()
+    val runAt: HelsinkiDateTime
 )
 
 data class ClaimedJobRef(val jobId: UUID, val jobType: AsyncJobType, val txId: Long)

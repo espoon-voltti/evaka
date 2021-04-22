@@ -183,9 +183,9 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `email is not sent after sending club application`() {
+    fun `email is sent after sending club application`() {
         jdbi.handle { h ->
-            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED)
+            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
             insertTestClubApplicationForm(
                 h = h,
                 applicationId = applicationId,
@@ -198,11 +198,17 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
             assertEquals(204, res.statusCode)
             assertApplicationIsSent(h, applicationId)
+
+            asyncJobRunner.runPendingJobsSync(1)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
 
             val sentMails = MockEmailClient.emails
 
-            assertEquals(0, sentMails.size)
+            assertEquals(1, sentMails.size)
+
+            val sentMail = sentMails.first()
+            assertEquals(guardian.id.toString(), sentMail.traceId)
+            assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
         }
     }
 
@@ -329,7 +335,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `valid email is sent`() {
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "working@test.fi", Language.fi)
+        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "working@test.fi", Language.fi, ApplicationType.DAYCARE)
         assertEmail(
             MockEmailClient.getEmail("working@test.fi"),
             "working@test.fi",
@@ -339,7 +345,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika"
         )
 
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "Working.Email@Test.Com", Language.sv)
+        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "Working.Email@Test.Com", Language.sv, ApplicationType.DAYCARE)
         assertEmail(
             MockEmailClient.getEmail("Working.Email@Test.Com"),
             "Working.Email@Test.Com",
@@ -352,8 +358,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `email with invalid toAddress is not sent`() {
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "not.working.com", Language.fi)
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "@test.fi", Language.fi)
+        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "not.working.com", Language.fi, ApplicationType.DAYCARE)
+        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "@test.fi", Language.fi, ApplicationType.DAYCARE)
 
         assertEquals(0, MockEmailClient.emails.size)
     }

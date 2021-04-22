@@ -24,7 +24,7 @@ function Assistance({ id, open }: Props) {
         icon={faHandHolding}
         title={i18n.childInformation.assistance.title}
         startCollapsed={!open}
-        dataQa="assistance-collapsible"
+        data-qa="assistance-collapsible"
       >
         <AssistanceNeed id={id} />
         <div className="separator large" />

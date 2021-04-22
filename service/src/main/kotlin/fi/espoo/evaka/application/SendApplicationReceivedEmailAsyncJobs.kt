@@ -28,7 +28,7 @@ class SendApplicationReceivedEmailAsyncJobs(
             ?: throw Exception("Didn't find guardian when sending application email (guardianId: ${msg.guardianId})")
 
         if (!guardian.email.isNullOrBlank()) {
-            applicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language)
+            applicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language, msg.type)
         } else {
             logger.warn("Cannot send application received email to guardian ${guardian.id}: missing email")
         }

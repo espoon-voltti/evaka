@@ -41,6 +41,12 @@ function env<T>(key: string, parser: (value: string) => T): T | undefined {
 
 const supervisorAad = '123dc92c-278b-4cea-9e54-2cc7e41555f3'
 const adminAad = 'c50be1c1-304d-4d5a-86a0-1fad225c76cb'
+const serviceWorkerAad = '00000000-0000-0000-0001-000000000000'
+const financeAdminAad = '00000000-0000-0000-0002-000000000000'
+const directorAad = '00000000-0000-0000-0003-000000000000'
+const unitSupervisorAad = '00000000-0000-0000-0004-000000000000'
+const staffAad = '00000000-0000-0000-0005-000000000000'
+const specialEducationTeacher = '00000000-0000-0000-0006-000000000000'
 
 const developmentMode = env('E2E_DEVELOPMENT', parseBoolean) ?? false
 
@@ -64,7 +70,13 @@ const config = {
   adminAad,
   adminExternalId: `espoo-ad:${adminAad}`,
   mobileBaseUrl: browserUrl,
-  mobileUrl: `${browserUrl}/employee/mobile`
+  mobileUrl: `${browserUrl}/employee/mobile`,
+  serviceWorkerAad,
+  financeAdminAad,
+  directorAad,
+  unitSupervisorAad,
+  staffAad,
+  specialEducationTeacher
 }
 
 export default config

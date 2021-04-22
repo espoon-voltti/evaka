@@ -23,9 +23,8 @@ const Wrapper = styled.div`
 
 const Row = styled.div`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   color: ${colors.greyscale.medium};
-  border-bottom: 1px solid ${colors.greyscale.lighter};
   margin-bottom: ${defaultMargins.m};
   &.fitted {
     margin-bottom: 0;
@@ -58,11 +57,9 @@ const ToggleWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 30px;
-  width: 30px;
-  border: 1px solid ${colors.greyscale.medium};
-  border-radius: 100%;
-  font-size: 28px;
+  height: 40px;
+  width: 20px;
+  font-size: 40px;
 `
 
 const Content = styled.div`
@@ -107,12 +104,17 @@ function CollapsibleSection({
             <FontAwesomeIcon icon={icon} />
           </IconWrapper>
         )}
-        <H3 fitted>{title}</H3>
+        <H3 bold fitted>
+          {title}
+        </H3>
         <ToggleWrapper
           onClick={() => setCollapsed(!collapsed)}
           data-qa="collapsible-trigger"
         >
-          <FontAwesomeIcon icon={collapsed ? faAngleUp : faAngleDown} />
+          <FontAwesomeIcon
+            icon={collapsed ? faAngleUp : faAngleDown}
+            color={colors.blues.primary}
+          />
         </ToggleWrapper>
       </Row>
       <Content className={classNames({ collapsed })}>{children}</Content>
