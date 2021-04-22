@@ -66,9 +66,7 @@ private fun Database.Transaction.deleteOldJobs() =
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> = createQuery(
     //language=sql
     """
-SELECT DISTINCT(social_security_number) from PERSON p JOIN (
-SELECT head_of_child FROM fridge_child
-WHERE daterange(start_date, end_date, '[]') @> current_date AND conflict = false) hoc ON p.id = hoc.head_of_child
+SELECT DISTINCT(social_security_number) FROM person
     """.trimIndent()
 )
     .mapTo<String>()
