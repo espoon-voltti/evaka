@@ -19,7 +19,9 @@ import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
+import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.varda.VardaUpdateService
 import mu.KotlinLogging
@@ -143,5 +145,11 @@ class ScheduledOperationController(
         Audit.DaycareDailyNoteDelete.log()
         db.transaction { it.deleteExpiredDaycareDailyNotes(Instant.now()) }
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/remove-old-async-jobs")
+    fun removeOldAsyncJobs(db: Database.Connection) {
+        val now = HelsinkiDateTime.now()
+        db.removeOldAsyncJobs(now)
     }
 }

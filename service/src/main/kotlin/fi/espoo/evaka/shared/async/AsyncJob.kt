@@ -9,8 +9,8 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -163,7 +163,7 @@ data class JobParams<T : AsyncJobPayload>(
     val payload: T,
     val retryCount: Int,
     val retryInterval: Duration,
-    val runAt: Instant = Instant.now()
+    val runAt: HelsinkiDateTime
 )
 
 data class ClaimedJobRef(val jobId: UUID, val jobType: AsyncJobType, val txId: Long)

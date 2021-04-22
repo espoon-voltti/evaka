@@ -27,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -201,7 +202,7 @@ private fun getPaidPlacements2(
         val serviceNeeds = h.createQuery(
             // language=sql
             """
-SELECT sn.start_date AS start, sn.end_date AS end, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient
+SELECT daterange(sn.start_date, sn.end_date, '[]') AS range, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient
 FROM new_service_need sn
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
@@ -209,7 +210,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         )
             .bind("placementIds", placements.map { it.id }.toTypedArray())
             .map { row ->
-                row.getRow(DateRange::class.java) to row.getRow(ServiceNeedValue::class.java)
+                row.mapColumn<DateRange>("range") to row.getRow(ServiceNeedValue::class.java)
             }
             .toList()
 

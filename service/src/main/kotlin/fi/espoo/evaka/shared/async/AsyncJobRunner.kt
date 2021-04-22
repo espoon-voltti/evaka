@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.async
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.dvv.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.voltti.logging.MdcKey
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
@@ -103,7 +104,7 @@ class AsyncJobRunner(
         payloads: Iterable<AsyncJobPayload>,
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
-        runAt: Instant = Instant.now()
+        runAt: HelsinkiDateTime = HelsinkiDateTime.now()
     ) {
         payloads.forEach { payload ->
             tx.insertJob(
