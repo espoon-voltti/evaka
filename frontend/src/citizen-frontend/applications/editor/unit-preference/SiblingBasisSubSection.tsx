@@ -31,7 +31,7 @@ export default React.memo(function SiblingBasisSubSection({
       ]()}
       <Checkbox
         checked={formData.siblingBasis}
-        dataQa="siblingBasis-input"
+        data-qa="siblingBasis-input"
         label={
           t.applications.editor.unitPreference.siblingBasis.checkbox[
             applicationType
@@ -77,7 +77,7 @@ export default React.memo(function SiblingBasisSubSection({
                     t.applications.editor.unitPreference.siblingBasis
                       .otherSibling
                   }
-                  dataQa={'other-sibling'}
+                  data-qa={'other-sibling'}
                   onChange={() =>
                     updateFormData({
                       vtjSiblings: formData.vtjSiblings.map((s) => ({
@@ -100,7 +100,7 @@ export default React.memo(function SiblingBasisSubSection({
                   </Label>
                   <InputField
                     value={formData.siblingName}
-                    dataQa={'siblingName-input'}
+                    data-qa={'siblingName-input'}
                     onChange={(value) => updateFormData({ siblingName: value })}
                     width={'XL'}
                     placeholder={
@@ -121,7 +121,7 @@ export default React.memo(function SiblingBasisSubSection({
                   </Label>
                   <InputField
                     value={formData.siblingSsn}
-                    dataQa={'siblingSsn-input'}
+                    data-qa={'siblingSsn-input'}
                     onChange={(value) =>
                       updateFormData({ siblingSsn: value.toUpperCase() })
                     }

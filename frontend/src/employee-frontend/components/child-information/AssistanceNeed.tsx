@@ -81,7 +81,7 @@ function AssistanceNeed({ id }: Props) {
             scrollToRef(refSectionTop)
           }}
           disabled={uiMode === 'create-new-assistance-need'}
-          dataQa="assistance-need-create-btn"
+          data-qa="assistance-need-create-btn"
         />
       </TitleRow>
       {uiMode === 'create-new-assistance-need' && (

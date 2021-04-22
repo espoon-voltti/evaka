@@ -246,7 +246,7 @@ function CreateApplicationModal({
 
             <div>
               <Radio
-                dataQa={'radio-new-no-ssn'}
+                data-qa={'radio-new-no-ssn'}
                 checked={personType === 'NEW_NO_SSN'}
                 label={i18nView.personTypes.NEW_NO_SSN}
                 onChange={() => setPersonType('NEW_NO_SSN')}

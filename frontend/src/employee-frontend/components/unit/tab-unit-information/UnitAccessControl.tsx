@@ -306,7 +306,7 @@ function AddAcl({
           noOptionsMessage={() => i18n.common.noResults}
         />
         <Button
-          dataQa="acl-add-button"
+          data-qa="acl-add-button"
           disabled={!selectedEmployee}
           onClick={() => {
             if (selectedEmployee) {

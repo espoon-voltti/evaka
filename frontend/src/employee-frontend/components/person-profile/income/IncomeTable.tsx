@@ -149,7 +149,7 @@ const IncomeTable = React.memo(function IncomeTable(props: Props) {
           </Tbody>
         </Table>
       ) : null}
-      <IncomeSum sum={sum} dataQa={`income-sum-${props.type}`} />
+      <IncomeSum sum={sum} data-qa={`income-sum-${props.type}`} />
     </Container>
   )
 })

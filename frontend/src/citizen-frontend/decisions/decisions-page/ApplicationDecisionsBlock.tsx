@@ -119,7 +119,7 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
           onClick={() =>
             history.push(`/decisions/by-application/${applicationId}`)
           }
-          dataQa={`button-confirm-decisions-${applicationId}`}
+          data-qa={`button-confirm-decisions-${applicationId}`}
         />
       </ButtonContainer>
     </>

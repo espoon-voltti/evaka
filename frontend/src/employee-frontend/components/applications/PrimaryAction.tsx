@@ -24,7 +24,7 @@ export default React.memo(function PrimaryAction({ action }: Props) {
             text={action.label}
             onClick={action.onClick}
             disabled={!action.enabled}
-            dataQa={`primary-action-${action.id}`}
+            data-qa={`primary-action-${action.id}`}
           />
         </PrimaryActionContainer>
       )}

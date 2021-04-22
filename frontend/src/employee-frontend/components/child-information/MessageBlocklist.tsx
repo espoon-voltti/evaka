@@ -105,7 +105,7 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
                       label={`${recipient.firstName} ${recipient.lastName}`}
                       hiddenLabel
                       checked={!recipient.blocklisted}
-                      dataQa={'blocklist-checkbox'}
+                      data-qa={'blocklist-checkbox'}
                       disabled={
                         !roles.find((r) =>
                           [

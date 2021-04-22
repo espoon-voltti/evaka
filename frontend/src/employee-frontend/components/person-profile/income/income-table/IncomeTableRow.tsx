@@ -97,7 +97,7 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
               }))
             }
             allowEmpty
-            dataQa={`income-input-${type}`}
+            data-qa={`income-input-${type}`}
           />
         ) : (
           <span>{amount} €</span>

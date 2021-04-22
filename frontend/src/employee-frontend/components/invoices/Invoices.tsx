@@ -80,7 +80,7 @@ export default React.memo(function Invoices({
             refreshInvoices().catch(() => setRefreshError(true))
           }}
           text={i18n.invoices.buttons.createInvoices}
-          dataQa="create-invoices"
+          data-qa="create-invoices"
         />
       </RefreshInvoices>
       <TitleRowContainer>
@@ -244,7 +244,7 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
               onChange={() =>
                 allChecked ? actions.clearChecked() : actions.checkAll()
               }
-              dataQa="toggle-all-invoices"
+              data-qa="toggle-all-invoices"
             />
           </Th>
         ) : null}
@@ -306,7 +306,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                 checked={!!checked[item.id] || allInvoicesToggle}
                 disabled={allInvoicesToggle}
                 onChange={() => actions.toggleChecked(item.id)}
-                dataQa="toggle-invoice"
+                data-qa="toggle-invoice"
               />
             </Td>
           ) : null}

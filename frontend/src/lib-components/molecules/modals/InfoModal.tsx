@@ -170,7 +170,7 @@ function InfoModal({
                     <>
                       <Button
                         onClick={reject.action}
-                        dataQa="modal-cancelBtn"
+                        data-qa="modal-cancelBtn"
                         text={reject.label}
                       />
                       <Gap horizontal size={'xs'} />
@@ -178,7 +178,7 @@ function InfoModal({
                   )}
                   <Button
                     primary
-                    dataQa="modal-okBtn"
+                    data-qa="modal-okBtn"
                     onClick={resolve.action}
                     disabled={resolveDisabled}
                     text={resolve.label}

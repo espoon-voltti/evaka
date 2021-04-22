@@ -76,7 +76,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
               setData((state) => ({ ...state, startDate }))
             }
             type="full-width"
-            dataQa="start-date-input"
+            data-qa="start-date-input"
           />
           <Gap size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.endDate}</div>
@@ -85,7 +85,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
             onChange={(endDate) => setData((state) => ({ ...state, endDate }))}
             onCleared={() => setData((state) => ({ ...state, endDate: null }))}
             type="full-width"
-            dataQa="end-date-input"
+            data-qa="end-date-input"
           />
         </section>
         <InfoBox message={i18n.unit.groups.updateModal.info} thin />

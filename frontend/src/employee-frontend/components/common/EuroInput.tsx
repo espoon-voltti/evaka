@@ -12,7 +12,7 @@ type Props = {
   value?: string
   onChange: (v: string) => void
   allowEmpty: boolean
-  dataQa?: string
+  'data-qa'?: string
   invalidText?: string
 }
 
@@ -20,7 +20,7 @@ const EuroInput = React.memo(function EuroInput({
   value,
   onChange,
   allowEmpty,
-  dataQa,
+  'data-qa': dataQa,
   invalidText = 'Virheellinen arvo'
 }: Props) {
   return (

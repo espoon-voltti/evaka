@@ -233,7 +233,7 @@ export default React.memo(function FormModal({
           <>
             <Button
               onClick={reject.action}
-              dataQa="modal-cancelBtn"
+              data-qa="modal-cancelBtn"
               text={reject.label}
             />
             <Gap horizontal size={'xs'} />
@@ -241,7 +241,7 @@ export default React.memo(function FormModal({
         )}
         <Button
           primary
-          dataQa="modal-okBtn"
+          data-qa="modal-okBtn"
           onClick={resolve.action}
           disabled={resolve.disabled}
           text={resolve.label}
@@ -285,7 +285,7 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
           <>
             <Button
               onClick={reject.action}
-              dataQa="modal-cancelBtn"
+              data-qa="modal-cancelBtn"
               text={reject.label}
             />
             <Gap horizontal size={'xs'} />

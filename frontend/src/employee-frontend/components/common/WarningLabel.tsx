@@ -11,10 +11,13 @@ import { Gap } from 'lib-components/white-space'
 
 interface Props {
   text: string
-  dataQa?: string
+  'data-qa'?: string
 }
 
-export default React.memo(function WarningLabel({ text, dataQa }: Props) {
+export default React.memo(function WarningLabel({
+  text,
+  'data-qa': dataQa
+}: Props) {
   return (
     <Wrapper data-qa={dataQa}>
       <FontAwesomeIcon icon={faExclamationTriangle} inverse />

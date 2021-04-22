@@ -63,7 +63,7 @@ export default React.memo(function MessageBoxes({
           primary
           onClick={onCreateNew}
           disabled={createNewDisabled}
-          dataQa="new-bulletin-btn"
+          data-qa="new-bulletin-btn"
         />
       </BottomWrapper>
     </Container>

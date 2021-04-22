@@ -228,7 +228,7 @@ const MemoizedCard = memo(function UnitCard({
       <MarginBox>
         <InlineButton
           disabled={false}
-          dataQa="select-placement-unit"
+          data-qa="select-placement-unit"
           onClick={() => selectUnit(unitId)}
           icon={(isSelectedUnit && faCheck) || undefined}
           text={

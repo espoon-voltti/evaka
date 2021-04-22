@@ -34,7 +34,7 @@ export default React.memo(function AssistanceNeedSubSection({
             {' '}
             <Checkbox
               checked={formData.preparatory}
-              dataQa={'preparatory-input'}
+              data-qa={'preparatory-input'}
               label={t.applications.editor.serviceNeed.preparatory}
               onChange={(checked) =>
                 updateFormData({
@@ -54,7 +54,7 @@ export default React.memo(function AssistanceNeedSubSection({
         {' '}
         <Checkbox
           checked={formData.assistanceNeeded}
-          dataQa={'assistanceNeeded-input'}
+          data-qa={'assistanceNeeded-input'}
           label={t.applications.editor.serviceNeed.assistanceNeeded}
           onChange={(checked) =>
             updateFormData({

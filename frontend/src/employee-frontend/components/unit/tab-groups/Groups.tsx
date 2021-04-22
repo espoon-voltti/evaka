@@ -156,7 +156,7 @@ export default React.memo(function Groups({
             icon={allGroupsAreOpen ? faAngleUp : faAngleDown}
             size="L"
             gray
-            dataQa="toggle-all-groups-collapsible"
+            data-qa="toggle-all-groups-collapsible"
           />
         </TitleContainer>
         {canManageGroups && (
@@ -165,7 +165,7 @@ export default React.memo(function Groups({
               <InlineButton
                 text={i18n.unit.groups.familyContacts}
                 onClick={() => undefined}
-                dataQa="open-family-contacts-button"
+                data-qa="open-family-contacts-button"
               />
             </Link>
           </div>

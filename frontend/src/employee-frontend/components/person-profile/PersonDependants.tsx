@@ -79,7 +79,7 @@ const PersonDependants = React.memo(function PersonDependants({
         icon={faChild}
         title={i18n.personProfile.dependants}
         startCollapsed={!open}
-        dataQa="person-dependants-collapsible"
+        data-qa="person-dependants-collapsible"
       >
         <Table data-qa="table-of-dependants">
           <Thead>

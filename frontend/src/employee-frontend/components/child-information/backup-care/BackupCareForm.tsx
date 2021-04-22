@@ -231,7 +231,7 @@ export default function BackupCareForm({
             primary
             type="submit"
             disabled={formErrors.length > 0 || !formState.unit}
-            dataQa="submit-backup-care-form"
+            data-qa="submit-backup-care-form"
             text={i18n.common.confirm}
           />
         </ActionButtons>

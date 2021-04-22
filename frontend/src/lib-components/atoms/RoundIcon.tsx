@@ -101,7 +101,7 @@ function RoundIcon({
   onClick,
   active = true,
   className,
-  dataQa,
+  'data-qa': dataQa,
   tabindex,
   role,
   'aria-label': ariaLabel,

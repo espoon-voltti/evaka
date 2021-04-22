@@ -39,7 +39,7 @@ interface CrossIconButtonProps extends BaseProps {
 
 function CrossIconButton({
   className,
-  dataQa,
+  'data-qa': dataQa,
   onClick,
   active
 }: CrossIconButtonProps) {

@@ -64,7 +64,7 @@ export default React.memo(function GuardianSubSection({
             <InputField
               id={'guardian-phone'}
               value={formData.guardianPhone}
-              dataQa={'guardianPhone-input'}
+              data-qa={'guardianPhone-input'}
               onChange={(value) => updateFormData({ guardianPhone: value })}
               info={errorToInputInfo(errors.guardianPhone, t.validationErrors)}
               hideErrorsBeforeTouched={!verificationRequested}
@@ -86,7 +86,7 @@ export default React.memo(function GuardianSubSection({
             <InputField
               id={'guardian-email'}
               value={formData.guardianEmail}
-              dataQa={'guardianEmail-input'}
+              data-qa={'guardianEmail-input'}
               onChange={(value) =>
                 updateFormData({ guardianEmail: value, noGuardianEmail: false })
               }
@@ -101,7 +101,7 @@ export default React.memo(function GuardianSubSection({
             <Checkbox
               label={t.applications.editor.contactInfo.noEmail + ' *'}
               checked={formData.noGuardianEmail}
-              dataQa={'noGuardianEmail-input'}
+              data-qa={'noGuardianEmail-input'}
               onChange={(checked) =>
                 updateFormData({
                   guardianEmail: '',
@@ -124,7 +124,7 @@ export default React.memo(function GuardianSubSection({
             <InputField
               id={'verify-guardian-email'}
               value={formData.guardianEmailVerification}
-              dataQa={'guardianEmailVerification-input'}
+              data-qa={'guardianEmailVerification-input'}
               onChange={(value) =>
                 updateFormData({
                   guardianEmailVerification: value,
@@ -155,7 +155,7 @@ export default React.memo(function GuardianSubSection({
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
           checked={formData.guardianFutureAddressExists}
-          dataQa={'guardianFutureAddressExists-input'}
+          data-qa={'guardianFutureAddressExists-input'}
           onChange={(checked) => {
             updateFormData({
               guardianFutureAddressExists: checked
@@ -174,7 +174,7 @@ export default React.memo(function GuardianSubSection({
                     .guardianFutureAddressEqualsChildFutureAddress
                 }
                 checked={formData.guardianFutureAddressEqualsChild}
-                dataQa={'guardianFutureAddressEqualsChild-input'}
+                data-qa={'guardianFutureAddressEqualsChild-input'}
                 onChange={(checked) => {
                   updateFormData({
                     guardianFutureAddressEqualsChild: checked
@@ -216,7 +216,7 @@ export default React.memo(function GuardianSubSection({
                 <InputField
                   id={'guardian-future-street'}
                   value={formData.guardianFutureStreet}
-                  dataQa={'guardianFutureStreet-input'}
+                  data-qa={'guardianFutureStreet-input'}
                   onChange={(value) =>
                     updateFormData({
                       guardianFutureStreet: value
@@ -241,7 +241,7 @@ export default React.memo(function GuardianSubSection({
                 <InputField
                   id={'guardian-future-postal-code'}
                   value={formData.guardianFuturePostalCode}
-                  dataQa={'guardianFuturePostalCode-input'}
+                  data-qa={'guardianFuturePostalCode-input'}
                   onChange={(value) =>
                     updateFormData({
                       guardianFuturePostalCode: value
@@ -266,7 +266,7 @@ export default React.memo(function GuardianSubSection({
                 <InputField
                   id={'guardian-future-post-office'}
                   value={formData.guardianFuturePostOffice}
-                  dataQa={'guardianFuturePostOffice-input'}
+                  data-qa={'guardianFuturePostOffice-input'}
                   onChange={(value) =>
                     updateFormData({
                       guardianFuturePostOffice: value

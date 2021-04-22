@@ -183,7 +183,7 @@ export default React.memo(function ApplicationFilters() {
             units={allUnits.getOrElse([])}
             selectedUnits={units}
             onChange={changeUnits}
-            dataQa={'unit-selector'}
+            data-qa={'unit-selector'}
           />
           <Gap size="xs" />
           <ApplicationDistinctionsFilter
@@ -285,7 +285,7 @@ const VoucherApplicationsFilter = React.memo(
         <Label>{i18n.applications.list.voucherFilter.title}</Label>
         <Gap size="xs" />
         <Radio
-          dataQa="filter-voucher-first-choice"
+          data-qa="filter-voucher-first-choice"
           label={i18n.applications.list.voucherFilter.firstChoice}
           checked={selected === 'VOUCHER_FIRST_CHOICE'}
           onChange={() => setSelected('VOUCHER_FIRST_CHOICE')}
@@ -293,7 +293,7 @@ const VoucherApplicationsFilter = React.memo(
         />
         <Gap size="xs" />
         <Radio
-          dataQa="filter-voucher-all"
+          data-qa="filter-voucher-all"
           label={i18n.applications.list.voucherFilter.allVoucher}
           checked={selected === 'VOUCHER_ONLY'}
           onChange={() => setSelected('VOUCHER_ONLY')}
@@ -301,7 +301,7 @@ const VoucherApplicationsFilter = React.memo(
         />
         <Gap size="xs" />
         <Radio
-          dataQa="filter-voucher-hide"
+          data-qa="filter-voucher-hide"
           label={i18n.applications.list.voucherFilter.hideVoucher}
           checked={selected === 'NO_VOUCHER'}
           onChange={() => setSelected('NO_VOUCHER')}
@@ -309,7 +309,7 @@ const VoucherApplicationsFilter = React.memo(
         />
         <Gap size="xs" />
         <Radio
-          dataQa="filter-voucher-no-filter"
+          data-qa="filter-voucher-no-filter"
           label={i18n.applications.list.voucherFilter.noFilter}
           checked={selected === undefined}
           onChange={() => setSelected(undefined)}

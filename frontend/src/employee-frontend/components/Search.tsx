@@ -85,7 +85,7 @@ function Search() {
               onChange={(value) => {
                 setSearchTerm(value)
               }}
-              dataQa="search-input"
+              data-qa="search-input"
               icon={faSearch}
             />
           </Wrapper>
@@ -94,13 +94,13 @@ function Search() {
               <AddButton
                 text={i18n.personSearch.addPersonFromVTJ.title}
                 onClick={() => setShowAddPersonFromVTJModal(true)}
-                dataQa="add-vtj-person-button"
+                data-qa="add-vtj-person-button"
               />
               <Gap size="s" horizontal />
               <AddButton
                 text={i18n.personSearch.createNewPerson.title}
                 onClick={() => setShowCreatePersonModal(true)}
-                dataQa="create-person-button"
+                data-qa="create-person-button"
               />
               <RequireRole oneOf={['ADMIN']}>
                 <HiddenButton

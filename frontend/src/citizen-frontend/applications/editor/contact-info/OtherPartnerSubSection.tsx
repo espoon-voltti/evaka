@@ -31,7 +31,7 @@ export default React.memo(function OtherPartnerSubSection({
       <Checkbox
         label={t.applications.editor.contactInfo.otherPartnerCheckboxLabel}
         checked={formData.otherPartnerExists}
-        dataQa={'otherPartnerExists-input'}
+        data-qa={'otherPartnerExists-input'}
         onChange={(checked) => {
           updateFormData({
             otherPartnerExists: checked
@@ -50,7 +50,7 @@ export default React.memo(function OtherPartnerSubSection({
                 <InputField
                   id={'other-partner-first-name'}
                   value={formData.otherPartnerFirstName}
-                  dataQa={'otherPartnerFirstName-input'}
+                  data-qa={'otherPartnerFirstName-input'}
                   onChange={(value) =>
                     updateFormData({
                       otherPartnerFirstName: value
@@ -74,7 +74,7 @@ export default React.memo(function OtherPartnerSubSection({
                 <InputField
                   id={'other-partner-last-name'}
                   value={formData.otherPartnerLastName}
-                  dataQa={'otherPartnerLastName-input'}
+                  data-qa={'otherPartnerLastName-input'}
                   onChange={(value) =>
                     updateFormData({
                       otherPartnerLastName: value
@@ -98,7 +98,7 @@ export default React.memo(function OtherPartnerSubSection({
                 <InputField
                   id={'other-partner-ssn'}
                   value={formData.otherPartnerSSN}
-                  dataQa={'otherPartnerSSN-input'}
+                  data-qa={'otherPartnerSSN-input'}
                   onChange={(value) =>
                     updateFormData({
                       otherPartnerSSN: value.toUpperCase()

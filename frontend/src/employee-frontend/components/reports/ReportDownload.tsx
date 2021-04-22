@@ -31,10 +31,10 @@ interface Props {
   data: object[] | string[][]
   headers?: LabelKeyObject[]
   filename: string
-  dataQa?: string
+  'data-qa'?: string
 }
 
-function ReportDownload({ data, headers, filename, dataQa }: Props) {
+function ReportDownload({ data, headers, filename, 'data-qa': dataQa }: Props) {
   const { i18n } = useTranslation()
   const [reloadCSV, setReloadCSV] = useState(true)
 

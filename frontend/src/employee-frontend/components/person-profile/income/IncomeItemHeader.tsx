@@ -79,7 +79,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
             !toggled && toggle()
           }}
           disabled={!editable}
-          dataQa="edit-income-item"
+          data-qa="edit-income-item"
         />
         <Button
           icon={faTrash}
@@ -87,13 +87,13 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
             startDeleting()
           }}
           disabled={!editable}
-          dataQa="delete-income-item"
+          data-qa="delete-income-item"
         />
         <ToggleButton
           icon={toggled ? faChevronDown : faChevronLeft}
           onClick={toggle}
           disabled={!toggleable}
-          dataQa="toggle-income-item"
+          data-qa="toggle-income-item"
         />
       </Row>
     </Container>

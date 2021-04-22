@@ -223,7 +223,7 @@ export default React.memo(function DecisionResponse({
                 }
                 ariaLabel={`${t.decisions.applicationDecisions.response.accept1} ${requestedStartDate} ${t.decisions.applicationDecisions.response.accept2}`}
                 disabled={blocked || submitting}
-                dataQa={'radio-accept'}
+                data-qa={'radio-accept'}
               />
             </FixedSpaceRow>
             <Radio
@@ -233,7 +233,7 @@ export default React.memo(function DecisionResponse({
               name={`${decision.id}-reject`}
               label={t.decisions.applicationDecisions.response.reject}
               disabled={blocked || submitting}
-              dataQa={'radio-reject'}
+              data-qa={'radio-reject'}
             />
           </FixedSpaceColumn>
           {blocked ? (
@@ -263,7 +263,7 @@ export default React.memo(function DecisionResponse({
                 (dateErrorMessage !== '' && acceptChecked) ||
                 submitting
               }
-              dataQa={'submit-response'}
+              data-qa={'submit-response'}
             />
             <Button
               text={t.decisions.applicationDecisions.response.cancel}

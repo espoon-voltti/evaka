@@ -190,7 +190,7 @@ function InputField({
   info,
   clearable = false,
   align,
-  dataQa,
+  'data-qa': dataQa,
   className,
   icon,
   type,
@@ -200,7 +200,6 @@ function InputField({
   hideErrorsBeforeTouched,
   id,
   inputRef,
-  'data-qa': dataQa2,
   'aria-describedby': ariaId,
   required
 }: TextInputProps) {
@@ -233,7 +232,7 @@ function InputField({
           clearable={clearable}
           align={align}
           className={classNames(className, infoStatus)}
-          data-qa={dataQa2 ?? dataQa}
+          data-qa={dataQa}
           type={type}
           min={min}
           max={max}
@@ -256,7 +255,7 @@ function InputField({
       </InputRow>
       {infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
-          <span data-qa={`${dataQa2 ?? dataQa ?? ''}-info`}>{infoText}</span>
+          <span data-qa={`${dataQa ?? ''}-info`}>{infoText}</span>
           <UnderRowStatusIcon status={info?.status} />
         </InputFieldUnderRow>
       )}

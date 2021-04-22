@@ -84,7 +84,7 @@ export default React.memo(function ApplicationCreation() {
               checked={selectedType === 'DAYCARE'}
               onChange={() => setSelectedType('DAYCARE')}
               label={t.applications.creation.daycareLabel}
-              dataQa="type-radio-DAYCARE"
+              data-qa="type-radio-DAYCARE"
             />
           </ExpandingInfo>
           <Gap size="s" />
@@ -96,7 +96,7 @@ export default React.memo(function ApplicationCreation() {
               checked={selectedType === 'PRESCHOOL'}
               onChange={() => setSelectedType('PRESCHOOL')}
               label={t.applications.creation.preschoolLabel}
-              dataQa="type-radio-PRESCHOOL"
+              data-qa="type-radio-PRESCHOOL"
             />
           </ExpandingInfo>
           <PreschoolDaycareInfo>
@@ -111,7 +111,7 @@ export default React.memo(function ApplicationCreation() {
               checked={selectedType === 'CLUB'}
               onChange={() => setSelectedType('CLUB')}
               label={t.applications.creation.clubLabel}
-              dataQa="type-radio-CLUB"
+              data-qa="type-radio-CLUB"
             />
           </ExpandingInfo>
           {duplicateExists ? (

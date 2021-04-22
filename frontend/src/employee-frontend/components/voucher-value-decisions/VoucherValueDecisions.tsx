@@ -124,7 +124,7 @@ export default React.memo(function VoucherValueDecisions({
                   hiddenLabel
                   checked={!!checked[item.id]}
                   onChange={() => toggleChecked(item.id)}
-                  dataQa="toggle-decision"
+                  data-qa="toggle-decision"
                 />
               </Td>
             ) : null}
@@ -178,7 +178,7 @@ export default React.memo(function VoucherValueDecisions({
                   hiddenLabel
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}
-                  dataQa="toggle-all-decisions"
+                  data-qa="toggle-all-decisions"
                 />
               </Td>
             ) : null}

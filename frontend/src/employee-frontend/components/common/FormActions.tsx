@@ -17,13 +17,13 @@ interface AddButtonProps {
   submitButtonText?: string
   onCancel: () => undefined | void
   disabled?: boolean
-  dataQa?: string
+  'data-qa'?: string
 }
 function FormActions({
   submitButtonText,
   onCancel,
   disabled = false,
-  dataQa
+  'data-qa': dataQa
 }: AddButtonProps) {
   const { i18n } = useTranslation()
   return (
@@ -34,7 +34,7 @@ function FormActions({
           primary
           type="submit"
           disabled={disabled}
-          dataQa={dataQa}
+          data-qa={dataQa}
           text={submitButtonText ?? i18n.common.confirm}
         />
       </FixedSpaceRow>

@@ -80,7 +80,7 @@ export default React.memo(function VTJModal({
               value={ssn}
               onChange={updateSsn}
               width="full"
-              dataQa="ssn-input"
+              data-qa="ssn-input"
             />
             {person?.isLoading ? <InputSpinner /> : null}
           </InputWrapper>

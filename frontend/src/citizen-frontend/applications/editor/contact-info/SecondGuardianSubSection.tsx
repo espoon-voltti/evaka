@@ -82,7 +82,7 @@ export default React.memo(function SecondGuardianSubSection({
                     checked={
                       formData.otherGuardianAgreementStatus === agreementStatus
                     }
-                    dataQa={`otherGuardianAgreementStatus-${agreementStatus}`}
+                    data-qa={`otherGuardianAgreementStatus-${agreementStatus}`}
                     label={
                       t.applications.editor.contactInfo
                         .secondGuardianAgreementStatus[agreementStatus]
@@ -117,7 +117,7 @@ export default React.memo(function SecondGuardianSubSection({
                       <InputField
                         id="other-guardian-phone"
                         value={formData.otherGuardianPhone}
-                        dataQa="otherGuardianPhone-input"
+                        data-qa="otherGuardianPhone-input"
                         onChange={(value) =>
                           updateFormData({
                             otherGuardianPhone: value
@@ -141,7 +141,7 @@ export default React.memo(function SecondGuardianSubSection({
                       <InputField
                         id="other-guardian-email"
                         value={formData.otherGuardianEmail}
-                        dataQa="otherGuardianEmail-input"
+                        data-qa="otherGuardianEmail-input"
                         onChange={(value) =>
                           updateFormData({
                             otherGuardianEmail: value

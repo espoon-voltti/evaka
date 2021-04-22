@@ -81,7 +81,7 @@ function AssistanceAction({ id }: Props) {
             scrollToRef(refSectionTop)
           }}
           disabled={uiMode === 'create-new-assistance-action'}
-          dataQa="assistance-action-create-btn"
+          data-qa="assistance-action-create-btn"
         />
       </TitleRow>
       {uiMode === 'create-new-assistance-action' && (

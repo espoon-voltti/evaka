@@ -20,7 +20,7 @@ interface Props {
   toolbar?: ReactElement
   showBorder?: boolean
   columnSize?: number
-  dataQa?: string
+  'data-qa'?: string
   open: boolean
 }
 
@@ -31,7 +31,7 @@ function ToolbarAccordion({
   onToggle,
   toolbar = undefined,
   showBorder = false,
-  dataQa,
+  'data-qa': dataQa,
   open = false
 }: Props) {
   return (
@@ -54,7 +54,7 @@ function ToolbarAccordion({
             <IconButton
               icon={open ? faChevronUp : faChevronDown}
               onClick={onToggle}
-              dataQa="collapsible-trigger"
+              data-qa="collapsible-trigger"
             />
           </Toolbar>
         </TitleRow>

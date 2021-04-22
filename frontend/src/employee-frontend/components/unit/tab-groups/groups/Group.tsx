@@ -259,7 +259,7 @@ function Group({
         {groupDaycareDailyNotes.isSuccess &&
           (isNotProduction() || isPilotUnit(unit.id)) && (
             <Tooltip
-              dataQa={`daycare-daily-note-hover-${placement.child.id}`}
+              data-qa={`daycare-daily-note-hover-${placement.child.id}`}
               up
               tooltip={
                 childNote ? (
@@ -311,7 +311,7 @@ function Group({
             >
               <RoundIcon
                 active={childNote != null || groupNote != null}
-                dataQa={`daycare-daily-note-icon-${placement.child.id}`}
+                data-qa={`daycare-daily-note-icon-${placement.child.id}`}
                 content={faStickyNote}
                 color={colors.blues.primary}
                 size="m"
@@ -363,7 +363,7 @@ function Group({
             icon={open ? faAngleUp : faAngleDown}
             size="L"
             gray
-            dataQa="collapsible-trigger"
+            data-qa="collapsible-trigger"
           />
           {!open ? (
             <>
@@ -398,7 +398,7 @@ function Group({
                 icon={faPen}
                 text={i18n.unit.groups.update}
                 onClick={() => toggleUiMode(`update-group-${group.id}`)}
-                dataQa="btn-update-group"
+                data-qa="btn-update-group"
               />
               <Gap size="s" horizontal />
               <InlineButton
@@ -406,7 +406,7 @@ function Group({
                 text={i18n.unit.groups.deleteGroup}
                 onClick={() => onDeleteGroup()}
                 disabled={sortedPlacements.length > 0 || !group.deletable}
-                dataQa="btn-remove-group"
+                data-qa="btn-remove-group"
               />
               <Gap size="s" horizontal />
             </>
@@ -416,7 +416,7 @@ function Group({
               icon={faCalendarAlt}
               text={i18n.unit.groups.diaryButton}
               onClick={() => undefined}
-              dataQa="open-absence-diary-button"
+              data-qa="open-absence-diary-button"
             />
           </Link>
         </Toolbar>
@@ -604,14 +604,14 @@ function Group({
                             <RowActionContainer>
                               <InlineButton
                                 onClick={() => onTransferRequested(placement)}
-                                dataQa="transfer-btn"
+                                data-qa="transfer-btn"
                                 icon={faExchange}
                                 text={i18n.unit.groups.transferBtn}
                               />
                               <Gap size="s" horizontal />
                               <InlineButton
                                 onClick={() => onDeletePlacement(placement)}
-                                dataQa="remove-btn"
+                                data-qa="remove-btn"
                                 icon={faUndo}
                                 text={i18n.unit.groups.returnBtn}
                               />
@@ -644,7 +644,7 @@ function Group({
                       })
                       toggleUiMode(`daycare-daily-note-edit-${group.id}`)
                     }}
-                    dataQa="btn-create-group-note"
+                    data-qa="btn-create-group-note"
                   />
                 </GroupNoteLinkContainer>
               )}

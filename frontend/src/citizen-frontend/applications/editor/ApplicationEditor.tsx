@@ -281,7 +281,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             label={t.applications.editor.actions.hasVerified}
             checked={verified}
             onChange={setVerified}
-            dataQa="verify-checkbox"
+            data-qa="verify-checkbox"
           />
           <Gap size="s" />
         </div>
@@ -303,7 +303,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             text={t.applications.editor.actions.saveDraft}
             onClick={onSaveDraft}
             disabled={submitting}
-            dataQa="save-as-draft-btn"
+            data-qa="save-as-draft-btn"
           />
         )}
         {verifying ? (
@@ -312,7 +312,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               text={t.applications.editor.actions.returnToEditBtn}
               onClick={() => setVerifying(false)}
               disabled={submitting}
-              dataQa="return-to-edit-btn"
+              data-qa="return-to-edit-btn"
             />
             {apiData.status === 'CREATED' ? (
               <Button
@@ -320,7 +320,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
                 onClick={onSend}
                 disabled={submitting || !verified}
                 primary
-                dataQa="send-btn"
+                data-qa="send-btn"
               />
             ) : (
               <Button
@@ -328,7 +328,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
                 onClick={onUpdate}
                 disabled={submitting || !verified}
                 primary
-                dataQa="save-btn"
+                data-qa="save-btn"
               />
             )}
           </>
@@ -338,7 +338,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             onClick={onVerify}
             disabled={submitting}
             primary
-            dataQa="verify-btn"
+            data-qa="verify-btn"
           />
         )}
       </ActionRow>

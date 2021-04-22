@@ -294,7 +294,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
                   >
                     <WarningLabel
                       text={i18n.placementDraft.restrictedDetails}
-                      dataQa={`restricted-details-warning`}
+                      data-qa={`restricted-details-warning`}
                     />
                   </Tooltip>
                 </FloatRight>

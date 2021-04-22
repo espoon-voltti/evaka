@@ -126,20 +126,19 @@ interface IconButtonProps extends BaseProps {
 
 function IconButton({
   className,
-  dataQa,
+  'data-qa': dataQa,
   icon,
   altText,
   onClick,
   disabled,
   size,
   gray,
-  white,
-  'data-qa': dataQa2
+  white
 }: IconButtonProps) {
   return (
     <StyledButton
       className={classNames(className, { disabled })}
-      data-qa={dataQa2 ?? dataQa}
+      data-qa={dataQa}
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}

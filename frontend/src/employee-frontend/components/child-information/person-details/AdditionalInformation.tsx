@@ -121,7 +121,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
               <InlineButton
                 icon={faPen}
                 onClick={() => startEdit()}
-                dataQa="edit-child-settings-button"
+                data-qa="edit-child-settings-button"
                 text={i18n.common.edit}
               />
             </RequireRole>
@@ -251,7 +251,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                   primary
                   disabled={false}
                   onClick={() => onSubmit()}
-                  dataQa="confirm-edited-child-button"
+                  data-qa="confirm-edited-child-button"
                   text={i18n.common.confirm}
                 />
               </FixedSpaceRow>

@@ -206,7 +206,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 icon={faTrash}
                 onClick={() => setConfirmingDelete(true)}
                 size="s"
-                dataQa="delete-note"
+                data-qa="delete-note"
               />
             </FixedSpaceRow>
           )}
@@ -239,7 +239,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
                 onClick={save}
                 text={i18n.common.save}
                 disabled={submitting}
-                dataQa="save-note"
+                data-qa="save-note"
               />
             </ButtonsBar>
           </>

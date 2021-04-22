@@ -215,7 +215,7 @@ export default React.memo(function InvoiceRowsSection({
                 <InlineButton
                   disabled={!editable}
                   onClick={getAddInvoiceRow(firstRow)}
-                  dataQa="invoice-button-add-row"
+                  data-qa="invoice-button-add-row"
                   text={i18n.invoice.form.rows.addRow}
                 />
                 <Sum title={'rowSubTotal'} sum={totalPrice(rows)} />

@@ -485,7 +485,7 @@ const ApplicationsList = React.memo(function Applications({
                       checked={isAllChecked()}
                       label={'hidden'}
                       hiddenLabel={true}
-                      dataQa={'toggle-check-all-checkbox'}
+                      data-qa={'toggle-check-all-checkbox'}
                       onChange={(checked) => toggleCheckAll(checked)}
                     />
                   </CheckAllContainer>

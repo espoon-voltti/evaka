@@ -86,7 +86,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
       <Checkbox
         checked={formData.connectedDaycare}
-        dataQa={'connectedDaycare-input'}
+        data-qa={'connectedDaycare-input'}
         label={t.applications.editor.serviceNeed.dailyTime.connectedDaycare}
         onChange={(checked) =>
           updateFormData({
@@ -124,7 +124,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 id={'daily-time-starts'}
                 type={'time'}
                 value={formData.startTime}
-                dataQa={'startTime-input'}
+                data-qa={'startTime-input'}
                 onChange={(value) => updateFormData({ startTime: value })}
                 width={'s'}
                 info={errorToInputInfo(errors.startTime, t.validationErrors)}
@@ -142,7 +142,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 id={'daily-time-ends'}
                 type={'time'}
                 value={formData.endTime}
-                dataQa={'endTime-input'}
+                data-qa={'endTime-input'}
                 onChange={(value) => updateFormData({ endTime: value })}
                 width={'s'}
                 info={errorToInputInfo(errors.endTime, t.validationErrors)}
@@ -159,7 +159,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
           >
             <Checkbox
               checked={formData.shiftCare}
-              dataQa={'shiftCare-input'}
+              data-qa={'shiftCare-input'}
               label={t.applications.editor.serviceNeed.shiftCare.label}
               onChange={(checked) =>
                 updateFormData({

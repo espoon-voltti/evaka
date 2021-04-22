@@ -119,7 +119,7 @@ export default React.memo(function Heading({
       label: React.ReactNode
       value: React.ReactNode
       valueWidth?: string
-      dataQa?: string
+      'data-qa'?: string
     }[] = decisionNumber
       ? [
           {
@@ -133,7 +133,7 @@ export default React.memo(function Heading({
       label: React.ReactNode
       value: React.ReactNode
       valueWidth?: string
-      dataQa?: string
+      'data-qa'?: string
     }[] =
       status !== 'DRAFT'
         ? [
@@ -148,7 +148,7 @@ export default React.memo(function Heading({
       label: React.ReactNode
       value: React.ReactNode
       valueWidth?: string
-      dataQa?: string
+      'data-qa'?: string
     }[] = [
       {
         label: i18n.feeDecision.headOfFamily,

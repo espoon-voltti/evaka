@@ -131,13 +131,13 @@ const PersonProfile = React.memo(function PersonProfile({
                   }`}
                   background={`black`}
                   color={`white`}
-                  dataQa="deceaced-label"
+                  data-qa="deceaced-label"
                 />
               )}
               {person.isSuccess && person.value.restrictedDetailsEnabled && (
                 <WarningLabel
                   text={i18n.personProfile.restrictedDetails}
-                  dataQa="restriction-details-enabled-label"
+                  data-qa="restriction-details-enabled-label"
                 />
               )}
             </InfoLabelContainer>

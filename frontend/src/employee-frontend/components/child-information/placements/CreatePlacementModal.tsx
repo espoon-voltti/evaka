@@ -180,7 +180,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
           <DatePickerDeprecated
             date={form.startDate}
             onChange={(startDate) => setForm({ ...form, startDate })}
-            dataQa="create-placement-start-date"
+            data-qa="create-placement-start-date"
             type="full-width"
           />
         </section>
@@ -191,7 +191,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
           <DatePickerDeprecated
             date={form.endDate}
             onChange={(endDate) => setForm({ ...form, endDate })}
-            dataQa="create-placement-end-date"
+            data-qa="create-placement-end-date"
             type="full-width"
           />
         </section>

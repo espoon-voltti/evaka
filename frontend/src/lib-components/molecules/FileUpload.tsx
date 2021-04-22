@@ -60,7 +60,7 @@ export interface FileUploadProps {
   onDelete: (id: UUID) => Promise<Result<void>>
   onDownloadFile: (id: UUID) => Promise<Result<BlobPart>>
   i18n: FileUploadI18n
-  dataQa?: string
+  'data-qa'?: string
 }
 
 const FileUploadContainer = styled.div`
@@ -229,7 +229,7 @@ export default React.memo(function FileUpload({
   onUpload,
   onDelete,
   onDownloadFile,
-  dataQa
+  'data-qa': dataQa
 }: FileUploadProps) {
   const ariaId = Math.random().toString(36).substring(2, 15)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -383,7 +383,7 @@ export default React.memo(function FileUpload({
                     file={file}
                     fileFetchFn={onDownloadFile}
                     onFileUnavailable={() => setModalVisible(true)}
-                    dataQa={'file-download-button'}
+                    data-qa={'file-download-button'}
                   />
                 ) : (
                   <span data-qa={'file-download-unavailable-text'}>
@@ -394,7 +394,7 @@ export default React.memo(function FileUpload({
                   icon={faTimes}
                   onClick={() => deleteFile(file)}
                   altText={`${i18n.upload.deleteFile} ${file.name}`}
-                  dataQa={`file-delete-button-${file.name}`}
+                  data-qa={`file-delete-button-${file.name}`}
                 />
               </FileHeader>
               {inProgress(file) && (

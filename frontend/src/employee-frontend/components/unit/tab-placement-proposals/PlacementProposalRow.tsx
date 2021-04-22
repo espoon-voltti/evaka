@@ -90,25 +90,25 @@ export default React.memo(function PlacementProposalRow({
         >
           <FixedSpaceColumn>
             <Radio
-              dataQa="proposal-reject-reason"
+              data-qa="proposal-reject-reason"
               checked={reason === 'REASON_1'}
               onChange={() => setReason('REASON_1')}
               label={i18n.unit.placementProposals.rejectReasons.REASON_1}
             />
             <Radio
-              dataQa="proposal-reject-reason"
+              data-qa="proposal-reject-reason"
               checked={reason === 'REASON_2'}
               onChange={() => setReason('REASON_2')}
               label={i18n.unit.placementProposals.rejectReasons.REASON_2}
             />
             <Radio
-              dataQa="proposal-reject-reason"
+              data-qa="proposal-reject-reason"
               checked={reason === 'OTHER'}
               onChange={() => setReason('OTHER')}
               label={i18n.unit.placementProposals.rejectReasons.OTHER}
             />
             <InputField
-              dataQa="proposal-reject-reason-input"
+              data-qa="proposal-reject-reason-input"
               value={otherReason}
               onChange={setOtherReason}
               placeholder={i18n.unit.placementProposals.rejectReasons.OTHER}
@@ -166,7 +166,7 @@ export default React.memo(function PlacementProposalRow({
             <FixedSpaceRow spacing="m">
               <div>
                 <CheckIconButton
-                  dataQa={'accept-button'}
+                  data-qa={'accept-button'}
                   onClick={() =>
                     confirmationState === 'ACCEPTED'
                       ? onChange('PENDING')
@@ -177,7 +177,7 @@ export default React.memo(function PlacementProposalRow({
               </div>
               <div>
                 <CrossIconButton
-                  dataQa={'reject-button'}
+                  data-qa={'reject-button'}
                   onClick={() =>
                     confirmationState === 'REJECTED'
                       ? onChange('PENDING')

@@ -60,7 +60,7 @@ const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
       <CollapsibleSection
         icon={faChild}
         title={i18n.personProfile.invoices}
-        dataQa="person-invoices-collapsible"
+        data-qa="person-invoices-collapsible"
         startCollapsed={!open}
       >
         <Table data-qa="table-of-invoices">

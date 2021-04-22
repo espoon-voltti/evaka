@@ -29,7 +29,7 @@ export default React.memo(function ActionsMenu({ actions }: Props) {
               setShowMenu((value) => !value)
               e.stopPropagation()
             }}
-            dataQa="application-actions-menu"
+            data-qa="application-actions-menu"
           />
           {showMenu && <MenuList actions={actions} closeMenu={closeMenu} />}
         </>

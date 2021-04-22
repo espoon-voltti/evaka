@@ -125,7 +125,7 @@ const Modal = React.memo(function Modal({
             date={invoiceDate}
             onChange={setInvoiceDate}
             type="full-width"
-            dataQa="invoice-date-input"
+            data-qa="invoice-date-input"
           />
         </div>
         <Gap size="s" />
@@ -135,7 +135,7 @@ const Modal = React.memo(function Modal({
             date={dueDate}
             onChange={setDueDate}
             type="full-width"
-            dataQa="invoice-due-date-input"
+            data-qa="invoice-due-date-input"
           />
         </div>
         {!allInvoicesToggle ? (

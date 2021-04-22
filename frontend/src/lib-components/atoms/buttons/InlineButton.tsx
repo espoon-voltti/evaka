@@ -73,7 +73,7 @@ interface InlineButtonProps extends BaseProps {
 
 function InlineButton({
   className,
-  dataQa,
+  'data-qa': dataQa,
   onClick,
   text,
   altText,
@@ -81,13 +81,12 @@ function InlineButton({
   disabled = false,
   darker = false,
   color,
-  iconRight,
-  'data-qa': dataQa2
+  iconRight
 }: InlineButtonProps) {
   return (
     <StyledButton
       className={classNames(className, { disabled, darker })}
-      data-qa={dataQa2 ?? dataQa}
+      data-qa={dataQa}
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}

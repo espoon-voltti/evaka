@@ -131,7 +131,7 @@ interface CommonProps {
   maxDate?: LocalDate
   type?: 'full-width' | 'half-width' | 'short'
   dateFormat?: string[]
-  dataQa?: string
+  'data-qa'?: string
   options?: Partial<ReactDatePickerProps>
   disabled?: boolean
   className?: string
@@ -170,7 +170,7 @@ export function DatePickerDeprecated({
   options,
   disabled,
   className,
-  dataQa
+  'data-qa': dataQa
 }: DatePickerProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (
@@ -217,7 +217,7 @@ export function DatePickerClearableDeprecated({
   type = 'half-width',
   options,
   className,
-  dataQa
+  'data-qa': dataQa
 }: DatePickerClearableProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (

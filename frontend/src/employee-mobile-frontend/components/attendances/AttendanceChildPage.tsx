@@ -117,7 +117,7 @@ export default React.memo(function AttendanceChildPage() {
         <BackButton
           onClick={() => history.goBack()}
           icon={faArrowLeft}
-          dataQa="back-btn"
+          data-qa="back-btn"
         />
         {child && group && !loading ? (
           <Fragment>
