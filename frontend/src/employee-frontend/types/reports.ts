@@ -152,9 +152,8 @@ export interface MissingServiceNeedReportRow {
 }
 
 export interface InvalidServiceNeedReportRow {
-  careAreaName: string
-  unitId: UUID
-  unitName: string
+  currentUnitId: UUID | null
+  currentUnitName: string | null
   childId: UUID
   firstName: string | null
   lastName: string | null
