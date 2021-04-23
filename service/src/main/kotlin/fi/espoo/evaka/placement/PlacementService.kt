@@ -7,6 +7,7 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.serviceneednew.NewServiceNeed
 import fi.espoo.evaka.serviceneednew.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneednew.getServiceNeedsByUnit
@@ -30,9 +31,12 @@ class PlacementService {
         unitId: UUID,
         startDate: LocalDate,
         endDate: LocalDate
-    ): Placement {
+    ): List<Placement> {
         tx.clearOldPlacements(childId, startDate, endDate)
-        return tx.handle.insertPlacement(type, childId, unitId, startDate, endDate)
+        val placementTypePeriods = handleFiveYearOldDaycare(tx, childId, type, startDate, endDate)
+        return placementTypePeriods.map { (period, type) ->
+            tx.handle.insertPlacement(type, childId, unitId, period.start, period.end)
+        }
     }
 }
 
@@ -50,7 +54,21 @@ fun Database.Transaction.updatePlacement(
     clearOldPlacements(old.childId, startDate, endDate, id, aclAuth)
 
     try {
-        handle.updatePlacementStartAndEndDate(id, startDate, endDate)
+        val placementTypePeriods = handleFiveYearOldDaycare(this, old.childId, old.type, startDate, endDate)
+        val (updatedPeriods, newPeriods) = placementTypePeriods.partition { (period, type) ->
+            period.overlaps(FiniteDateRange(old.startDate, old.endDate)) && type == old.type
+        }
+
+        updatedPeriods.firstOrNull()?.let { (period, _) ->
+            handle.updatePlacementStartAndEndDate(id, period.start, period.end)
+        } ?: run {
+            checkAclAuth(aclAuth, old)
+            handle.cancelPlacement(old.id)
+        }
+
+        newPeriods.forEach { (period, type) ->
+            handle.insertPlacement(type, old.childId, old.unitId, period.start, period.end)
+        }
     } catch (e: Exception) {
         throw mapPSQLException(e)
     }
@@ -279,6 +297,41 @@ private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithDeta
     }
 
     return daycarePlacement.copy(groupPlacements = groupPlacements)
+}
+
+private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, type: PlacementType, startDate: LocalDate, endDate: LocalDate): List<Pair<FiniteDateRange, PlacementType>> {
+    val (normalPlacementType, fiveYearOldPlacementType) = when (type) {
+        PlacementType.DAYCARE, PlacementType.DAYCARE_FIVE_YEAR_OLDS ->
+            PlacementType.DAYCARE to PlacementType.DAYCARE_FIVE_YEAR_OLDS
+        PlacementType.DAYCARE_PART_TIME, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+            PlacementType.DAYCARE_PART_TIME to PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+        else -> return listOf(FiniteDateRange(startDate, endDate) to type)
+    }
+
+    val child = tx.handle.getPersonById(childId) ?: error("Child not found ($childId)")
+    val fiveYearOldTermStart = LocalDate.of(child.dateOfBirth.plusYears(5).year, 8, 1)
+    val fiveYearOldTermEnd = fiveYearOldTermStart.plusYears(1).minusDays(1)
+
+    return listOfNotNull(
+        if (startDate < fiveYearOldTermStart)
+            FiniteDateRange(
+                startDate,
+                minOf(fiveYearOldTermStart.minusDays(1), endDate)
+            ) to normalPlacementType
+        else null,
+        if (fiveYearOldTermStart <= endDate && startDate <= fiveYearOldTermEnd)
+            FiniteDateRange(
+                maxOf(fiveYearOldTermStart, startDate),
+                minOf(fiveYearOldTermEnd, endDate)
+            ) to fiveYearOldPlacementType
+        else null,
+        if (fiveYearOldTermEnd < endDate)
+            FiniteDateRange(
+                maxOf(fiveYearOldTermEnd.plusDays(1), startDate),
+                endDate
+            ) to normalPlacementType
+        else null
+    )
 }
 
 data class DaycarePlacement(

@@ -100,14 +100,14 @@ class PlacementController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PlacementCreateRequestBody
-    ): ResponseEntity<Placement> {
+    ): ResponseEntity<Unit> {
         Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
         acl.getRolesForUnit(user, body.unitId)
             .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
-        val placement = db.transaction { tx ->
+        db.transaction { tx ->
             if (tx.handle.getChild(body.childId) == null) {
                 tx.handle.createChild(
                     Child(
@@ -117,7 +117,7 @@ class PlacementController(
                 )
             }
 
-            val placement = placementService.createPlacement(
+            placementService.createPlacement(
                 tx,
                 type = body.type,
                 childId = body.childId,
@@ -126,11 +126,10 @@ class PlacementController(
                 endDate = body.endDate
             )
             asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
-            placement
         }
 
         asyncJobRunner.scheduleImmediateRun()
-        return ResponseEntity.created(URI.create("/placements/${placement.id}")).body(placement)
+        return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{placementId}")
