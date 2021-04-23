@@ -154,7 +154,9 @@ private fun coefficients(excludeAbsent: Boolean, includeGroups: Boolean) =
             ${if (excludeAbsent) "WHEN absent THEN 0.0" else ""}
             WHEN is_family_unit THEN 1.75
             WHEN age < 3 THEN 1.75
+            WHEN placement_type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND COALESCE(hours, 0.0) <= 20.0 THEN 0.5
             WHEN placement_type = 'DAYCARE_PART_TIME' AND (term_start_year - birth_year) = 5 AND COALESCE(hours, 0.0) <= 20.0 THEN 0.5
+            WHEN placement_type IN ('DAYCARE_FIVE_YEAR_OLDS', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS') AND hours <= 20 THEN 0.5
             WHEN placement_type IN ('DAYCARE', 'DAYCARE_PART_TIME') AND (term_start_year - birth_year) = 5 AND hours <= 20 THEN 0.5
             WHEN placement_type IN ('DAYCARE_PART_TIME', 'TEMPORARY_DAYCARE_PART_DAY') THEN 0.54
             WHEN placement_type = 'PRESCHOOL' AND COALESCE(hours, 0.0) <= 20.0 THEN 0.5

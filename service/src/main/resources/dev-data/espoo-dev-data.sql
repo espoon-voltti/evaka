@@ -1913,7 +1913,7 @@ INSERT INTO service_need_option (name, valid_placement_type, default_option, fee
     ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, TRUE, FALSE),
     ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, FALSE),
     ('Viisivuotiaiden kokopäiväinen', 'DAYCARE_FIVE_YEAR_OLDS', TRUE, 0.8, 1.0, 1.0, 45, FALSE, FALSE),
-    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.35, 0.6, 0.54, 25, TRUE, FALSE),
+    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.35, 0.6, 0.5, 25, TRUE, FALSE),
     ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, TRUE),
     ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE),
     ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, TRUE),
