@@ -56,6 +56,7 @@ export const fi = {
       club: 'Kerho',
       preschool: 'Esiopetus',
       daycare: 'Varhaiskasvatus',
+      daycare5yo: 'Varhaiskasvatus',
       preparatory: 'Valmistava',
       'backup-care': 'Varasijoitus',
       temporary: 'Tilapäinen'
@@ -1469,6 +1470,9 @@ export const fi = {
       PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
       PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
       DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
+      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+        '5-vuotiaiden osapäiväinen varhaiskasvatus',
       PRESCHOOL: 'Esiopetus',
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
