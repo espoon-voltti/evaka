@@ -73,7 +73,9 @@ export default React.memo(function DaycareDailyNoteModal({
     initialFormData(note, childId, groupId)
   )
 
-  const updateForm = (updates: Partial<DaycareDailyNoteFormData>) => {
+  const updateForm = <K extends keyof DaycareDailyNoteFormData>(
+    updates: Pick<DaycareDailyNoteFormData, K>
+  ) => {
     setForm({ ...form, ...updates })
   }
 
