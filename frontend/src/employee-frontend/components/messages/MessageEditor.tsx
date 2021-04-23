@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import _ from 'lodash'
 import { faTimes, faTrash } from 'lib-icons'
+import { UpdateStateFn } from 'lib-common/form-state'
 import colors from 'lib-components/colors'
 import InputField from 'lib-components/atoms/form/InputField'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -27,7 +27,7 @@ type Option = {
 type Props = {
   bulletin: Bulletin
   senderOptions: string[]
-  onChange: (change: Partial<Bulletin>) => void
+  onChange: UpdateStateFn<Bulletin>
   onDeleteDraft: () => void
   onClose: () => void
   onSend: () => void

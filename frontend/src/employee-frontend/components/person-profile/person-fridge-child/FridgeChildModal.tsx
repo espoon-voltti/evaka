@@ -4,6 +4,7 @@
 
 import React, { useState, useContext, useEffect } from 'react'
 import LocalDate from 'lib-common/local-date'
+import { UpdateStateFn } from '../../../../lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
@@ -100,7 +101,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
     })
   }
 
-  const assignFridgeChildForm = (value: Partial<FridgeChildForm>) => {
+  const assignFridgeChildForm: UpdateStateFn<FridgeChildForm> = (value) => {
     const mergedFridgeChild = { ...form, ...value }
     setForm(mergedFridgeChild)
   }

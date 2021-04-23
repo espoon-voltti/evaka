@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 import _ from 'lodash'
 import LocalDate from 'lib-common/local-date'
+import { UpdateStateFn } from '../../../../lib-common/form-state'
 import { UUID } from '../../../types'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
@@ -122,7 +123,7 @@ export default function BackupCareForm({
     setFormErrors(evaluateFormErrors(form))
   }
 
-  const updateFormState = (value: Partial<FormState>) => {
+  const updateFormState: UpdateStateFn<FormState> = (value) => {
     const newState = { ...formState, ...value }
     setFormState(newState)
     validateForm(newState)

@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { faTrash } from 'lib-icons'
+import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -32,7 +33,7 @@ interface InvoiceRowStub {
 
 interface Props {
   row: InvoiceRowStub
-  update: (v: Partial<InvoiceRowStub>) => void
+  update: UpdateStateFn<InvoiceRowStub>
   remove: () => void
   invoiceCodes: Result<InvoiceCodes>
   editable: boolean

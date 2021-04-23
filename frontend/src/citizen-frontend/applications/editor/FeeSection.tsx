@@ -2,19 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { useTranslation } from '../../localization'
-import { FeeFormData } from '../../applications/editor/ApplicationFormData'
-import EditorSection from '../../applications/editor/EditorSection'
-import { ApplicationFormDataErrors } from '../../applications/editor/validations'
-import { getErrorCount } from '../../form-validation'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { UpdateStateFn } from 'lib-common/form-state'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import React from 'react'
+import EditorSection from '../../applications/editor/EditorSection'
+import { getErrorCount } from '../../form-validation'
+import { useTranslation } from '../../localization'
+import { FeeFormData } from './ApplicationFormData'
+import { ApplicationFormDataErrors } from './validations'
 
 type Props = {
   applicationType: ApplicationType
   formData: FeeFormData
-  updateFormData: (v: Partial<FeeFormData>) => void
+  updateFormData: UpdateStateFn<FeeFormData>
   errors: ApplicationFormDataErrors['fee']
   verificationRequested: boolean
 }

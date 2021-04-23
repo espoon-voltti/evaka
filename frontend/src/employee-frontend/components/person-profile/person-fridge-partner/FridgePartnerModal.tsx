@@ -4,6 +4,7 @@
 
 import React, { useState, useContext, useEffect } from 'react'
 import LocalDate from 'lib-common/local-date'
+import { UpdateStateFn } from '../../../../lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import {
@@ -110,7 +111,9 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
     })
   }
 
-  const assignFridgePartnerForm = (values: Partial<FridgePartnerForm>) => {
+  const assignFridgePartnerForm: UpdateStateFn<FridgePartnerForm> = (
+    values
+  ) => {
     const mergedFridgePartner = { ...form, ...values }
     setForm(mergedFridgePartner)
   }

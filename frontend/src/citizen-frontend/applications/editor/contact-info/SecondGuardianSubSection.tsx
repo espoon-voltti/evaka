@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { useTranslation } from '../../../localization'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3, Label, P } from 'lib-components/typography'
@@ -10,8 +11,8 @@ import {
   ApplicationGuardianAgreementStatus,
   ApplicationType
 } from 'lib-common/api-types/application/enums'
-import { ContactInfoFormData } from '../../../applications/editor/ApplicationFormData'
-import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
+import { ContactInfoFormData } from '../ApplicationFormData'
+import { ApplicationFormDataErrors } from '../validations'
 import Radio from 'lib-components/atoms/form/Radio'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
@@ -22,7 +23,7 @@ import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 type SecondGuardianSubSectionProps = {
   type: ApplicationType
   formData: ContactInfoFormData
-  updateFormData: (v: Partial<ContactInfoFormData>) => void
+  updateFormData: UpdateStateFn<ContactInfoFormData>
   errors: ApplicationFormDataErrors['contactInfo']
   verificationRequested: boolean
   otherGuardianStatus: 'NO' | 'SAME_ADDRESS' | 'DIFFERENT_ADDRESS'

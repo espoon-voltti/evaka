@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UpdateStateFn } from 'lib-common/form-state'
 import React from 'react'
 import { useTranslation } from '../../../localization'
 import { ContactInfoFormData } from '../ApplicationFormData'
 import EditorSection from '../../../applications/editor/EditorSection'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
+import { ApplicationFormDataErrors } from '../validations'
 import { getErrorCount } from '../../../form-validation'
 import ChildSubSection from '../../../applications/editor/contact-info/ChildSubSection'
 import GuardianSubSection from '../../../applications/editor/contact-info/GuardianSubSection'
@@ -19,7 +20,7 @@ import { ApplicationType } from 'lib-common/api-types/application/enums'
 export type ContactInfoSectionProps = {
   type: ApplicationType
   formData: ContactInfoFormData
-  updateFormData: (update: Partial<ContactInfoFormData>) => void
+  updateFormData: UpdateStateFn<ContactInfoFormData>
   errors: ApplicationFormDataErrors['contactInfo']
   verificationRequested: boolean
   fullFamily: boolean

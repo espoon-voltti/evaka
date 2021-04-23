@@ -58,7 +58,9 @@ function PersonFridgeHeadForm({ id, personFridgeHead }: Props) {
     } else setFormValidation(isFormValid(headPersonForm))
   }, [headPersonForm])
 
-  const assignHeadPersonForm = (value: Partial<PersonContactInfo>) => {
+  const assignHeadPersonForm = <K extends keyof PersonContactInfo>(
+    value: Pick<PersonContactInfo, K>
+  ) => {
     if (!headPersonForm) throw new Error(`Undefined form data`)
     const mergedHeadPerson = { ...headPersonForm, ...value }
     setHeadPersonForm(mergedHeadPerson)

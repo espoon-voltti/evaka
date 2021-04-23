@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
+import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import styled from 'styled-components'
 import Select from '../../../components/common/Select'
@@ -183,7 +184,7 @@ function AddressEditor({
   dataQaPrefix: string
 }) {
   const { i18n } = useTranslation()
-  const update = (updates: Partial<Address>) =>
+  const update: UpdateStateFn<Address> = (updates) =>
     onChange({ ...address, ...updates })
   if (!editable) {
     return (
@@ -526,13 +527,13 @@ export default function UnitEditor(props: Props): JSX.Element {
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
     updateForm({ careTypes: { ...form.careTypes, ...updates } })
-  const updateDecisionCustomization = (
-    updates: Partial<UnitDecisionCustomization>
+  const updateDecisionCustomization: UpdateStateFn<UnitDecisionCustomization> = (
+    updates
   ) =>
     updateForm({
       decisionCustomization: { ...form.decisionCustomization, ...updates }
     })
-  const updateUnitManager = (updates: Partial<UnitManager>) =>
+  const updateUnitManager: UpdateStateFn<UnitManager> = (updates) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 
   const selectedFinanceDecisionManager = useMemo(
