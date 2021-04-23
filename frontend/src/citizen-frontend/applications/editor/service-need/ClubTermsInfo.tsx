@@ -37,7 +37,7 @@ export function ClubTermsInfo() {
       </Label>
       <Gap size="s" />
       {clubTerms.isSuccess && (
-        <Ul>
+        <Ul data-qa="club-terms">
           {clubTerms.value.map(({ term: { end, start } }, i) => (
             <li key={i}>
               {start.format()} – {end.format()}

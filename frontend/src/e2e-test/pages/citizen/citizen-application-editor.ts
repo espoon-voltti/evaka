@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import _ from 'lodash'
 import { t, ClientFunction, Selector } from 'testcafe'
 import { FormInput } from '../../utils/application-forms'
 import { Checkbox } from '../../utils/helpers'
@@ -32,6 +33,8 @@ export default class CitizenApplicationEditor {
   readonly saveAsDraftButton = Selector('[data-qa="save-as-draft-btn"]')
 
   readonly childStreetAddress = Selector('[data-qa="child-street-address"]')
+
+  readonly clubTerms = Selector('[data-qa="club-terms"]')
 
   readonly urgentAttachmentsUpload = Selector('[data-qa="urgent-file-upload"]')
   readonly noGuardianEmailButton = Selector('[data-qa="noGuardianEmail-input"]')
@@ -234,5 +237,9 @@ export default class CitizenApplicationEditor {
       : await t
           .expect(this.childStreetAddress.with({ timeout: 2000 }).visible)
           .eql(false)
+  }
+
+  async assertClubTerms(terms: string) {
+    await t.expect(this.clubTerms.innerText).eql(terms)
   }
 }
