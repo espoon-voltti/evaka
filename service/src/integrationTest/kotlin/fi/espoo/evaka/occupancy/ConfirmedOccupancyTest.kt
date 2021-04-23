@@ -384,6 +384,50 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     }
 
     @Test
+    fun `occupancy calculation is correct for a child in full time 5-year-old daycare`() {
+        jdbi.handle(
+            createOccupancyTestFixture(
+                unitId = testDaycare.id,
+                period = defaultPeriod,
+                dateOfBirth = LocalDate.of(2014, 1, 1),
+                placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                hours = 25.0
+            )
+        )
+
+        val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
+
+        assertEquals(
+            listOf(
+                OccupancyPeriod(defaultPeriod, 1.0, 1)
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `occupancy calculation is correct for a child in part time 5-year-old daycare`() {
+        jdbi.handle(
+            createOccupancyTestFixture(
+                unitId = testDaycare.id,
+                period = defaultPeriod,
+                dateOfBirth = LocalDate.of(2014, 1, 1),
+                placementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+                hours = 20.0
+            )
+        )
+
+        val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
+
+        assertEquals(
+            listOf(
+                OccupancyPeriod(defaultPeriod, 0.5, 1)
+            ),
+            result
+        )
+    }
+
+    @Test
     fun `occupancy calculation is correct for child under 3 years old in daycare with part time placement`() {
         jdbi.handle(
             createOccupancyTestFixture(

@@ -140,7 +140,9 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
                     WHEN placement_type IS NULL THEN 0.0
                     WHEN is_family_unit THEN 1.75
                     WHEN age < 3 THEN 1.75
+                    WHEN placement_type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND COALESCE(hours_per_week, 0.0) <= 20.0 THEN 0.5
                     WHEN placement_type = 'DAYCARE_PART_TIME' AND (term_start_year - birth_year) = 5 AND COALESCE(hours_per_week, 0.0) <= 20.0 THEN 0.5
+                    WHEN placement_type IN ('DAYCARE_FIVE_YEAR_OLDS', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS') AND hours_per_week <= 20 THEN 0.5
                     WHEN placement_type IN ('DAYCARE', 'DAYCARE_PART_TIME') AND (term_start_year - birth_year) = 5 AND hours_per_week <= 20 THEN 0.5
                     WHEN placement_type IN ('DAYCARE_PART_TIME', 'TEMPORARY_DAYCARE_PART_DAY') THEN 0.54
                     WHEN placement_type = 'PRESCHOOL' AND COALESCE(hours_per_week, 0.0) <= 20.0 THEN 0.5
