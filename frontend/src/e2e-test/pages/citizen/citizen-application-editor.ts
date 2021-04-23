@@ -239,7 +239,7 @@ export default class CitizenApplicationEditor {
           .eql(false)
   }
 
-  async assertClubTerms(terms: string) {
-    await t.expect(this.clubTerms.innerText).eql(terms)
+  async assertClubTerms(terms: string[]) {
+    await t.expect(this.clubTerms.innerText).eql(terms.join('\n'))
   }
 }
