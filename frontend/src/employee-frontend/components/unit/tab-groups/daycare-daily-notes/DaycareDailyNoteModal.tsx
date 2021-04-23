@@ -73,9 +73,10 @@ export default React.memo(function DaycareDailyNoteModal({
     initialFormData(note, childId, groupId)
   )
 
-  const updateForm = (updates: Partial<DaycareDailyNoteFormData>) => {
-    const newForm = { ...form, ...updates }
-    setForm(newForm)
+  const updateForm = <K extends keyof DaycareDailyNoteFormData>(
+    updates: Pick<DaycareDailyNoteFormData, K>
+  ) => {
+    setForm({ ...form, ...updates })
   }
 
   const submit = () => {
@@ -100,10 +101,10 @@ export default React.memo(function DaycareDailyNoteModal({
   }
 
   const toggleReminder = (reminder: DaycareDailyNoteReminder) => {
-    const newReminders = form.reminders.some((r) => r == reminder)
-      ? note?.reminders.filter((r) => r != reminder)
+    const reminders = form.reminders.some((r) => r == reminder)
+      ? form.reminders.filter((r) => r != reminder)
       : [...form.reminders, reminder]
-    updateForm({ reminders: newReminders })
+    updateForm({ reminders })
   }
 
   return groupId !== null ? (
