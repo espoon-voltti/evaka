@@ -181,9 +181,11 @@ export default class CitizenApplicationEditor {
   }
 
   async setPreferredStartDate(date: Date) {
-    await t.typeText(this.preferredStartDateInput, format(date, 'dd.MM.yyyy'), {
-      replace: true
-    })
+    await t
+      .typeText(this.preferredStartDateInput, format(date, 'dd.MM.yyyy'), {
+        replace: true
+      })
+      .pressKey('tab')
   }
 
   async uploadUrgentFile(file: string) {

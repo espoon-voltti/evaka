@@ -25,7 +25,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 const clubTerms = ['13.08.2020 - 04.06.2021', '11.8.2021 - 03.06.2022']
 
 export default React.memo(function PreferredStartSubSection({
-  status,
   originalPreferredStartDate,
   type,
   formData,
@@ -142,12 +141,7 @@ export default React.memo(function PreferredStartSubSection({
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
           isValidDate={(date: LocalDate) =>
-            isValidPreferredStartDate(
-              date,
-              originalPreferredStartDate,
-              status,
-              type
-            )
+            isValidPreferredStartDate(date, originalPreferredStartDate, type)
           }
           data-qa={'preferredStartDate-input'}
           id={labelId}
