@@ -35,6 +35,32 @@ val snDefaultPartDayDaycare = ServiceNeedOption(
     partWeek = false
 )
 
+val snDefaultFiveYearOldsDaycare = ServiceNeedOption(
+    id = UUID.randomUUID(),
+    name = "Viisivuotiaiden kokopäiväinen",
+    validPlacementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+    defaultOption = true,
+    feeCoefficient = BigDecimal("0.80"),
+    voucherValueCoefficient = BigDecimal("1.00"),
+    occupancyCoefficient = BigDecimal("1.00"),
+    daycareHoursPerWeek = 45,
+    partDay = false,
+    partWeek = false
+)
+
+val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
+    id = UUID.randomUUID(),
+    name = "Viisivuotiaiden osapäiväinen",
+    validPlacementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+    defaultOption = true,
+    feeCoefficient = BigDecimal("0.35"),
+    voucherValueCoefficient = BigDecimal("0.60"),
+    occupancyCoefficient = BigDecimal("0.54"),
+    daycareHoursPerWeek = 25,
+    partDay = true,
+    partWeek = false
+)
+
 val snDefaultPreschool = ServiceNeedOption(
     id = UUID.randomUUID(),
     name = "Esiopetus",
@@ -259,6 +285,8 @@ val snPreparatoryDaycarePartDay40 = ServiceNeedOption(
 val serviceNeedTestFixtures = listOf(
     snDefaultDaycare,
     snDefaultPartDayDaycare,
+    snDefaultFiveYearOldsDaycare,
+    snDefaultFiveYearOldsPartDayDaycare,
     snDefaultPreschool,
     snDefaultPreschoolDaycare,
     snDefaultPreparatory,

@@ -25,6 +25,8 @@ import fi.espoo.evaka.invoicing.oldTestPricing
 import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
@@ -267,57 +269,35 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(23100, result[0].children[0].finalFee)
     }
 
-    // @Test
-    // fun `fee decision placement infers FIVE_YEARS_OLD_DAYCARE from age correctly`() {
-    //     val fiveYearOld = jdbi.handle { h ->
-    //         val id = h.insertTestPerson(DevPerson(dateOfBirth = LocalDate.of(2014, 1, 1)))
-    //         h.insertTestChild(DevChild(id))
-    //         id
-    //     }
-    //
-    //     val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-    //     insertPlacement(fiveYearOld, placementPeriod, DAYCARE, testDaycare.id)
-    //     insertFamilyRelations(testAdult_1.id, listOf(fiveYearOld), placementPeriod)
-    //     insertServiceNeed(fiveYearOld, listOf(placementPeriod to 30.0))
-    //
-    //     jdbi.handle { generator.handlePlacement(it, fiveYearOld, placementPeriod) }
-    //
-    //     val result = getAllFeeDecisions()
-    //
-    //     assertEquals(2, result.size)
-    //     result[0].let { decision ->
-    //         assertEquals(2, decision.familySize)
-    //         assertEquals(placementPeriod.start, decision.validFrom)
-    //         assertEquals(LocalDate.of(2019, 7, 31), decision.validTo)
-    //         assertEquals(23100, decision.totalFee())
-    //         assertEquals(1, decision.children.size)
-    //         decision.children[0].let { child ->
-    //             assertEquals(fiveYearOld, child.child.id)
-    //             assertEquals(28900, child.baseFee)
-    //             assertEquals(DAYCARE, child.placement.type)
-    //             assertEquals(ServiceNeed.GT_25_LT_35, child.serviceNeed)
-    //             assertEquals(0, child.siblingDiscount)
-    //             assertEquals(23100, child.fee)
-    //             assertEquals(23100, child.finalFee)
-    //         }
-    //     }
-    //     result[1].let { decision ->
-    //         assertEquals(2, decision.familySize)
-    //         assertEquals(LocalDate.of(2019, 8, 1), decision.validFrom)
-    //         assertEquals(placementPeriod.end, decision.validTo)
-    //         assertEquals(10100, decision.totalFee())
-    //         assertEquals(1, decision.children.size)
-    //         decision.children[0].let { child ->
-    //             assertEquals(fiveYearOld, child.child.id)
-    //             assertEquals(28900, child.baseFee)
-    //             assertEquals(PlacementType.FIVE_YEARS_OLD_DAYCARE, child.placement.type)
-    //             assertEquals(ServiceNeed.LTE_15, child.serviceNeed)
-    //             assertEquals(0, child.siblingDiscount)
-    //             assertEquals(10100, child.fee)
-    //             assertEquals(10100, child.finalFee)
-    //         }
-    //     }
-    // }
+    @Test
+    fun `fee decision placement infers correct service need from a five year olds daycare placement`() {
+        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertPlacement(testChild_1.id, placementPeriod, DAYCARE_FIVE_YEAR_OLDS, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
+
+        jdbi.handle { generator.handlePlacement(it, testChild_1.id, placementPeriod) }
+
+        val result = getAllFeeDecisions()
+
+        assertEquals(DAYCARE_FIVE_YEAR_OLDS, result[0].children[0].placement.type)
+        assertEquals(BigDecimal("0.80"), result[0].children[0].serviceNeed.feeCoefficient)
+        assertEquals(23100, result[0].children[0].finalFee)
+    }
+
+    @Test
+    fun `fee decision placement infers correct service need from a part day five year olds daycare placement`() {
+        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+        insertPlacement(testChild_1.id, placementPeriod, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
+
+        jdbi.handle { generator.handlePlacement(it, testChild_1.id, placementPeriod) }
+
+        val result = getAllFeeDecisions()
+
+        assertEquals(DAYCARE_PART_TIME_FIVE_YEAR_OLDS, result[0].children[0].placement.type)
+        assertEquals(BigDecimal("0.35"), result[0].children[0].serviceNeed.feeCoefficient)
+        assertEquals(10100, result[0].children[0].finalFee)
+    }
 
     @Test
     fun `new service need updates existing draft`() {
