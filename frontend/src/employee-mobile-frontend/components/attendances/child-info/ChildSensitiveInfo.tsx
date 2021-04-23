@@ -112,10 +112,10 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                   'child-info-child-address'
                 )}
 
-                {child.placementType && child.placementType.length > 0 && (
+                {child.placementTypes && child.placementTypes.length > 0 && (
                   <KeyValue>
                     <Key>{i18n.attendances.childInfo.type}</Key>
-                    <span>{placementTypesToText(child.placementType)}</span>
+                    <span>{placementTypesToText(child.placementTypes)}</span>
                   </KeyValue>
                 )}
               </FixedSpaceColumn>

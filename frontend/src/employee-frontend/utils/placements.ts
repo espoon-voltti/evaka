@@ -6,6 +6,7 @@ import { PlacementType } from '../types/child'
 
 const partDayPlacementTypes: readonly PlacementType[] = [
   'DAYCARE_PART_TIME',
+  'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
   'TEMPORARY_DAYCARE_PART_DAY',
   'PRESCHOOL',
   'PREPARATORY'

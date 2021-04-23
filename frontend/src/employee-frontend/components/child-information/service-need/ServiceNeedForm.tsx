@@ -89,6 +89,7 @@ function placementTypeAndHoursMismatch(
   switch (placement.type) {
     case 'CLUB':
     case 'DAYCARE':
+    case 'DAYCARE_FIVE_YEAR_OLDS':
     case 'PRESCHOOL_DAYCARE':
     case 'PREPARATORY_DAYCARE':
       return false
@@ -96,6 +97,7 @@ function placementTypeAndHoursMismatch(
       return hours > 20
     case 'PREPARATORY':
     case 'DAYCARE_PART_TIME':
+    case 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS':
     case 'TEMPORARY_DAYCARE_PART_DAY':
       return hours > 25
     case 'TEMPORARY_DAYCARE':

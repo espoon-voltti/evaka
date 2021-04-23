@@ -30,7 +30,10 @@ export const fi = {
     placement: {
       CLUB: 'Kerho',
       DAYCARE: 'Varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
+      DAYCARE_FIVE_YEAR_OLDS: '5-vuotiaiden varhaiskasvatus',
+      DAYCARE_PART_TIME_FIVE_YEAR_OLDS:
+        '5-vuotiaiden osapäiväinen varhaiskasvatus',
       PRESCHOOL: 'Esiopetus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
       PREPARATORY: 'Valmistava',

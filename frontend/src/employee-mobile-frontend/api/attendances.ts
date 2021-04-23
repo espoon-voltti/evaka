@@ -98,7 +98,7 @@ export interface Child {
   preferredName: string | null
   ssn: string | null
   childAddress: string | null
-  placementType: PlacementType[] | null
+  placementTypes: PlacementType[] | null
   allergies: string | null
   diet: string | null
   medication: string | null
