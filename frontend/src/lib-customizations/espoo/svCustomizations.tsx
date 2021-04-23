@@ -13,5 +13,10 @@ export default {
       'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  map: {
+    mainInfo:
+      'I den här vyn kan du på kartan söka enheter med småbarnspedagogik och förskola.',
+    searchPlaceholder: 'T.ex. Kilovägen eller Purola daghem'
   }
 }

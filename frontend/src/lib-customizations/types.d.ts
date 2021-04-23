@@ -26,6 +26,10 @@ interface CitizenLocalizations {
     privacyPolicyLink: string
     sendFeedbackLink: string
   }
+  map: {
+    mainInfo: string
+    searchPlaceholder: string
+  }
 }
 
 interface MapConfig {
