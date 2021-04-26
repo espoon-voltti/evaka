@@ -23,7 +23,6 @@ type Props = {
   onSuccess: () => void
   primary?: boolean
   disabled?: boolean
-  quick?: boolean
   className?: string
   'data-qa'?: string
 }
@@ -41,7 +40,6 @@ export default React.memo(function AsyncButton({
   disabled,
   onClick,
   onSuccess,
-  quick,
   ...props
 }: Props) {
   const [inProgress, setInProgress] = useState(false)
@@ -64,9 +62,8 @@ export default React.memo(function AsyncButton({
 
   useEffect(() => {
     if (showSuccess) {
-      void delay(() => setShowSuccess(false), quick ? 500 : 2000).then(
-        onSuccess
-      )
+      void delay(onSuccess, 500)
+      void delay(() => setShowSuccess(false), 2000)
     }
   }, [showSuccess])
 

@@ -171,7 +171,6 @@ export default React.memo(function MarkDeparted() {
                     {selectedAbsenceType && !timeError ? (
                       <AsyncButton
                         primary
-                        quick
                         text={i18n.common.confirm}
                         onClick={() =>
                           markDepartedWithAbsence(selectedAbsenceType)
@@ -198,7 +197,6 @@ export default React.memo(function MarkDeparted() {
                   />
                   <AsyncButton
                     primary
-                    quick
                     text={i18n.common.confirm}
                     onClick={() => markDeparted()}
                     onSuccess={() => history.go(-2)}

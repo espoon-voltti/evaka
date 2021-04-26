@@ -122,7 +122,6 @@ export default React.memo(function MarkAbsent() {
                 {selectedAbsenceType ? (
                   <AsyncButton
                     primary
-                    quick
                     text={i18n.common.confirm}
                     onClick={() => postAbsence(selectedAbsenceType)}
                     onSuccess={() => history.goBack()}
