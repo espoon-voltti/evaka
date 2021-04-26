@@ -231,7 +231,7 @@ fun Database.Read.getDaycarePlacements(
         """
         SELECT
             pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id,
-            d.name AS daycare_name, a.name AS area_name,
+            d.name AS daycare_name, d.provider_type, a.name AS area_name,
             ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
             (
                 SELECT count(*)
@@ -274,6 +274,7 @@ fun Handle.getDaycarePlacement(id: UUID): DaycarePlacement? {
             c.date_of_birth AS child_date_of_birth,
             u.id AS unit_id,
             u.name AS unit_name,
+            u.provider_type,
             a.name AS area_name
         FROM placement p
         JOIN daycare u ON p.unit_id = u.id
@@ -531,7 +532,8 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
         daycare = DaycareBasics(
             id = rs.getUUID("unit_id"),
             name = rs.getString("unit_name"),
-            area = rs.getString("area_name")
+            area = rs.getString("area_name"),
+            providerType = rs.getEnum("provider_type")
         ),
         startDate = rs.getDate("placement_start").toLocalDate(),
         endDate = rs.getDate("placement_end").toLocalDate(),
@@ -552,7 +554,8 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
         daycare = DaycareBasics(
             id = rs.getUUID("unit_id"),
             name = rs.getString("daycare_name"),
-            area = rs.getString("area_name")
+            area = rs.getString("area_name"),
+            providerType = rs.getEnum("provider_type")
         ),
         startDate = rs.getDate("start_date").toLocalDate(),
         endDate = rs.getDate("end_date").toLocalDate(),

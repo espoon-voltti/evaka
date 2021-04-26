@@ -5,6 +5,7 @@
 import { UUID } from '../types/index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ProviderType } from './unit'
 
 export type PlacementType =
   | 'CLUB'
@@ -118,6 +119,7 @@ export interface Placement {
     id: UUID
     name: string
     area: string
+    providerType: ProviderType
   }
   missingServiceNeedDays: number
   serviceNeeds: NewServiceNeed[]

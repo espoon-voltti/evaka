@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.serviceneednew.NewServiceNeed
 import fi.espoo.evaka.serviceneednew.getServiceNeedsByChild
@@ -342,5 +343,6 @@ data class ChildBasics(
 data class DaycareBasics(
     val id: UUID,
     val name: String,
-    val area: String
+    val area: String,
+    val providerType: ProviderType
 )
