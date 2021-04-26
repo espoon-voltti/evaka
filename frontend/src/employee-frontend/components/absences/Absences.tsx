@@ -176,7 +176,7 @@ export default function Absences({
                 label={i18n.absences.careTypeCategories[careTypeCategory]}
                 checked={selectedCareTypeCategories.includes(careTypeCategory)}
                 onChange={() => updateCareTypes(careTypeCategory)}
-                dataQa={`absences-select-caretype-${careTypeCategory}`}
+                data-qa={`absences-select-caretype-${careTypeCategory}`}
               />
             ))}
           </FixedSpaceColumn>

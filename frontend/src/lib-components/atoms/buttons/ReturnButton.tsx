@@ -48,7 +48,7 @@ export default React.memo(function ReturnButton({
         icon={faAngleLeft}
         text={label}
         onClick={() => history.goBack()}
-        dataQa={dataQa}
+        data-qa={dataQa}
         disabled={history.length <= 1}
         color={colors.blues.dark}
       />

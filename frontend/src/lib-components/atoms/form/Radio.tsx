@@ -114,8 +114,7 @@ function Radio({
   name,
   disabled,
   className,
-  dataQa,
-  'data-qa': dataQa2,
+  'data-qa': dataQa,
   small,
   id,
   ...props
@@ -131,7 +130,7 @@ function Radio({
       }}
       className={classNames(className, { disabled })}
       small={small}
-      data-qa={dataQa2 ?? dataQa}
+      data-qa={dataQa}
     >
       <Circle small={small}>
         <RadioInput

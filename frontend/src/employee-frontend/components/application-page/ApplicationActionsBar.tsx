@@ -43,7 +43,7 @@ export default React.memo(function ApplicationActionsBar({
           onClick={() => setEditing(true)}
           text={i18n.common.edit}
           primary
-          dataQa="edit-application"
+          data-qa="edit-application"
         />
       )
     },

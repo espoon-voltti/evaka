@@ -76,7 +76,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                           file={file}
                           fileFetchFn={getAttachmentBlob}
                           onFileUnavailable={() => setErrorModalVisible(true)}
-                          dataQa={'service-need-urgency-attachment-download'}
+                          data-qa={'service-need-urgency-attachment-download'}
                         />
                       </li>
                     ))}
@@ -139,7 +139,7 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
                       file={file}
                       fileFetchFn={getAttachmentBlob}
                       onFileUnavailable={() => setErrorModalVisible(true)}
-                      dataQa={'service-need-shift-care-attachment-download'}
+                      data-qa={'service-need-shift-care-attachment-download'}
                     />
                   </li>
                 ))}

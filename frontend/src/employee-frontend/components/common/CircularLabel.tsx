@@ -21,10 +21,10 @@ interface Props {
   text: string
   background: string
   color: string
-  dataQa?: string
+  'data-qa'?: string
 }
 
-function CircularLabel({ text, background, color, dataQa }: Props) {
+function CircularLabel({ text, background, color, 'data-qa': dataQa }: Props) {
   return (
     <RoundLabel
       background={background}

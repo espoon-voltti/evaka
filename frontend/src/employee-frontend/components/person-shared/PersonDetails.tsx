@@ -175,7 +175,7 @@ const PersonDetails = React.memo(function PersonDetails({
             <InlineButton
               icon={faPen}
               onClick={() => toggleUiMode('person-details-editing')}
-              dataQa="edit-person-settings-button"
+              data-qa="edit-person-settings-button"
               text={i18n.common.edit}
             />
           </RequireRole>
@@ -191,7 +191,7 @@ const PersonDetails = React.memo(function PersonDetails({
                 <InputField
                   value={form.lastName}
                   onChange={(value) => updateForm({ lastName: value })}
-                  dataQa="input-last-name"
+                  data-qa="input-last-name"
                 />
               ) : (
                 person.lastName
@@ -204,7 +204,7 @@ const PersonDetails = React.memo(function PersonDetails({
                 <InputField
                   value={form.firstName}
                   onChange={(value) => updateForm({ firstName: value })}
-                  dataQa="input-first-name"
+                  data-qa="input-first-name"
                 />
               ) : (
                 person.firstName
@@ -219,7 +219,7 @@ const PersonDetails = React.memo(function PersonDetails({
                   date={form.dateOfBirth}
                   onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
                   maxDate={LocalDate.today()}
-                  dataQa="input-birthday"
+                  data-qa="input-birthday"
                 />
               ) : (
                 person.dateOfBirth.format()
@@ -366,7 +366,7 @@ const PersonDetails = React.memo(function PersonDetails({
                               forceManualFeeDecisions: true
                             })
                           }
-                          dataQa={`force-manual-fee-decisions-true`}
+                          data-qa={`force-manual-fee-decisions-true`}
                         />
                         <Radio
                           label={
@@ -378,7 +378,7 @@ const PersonDetails = React.memo(function PersonDetails({
                               forceManualFeeDecisions: false
                             })
                           }
-                          dataQa={`force-manual-fee-decisions-false`}
+                          data-qa={`force-manual-fee-decisions-false`}
                         />
                       </FixedSpaceColumn>
                     ) : person.forceManualFeeDecisions ? (
@@ -437,7 +437,7 @@ const PersonDetails = React.memo(function PersonDetails({
               primary
               disabled={false}
               onClick={() => onSubmit()}
-              dataQa="confirm-edited-person-button"
+              data-qa="confirm-edited-person-button"
               text={i18n.common.confirm}
             />
           </FixedSpaceRow>

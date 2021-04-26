@@ -341,7 +341,7 @@ function AssistanceActionForm(props: Props) {
       <FormActions
         onCancel={() => clearUiMode()}
         disabled={formHasErrors(formErrors)}
-        dataQa="button-assistance-action-confirm"
+        data-qa="button-assistance-action-confirm"
       />
     </form>
   )

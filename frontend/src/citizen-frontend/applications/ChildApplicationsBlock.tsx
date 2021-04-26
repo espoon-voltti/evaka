@@ -165,7 +165,7 @@ export default React.memo(function ChildApplicationsBlock({
         <AddButton
           text={t.applicationsList.newApplicationLink}
           onClick={() => history.push(`/applications/new/${childId}`)}
-          dataQa={`new-application-${childId}`}
+          data-qa={`new-application-${childId}`}
         />
       </TitleContainer>
 
@@ -278,7 +278,7 @@ export default React.memo(function ChildApplicationsBlock({
                       icon={faPen}
                       text={t.applicationsList.editApplicationLink}
                       onClick={noop}
-                      dataQa={`button-open-application-${applicationId}`}
+                      data-qa={`button-open-application-${applicationId}`}
                     />
                   </Link>
                 ) : (
@@ -287,7 +287,7 @@ export default React.memo(function ChildApplicationsBlock({
                       icon={faFileAlt}
                       text={t.applicationsList.openApplicationLink}
                       onClick={noop}
-                      dataQa={`button-open-application-${applicationId}`}
+                      data-qa={`button-open-application-${applicationId}`}
                     />
                   </Link>
                 )}
@@ -303,7 +303,7 @@ export default React.memo(function ChildApplicationsBlock({
                     onClick={() =>
                       onDeleteApplication(applicationId, applicationStatus)
                     }
-                    dataQa={`button-remove-application-${applicationId}`}
+                    data-qa={`button-remove-application-${applicationId}`}
                   />
                 )}
               </FixedSpaceFlexWrap>

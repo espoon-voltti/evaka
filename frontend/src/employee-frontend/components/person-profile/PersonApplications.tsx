@@ -99,7 +99,7 @@ const PersonApplications = React.memo(function PersonApplications({
         icon={faFileAlt}
         title={i18n.personProfile.applications}
         startCollapsed={!open}
-        dataQa="person-applications-collapsible"
+        data-qa="person-applications-collapsible"
       >
         <Table data-qa="table-of-applications">
           <Thead>

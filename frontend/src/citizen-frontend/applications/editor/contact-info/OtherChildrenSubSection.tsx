@@ -58,7 +58,7 @@ export default React.memo(function OtherChildrenSubSection({
       <Gap size={'s'} />
       <Checkbox
         checked={formData.otherChildrenExists}
-        dataQa={'otherChildrenExists-input'}
+        data-qa={'otherChildrenExists-input'}
         label={t.applications.editor.contactInfo.areExtraChildren}
         onChange={(checked) => {
           updateFormData({
@@ -90,7 +90,7 @@ export default React.memo(function OtherChildrenSubSection({
                   <InputField
                     id={`extra-child-first-name-${index}`}
                     value={child.firstName}
-                    dataQa={`otherChildren[${index}].firstName-input`}
+                    data-qa={`otherChildren[${index}].firstName-input`}
                     onChange={(value) => {
                       updateFormData({
                         otherChildren: formData.otherChildren.map((old, i) =>
@@ -116,7 +116,7 @@ export default React.memo(function OtherChildrenSubSection({
                   <InputField
                     id={`extra-child-last-name-${index}`}
                     value={child.lastName}
-                    dataQa={`otherChildren[${index}].lastName-input`}
+                    data-qa={`otherChildren[${index}].lastName-input`}
                     onChange={(value) => {
                       updateFormData({
                         otherChildren: formData.otherChildren.map((old, i) =>
@@ -143,7 +143,7 @@ export default React.memo(function OtherChildrenSubSection({
                     <InputField
                       id={`extra-child-ssn-${index}`}
                       value={child.socialSecurityNumber}
-                      dataQa={`otherChildren[${index}].socialSecurityNumber-input`}
+                      data-qa={`otherChildren[${index}].socialSecurityNumber-input`}
                       onChange={(value) => {
                         updateFormData({
                           otherChildren: formData.otherChildren.map((old, i) =>
@@ -191,7 +191,7 @@ export default React.memo(function OtherChildrenSubSection({
           <Gap size={'m'} />
           <AddButton
             text={t.applications.editor.contactInfo.addChild}
-            dataQa={'add-other-child'}
+            data-qa={'add-other-child'}
             onClick={() => {
               updateFormData({
                 otherChildren: [

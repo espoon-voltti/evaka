@@ -61,7 +61,7 @@ const Actions = React.memo(function Actions({
           <Button
             onClick={goToDecisions}
             disabled={!modified}
-            dataQa="decision-actions-close"
+            data-qa="decision-actions-close"
             text={i18n.feeDecisions.buttons.close}
           />
           <AsyncButton

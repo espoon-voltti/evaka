@@ -113,7 +113,7 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
         <CollapsibleSection
           icon={faHomeAlt}
           title={i18n.personProfile.familyOverview.title}
-          dataQa="family-overview-collapsible"
+          data-qa="family-overview-collapsible"
           startCollapsed={!open}
         >
           <LabelValueListContainer>

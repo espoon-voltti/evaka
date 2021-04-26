@@ -125,7 +125,7 @@ export default React.memo(function ActionBar({ reloadApplications }: Props) {
             text={label}
             disabled={disabled}
             primary={primary}
-            dataQa={`action-bar-${id}`}
+            data-qa={`action-bar-${id}`}
           />
         ))}
       </FixedSpaceRow>

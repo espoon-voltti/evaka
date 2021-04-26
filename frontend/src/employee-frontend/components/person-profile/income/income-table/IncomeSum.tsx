@@ -18,10 +18,10 @@ const Container = styled.div`
 
 const IncomeSum = React.memo(function IncomeSum({
   sum,
-  dataQa
+  'data-qa': dataQa
 }: {
   sum: number
-  dataQa?: string
+  'data-qa'?: string
 }) {
   const { i18n } = useTranslation()
   return (

@@ -146,7 +146,7 @@ export default React.memo(function PinLogin() {
                 <IconButton
                   size={'L'}
                   icon={faUserUnlock}
-                  dataQa={'button-logout'}
+                  data-qa={'button-logout'}
                   onClick={() => {
                     setLoggingOut(true)
                   }}
@@ -215,7 +215,7 @@ export default React.memo(function PinLogin() {
                         <IconButton
                           icon={faArrowRight}
                           onClick={loadChildSensitiveInfo}
-                          dataQa={'submit-pin'}
+                          data-qa={'submit-pin'}
                         />
                       )}
                     </FixedSpaceRow>

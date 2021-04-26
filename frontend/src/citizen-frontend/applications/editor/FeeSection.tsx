@@ -38,7 +38,7 @@ export default React.memo(function FeeSection({
       {t.applications.editor.fee.emphasis()}
       <Checkbox
         checked={formData.maxFeeAccepted}
-        dataQa={'maxFeeAccepted-input'}
+        data-qa={'maxFeeAccepted-input'}
         label={t.applications.editor.fee.checkbox}
         onChange={(maxFeeAccepted) => updateFormData({ maxFeeAccepted })}
       />

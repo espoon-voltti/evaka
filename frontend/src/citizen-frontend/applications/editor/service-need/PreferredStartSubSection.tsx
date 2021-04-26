@@ -170,7 +170,7 @@ export default React.memo(function PreferredStartSubSection({
 
             <Checkbox
               checked={formData.urgent}
-              dataQa={'urgent-input'}
+              data-qa={'urgent-input'}
               label={t.applications.editor.serviceNeed.urgent.label}
               onChange={(checked) =>
                 updateFormData({
@@ -201,7 +201,7 @@ export default React.memo(function PreferredStartSubSection({
                     onDelete={deleteUrgencyAttachment}
                     onDownloadFile={getAttachmentBlob}
                     i18n={{ upload: t.fileUpload, download: t.fileDownload }}
-                    dataQa={'urgent-file-upload'}
+                    data-qa={'urgent-file-upload'}
                   />
                 </>
               )}
@@ -220,7 +220,7 @@ export default React.memo(function PreferredStartSubSection({
             >
               <Checkbox
                 checked={formData.wasOnDaycare}
-                dataQa={'wasOnDaycare-input'}
+                data-qa={'wasOnDaycare-input'}
                 label={
                   t.applications.editor.serviceNeed.clubDetails.wasOnDaycare
                 }
@@ -240,7 +240,7 @@ export default React.memo(function PreferredStartSubSection({
             >
               <Checkbox
                 checked={formData.wasOnClubCare}
-                dataQa={'wasOnClubCare-input'}
+                data-qa={'wasOnClubCare-input'}
                 label={
                   t.applications.editor.serviceNeed.clubDetails.wasOnClubCare
                 }

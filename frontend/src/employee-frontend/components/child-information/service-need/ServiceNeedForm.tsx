@@ -291,7 +291,7 @@ function ServiceNeedForm(props: Props) {
                     type={'number'}
                     min={1}
                     step={0.5}
-                    dataQa="input-service-need-hours-per-week"
+                    data-qa="input-service-need-hours-per-week"
                     onChange={(value) =>
                       updateFormState({
                         hoursPerWeek: Number(value)
@@ -349,7 +349,7 @@ function ServiceNeedForm(props: Props) {
                   onChange={(value: boolean) =>
                     updateFormState({ partDay: value })
                   }
-                  dataQa="toggle-service-need-part-day"
+                  data-qa="toggle-service-need-part-day"
                 />
                 <Checkbox
                   label={i18n.childInformation.serviceNeed.services.partWeek}
@@ -357,7 +357,7 @@ function ServiceNeedForm(props: Props) {
                   onChange={(value: boolean) =>
                     updateFormState({ partWeek: value })
                   }
-                  dataQa="toggle-service-need-part-week"
+                  data-qa="toggle-service-need-part-week"
                 />
                 <Checkbox
                   label={i18n.childInformation.serviceNeed.services.shiftCare}
@@ -365,7 +365,7 @@ function ServiceNeedForm(props: Props) {
                   onChange={(value: boolean) =>
                     updateFormState({ shiftCare: value })
                   }
-                  dataQa="toggle-service-need-shift-care"
+                  data-qa="toggle-service-need-shift-care"
                 />
               </FixedSpaceColumn>
             )
@@ -388,7 +388,7 @@ function ServiceNeedForm(props: Props) {
       <FormActions
         onCancel={() => clearUiMode()}
         disabled={formHasErrors(formErrors)}
-        dataQa="submit-service-need-form"
+        data-qa="submit-service-need-form"
       />
     </form>
   )

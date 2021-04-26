@@ -278,7 +278,7 @@ function AssistanceNeedForm(props: Props) {
                         ? { text: 'Virheellinen arvo', status: 'warning' }
                         : undefined
                     }
-                    dataQa="input-assistance-need-multiplier"
+                    data-qa="input-assistance-need-multiplier"
                   />
                   <InfoBall
                     text={
@@ -383,7 +383,7 @@ function AssistanceNeedForm(props: Props) {
       <FormActions
         onCancel={() => clearUiMode()}
         disabled={formHasErrors(formErrors)}
-        dataQa="button-assistance-need-confirm"
+        data-qa="button-assistance-need-confirm"
       />
     </form>
   )

@@ -205,7 +205,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
                     calculateOverlapWarnings(startDate, placement.endDate)
                   }}
                   type="full-width"
-                  dataQa="placement-start-date-input"
+                  data-qa="placement-start-date-input"
                 />
                 {startDateWarning ? (
                   <WarningContainer>
@@ -233,7 +233,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
                     calculateOverlapWarnings(placement.startDate, endDate)
                   }}
                   type="full-width"
-                  dataQa="placement-end-date-input"
+                  data-qa="placement-end-date-input"
                 />
                 {endDateWarning ? (
                   <WarningContainer>

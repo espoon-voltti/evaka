@@ -39,7 +39,7 @@ interface CheckIconButtonProps extends BaseProps {
 
 function CheckIconButton({
   className,
-  dataQa,
+  'data-qa': dataQa,
   onClick,
   active
 }: CheckIconButtonProps) {

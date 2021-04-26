@@ -76,7 +76,7 @@ export default function EmployeesPage() {
         <TopBar>
           <SearchBar>
             <InputField
-              dataQa="employee-name-filter"
+              data-qa="employee-name-filter"
               value={searchTerm}
               placeholder={i18n.employees.findByName}
               onChange={setSearchTerm}

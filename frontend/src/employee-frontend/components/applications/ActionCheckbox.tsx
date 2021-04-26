@@ -31,7 +31,7 @@ export default React.memo(function ActionCheckbox({ applicationId }: Props) {
             checked={checkedIds.includes(applicationId)}
             label={'hidden'}
             hiddenLabel={true}
-            dataQa={'application-row-checkbox-' + applicationId}
+            data-qa={'application-row-checkbox-' + applicationId}
             onChange={(checked) => updateCheckedIds(applicationId, checked)}
           />
         </CheckboxContainer>

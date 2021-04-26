@@ -84,15 +84,14 @@ function CollapsibleSection({
   startCollapsed = false,
   fitted = false,
   className,
-  dataQa,
-  'data-qa': dataQa2
+  'data-qa': dataQa
 }: CollapsibleSectionProps) {
   const [collapsed, setCollapsed] = useState<boolean>(startCollapsed)
 
   return (
     <Wrapper
       className={classNames(className, { fitted })}
-      data-qa={dataQa2 ?? dataQa}
+      data-qa={dataQa}
       data-status={collapsed ? 'closed' : 'open'}
     >
       <Row

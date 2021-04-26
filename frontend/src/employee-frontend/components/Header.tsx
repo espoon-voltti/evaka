@@ -89,7 +89,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
     <>
       {!isMobileView && (
         <StyledHeader
-          dataQa="header"
+          data-qa="header"
           title={i18n.header.title}
           logo={
             <Img
@@ -471,12 +471,12 @@ interface Header2Props {
   children?: React.ReactNode
   logo: React.ReactNode
   className?: string
-  dataQa?: string
+  'data-qa'?: string
   link?: string
 }
 
 function Header2({
-  dataQa,
+  'data-qa': dataQa,
   logo,
   title,
   children,

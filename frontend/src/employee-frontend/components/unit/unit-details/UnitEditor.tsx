@@ -203,7 +203,7 @@ function AddressEditor({
         value={address.streetAddress}
         placeholder={i18n.unitEditor.placeholder.streetAddress}
         onChange={(value) => update({ streetAddress: value })}
-        dataQa={`${dataQaPrefix}-street-input`}
+        data-qa={`${dataQaPrefix}-street-input`}
       />
       <AddressSecondRowContainer>
         <InputField
@@ -211,13 +211,13 @@ function AddressEditor({
           placeholder={i18n.unitEditor.placeholder.postalCode}
           onChange={(value) => update({ postalCode: value })}
           width={'s'}
-          dataQa={`${dataQaPrefix}-postal-code-input`}
+          data-qa={`${dataQaPrefix}-postal-code-input`}
         />
         <InputField
           value={address.postOffice}
           placeholder={i18n.unitEditor.placeholder.postOffice}
           onChange={(value) => update({ postOffice: value })}
-          dataQa={`${dataQaPrefix}-post-office-input`}
+          data-qa={`${dataQaPrefix}-post-office-input`}
         />
       </AddressSecondRowContainer>
     </div>
@@ -578,7 +578,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               icon={faPen}
               onClick={onClickEditHandler}
               text={i18n.common.edit}
-              dataQa={'enable-edit-button'}
+              data-qa={'enable-edit-button'}
             />
           )}
         </TopBar>
@@ -596,7 +596,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             value={form.name}
             onChange={(value) => updateForm({ name: value })}
             width={'L'}
-            dataQa="unit-name-input"
+            data-qa="unit-name-input"
           />
         ) : (
           <div>{form.name}</div>
@@ -665,7 +665,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                   daycareType: checked ? form.daycareType : undefined
                 })
               }
-              dataQa="care-type-checkbox-DAYCARE"
+              data-qa="care-type-checkbox-DAYCARE"
             />
             {form.careTypes.DAYCARE && (
               <Select
@@ -704,7 +704,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             checked={form.careTypes.PRESCHOOL}
             label={i18n.common.types.PRESCHOOL}
             onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
-            dataQa="care-type-checkbox-PRESCHOOL"
+            data-qa="care-type-checkbox-PRESCHOOL"
           />
           <Checkbox
             disabled={!props.editable}
@@ -713,14 +713,14 @@ export default function UnitEditor(props: Props): JSX.Element {
             onChange={(checked) =>
               updateCareTypes({ PREPARATORY_EDUCATION: checked })
             }
-            dataQa="care-type-checkbox-PREPARATORY"
+            data-qa="care-type-checkbox-PREPARATORY"
           />
           <Checkbox
             disabled={!props.editable}
             checked={form.careTypes.CLUB}
             label={i18n.common.types.CLUB}
             onChange={(checked) => updateCareTypes({ CLUB: checked })}
-            dataQa="care-type-checkbox-CLUB"
+            data-qa="care-type-checkbox-CLUB"
           />
         </FixedSpaceColumn>
       </FormPart>
@@ -760,7 +760,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                         : null
                     })
                   }}
-                  dataQa={`application-type-checkbox-${type.toUpperCase()}`}
+                  data-qa={`application-type-checkbox-${type.toUpperCase()}`}
                 />
                 {period != null && (
                   <>
@@ -1144,7 +1144,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             value={unitManager.name}
             onChange={(value) => updateUnitManager({ name: value })}
             width={'L'}
-            dataQa="manager-name-input"
+            data-qa="manager-name-input"
           />
         ) : (
           unitManager.name
@@ -1160,7 +1160,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.phone}
             value={unitManager.phone}
             onChange={(value) => updateUnitManager({ phone: value })}
-            dataQa={'qa-unit-manager-phone-input-field'}
+            data-qa={'qa-unit-manager-phone-input-field'}
           />
         ) : (
           unitManager.phone
@@ -1177,7 +1177,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             value={unitManager.email}
             onChange={(value) => updateUnitManager({ email: value })}
             width={'L'}
-            dataQa={'qa-unit-manager-email-input-field'}
+            data-qa={'qa-unit-manager-email-input-field'}
           />
         ) : (
           unitManager.email

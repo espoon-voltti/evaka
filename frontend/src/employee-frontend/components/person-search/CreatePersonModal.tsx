@@ -69,14 +69,14 @@ export default React.memo(function CreatePersonModal({
             value={form.firstName ?? ''}
             onChange={(value) => setForm(set('firstName', value))}
             width="full"
-            dataQa="first-name-input"
+            data-qa="first-name-input"
           />
           <Label>{i18n.personSearch.createNewPerson.form.lastName}*</Label>
           <InputField
             value={form.lastName ?? ''}
             onChange={(value) => setForm(set('lastName', value))}
             width="full"
-            dataQa="last-name-input"
+            data-qa="last-name-input"
           />
           <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
           <DatePickerDeprecated
@@ -98,7 +98,7 @@ export default React.memo(function CreatePersonModal({
               value={form.streetAddress ?? ''}
               onChange={(value) => setForm(set('streetAddress', value))}
               width="full"
-              dataQa="street-address-input"
+              data-qa="street-address-input"
             />
             <Gap size="xs" />
             <PostalCodeAndOfficeContainer>
@@ -110,7 +110,7 @@ export default React.memo(function CreatePersonModal({
                   value={form.postalCode ?? ''}
                   onChange={(value) => setForm(set('postalCode', value))}
                   width="full"
-                  dataQa="postal-code-input"
+                  data-qa="postal-code-input"
                 />
               </PostalCodeContainer>
               <PostOfficeContainer>
@@ -121,7 +121,7 @@ export default React.memo(function CreatePersonModal({
                   value={form.postOffice ?? ''}
                   onChange={(value) => setForm(set('postOffice', value))}
                   width="full"
-                  dataQa="post-office-input"
+                  data-qa="post-office-input"
                 />
               </PostOfficeContainer>
             </PostalCodeAndOfficeContainer>
@@ -133,14 +133,14 @@ export default React.memo(function CreatePersonModal({
                 value={form.phone ?? ''}
                 onChange={(value) => setForm(set('phone', value))}
                 width="full"
-                dataQa="phone-input"
+                data-qa="phone-input"
               />
               <Label>{i18n.personSearch.createNewPerson.form.email}</Label>
               <InputField
                 value={form.email ?? ''}
                 onChange={(value) => setForm(set('email', value))}
                 width="full"
-                dataQa="email-input"
+                data-qa="email-input"
               />
             </>
           ) : null}

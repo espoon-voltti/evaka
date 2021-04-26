@@ -41,10 +41,10 @@ interface Props {
   text: string
   active: boolean
   onClick?: () => undefined | void
-  dataQa?: string
+  'data-qa'?: string
 }
 
-function Chip({ text, active, onClick, dataQa }: Props) {
+function Chip({ text, active, onClick, 'data-qa': dataQa }: Props) {
   return (
     <ChipContainer active={active} onClick={onClick} data-qa={dataQa}>
       {active && (

@@ -175,7 +175,7 @@ function ApplicationReadView({
                           key={attachment.id}
                           attachment={attachment}
                           receivedAt={attachmentReceivedAt(attachment)}
-                          dataQa={`urgent-attachment-${attachment.name}`}
+                          data-qa={`urgent-attachment-${attachment.name}`}
                         />
                       ))}
                     </>
@@ -235,7 +235,7 @@ function ApplicationReadView({
                           key={attachment.id}
                           receivedAt={attachmentReceivedAt(attachment)}
                           attachment={attachment}
-                          dataQa={`extended-care-attachment-${attachment.name}`}
+                          data-qa={`extended-care-attachment-${attachment.name}`}
                         />
                       ))}
                     </>

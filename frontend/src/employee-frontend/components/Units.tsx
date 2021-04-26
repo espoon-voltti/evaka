@@ -110,7 +110,7 @@ function Units() {
         <TopBar>
           <div>
             <InputField
-              dataQa="unit-name-filter"
+              data-qa="unit-name-filter"
               value={filter}
               placeholder={i18n.units.findByName}
               onChange={(value) => {
@@ -126,7 +126,7 @@ function Units() {
               onChange={() =>
                 setIncludeClosed((previousState) => !previousState)
               }
-              dataQa="include-closed"
+              data-qa="include-closed"
             />
           </div>
           <RequireRole oneOf={['ADMIN']}>

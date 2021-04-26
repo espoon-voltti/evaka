@@ -43,13 +43,13 @@ export default React.memo(function DecisionResponse({
     <FixedSpaceColumn>
       <FixedSpaceRow>
         <Radio
-          dataQa="decision-radio-accept"
+          data-qa="decision-radio-accept"
           checked={accept}
           label={i18n.application.decisions.response.accept}
           onChange={() => setAccept(true)}
         />
         <DatePickerDeprecated
-          dataQa="decision-start-date-picker"
+          data-qa="decision-start-date-picker"
           type="short"
           date={acceptDate}
           onChange={setAcceptDate}
@@ -58,7 +58,7 @@ export default React.memo(function DecisionResponse({
         />
       </FixedSpaceRow>
       <Radio
-        dataQa="decision-radio-reject"
+        data-qa="decision-radio-reject"
         checked={!accept}
         label={i18n.application.decisions.response.reject}
         onChange={() => setAccept(false)}

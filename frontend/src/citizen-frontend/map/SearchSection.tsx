@@ -85,19 +85,19 @@ export default React.memo(function SearchSection({
         <Label>{t.map.careType}</Label>
         <FixedSpaceFlexWrap>
           <Radio
-            dataQa="map-filter-daycare"
+            data-qa="map-filter-daycare"
             checked={careType === 'DAYCARE'}
             label={t.map.careTypes.DAYCARE}
             onChange={() => setCareType('DAYCARE')}
           />
           <Radio
-            dataQa="map-filter-preschool"
+            data-qa="map-filter-preschool"
             checked={careType === 'PRESCHOOL'}
             label={t.map.careTypes.PRESCHOOL}
             onChange={() => setCareType('PRESCHOOL')}
           />
           <Radio
-            dataQa="map-filter-club"
+            data-qa="map-filter-club"
             checked={careType === 'CLUB'}
             label={t.map.careTypes.CLUB}
             onChange={() => setCareType('CLUB')}

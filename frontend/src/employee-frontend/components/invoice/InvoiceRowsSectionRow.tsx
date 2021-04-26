@@ -109,7 +109,7 @@ function InvoiceRowSectionRow({
             onChange={(value) =>
               update({ description: value.substring(0, 52) })
             }
-            dataQa="input-description"
+            data-qa="input-description"
           />
         ) : (
           <div>{description}</div>
@@ -200,7 +200,7 @@ function InvoiceRowSectionRow({
           <DeleteButton
             icon={faTrash}
             onClick={remove}
-            dataQa="delete-invoice-row-button"
+            data-qa="delete-invoice-row-button"
           />
         ) : null}
       </Td>
@@ -262,7 +262,7 @@ const AmountInput = React.memo(function AmountInput({
           setInvalid(true)
         }
       }}
-      dataQa="input-amount"
+      data-qa="input-amount"
       info={invalid ? { status: 'warning', text: 'Tarkista' } : undefined}
     />
   )
@@ -290,7 +290,7 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
       value={stringValue}
       onChange={setStringValue}
       allowEmpty={false}
-      dataQa="input-price"
+      data-qa="input-price"
     />
   )
 })

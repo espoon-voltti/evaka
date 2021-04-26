@@ -179,7 +179,7 @@ export default React.memo(function ApplicationEditView({
                     set('form.preferences.preferredStartDate', value)
                   )
                 }}
-                dataQa="datepicker-start-date"
+                data-qa="datepicker-start-date"
               />
               {errors['form.preferences.preferredStartDate'] ? (
                 <>
@@ -201,7 +201,7 @@ export default React.memo(function ApplicationEditView({
                 onChange={(value) =>
                   setApplication(set('form.preferences.urgent', value))
                 }
-                dataQa="checkbox-urgent"
+                data-qa="checkbox-urgent"
               />
 
               {urgent && (
@@ -212,7 +212,7 @@ export default React.memo(function ApplicationEditView({
                     onDownloadFile={getAttachmentBlob}
                     i18n={i18n.fileUpload}
                     files={attachments.filter((a) => a.type === 'URGENCY')}
-                    dataQa="file-upload-urgent"
+                    data-qa="file-upload-urgent"
                   />
                 </FileUploadGridContainer>
               )}
@@ -264,7 +264,7 @@ export default React.memo(function ApplicationEditView({
                       )
                     : setApplication(set('form.preferences.serviceNeed', null))
                 }
-                dataQa="checkbox-service-need-connected"
+                data-qa="checkbox-service-need-connected"
               />
             </>
           )}
@@ -294,7 +294,7 @@ export default React.memo(function ApplicationEditView({
                           }
                         : undefined
                     }
-                    dataQa="start-time"
+                    data-qa="start-time"
                   />
                   <Gap size="s" horizontal />
                   <InputField
@@ -317,7 +317,7 @@ export default React.memo(function ApplicationEditView({
                           }
                         : undefined
                     }
-                    dataQa="end-time"
+                    data-qa="end-time"
                   />
                 </HorizontalContainer>
                 <Gap size="m" />
@@ -332,7 +332,7 @@ export default React.memo(function ApplicationEditView({
                     set('form.preferences.serviceNeed.shiftCare', value)
                   )
                 }
-                dataQa="checkbox-service-need-shift-care"
+                data-qa="checkbox-service-need-shift-care"
               />
 
               {serviceNeed.shiftCare && (
@@ -345,7 +345,7 @@ export default React.memo(function ApplicationEditView({
                     files={attachments.filter(
                       (a) => a.type === 'EXTENDED_CARE'
                     )}
-                    dataQa="file-upload-shift-care"
+                    data-qa="file-upload-shift-care"
                   />
                 </FileUploadGridContainer>
               )}
@@ -361,7 +361,7 @@ export default React.memo(function ApplicationEditView({
                 onChange={(value) =>
                   setApplication(set('form.clubDetails.wasOnClubCare', value))
                 }
-                dataQa="checkbox-club-details-club-care"
+                data-qa="checkbox-club-details-club-care"
               />
               <Label>{i18n.application.clubDetails.wasOnDaycareLabel}</Label>
               <Checkbox
@@ -370,7 +370,7 @@ export default React.memo(function ApplicationEditView({
                 onChange={(value) =>
                   setApplication(set('form.clubDetails.wasOnDaycare', value))
                 }
-                dataQa="checkbox-club-details-day-care"
+                data-qa="checkbox-club-details-day-care"
               />
             </>
           )}
@@ -384,7 +384,7 @@ export default React.memo(function ApplicationEditView({
                 onChange={(value) =>
                   setApplication(set('form.preferences.preparatory', value))
                 }
-                dataQa="checkbox-service-need-preparatory"
+                data-qa="checkbox-service-need-preparatory"
               />
             </>
           )}
@@ -396,7 +396,7 @@ export default React.memo(function ApplicationEditView({
             onChange={(value) =>
               setApplication(set('form.child.assistanceNeeded', value))
             }
-            dataQa="checkbox-service-need-assistance-needed"
+            data-qa="checkbox-service-need-assistance-needed"
           />
 
           {child.assistanceNeeded && (
@@ -451,7 +451,7 @@ export default React.memo(function ApplicationEditView({
               }}
               loadingMessage={() => i18n.common.loading}
               noOptionsMessage={() => i18n.common.noResults}
-              dataQa="select-preferred-unit"
+              data-qa="select-preferred-unit"
             />
             <Gap size="s" />
             {preferredUnits.length === 0 ? (
@@ -477,7 +477,7 @@ export default React.memo(function ApplicationEditView({
                       )
                     )
                   }
-                  dataQa="button-select-preferred-unit"
+                  data-qa="button-select-preferred-unit"
                 />
                 {!preferencesInUnitsList.some(({ id }) => id === unit.id) ? (
                   <>
@@ -509,7 +509,7 @@ export default React.memo(function ApplicationEditView({
                   )
                 : setApplication(set('form.preferences.siblingBasis', null))
             }
-            dataQa="checkbox-sibling-basis"
+            data-qa="checkbox-sibling-basis"
           />
           {siblingBasis !== null && (
             <>
@@ -522,7 +522,7 @@ export default React.memo(function ApplicationEditView({
                     set('form.preferences.siblingBasis.siblingName', value)
                   )
                 }
-                dataQa="input-sibling-name"
+                data-qa="input-sibling-name"
               />
               <Label>{i18n.application.preferences.siblingSsn}</Label>
               <InputField
@@ -533,7 +533,7 @@ export default React.memo(function ApplicationEditView({
                     set('form.preferences.siblingBasis.siblingSsn', value)
                   )
                 }
-                dataQa="input-sibling-ssn"
+                data-qa="input-sibling-ssn"
               />
             </>
           )}
@@ -710,7 +710,7 @@ export default React.memo(function ApplicationEditView({
                 onChange={(value) => {
                   setApplication(set('form.guardian.phoneNumber', value))
                 }}
-                dataQa="application-person-phone"
+                data-qa="application-person-phone"
               />
               <Label>{i18n.application.person.email}</Label>
               <InputField
@@ -719,7 +719,7 @@ export default React.memo(function ApplicationEditView({
                 onChange={(value) => {
                   setApplication(set('form.guardian.email', value))
                 }}
-                dataQa="application-person-email"
+                data-qa="application-person-email"
               />
             </ListGrid>
           </div>
@@ -744,7 +744,7 @@ export default React.memo(function ApplicationEditView({
                     )
                   )
                 }
-                dataQa="application-second-guardian-toggle"
+                data-qa="application-second-guardian-toggle"
               />
 
               {secondGuardian && (
@@ -760,7 +760,7 @@ export default React.memo(function ApplicationEditView({
                           set('form.secondGuardian.phoneNumber', value)
                         )
                       }}
-                      dataQa="application-second-guardian-phone"
+                      data-qa="application-second-guardian-phone"
                     />
                     <Label>{i18n.application.person.email}</Label>
                     <InputField
@@ -769,7 +769,7 @@ export default React.memo(function ApplicationEditView({
                       onChange={(value) => {
                         setApplication(set('form.secondGuardian.email', value))
                       }}
-                      dataQa="application-second-guardian-email"
+                      data-qa="application-second-guardian-email"
                     />
                     <Label data-qa="agreement-status-label">
                       {i18n.application.person.agreementStatus}
@@ -796,7 +796,7 @@ export default React.memo(function ApplicationEditView({
                                 set('form.secondGuardian.agreementStatus', id)
                               )
                             }}
-                            dataQa={`radio-other-guardian-agreement-status-${
+                            data-qa={`radio-other-guardian-agreement-status-${
                               id ?? 'null'
                             }`}
                           />
@@ -1047,7 +1047,7 @@ export default React.memo(function ApplicationEditView({
               onChange={(value) =>
                 setApplication(set('form.maxFeeAccepted', value))
               }
-              dataQa="checkbox-maxFeeAccepted"
+              data-qa="checkbox-maxFeeAccepted"
               disabled={application.origin !== 'PAPER'}
             />
           </>

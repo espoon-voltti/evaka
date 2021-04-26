@@ -139,7 +139,7 @@ export default React.memo(function ReceiverSelection({
                           selected: checked
                         })
                       }
-                      dataQa={`check-receiver-${receiverChild.childId}`}
+                      data-qa={`check-receiver-${receiverChild.childId}`}
                     />
                   </Td>
                 </Tr>

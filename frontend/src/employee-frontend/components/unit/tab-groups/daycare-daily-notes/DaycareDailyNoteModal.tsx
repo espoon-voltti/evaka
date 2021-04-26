@@ -137,7 +137,7 @@ export default React.memo(function DaycareDailyNoteModal({
             <IconButton
               icon={faTrash}
               onClick={deleteNote}
-              dataQa={'btn-delete-note'}
+              data-qa={'btn-delete-note'}
             />
             <span>{i18n.common.remove}</span>
           </FixedSpaceRow>
@@ -216,19 +216,19 @@ export default React.memo(function DaycareDailyNoteModal({
               checked={form.feedingNote == 'GOOD'}
               label={i18n.unit.groups.daycareDailyNote.level.GOOD}
               onChange={() => updateForm({ feedingNote: 'GOOD' })}
-              dataQa={'feeding-level-good'}
+              data-qa={'feeding-level-good'}
             />
             <Radio
               checked={form.feedingNote == 'MEDIUM'}
               label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
               onChange={() => updateForm({ feedingNote: 'MEDIUM' })}
-              dataQa={'feeding-level-medium'}
+              data-qa={'feeding-level-medium'}
             />
             <Radio
               checked={form.feedingNote == 'NONE'}
               label={i18n.unit.groups.daycareDailyNote.level.NONE}
               onChange={() => updateForm({ feedingNote: 'NONE' })}
-              dataQa={'feeding-level-none'}
+              data-qa={'feeding-level-none'}
             />
           </FixedSpaceColumn>
 
@@ -240,19 +240,19 @@ export default React.memo(function DaycareDailyNoteModal({
               checked={form.sleepingNote == 'GOOD'}
               label={i18n.unit.groups.daycareDailyNote.level.GOOD}
               onChange={() => updateForm({ sleepingNote: 'GOOD' })}
-              dataQa={'sleeping-level-good'}
+              data-qa={'sleeping-level-good'}
             />
             <Radio
               checked={form.sleepingNote == 'MEDIUM'}
               label={i18n.unit.groups.daycareDailyNote.level.MEDIUM}
               onChange={() => updateForm({ sleepingNote: 'MEDIUM' })}
-              dataQa={'sleeping-level-medium'}
+              data-qa={'sleeping-level-medium'}
             />
             <Radio
               checked={form.sleepingNote == 'NONE'}
               label={i18n.unit.groups.daycareDailyNote.level.NONE}
               onChange={() => updateForm({ sleepingNote: 'NONE' })}
-              dataQa={'sleeping-level-none'}
+              data-qa={'sleeping-level-none'}
             />
           </FixedSpaceColumn>
 
@@ -282,7 +282,7 @@ export default React.memo(function DaycareDailyNoteModal({
                 false
               }
               onChange={() => toggleReminder('DIAPERS')}
-              dataQa="checkbox-diapers"
+              data-qa="checkbox-diapers"
             />
             <Checkbox
               label={i18n.unit.groups.daycareDailyNote.reminderType.CLOTHES}
@@ -291,7 +291,7 @@ export default React.memo(function DaycareDailyNoteModal({
                 false
               }
               onChange={() => toggleReminder('CLOTHES')}
-              dataQa="checkbox-clothes"
+              data-qa="checkbox-clothes"
             />
             <Checkbox
               label={i18n.unit.groups.daycareDailyNote.reminderType.LAUNDRY}
@@ -300,7 +300,7 @@ export default React.memo(function DaycareDailyNoteModal({
                 false
               }
               onChange={() => toggleReminder('LAUNDRY')}
-              dataQa="checkbox-laundry"
+              data-qa="checkbox-laundry"
             />
           </FixedSpaceColumn>
 

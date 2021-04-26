@@ -98,7 +98,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
             label={i18n.personProfile.income.details.effectOptions[effect]}
             checked={editedIncome.effect === effect}
             onChange={() => setEditedIncome((prev) => ({ ...prev, effect }))}
-            dataQa={`income-effect-${effect}`}
+            data-qa={`income-effect-${effect}`}
           />
         ))}
       </FixedSpaceColumn>

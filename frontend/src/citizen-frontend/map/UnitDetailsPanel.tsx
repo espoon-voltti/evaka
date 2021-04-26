@@ -103,7 +103,7 @@ export default React.memo(function UnitDetailsPanel({
       <Area opaque>
         <Gap size="s" />
         <InlineButton
-          dataQa="map-unit-details-back"
+          data-qa="map-unit-details-back"
           text={'Takaisin hakuun'}
           icon={faArrowLeft}
           onClick={onClose}

@@ -80,7 +80,7 @@ function renderMissingGroupPlacementRow(
           <InlineButton
             onClick={() => onAddToGroup()}
             icon={faArrowRight}
-            dataQa="add-to-group-btn"
+            data-qa="add-to-group-btn"
             text={i18n.unit.placements.addToGroup}
           />
         </Td>

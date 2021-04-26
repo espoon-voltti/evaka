@@ -158,7 +158,7 @@ function GroupCaretakersModal({
                 ? { text: 'Virheellinen arvo', status: 'warning' }
                 : undefined
             }
-            dataQa="input-assistance-need-multiplier"
+            data-qa="input-assistance-need-multiplier"
           />
         </NumberInputContainer>
       </section>

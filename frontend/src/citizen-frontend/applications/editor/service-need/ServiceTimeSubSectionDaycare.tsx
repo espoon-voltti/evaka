@@ -90,7 +90,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           id={`service-need-part-time-true`}
           label={t.applications.editor.serviceNeed.partTime.true}
           checked={formData.partTime}
-          dataQa={'partTime-input-true'}
+          data-qa={'partTime-input-true'}
           onChange={() =>
             updateFormData({
               partTime: true
@@ -101,7 +101,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           id={`service-need-part-time-false`}
           label={t.applications.editor.serviceNeed.partTime.false}
           checked={!formData.partTime}
-          dataQa={'partTime-input-false'}
+          data-qa={'partTime-input-false'}
           onChange={() =>
             updateFormData({
               partTime: false
@@ -173,7 +173,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       >
         <Checkbox
           checked={formData.shiftCare}
-          dataQa={'shiftCare-input'}
+          data-qa={'shiftCare-input'}
           label={t.applications.editor.serviceNeed.shiftCare.label}
           onChange={(checked) =>
             updateFormData({

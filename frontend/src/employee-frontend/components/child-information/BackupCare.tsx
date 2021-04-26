@@ -60,7 +60,7 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
               text={i18n.childInformation.backupCares.create}
               onClick={() => toggleUiMode('create-new-backup-care')}
               disabled={uiMode === 'create-new-backup-care'}
-              dataQa="backup-care-create-btn"
+              data-qa="backup-care-create-btn"
             />
           </RequireRole>
           {uiMode === 'create-new-backup-care' && (

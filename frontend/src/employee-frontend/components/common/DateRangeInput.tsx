@@ -143,7 +143,7 @@ function BaseDateRangeInput({
       <DatePickerDeprecated
         date={start}
         onChange={setStartValue}
-        dataQa="date-range-input-start-date"
+        data-qa="date-range-input-start-date"
         type={'short'}
       />
       <Gap size="xs" horizontal />
@@ -152,7 +152,7 @@ function BaseDateRangeInput({
       <DatePickerDeprecated
         date={end}
         onChange={setEndValue}
-        dataQa="date-range-input-end-date"
+        data-qa="date-range-input-end-date"
         type={'short'}
       />
     </Container>

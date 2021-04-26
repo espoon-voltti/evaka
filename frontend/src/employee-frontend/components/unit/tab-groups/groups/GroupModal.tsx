@@ -98,7 +98,7 @@ function GroupModal({ unitId, reload }: Props) {
           <InputField
             value={form.name}
             onChange={(value) => assignForm({ name: value })}
-            dataQa={'new-group-name-input'}
+            data-qa={'new-group-name-input'}
             info={
               !validationResult.fields.name
                 ? {
@@ -127,7 +127,7 @@ function GroupModal({ unitId, reload }: Props) {
             onChange={(value) =>
               assignForm({ initialCaretakers: Number(value) })
             }
-            dataQa={'new-group-name-input'}
+            data-qa={'new-group-name-input'}
           />
         </div>
       </FixedSpaceColumn>

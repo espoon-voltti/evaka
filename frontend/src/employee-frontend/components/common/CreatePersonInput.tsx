@@ -39,7 +39,7 @@ export default React.memo(function CreatePersonInput({
             onChange={(value) => setCreatePersonInfo(set('firstName', value))}
             onFocus={onFocus}
             width="full"
-            dataQa="input-first-name"
+            data-qa="input-first-name"
           />
           <Label>{i18n.personSearch.createNewPerson.form.lastName}*</Label>
           <InputField
@@ -47,7 +47,7 @@ export default React.memo(function CreatePersonInput({
             onChange={(value) => setCreatePersonInfo(set('lastName', value))}
             onFocus={onFocus}
             width="full"
-            dataQa="input-last-name"
+            data-qa="input-last-name"
           />
           <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
           <DatePickerDeprecated
@@ -58,7 +58,7 @@ export default React.memo(function CreatePersonInput({
             }}
             onFocus={onFocus}
             maxDate={LocalDate.today()}
-            dataQa={'datepicker-dob'}
+            data-qa={'datepicker-dob'}
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>
           <AddressContainer>
@@ -70,7 +70,7 @@ export default React.memo(function CreatePersonInput({
               }
               onFocus={onFocus}
               width="full"
-              dataQa="input-street-address"
+              data-qa="input-street-address"
             />
             <Gap size="xs" />
             <PostalCodeAndOfficeContainer>
@@ -85,7 +85,7 @@ export default React.memo(function CreatePersonInput({
                   }
                   onFocus={onFocus}
                   width="full"
-                  dataQa="input-postal-code"
+                  data-qa="input-postal-code"
                 />
               </PostalCodeContainer>
               <PostOfficeContainer>
@@ -99,7 +99,7 @@ export default React.memo(function CreatePersonInput({
                   }
                   onFocus={onFocus}
                   width="full"
-                  dataQa="input-post-office"
+                  data-qa="input-post-office"
                 />
               </PostOfficeContainer>
             </PostalCodeAndOfficeContainer>
@@ -111,7 +111,7 @@ export default React.memo(function CreatePersonInput({
             onChange={(value) => setCreatePersonInfo(set('phone', value))}
             onFocus={onFocus}
             width="full"
-            dataQa="input-phone"
+            data-qa="input-phone"
           />
           <Label>{i18n.personSearch.createNewPerson.form.email}</Label>
           <InputField
@@ -119,7 +119,7 @@ export default React.memo(function CreatePersonInput({
             onChange={(value) => setCreatePersonInfo(set('email', value))}
             onFocus={onFocus}
             width="full"
-            dataQa="input-email"
+            data-qa="input-email"
           />
         </ListGrid>
       )}

@@ -165,7 +165,7 @@ export default React.memo(function PlacementProposals({
       {placementPlans.length > 0 && (
         <ButtonRow>
           <Button
-            dataQa={'placement-proposals-accept-button'}
+            data-qa={'placement-proposals-accept-button'}
             onClick={() => {
               acceptPlacementProposal(unitId)
                 .then(loadUnitData)

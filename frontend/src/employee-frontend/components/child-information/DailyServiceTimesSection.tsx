@@ -339,7 +339,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     text={i18n.common.edit}
                     icon={faPen}
                     onClick={startEditing}
-                    dataQa="edit-button"
+                    data-qa="edit-button"
                   />
                 </RightAlign>
 
@@ -413,7 +413,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     }
                     checked={formData.type === 'REGULAR'}
                     onChange={setType('REGULAR')}
-                    dataQa="radio-regular"
+                    data-qa="radio-regular"
                   />
                   {formData.type === 'REGULAR' && (
                     <FixedSpaceRow style={{ marginLeft: defaultMargins.XXL }}>
@@ -438,7 +438,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     }
                     checked={formData.type === 'IRREGULAR'}
                     onChange={setType('IRREGULAR')}
-                    dataQa="radio-irregular"
+                    data-qa="radio-irregular"
                   />
                   {formData.type === 'IRREGULAR' && (
                     <FixedSpaceColumn>
@@ -455,7 +455,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                               }
                               checked={formData[wd].selected}
                               onChange={setWeekdaySelected(wd)}
-                              dataQa={`${wd}-checkbox`}
+                              data-qa={`${wd}-checkbox`}
                             />
                           </div>
                           <FixedSpaceRow
@@ -497,7 +497,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                     onClick={onSubmit}
                     disabled={submitting || !formIsValid}
                     primary
-                    dataQa="submit-button"
+                    data-qa="submit-button"
                   />
                 </FixedSpaceRow>
               </RightAlign>
@@ -529,7 +529,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
         onChange={(start) => onChange({ ...value, start })}
         type="time"
         required
-        dataQa={`${dataQaPrefix}-start`}
+        data-qa={`${dataQaPrefix}-start`}
         info={
           error && error.start
             ? {
@@ -547,7 +547,7 @@ const TimeRangeInput = React.memo(function TimeRangeInput({
         onChange={(end) => onChange({ ...value, end })}
         type="time"
         required
-        dataQa={`${dataQaPrefix}-end`}
+        data-qa={`${dataQaPrefix}-end`}
         info={
           error && error.end
             ? {

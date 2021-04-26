@@ -25,7 +25,7 @@ export const PdfLink = React.memo(function PdfLink({
         icon={faFileAlt}
         text={t.decisions.applicationDecisions.openPdf}
         onClick={noop}
-        dataQa="button-open-pdf"
+        data-qa="button-open-pdf"
       />
     </a>
   )

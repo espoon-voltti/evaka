@@ -138,7 +138,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
     <CollapsibleSection
       icon={faEuroSign}
       title={i18n.personProfile.income.title}
-      dataQa="person-income-collapsible"
+      data-qa="person-income-collapsible"
       startCollapsed={!open}
     >
       <AddButtonRow
@@ -148,7 +148,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
           setEditing('new')
         }}
         disabled={!!editing}
-        dataQa="add-income-button"
+        data-qa="add-income-button"
       />
       <Gap size="m" />
       {content()}

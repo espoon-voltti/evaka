@@ -26,7 +26,7 @@ interface FileDownloadButtonProps {
   file: Attachment
   fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
   onFileUnavailable: () => void
-  dataQa?: string
+  'data-qa'?: string
 }
 
 /**
@@ -37,7 +37,7 @@ export default React.memo(function FileDownloadButton({
   file,
   fileFetchFn,
   onFileUnavailable,
-  dataQa
+  'data-qa': dataQa
 }: FileDownloadButtonProps) {
   const getFileIfAvailable = async (file: Attachment) => {
     const result = await fileFetchFn(file.id)

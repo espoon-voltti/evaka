@@ -78,7 +78,7 @@ export default function Tooltip({
   children,
   tooltip,
   up,
-  dataQa
+  'data-qa': dataQa
 }: TooltipProps) {
   return (
     <TooltipWrapper>

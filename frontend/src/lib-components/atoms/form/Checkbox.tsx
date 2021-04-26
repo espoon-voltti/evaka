@@ -127,8 +127,7 @@ function Checkbox({
   onChange,
   disabled,
   className,
-  dataQa,
-  'data-qa': dataQa2
+  'data-qa': dataQa
 }: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -139,7 +138,7 @@ function Checkbox({
         if (!disabled && onChange) onChange(!checked)
       }}
       className={classNames(className, { disabled })}
-      data-qa={dataQa2 ?? dataQa}
+      data-qa={dataQa}
     >
       <Box>
         <CheckboxInput

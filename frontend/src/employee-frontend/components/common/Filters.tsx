@@ -239,7 +239,7 @@ export function AreaFilter({
               label={name}
               checked={toggled.includes(shortName) || toggled.includes('All')}
               onChange={toggle(shortName)}
-              dataQa={`area-filter-${shortName}`}
+              data-qa={`area-filter-${shortName}`}
             />
           ))}
         {showAll && (
@@ -247,7 +247,7 @@ export function AreaFilter({
             label={i18n.common.all}
             checked={toggled.includes('All')}
             onChange={toggle('All')}
-            dataQa={`area-filter-All`}
+            data-qa={`area-filter-All`}
           />
         )}
       </FixedSpaceColumn>
@@ -355,7 +355,7 @@ export function FeeDecisionStatusFilter({
             label={i18n.feeDecision.status[id]}
             checked={toggled === id}
             onChange={toggle(id)}
-            dataQa={`fee-decision-status-filter-${id}`}
+            data-qa={`fee-decision-status-filter-${id}`}
             small
           />
         ))}
@@ -393,7 +393,7 @@ export function FeeDecisionDistinctionsFilter({
             label={i18n.feeDecision.distinctiveDetails[id]}
             checked={toggled.includes(id)}
             onChange={toggle(id)}
-            dataQa={`fee-decision-distinction-filter-${id}`}
+            data-qa={`fee-decision-distinction-filter-${id}`}
           />
         ))}
       </FixedSpaceColumn>
@@ -430,14 +430,14 @@ export function FeeDecisionDateFilter({
         <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
-          dataQa="fee-decisions-start-date"
+          data-qa="fee-decisions-start-date"
           onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
         <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
-          dataQa="fee-decisions-start-date"
+          data-qa="fee-decisions-start-date"
           onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
@@ -461,7 +461,7 @@ export function FeeDecisionDateFilter({
         label={i18n.filters.searchByStartDate}
         checked={searchByStartDate}
         onChange={setSearchByStartDate}
-        dataQa={`fee-decision-search-by-start-date`}
+        data-qa={`fee-decision-search-by-start-date`}
       />
     </>
   )
@@ -497,7 +497,7 @@ export const ValueDecisionStatusFilter = React.memo(
               label={i18n.valueDecision.status[id]}
               checked={toggled === id}
               onChange={toggle(id)}
-              dataQa={`value-decision-status-filter-${id}`}
+              data-qa={`value-decision-status-filter-${id}`}
               small
             />
           ))}
@@ -532,7 +532,7 @@ export function InvoiceStatusFilter({
             label={i18n.invoice.status[id]}
             checked={toggled === id}
             onChange={toggle(id)}
-            dataQa={`invoice-status-filter-${id}`}
+            data-qa={`invoice-status-filter-${id}`}
             small
           />
         ))}
@@ -572,14 +572,14 @@ export function InvoiceDateFilter({
         <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
-          dataQa="invoices-start-date"
+          data-qa="invoices-start-date"
           onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
         <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
-          dataQa="invoices-end-date"
+          data-qa="invoices-end-date"
           onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
@@ -603,7 +603,7 @@ export function InvoiceDateFilter({
         label={i18n.filters.invoiceSearchByStartDate}
         checked={searchByStartDate}
         onChange={setUseCustomDatesForInvoiceSending}
-        dataQa={`invoice-search-by-start-date`}
+        data-qa={`invoice-search-by-start-date`}
       />
     </>
   )
@@ -633,7 +633,7 @@ export function InvoiceDistinctionsFilter({
           label={i18n.invoice.distinctiveDetails[id]}
           checked={toggled.includes(id)}
           onChange={toggle(id)}
-          dataQa={`fee-decision-distinction-filter-${id}`}
+          data-qa={`fee-decision-distinction-filter-${id}`}
         />
       ))}
     </>
@@ -692,7 +692,7 @@ export function ApplicationTypeFilter({
               label={i18n.applications.types[id]}
               checked={toggled === id}
               onChange={toggle(id)}
-              dataQa={`application-type-filter-${id}`}
+              data-qa={`application-type-filter-${id}`}
               small
             />
           ) : (
@@ -712,7 +712,7 @@ export function ApplicationTypeFilter({
                 ariaLabel={i18n.applications.types[id]}
                 checked={toggled === id}
                 onChange={toggle(id)}
-                dataQa={`application-type-filter-${id}`}
+                data-qa={`application-type-filter-${id}`}
                 small
               />
               {toggled === id && (
@@ -723,7 +723,7 @@ export function ApplicationTypeFilter({
                       label={i18n.applications.types[type]}
                       checked={toggledPreschool.includes(type)}
                       onChange={togglePreschool(type)}
-                      dataQa={`application-type-filter-preschool-${type}`}
+                      data-qa={`application-type-filter-preschool-${type}`}
                     />
                   ))}
                 </CustomDiv>
@@ -810,7 +810,7 @@ export function ApplicationStatusFilter({
             ariaLabel={i18n.application.statuses[id]}
             checked={toggled === id}
             onChange={toggle(id)}
-            dataQa={`application-status-filter-${id}`}
+            data-qa={`application-status-filter-${id}`}
             small
           />
         ))}
@@ -823,7 +823,7 @@ export function ApplicationStatusFilter({
               label={i18n.application.statuses[id]}
               checked={toggledAllStatuses.includes(id)}
               onChange={toggleAllStatuses(id)}
-              dataQa={`application-status-filter-all-${id}`}
+              data-qa={`application-status-filter-all-${id}`}
             />
           ))}
         </CustomDivWithMargin>
@@ -868,7 +868,7 @@ export function ApplicationDateFilter({
             checked={toggled.includes(dateType)}
             onChange={toggle(dateType)}
             key={dateType}
-            dataQa={`applications-search-by-${dateType}`}
+            data-qa={`applications-search-by-${dateType}`}
           />
         ))}
       </FixedSpaceColumn>
@@ -877,14 +877,14 @@ export function ApplicationDateFilter({
         <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
-          dataQa="applications-start-date"
+          data-qa="applications-start-date"
           onCleared={() => setStartDate(undefined)}
         />
         <span>-</span>
         <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
-          dataQa="applications-end-date"
+          data-qa="applications-end-date"
           onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
@@ -1077,14 +1077,14 @@ interface MultiUnitsProps {
   units: { id: string; name: string }[]
   selectedUnits: string[]
   onChange: (v: string[]) => void
-  dataQa?: string
+  'data-qa': string
 }
 
 export function MultiSelectUnitFilter({
   units,
   selectedUnits,
   onChange,
-  dataQa
+  'data-qa': dataQa
 }: MultiUnitsProps) {
   const { i18n } = useTranslation()
   return (
@@ -1137,7 +1137,7 @@ export function ApplicationDistinctionsFilter({
             label={i18n.applications.distinctiveDetails['SECONDARY']}
             checked={toggled.includes('SECONDARY')}
             onChange={toggle('SECONDARY')}
-            dataQa={'application-distiction-SECONDARY'}
+            data-qa={'application-distiction-SECONDARY'}
             disabled
           />
         </Tooltip>
@@ -1146,7 +1146,7 @@ export function ApplicationDistinctionsFilter({
           label={i18n.applications.distinctiveDetails['SECONDARY']}
           checked={toggled.includes('SECONDARY')}
           onChange={toggle('SECONDARY')}
-          dataQa={'application-distiction-SECONDARY'}
+          data-qa={'application-distiction-SECONDARY'}
         />
       )}
     </Fragment>
@@ -1170,21 +1170,21 @@ export function TransferApplicationsFilter({
       </Label>
       <FixedSpaceColumn spacing={'xs'}>
         <Radio
-          dataQa="filter-transfer-only"
+          data-qa="filter-transfer-only"
           label={i18n.applications.list.transferFilter.transferOnly}
           checked={selected === 'TRANSFER_ONLY'}
           onChange={() => setSelected('TRANSFER_ONLY')}
           small
         />
         <Radio
-          dataQa="filter-transfer-exclude"
+          data-qa="filter-transfer-exclude"
           label={i18n.applications.list.transferFilter.hideTransfer}
           checked={selected === 'NO_TRANSFER'}
           onChange={() => setSelected('NO_TRANSFER')}
           small
         />
         <Radio
-          dataQa="filter-transfer-all"
+          data-qa="filter-transfer-all"
           label={i18n.applications.list.transferFilter.all}
           checked={selected === 'ALL'}
           onChange={() => setSelected('ALL')}

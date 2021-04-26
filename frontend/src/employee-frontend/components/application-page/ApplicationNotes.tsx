@@ -101,7 +101,7 @@ export default React.memo(function ApplicationNotes({ applicationId }: Props) {
                 onClick={() => setCreating(true)}
                 text={i18n.application.notes.add}
                 darker
-                dataQa="add-note"
+                data-qa="add-note"
               />
             )}
           </Sticky>

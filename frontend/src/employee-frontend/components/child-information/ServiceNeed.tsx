@@ -76,7 +76,7 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
               scrollToRef(refSectionTop)
             }}
             disabled={uiMode === 'create-new-service-need'}
-            dataQa="btn-create-new-service-need"
+            data-qa="btn-create-new-service-need"
           />
         </RequireRole>
         {uiMode === 'create-new-service-need' && (

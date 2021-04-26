@@ -86,8 +86,7 @@ interface ButtonProps extends BaseProps {
 
 function Button({
   className,
-  dataQa,
-  'data-qa': dataQa2,
+  'data-qa': dataQa,
   onClick,
   text,
   primary = false,
@@ -114,7 +113,7 @@ function Button({
   return (
     <StyledButton
       className={classNames(className, { primary, disabled })}
-      data-qa={dataQa2 ?? dataQa}
+      data-qa={dataQa}
       onClick={handleOnClick}
       disabled={disabled}
       type={type}

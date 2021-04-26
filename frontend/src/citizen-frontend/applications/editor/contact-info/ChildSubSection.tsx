@@ -63,7 +63,7 @@ export default React.memo(function ChildSubSection({
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
           checked={formData.childFutureAddressExists}
-          dataQa={'childFutureAddressExists-input'}
+          data-qa={'childFutureAddressExists-input'}
           onChange={(checked) => {
             updateFormData({
               childFutureAddressExists: checked
@@ -107,7 +107,7 @@ export default React.memo(function ChildSubSection({
                 <InputField
                   id={'child-future-street'}
                   value={formData.childFutureStreet}
-                  dataQa={'childFutureStreet-input'}
+                  data-qa={'childFutureStreet-input'}
                   onChange={(value) =>
                     updateFormData(
                       formData.guardianFutureAddressEqualsChild
@@ -138,7 +138,7 @@ export default React.memo(function ChildSubSection({
                 <InputField
                   id={'child-future-postal-code'}
                   value={formData.childFuturePostalCode}
-                  dataQa={'childFuturePostalCode-input'}
+                  data-qa={'childFuturePostalCode-input'}
                   onChange={(value) =>
                     updateFormData(
                       formData.guardianFutureAddressEqualsChild
@@ -169,7 +169,7 @@ export default React.memo(function ChildSubSection({
                 <InputField
                   id={'child-future-post-office'}
                   value={formData.childFuturePostOffice}
-                  dataQa={'childFuturePostOffice-input'}
+                  data-qa={'childFuturePostOffice-input'}
                   onChange={(value) =>
                     updateFormData(
                       formData.guardianFutureAddressEqualsChild

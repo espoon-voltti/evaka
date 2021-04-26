@@ -180,7 +180,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
         icon={faUser}
         title={i18n.personProfile.partner}
         startCollapsed={!open}
-        dataQa="person-partners-collapsible"
+        data-qa="person-partners-collapsible"
       >
         <TopBar>
           <span className="subtitle">({i18n.personProfile.partnerInfo})</span>

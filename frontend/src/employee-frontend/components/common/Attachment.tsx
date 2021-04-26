@@ -34,7 +34,7 @@ const ReceivedAtText = styled(Dimmed)`
 
 interface Props {
   attachment: ApplicationAttachment
-  dataQa: string
+  'data-qa': string
   receivedAt: Date
 }
 
@@ -52,7 +52,7 @@ const contentTypeIcon = (contentType: string) => {
   }
 }
 
-function Attachment({ attachment, dataQa, receivedAt }: Props) {
+function Attachment({ attachment, 'data-qa': dataQa, receivedAt }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
 
@@ -75,7 +75,7 @@ function Attachment({ attachment, dataQa, receivedAt }: Props) {
               resolveLabel: i18n.common.ok
             })
           }
-          dataQa={'attachment-download'}
+          data-qa={'attachment-download'}
         />
         <ReceivedAtText data-qa={`attachment-received-at`}>
           {attachment.uploadedByEmployee

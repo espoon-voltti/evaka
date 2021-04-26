@@ -272,7 +272,7 @@ function VoucherServiceProviders() {
                 filters.month,
                 areas.find((area) => area.id === filters.areaId)?.name ?? ''
               )}
-              dataQa={'download-csv'}
+              data-qa={'download-csv'}
             />
             <TableScrollable>
               <Thead>

@@ -180,7 +180,7 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
         icon={faChild}
         title={i18n.personProfile.fridgeChildOfHead}
         startCollapsed={!open}
-        dataQa="person-children-collapsible"
+        data-qa="person-children-collapsible"
       >
         <AddButtonRow
           text={i18n.personProfile.fridgeChildAdd}

@@ -85,14 +85,14 @@ function Applications() {
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
               type="half-width"
-              dataQa="datepicker-from"
+              data-qa="datepicker-from"
             />
             <span>{' - '}</span>
             <DatePickerDeprecated
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
               type="half-width"
-              dataQa="datepicker-to"
+              data-qa="datepicker-to"
             />
           </FlexRow>
         </FilterRow>

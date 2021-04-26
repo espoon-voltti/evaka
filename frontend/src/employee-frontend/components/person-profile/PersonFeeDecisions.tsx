@@ -85,7 +85,7 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
       <CollapsibleSection
         icon={faChild}
         title={i18n.personProfile.feeDecisions.title}
-        dataQa="person-fee-decisions-collapsible"
+        data-qa="person-fee-decisions-collapsible"
         startCollapsed={!open}
       >
         {uiMode === 'create-retroactive-fee-decision' ? (
@@ -102,7 +102,7 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
             toggleUiMode('create-retroactive-fee-decision')
           }}
           disabled={!!uiMode}
-          dataQa="create-retroactive-fee-decision-button"
+          data-qa="create-retroactive-fee-decision-button"
         />
         <Table data-qa="table-of-fee-decisions">
           <Thead>

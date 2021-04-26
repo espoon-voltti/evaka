@@ -312,7 +312,7 @@ const Decision = memo(function Decision({
                       onChange={(planned: boolean) => {
                         updateState(decision.type, { planned })
                       }}
-                      dataQa={`toggle-service-need-part-day-${decision.type}`}
+                      data-qa={`toggle-service-need-part-day-${decision.type}`}
                     />
                   ),
                   value: (
@@ -527,7 +527,7 @@ const Decision = memo(function Decision({
             <SendButtonContainer>
               <FixedSpaceRow>
                 <Button
-                  dataQa="cancel-decisions-button"
+                  data-qa="cancel-decisions-button"
                   onClick={redirectToMainPage}
                   text={i18n.common.cancel}
                 />

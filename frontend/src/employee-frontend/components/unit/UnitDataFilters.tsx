@@ -40,7 +40,7 @@ export default React.memo(function UnitDataFilters({
       <DatePickersContainer>
         {canEdit ? (
           <DatePickerDeprecated
-            dataQa="unit-filter-start-date"
+            data-qa="unit-filter-start-date"
             date={startDate}
             onChange={(date) => setFilters(filters.withStartDate(date))}
             type="half-width"
@@ -61,25 +61,25 @@ export default React.memo(function UnitDataFilters({
           text={i18n.unit.filters.periods.day}
           active={period === '1 day'}
           onClick={() => setFilters(filters.withPeriod('1 day'))}
-          dataQa="unit-filter-period-1-day"
+          data-qa="unit-filter-period-1-day"
         />
         <Chip
           text={i18n.unit.filters.periods.threeMonths}
           active={period === '3 months'}
           onClick={() => setFilters(filters.withPeriod('3 months'))}
-          dataQa="unit-filter-period-3-months"
+          data-qa="unit-filter-period-3-months"
         />
         <Chip
           text={i18n.unit.filters.periods.sixMonths}
           active={period === '6 months'}
           onClick={() => setFilters(filters.withPeriod('6 months'))}
-          dataQa="unit-filter-period-6-months"
+          data-qa="unit-filter-period-6-months"
         />
         <Chip
           text={i18n.unit.filters.periods.year}
           active={period === '1 year'}
           onClick={() => setFilters(filters.withPeriod('1 year'))}
-          dataQa="unit-filter-period-1-year"
+          data-qa="unit-filter-period-1-year"
         />
       </Chips>
     </FixedSpaceRow>
