@@ -10,5 +10,6 @@ const proxy = createProxy()
 
 router.get('/units', proxy)
 router.get('/public/units/*', proxy)
+router.get('/public/club-terms', proxy)
 
 export default router

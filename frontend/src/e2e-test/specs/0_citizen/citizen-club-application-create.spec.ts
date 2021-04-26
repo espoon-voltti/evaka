@@ -76,6 +76,10 @@ test('Minimal valid club application can be sent', async (t) => {
   await citizenNewApplicationPage.createApplication('CLUB')
   applicationId = await citizenApplicationEditor.getApplicationId()
 
+  await citizenApplicationEditor.assertClubTerms([
+    '13.08.2020 – 04.06.2021',
+    '11.08.2021 – 03.06.2022'
+  ])
   await citizenApplicationEditor.fillData(minimalClubForm.form)
 
   await citizenApplicationEditor.verifyAndSend()

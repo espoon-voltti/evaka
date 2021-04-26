@@ -8,8 +8,8 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
-import fi.espoo.evaka.deriveClubTerm
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.db.Database
@@ -84,7 +84,8 @@ class PlacementPlanService(
                 )
             }
             ApplicationType.CLUB -> {
-                val term = deriveClubTerm(startDate)
+                val (term) = tx.getActiveClubTermAt(startDate)
+                    ?: throw Exception("No suitable club term found for start date $startDate")
                 val period = FiniteDateRange(startDate, term.end)
                 return PlacementPlanDraft(
                     child = child,

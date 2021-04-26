@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
+import {
+  ClubTerm,
+  deserializeClubTerm
+} from 'lib-common/api-types/units/ClubTerm'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import {
@@ -198,6 +202,15 @@ export async function getAttachmentBlob(
       responseType: 'blob'
     })
     return Success.of(result.data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
+  try {
+    const result = await client.get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
+    return Success.of(result.data.map(deserializeClubTerm))
   } catch (e) {
     return Failure.fromError(e)
   }

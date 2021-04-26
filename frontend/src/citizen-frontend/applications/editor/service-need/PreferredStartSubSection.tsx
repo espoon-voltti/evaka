@@ -2,27 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { useLang, useTranslation } from '../../../localization'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import FileUpload from 'lib-components/molecules/FileUpload'
-import { deleteAttachment, getAttachmentBlob, saveAttachment } from '../../api'
-import { Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
+import { featureFlags } from 'lib-customizations/citizen'
+import React from 'react'
 import { useParams } from 'react-router-dom'
 import { errorToInputInfo } from '../../../form-validation'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { ServiceNeedSectionProps } from './ServiceNeedSection'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { useLang, useTranslation } from '../../../localization'
+import { deleteAttachment, getAttachmentBlob, saveAttachment } from '../../api'
 import { isValidPreferredStartDate } from '../validations'
-import LocalDate from 'lib-common/local-date'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { featureFlags } from 'lib-customizations/citizen'
-
-const clubTerms = ['13.08.2020 - 04.06.2021', '11.8.2021 - 03.06.2022']
+import { ClubTermsInfo } from './ClubTermsInfo'
+import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
   status,
@@ -95,24 +93,7 @@ export default React.memo(function PreferredStartSubSection({
           <P key={index}>{info}</P>
         ))}
 
-        {type === 'CLUB' && (
-          <>
-            <Label>
-              {
-                t.applications.editor.serviceNeed.startDate[
-                  clubTerms.length === 1 ? 'clubTerm' : 'clubTerms'
-                ]
-              }
-            </Label>
-            <Gap size="s" />
-            <Ul>
-              {clubTerms.map((term) => (
-                <li key={term}>{term}</li>
-              ))}
-            </Ul>
-            <Gap size="m" />
-          </>
-        )}
+        {type === 'CLUB' && <ClubTermsInfo />}
 
         {type !== 'CLUB' ? (
           <ExpandingInfo
@@ -257,7 +238,3 @@ export default React.memo(function PreferredStartSubSection({
     </>
   )
 })
-
-const Ul = styled.ul`
-  margin: 0;
-`

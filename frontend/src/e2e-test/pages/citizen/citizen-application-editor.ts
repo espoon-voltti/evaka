@@ -33,6 +33,8 @@ export default class CitizenApplicationEditor {
 
   readonly childStreetAddress = Selector('[data-qa="child-street-address"]')
 
+  readonly clubTerms = Selector('[data-qa="club-terms"]')
+
   readonly urgentAttachmentsUpload = Selector('[data-qa="urgent-file-upload"]')
   readonly noGuardianEmailButton = Selector('[data-qa="noGuardianEmail-input"]')
 
@@ -234,5 +236,9 @@ export default class CitizenApplicationEditor {
       : await t
           .expect(this.childStreetAddress.with({ timeout: 2000 }).visible)
           .eql(false)
+  }
+
+  async assertClubTerms(terms: string[]) {
+    await t.expect(this.clubTerms.innerText).eql(terms.join('\n'))
   }
 }

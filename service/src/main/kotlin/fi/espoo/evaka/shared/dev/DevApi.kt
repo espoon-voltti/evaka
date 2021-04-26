@@ -115,8 +115,9 @@ class DevApi(
         db.transaction {
             it.handle.resetDatabase()
 
-            // Preschool terms are not inserted by fixtures
+            // Terms are not inserted by fixtures
             it.handle.runDevScript("preschool-terms.sql")
+            it.handle.runDevScript("club-terms.sql")
         }
         return ResponseEntity.noContent().build()
     }
