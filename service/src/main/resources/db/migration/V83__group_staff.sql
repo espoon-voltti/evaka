@@ -1,0 +1,1 @@
+ALTER TYPE user_role ADD VALUE 'GROUP_STAFF';

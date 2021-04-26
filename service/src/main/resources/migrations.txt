@@ -79,3 +79,5 @@ V78__last_login.sql
 V79__drop_index_message_thread_created.sql
 V80__voucher_value_decision_with_new_service_needs.sql
 V81__message_account_active.sql
+V82__daycare_group_acl.sql
+V83__group_staff.sql
