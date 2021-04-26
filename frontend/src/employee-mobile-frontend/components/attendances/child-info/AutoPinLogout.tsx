@@ -27,7 +27,8 @@ export default function AutoLogout({ timeout, onTimeOut }: Props) {
       'mousedown',
       'click',
       'scroll',
-      'keypress'
+      'keypress',
+      'touch'
     ]
 
     const resetTimeout = () => {
@@ -35,12 +36,19 @@ export default function AutoLogout({ timeout, onTimeOut }: Props) {
       setTimeouts()
     }
 
+    const logoutOnResume = () => {
+      clearTimeouts()
+      logout()
+    }
+
     for (const event of events) {
-      window.addEventListener(event, resetTimeout)
+      window.addEventListener(event, resetTimeout, { passive: true })
+      window.addEventListener('blur', logoutOnResume, { passive: true })
     }
 
     setTimeouts()
     return () => {
+      window.removeEventListener('blur', logoutOnResume)
       for (const event of events) {
         window.removeEventListener(event, resetTimeout)
         clearTimeouts()
