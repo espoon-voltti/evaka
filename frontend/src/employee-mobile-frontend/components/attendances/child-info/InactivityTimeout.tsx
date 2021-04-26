@@ -1,25 +1,23 @@
-import React, { useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
-interface Props {
-  timeout: number
+export default function useInactivityTimeout(
+  timeout: number,
   onTimeOut: () => void
-}
-
-export default function AutoLogout({ timeout, onTimeOut }: Props) {
-  const logout = useCallback(() => {
+) {
+  const timeoutCallBack = useCallback(() => {
     clearTimeout()
     onTimeOut && onTimeOut()
   }, [onTimeOut])
 
   useEffect(() => {
-    let logoutTimeout: number
+    let timeoutHandle: number
 
     const setTimeouts = () => {
-      logoutTimeout = setTimeout(logout, timeout)
+      timeoutHandle = setTimeout(timeoutCallBack, timeout)
     }
 
     const clearTimeouts = () => {
-      if (logoutTimeout) clearTimeout(logoutTimeout)
+      if (timeoutHandle) clearTimeout(timeoutHandle)
     }
     const events = [
       'load',
@@ -36,19 +34,19 @@ export default function AutoLogout({ timeout, onTimeOut }: Props) {
       setTimeouts()
     }
 
-    const logoutOnResume = () => {
+    const onBlur = () => {
       clearTimeouts()
-      logout()
+      timeoutCallBack()
     }
 
+    window.addEventListener('blur', onBlur, { passive: true })
     for (const event of events) {
       window.addEventListener(event, resetTimeout, { passive: true })
-      window.addEventListener('blur', logoutOnResume, { passive: true })
     }
 
     setTimeouts()
     return () => {
-      window.removeEventListener('blur', logoutOnResume)
+      window.removeEventListener('blur', onBlur)
       for (const event of events) {
         window.removeEventListener(event, resetTimeout)
         clearTimeouts()
@@ -56,5 +54,5 @@ export default function AutoLogout({ timeout, onTimeOut }: Props) {
     }
   }, [])
 
-  return <></>
+  return
 }

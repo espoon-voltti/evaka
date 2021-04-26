@@ -1,5 +1,3 @@
-import AutoPinLogout from './AutoPinLogout'
-
 {
   /*
 SPDX-FileCopyrightText: 2017-2021 City of Espoo
@@ -45,6 +43,7 @@ import colors from '../../../../lib-components/colors'
 import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 import PinLogout from './PinLogout'
+import useInactivityTimeout from './InactivityTimeout'
 
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
@@ -121,6 +120,8 @@ export default React.memo(function PinLogin() {
     setLoggingOut(false)
   }
 
+  useInactivityTimeout(120 * 1000, logout)
+
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
@@ -167,7 +168,6 @@ export default React.memo(function PinLogin() {
                   cancel={cancelLogout}
                 />
               )}
-              <AutoPinLogout timeout={120 * 1000} onTimeOut={logout} />
               <ChildSensitiveInfo child={childResult.value.child} />
             </>
           ) : (
