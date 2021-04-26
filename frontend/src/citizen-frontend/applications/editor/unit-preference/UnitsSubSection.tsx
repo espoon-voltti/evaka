@@ -46,6 +46,7 @@ export default React.memo(function UnitsSubSection({
   const loadUnits = useRestApi(getApplicationUnits, setUnits)
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
+  const preferredStartDateIso = preferredStartDate?.formatIso()
 
   useEffect(() => {
     if (!preferredStartDate) {
@@ -62,7 +63,7 @@ export default React.memo(function UnitsSubSection({
 
       loadUnits(unitType, preferredStartDate, shiftCare)
     }
-  }, [applicationType, preparatory, preferredStartDate?.formatIso(), shiftCare])
+  }, [applicationType, preparatory, preferredStartDateIso, shiftCare])
 
   useEffect(() => {
     if (units.isSuccess) {
