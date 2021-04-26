@@ -9,8 +9,66 @@ import {
   Loading,
   Result,
   Success,
-  withStaleCancellation
+  withStaleCancellation,
+  combine
 } from './api'
+
+describe('combine', () => {
+  const success = Success.of(1)
+  const loading = Loading.of<number>()
+  const failure = Failure.of({ message: 'foo' })
+
+  it('is loading while at least one is loading and others are success', () => {
+    const tests: [Result<unknown>, Result<unknown>, Result<unknown>][] = [
+      [success, loading, success],
+      [success, success, loading],
+      [loading, success, success]
+    ]
+    tests.forEach((test) => {
+      const { isLoading, isFailure, isSuccess } = combine(...test)
+      expect(isLoading).toEqual(true)
+      expect(isFailure).toEqual(false)
+      expect(isSuccess).toEqual(false)
+    })
+  })
+
+  it('is failure when at least one is failure', () => {
+    const tests: [Result<unknown>, Result<unknown>, Result<unknown>][] = [
+      [success, loading, failure],
+      [failure, success, loading],
+      [loading, failure, success]
+    ]
+    tests.forEach((test) => {
+      const { isLoading, isFailure, isSuccess } = combine(...test)
+      expect(isLoading).toEqual(false)
+      expect(isFailure).toEqual(true)
+      expect(isSuccess).toEqual(false)
+    })
+  })
+})
+
+describe('mapAll', () => {
+  const success = Success.of('yippee')
+  const loading = Loading.of<string>()
+  const failure = Failure.of<string>({ message: 'foo' })
+  const mapper = {
+    loading() {
+      return 'loading'
+    },
+    failure() {
+      return 'failure'
+    },
+    success(v: string) {
+      return v
+    }
+  }
+
+  it('works', () => {
+    expect(loading.mapAll(mapper)).toEqual('loading')
+    expect(failure.mapAll(mapper)).toEqual('failure')
+    expect(success.mapAll(mapper)).toEqual('yippee')
+  })
+})
 
 describe('utils/async', () => {
   describe('withCancellation', () => {

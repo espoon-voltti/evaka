@@ -28,14 +28,25 @@ export class Loading<T> {
     return new Loading()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   chain<A>(_f: (v: T) => Result<A>): Result<A> {
-    return (this as unknown) as Loading<A>
+    return (this as unknown) as Result<A>
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  apply<A>(f: Result<(v: T) => A>): Result<A> {
+    if (f.isFailure) return (f as unknown) as Result<A>
+    return (this as unknown) as Result<A>
+  }
+
   map<A>(_f: (v: T) => A): Result<A> {
-    return (this as unknown) as Loading<A>
+    return (this as unknown) as Result<A>
+  }
+
+  mapAll<A>(fs: {
+    loading: () => A
+    failure: () => A
+    success: (v: T) => A
+  }): A {
+    return fs.loading()
   }
 
   getOrElse<A>(other: A): A | T {
@@ -68,14 +79,24 @@ export class Failure<T> {
     return new Failure(e.message)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   chain<A>(_f: (v: T) => Result<A>): Result<A> {
     return (this as unknown) as Result<A>
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  apply<A>(_f: Result<(v: T) => A>): Result<A> {
+    return (this as unknown) as Result<A>
+  }
+
   map<A>(_f: (v: T) => A): Result<A> {
     return (this as unknown) as Result<A>
+  }
+
+  mapAll<A>(fs: {
+    loading: () => A
+    failure: () => A
+    success: (v: T) => A
+  }): A {
+    return fs.failure()
   }
 
   getOrElse<A>(other: A): A | T {
@@ -103,14 +124,81 @@ export class Success<T> {
     return f(this.value)
   }
 
+  apply<A>(f: Result<(v: T) => A>): Result<A> {
+    if (f.isSuccess) {
+      return Success.of(f.value(this.value))
+    }
+    return (f as unknown) as Result<A>
+  }
+
   map<A>(f: (v: T) => A): Result<A> {
     return this.chain((v) => Success.of(f(v)))
+  }
+
+  mapAll<A>(fs: {
+    loading: () => A
+    failure: () => A
+    success: (v: T) => A
+  }): A {
+    return fs.success(this.value)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getOrElse<A>(_other: A): A | T {
     return this.value
   }
+}
+
+export function map<A, B, C>(
+  ar: Result<A>,
+  br: Result<B>,
+  fn: (a: A, b: B) => C
+): Result<C>
+export function map<A, B, C, D>(
+  ar: Result<A>,
+  br: Result<B>,
+  cr: Result<C>,
+  fn: (a: A, b: B, c: C) => D
+): Result<D>
+export function map<A, B, C, D>(...args: unknown[]): Result<unknown> {
+  switch (args.length) {
+    case 3: {
+      const [ar, br, fn] = args as [Result<A>, Result<B>, (a: A, b: B) => C]
+      const f = (a: A) => (b: B) => fn(a, b)
+      return br.apply(ar.map(f))
+    }
+    case 4: {
+      const [ar, br, cr, fn] = args as [
+        Result<A>,
+        Result<B>,
+        Result<C>,
+        (a: A, b: B, c: C) => D
+      ]
+      const f = (a: A) => (b: B) => (c: C) => fn(a, b, c)
+      return cr.apply(br.apply(ar.map(f)))
+    }
+  }
+  throw new Error('not reached')
+}
+
+export function combine<A, B>(ar: Result<A>, br: Result<B>): Result<[A, B]>
+export function combine<A, B, C>(
+  ar: Result<A>,
+  br: Result<B>,
+  cr: Result<C>
+): Result<[A, B, C]>
+export function combine<A, B, C>(...args: unknown[]): Result<unknown> {
+  switch (args.length) {
+    case 2: {
+      const [ar, br] = args as [Result<A>, Result<B>]
+      return map(ar, br, (a, b): [A, B] => [a, b])
+    }
+    case 3: {
+      const [ar, br, cr] = args as [Result<A>, Result<B>, Result<C>]
+      return map(ar, br, cr, (a, b, c): [A, B, C] => [a, b, c])
+    }
+  }
+  throw new Error('not reached')
 }
 
 export interface Cancelled {
