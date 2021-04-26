@@ -2,29 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { ServiceNeedFormData } from '../../../applications/editor/ApplicationFormData'
-import { useTranslation } from '../../../localization'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import EditorSection from '../../../applications/editor/EditorSection'
-import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
-import { getErrorCount } from '../../../form-validation'
-import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'
-import AssistanceNeedSubSection from '../../../applications/editor/service-need/AssistanceNeedSubSection'
 import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/api-types/application/enums'
+import { UpdateStateFn } from 'lib-common/form-state'
+import LocalDate from 'lib-common/local-date'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import React from 'react'
+import EditorSection from '../../../applications/editor/EditorSection'
+import AssistanceNeedSubSection from '../../../applications/editor/service-need/AssistanceNeedSubSection'
+import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'
 import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
-import LocalDate from 'lib-common/local-date'
+import { getErrorCount } from '../../../form-validation'
+import { useTranslation } from '../../../localization'
+import { ServiceNeedFormData } from '../ApplicationFormData'
+import { ApplicationFormDataErrors } from '../validations'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus
   originalPreferredStartDate: LocalDate | null
   type: ApplicationType
   formData: ServiceNeedFormData
-  updateFormData: (update: Partial<ServiceNeedFormData>) => void
+  updateFormData: UpdateStateFn<ServiceNeedFormData>
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
 }

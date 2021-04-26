@@ -64,7 +64,9 @@ function GroupCaretakersModal({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [conflict, setConflict] = useState<boolean>(false)
 
-  const assignForm = (values: Partial<FormState>) => {
+  const assignForm = <K extends keyof FormState>(
+    values: Pick<FormState, K>
+  ) => {
     setForm({
       ...form,
       ...values

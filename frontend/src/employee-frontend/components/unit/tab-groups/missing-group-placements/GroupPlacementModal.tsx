@@ -5,6 +5,7 @@
 import React, { useState, useContext } from 'react'
 import styled from 'styled-components'
 
+import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
@@ -90,7 +91,7 @@ export default React.memo(function GroupPlacementModal({
   }
   const [form, setForm] = useState<GroupPlacementForm>(getInitialFormState())
 
-  const assignFormValues = (values: Partial<GroupPlacementForm>) => {
+  const assignFormValues: UpdateStateFn<GroupPlacementForm> = (values) => {
     setForm({
       ...form,
       ...values,

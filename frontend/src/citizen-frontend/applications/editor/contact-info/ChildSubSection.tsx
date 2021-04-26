@@ -15,7 +15,7 @@ import { Gap } from 'lib-components/white-space'
 import { errorToInputInfo } from '../../../form-validation'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
-import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
+import { ContactInfoSectionProps } from './ContactInfoSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 
 export default React.memo(function ChildSubSection({
@@ -86,11 +86,12 @@ export default React.memo(function ChildSubSection({
               date={formData.childMoveDate}
               data-qa={'childMoveDate-input'}
               onChange={(value) =>
-                updateFormData(
-                  formData.guardianFutureAddressEqualsChild
-                    ? { guardianMoveDate: value, childMoveDate: value }
-                    : { childMoveDate: value }
-                )
+                formData.guardianFutureAddressEqualsChild
+                  ? updateFormData({
+                      guardianMoveDate: value,
+                      childMoveDate: value
+                    })
+                  : updateFormData({ childMoveDate: value })
               }
               locale={lang}
               info={errorToInputInfo(errors.childMoveDate, t.validationErrors)}
@@ -109,16 +110,14 @@ export default React.memo(function ChildSubSection({
                   value={formData.childFutureStreet}
                   data-qa={'childFutureStreet-input'}
                   onChange={(value) =>
-                    updateFormData(
-                      formData.guardianFutureAddressEqualsChild
-                        ? {
-                            childFutureStreet: value,
-                            guardianFutureStreet: value
-                          }
-                        : {
-                            childFutureStreet: value
-                          }
-                    )
+                    formData.guardianFutureAddressEqualsChild
+                      ? updateFormData({
+                          childFutureStreet: value,
+                          guardianFutureStreet: value
+                        })
+                      : updateFormData({
+                          childFutureStreet: value
+                        })
                   }
                   info={errorToInputInfo(
                     errors.childFutureStreet,
@@ -140,16 +139,12 @@ export default React.memo(function ChildSubSection({
                   value={formData.childFuturePostalCode}
                   data-qa={'childFuturePostalCode-input'}
                   onChange={(value) =>
-                    updateFormData(
-                      formData.guardianFutureAddressEqualsChild
-                        ? {
-                            guardianFuturePostalCode: value,
-                            childFuturePostalCode: value
-                          }
-                        : {
-                            childFuturePostalCode: value
-                          }
-                    )
+                    formData.guardianFutureAddressEqualsChild
+                      ? updateFormData({
+                          guardianFuturePostalCode: value,
+                          childFuturePostalCode: value
+                        })
+                      : updateFormData({ childFuturePostalCode: value })
                   }
                   info={errorToInputInfo(
                     errors.childFuturePostalCode,
@@ -171,16 +166,12 @@ export default React.memo(function ChildSubSection({
                   value={formData.childFuturePostOffice}
                   data-qa={'childFuturePostOffice-input'}
                   onChange={(value) =>
-                    updateFormData(
-                      formData.guardianFutureAddressEqualsChild
-                        ? {
-                            guardianFuturePostOffice: value,
-                            childFuturePostOffice: value
-                          }
-                        : {
-                            childFuturePostOffice: value
-                          }
-                    )
+                    formData.guardianFutureAddressEqualsChild
+                      ? updateFormData({
+                          guardianFuturePostOffice: value,
+                          childFuturePostOffice: value
+                        })
+                      : updateFormData({ childFuturePostOffice: value })
                   }
                   info={errorToInputInfo(
                     errors.childFuturePostOffice,

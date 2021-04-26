@@ -5,6 +5,7 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
+import { UpdateStateFn } from '../../../../lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
@@ -152,7 +153,7 @@ function ServiceNeedForm(props: Props) {
 
   const checkAnyConflict = () => checkHardConflict() || checkSoftConflict()
 
-  const updateFormState = (value: Partial<FormState>) => {
+  const updateFormState: UpdateStateFn<FormState> = (value) => {
     const newState = { ...form, ...value }
     setForm(newState)
   }

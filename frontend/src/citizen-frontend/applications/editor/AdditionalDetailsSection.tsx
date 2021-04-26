@@ -2,23 +2,24 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { UpdateStateFn } from 'lib-common/form-state'
+import { TextArea } from 'lib-components/atoms/form/InputField'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { TextArea } from 'lib-components/atoms/form/InputField'
-import { useTranslation } from '../../localization'
-import { AdditionalDetailsFormData } from '../../applications/editor/ApplicationFormData'
-import EditorSection from '../../applications/editor/EditorSection'
-import { ApplicationType } from 'lib-common/api-types/application/enums'
-import { ApplicationFormDataErrors } from '../../applications/editor/validations'
-import { getErrorCount } from '../../form-validation'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import React from 'react'
 import styled from 'styled-components'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import EditorSection from '../../applications/editor/EditorSection'
+import { getErrorCount } from '../../form-validation'
+import { useTranslation } from '../../localization'
+import { AdditionalDetailsFormData } from './ApplicationFormData'
+import { ApplicationFormDataErrors } from './validations'
 
 type Props = {
   formData: AdditionalDetailsFormData
-  updateFormData: (v: Partial<AdditionalDetailsFormData>) => void
+  updateFormData: UpdateStateFn<AdditionalDetailsFormData>
   errors: ApplicationFormDataErrors['additionalDetails']
   verificationRequested: boolean
   applicationType: ApplicationType

@@ -2,21 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { UnitPreferenceFormData } from '../../../applications/editor/ApplicationFormData'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import LocalDate from 'lib-common/local-date'
-import { useTranslation } from '../../../localization'
-import EditorSection from '../../../applications/editor/EditorSection'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
-import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
-import { getErrorCount } from '../../../form-validation'
+import { UpdateStateFn } from 'lib-common/form-state'
+import LocalDate from 'lib-common/local-date'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import React from 'react'
+import EditorSection from '../../../applications/editor/EditorSection'
 import SiblingBasisSubSection from '../../../applications/editor/unit-preference/SiblingBasisSubSection'
 import UnitsSubSection from '../../../applications/editor/unit-preference/UnitsSubSection'
+import { getErrorCount } from '../../../form-validation'
+import { useTranslation } from '../../../localization'
+import { UnitPreferenceFormData } from '../ApplicationFormData'
+import { ApplicationFormDataErrors } from '../validations'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData
-  updateFormData: (update: Partial<UnitPreferenceFormData>) => void
+  updateFormData: UpdateStateFn<UnitPreferenceFormData>
   errors: ApplicationFormDataErrors['unitPreference']
   verificationRequested: boolean
   applicationType: ApplicationType

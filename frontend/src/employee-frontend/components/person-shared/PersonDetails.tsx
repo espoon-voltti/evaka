@@ -5,6 +5,7 @@
 import * as React from 'react'
 import { faPen } from 'lib-icons'
 import { Result } from 'lib-common/api'
+import { UpdateStateFn } from '../../../lib-common/form-state'
 import { PersonDetails } from '../../types/person'
 import { useTranslation } from '../../state/i18n'
 import { useContext, useEffect, useState } from 'react'
@@ -141,7 +142,7 @@ const PersonDetails = React.memo(function PersonDetails({
   const person = personResult.value
   const powerEditing = editing && person.socialSecurityNumber == null
 
-  const updateForm = (values: Partial<Form>) => {
+  const updateForm: UpdateStateFn<Form> = (values) => {
     setForm({
       ...form,
       ...values

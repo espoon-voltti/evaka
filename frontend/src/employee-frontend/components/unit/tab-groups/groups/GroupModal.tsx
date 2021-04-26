@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
+import { UpdateStateFn } from 'lib-common/form-state'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../../state/i18n'
@@ -63,7 +64,7 @@ function GroupModal({ unitId, reload }: Props) {
     })
   }, [form])
 
-  const assignForm = (values: Partial<CreateGroupForm>) => {
+  const assignForm: UpdateStateFn<CreateGroupForm> = (values) => {
     setForm({ ...form, ...values })
   }
 
