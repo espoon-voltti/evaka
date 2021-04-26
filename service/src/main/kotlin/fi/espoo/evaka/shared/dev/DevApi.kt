@@ -187,6 +187,11 @@ class DevApi(
         return ResponseEntity.ok().build()
     }
 
+    @PostMapping("/daycare-group-acl")
+    fun createDaycareGroupAclRows(db: Database.Connection, @RequestBody rows: List<DevDaycareGroupAcl>) {
+        db.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } }
+    }
+
     @PostMapping("/daycare-groups")
     fun createDaycareGroups(db: Database, @RequestBody groups: List<DevDaycareGroup>): ResponseEntity<Unit> {
         db.transaction {
@@ -1308,3 +1313,5 @@ data class DevPricing(
     val minThreshold6: Int,
     val thresholdIncrease6Plus: Int
 )
+
+data class DevDaycareGroupAcl(val groupId: UUID, val employeeId: UUID)

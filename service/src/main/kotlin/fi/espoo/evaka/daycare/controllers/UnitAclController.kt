@@ -16,12 +16,15 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.clearDaycareGroupAcl
+import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -123,6 +126,26 @@ class UnitAclController(private val acl: AccessControlList) {
         removeStaffMember(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
+
+    @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")
+    fun updateStaffGroupAcl(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable daycareId: UUID,
+        @PathVariable employeeId: UUID,
+        @RequestBody update: GroupAclUpdate
+    ) {
+        Audit.UnitGroupAclUpdate.log(targetId = daycareId, objectId = employeeId)
+        acl.getRolesForUnit(user, daycareId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+
+        db.transaction {
+            it.clearDaycareGroupAcl(daycareId, employeeId)
+            it.insertDaycareGroupAcl(daycareId, employeeId, update.groupIds)
+        }
+    }
+
+    data class GroupAclUpdate(val groupIds: List<UUID>)
 }
 
 data class DaycareAclResponse(val rows: List<DaycareAclRow>)

@@ -4,6 +4,7 @@ import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.clearDaycareGroupAcl
 import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
 import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.auth.hasDaycareAclRowForAnyUnit
@@ -17,6 +18,7 @@ fun getDaycareAclRows(db: Database.Connection, daycareId: UUID): List<DaycareAcl
 
 fun addUnitSupervisor(db: Database.Connection, daycareId: UUID, employeeId: UUID) {
     db.transaction {
+        it.clearDaycareGroupAcl(daycareId, employeeId)
         it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
         it.upsertMessageAccountForEmployee(employeeId)
     }
@@ -33,7 +35,10 @@ fun removeUnitSupervisor(db: Database.Connection, daycareId: UUID, employeeId: U
 }
 
 fun addSpecialEducationTeacher(db: Database.Connection, daycareId: UUID, employeeId: UUID) {
-    db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+    db.transaction {
+        it.clearDaycareGroupAcl(daycareId, employeeId)
+        it.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER)
+    }
 }
 
 fun removeSpecialEducationTeacher(db: Database.Connection, daycareId: UUID, employeeId: UUID) {
@@ -45,5 +50,8 @@ fun addStaffMember(db: Database.Connection, daycareId: UUID, employeeId: UUID) {
 }
 
 fun removeStaffMember(db: Database.Connection, daycareId: UUID, employeeId: UUID) {
-    db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
+    db.transaction {
+        it.clearDaycareGroupAcl(daycareId, employeeId)
+        it.deleteDaycareAclRow(daycareId, employeeId, UserRole.STAFF)
+    }
 }

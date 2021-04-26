@@ -77,3 +77,31 @@ AND role = :role
     .bind("employeeId", employeeId)
     .bind("role", role)
     .execute()
+
+fun Database.Transaction.clearDaycareGroupAcl(daycareId: UUID, employeeId: UUID) = createUpdate(
+    """
+DELETE FROM daycare_group_acl
+WHERE employee_id = :employeeId
+AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = :daycareId)
+"""
+)
+    .bind("daycareId", daycareId)
+    .bind("employeeId", employeeId)
+    .execute()
+
+fun Database.Transaction.insertDaycareGroupAcl(daycareId: UUID, employeeId: UUID, groupIds: List<UUID>) = prepareBatch(
+    """
+INSERT INTO daycare_group_acl
+SELECT id, :employeeId
+FROM daycare_group
+WHERE id = :groupId AND daycare_id = :daycareId
+"""
+).let { batch ->
+    groupIds.forEach { groupId ->
+        batch
+            .bind("daycareId", daycareId)
+            .bind("employeeId", employeeId)
+            .bind("groupId", groupId)
+    }
+    batch.execute()
+}
