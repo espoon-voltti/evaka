@@ -141,6 +141,7 @@ export default function StaffPage({ onNavigate }: Props) {
       return <Loader />
     },
     success([attendance, staffAttendances, occupancy]) {
+      const staffAttendance = staffAttendances.attendances[today.toString()]
       const groupOccupancy = occupancy.find(
         (group) => group.groupId === groupIdOrAll
       )?.occupancies.min?.percentage // There's only one occupancy, because we only fetch today's occupancy, so we can use `min`
@@ -154,13 +155,20 @@ export default function StaffPage({ onNavigate }: Props) {
           />
           <ContentArea opaque fullHeight>
             <StaffAttendanceEditor
-              staffAttendance={staffAttendances.attendances[today.toString()]}
+              staffAttendance={staffAttendance}
               realizedOccupancy={groupOccupancy}
               isSaving={saving}
               onConfirm={updateAttendance}
             />
           </ContentArea>
-          <BottomNavBar selected="staff" onChange={onNavigate} />
+          <BottomNavBar
+            selected="staff"
+            staffCount={{
+              count: staffAttendance.count ?? 0,
+              countOther: staffAttendance.countOther ?? 0
+            }}
+            onChange={onNavigate}
+          />
         </>
       )
     }

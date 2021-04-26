@@ -39,6 +39,7 @@ export const ReserveSpace = styled.div`
 
 const Button = styled.div`
   width: 100px;
+  position: relative;
 `
 
 const CustomIcon = styled(FontAwesomeIcon)<{ selected: boolean }>`
@@ -53,17 +54,16 @@ const IconText = styled.span<{ selected: boolean }>`
   font-size: 14px;
 `
 
-const Circle = styled.span`
-  height: 16px;
-  width: 16px;
-  background-color: ${colors.accents.orange};
+const Circle = styled.span<{ color: keyof typeof colors.accents }>`
+  min-width: 16px;
+  background-color: ${(p) => colors.accents[p.color]};
   color: ${colors.greyscale.white};
-  border-radius: 50%;
+  border-radius: 8px;
   display: inline-block;
   position: absolute;
-  right: 8px;
+  right: 0;
   top: -4px;
-  padding-left: 4.5px;
+  padding: 0 4.5px;
   font-size: 11px;
 `
 
@@ -127,7 +127,12 @@ export default function BottomNavbar({
             }
           >
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
-            {staffCount?.count} {staffCount?.countOther}
+            {staffCount &&
+            (staffCount.count != 0 || staffCount.countOther != 0) ? (
+              <Circle color="violet">
+                {staffCount?.count}+{staffCount?.countOther}
+              </Circle>
+            ) : null}
           </BottomText>
         </Button>
         <div style={{ display: 'none' }}>
@@ -144,7 +149,9 @@ export default function BottomNavbar({
                 icon={faComments}
                 selected={selected === 'messages'}
               />
-              {messageCount || 0 > 0 ? <Circle>{messageCount}</Circle> : null}
+              {messageCount || 0 > 0 ? (
+                <Circle color="orange">{messageCount}</Circle>
+              ) : null}
             </BottomText>
           </Button>
         </div>

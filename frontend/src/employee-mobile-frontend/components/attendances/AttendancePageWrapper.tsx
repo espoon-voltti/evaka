@@ -41,6 +41,10 @@ import { useTranslation } from '../../state/i18n'
 import FreeTextSearch from '../common/FreeTextSearch'
 import TopBar from '../common/TopBar'
 import BottomNavbar, { NavItem } from '../common/BottomNavbar'
+import { StaffAttendanceGroup } from 'lib-common/api-types/staffAttendances'
+import { Loading, Result, combine, Success } from 'lib-common/api'
+import { getStaffAttendances } from 'employee-mobile-frontend/api/staffAttendances'
+import LocalDate from 'lib-common/local-date'
 
 export interface Props {
   onNavigate: (page: NavItem) => void
@@ -64,6 +68,9 @@ export default React.memo(function AttendancePageWrapper({
   const { attendanceResponse, setAttendanceResponse } = useContext(
     AttendanceUIContext
   )
+  const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
+    Result<StaffAttendanceGroup | undefined>
+  >(Loading.of())
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')
@@ -76,10 +83,26 @@ export default React.memo(function AttendancePageWrapper({
     getDaycareAttendances,
     setAttendanceResponse
   )
+  const loadStaffAttendances = useRestApi(
+    getStaffAttendances,
+    setStaffAttendancesResponse
+  )
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
   }, [groupIdOrAll, unitId, currentPage])
+
+  const today = LocalDate.today()
+  useEffect(() => {
+    if (groupIdOrAll !== 'all') {
+      loadStaffAttendances(groupIdOrAll, {
+        year: today.year,
+        month: today.month
+      })
+    } else {
+      setStaffAttendancesResponse(Success.of(undefined))
+    }
+  }, [groupIdOrAll, today.year, today.month, loadStaffAttendances])
 
   useEffect(() => {
     if (freeText === '') {
@@ -218,11 +241,16 @@ export default React.memo(function AttendancePageWrapper({
 
   const containerSpring = useSpring<{ x: number }>({ x: showSearch ? 1 : 0 })
 
-  return (
-    <>
-      {attendanceResponse.isFailure && <ErrorSegment />}
-      {attendanceResponse.isLoading && <Loader />}
-      {attendanceResponse.isSuccess && (
+  return combine(attendanceResponse, staffAttendancesResponse).mapAll({
+    failure() {
+      return <ErrorSegment />
+    },
+    loading() {
+      return <Loader />
+    },
+    success([attendance, staffAttendances]) {
+      const staffAttendance = staffAttendances?.attendances[today.toString()]
+      return (
         <>
           <SearchBar
             style={{
@@ -230,7 +258,7 @@ export default React.memo(function AttendancePageWrapper({
             }}
           >
             <NoMarginTitle size={1} centered smaller bold data-qa="unit-name">
-              {attendanceResponse.value.unit.name}{' '}
+              {attendance.unit.name}{' '}
               <IconButton
                 onClick={() => setShowSearch(!showSearch)}
                 icon={faTimes}
@@ -257,7 +285,7 @@ export default React.memo(function AttendancePageWrapper({
             </ContentArea>
           </SearchBar>
           <TopBar
-            unitName={attendanceResponse.value.unit.name}
+            unitName={attendance.unit.name}
             selectedGroup={selectedGroup}
             onChangeGroup={changeGroup}
             onSearch={() => setShowSearch(!showSearch)}
@@ -309,11 +337,22 @@ export default React.memo(function AttendancePageWrapper({
               <Redirect to={`${path}/coming`} />
             </Switch>
           </FullHeightContentArea>
-          <BottomNavbar selected="child" onChange={onNavigate} />
+          <BottomNavbar
+            selected="child"
+            staffCount={
+              staffAttendance
+                ? {
+                    count: staffAttendance.count ?? 0,
+                    countOther: staffAttendance.countOther ?? 0
+                  }
+                : undefined
+            }
+            onChange={onNavigate}
+          />
         </>
-      )}
-    </>
-  )
+      )
+    }
+  })
 })
 
 const NoMarginTitle = styled(Title)`
