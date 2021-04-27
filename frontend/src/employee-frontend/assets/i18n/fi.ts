@@ -310,7 +310,7 @@ export const fi = {
         AGREED: 'Sovittu yhdessä',
         NOT_AGREED: 'Ei ole sovittu yhdessä',
         RIGHT_TO_GET_NOTIFIED: 'Tiedonsaantioikeus',
-        NOT_SET: 'Ei asetettu'
+        NOT_SET: 'Huoltajat asuvat samassa osoitteessa'
       },
       noOtherChildren: 'Ei muita lapsia'
     },
@@ -2167,11 +2167,11 @@ export const fi = {
         7: 'SU'
       },
       roundTheClock: 'Ilta- ja vuorohoito',
-      capacity: 'Yksikön kapasiteetti',
+      capacity: 'Yksikön laskennallinen lapsimäärä',
       language: 'Yksikön kieli',
       ghostUnit: 'Haamuyksikkö',
       integrations: 'Integraatiot',
-      ophUnitOid: 'Yksikön OID',
+      ophUnitOid: 'Toimipaikan OID',
       ophOrganizerOid: 'Järjestäjän OID',
       ophOrganizationOid: 'Organisaation OID',
       costCenter: 'Kustannuspaikka',
