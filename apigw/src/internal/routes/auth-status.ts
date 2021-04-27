@@ -10,7 +10,6 @@ import {
 } from '../../shared/service-client'
 import { logoutExpress } from '../../shared/session'
 import { fromCallback } from '../../shared/promise-utils'
-import { SAML } from 'passport-saml'
 
 export default toRequestHandler(async (req, res) => {
   const user = req.user
@@ -29,8 +28,8 @@ export default toRequestHandler(async (req, res) => {
           roles: [...globalRoles, ...allScopedRoles]
         })
       } else {
-        // device has been removed (SAML config not relevant)
-        await logoutExpress(req, res, 'employee', new SAML({}))
+        // device has been removed
+        await logoutExpress(req, res, 'employee')
         res.status(200).json({ loggedIn: false })
       }
     } else {

@@ -16,6 +16,7 @@ import { RedisClient } from 'redis'
 import AsyncRedisClient from './async-redis-client'
 import { cookieSecret, sessionTimeoutMinutes, useSecureCookies } from './config'
 import { toMiddleware } from './express'
+import { logDebug } from './logging'
 import { fromCallback } from './promise-utils'
 
 export type SessionType = 'enduser' | 'employee'
@@ -59,8 +60,13 @@ function logoutKey(nameID: string, sessionIndex?: string) {
 
 async function tryParseProfile(
   req: Request,
-  saml: SAML
+  saml?: SAML
 ): Promise<Profile | null | undefined> {
+  if (!saml) {
+    logDebug('No SAML parser provided, skipping profile parsing from request')
+    return
+  }
+
   // NOTE: This duplicate parsing can be removed if passport-saml ever exposes
   // an alternative for passport.authenticate() that either lets us hook into
   // it before any redirects or separate XML parsing and authentication methods.
@@ -129,7 +135,7 @@ export async function saveLogoutToken(
 
 async function consumeLogoutRequest(
   req: express.Request,
-  saml: SAML
+  saml?: SAML
 ): Promise<void> {
   if (!asyncRedisClient) return
 
@@ -140,7 +146,12 @@ async function consumeLogoutRequest(
   const nameID = profile?.nameID ?? req.user?.nameID
   const sessionIndex = profile?.sessionIndex ?? req.user?.sessionIndex
 
-  if (!nameID) return // Nothing to consume without a SAMLRequest or session
+  if (!nameID) {
+    logDebug(
+      "Can't consume logout request without a SAMLRequest or session cookie, ignoring"
+    )
+    return
+  }
 
   const key = logoutKey(nameID, sessionIndex)
   const sid = await asyncRedisClient.get(key)
@@ -155,7 +166,7 @@ export async function logoutExpress(
   req: express.Request,
   res: express.Response,
   sessionType: SessionType,
-  saml: SAML
+  saml?: SAML
 ) {
   req.logout()
   await consumeLogoutRequest(req, saml)
