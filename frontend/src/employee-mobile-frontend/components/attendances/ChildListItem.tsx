@@ -19,6 +19,7 @@ import { useTranslation } from '../../state/i18n'
 import { formatDateTimeOnly } from '../../utils/date'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { Link } from 'react-router-dom'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -168,8 +169,8 @@ export default React.memo(function ChildListItem({
         </ChildBoxInfo>
       </AttendanceLinkBox>
       <ToolsColumn>
-        {(attendanceChild.dailyNote || groupNote) &&
-          attendanceResponse.isSuccess && (
+        <FixedSpaceColumn spacing={'xxs'}>
+          {attendanceChild.dailyNote && attendanceResponse.isSuccess && (
             <Link
               to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
               data-qa={'link-child-daycare-daily-note'}
@@ -181,6 +182,19 @@ export default React.memo(function ChildListItem({
               />
             </Link>
           )}
+          {groupNote && attendanceResponse.isSuccess && (
+            <Link
+              to={`/units/${attendanceResponse.value.unit.id}/groups/${attendanceChild.groupId}/childattendance/${attendanceChild.id}/note`}
+              data-qa={'link-child-daycare-daily-note'}
+            >
+              <RoundIcon
+                content={farStickyNote}
+                color={colors.blues.light}
+                size={'m'}
+              />
+            </Link>
+          )}
+        </FixedSpaceColumn>
       </ToolsColumn>
     </ChildBox>
   )
