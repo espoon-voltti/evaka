@@ -48,7 +48,8 @@ export const fi = {
     back: 'Takaisin',
     hours: 'Tuntia',
     remove: 'Poista',
-    clear: 'Tyhjennä'
+    clear: 'Tyhjennä',
+    save: 'Tallenna'
   },
   absences: {
     title: 'Poissaolomerkinnät',
@@ -110,13 +111,13 @@ export const fi = {
       notSet: 'Varhaiskasvatusaikaa ei asetettuna'
     },
     notes: {
-      dailyNotes: 'Päivän muistiinpanot',
+      dailyNotes: 'Muistiinpanot',
       labels: {
         note: 'Päivän tapahtumia (ei terveystietoja)',
         feedingNote: 'Lapsi söi tänään',
         sleepingNote: 'Lapsi nukkui tänään',
         reminderNote: 'Muistettavia asioita',
-        groupNotesHeader: 'Koko ryhmää koskeva muistiinpano'
+        groupNotesHeader: 'Muistiinpano koko ryhmälle'
       },
       values: {
         GOOD: 'Hyvin',
@@ -130,11 +131,14 @@ export const fi = {
       },
       placeholders: {
         note: 'Mitä tänään opin, leikin, oivalsin.',
+        groupNote: 'Kirjoita muistiinpano',
         reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
         sleepingTime: 'Esim 1,5'
       },
       noNotes: 'Ei merkintöjä tälle päivälle',
-      clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?'
+      clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?',
+      groupNote: 'Ryhmän muistiinpano',
+      note: 'Lapsen päivän muistiinpanot'
     },
     absenceTitle: 'Poissaolomerkintä',
     pin: {
