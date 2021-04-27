@@ -22,6 +22,8 @@ internal val vardaMinDate = LocalDate.of(2019, 1, 1)
 internal val vardaPlacementTypes = arrayOf(
     PlacementType.DAYCARE,
     PlacementType.DAYCARE_PART_TIME,
+    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
     PlacementType.PRESCHOOL_DAYCARE,
     PlacementType.PREPARATORY_DAYCARE
 )
