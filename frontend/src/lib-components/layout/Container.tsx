@@ -43,6 +43,8 @@ type ContentAreaProps = {
   paddingVertical?: SpacingSize
   paddingHorizontal?: SpacingSize
   fullHeight?: boolean
+  blue?: boolean
+  shadow?: boolean
 }
 
 export const ContentArea = styled.section<ContentAreaProps>`
@@ -54,9 +56,16 @@ export const ContentArea = styled.section<ContentAreaProps>`
         ? defaultMargins[p.paddingHorizontal]
         : defaultMargins.L
     }`};
-  background-color: ${(props) => (props.opaque ? 'white' : 'transparent')};
+  background-color: ${(props) =>
+    props.opaque
+      ? 'white'
+      : props.blue
+      ? colors.brandEspoo.espooTurquoiseLight
+      : 'transparent'};
   position: relative;
   ${(p) => (p.fullHeight ? `min-height: 100vh` : '')}
+  ${(p) =>
+    p.shadow ? `box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter}` : ''}
 `
 
 type CollapsibleContentAreaProps = ContentAreaProps & {

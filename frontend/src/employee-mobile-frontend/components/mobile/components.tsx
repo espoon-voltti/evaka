@@ -53,8 +53,12 @@ export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
 
-export const ContentAreaWithShadow = styled(ContentArea)<{ blue?: boolean }>`
-  box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter};
-  ${(p) =>
-    p.blue ? `background-color: ${colors.brandEspoo.espooTurquoiseLight}` : ''}
+export const ChipWrapper = styled.div<{ $noMargin?: boolean }>`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  > div {
+    margin-bottom: ${(p) => (p.$noMargin ? `0` : `16px`)};
+  }
 `

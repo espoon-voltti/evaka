@@ -21,11 +21,9 @@ import {
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Result, Loading } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { ContentArea } from 'lib-components/layout/Container'
 
-import {
-  ContentAreaWithShadow,
-  TallContentArea
-} from '../../../components/mobile/components'
+import { TallContentArea } from '../../../components/mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   childDeparts,
@@ -130,7 +128,8 @@ export default React.memo(function MarkDeparted() {
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
             }
           />
-          <ContentAreaWithShadow
+          <ContentArea
+            shadow
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'m'}
@@ -206,9 +205,10 @@ export default React.memo(function MarkDeparted() {
                 </FixedSpaceRow>
               </Actions>
             )}
-          </ContentAreaWithShadow>
+          </ContentArea>
           <Gap size={'s'} />
-          <ContentAreaWithShadow
+          <ContentArea
+            shadow
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'s'}
@@ -227,7 +227,7 @@ export default React.memo(function MarkDeparted() {
                 groupNote={groupNote ? groupNote : undefined}
               />
             </DailyNotes>
-          </ContentAreaWithShadow>
+          </ContentArea>
         </TallContentArea>
       )}
     </>

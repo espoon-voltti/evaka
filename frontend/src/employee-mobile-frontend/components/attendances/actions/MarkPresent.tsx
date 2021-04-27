@@ -19,11 +19,9 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import Title from 'lib-components/atoms/Title'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { ContentArea } from 'lib-components/layout/Container'
 
-import {
-  ContentAreaWithShadow,
-  TallContentArea
-} from '../../../components/mobile/components'
+import { TallContentArea } from '../../../components/mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   childArrivesPOST,
@@ -89,7 +87,8 @@ export default React.memo(function MarkPresent() {
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
             }
           />
-          <ContentAreaWithShadow
+          <ContentArea
+            shadow
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'m'}
@@ -120,9 +119,10 @@ export default React.memo(function MarkPresent() {
                 />
               </FixedSpaceRow>
             </Actions>
-          </ContentAreaWithShadow>
+          </ContentArea>
           <Gap size={'s'} />
-          <ContentAreaWithShadow
+          <ContentArea
+            shadow
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'s'}
@@ -141,7 +141,7 @@ export default React.memo(function MarkPresent() {
                 groupNote={groupNote ? groupNote : undefined}
               />
             </DailyNotes>
-          </ContentAreaWithShadow>
+          </ContentArea>
         </TallContentArea>
       )}
     </>

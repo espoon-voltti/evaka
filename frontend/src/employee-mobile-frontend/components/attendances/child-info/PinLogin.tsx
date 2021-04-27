@@ -14,33 +14,32 @@ import React, {
 } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import ReactSelect from 'react-select'
 
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import ReactSelect from 'react-select'
+import { ContentArea } from 'lib-components/layout/Container'
+import { Result } from '../../../../lib-common/api'
+import Loader from 'lib-components/atoms/Loader'
+import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { TallContentArea } from '../../mobile/components'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import Title from 'lib-components/atoms/Title'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-components/colors'
+import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 
 import {
   ChildResult,
   getChildSensitiveInformation,
   getDaycareAttendances
 } from '../../../api/attendances'
-import { Result } from '../../../../lib-common/api'
 import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
-import Loader from '../../../../lib-components/atoms/Loader'
-import InputField, {
-  InputInfo
-} from '../../../../lib-components/atoms/form/InputField'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
-import { ContentAreaWithShadow, TallContentArea } from '../../mobile/components'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
-import Title from '../../../../lib-components/atoms/Title'
-import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
-import { defaultMargins, Gap } from '../../../../lib-components/white-space'
-import colors from '../../../../lib-components/colors'
-import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 import PinLogout from './PinLogout'
 import useInactivityTimeout from './InactivityTimeout'
@@ -171,7 +170,8 @@ export default React.memo(function PinLogin() {
               <ChildSensitiveInfo child={childResult.value.child} />
             </>
           ) : (
-            <ContentAreaWithShadow
+            <ContentArea
+              shadow
               opaque={true}
               paddingHorizontal={'s'}
               paddingVertical={'m'}
@@ -225,7 +225,7 @@ export default React.memo(function PinLogin() {
                   </>
                 )}
               </FixedSpaceColumn>
-            </ContentAreaWithShadow>
+            </ContentArea>
           )}
         </TallContentArea>
       )}
