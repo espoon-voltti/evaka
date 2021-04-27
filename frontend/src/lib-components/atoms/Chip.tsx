@@ -5,11 +5,14 @@
 import React from 'react'
 import styled from 'styled-components'
 import { readableColor } from 'polished'
+import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import { faCheck } from 'lib-icons'
+import { useSingleAndDoubleClick } from 'lib-common/utils/useSingleAndDoubleClick'
+
 import colors from '../colors'
 import { defaultMargins } from '../white-space'
-import classNames from 'classnames'
 import { tabletMin } from '../breakpoints'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
@@ -50,14 +53,25 @@ export const SelectionChip = React.memo(function SelectionChip({
   showIcon = true
 }: SelectionChipProps) {
   const ariaId = Math.random().toString(36).substring(2, 15)
+  const { handleClick, handleDoubleClick } = useSingleAndDoubleClick(
+    onClick,
+    onDoubleClick
+  )
+
+  function onClick(e: React.MouseEvent<HTMLDivElement>) {
+    e.preventDefault()
+    onChange(!selected)
+  }
+
+  function onDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
+    e.preventDefault()
+  }
 
   return (
     <div data-qa={dataQa}>
       <SelectionChipWrapper
-        onClick={(e) => {
-          e.preventDefault()
-          onChange(!selected)
-        }}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
       >
         <SelectionChipInnerWrapper
           className={classNames({ checked: selected })}
