@@ -346,7 +346,9 @@ export default React.memo(function DailyNoteEditor() {
                       {levelInfoValues.map((levelInfo) => (
                         <Fragment key={levelInfo}>
                           <ChoiceChip
-                            text={i18n.attendances.notes.values[levelInfo]}
+                            text={
+                              i18n.attendances.notes.feedingValues[levelInfo]
+                            }
                             selected={dailyNote.feedingNote === levelInfo}
                             onChange={() => {
                               setDailyNote({
@@ -370,7 +372,9 @@ export default React.memo(function DailyNoteEditor() {
                       {levelInfoValues.map((levelInfo) => (
                         <Fragment key={levelInfo}>
                           <ChoiceChip
-                            text={i18n.attendances.notes.values[levelInfo]}
+                            text={
+                              i18n.attendances.notes.sleepingValues[levelInfo]
+                            }
                             selected={dailyNote.sleepingNote === levelInfo}
                             onChange={() => {
                               setDailyNote({

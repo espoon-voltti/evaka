@@ -38,7 +38,11 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
             <FixedSpaceColumn spacing={'xxs'}>
               <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
               <span>
-                {i18n.attendances.notes.values[child.dailyNote.feedingNote]}
+                {
+                  i18n.attendances.notes.feedingValues[
+                    child.dailyNote.feedingNote
+                  ]
+                }
               </span>
             </FixedSpaceColumn>
           )}
@@ -46,7 +50,11 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
             <FixedSpaceColumn spacing={'xxs'}>
               <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
               <span>
-                {i18n.attendances.notes.values[child.dailyNote.sleepingNote]}
+                {
+                  i18n.attendances.notes.sleepingValues[
+                    child.dailyNote.sleepingNote
+                  ]
+                }
                 {child.dailyNote.sleepingHours &&
                   `. ${child.dailyNote.sleepingHours} ${i18n.common.hours}.`}
               </span>

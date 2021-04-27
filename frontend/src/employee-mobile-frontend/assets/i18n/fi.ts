@@ -119,10 +119,15 @@ export const fi = {
         reminderNote: 'Muistettavia asioita',
         groupNotesHeader: 'Muistiinpano koko ryhmälle'
       },
-      values: {
+      sleepingValues: {
         GOOD: 'Hyvin',
         MEDIUM: 'Vähän',
         NONE: 'Ei ollenkaan'
+      },
+      feedingValues: {
+        GOOD: 'Hyvin',
+        MEDIUM: 'Vähän',
+        NONE: 'Ei ollenkaan/maistoi'
       },
       reminders: {
         DIAPERS: 'Lisää vaippoja',
