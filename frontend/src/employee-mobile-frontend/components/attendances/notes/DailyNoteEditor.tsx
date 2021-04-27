@@ -351,7 +351,10 @@ export default React.memo(function DailyNoteEditor() {
                             onChange={() => {
                               setDailyNote({
                                 ...dailyNote,
-                                feedingNote: levelInfo
+                                feedingNote:
+                                  dailyNote.feedingNote === levelInfo
+                                    ? undefined
+                                    : levelInfo
                               })
                             }}
                             data-qa={`feeding-note-${levelInfo}`}
@@ -370,7 +373,6 @@ export default React.memo(function DailyNoteEditor() {
                             text={i18n.attendances.notes.values[levelInfo]}
                             selected={dailyNote.sleepingNote === levelInfo}
                             onChange={() => {
-                              console.log('vaihdetaan ', dailyNote.sleepingNote)
                               setDailyNote({
                                 ...dailyNote,
                                 sleepingNote:
