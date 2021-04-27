@@ -10,7 +10,8 @@ const names = [
   'espooad-internal-staging.pem',
   'idp.test.espoon-voltti.fi.pem',
   'saml-signing.idp.tunnistautuminen.suomi.fi.pem',
-  'saml-signing-testi.apro.tunnistus.fi.pem'
+  'saml-signing-testi.apro.tunnistus.fi.pem',
+  'tamperead-internal-staging.pem'
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
