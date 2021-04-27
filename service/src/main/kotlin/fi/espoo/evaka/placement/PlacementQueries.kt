@@ -239,7 +239,16 @@ fun Database.Read.getDaycarePlacements(
                 LEFT OUTER JOIN service_need sn
                     ON sn.child_id = pl.child_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                 WHERE sn.id IS NULL
-            ) AS missing_service_need
+            ) AS missing_service_need,
+            CASE
+                WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
+                ELSE (
+                    SELECT count(*)
+                    FROM generate_series(greatest(pl.start_date, '2020-03-01'::date), pl.end_date, '1 day') t
+                    LEFT JOIN new_service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
+                    WHERE sn.id IS NULL
+                )
+            END AS missing_new_service_need
         FROM placement pl
         LEFT OUTER JOIN daycare d on pl.unit_id = d.id
         LEFT OUTER JOIN person ch on pl.child_id = ch.id
@@ -560,6 +569,7 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
         startDate = rs.getDate("start_date").toLocalDate(),
         endDate = rs.getDate("end_date").toLocalDate(),
         type = rs.getEnum("type"),
-        missingServiceNeedDays = rs.getInt("missing_service_need")
+        missingServiceNeedDays = rs.getInt("missing_service_need"),
+        missingNewServiceNeedDays = rs.getInt("missing_new_service_need")
     )
 }
