@@ -1,21 +1,18 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { ContentArea } from 'lib-components/layout/Container'
+import colors from 'lib-components/colors'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { faTimes } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import { ContentAreaWithShadow, TallContentArea } from '../../mobile/components'
-import colors from '../../../../lib-components/colors'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
-import { faTimes } from '../../../../lib-icons'
+import { TallContentArea } from '../../mobile/components'
 
 interface Props {
   loggedInStaffName: string
@@ -37,8 +34,9 @@ export default React.memo(function PinLogout({
         paddingHorizontal={'zero'}
         paddingVertical={'zero'}
       >
-        <ContentAreaWithShadow
-          opaque={true}
+        <ContentArea
+          shadow
+          opaque
           paddingHorizontal={'s'}
           paddingVertical={'m'}
         >
@@ -57,7 +55,7 @@ export default React.memo(function PinLogout({
               {i18n.attendances.pin.logOut}
             </LogoutButton>
           </FixedSpaceColumn>
-        </ContentAreaWithShadow>
+        </ContentArea>
       </TallContentArea>
     </FloatContainer>
   )
