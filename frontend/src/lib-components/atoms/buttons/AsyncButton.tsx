@@ -53,7 +53,7 @@ export default React.memo(function AsyncButton({
       .then((result: void | Result | (void | Result)[]) => {
         if (Array.isArray(result)) {
           let failure = false
-          for (let elem of result) {
+          for (const elem of result) {
             if (elem && elem.isFailure) {
               failure = true
             }
