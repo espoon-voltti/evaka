@@ -35,7 +35,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     final val testDaycareGroup = DevDaycareGroup(daycareId = daycareId)
     final val groupId = testDaycareGroup.id
 
-    final val placementStart = LocalDate.now().plusDays(300)
+    final val placementStart = LocalDate.of(2020, 1, 1)
     final val placementEnd = placementStart.plusDays(200)
     lateinit var testPlacement: DaycarePlacementDetails
 
@@ -89,9 +89,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `get placements works with with daycareId and matching dates`() {
         val (_, res, result) = http.get(
-            "/placements?daycareId=$daycareId&from=${LocalDate.now()}&to=${
-            LocalDate.now().plusDays(900)
-            }"
+            "/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
         )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
@@ -103,9 +101,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `get placements works with with daycareId and non-matching dates`() {
         val (_, res, result) = http.get(
-            "/placements?daycareId=$daycareId&from=${
-            LocalDate.now().minusDays(900)
-            }&to=${LocalDate.now().minusDays(300)}"
+            "/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
         )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
@@ -146,9 +142,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `get placements works with with childId and matching dates`() {
         val (_, res, result) = http.get(
-            "/placements?childId=$childId&from=${LocalDate.now()}&to=${
-            LocalDate.now().plusDays(900)
-            }"
+            "/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
         )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
@@ -160,9 +154,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `get placements works with with childId and non-matching dates`() {
         val (_, res, result) = http.get(
-            "/placements?childId=$childId&from=${
-            LocalDate.now().minusDays(900)
-            }&to=${LocalDate.now().minusDays(300)}"
+            "/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
         )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
@@ -399,12 +391,20 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `unit supervisor sees placements to her unit only`() {
         jdbi.handle { h ->
+            val allowedId = insertTestPlacement(
+                h = h,
+                childId = childId,
+                unitId = daycareId,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusDays(1)
+            )
+
             val restrictedId = insertTestPlacement(
                 h = h,
                 childId = childId,
                 unitId = testDaycare2.id,
-                startDate = LocalDate.now().plusMonths(1).plusDays(1),
-                endDate = LocalDate.now().plusMonths(2)
+                startDate = LocalDate.now().minusDays(2),
+                endDate = LocalDate.now().minusDays(1)
             )
 
             val (_, res, result) = http.get("/placements?childId=$childId")
@@ -414,10 +414,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
 
             val placements = result.get().toList()
-            val allowed = placements.find { it.id == testPlacement.id }!!
+            val allowed = placements.find { it.id == allowedId }!!
             val restricted = placements.find { it.id == restrictedId }!!
 
-            org.junit.jupiter.api.Assertions.assertEquals(2, placements.size)
             org.junit.jupiter.api.Assertions.assertFalse(allowed.isRestrictedFromUser)
             org.junit.jupiter.api.Assertions.assertTrue(restricted.isRestrictedFromUser)
         }
