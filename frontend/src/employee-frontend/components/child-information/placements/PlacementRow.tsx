@@ -269,6 +269,12 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             {i18n.placement.type[placement.type]}
           </DataValue>
         </DataRow>
+        <DataRow>
+          <DataLabel>{i18n.childInformation.placements.providerType}</DataLabel>
+          <DataValue data-qa="placement-details-provider-type">
+            {i18n.common.providerType[placement.daycare.providerType]}
+          </DataValue>
+        </DataRow>
         <Gap size="s" />
         {showServiceNeedWarning && (
           <AlertBox
