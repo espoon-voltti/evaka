@@ -242,7 +242,7 @@ export default React.memo(function DailyNoteEditor() {
                 shadow
                 opaque
                 paddingHorizontal={'s'}
-                paddingVertical={'xs'}
+                paddingVertical={'6px'}
               >
                 <Title>{i18n.attendances.notes.dailyNotes}</Title>
               </TitleArea>

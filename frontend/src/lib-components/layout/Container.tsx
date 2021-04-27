@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 import colors from '../colors'
-import { defaultMargins, SpacingSize } from '../white-space'
+import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 import classNames from 'classnames'
 
 export const Container = styled.div`
@@ -40,9 +40,9 @@ type ContentAreaProps = {
   classname?: string
   'data-qa'?: string
   opaque: boolean
-  paddingVertical?: SpacingSize
-  paddingHorizontal?: SpacingSize
   fullHeight?: boolean
+  paddingVertical?: SpacingSize | string
+  paddingHorizontal?: SpacingSize | string
   blue?: boolean
   shadow?: boolean
 }
@@ -50,10 +50,16 @@ type ContentAreaProps = {
 export const ContentArea = styled.section<ContentAreaProps>`
   padding: ${(p) =>
     `${
-      p.paddingVertical ? defaultMargins[p.paddingVertical] : defaultMargins.s
+      p.paddingVertical
+        ? isSpacingSize(p.paddingVertical)
+          ? defaultMargins[p.paddingVertical]
+          : p.paddingVertical
+        : defaultMargins.s
     } ${
       p.paddingHorizontal
-        ? defaultMargins[p.paddingHorizontal]
+        ? isSpacingSize(p.paddingHorizontal)
+          ? defaultMargins[p.paddingHorizontal]
+          : p.paddingHorizontal
         : defaultMargins.L
     }`};
   background-color: ${(props) =>
