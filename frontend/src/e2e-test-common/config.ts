@@ -48,15 +48,15 @@ const unitSupervisorAad = '00000000-0000-0000-0004-000000000000'
 const staffAad = '00000000-0000-0000-0005-000000000000'
 const specialEducationTeacher = '00000000-0000-0000-0006-000000000000'
 
-const developmentMode = env('E2E_DEVELOPMENT', parseBoolean) ?? false
+const ci = env('CI', parseBoolean) ?? false
 
 const baseUrl = env('BASE_URL', (url) => url)
 const browserUrl = baseUrl ?? 'http://localhost:9099'
 
 const config = {
   playwright: {
-    developmentMode,
-    headless: env('HEADLESS', parseBoolean) ?? !developmentMode,
+    ci,
+    headless: env('HEADLESS', parseBoolean) ?? ci,
     browser:
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
       'chromium'
