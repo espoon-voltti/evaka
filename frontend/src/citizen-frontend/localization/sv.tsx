@@ -135,7 +135,7 @@ const sv: Translations = {
       preschoolLabel:
         'Anmälan till förskoleundervisning och/eller förberedande undervisning',
       preschoolInfo:
-        'Förskoleundervisningen är gratis och ordnas fyra timmar per dag. Därtill kan du ansöka om anslutande småbarnspedagogik på samma plats, på morgonen före och på eftermiddagen efter förskoleundervisningen. Du kan ansöka om småbarnspedagogik i anslutning till förskoleundervisningen när du anmäler barnet till förskoleundervisningen eller separat efter att förskoleundervisningen har inletts. Du kan också ansöka på en och samma ansökan om både förberedande undervisning, som är gratis, och anslutande småbarnspedagogik.',
+        'Förskoleundervisningen är gratis och ordnas fyra timmar per dag. Därtill kan du ansöka om anslutande småbarnspedagogik på samma plats, på morgonen före och på eftermiddagen efter förskoleundervisningen. Du kan också ansöka om servicesedel för småbarnspedagogik i samband med förskoleundervisningen, genom att vid alternativet Ansökningsönskemål välja den servicesedelenhet som du vill söka till. Du kan ansöka om småbarnspedagogik i anslutning till förskoleundervisningen när du anmäler barnet till förskoleundervisningen eller separat efter att förskoleundervisningen har inletts. Du kan också ansöka på en och samma ansökan om både förberedande undervisning, som är gratis, och anslutande småbarnspedagogik.',
       preschoolDaycareInfo:
         'Ansökan om anslutande småbarnspedagogik för ett barn som anmäls/har anmälts till förskoleundervisning eller förberedande undervisning',
       clubLabel: 'Ansökan till en klubb',
@@ -553,6 +553,10 @@ const sv: Translations = {
                   undantag för servicesedelenheter), enheten informerar om hur
                   man ansöker. I dessa fall omvandlar servicehänvisningen
                   ansökan till en ansökan om endast förskoleundervisning.
+                </P>
+                <P>
+                  Du ansöker om en servicesedel genom att som ansökningsönskemål
+                  välja den servicesedelenhet du vill söka till.
                 </P>
                 <P>
                   Du får ett separat skriftligt beslut om platsen inom
