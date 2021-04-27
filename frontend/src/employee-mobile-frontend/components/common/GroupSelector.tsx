@@ -14,15 +14,15 @@ import { AttendanceResponse, Group } from '../../api/attendances'
 import colors from 'lib-components/colors'
 
 interface GroupSelectorProps {
-  groupIdOrAll: string | 'all'
   selectedGroup: Group | undefined
-  changeGroup: (groupOrAll: Group | 'all') => void
+  allowAllGroups: boolean
+  onChangeGroup: (group: Group | undefined) => void
 }
 
 export default function GroupSelector({
-  groupIdOrAll,
   selectedGroup,
-  changeGroup
+  allowAllGroups,
+  onChangeGroup
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
@@ -49,16 +49,20 @@ export default function GroupSelector({
     <GroupChipWrapper>
       {attendanceResponse.isSuccess && (
         <>
-          <ChoiceChip
-            text={`${i18n.common.all} (${
-              attendanceResponse.value.children.filter((child) => {
-                return child.status === 'PRESENT'
-              }).length
-            }/${attendanceResponse.value.children.length})`}
-            selected={groupIdOrAll === 'all' ? true : false}
-            onChange={() => changeGroup('all')}
-          />
-          <Gap horizontal size={'xxs'} />
+          {allowAllGroups && (
+            <>
+              <ChoiceChip
+                text={`${i18n.common.all} (${
+                  attendanceResponse.value.children.filter((child) => {
+                    return child.status === 'PRESENT'
+                  }).length
+                }/${attendanceResponse.value.children.length})`}
+                selected={selectedGroup ? false : true}
+                onChange={() => onChangeGroup(undefined)}
+              />
+              <Gap horizontal size={'xxs'} />
+            </>
+          )}
           {attendanceResponse.value.unit.groups.map((group) => (
             <Fragment key={group.id}>
               <ChoiceChip
@@ -68,7 +72,7 @@ export default function GroupSelector({
                 )}/${getTotalChildren(group.id)})`}
                 selected={selectedGroup ? selectedGroup.id === group.id : false}
                 onChange={() => {
-                  changeGroup(group)
+                  onChangeGroup(group)
                 }}
               />
               <Gap horizontal size={'xxs'} />

@@ -5,7 +5,7 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -33,9 +32,16 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     val groupName = "Testiryhmä"
     val groupStartDate = LocalDate.of(2019, 1, 1)
 
-    @AfterEach
-    private fun afterEach() {
-        cleanTestData()
+    @BeforeEach
+    protected fun insertDaycareGroup() {
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.handle.insertTestCareArea(DevCareArea(id = areaId))
+            tx.handle.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
+            tx.handle.insertTestDaycareGroup(
+                DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = groupStartDate)
+            )
+        }
     }
 
     @Test
@@ -69,66 +75,70 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `create attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
 
         val result =
             staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
 
         assertEquals(result.attendances.size, attendanceDate.month.length(false))
         assertEquals(result.attendances[attendanceDate]?.count, 1.0)
+        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
+    }
+
+    @Test
+    fun `creating an attendance with null countOther sets countOther to 0`() {
+        val attendanceDate = groupStartDate
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, null))
+
+        val result =
+            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
+
+        assertEquals(result.attendances.size, attendanceDate.month.length(false))
+        assertEquals(result.attendances[attendanceDate]?.count, 1.0)
+        assertEquals(result.attendances[attendanceDate]?.countOther, 0.0)
     }
 
     @Test
     fun `modify attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
 
         var result =
             staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
         assertEquals(result.attendances[attendanceDate]?.count, 1.0)
+        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
 
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 2.5))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 2.5, 0.0))
         result = staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
         assertEquals(result.attendances[attendanceDate]?.count, 2.5)
+        assertEquals(result.attendances[attendanceDate]?.countOther, 0.0)
+    }
+
+    @Test
+    fun `modifying attendance with null countOther doesn't change countOther`() {
+        val attendanceDate = groupStartDate
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
+
+        var result =
+            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
+        assertEquals(result.attendances[attendanceDate]?.count, 1.0)
+        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
+
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 2.5, null))
+        result = staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
+        assertEquals(result.attendances[attendanceDate]?.count, 2.5)
+        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
     }
 
     @Test
     fun `create attendance for a date when group is not operating`() {
         val attendanceDate = groupStartDate.minusDays(1)
         assertThrows<BadRequest> {
-            staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0))
+            staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
         }
 
         val result =
             staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
         assertEquals(result.attendances[attendanceDate]?.count, null)
-    }
-
-    @BeforeEach
-    protected fun insertDaycareGroup() {
-        jdbi.transaction {
-            it.insertTestCareArea(DevCareArea(id = areaId))
-            it.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
-            it.insertTestDaycareGroup(
-                DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = groupStartDate)
-            )
-        }
-    }
-
-    private fun cleanTestData() {
-        jdbi.handle {
-            it.createUpdate(
-                //language=SQL
-                """
-                DELETE FROM staff_attendance;
-                DELETE FROM daycare_group where daycare_id = :daycareId;
-                DELETE FROM daycare WHERE care_area_id = :areaId;
-                DELETE FROM care_area WHERE id = :areaId;
-                """.trimIndent()
-            )
-                .bind("areaId", areaId)
-                .bind("daycareId", daycareId)
-                .execute()
-        }
     }
 }

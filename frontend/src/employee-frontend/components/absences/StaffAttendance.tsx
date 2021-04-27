@@ -15,11 +15,14 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { DisabledCell } from '../../components/absences/AbsenceCell'
 import { useTranslation } from '../../state/i18n'
 import { AbsencesContext } from '../../state/absence'
-import { StaffAttendance, StaffAttendanceGroup } from '../../types/absence'
+import {
+  StaffAttendance,
+  StaffAttendanceGroup
+} from 'lib-common/api-types/staffAttendances'
 import { Loading, Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { formatDecimal } from '../../components/utils'
+import { formatDecimal } from 'lib-common/utils/number'
 import { faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'

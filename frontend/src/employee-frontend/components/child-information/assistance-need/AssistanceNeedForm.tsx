@@ -14,7 +14,8 @@ import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import InfoBall from '../../../components/common/InfoBall'
 import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
-import { formatDecimal, textAreaRows } from '../../../components/utils'
+import { formatDecimal } from 'lib-common/utils/number'
+import { textAreaRows } from '../../utils'
 
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import {

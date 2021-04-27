@@ -7,80 +7,80 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Gap } from 'lib-components/white-space'
 import { faChild, faComments, faUser } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 
-type SelectedNavButton = 'child' | 'staff' | 'messages'
+export type NavItem = 'child' | 'staff' | 'messages'
 
-const FooterDiv = styled.div`
+const bottomNavBarHeight = 60
+
+const Root = styled.div`
   position: fixed;
   left: 0%;
   right: 0%;
   bottom: 0%;
-  height: 60px;
+  height: ${bottomNavBarHeight}px;
+
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
 
   background: ${colors.blues.primary};
   box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.15);
   margin-bottom: 0 !important;
 `
 
-const LeftButton = styled.div`
-  position: fixed;
-  left: 10%;
+export const ReserveSpace = styled.div`
+  height: ${bottomNavBarHeight}px;
 `
 
-const MiddleButton = styled.div`
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-`
-
-const RightButton = styled.div`
-  position: fixed;
-  right: 10%;
+const Button = styled.div`
+  width: 100px;
+  position: relative;
 `
 
 const CustomIcon = styled(FontAwesomeIcon)<{ selected: boolean }>`
   color: ${(p) => (p.selected ? colors.blues.lighter : colors.blues.light)};
   height: 24px !important;
   width: 24px !important;
-  margin 0;
+  margin: 0;
 `
 
 const IconText = styled.span<{ selected: boolean }>`
   color: ${(p) => (p.selected ? colors.blues.lighter : colors.blues.light)};
-  fontsize: 14px;
+  font-size: 14px;
 `
 
-const Circle = styled.span`
-  height: 16px;
-  width: 16px;
-  background-color: ${colors.accents.orange};
+const Circle = styled.span<{ color: keyof typeof colors.accents }>`
+  min-width: 16px;
+  background-color: ${(p) => colors.accents[p.color]};
   color: ${colors.greyscale.white};
-  border-radius: 50%;
+  border-radius: 8px;
   display: inline-block;
   position: absolute;
-  right: 8px;
+  right: 0;
   top: -4px;
-  padding-left: 4.5px;
+  padding: 0 4.5px;
   font-size: 11px;
 `
 
-type IconWithBottomTextProps = {
+type BottomTextProps = {
   text: string
   children: React.ReactNode
   selected: boolean
+  onClick: () => void
 }
 
-const BottomText = ({ text, children, selected }: IconWithBottomTextProps) => {
+const BottomText = ({ text, children, selected, onClick }: BottomTextProps) => {
   return (
-    <FixedSpaceColumn>
-      <FixedSpaceRow style={{ margin: '0 auto' }}>{children}</FixedSpaceRow>
-      <FixedSpaceRow>
+    <FixedSpaceColumn spacing="3px" onClick={onClick}>
+      <FixedSpaceRow justifyContent="center" marginBottom="zero">
+        {children}
+      </FixedSpaceRow>
+      <FixedSpaceRow justifyContent="space-evenly" alignItems="center">
         <IconText selected={selected}>{text}</IconText>
       </FixedSpaceRow>
     </FixedSpaceColumn>
@@ -88,50 +88,74 @@ const BottomText = ({ text, children, selected }: IconWithBottomTextProps) => {
 }
 
 type BottomNavbarProps = {
-  selected?: SelectedNavButton
+  selected?: NavItem
   messageCount?: number
+  staffCount?: { count: number; countOther: number }
+  onChange?: (value: NavItem) => void
 }
 
 export default function BottomNavbar({
   selected,
-  messageCount
+  messageCount,
+  staffCount,
+  onChange
 }: BottomNavbarProps) {
   const { i18n } = useTranslation()
 
   return (
-    <FooterDiv>
-      <Gap size={'xs'} />
-      <LeftButton>
-        <BottomText text={i18n.common.children} selected={selected === 'child'}>
-          <CustomIcon
-            icon={faChild}
-            onClick={() => null}
+    <>
+      {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
+      <ReserveSpace />
+      <Root>
+        <Button>
+          <BottomText
+            text={i18n.common.children}
             selected={selected === 'child'}
-          />
-        </BottomText>
-      </LeftButton>
-      <MiddleButton>
-        <BottomText text={i18n.common.staff} selected={selected === 'staff'}>
-          <CustomIcon
-            icon={faUser}
-            onClick={() => null}
+            onClick={() =>
+              selected !== 'child' && onChange && onChange('child')
+            }
+          >
+            <CustomIcon icon={faChild} selected={selected === 'child'} />
+          </BottomText>
+        </Button>
+        <Button>
+          <BottomText
+            text={i18n.common.staff}
             selected={selected === 'staff'}
-          />
-        </BottomText>
-      </MiddleButton>
-      <RightButton>
-        <BottomText
-          text={i18n.common.messages}
-          selected={selected === 'messages'}
-        >
-          <CustomIcon
-            icon={faComments}
-            onClick={() => null}
-            selected={selected === 'messages'}
-          />
-          {messageCount || 0 > 0 ? <Circle>{messageCount}</Circle> : null}
-        </BottomText>
-      </RightButton>
-    </FooterDiv>
+            onClick={() =>
+              selected !== 'staff' && onChange && onChange('staff')
+            }
+          >
+            <CustomIcon icon={faUser} selected={selected === 'staff'} />
+            {staffCount &&
+            (staffCount.count != 0 || staffCount.countOther != 0) ? (
+              <Circle color="violet">
+                {staffCount?.count}+{staffCount?.countOther}
+              </Circle>
+            ) : null}
+          </BottomText>
+        </Button>
+        <div style={{ display: 'none' }}>
+          {/* This will be needed in the future */}
+          <Button>
+            <BottomText
+              text={i18n.common.messages}
+              selected={selected === 'messages'}
+              onClick={() =>
+                selected !== 'messages' && onChange && onChange('messages')
+              }
+            >
+              <CustomIcon
+                icon={faComments}
+                selected={selected === 'messages'}
+              />
+              {messageCount || 0 > 0 ? (
+                <Circle color="orange">{messageCount}</Circle>
+              ) : null}
+            </BottomText>
+          </Button>
+        </div>
+      </Root>
+    </>
   )
 }

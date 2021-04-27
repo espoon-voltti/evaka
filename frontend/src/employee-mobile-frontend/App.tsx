@@ -7,7 +7,8 @@ import {
   BrowserRouter as Router,
   Route,
   Switch,
-  Redirect
+  Redirect,
+  RouteComponentProps
 } from 'react-router-dom'
 import { idleTracker } from 'lib-common/utils/idleTracker'
 import ensureAuthenticated from './components/ensureAuthenticated'
@@ -24,7 +25,13 @@ import MarkPresent from './components/attendances/actions/MarkPresent'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
+import StaffPage from './components/staff/StaffPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
+import { NavItem } from './components/common/BottomNavbar'
+import { History } from 'history'
+
+export type RouteParams = { unitId: string; groupId: string }
+type RouteProps = RouteComponentProps<RouteParams>
 
 export default function App() {
   const [authStatus, refreshAuthStatus] = useAuthState()
@@ -46,7 +53,14 @@ export default function App() {
               <Route exact path="/pairing" component={PairingWizard} />
               <Route
                 path="/units/:unitId/attendance/:groupId"
-                component={ensureAuthenticated(AttendancePageWrapper)}
+                render={({ match, history }: RouteProps) => {
+                  const Component = ensureAuthenticated(AttendancePageWrapper)
+                  return (
+                    <Component
+                      onNavigate={navBarNavigate(match.params, history)}
+                    />
+                  )
+                }}
               />
               <Route
                 path="/units/:unitId/groups/:groupId/childattendance/:childId/markpresent"
@@ -72,7 +86,18 @@ export default function App() {
                 path="/units/:unitId/groups/:groupId/childattendance/:childId"
                 component={ensureAuthenticated(AttendanceChildPage)}
               />
-              <Route path="" component={RedirectToMainPage} />
+              <Route
+                path="/units/:unitId/staff/:groupId"
+                render={({ match, history }: RouteProps) => {
+                  const Component = ensureAuthenticated(StaffPage)
+                  return (
+                    <Component
+                      onNavigate={navBarNavigate(match.params, history)}
+                    />
+                  )
+                }}
+              />
+              <Route component={RedirectToMainPage} />
             </Switch>
           </Router>
         </AttendanceUIContextProvider>
@@ -108,4 +133,22 @@ function useAuthState(): [AuthStatus | undefined, () => Promise<void>] {
   )
 
   return [authStatus, refreshAuthStatus]
+}
+
+export function getPagePath(page: NavItem, { unitId, groupId }: RouteParams) {
+  switch (page) {
+    case 'child':
+      return `/units/${unitId}/attendance/${groupId}`
+    case 'staff':
+      return `/units/${unitId}/staff/${groupId}`
+    default:
+      throw new Error('Messages not implemented')
+  }
+}
+
+function navBarNavigate(match: RouteParams, history: History) {
+  return function (page: NavItem) {
+    const path = getPagePath(page, match)
+    if (path !== undefined) history.push(path)
+  }
 }

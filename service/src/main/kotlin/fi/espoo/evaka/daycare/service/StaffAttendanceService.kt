@@ -49,7 +49,7 @@ class StaffAttendanceService {
         .map {
             it to (
                 attendanceList
-                    .firstOrNull { attendance -> attendance.date.isEqual(it) } ?: StaffAttendance(groupId, it, null)
+                    .firstOrNull { attendance -> attendance.date.isEqual(it) } ?: StaffAttendance(groupId, it, null, null)
                 )
         }
         .toMap()
@@ -66,7 +66,8 @@ data class StaffAttendanceGroup(
 data class StaffAttendance(
     var groupId: UUID,
     val date: LocalDate,
-    val count: Double?
+    val count: Double?,
+    val countOther: Double?
 )
 
 data class GroupInfo(
@@ -109,17 +110,28 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendance): 
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendance) {
     //language=SQL
-    val sql =
+    val sql = if (staffAttendance.countOther != null) {
         """
-        INSERT INTO staff_attendance (group_id, date, count) 
-        VALUES (:groupId, :date, :count)
-        ON CONFLICT (group_id, date) DO UPDATE SET count = :count
-        """.trimIndent()
+        INSERT INTO staff_attendance (group_id, date, count, count_other)
+        VALUES (:groupId, :date, :count, :count_other)
+        ON CONFLICT (group_id, date) DO UPDATE SET
+            count = :count,
+            count_other = :count_other
+        """
+    } else {
+        """
+        INSERT INTO staff_attendance (group_id, date, count, count_other)
+        VALUES (:groupId, :date, :count, DEFAULT)
+        ON CONFLICT (group_id, date) DO UPDATE SET
+            count = :count
+        """
+    }.trimIndent()
 
     createUpdate(sql)
         .bind("groupId", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
         .bind("count", staffAttendance.count)
+        .bind("count_other", staffAttendance.countOther)
         .execute()
 }
 
@@ -127,7 +139,7 @@ fun Database.Read.getStaffAttendanceByRange(rangeStart: LocalDate, rangeEnd: Loc
     //language=SQL
     val sql =
         """
-        SELECT group_id, date, count
+        SELECT group_id, date, count, count_other
         FROM staff_attendance
         WHERE group_id = :groupId
             AND date BETWEEN :rangeStart AND :rangeEnd;

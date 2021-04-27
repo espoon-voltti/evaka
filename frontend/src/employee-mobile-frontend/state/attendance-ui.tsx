@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState, createContext } from 'react'
+import React, { useCallback, useMemo, useState, createContext } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { AttendanceResponse } from '../api/attendances'
+import { StaffAttendanceGroup } from 'lib-common/api-types/staffAttendances'
 
 interface UIState {
   attendanceResponse: Result<AttendanceResponse>
@@ -34,26 +35,25 @@ export const AttendanceUIContextProvider = React.memo(
       Result<AttendanceResponse>
     >(Loading.of())
 
-    function filterAttendanceResponse(
-      attendanceResponse: Result<AttendanceResponse>,
-      groupIdOrAll: string | 'all'
-    ) {
-      if (attendanceResponse.isSuccess) {
-        if (groupIdOrAll !== 'all')
-          attendanceResponse.value.children = attendanceResponse.value.children.filter(
-            (child) => child.groupId === groupIdOrAll
-          )
-      }
-      return attendanceResponse
-    }
+    const [staffAttendanceResponse, setStaffAttendanceResponse] = useState<
+      Result<StaffAttendanceGroup>
+    >(Loading.of())
+
+    const reset = useCallback(() => {
+      setAttendanceResponse(Loading.of())
+      setStaffAttendanceResponse(Loading.of())
+    }, [])
 
     const value = useMemo(
       () => ({
         attendanceResponse,
         setAttendanceResponse,
-        filterAttendanceResponse
+        filterAttendanceResponse,
+        staffAttendanceResponse,
+        setStaffAttendanceResponse,
+        reset
       }),
-      [attendanceResponse, setAttendanceResponse, filterAttendanceResponse]
+      [attendanceResponse, staffAttendanceResponse, reset]
     )
 
     return (
@@ -63,3 +63,16 @@ export const AttendanceUIContextProvider = React.memo(
     )
   }
 )
+
+function filterAttendanceResponse(
+  attendanceResponse: Result<AttendanceResponse>,
+  groupIdOrAll: string | 'all'
+) {
+  if (attendanceResponse.isSuccess) {
+    if (groupIdOrAll !== 'all')
+      attendanceResponse.value.children = attendanceResponse.value.children.filter(
+        (child) => child.groupId === groupIdOrAll
+      )
+  }
+  return attendanceResponse
+}

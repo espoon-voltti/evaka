@@ -40,7 +40,7 @@ class StaffAttendanceController(
     ): ResponseEntity<Wrapper<StaffAttendanceGroup>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
         val result = staffAttendanceService.getAttendancesByMonth(db, year, month, groupId)
         return ResponseEntity.ok(Wrapper(result))
     }
@@ -54,7 +54,7 @@ class StaffAttendanceController(
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }

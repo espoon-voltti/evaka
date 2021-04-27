@@ -12,7 +12,7 @@ import { faQuestion } from 'lib-icons'
 import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
 import { isActiveDateRange } from '../../../utils/date'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { formatDecimal } from '../../../components/utils'
+import { formatDecimal } from 'lib-common/utils/number'
 
 import { formatParagraphs } from '../../../utils/html-utils'
 import LabelValueList from '../../../components/common/LabelValueList'

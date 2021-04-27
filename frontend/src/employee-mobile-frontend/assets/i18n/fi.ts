@@ -174,6 +174,12 @@ export const fi = {
       backupPickupName: 'Varahakijan nimi'
     }
   },
+  staff: {
+    title: 'Henkilökunnan määrä tänään',
+    daycareResponsible: 'Kasvatusvastuullisia',
+    other: 'Muita (esim. avustajat, opiskelijat, veot)',
+    realizedOccupancy: 'Ryhmän käyttöaste tänään'
+  },
   mobile: {
     landerText1:
       'Tervetuloa käyttämään Espoon varhaiskasvatuksen mobiilisovellusta!',
