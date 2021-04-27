@@ -1106,18 +1106,9 @@ const en: Translations = {
     }
   },
   applicationsList: {
-    title:
-      'Applying for early childhood education or a club and enrolling for pre-primary education',
+    title: enCustomizations.applicationsList.title,
     summary: function ApplicationListSummaryText() {
-      return (
-        <P width="800px">
-          A child’s guardian can submit an application for early childhood
-          education or a club and enrol the child to pre-primary education.
-          Information on the guardian’s children is automatically retrieved from
-          the Digital and Population Data Services Agency and displayed in this
-          view.
-        </P>
-      )
+      return <P width="800px">{enCustomizations.applicationsList.summary}</P>
     },
     pageLoadError: 'Failed to load guardian applications',
     noApplications: 'No applications',

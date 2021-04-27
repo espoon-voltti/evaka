@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export default {
+  applicationsList: {
+    title: 'Hakeminen varhaiskasvatukseen ja ilmoittautuminen esiopetukseen',
+    summary: `Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.`
+  },
   footer: {
     cityLabel: '© Espoon kaupunki',
     privacyPolicyLink:
