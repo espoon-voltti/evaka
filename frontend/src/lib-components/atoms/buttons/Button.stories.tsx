@@ -122,7 +122,7 @@ storiesOf('evaka/atoms/buttons', module)
         onClick={() =>
           new Promise<void>((resolve) => void setTimeout(resolve, 2000))
         }
-        onSuccess={() => undefined}
+        onSuccess={() => console.log('success')}
         text="Save"
         textInProgress="Saving"
         textDone="Saved"

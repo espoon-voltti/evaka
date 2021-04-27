@@ -62,7 +62,8 @@ export default React.memo(function AsyncButton({
 
   useEffect(() => {
     if (showSuccess) {
-      void delay(() => setShowSuccess(false), 2000).then(onSuccess)
+      void delay(onSuccess, 500)
+      void delay(() => setShowSuccess(false), 2000)
     }
   }, [showSuccess])
 
