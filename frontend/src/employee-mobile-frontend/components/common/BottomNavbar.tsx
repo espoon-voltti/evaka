@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
+import { formatDecimal } from 'lib-common/utils/number'
 
 export type NavItem = 'child' | 'staff' | 'messages'
 
@@ -107,7 +108,7 @@ export default function BottomNavbar({
       {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
       <ReserveSpace />
       <Root>
-        <Button>
+        <Button data-qa="bottomnav-children">
           <BottomText
             text={i18n.common.children}
             selected={selected === 'child'}
@@ -118,7 +119,7 @@ export default function BottomNavbar({
             <CustomIcon icon={faChild} selected={selected === 'child'} />
           </BottomText>
         </Button>
-        <Button>
+        <Button data-qa="bottomnav-staff">
           <BottomText
             text={i18n.common.staff}
             selected={selected === 'staff'}
@@ -129,15 +130,16 @@ export default function BottomNavbar({
             <CustomIcon icon={faUser} selected={selected === 'staff'} />
             {staffCount &&
             (staffCount.count != 0 || staffCount.countOther != 0) ? (
-              <Circle color="violet">
-                {staffCount?.count}+{staffCount?.countOther}
+              <Circle color="violet" data-qa="staff-count-bubble">
+                {formatDecimal(staffCount.count)}+
+                {formatDecimal(staffCount.countOther)}
               </Circle>
             ) : null}
           </BottomText>
         </Button>
         <div style={{ display: 'none' }}>
           {/* This will be needed in the future */}
-          <Button>
+          <Button data-qa="messages">
             <BottomText
               text={i18n.common.messages}
               selected={selected === 'messages'}

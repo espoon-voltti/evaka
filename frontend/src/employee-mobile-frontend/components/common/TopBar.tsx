@@ -52,6 +52,7 @@ export default function TopBar({
           }}
           icon={showGroupSelector ? faAngleUp : faAngleDown}
           iconRight
+          data-qa="group-selector-button"
         />
         <GroupSelector
           selectedGroup={selectedGroup}
@@ -60,6 +61,7 @@ export default function TopBar({
             onChangeGroup(group)
             setShowGroupSelector(false)
           }}
+          data-qa="group-selector"
         />
       </GroupSelectorWrapper>
       <Gap size={'XL'} />

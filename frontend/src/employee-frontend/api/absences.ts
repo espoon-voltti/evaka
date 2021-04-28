@@ -95,7 +95,6 @@ export async function getStaffAttendances(
 export async function postStaffAttendance(
   staffAttendance: StaffAttendance
 ): Promise<Result<void>> {
-  console.error('staff attendance', staffAttendance)
   return client
     .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
     .then((res) => Success.of(res.data))

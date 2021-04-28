@@ -8,17 +8,24 @@ interface Props {
   disabled?: boolean
   onPlus?: () => void
   onMinus?: () => void
+  'data-qa'?: string
 }
 
-export default function PlusMinus({ value, disabled, onPlus, onMinus }: Props) {
+export default function PlusMinus({
+  value,
+  disabled,
+  onPlus,
+  onMinus,
+  'data-qa': dataQa
+}: Props) {
   const str = formatDecimal(value)
   return (
-    <Root>
-      <TextButton disabled={disabled} onClick={onMinus}>
+    <Root data-qa={dataQa}>
+      <TextButton disabled={disabled} onClick={onMinus} data-qa="minus-button">
         -
       </TextButton>
-      <Value>{str}</Value>
-      <TextButton disabled={disabled} onClick={onPlus}>
+      <Value data-qa="value">{str}</Value>
+      <TextButton disabled={disabled} onClick={onPlus} data-qa="plus-button">
         +
       </TextButton>
     </Root>
