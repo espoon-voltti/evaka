@@ -29,6 +29,7 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
         .toSet()
     return when (type) {
         "citizen" -> AuthenticatedUser.Citizen(id)
+        "citizen_weak" -> AuthenticatedUser.WeakCitizen(id)
         "employee" -> AuthenticatedUser.Employee(id, roles)
         "mobile" -> AuthenticatedUser.MobileDevice(id)
         "system" -> AuthenticatedUser.SystemInternalUser
@@ -54,6 +55,7 @@ fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = 
             is AuthenticatedUser.MobileDevice -> "mobile"
             is AuthenticatedUser.Employee -> "employee"
             is AuthenticatedUser.Citizen -> "citizen"
+            is AuthenticatedUser.WeakCitizen -> "citizen_weak"
         }
     )
     .withClaim("scope", roles.joinToString(" "))

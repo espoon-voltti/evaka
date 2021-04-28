@@ -12,7 +12,7 @@ export function createJwt(payload: {
   kind: 'SuomiFI' | 'AD' | 'AdDummy'
   sub: string
   scope?: string
-  evaka_type: 'citizen' | 'employee' | 'mobile' | 'system'
+  evaka_type: 'citizen' | 'citizen_weak' | 'employee' | 'mobile' | 'system'
 }): string {
   return jwt.sign(payload, privateKey, {
     algorithm: 'RS256',

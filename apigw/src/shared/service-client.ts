@@ -20,10 +20,17 @@ const machineUser: SamlUser = {
   userType: 'SYSTEM'
 }
 
-export type UserType = 'ENDUSER' | 'EMPLOYEE' | 'MOBILE' | 'SYSTEM'
+export type UserType =
+  | 'ENDUSER'
+  | 'EMPLOYEE'
+  | 'MOBILE'
+  | 'SYSTEM'
+  | 'CITIZEN_STRONG'
+  | 'CITIZEN_WEAK'
 
 export type UserRole =
   | 'ENDUSER'
+  | 'CITIZEN_WEAK'
   | 'ADMIN'
   | 'DIRECTOR'
   | 'FINANCE_ADMIN'

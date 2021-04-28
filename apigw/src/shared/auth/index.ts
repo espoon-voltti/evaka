@@ -42,7 +42,10 @@ function createJwtToken(user: SamlUser): string {
 
   switch (type) {
     case 'ENDUSER':
+    case 'CITIZEN_STRONG':
       return createJwt({ ...common, evaka_type: 'citizen' })
+    case 'CITIZEN_WEAK':
+      return createJwt({ ...common, evaka_type: 'citizen_weak' })
     case 'MOBILE':
       return createJwt({ ...common, evaka_type: 'mobile' })
     case 'SYSTEM':
