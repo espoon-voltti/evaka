@@ -55,6 +55,7 @@ export default function StaffAttendanceEditor({
         onMinus={dec(staff, setStaff)}
         onPlus={inc(staff, setStaff)}
         disabled={isSaving}
+        data-qa="staff-count"
       />
       <Gap size="m" />
       <Subtitle>{i18n.staff.other}</Subtitle>
@@ -63,6 +64,7 @@ export default function StaffAttendanceEditor({
         onMinus={dec(staffOther, setStaffOther)}
         onPlus={inc(staffOther, setStaffOther)}
         disabled={isSaving}
+        data-qa="staff-other-count"
       />
       <Gap size="m" />
       <FixedSpaceRow justifyContent="center">
@@ -70,6 +72,7 @@ export default function StaffAttendanceEditor({
           text={i18n.common.cancel}
           onClick={reset}
           disabled={!changed || isSaving}
+          data-qa="cancel-button"
         />
         <Button
           text={i18n.common.confirm}
@@ -82,11 +85,12 @@ export default function StaffAttendanceEditor({
               countOther: staffOther
             })
           }
+          data-qa="confirm-button"
         />
       </FixedSpaceRow>
       <Gap size="m" />
       <FixedSpaceRow justifyContent="center">
-        <H5>
+        <H5 data-qa="realized-occupancy">
           {i18n.staff.realizedOccupancy}{' '}
           {realizedOccupancy === undefined
             ? '-'

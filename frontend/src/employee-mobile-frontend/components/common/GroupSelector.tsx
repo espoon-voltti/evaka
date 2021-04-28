@@ -59,6 +59,7 @@ export default function GroupSelector({
                 }/${attendanceResponse.value.children.length})`}
                 selected={selectedGroup ? false : true}
                 onChange={() => onChangeGroup(undefined)}
+                data-qa="group--all"
               />
               <Gap horizontal size={'xxs'} />
             </>
@@ -74,6 +75,7 @@ export default function GroupSelector({
                 onChange={() => {
                   onChangeGroup(group)
                 }}
+                data-qa={`group--${group.id}`}
               />
               <Gap horizontal size={'xxs'} />
             </Fragment>
