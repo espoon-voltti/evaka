@@ -66,6 +66,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -137,6 +138,11 @@ class ApplicationStateService(
 
         if (!application.hideFromGuardian && application.type == ApplicationType.CLUB) {
             asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.CLUB)))
+        }
+
+        if (!application.hideFromGuardian && application.type == ApplicationType.PRESCHOOL) {
+            val sentWithinPreschoolApplicationPeriod = tx.sentWithinPreschoolApplicationPeriod(sentDate)
+            asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
         }
 
         updateApplicationStatus(tx.handle, application.id, SENT)
@@ -466,6 +472,14 @@ class ApplicationStateService(
         validateApplication(tx, original.type, updatedForm, strict = false)
 
         tx.updateApplicationContents(original, updatedForm, manuallySetDueDate = update.dueDate)
+    }
+
+    private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
+        return createQuery("SELECT 1 FROM preschool_term WHERE application_period @> :date")
+            .bind("date", sentDate)
+            .mapTo<Boolean>()
+            .toList()
+            .firstOrNull() ?: false
     }
 
     private fun Database.Transaction.updateApplicationContents(original: ApplicationDetails, updatedForm: ApplicationForm, manuallySetDueDate: LocalDate? = null) {

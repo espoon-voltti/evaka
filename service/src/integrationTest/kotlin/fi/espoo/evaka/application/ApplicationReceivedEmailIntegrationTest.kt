@@ -12,7 +12,9 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -190,6 +192,38 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 h = h,
                 applicationId = applicationId,
                 document = validClubForm
+            )
+
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+                .asUser(endUser)
+                .response()
+
+            assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
+
+            asyncJobRunner.runPendingJobsSync(1)
+            assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+            val sentMails = MockEmailClient.emails
+
+            assertEquals(1, sentMails.size)
+
+            val sentMail = sentMails.first()
+            assertEquals(guardian.id.toString(), sentMail.traceId)
+            assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
+        }
+    }
+
+    @Test
+    fun `email is sent after sending preschool application`() {
+        jdbi.handle { h ->
+            val applicationId = UUID.randomUUID()
+            insertApplication(
+                h,
+                guardian = guardian,
+                appliedType = PlacementType.PRESCHOOL,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
             )
 
             val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
