@@ -269,6 +269,6 @@ test('User can see group daily note', async (t) => {
   await t.click(mobileGroupsPage.childDailyNoteLink2)
 
   await t
-    .expect(childPage.dailyNoteGroupNote.textContent)
+    .expect(childPage.dailyNoteGroupNoteInput.value)
     .eql(daycareDailyNote.note)
 })

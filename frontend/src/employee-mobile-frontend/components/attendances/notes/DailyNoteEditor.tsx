@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
@@ -12,37 +12,38 @@ import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import colors from 'lib-components/colors'
-import Radio from 'lib-components/atoms/form/Radio'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Title from 'lib-components/atoms/Title'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
+import { H2, Label } from 'lib-components/typography'
 import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import Button from 'lib-components/atoms/buttons/Button'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import RoundIcon from 'lib-components/atoms/RoundIcon'
+import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { ContentArea } from 'lib-components/layout/Container'
+import { Result } from 'lib-common/api'
 
 import {
+  AttendanceResponse,
   createOrUpdateDaycareDailyNoteForChild,
   DailyNote,
   DaycareDailyNoteLevelInfo,
   DaycareDailyNoteReminder,
   deleteDaycareDailyNote,
-  getDaycareAttendances
+  getDaycareAttendances,
+  upsertGroupDaycareDailyNote
 } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
-import { TallContentArea, ContentAreaWithShadow } from '../../mobile/components'
-import { Actions } from '../components'
+import { TallContentArea, ChipWrapper } from '../../mobile/components'
 import { UserContext } from '../../../state/user'
 import { User } from '../../../types/index'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -75,6 +76,8 @@ export default React.memo(function DailyNoteEditor() {
     AttendanceUIContext
   )
 
+  const [dirty, setDirty] = useState(false)
+
   const [dailyNote, setDailyNote] = useState<DailyNoteEdited>({
     id: undefined,
     childId: childId,
@@ -87,6 +90,24 @@ export default React.memo(function DailyNoteEditor() {
     reminders: [],
     reminderNote: ''
   })
+
+  const [groupNote, setGroupNote] = useState<DailyNote>({
+    childId: null,
+    date: LocalDate.today(),
+    groupId,
+    note: '',
+    id: null,
+    feedingNote: null,
+    sleepingNote: null,
+    sleepingHours: null,
+    reminders: [],
+    reminderNote: null,
+    modifiedAt: null,
+    modifiedBy: user?.id ?? 'unknown user'
+  })
+
+  const [deleteType, setDeleteType] = useState<'NOTE' | 'GROUP_NOTE'>('NOTE')
+  const [dialogType, setDialogType] = useState<'CONFIRM' | 'DELETE'>('CONFIRM')
 
   const loadDaycareAttendances = useRestApi(
     getDaycareAttendances,
@@ -105,16 +126,18 @@ export default React.memo(function DailyNoteEditor() {
       if (child && child.dailyNote) {
         setDailyNote(dailyNoteToDailyNoteEdited(child.dailyNote))
       }
+      const gNote = attendanceResponse.value.unit.groups.find(
+        (g) => g.id == groupId
+      )?.dailyNote
+      if (gNote) {
+        setGroupNote(gNote)
+      }
     }
   }, [attendanceResponse])
 
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
-
-  const groupNote =
-    attendanceResponse.isSuccess &&
-    attendanceResponse.value.unit.groups.find((g) => g.id == groupId)?.dailyNote
 
   const levelInfoValues: DaycareDailyNoteLevelInfo[] = [
     'GOOD',
@@ -127,10 +150,47 @@ export default React.memo(function DailyNoteEditor() {
     'CLOTHES',
     'LAUNDRY'
   ]
-
   const deleteNote = async () => {
-    if (dailyNote.id) await deleteDaycareDailyNote(dailyNote.id)
+    if (deleteType === 'NOTE') {
+      if (dailyNote.id) await deleteDaycareDailyNote(dailyNote.id)
+    } else {
+      if (groupNote.id) await deleteDaycareDailyNote(groupNote.id)
+    }
     history.goBack()
+  }
+  const saveNotes = async () => {
+    if (groupNote && groupNote.note !== '') {
+      const newGroupNote = genNewGroupNote(
+        attendanceResponse,
+        groupId,
+        groupNote.note,
+        user
+      )
+      if (dailyNoteIsEmpty(dailyNote)) {
+        setDirty(false)
+        return upsertGroupDaycareDailyNote(groupId, newGroupNote)
+      } else {
+        setDirty(false)
+        return Promise.all([
+          upsertGroupDaycareDailyNote(groupId, newGroupNote),
+          createOrUpdateDaycareDailyNoteForChild(
+            childId,
+            dailyNoteEditedToDailyNote(dailyNote, user)
+          )
+        ])
+      }
+    } else {
+      setDirty(false)
+      return createOrUpdateDaycareDailyNoteForChild(
+        childId,
+        dailyNoteEditedToDailyNote(dailyNote, user)
+      )
+    }
+  }
+
+  const editNote = (dailyNote: DailyNoteEdited) => {
+    setDailyNote(dailyNote)
+    setDirty(true)
   }
 
   return (
@@ -146,196 +206,286 @@ export default React.memo(function DailyNoteEditor() {
           >
             <Center>
               <RoundIcon content={faExclamation} color={'orange'} size="XL" />
-              <DialogTitle>{i18n.attendances.notes.clearTitle}</DialogTitle>
-              <Buttons>
-                <InlineButton
-                  text={i18n.common.cancel}
-                  onClick={() => setShowDialog(false)}
-                />
-                <InlineButton
-                  text={i18n.common.clear}
-                  onClick={deleteNote}
-                  data-qa="delete-daily-note-btn"
-                />
-              </Buttons>
+              {dialogType === 'DELETE' && (
+                <>
+                  <DialogTitle>{i18n.attendances.notes.clearTitle}</DialogTitle>
+                  <Buttons>
+                    <InlineButton
+                      text={i18n.common.cancel}
+                      onClick={() => setShowDialog(false)}
+                    />
+                    <InlineButton
+                      text={i18n.common.clear}
+                      onClick={deleteNote}
+                      data-qa="delete-daily-note-btn"
+                    />
+                  </Buttons>
+                </>
+              )}
+
+              {dialogType === 'CONFIRM' && (
+                <>
+                  <DialogTitle>
+                    {i18n.attendances.notes.confirmTitle}
+                  </DialogTitle>
+                  <Buttons>
+                    <InlineButton
+                      text={i18n.attendances.notes.closeWithoutSaving}
+                      onClick={() => history.goBack()}
+                      data-qa="confirm-go-back-btn"
+                    />
+                    <InlineButton
+                      text={i18n.common.save}
+                      onClick={() => {
+                        void saveNotes().then(() => {
+                          history.goBack()
+                        })
+                      }}
+                    />
+                  </Buttons>
+                </>
+              )}
             </Center>
           </ConfirmDialog>
+
           <TallContentArea
             opaque={false}
             paddingHorizontal={'zero'}
             paddingVertical={'zero'}
           >
-            <BackButton
-              onClick={() => history.goBack()}
-              icon={faArrowLeft}
-              text={
-                child
-                  ? `${child.firstName} ${child.lastName}`
-                  : i18n.common.back
-              }
-            />
-            <ContentAreaWithShadow
-              opaque={true}
-              paddingHorizontal={'s'}
-              paddingVertical={'m'}
-            >
-              <Title>{i18n.attendances.notes.dailyNotes}</Title>
-              {dailyNote.id && (
-                <FixedSpaceRow
-                  fullWidth={true}
-                  justifyContent={'flex-end'}
-                  spacing={'xxs'}
-                >
-                  <IconButton
-                    icon={faTrash}
-                    onClick={() => setShowDialog(!showDialog)}
-                    data-qa="open-delete-dialog-btn"
-                  />
-                  <span>{i18n.common.clear}</span>
-                </FixedSpaceRow>
-              )}
-              <FixedSpaceColumn spacing={'m'}>
-                <FixedSpaceColumn spacing={'xxs'}>
-                  <Label>{i18n.attendances.notes.labels.note}</Label>
-                  <TextArea
-                    value={dailyNote.note}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      setDailyNote({ ...dailyNote, note: e.target.value })
-                    }
-                    placeholder={i18n.attendances.notes.placeholders.note}
-                    data-qa={'daily-note-note-input'}
-                  />
-                </FixedSpaceColumn>
+            <TopRow>
+              <BackButton
+                onClick={() => {
+                  if (dirty) {
+                    setDialogType('CONFIRM')
+                    setShowDialog(!showDialog)
+                  } else {
+                    history.goBack()
+                  }
+                }}
+                icon={faArrowLeft}
+                text={
+                  child
+                    ? `${child.firstName} ${child.lastName}`
+                    : i18n.common.back
+                }
+              />
+              <InlineButton
+                onClick={() =>
+                  void saveNotes().then(() => {
+                    history.goBack()
+                  })
+                }
+                text={i18n.common.save}
+                data-qa="create-daily-note-btn"
+              />
+            </TopRow>
+            <FixedSpaceColumn>
+              <TitleArea
+                shadow
+                opaque
+                paddingHorizontal={'s'}
+                paddingVertical={'6px'}
+              >
+                <Title>{i18n.attendances.notes.dailyNotes}</Title>
+              </TitleArea>
 
-                <FixedSpaceColumn spacing={'s'}>
-                  <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
-                  <FixedSpaceColumn spacing={'xs'}>
-                    {levelInfoValues.map((levelInfo) => (
-                      <Radio
-                        key={levelInfo}
-                        label={i18n.attendances.notes.values[levelInfo]}
-                        onChange={() =>
-                          setDailyNote({ ...dailyNote, feedingNote: levelInfo })
-                        }
-                        checked={dailyNote.feedingNote === levelInfo}
-                        data-qa={`feeding-note-${levelInfo}`}
-                      />
-                    ))}
-                  </FixedSpaceColumn>
-                </FixedSpaceColumn>
+              <ContentArea shadow opaque paddingHorizontal={'s'}>
+                <FixedSpaceColumn spacing={'m'}>
+                  {groupNote.id && (
+                    <>
+                      <FixedSpaceRow
+                        fullWidth={true}
+                        justifyContent={'flex-end'}
+                        spacing={'xxs'}
+                      >
+                        <IconButton
+                          icon={faTrash}
+                          onClick={() => {
+                            setDeleteType('GROUP_NOTE')
+                            setDialogType('DELETE')
+                            setShowDialog(!showDialog)
+                          }}
+                          data-qa="open-delete-groupnote-dialog-btn"
+                          gray
+                        />
+                        <span>{i18n.common.clear}</span>
+                      </FixedSpaceRow>
+                    </>
+                  )}
 
-                <FixedSpaceColumn spacing={'s'}>
-                  <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
-                  <FixedSpaceColumn spacing={'xs'}>
-                    {levelInfoValues.map((levelInfo) => (
-                      <Radio
-                        key={levelInfo}
-                        label={i18n.attendances.notes.values[levelInfo]}
-                        onChange={() =>
-                          setDailyNote({
-                            ...dailyNote,
-                            sleepingNote: levelInfo
-                          })
-                        }
-                        checked={dailyNote.sleepingNote === levelInfo}
-                        data-qa={`sleeping-note-${levelInfo}`}
-                      />
-                    ))}
-                  </FixedSpaceColumn>
-                </FixedSpaceColumn>
+                  <H2 noMargin>{i18n.attendances.notes.groupNote}</H2>
 
-                <Time>
-                  <InputField
-                    value={
-                      dailyNote.sleepingHours
-                        ? dailyNote.sleepingHours.toString()
-                        : ''
-                    }
-                    onChange={(value) =>
-                      setDailyNote({
-                        ...dailyNote,
-                        sleepingHours: parseFloat(value)
-                      })
-                    }
-                    placeholder={
-                      i18n.attendances.notes.placeholders.sleepingTime
-                    }
-                    data-qa="sleeping-time-input"
-                    width={'s'}
-                    type={'number'}
-                  />
-                  <span>{i18n.common.hours}</span>
-                </Time>
-
-                <FixedSpaceColumn spacing={'s'}>
-                  <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
-                  <FixedSpaceColumn spacing={'xs'}>
-                    {reminderValues.map((reminder) => (
-                      <Checkbox
-                        key={reminder}
-                        label={i18n.attendances.notes.reminders[reminder]}
-                        onChange={(checked) => {
-                          checked
-                            ? setDailyNote({
-                                ...dailyNote,
-                                reminders: [...dailyNote.reminders, reminder]
-                              })
-                            : setDailyNote({
-                                ...dailyNote,
-                                reminders: dailyNote.reminders.filter(
-                                  (v) => v !== reminder
-                                )
-                              })
-                        }}
-                        checked={dailyNote.reminders.includes(reminder)}
-                        data-qa={`reminders-${reminder}`}
-                      />
-                    ))}
-                    <TextArea
-                      value={dailyNote.reminderNote}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        setDailyNote({
-                          ...dailyNote,
-                          reminderNote: e.target.value
-                        })
-                      }
-                      placeholder={
-                        i18n.attendances.notes.placeholders.reminderNote
-                      }
-                      data-qa="reminder-note-input"
-                    />
-                  </FixedSpaceColumn>
-                </FixedSpaceColumn>
-                {attendanceResponse.isSuccess && groupNote && (
-                  <FixedSpaceColumn spacing={'s'}>
+                  <FixedSpaceColumn spacing={'xxs'}>
                     <Label>
                       {i18n.attendances.notes.labels.groupNotesHeader}
                     </Label>
-                    <p data-qa={'group-note'}>{groupNote.note}</p>
-                  </FixedSpaceColumn>
-                )}
-                <Actions>
-                  <FixedSpaceRow fullWidth>
-                    <Button
-                      text={i18n.common.cancel}
-                      onClick={() => history.goBack()}
-                    />
-                    <AsyncButton
-                      primary
-                      text={i18n.common.confirm}
-                      onClick={() =>
-                        createOrUpdateDaycareDailyNoteForChild(
-                          childId,
-                          dailyNoteEditedToDailyNote(dailyNote, user)
-                        )
+                    <TextArea
+                      value={groupNote.note ?? ''}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                        setDirty(true)
+                        setGroupNote({ ...groupNote, note: e.target.value })
+                      }}
+                      placeholder={
+                        i18n.attendances.notes.placeholders.groupNote
                       }
-                      onSuccess={() => history.goBack()}
-                      data-qa="create-daily-note-btn"
+                      data-qa={'daily-note-group-note-input'}
                     />
-                  </FixedSpaceRow>
-                </Actions>
-              </FixedSpaceColumn>
-            </ContentAreaWithShadow>
+                  </FixedSpaceColumn>
+                </FixedSpaceColumn>
+              </ContentArea>
+
+              <ContentArea shadow opaque paddingHorizontal={'s'}>
+                <FixedSpaceColumn spacing={'m'}>
+                  {dailyNote.id && (
+                    <FixedSpaceRow
+                      fullWidth={true}
+                      justifyContent={'flex-end'}
+                      spacing={'xxs'}
+                    >
+                      <IconButton
+                        icon={faTrash}
+                        onClick={() => {
+                          setDeleteType('NOTE')
+                          setDialogType('DELETE')
+                          setShowDialog(!showDialog)
+                        }}
+                        data-qa="open-delete-dialog-btn"
+                        gray
+                      />
+                      <span>{i18n.common.clear}</span>
+                    </FixedSpaceRow>
+                  )}
+
+                  <H2 noMargin>{i18n.attendances.notes.note}</H2>
+
+                  <FixedSpaceColumn spacing={'xxs'}>
+                    <Label>{i18n.attendances.notes.labels.note}</Label>
+                    <TextArea
+                      value={dailyNote.note}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        editNote({ ...dailyNote, note: e.target.value })
+                      }
+                      placeholder={i18n.attendances.notes.placeholders.note}
+                      data-qa={'daily-note-note-input'}
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn spacing={'s'}>
+                    <Label>{i18n.attendances.notes.labels.feedingNote}</Label>
+                    <ChipWrapper $noMargin>
+                      {levelInfoValues.map((levelInfo) => (
+                        <Fragment key={levelInfo}>
+                          <ChoiceChip
+                            text={
+                              i18n.attendances.notes.feedingValues[levelInfo]
+                            }
+                            selected={dailyNote.feedingNote === levelInfo}
+                            onChange={() => {
+                              editNote({
+                                ...dailyNote,
+                                feedingNote:
+                                  dailyNote.feedingNote === levelInfo
+                                    ? undefined
+                                    : levelInfo
+                              })
+                            }}
+                            data-qa={`feeding-note-${levelInfo}`}
+                          />
+                          <Gap horizontal size={'xxs'} />
+                        </Fragment>
+                      ))}
+                    </ChipWrapper>
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn spacing={'s'}>
+                    <Label>{i18n.attendances.notes.labels.sleepingNote}</Label>
+                    <ChipWrapper $noMargin>
+                      {levelInfoValues.map((levelInfo) => (
+                        <Fragment key={levelInfo}>
+                          <ChoiceChip
+                            text={
+                              i18n.attendances.notes.sleepingValues[levelInfo]
+                            }
+                            selected={dailyNote.sleepingNote === levelInfo}
+                            onChange={() => {
+                              editNote({
+                                ...dailyNote,
+                                sleepingNote:
+                                  dailyNote.sleepingNote === levelInfo
+                                    ? undefined
+                                    : levelInfo
+                              })
+                            }}
+                            data-qa={`sleeping-note-${levelInfo}`}
+                          />
+                          <Gap horizontal size={'xxs'} />
+                        </Fragment>
+                      ))}
+                    </ChipWrapper>
+                  </FixedSpaceColumn>
+                  <Time>
+                    <InputField
+                      value={
+                        dailyNote.sleepingHours
+                          ? dailyNote.sleepingHours.toString()
+                          : ''
+                      }
+                      onChange={(value) =>
+                        editNote({
+                          ...dailyNote,
+                          sleepingHours: parseFloat(value)
+                        })
+                      }
+                      placeholder={
+                        i18n.attendances.notes.placeholders.sleepingTime
+                      }
+                      data-qa="sleeping-time-input"
+                      width={'s'}
+                      type={'number'}
+                    />
+                    <span>{i18n.common.hours}</span>
+                  </Time>
+                  <FixedSpaceColumn spacing={'s'}>
+                    <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
+                    <FixedSpaceColumn spacing={'xs'}>
+                      {reminderValues.map((reminder) => (
+                        <Checkbox
+                          key={reminder}
+                          label={i18n.attendances.notes.reminders[reminder]}
+                          onChange={(checked) => {
+                            checked
+                              ? editNote({
+                                  ...dailyNote,
+                                  reminders: [...dailyNote.reminders, reminder]
+                                })
+                              : editNote({
+                                  ...dailyNote,
+                                  reminders: dailyNote.reminders.filter(
+                                    (v) => v !== reminder
+                                  )
+                                })
+                          }}
+                          checked={dailyNote.reminders.includes(reminder)}
+                          data-qa={`reminders-${reminder}`}
+                        />
+                      ))}
+                      <TextArea
+                        value={dailyNote.reminderNote}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          editNote({
+                            ...dailyNote,
+                            reminderNote: e.target.value
+                          })
+                        }
+                        placeholder={
+                          i18n.attendances.notes.placeholders.reminderNote
+                        }
+                        data-qa="reminder-note-input"
+                      />
+                    </FixedSpaceColumn>
+                  </FixedSpaceColumn>
+                </FixedSpaceColumn>
+              </ContentArea>
+            </FixedSpaceColumn>
           </TallContentArea>
         </>
       )}
@@ -378,6 +528,53 @@ function dailyNoteToDailyNoteEdited(dailyNote: DailyNote): DailyNoteEdited {
     sleepingNote: dailyNote.sleepingNote ? dailyNote.sleepingNote : undefined,
     sleepingHours: dailyNote.sleepingHours ? dailyNote.sleepingHours : undefined
   }
+}
+
+function genNewGroupNote(
+  attendanceResponse: Result<AttendanceResponse>,
+  groupId: string,
+  groupNote: string | null,
+  user: User | undefined
+) {
+  const oldGroupNote =
+    attendanceResponse.isSuccess &&
+    attendanceResponse.value.unit.groups.find((g) => g.id == groupId)?.dailyNote
+  let newGroupNote: DailyNote = {
+    childId: null,
+    date: LocalDate.today(),
+    groupId,
+    note: groupNote,
+    id: null,
+    feedingNote: null,
+    sleepingNote: null,
+    sleepingHours: null,
+    reminders: [],
+    reminderNote: null,
+    modifiedAt: null,
+    modifiedBy: user?.id ?? 'unknown user'
+  }
+  if (oldGroupNote) {
+    newGroupNote = {
+      ...newGroupNote,
+      id: oldGroupNote.id
+    }
+  }
+  return newGroupNote
+}
+
+function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
+  if (
+    dailyNote.feedingNote === undefined &&
+    dailyNote.groupId === undefined &&
+    dailyNote.id === undefined &&
+    dailyNote.note === '' &&
+    dailyNote.reminderNote === '' &&
+    dailyNote.reminders.length === 0 &&
+    dailyNote.sleepingHours === undefined &&
+    dailyNote.sleepingNote === undefined
+  )
+    return true
+  return false
 }
 
 const BackButton = styled(InlineButton)`
@@ -429,4 +626,20 @@ const DialogTitle = styled.h2`
   color: ${colors.blues.dark};
   margin-top: 32px;
   margin-bottom: 40px;
+`
+
+const TitleArea = styled(ContentArea)`
+  text-align: center;
+
+  h1 {
+    margin: 0;
+  }
+`
+const TopRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+
+  button {
+    margin-right: ${defaultMargins.s};
+  }
 `

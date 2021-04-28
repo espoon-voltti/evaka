@@ -19,11 +19,9 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { ContentArea } from 'lib-components/layout/Container'
 
-import {
-  ContentAreaWithShadow,
-  TallContentArea
-} from '../../../components/mobile/components'
+import { TallContentArea } from '../../../components/mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
   getDaycareAttendances,
@@ -97,7 +95,8 @@ export default React.memo(function MarkAbsent() {
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
             }
           />
-          <ContentAreaWithShadow
+          <ContentArea
+            shadow
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'m'}
@@ -132,9 +131,10 @@ export default React.memo(function MarkAbsent() {
                 )}
               </FixedSpaceRow>
             </Actions>
-          </ContentAreaWithShadow>
+          </ContentArea>
           <Gap size={'s'} />
-          <ContentAreaWithShadow
+          <ContentArea
+            shadow
             opaque={true}
             paddingHorizontal={'s'}
             paddingVertical={'s'}
@@ -153,7 +153,7 @@ export default React.memo(function MarkAbsent() {
                 groupNote={groupNote ? groupNote : undefined}
               />
             </DailyNotes>
-          </ContentAreaWithShadow>
+          </ContentArea>
         </TallContentArea>
       )}
     </>

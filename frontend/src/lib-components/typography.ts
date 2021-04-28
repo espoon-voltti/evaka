@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
+
 import { blueColors, greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
+
 import { BaseProps } from './utils'
 
 type HeadingProps = BaseProps & {
@@ -43,6 +45,12 @@ export const H2 = styled.h2<HeadingProps>`
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
+
+  @media (max-width: 600px) {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+  }
 `
 
 export const H3 = styled.h3<HeadingProps>`

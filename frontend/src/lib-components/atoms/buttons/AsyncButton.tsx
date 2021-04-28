@@ -19,7 +19,7 @@ type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: () => Promise<void | Result>
+  onClick: () => Promise<void | Result | (void | Result)[]>
   onSuccess: () => void
   primary?: boolean
   disabled?: boolean
@@ -50,11 +50,21 @@ export default React.memo(function AsyncButton({
   const callback = () => {
     setInProgress(true)
     onClick()
-      .then((result) => {
-        if (result && result.isFailure) {
-          setShowFailure(true)
+      .then((result: void | Result | (void | Result)[]) => {
+        if (Array.isArray(result)) {
+          let failure = false
+          for (const elem of result) {
+            if (elem && elem.isFailure) {
+              failure = true
+            }
+            failure ? setShowFailure(true) : setShowSuccess(true)
+          }
         } else {
-          setShowSuccess(true)
+          if (result && result.isFailure) {
+            setShowFailure(true)
+          } else {
+            setShowSuccess(true)
+          }
         }
       })
       .catch(() => setShowFailure(true))

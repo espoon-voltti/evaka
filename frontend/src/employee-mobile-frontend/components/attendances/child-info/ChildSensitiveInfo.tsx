@@ -10,14 +10,14 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
+import Title from 'lib-components/atoms/Title'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { ContentArea } from 'lib-components/layout/Container'
 import { faPhone } from 'lib-icons'
 
 import { Child } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { ContentAreaWithShadow } from '../../mobile/components'
-import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers'
-import Title from '../../../../lib-components/atoms/Title'
-import CollapsibleSection from '../../../../lib-components/molecules/CollapsibleSection'
 import { PlacementType } from '../../../types'
 
 interface Props {
@@ -78,17 +78,18 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
     <>
       {child && (
         <FixedSpaceColumn spacing={'m'}>
-          <ContentAreaWithShadow
-            opaque={true}
+          <ContentArea
+            shadow
+            opaque
             paddingHorizontal={'s'}
             paddingVertical={'m'}
           >
             <FixedSpaceColumn alignItems={'center'} spacing={'m'}>
               <Title>{i18n.attendances.childInfo.header}</Title>
             </FixedSpaceColumn>
-          </ContentAreaWithShadow>
+          </ContentArea>
 
-          <ContentAreaWithShadow opaque={true}>
+          <ContentArea shadow opaque>
             <CollapsibleSection
               title={i18n.attendances.childInfo.personalInfoHeader}
             >
@@ -120,9 +121,9 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                 )}
               </FixedSpaceColumn>
             </CollapsibleSection>
-          </ContentAreaWithShadow>
+          </ContentArea>
 
-          <ContentAreaWithShadow opaque={true}>
+          <ContentArea shadow opaque>
             <CollapsibleSection
               title={i18n.attendances.childInfo.allergiesHeader}
             >
@@ -146,9 +147,9 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                 )}
               </FixedSpaceColumn>
             </CollapsibleSection>
-          </ContentAreaWithShadow>
+          </ContentArea>
 
-          <ContentAreaWithShadow opaque={true}>
+          <ContentArea shadow opaque>
             <CollapsibleSection
               title={i18n.attendances.childInfo.contactInfoHeader}
             >
@@ -213,7 +214,7 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                 </div>
               ))}
             </CollapsibleSection>
-          </ContentAreaWithShadow>
+          </ContentArea>
         </FixedSpaceColumn>
       )}
     </>
