@@ -7,6 +7,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -82,5 +83,16 @@ class NewServiceNeedController(
         }
 
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/new-service-needs/options")
+    fun getServiceNeedOptions(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): ResponseEntity<List<ServiceNeedOption>> {
+        Audit.MessagingSenderOptionsRead.log()
+        user.requireAnyEmployee()
+
+        return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
     }
 }

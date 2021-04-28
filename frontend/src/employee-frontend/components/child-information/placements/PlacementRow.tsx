@@ -282,7 +282,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           </DataValue>
         </DataRow>
         <Gap size="s" />
-        {missingServiceNeedDays > 0 ? (
+        {missingServiceNeedDays > 0 && !featureFlags.useNewServiceNeeds ? (
           <AlertBox
             message={`${i18n.childInformation.placements.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissing2}`}
             thin
@@ -309,7 +309,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           <RequireRole oneOf={['ADMIN']}>
             <Gap size="s" />
 
-            <NewServiceNeeds serviceNeeds={placement.serviceNeeds} />
+            <NewServiceNeeds placement={placement} reload={onRefreshNeeded} />
           </RequireRole>
         )}
       </ToolbarAccordion>

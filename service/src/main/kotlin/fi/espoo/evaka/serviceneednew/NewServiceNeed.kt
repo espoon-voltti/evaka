@@ -55,7 +55,7 @@ fun validateServiceNeed(
 
     // language=sql
     val sql = """
-        SELECT 1 
+        SELECT 1
         FROM placement pl
         JOIN service_need_option sno ON sno.valid_placement_type = pl.type
         WHERE pl.id = :placementId AND sno.id = :optionId
@@ -66,6 +66,20 @@ fun validateServiceNeed(
         .mapTo<Int>()
         .list()
         .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
+
+    // language=sql
+    val sql2 = """
+        SELECT 1
+        FROM placement pl
+        WHERE pl.id = :placementId AND daterange(pl.start_date, pl.end_date, '[]') @> daterange(:startDate, :endDate, '[]')
+    """.trimIndent()
+    db.createQuery(sql2)
+        .bind("placementId", placementId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .mapTo<Int>()
+        .list()
+        .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
 }
 
 fun createNewServiceNeed(

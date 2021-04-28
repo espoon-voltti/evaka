@@ -214,3 +214,9 @@ fun Database.Read.getOverlappingServiceNeeds(
         .mapTo<NewServiceNeed>()
         .list()
 }
+
+fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
+    return createQuery("SELECT * FROM service_need_option")
+        .mapTo<ServiceNeedOption>()
+        .list()
+}

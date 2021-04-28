@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,7 +7,6 @@ import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
 import { ChildState } from '../../state/child'
-import { Loading } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import { faMapMarkerAlt } from 'lib-icons'
 import PlacementRow from '../../components/child-information/placements/PlacementRow'
@@ -19,6 +18,9 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { RequireRole } from '../../utils/roles'
 import { DateRange, rangesOverlap } from '../../utils/date'
 import { Placement } from '../../types/child'
+import { getServiceNeedOptions } from '../../api/child/new-service-needs'
+import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import _ from 'lodash'
 
 interface Props {
   id: UUID
@@ -27,15 +29,21 @@ interface Props {
 
 const Placements = React.memo(function Placements({ id, open }: Props) {
   const { i18n } = useTranslation()
-  const { placements, setPlacements } = useContext<ChildState>(ChildContext)
+  const {
+    placements,
+    setPlacements,
+    setServiceNeedOptions
+  } = useContext<ChildState>(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
-  function loadPlacements() {
-    setPlacements(Loading.of())
-    void getPlacements(id).then((placements) => setPlacements(placements))
-  }
+  const loadPlacements = useRestApi(getPlacements, setPlacements)
+  useEffect(() => loadPlacements(id), [id, loadPlacements])
 
-  useEffect(loadPlacements, [id, setPlacements])
+  const loadServiceNeedOptions = useRestApi(
+    getServiceNeedOptions,
+    setServiceNeedOptions
+  )
+  useEffect(loadServiceNeedOptions, [loadServiceNeedOptions])
 
   const checkOverlaps = (range: DateRange, placement: Placement): boolean =>
     placements
@@ -55,22 +63,14 @@ const Placements = React.memo(function Placements({ id, open }: Props) {
     }
     return (
       <div>
-        {placements.value
-          .sort((p1, p2) =>
-            p1.startDate.isEqual(p2.startDate)
-              ? 0
-              : p1.startDate.isBefore(p2.startDate)
-              ? 1
-              : -1
-          )
-          .map((p) => (
-            <PlacementRow
-              key={p.id}
-              placement={p}
-              onRefreshNeeded={loadPlacements}
-              checkOverlaps={checkOverlaps}
-            />
-          ))}
+        {_.orderBy(placements.value, ['startDate'], ['desc']).map((p) => (
+          <PlacementRow
+            key={p.id}
+            placement={p}
+            onRefreshNeeded={() => loadPlacements(id)}
+            checkOverlaps={checkOverlaps}
+          />
+        ))}
       </div>
     )
   }
@@ -100,7 +100,7 @@ const Placements = React.memo(function Placements({ id, open }: Props) {
         {renderContents()}
       </CollapsibleSection>
       {uiMode === 'create-new-placement' && (
-        <CreatePlacementModal childId={id} reload={loadPlacements} />
+        <CreatePlacementModal childId={id} reload={() => loadPlacements(id)} />
       )}
     </div>
   )
