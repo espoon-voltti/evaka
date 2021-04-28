@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import { isNotProduction } from 'employee-frontend/constants'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
 import colors from 'lib-components/colors'
@@ -221,15 +220,13 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     {i18n.employees.title}
                   </Link>
                 </RequireRole>
-                {isNotProduction() && (
-                  <Link
-                    to={`/pin-code`}
-                    onClick={() => setPopupVisible(false)}
-                    data-qa="user-popup-pin-code"
-                  >
-                    {i18n.pinCode.link}
-                  </Link>
-                )}
+                <Link
+                  to={`/pin-code`}
+                  onClick={() => setPopupVisible(false)}
+                  data-qa="user-popup-pin-code"
+                >
+                  {i18n.pinCode.link}
+                </Link>
                 <LogoutLink
                   data-qa="logout-btn"
                   href={logoutUrl}
