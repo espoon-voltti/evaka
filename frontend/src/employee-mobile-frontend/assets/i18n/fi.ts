@@ -142,6 +142,8 @@ export const fi = {
       },
       noNotes: 'Ei merkintöjä tälle päivälle',
       clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?',
+      confirmTitle: 'Tallennetaanko tehdyt merkinnät ennen sulkemista?',
+      closeWithoutSaving: 'Sulje tallentamatta',
       groupNote: 'Ryhmän muistiinpano',
       note: 'Lapsen päivän muistiinpanot'
     },

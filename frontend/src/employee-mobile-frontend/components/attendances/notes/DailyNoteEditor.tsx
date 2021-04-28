@@ -21,8 +21,6 @@ import {
 import { H2, Label } from 'lib-components/typography'
 import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
-// import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-// import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -44,7 +42,6 @@ import {
 import { useTranslation } from '../../../state/i18n'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import { TallContentArea, ChipWrapper } from '../../mobile/components'
-// import { Actions } from '../components'
 import { UserContext } from '../../../state/user'
 import { User } from '../../../types/index'
 
@@ -79,6 +76,8 @@ export default React.memo(function DailyNoteEditor() {
     AttendanceUIContext
   )
 
+  const [dirty, setDirty] = useState(false)
+
   const [dailyNote, setDailyNote] = useState<DailyNoteEdited>({
     id: undefined,
     childId: childId,
@@ -108,6 +107,7 @@ export default React.memo(function DailyNoteEditor() {
   })
 
   const [deleteType, setDeleteType] = useState<'NOTE' | 'GROUP_NOTE'>('NOTE')
+  const [dialogType, setDialogType] = useState<'CONFIRM' | 'DELETE'>('CONFIRM')
 
   const loadDaycareAttendances = useRestApi(
     getDaycareAttendances,
@@ -167,8 +167,10 @@ export default React.memo(function DailyNoteEditor() {
         user
       )
       if (dailyNoteIsEmpty(dailyNote)) {
+        setDirty(false)
         return upsertGroupDaycareDailyNote(groupId, newGroupNote)
       } else {
+        setDirty(false)
         return Promise.all([
           upsertGroupDaycareDailyNote(groupId, newGroupNote),
           createOrUpdateDaycareDailyNoteForChild(
@@ -178,11 +180,17 @@ export default React.memo(function DailyNoteEditor() {
         ])
       }
     } else {
+      setDirty(false)
       return createOrUpdateDaycareDailyNoteForChild(
         childId,
         dailyNoteEditedToDailyNote(dailyNote, user)
       )
     }
+  }
+
+  const editNote = (dailyNote: DailyNoteEdited) => {
+    setDailyNote(dailyNote)
+    setDirty(true)
   }
 
   return (
@@ -198,20 +206,48 @@ export default React.memo(function DailyNoteEditor() {
           >
             <Center>
               <RoundIcon content={faExclamation} color={'orange'} size="XL" />
-              <DialogTitle>{i18n.attendances.notes.clearTitle}</DialogTitle>
-              <Buttons>
-                <InlineButton
-                  text={i18n.common.cancel}
-                  onClick={() => setShowDialog(false)}
-                />
-                <InlineButton
-                  text={i18n.common.clear}
-                  onClick={deleteNote}
-                  data-qa="delete-daily-note-btn"
-                />
-              </Buttons>
+              {dialogType === 'DELETE' && (
+                <>
+                  <DialogTitle>{i18n.attendances.notes.clearTitle}</DialogTitle>
+                  <Buttons>
+                    <InlineButton
+                      text={i18n.common.cancel}
+                      onClick={() => setShowDialog(false)}
+                    />
+                    <InlineButton
+                      text={i18n.common.clear}
+                      onClick={deleteNote}
+                      data-qa="delete-daily-note-btn"
+                    />
+                  </Buttons>
+                </>
+              )}
+
+              {dialogType === 'CONFIRM' && (
+                <>
+                  <DialogTitle>
+                    {i18n.attendances.notes.confirmTitle}
+                  </DialogTitle>
+                  <Buttons>
+                    <InlineButton
+                      text={i18n.attendances.notes.closeWithoutSaving}
+                      onClick={() => history.goBack()}
+                      data-qa="confirm-go-back-btn"
+                    />
+                    <InlineButton
+                      text={i18n.common.save}
+                      onClick={() => {
+                        saveNotes().then(() => {
+                          history.goBack()
+                        })
+                      }}
+                    />
+                  </Buttons>
+                </>
+              )}
             </Center>
           </ConfirmDialog>
+
           <TallContentArea
             opaque={false}
             paddingHorizontal={'zero'}
@@ -219,7 +255,14 @@ export default React.memo(function DailyNoteEditor() {
           >
             <TopRow>
               <BackButton
-                onClick={() => history.goBack()}
+                onClick={() => {
+                  if (dirty) {
+                    setDialogType('CONFIRM')
+                    setShowDialog(!showDialog)
+                  } else {
+                    history.goBack()
+                  }
+                }}
                 icon={faArrowLeft}
                 text={
                   child
@@ -247,22 +290,6 @@ export default React.memo(function DailyNoteEditor() {
                 <Title>{i18n.attendances.notes.dailyNotes}</Title>
               </TitleArea>
 
-              {/* <ActionsWithPadding>
-                <FixedSpaceRow fullWidth>
-                  <Button
-                    text={i18n.common.cancel}
-                    onClick={() => history.goBack()}
-                  />
-                  <AsyncButton
-                    primary
-                    text={i18n.common.save}
-                    onClick={() => saveNotes()}
-                    onSuccess={() => history.goBack()}
-                    data-qa="create-daily-note-btn"
-                  />
-                </FixedSpaceRow>
-              </ActionsWithPadding> */}
-
               <ContentArea shadow opaque paddingHorizontal={'s'}>
                 <FixedSpaceColumn spacing={'m'}>
                   {groupNote.id && (
@@ -276,6 +303,7 @@ export default React.memo(function DailyNoteEditor() {
                           icon={faTrash}
                           onClick={() => {
                             setDeleteType('GROUP_NOTE')
+                            setDialogType('DELETE')
                             setShowDialog(!showDialog)
                           }}
                           data-qa="open-delete-groupnote-dialog-btn"
@@ -294,9 +322,10 @@ export default React.memo(function DailyNoteEditor() {
                     </Label>
                     <TextArea
                       value={groupNote.note ?? ''}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                        setDirty(true)
                         setGroupNote({ ...groupNote, note: e.target.value })
-                      }
+                      }}
                       placeholder={
                         i18n.attendances.notes.placeholders.groupNote
                       }
@@ -318,6 +347,7 @@ export default React.memo(function DailyNoteEditor() {
                         icon={faTrash}
                         onClick={() => {
                           setDeleteType('NOTE')
+                          setDialogType('DELETE')
                           setShowDialog(!showDialog)
                         }}
                         data-qa="open-delete-dialog-btn"
@@ -334,7 +364,7 @@ export default React.memo(function DailyNoteEditor() {
                     <TextArea
                       value={dailyNote.note}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        setDailyNote({ ...dailyNote, note: e.target.value })
+                        editNote({ ...dailyNote, note: e.target.value })
                       }
                       placeholder={i18n.attendances.notes.placeholders.note}
                       data-qa={'daily-note-note-input'}
@@ -351,7 +381,7 @@ export default React.memo(function DailyNoteEditor() {
                             }
                             selected={dailyNote.feedingNote === levelInfo}
                             onChange={() => {
-                              setDailyNote({
+                              editNote({
                                 ...dailyNote,
                                 feedingNote:
                                   dailyNote.feedingNote === levelInfo
@@ -377,7 +407,7 @@ export default React.memo(function DailyNoteEditor() {
                             }
                             selected={dailyNote.sleepingNote === levelInfo}
                             onChange={() => {
-                              setDailyNote({
+                              editNote({
                                 ...dailyNote,
                                 sleepingNote:
                                   dailyNote.sleepingNote === levelInfo
@@ -400,7 +430,7 @@ export default React.memo(function DailyNoteEditor() {
                           : ''
                       }
                       onChange={(value) =>
-                        setDailyNote({
+                        editNote({
                           ...dailyNote,
                           sleepingHours: parseFloat(value)
                         })
@@ -423,11 +453,11 @@ export default React.memo(function DailyNoteEditor() {
                           label={i18n.attendances.notes.reminders[reminder]}
                           onChange={(checked) => {
                             checked
-                              ? setDailyNote({
+                              ? editNote({
                                   ...dailyNote,
                                   reminders: [...dailyNote.reminders, reminder]
                                 })
-                              : setDailyNote({
+                              : editNote({
                                   ...dailyNote,
                                   reminders: dailyNote.reminders.filter(
                                     (v) => v !== reminder
@@ -441,7 +471,7 @@ export default React.memo(function DailyNoteEditor() {
                       <TextArea
                         value={dailyNote.reminderNote}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                          setDailyNote({
+                          editNote({
                             ...dailyNote,
                             reminderNote: e.target.value
                           })
@@ -597,10 +627,6 @@ const DialogTitle = styled.h2`
   margin-top: 32px;
   margin-bottom: 40px;
 `
-
-// const ActionsWithPadding = styled(Actions)`
-//   padding: 0 ${defaultMargins.s};
-// `
 
 const TitleArea = styled(ContentArea)`
   text-align: center;
