@@ -93,6 +93,21 @@ val migrationSqlCases = """
         WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 40 AND sn.part_day AND NOT sn.part_week THEN 'Osapäiväinen liittyvä, yhteensä enintään 40h'
         WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week > 40 AND sn.hours_per_week < 50 AND sn.part_day AND sn.part_week THEN 'Osapäiväinen ja osaviikkoinen liittyvä, yhteensä 40-50h'
         WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 40 AND sn.part_day AND sn.part_week THEN 'Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h'
+
+        -- invalid but easily fixable cases
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week >= 35 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen, vähintään 35h'
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week < 35 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen, 25-35h'
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week >= 35 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen, vähintään 35h'
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week < 35 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen, 25-35h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week >= 45 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, vähintään 45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 35 AND sn.hours_per_week < 45 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 35-45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 25-35h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 25-35h'
+        WHEN p.type = 'PRESCHOOL_DAYCARE' AND sn.hours_per_week >= 45 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen liittyvä, yhteensä vähintään 45h'
+        WHEN p.type = 'PRESCHOOL_DAYCARE' AND sn.hours_per_week >= 45 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen liittyvä, yhteensä vähintään 45h'
+        WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week >= 50 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen liittyvä, yhteensä vähintään 50h'
+        WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week >= 50 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen liittyvä, yhteensä vähintään 50h'
+
         ELSE 'undefined'
     END
 """.trimIndent()
