@@ -45,6 +45,7 @@ function run_reuse() {
 
 function addheader() {
     local file="$1"
+    shift
     local cmd_args=("$@")
     run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "$REUSE_YEARS" "${cmd_args[@]}" "$file"
 }
