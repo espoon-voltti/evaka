@@ -134,7 +134,7 @@ export default {
       preschoolLabel:
         'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen',
       preschoolInfo:
-        'Maksutonta esiopetusta on neljä tuntia päivässä. Tämän lisäksi lapselle voidaan hakea maksullista liittyvää varhaiskasvatusta, jota tarjotaan esiopetuspaikoissa aamulla ennen esiopetuksen alkua ja iltapäivisin esiopetuksen jälkeen. Hakemuksen liittyvään varhaiskasvatukseen voi tehdä esiopetukseen ilmoittautumisen yhteydessä tai erillisenä hakemuksena opetuksen jo alettua. Samalla hakemuksella voit hakea myös maksuttomaan valmistavaan opetukseen sekä valmistavaan opetukseen liittyvään varhaiskasvatukseen.',
+        'Maksutonta esiopetusta on neljä tuntia päivässä. Tämän lisäksi lapselle voidaan hakea maksullista liittyvää varhaiskasvatusta, jota tarjotaan esiopetuspaikoissa aamulla ennen esiopetuksen alkua ja iltapäivisin esiopetuksen jälkeen. Liittyvään varhaiskasvatukseen voi hakea myös palveluseteliä, valitsemalla Hakutoiveet -kohtaan palveluseteliyksikön, johon halutaan hakea. Hakemuksen liittyvään varhaiskasvatukseen voi tehdä esiopetukseen ilmoittautumisen yhteydessä tai erillisenä hakemuksena opetuksen jo alettua. Samalla hakemuksella voit hakea myös maksuttomaan valmistavaan opetukseen sekä valmistavaan opetukseen liittyvään varhaiskasvatukseen.',
       preschoolDaycareInfo:
         'Liittyvän varhaiskasvatuksen hakeminen lapsille, jotka ilmoitetaan / on ilmoitettu esiopetukseen tai valmistavaan opetukseen',
       clubLabel: 'Kerhohakemus',
@@ -535,6 +535,10 @@ export default {
                   palveluseteliyksiköt), yksiköt informoivat asiakkaita
                   hakutavasta. Näissä tapauksissa palveluohjaus muuttaa
                   hakemuksen pelkäksi esiopetushakemukseksi.
+                </P>
+                <P>
+                  Palveluseteliä haetaan valitsemalla hakutoiveeksi se
+                  palveluseteliyksikkö, johon halutaan hakea.
                 </P>
                 <P>
                   Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen,
