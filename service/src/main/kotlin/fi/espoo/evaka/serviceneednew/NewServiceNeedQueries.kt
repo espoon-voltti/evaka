@@ -190,7 +190,8 @@ fun Database.Transaction.deleteNewServiceNeed(
 fun Database.Read.getOverlappingServiceNeeds(
     placementId: UUID,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
+    excluding: UUID?
 ): List<NewServiceNeed> {
     // language=sql
     val sql = """
@@ -213,6 +214,7 @@ fun Database.Read.getOverlappingServiceNeeds(
         .bind("endDate", endDate)
         .mapTo<NewServiceNeed>()
         .list()
+        .filter { it.id != excluding }
 }
 
 fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {

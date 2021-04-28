@@ -106,52 +106,52 @@ fun updateNewServiceNeed(
     val old = tx.getNewServiceNeed(id)
     validateServiceNeed(tx, old.placementId, startDate, endDate, optionId)
     if (startDate.isBefore(old.startDate)) {
-        clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(startDate, old.startDate.minusDays(1)))
+        clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(startDate, old.startDate.minusDays(1)), excluding = id)
     }
     if (endDate.isAfter(old.endDate)) {
-        clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(old.endDate.plusDays(1), endDate))
+        clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(old.endDate.plusDays(1), endDate), excluding = id)
     }
 
     tx.updateNewServiceNeed(id, startDate, endDate, optionId, shiftCare)
 }
 
-private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, period: FiniteDateRange) {
-    tx.getOverlappingServiceNeeds(placementId, period.start, period.end).forEach { old ->
+private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
+    tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding).forEach { old ->
         val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
         when {
-            period.contains(oldPeriod) -> {
+            periodToClear.contains(oldPeriod) -> {
                 tx.deleteNewServiceNeed(old.id)
             }
-            oldPeriod.contains(period) -> {
+            periodToClear.includes(oldPeriod.start) -> {
+                tx.updateNewServiceNeed(
+                    id = old.id,
+                    startDate = periodToClear.end.plusDays(1),
+                    endDate = old.endDate,
+                    optionId = old.option.id,
+                    shiftCare = old.shiftCare
+                )
+            }
+            periodToClear.includes(oldPeriod.end) -> {
                 tx.updateNewServiceNeed(
                     id = old.id,
                     startDate = old.startDate,
-                    endDate = period.start.minusDays(1),
+                    endDate = periodToClear.start.minusDays(1),
+                    optionId = old.option.id,
+                    shiftCare = old.shiftCare
+                )
+            }
+            else -> {
+                tx.updateNewServiceNeed(
+                    id = old.id,
+                    startDate = old.startDate,
+                    endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
                     shiftCare = old.shiftCare
                 )
                 tx.insertNewServiceNeed(
                     placementId = placementId,
-                    startDate = period.end.plusDays(1),
+                    startDate = periodToClear.end.plusDays(1),
                     endDate = old.endDate,
-                    optionId = old.option.id,
-                    shiftCare = old.shiftCare
-                )
-            }
-            period.includes(oldPeriod.start) -> {
-                tx.updateNewServiceNeed(
-                    id = old.id,
-                    startDate = period.end.plusDays(1),
-                    endDate = old.endDate,
-                    optionId = old.option.id,
-                    shiftCare = old.shiftCare
-                )
-            }
-            period.includes(oldPeriod.end) -> {
-                tx.updateNewServiceNeed(
-                    id = old.id,
-                    startDate = old.startDate,
-                    endDate = period.start.minusDays(1),
                     optionId = old.option.id,
                     shiftCare = old.shiftCare
                 )

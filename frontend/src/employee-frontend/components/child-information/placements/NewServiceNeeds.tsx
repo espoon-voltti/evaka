@@ -21,7 +21,8 @@ import SimpleSelect from '../../../../lib-components/atoms/form/SimpleSelect'
 import { ChildContext } from '../../../state'
 import {
   createNewServiceNeed,
-  deleteNewServiceNeed
+  deleteNewServiceNeed,
+  updateNewServiceNeed
 } from '../../../api/child/new-service-needs'
 import { UIContext } from '../../../state/ui'
 
@@ -42,6 +43,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
   const t = i18n.childInformation.placements.serviceNeeds
 
   const [creatingNew, setCreatingNew] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const { serviceNeedOptions } = useContext(ChildContext)
   const options = serviceNeedOptions.isSuccess
@@ -101,14 +103,34 @@ function NewServiceNeeds({ placement, reload }: Props) {
               />
             )}
 
-            {_.orderBy(serviceNeeds, ['startDate'], ['desc']).map((sn) => (
-              <NewServiceNeedReadRow
-                key={sn.id}
-                serviceNeed={sn}
-                onDelete={() => onDelete(sn.id)}
-                disabled={creatingNew}
-              />
-            ))}
+            {_.orderBy(serviceNeeds, ['startDate'], ['desc']).map((sn) =>
+              editingId === sn.id ? (
+                <NewServiceNeedEditorRow
+                  placement={placement}
+                  options={options}
+                  initialForm={{
+                    startDate: sn.startDate,
+                    endDate: sn.endDate,
+                    optionId: sn.option.id,
+                    shiftCare: sn.shiftCare
+                  }}
+                  onSuccess={() => {
+                    setEditingId(null)
+                    reload()
+                  }}
+                  onCancel={() => setEditingId(null)}
+                  editingId={editingId}
+                />
+              ) : (
+                <NewServiceNeedReadRow
+                  key={sn.id}
+                  serviceNeed={sn}
+                  onEdit={() => setEditingId(sn.id)}
+                  onDelete={() => onDelete(sn.id)}
+                  disabled={creatingNew || editingId !== null}
+                />
+              )
+            )}
           </Tbody>
         </Table>
       )}
@@ -118,11 +140,13 @@ function NewServiceNeeds({ placement, reload }: Props) {
 
 interface NewServiceNeedReadRowProps {
   serviceNeed: NewServiceNeed
+  onEdit: () => void
   onDelete: () => void
   disabled?: boolean
 }
 function NewServiceNeedReadRow({
   serviceNeed,
+  onEdit,
   onDelete,
   disabled
 }: NewServiceNeedReadRowProps) {
@@ -137,7 +161,7 @@ function NewServiceNeedReadRow({
       <Td>
         <Toolbar
           dateRange={serviceNeed}
-          onEdit={() => console.log('todo')}
+          onEdit={onEdit}
           editableFor={['ADMIN', 'UNIT_SUPERVISOR']}
           onDelete={onDelete}
           deletableFor={['ADMIN', 'UNIT_SUPERVISOR']}
@@ -161,13 +185,15 @@ interface NewServiceNeedCreateRowProps {
   initialForm: FormData
   onSuccess: () => void
   onCancel: () => void
+  editingId?: string
 }
 function NewServiceNeedEditorRow({
   placement,
   options,
   initialForm,
   onSuccess,
-  onCancel
+  onCancel,
+  editingId
 }: NewServiceNeedCreateRowProps) {
   const { i18n } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
@@ -186,26 +212,48 @@ function NewServiceNeedEditorRow({
     if (form.startDate && form.endDate && form.optionId) {
       setSubmitting(true)
 
-      createNewServiceNeed({
-        placementId: placement.id,
-        startDate: form.startDate,
-        endDate: form.endDate,
-        optionId: form.optionId,
-        shiftCare: form.shiftCare
-      })
-        .then((res) => {
-          if (res.isSuccess) {
-            onSuccess()
-          } else {
-            setErrorMessage({
-              type: 'error',
-              title: i18n.common.error.unknown,
-              text: i18n.common.error.saveFailed,
-              resolveLabel: i18n.common.ok
-            })
-          }
+      if (editingId) {
+        void updateNewServiceNeed(editingId, {
+          startDate: form.startDate,
+          endDate: form.endDate,
+          optionId: form.optionId,
+          shiftCare: form.shiftCare
         })
-        .finally(() => setSubmitting(false))
+          .then((res) => {
+            if (res.isSuccess) {
+              onSuccess()
+            } else {
+              setErrorMessage({
+                type: 'error',
+                title: i18n.common.error.unknown,
+                text: i18n.common.error.saveFailed,
+                resolveLabel: i18n.common.ok
+              })
+            }
+          })
+          .finally(() => setSubmitting(false))
+      } else {
+        void createNewServiceNeed({
+          placementId: placement.id,
+          startDate: form.startDate,
+          endDate: form.endDate,
+          optionId: form.optionId,
+          shiftCare: form.shiftCare
+        })
+          .then((res) => {
+            if (res.isSuccess) {
+              onSuccess()
+            } else {
+              setErrorMessage({
+                type: 'error',
+                title: i18n.common.error.unknown,
+                text: i18n.common.error.saveFailed,
+                resolveLabel: i18n.common.ok
+              })
+            }
+          })
+          .finally(() => setSubmitting(false))
+      }
     }
   }
 

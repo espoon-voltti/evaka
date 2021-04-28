@@ -30,12 +30,24 @@ export async function createNewServiceNeed(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getServiceNeedOptions(): Promise<
-  Result<ServiceNeedOption[]>
-> {
+export interface NewServiceNeedUpdateRequest {
+  startDate: LocalDate
+  endDate: LocalDate
+  optionId: UUID
+  shiftCare: boolean
+}
+
+export async function updateNewServiceNeed(
+  id: UUID,
+  data: NewServiceNeedUpdateRequest
+): Promise<Result<null>> {
   return client
-    .get<JsonOf<ServiceNeedOption[]>>('/new-service-needs/options')
-    .then((res) => Success.of(res.data))
+    .put(`/new-service-needs/${id}`, {
+      ...data,
+      startDate: data.startDate.toJSON(),
+      endDate: data.endDate.toJSON()
+    })
+    .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
 
@@ -43,5 +55,14 @@ export async function deleteNewServiceNeed(id: UUID): Promise<Result<null>> {
   return client
     .delete(`/new-service-needs/${id}`)
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getServiceNeedOptions(): Promise<
+  Result<ServiceNeedOption[]>
+> {
+  return client
+    .get<JsonOf<ServiceNeedOption[]>>('/new-service-needs/options')
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
