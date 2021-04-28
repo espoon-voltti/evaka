@@ -155,6 +155,12 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
     !editing &&
     placement.missingServiceNeedDays > 0
 
+  const missingServiceNeedDays = featureFlags.useNewServiceNeeds
+    ? placement.missingNewServiceNeedDays
+    : showServiceNeedWarning
+    ? placement.missingServiceNeedDays
+    : 0
+
   return placement.isRestrictedFromUser ? (
     <RestrictedToolbar
       title={i18n.childInformation.placements.restrictedName}
@@ -183,7 +189,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             deletableFor={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']}
             dataQaDelete="btn-remove-placement"
             warning={
-              showServiceNeedWarning
+              missingServiceNeedDays > 0
                 ? {
                     text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
                     tooltipId: `tooltip_missing-service-need_${placement.id}`
@@ -276,13 +282,13 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           </DataValue>
         </DataRow>
         <Gap size="s" />
-        {showServiceNeedWarning && (
+        {missingServiceNeedDays > 0 ? (
           <AlertBox
-            message={`${i18n.childInformation.placements.serviceNeedMissing1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissing2}`}
+            message={`${i18n.childInformation.placements.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissing2}`}
             thin
             wide
           />
-        )}
+        ) : null}
         {editing && (
           <ActionRow>
             <FixedSpaceRow>
@@ -299,7 +305,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           </ActionRow>
         )}
 
-        {featureFlags.newServiceNeeds && (
+        {featureFlags.showNewServiceNeedsList && (
           <RequireRole oneOf={['ADMIN']}>
             <Gap size="s" />
 

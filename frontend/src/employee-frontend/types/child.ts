@@ -122,6 +122,7 @@ export interface Placement {
     providerType: ProviderType
   }
   missingServiceNeedDays: number
+  missingNewServiceNeedDays: number
   serviceNeeds: NewServiceNeed[]
   isRestrictedFromUser: boolean
 }
