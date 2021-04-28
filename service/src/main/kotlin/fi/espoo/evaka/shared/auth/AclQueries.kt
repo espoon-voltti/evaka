@@ -12,7 +12,8 @@ import java.util.UUID
 data class DaycareAclRow(
     @Nested
     val employee: DaycareAclRowEmployee,
-    val role: UserRole
+    val role: UserRole,
+    val groupIds: List<UUID>
 )
 
 data class DaycareAclRowEmployee(val id: UUID, val firstName: String, val lastName: String, val email: String?)
@@ -20,9 +21,15 @@ data class DaycareAclRowEmployee(val id: UUID, val firstName: String, val lastNa
 fun Database.Read.getDaycareAclRows(daycareId: UUID): List<DaycareAclRow> = createQuery(
     // language=SQL
     """
-SELECT id, first_name, last_name, email, role
+SELECT id, first_name, last_name, email, role, coalesce(group_ids, array[]::uuid[]) AS group_ids
 FROM daycare_acl
 JOIN employee e on daycare_acl.employee_id = e.id
+LEFT JOIN (
+    SELECT daycare_id, employee_id, array_agg(dg.id) AS group_ids
+    FROM daycare_group_acl acl
+    JOIN daycare_group dg ON acl.daycare_group_id = dg.id
+    GROUP BY daycare_id, employee_id
+) groups USING (daycare_id, employee_id)
 WHERE daycare_id = :daycareId
     """.trimIndent()
 )
@@ -102,6 +109,7 @@ WHERE id = :groupId AND daycare_id = :daycareId
             .bind("daycareId", daycareId)
             .bind("employeeId", employeeId)
             .bind("groupId", groupId)
+            .add()
     }
     batch.execute()
 }

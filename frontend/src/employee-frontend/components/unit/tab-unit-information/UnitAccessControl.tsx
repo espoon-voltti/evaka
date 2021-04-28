@@ -18,7 +18,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Table, Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
@@ -31,7 +31,9 @@ import {
   putMobileDeviceName,
   removeDaycareAclStaff,
   removeDaycareAclSupervisor,
-  removeDaycareAclSpecialEducationTeacher
+  removeDaycareAclSpecialEducationTeacher,
+  DaycareGroupSummary,
+  updateDaycareGroupAcl
 } from '../../../api/unit'
 import { getEmployees } from '../../../api/employees'
 import { Employee } from '../../../types/employee'
@@ -53,13 +55,18 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '../../../constants'
 import { AdRole } from '../../../types'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 
-type Props = { unitId: string }
+type Props = {
+  unitId: string
+  groups: DaycareGroupSummary[]
+}
 
 interface FormattedRow {
   id: UUID
   name: string
   email: string
+  groupIds: UUID[]
 }
 
 const Flex = styled.div`
@@ -72,20 +79,38 @@ function AclRow({
   row,
   isDeletable,
   onClickDelete,
-  rolesAllowedToRemoveRows
+  onChangeGroups,
+  rolesAllowedToEdit,
+  unitGroups
 }: {
   row: FormattedRow
   isDeletable: boolean
   onClickDelete: () => void
-  rolesAllowedToRemoveRows?: AdRole[]
+  onChangeGroups: (ids: UUID[]) => Promise<Result<void>>
+  rolesAllowedToEdit?: AdRole[]
+  unitGroups: DaycareGroupSummary[] | undefined
 }) {
+  const [saved, setSaved] = useState(true)
+  const saveGroups = useRestApi(onChangeGroups, (result) => {
+    setSaved(!result.isLoading)
+  })
+
   return (
-    <Tr data-qa="acl-row">
+    <Tr data-qa="acl-row" data-saved={saved ? true : undefined}>
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
+      {unitGroups && (
+        <GroupMultiSelectTd>
+          <GroupMultiSelect
+            unitGroups={unitGroups}
+            value={row.groupIds}
+            onChange={saveGroups}
+          />
+        </GroupMultiSelectTd>
+      )}
       <Td>
-        {rolesAllowedToRemoveRows ? (
-          <RequireRole oneOf={rolesAllowedToRemoveRows}>
+        {rolesAllowedToEdit ? (
+          <RequireRole oneOf={rolesAllowedToEdit}>
             {isDeletable && (
               <IconButton
                 icon={faTrash}
@@ -107,6 +132,41 @@ function AclRow({
         )}
       </Td>
     </Tr>
+  )
+}
+
+const GroupMultiSelectTd = styled(Td)`
+  padding: 0;
+  vertical-align: middle;
+`
+
+function GroupMultiSelect({
+  unitGroups,
+  value: initialValue,
+  onChange
+}: {
+  unitGroups: DaycareGroupSummary[]
+  value: UUID[]
+  onChange: (groupIds: UUID[]) => void
+}) {
+  const { i18n } = useTranslation()
+  const [value, setValue] = useState(
+    unitGroups.filter(({ id }) => initialValue.includes(id))
+  )
+
+  return (
+    <MultiSelect
+      data-qa="groups"
+      value={value}
+      options={unitGroups}
+      getOptionId={(x) => x.id}
+      getOptionLabel={(x) => x.name}
+      onChange={(values) => {
+        setValue(values)
+        onChange(values.map(({ id }) => id))
+      }}
+      placeholder={`${i18n.common.select}...`}
+    />
   )
 }
 
@@ -135,13 +195,20 @@ const AddAclSelectContainer = styled.div`
 `
 
 function AclTable({
+  unitGroups,
   rows,
   onDeleteAclRow,
-  rolesAllowedToRemoveRows
+  onChangeAclGroups,
+  rolesAllowedToEdit
 }: {
+  unitGroups?: DaycareGroupSummary[]
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
-  rolesAllowedToRemoveRows?: AdRole[]
+  onChangeAclGroups?: (
+    employeeId: UUID,
+    groupIds: UUID[]
+  ) => Promise<Result<void>>
+  rolesAllowedToEdit?: AdRole[]
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -152,6 +219,7 @@ function AclTable({
         <Tr>
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.email}</Th>
+          {unitGroups && <Th>{i18n.unit.accessControl.groups}</Th>}
           <Th />
         </Tr>
       </Thead>
@@ -159,10 +227,16 @@ function AclTable({
         {rows.map((row) => (
           <AclRow
             key={row.id}
+            unitGroups={unitGroups}
             row={row}
             isDeletable={row.id !== user?.id}
             onClickDelete={() => onDeleteAclRow(row.id)}
-            rolesAllowedToRemoveRows={rolesAllowedToRemoveRows}
+            onChangeGroups={
+              onChangeAclGroups
+                ? (ids) => onChangeAclGroups(row.id, ids)
+                : async () => Success.of(undefined)
+            }
+            rolesAllowedToEdit={rolesAllowedToEdit}
           />
         ))}
       </Tbody>
@@ -325,7 +399,7 @@ interface RemoveState {
   removeFn: (unitId: UUID, employeeId: UUID) => Promise<unknown>
 }
 
-function UnitAccessControl({ unitId }: Props) {
+function UnitAccessControl({ unitId, groups }: Props) {
   const { i18n } = useTranslation()
 
   const { user } = useContext(UserContext)
@@ -369,7 +443,8 @@ function UnitAccessControl({ unitId }: Props) {
       rows.map((row) => ({
         id: row.employee.id,
         name: formatName(row.employee.firstName, row.employee.lastName, i18n),
-        email: row.employee.email ?? row.employee.id
+        email: row.employee.email ?? row.employee.id,
+        groupIds: row.groupIds
       })),
       (row) => row.name
     )
@@ -422,6 +497,9 @@ function UnitAccessControl({ unitId }: Props) {
     addDaycareAclStaff(unitId, employeeId).then(() =>
       reloadDaycareAclRows(unitId)
     )
+
+  const updateStaffGroupAcls = (employeeId: UUID, groupIds: UUID[]) =>
+    updateDaycareGroupAcl(unitId, employeeId, groupIds)
 
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
     undefined
@@ -546,7 +624,7 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclSupervisor
                 })
               }
-              rolesAllowedToRemoveRows={['ADMIN']}
+              rolesAllowedToEdit={['ADMIN']}
             />
           )}
           <RequireRole oneOf={['ADMIN']}>
@@ -569,7 +647,7 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclSpecialEducationTeacher
                 })
               }
-              rolesAllowedToRemoveRows={['ADMIN']}
+              rolesAllowedToEdit={['ADMIN']}
             />
           )}
           <RequireRole oneOf={['ADMIN']}>
@@ -592,6 +670,8 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclStaff
                 })
               }
+              unitGroups={groups}
+              onChangeAclGroups={updateStaffGroupAcls}
             />
           )}
           <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />

@@ -7,12 +7,14 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
+import fi.espoo.evaka.daycare.DaycareGroupSummary
 import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
+import fi.espoo.evaka.daycare.getDaycareGroupSummaries
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.service.CaretakerAmount
@@ -65,9 +67,12 @@ class DaycareController(
         Audit.UnitRead.log(targetId = daycareId)
         val currentUserRoles = acl.getRolesForUnit(user, daycareId)
         currentUserRoles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return db.read { it.getDaycare(daycareId) }
-            ?.let { ResponseEntity.ok(DaycareResponse(it, currentUserRoles.roles)) } ?: ResponseEntity.notFound()
-            .build()
+        return db.read { tx ->
+            tx.getDaycare(daycareId)?.let { daycare ->
+                val groups = tx.getDaycareGroupSummaries(daycareId)
+                ResponseEntity.ok(DaycareResponse(daycare, groups, currentUserRoles.roles))
+            }
+        } ?: ResponseEntity.notFound().build()
     }
 
     @GetMapping("/{daycareId}/groups")
@@ -317,4 +322,4 @@ class DaycareController(
     )
 }
 
-data class DaycareResponse(val daycare: Daycare, val currentUserRoles: Set<UserRole>)
+data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupSummary>, val currentUserRoles: Set<UserRole>)

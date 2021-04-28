@@ -70,7 +70,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
         insertSupervisor(testDaycare.id)
         assertEquals(
             listOf(
-                DaycareAclRow(employee = employee, role = UserRole.UNIT_SUPERVISOR)
+                DaycareAclRow(employee = employee, role = UserRole.UNIT_SUPERVISOR, groupIds = emptyList())
             ),
             getAclRows()
         )
@@ -81,7 +81,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
         insertStaff()
         assertEquals(
             listOf(
-                DaycareAclRow(employee = employee, role = UserRole.STAFF)
+                DaycareAclRow(employee = employee, role = UserRole.STAFF, groupIds = emptyList())
             ),
             getAclRows()
         )

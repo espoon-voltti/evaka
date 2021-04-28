@@ -6,7 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import React, { useContext } from 'react'
+import { sortBy } from 'lodash'
+import React, { useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import UnitInformation from '../../components/unit/tab-unit-information/UnitInformation'
@@ -28,6 +29,14 @@ function TabUnitInformation() {
   const { roles } = useContext(UserContext)
   const { unitInformation, unitData, filters, setFilters } = useContext(
     UnitContext
+  )
+
+  const groups = useMemo(
+    () =>
+      unitInformation.isSuccess
+        ? sortBy(unitInformation.value.groups, (x) => x.name)
+        : [],
+    [unitInformation]
   )
 
   if (unitInformation.isLoading) {
@@ -106,7 +115,10 @@ function TabUnitInformation() {
       </ContentArea>
 
       <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-        <UnitAccessControl unitId={unitInformation.value.daycare.id} />
+        <UnitAccessControl
+          unitId={unitInformation.value.daycare.id}
+          groups={groups}
+        />
       </RequireRole>
     </FixedSpaceColumn>
   )
