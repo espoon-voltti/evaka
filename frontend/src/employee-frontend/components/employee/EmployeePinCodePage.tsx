@@ -59,7 +59,7 @@ export default React.memo(function EmployeePinCodePage() {
   }
 
   function savePinCode() {
-    return updatePinCode(pin)
+    return updatePinCode(pin).then(isPinCodeLocked).then(setPinLocked)
   }
 
   function getInputInfo(): InputInfo | undefined {
@@ -93,7 +93,7 @@ export default React.memo(function EmployeePinCodePage() {
 
         {pinLocked && pinLocked.isSuccess && pinLocked.value && (
           <AlertBox
-            data-qa={'pin-locked-info'}
+            data-qa={'pin-locked-alert-box'}
             message={i18n.pinCode.lockedLong}
           />
         )}
@@ -120,6 +120,7 @@ export default React.memo(function EmployeePinCodePage() {
             onSuccess={() => {
               setError(false)
             }}
+            data-qa={'send-pin-button'}
           />
         )}
         <Gap size={'L'} />

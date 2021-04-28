@@ -886,7 +886,16 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @PostMapping("/employee-pin")
     fun createEmployeePins(db: Database, @RequestBody employeePins: List<DevEmployeePin>): ResponseEntity<Unit> {
-        db.transaction { employeePins.forEach { employeePin -> it.handle.insertEmployeePin(employeePin) } }
+        db.transaction {
+            employeePins.forEach { employeePin ->
+                val userId =
+                    if (employeePin.userId != null) employeePin.userId
+                    else if (!employeePin.employeeExternalId.isNullOrBlank()) it.handle.getEmployeeIdByExternalId(employeePin.employeeExternalId)
+                    else throw Error("Cannot create dev employee pin: user id and external user id missing")
+
+                it.handle.insertEmployeePin(employeePin.copy(userId = userId))
+            }
+        }
         return ResponseEntity.noContent().build()
     }
 
