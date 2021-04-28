@@ -14,8 +14,10 @@ import config from 'e2e-test-common/config'
 
 let browser: Browser
 
+const DISABLE_JEST_TIMEOUT = 1_000_000_000 // 0 or Infinity unfortunately don't work
+
 beforeAll(async () => {
-  jest.setTimeout(60000)
+  jest.setTimeout(config.playwright.ci ? 60_000 : DISABLE_JEST_TIMEOUT)
   browser = await playwright[config.playwright.browser].launch({
     headless: config.playwright.headless
   })
