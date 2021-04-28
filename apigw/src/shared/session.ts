@@ -55,7 +55,7 @@ export function refreshLogoutToken() {
 }
 
 function logoutKey(nameID: string, sessionIndex?: string) {
-  return `slo:${nameID}.${sessionIndex}`
+  return `slo:${nameID}:::${sessionIndex}`
 }
 
 async function tryParseProfile(
