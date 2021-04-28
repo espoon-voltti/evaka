@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 import classNames from 'classnames'
@@ -45,6 +45,7 @@ export default React.memo(function AsyncButton({
   const [inProgress, setInProgress] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showFailure, setShowFailure] = useState(false)
+  const onSuccessRef = useRef(onSuccess)
 
   const callback = () => {
     setInProgress(true)
@@ -61,15 +62,30 @@ export default React.memo(function AsyncButton({
   }
 
   useEffect(() => {
-    if (showSuccess) {
-      void delay(onSuccess, 500)
-      void delay(() => setShowSuccess(false), 2000)
+    onSuccessRef.current = onSuccess
+  }, [onSuccess, onSuccessRef])
+
+  useEffect(() => {
+    const runOnSuccess = showSuccess
+      ? setTimeout(() => onSuccessRef.current(), 500)
+      : undefined
+    const clearShowSuccess = showSuccess
+      ? setTimeout(() => setShowSuccess(false), 2000)
+      : undefined
+
+    return () => {
+      if (runOnSuccess) clearTimeout(runOnSuccess)
+      if (clearShowSuccess) clearTimeout(clearShowSuccess)
     }
   }, [showSuccess])
 
   useEffect(() => {
-    if (showFailure) {
-      void delay(() => setShowFailure(false), 2000)
+    const clearShowFailure = showFailure
+      ? setTimeout(() => setShowFailure(false), 2000)
+      : undefined
+
+    return () => {
+      if (clearShowFailure) clearTimeout(clearShowFailure)
     }
   }, [showFailure])
 
@@ -128,14 +144,6 @@ export default React.memo(function AsyncButton({
     </StyledButton>
   )
 })
-
-function delay<T>(cb: () => T, ms: number): Promise<T> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(cb())
-    }, ms)
-  })
-}
 
 const Content = styled.div`
   display: flex;
