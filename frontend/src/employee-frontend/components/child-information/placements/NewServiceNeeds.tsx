@@ -36,7 +36,7 @@ function NewServiceNeeds({ serviceNeeds }: Props) {
             </Tr>
           </Thead>
           <Tbody>
-            {_.sortBy(serviceNeeds, (s) => s.startDate).map((sn) => (
+            {_.orderBy(serviceNeeds, ['startDate'], ['desc']).map((sn) => (
               <Tr key={sn.id}>
                 <Td>
                   {sn.startDate.format()} - {sn.endDate.format()}
