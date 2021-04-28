@@ -30,6 +30,11 @@ sealed class AuthenticatedUser : RoleContainer {
         override val isEndUser = true
     }
 
+    data class WeakCitizen(override val id: UUID) : AuthenticatedUser() {
+        override val roles: Set<UserRole> = setOf(UserRole.CITIZEN_WEAK)
+        override val isEndUser = true
+    }
+
     data class Employee private constructor(override val id: UUID, val globalRoles: Set<UserRole>, val allScopedRoles: Set<UserRole>) : AuthenticatedUser() {
         constructor(id: UUID, roles: Set<UserRole>) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
         constructor(employeeUser: EmployeeUser) : this(employeeUser.id, employeeUser.globalRoles, employeeUser.allScopedRoles)

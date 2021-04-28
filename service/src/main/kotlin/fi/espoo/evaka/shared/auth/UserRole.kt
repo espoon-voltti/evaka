@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 
 enum class UserRole {
     END_USER,
+    CITIZEN_WEAK,
 
     ADMIN,
     DIRECTOR,
