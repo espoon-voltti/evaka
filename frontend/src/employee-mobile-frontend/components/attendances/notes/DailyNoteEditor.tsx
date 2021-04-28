@@ -237,7 +237,7 @@ export default React.memo(function DailyNoteEditor() {
                     <InlineButton
                       text={i18n.common.save}
                       onClick={() => {
-                        saveNotes().then(() => {
+                        void saveNotes().then(() => {
                           history.goBack()
                         })
                       }}
@@ -272,7 +272,7 @@ export default React.memo(function DailyNoteEditor() {
               />
               <InlineButton
                 onClick={() =>
-                  saveNotes().then(() => {
+                  void saveNotes().then(() => {
                     history.goBack()
                   })
                 }
