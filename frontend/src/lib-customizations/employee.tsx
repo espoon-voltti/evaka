@@ -6,7 +6,16 @@
 // @ts-ignore
 import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
+import { fi } from './espoo/employee/assets/i18n/fi'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { cityLogo, featureFlags }: EmployeeCustomizations = customizations
 export { cityLogo, featureFlags }
+
+export type Lang = 'fi'
+
+export type Translations = typeof fi
+
+export const translations: {
+  [K in Lang]: Translations
+} = (customizations as EmployeeCustomizations).translations
