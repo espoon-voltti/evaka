@@ -44,6 +44,13 @@ export async function updatePinCode(pinCode: string): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
+export async function isPinCodeLocked(): Promise<Result<boolean>> {
+  return client
+    .get<boolean>(`/employee/pin-code/is-pin-locked`)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export function searchEmployees(
   page: number,
   pageSize: number,

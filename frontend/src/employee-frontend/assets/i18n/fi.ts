@@ -2349,6 +2349,9 @@ export const fi = {
     button: 'Tallenna PIN-koodi',
     placeholder: '4 numeroa',
     error: 'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia',
+    locked: 'PIN-koodi on lukittu, vaihda se uuteen',
+    lockedLong:
+      'PIN-koodi on syötetty eVaka-mobiilissa 5 kertaa väärin, ja koodi on lukittu. Ole hyvä ja vaihda tilalle uusi PIN-koodi.',
     link: 'eVaka-mobiilin PIN-koodi'
   },
   employees: {

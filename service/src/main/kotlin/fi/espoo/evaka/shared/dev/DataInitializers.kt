@@ -959,17 +959,24 @@ fun Handle.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_part
 
 data class DevEmployeePin(
     val id: UUID,
-    val userId: UUID,
-    val pin: String
+    val userId: UUID? = null,
+    val employeeExternalId: String? = null,
+    val pin: String,
+    val locked: Boolean? = false
 )
 
-fun Handle.insertEmployeePin(emoployeePin: DevEmployeePin) = insertTestDataRow(
-    emoployeePin,
+fun Handle.insertEmployeePin(employeePin: DevEmployeePin) = insertTestDataRow(
+    employeePin,
     """
-INSERT INTO employee_pin (id, user_id, pin)
-VALUES (:id, :userId, :pin)
+INSERT INTO employee_pin (id, user_id, pin, locked)
+VALUES (:id, :userId, :pin, :locked)
 RETURNING id
 """
 )
+
+fun Handle.getEmployeeIdByExternalId(externalId: String) = createQuery("SELECT id FROM employee WHERE external_id = :id")
+    .bind("id", externalId)
+    .mapTo<UUID>()
+    .first()
 
 fun Handle.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()

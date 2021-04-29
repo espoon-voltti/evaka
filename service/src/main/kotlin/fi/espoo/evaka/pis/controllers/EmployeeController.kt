@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
+import fi.espoo.evaka.pis.isPinLocked
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -93,6 +94,17 @@ class EmployeeController {
             )
         }.let {
             ResponseEntity.noContent().build()
+        }
+    }
+
+    @GetMapping("/pin-code/is-pin-locked")
+    fun isPinLocked(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): Boolean {
+        Audit.PinCodeLockedRead.log(targetId = user.id)
+        return db.read { tx ->
+            tx.handle.isPinLocked(user.id)
         }
     }
 

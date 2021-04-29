@@ -2,31 +2,36 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 import Title from 'lib-components/atoms/Title'
 import { Label, P } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
+import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { faLockAlt } from 'lib-icons'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
-import { updatePinCode } from 'employee-frontend/api/employees'
+import { isPinCodeLocked, updatePinCode } from 'employee-frontend/api/employees'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import { Result } from '../../../lib-common/api'
+import { AlertBox } from '../../../lib-components/molecules/MessageBoxes'
 
 export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
   const [pin, setPin] = useState<string>('')
   const [error, setError] = useState<boolean>(false)
+  const [pinLocked, setPinLocked] = useState<Result<boolean>>()
+
+  useEffect(() => {
+    void isPinCodeLocked().then(setPinLocked)
+  }, [setPinLocked])
 
   function isValidNumber(pin: string) {
-    const int = parseInt(pin)
-    const str = int.toString()
-    return str.length === 4
+    return /^\d{4}$/.test(pin)
   }
 
   function errorCheck(pin: string) {
@@ -52,7 +57,21 @@ export default React.memo(function EmployeePinCodePage() {
   }
 
   function savePinCode() {
-    return updatePinCode(pin)
+    return updatePinCode(pin).then(isPinCodeLocked).then(setPinLocked)
+  }
+
+  function getInputInfo(): InputInfo | undefined {
+    return pin && error
+      ? {
+          text: i18n.pinCode.error,
+          status: 'warning'
+        }
+      : pinLocked && pinLocked.isSuccess && pinLocked.value && !pin
+      ? {
+          text: i18n.pinCode.locked,
+          status: 'warning'
+        }
+      : undefined
   }
 
   return (
@@ -70,6 +89,13 @@ export default React.memo(function EmployeePinCodePage() {
         <Title size={2}>{i18n.pinCode.title2}</Title>
         <P>{i18n.pinCode.text5}</P>
 
+        {pinLocked && pinLocked.isSuccess && pinLocked.value && (
+          <AlertBox
+            data-qa={'pin-locked-alert-box'}
+            message={i18n.pinCode.lockedLong}
+          />
+        )}
+
         <FixedSpaceColumn spacing={'xxs'}>
           <Label>{i18n.pinCode.pinCode}</Label>
           <InputField
@@ -78,14 +104,7 @@ export default React.memo(function EmployeePinCodePage() {
             placeholder={i18n.pinCode.placeholder}
             width={'s'}
             data-qa="pin-code-input"
-            info={
-              error
-                ? {
-                    text: i18n.pinCode.error,
-                    status: 'warning'
-                  }
-                : undefined
-            }
+            info={getInputInfo()}
           />
         </FixedSpaceColumn>
         <Gap size={'L'} />
@@ -99,6 +118,7 @@ export default React.memo(function EmployeePinCodePage() {
             onSuccess={() => {
               setError(false)
             }}
+            data-qa={'send-pin-button'}
           />
         )}
         <Gap size={'L'} />

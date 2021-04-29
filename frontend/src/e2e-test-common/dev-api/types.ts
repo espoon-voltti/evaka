@@ -589,6 +589,8 @@ export interface FridgePartner {
 
 export interface EmployeePin {
   id: string
-  userId: string
+  employeeExternalId?: string
+  userId?: string
   pin: string
+  locked?: boolean
 }

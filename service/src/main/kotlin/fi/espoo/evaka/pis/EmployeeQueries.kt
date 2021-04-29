@@ -256,3 +256,9 @@ RETURNING locked
 ).bind("employeeId", employeeId)
     .mapTo<Boolean>()
     .first()
+
+fun Handle.isPinLocked(employeeId: UUID): Boolean =
+    createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
+        .bind("id", employeeId)
+        .mapTo<Boolean>()
+        .firstOrNull() ?: false
