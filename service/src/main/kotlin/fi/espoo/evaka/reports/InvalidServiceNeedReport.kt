@@ -42,6 +42,7 @@ private fun Database.Read.getInvalidServiceNeedRows(
 WITH data AS (
     SELECT
         p.child_id,
+        p.unit_id,
         ch.first_name,
         ch.last_name,
         ($migrationSqlCases) AS option_name,
@@ -58,7 +59,7 @@ SELECT
 FROM data
 LEFT JOIN placement pl ON pl.child_id = data.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> :today
 LEFT JOIN daycare u ON pl.unit_id = u.id
-WHERE option_name = 'undefined' ${if (authorizedUnits != AclAuthorization.All) "AND u.id = ANY(:units)" else ""}
+WHERE option_name = 'undefined' ${if (authorizedUnits != AclAuthorization.All) "AND u.id = ANY(:units) AND data.unit_id = ANY(:units)" else ""}
 ORDER BY u.name, last_name, first_name, start_date
         """.trimIndent()
 
