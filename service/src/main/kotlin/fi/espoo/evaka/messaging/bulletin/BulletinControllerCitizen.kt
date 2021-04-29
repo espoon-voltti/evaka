@@ -30,7 +30,7 @@ class BulletinControllerCitizen {
         @RequestParam pageSize: Int
     ): ResponseEntity<Paged<ReceivedBulletin>> {
         Audit.MessagingBulletinRead.log()
-        user.requireOneOfRoles(UserRole.END_USER)
+        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
 
         return db
             .read { it.getReceivedBulletinsByGuardian(user, page, pageSize) }
@@ -43,7 +43,7 @@ class BulletinControllerCitizen {
         user: AuthenticatedUser
     ): ResponseEntity<Int> {
         Audit.MessagingUnreadCountRead.log()
-        user.requireOneOfRoles(UserRole.END_USER)
+        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
 
         return db.read {
             it.getUnreadBulletinCountByGuardian(user)
@@ -57,7 +57,7 @@ class BulletinControllerCitizen {
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.MessagingBulletinMarkRead.log(id)
-        user.requireOneOfRoles(UserRole.END_USER)
+        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
 
         db.transaction {
             it.markBulletinRead(user, id)

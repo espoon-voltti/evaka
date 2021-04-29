@@ -13,7 +13,7 @@ import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { faCheck, faChevronDown, faChevronUp, faSignIn } from 'lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
-import { getLoginUri } from '../header/const'
+import { getLoginUri, getLogoutUri } from '../header/const'
 import { featureFlags } from '../config'
 
 interface Props {
@@ -53,7 +53,7 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
       </Nav>
       <LanguageMenu />
       {user ? (
-        <Logout href="/api/application/auth/saml/logout" data-qa="logout-btn">
+        <Logout href={getLogoutUri(user)} data-qa="logout-btn">
           {user ? (
             <UserName>
               <span>{user.firstName}</span> <span>{user.lastName}</span>

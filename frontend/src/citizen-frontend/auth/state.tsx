@@ -19,6 +19,7 @@ export type Person = {
 
 export type User = Person & {
   children: Person[]
+  userType: string
 }
 
 type AuthState = {

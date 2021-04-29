@@ -36,7 +36,7 @@ class VtjController(
         @PathVariable(value = "personId") personId: UUID
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.END_USER)
+        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         if (user.id != personId) {
             throw Forbidden("Query not allowed")
         }

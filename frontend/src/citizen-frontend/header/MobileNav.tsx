@@ -14,7 +14,7 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from 'lib-components/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
-import { getLoginUri } from '../header/const'
+import { getLoginUri, getLogoutUri } from '../header/const'
 import { featureFlags } from '../config'
 import { CircledChar } from './DesktopNav'
 
@@ -54,10 +54,7 @@ export default React.memo(function MobileNav({
             }`}</UserName>
             <Gap size="s" />
             {user ? (
-              <a
-                href={'/api/application/auth/saml/logout'}
-                data-qa="logout-btn"
-              >
+              <a href={getLogoutUri(user)} data-qa="logout-btn">
                 <LogInLogOutButton>
                   <FontAwesomeIcon icon={faSignOut} size="lg" />
                   <Gap size="xs" horizontal />
