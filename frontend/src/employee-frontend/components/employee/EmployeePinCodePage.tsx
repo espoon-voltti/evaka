@@ -31,9 +31,7 @@ export default React.memo(function EmployeePinCodePage() {
   }, [setPinLocked])
 
   function isValidNumber(pin: string) {
-    const int = parseInt(pin)
-    const str = int.toString()
-    return str.length === 4
+    return /^\d{4}$/.test(pin)
   }
 
   function errorCheck(pin: string) {
