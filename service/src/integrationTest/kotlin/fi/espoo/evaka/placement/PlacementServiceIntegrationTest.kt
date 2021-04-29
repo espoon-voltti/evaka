@@ -64,8 +64,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            oldPlacement = placementService.createPlacement(
-                it,
+            oldPlacement = it.handle.insertPlacement(
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
@@ -100,7 +99,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 21),
                 LocalDate.of(year, month, 30)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -115,7 +114,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
      */
     @Test
     fun `inserting identical placement`() {
-        val newPlacement = db.transaction {
+        val newPlacements = db.transaction {
             placementService.createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
@@ -128,7 +127,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
-        assertEquals(listOf(newPlacement), placements)
+        assertEquals(newPlacements, placements)
     }
 
     /*
@@ -147,7 +146,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 11),
                 LocalDate.of(year, month, 20)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -173,7 +172,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 21),
                 LocalDate.of(year, month, 30)
             )
-        }
+        }.first()
 
         val originalPlacements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -210,7 +209,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 11),
                 LocalDate.of(year, month, 21)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -241,7 +240,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 11),
                 LocalDate.of(year, month, 19)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -279,7 +278,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 10),
                 LocalDate.of(year, month, 21)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -303,7 +302,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 10),
                 LocalDate.of(year, month, 19)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -334,7 +333,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 9),
                 LocalDate.of(year, month, 20)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -358,7 +357,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 9),
                 LocalDate.of(year, month, 21)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -382,7 +381,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 9),
                 LocalDate.of(year, month, 19)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -413,7 +412,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 21),
                 LocalDate.of(year, month, 31)
             )
-        }
+        }.first()
         val newPlacement = db.transaction {
             placementService.createPlacement(
                 it,
@@ -423,7 +422,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 15),
                 LocalDate.of(year, month, 25)
             )
-        }
+        }.first()
 
         val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
@@ -456,7 +455,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 10),
                 LocalDate.of(year, month, 20)
             )
-        }
+        }.first()
 
         db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 19)) }
 
@@ -476,7 +475,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 10),
                 LocalDate.of(year, month, 20)
             )
-        }
+        }.first()
         val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             insertTestDaycareGroupPlacement(
@@ -512,7 +511,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, 30)
             )
-        }
+        }.first()
         val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             insertTestDaycareGroupPlacement(
@@ -563,7 +562,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, 30)
             )
-        }
+        }.first()
         val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             insertTestDaycareGroupPlacement(
@@ -614,7 +613,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 10),
                 LocalDate.of(year, month, 20)
             )
-        }
+        }.first()
 
         db.transaction {
             it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 21))
@@ -636,7 +635,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 10),
                 LocalDate.of(year, month, 20)
             )
-        }
+        }.first()
         db.transaction {
             assertThrows<BadRequest> {
                 it.updatePlacement(

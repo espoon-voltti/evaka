@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
+import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
@@ -235,17 +236,21 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             endDate = endDate
         )
 
-        val (_, _, data) = http.post("/placements")
+        http.post("/placements")
             .asUser(serviceWorker)
             .objectBody(body, mapper = objectMapper)
-            .responseObject<Placement>(objectMapper)
+            .response()
             .also { (_, res, _) ->
-                assertEquals(201, res.statusCode)
+                assertEquals(204, res.statusCode)
             }
+
+        val (_, _, data) = http.get("/placements", listOf("childId" to testChild_1.id))
+            .asUser(serviceWorker)
+            .responseObject<List<DaycarePlacementWithDetails>>(objectMapper)
 
         asyncJobRunner.runPendingJobsSync()
 
-        return data.get().id
+        return data.get().first().id
     }
 
     private fun updatePlacement(id: UUID, startDate: LocalDate, endDate: LocalDate) {
