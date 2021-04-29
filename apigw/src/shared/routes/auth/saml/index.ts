@@ -14,6 +14,7 @@ import { fromCallback } from '../../../promise-utils'
 import { getEmployees } from '../../../dev-api'
 import _ from 'lodash'
 import { AuthenticateOptions, SAML } from 'passport-saml'
+import { createLogoutToken, tryParseProfile } from '../../../auth'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -92,7 +93,15 @@ function createLoginHandler({
             req,
             'User logged in successfully'
           )
-          await saveLogoutToken(req, strategyName)
+
+          if (!user.nameID) {
+            throw new Error('User unexpectedly missing nameID property')
+          }
+          await saveLogoutToken(
+            req,
+            strategyName,
+            createLogoutToken(user.nameID, user.sessionIndex)
+          )
           const redirectUrl = getRedirectUrl(req)
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
@@ -114,14 +123,10 @@ function createLoginHandler({
 }
 
 function createLogoutHandler({
-  samlConfig,
   strategy,
   strategyName,
   sessionType
 }: SamlEndpointConfig): express.RequestHandler {
-  // For parsing SAML messages outside the strategy
-  const saml = new SAML(samlConfig)
-
   return toRequestHandler(async (req, res) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out_requested`,
@@ -134,7 +139,7 @@ function createLogoutHandler({
           strategy.logout(req, cb)
         )
         logDebug('Logging user out from passport.', req)
-        await logoutExpress(req, res, sessionType, saml)
+        await logoutExpress(req, res, sessionType)
         return res.redirect(redirectUrl)
       } catch (err) {
         logAuditEvent(
@@ -151,7 +156,7 @@ function createLogoutHandler({
         'User signed out'
       )
       logDebug('Logging user out from passport.', req)
-      await logoutExpress(req, res, sessionType, saml)
+      await logoutExpress(req, res, sessionType)
       res.redirect(getRedirectUrl(req))
     }
   })
@@ -178,7 +183,13 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
       req,
       'Logout callback called'
     )
-    await logoutExpress(req, res, config.sessionType, saml)
+    const profile = await tryParseProfile(req, saml)
+    await logoutExpress(
+      req,
+      res,
+      config.sessionType,
+      profile?.nameID && createLogoutToken(profile.nameID, profile.sessionIndex)
+    )
   })
 
   const router = Router()
