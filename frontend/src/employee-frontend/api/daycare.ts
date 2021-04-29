@@ -9,7 +9,10 @@ import { CareArea } from '../types/unit'
 import { PlacementType } from '../types/child'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import {
+  deserializePublicUnit,
+  PublicUnit
+} from 'lib-common/api-types/units/PublicUnit'
 
 export async function getUnits(
   areas: string[],
@@ -49,7 +52,7 @@ export function getApplicationUnits(
       params: { type: asUnitType(type), date: date.formatIso() }
     })
     .then((res) => res.data)
-    .then((units) => Success.of(units))
+    .then((units) => Success.of(units.map(deserializePublicUnit)))
     .catch((e) => Failure.fromError(e))
 }
 
