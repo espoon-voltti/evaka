@@ -5,11 +5,11 @@
 import type { EmployeeCustomizations } from 'lib-customizations/types'
 import EspooLogo from './EspooLogo.png'
 import featureFlags from './featureFlags'
-import { fi } from './employee/assets/i18n/fi'
 
 const customizations: EmployeeCustomizations = {
   translations: {
-    fi
+    fi: {
+    }
   },
   cityLogo: {
     src: EspooLogo,
