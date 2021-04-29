@@ -11,6 +11,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { reactSelectStyles } from '../../components/common/Select'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
@@ -36,6 +37,7 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import { FlexRow } from '../../components/common/styled/containers'
+import { RequireRole } from '../../utils/roles'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -207,6 +209,7 @@ function Occupancies() {
     type: 'UNIT_CONFIRMED'
   })
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
+  const [useNewServiceNeeds, setUseNewServiceNeeds] = useState(false)
 
   useEffect(() => {
     void getAreas().then((res) => res.isSuccess && setAreas(res.value))
@@ -216,8 +219,8 @@ function Occupancies() {
     if (filters.careAreaId == '') return
 
     setRows(Loading.of())
-    void getOccupanciesReport(filters).then(setRows)
-  }, [filters])
+    void getOccupanciesReport(filters, useNewServiceNeeds).then(setRows)
+  }, [filters, useNewServiceNeeds])
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
   const displayCells: string[][] = rows
@@ -369,6 +372,15 @@ function Occupancies() {
             />
           </Wrapper>
         </FilterRow>
+        <RequireRole oneOf={['ADMIN']}>
+          <FilterRow>
+            <Checkbox
+              label="Käytä uusia palveluntarpeita"
+              checked={useNewServiceNeeds}
+              onChange={setUseNewServiceNeeds}
+            />
+          </FilterRow>
+        </RequireRole>
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && filters.careAreaId != '' && (

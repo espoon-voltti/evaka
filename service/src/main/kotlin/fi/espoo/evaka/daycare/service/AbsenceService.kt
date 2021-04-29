@@ -225,7 +225,11 @@ enum class AbsenceType {
     TEMPORARY_VISITOR,
     PARENTLEAVE,
     FORCE_MAJEURE,
-    PRESENCE
+    PRESENCE;
+
+    companion object {
+        val nonAbsences = setOf(PRESENCE, PLANNED_ABSENCE)
+    }
 }
 
 data class AbsencePlacement(

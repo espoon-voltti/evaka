@@ -268,7 +268,8 @@ export interface OccupancyReportFilters {
 }
 
 export async function getOccupanciesReport(
-  filters: OccupancyReportFilters
+  filters: OccupancyReportFilters,
+  useNewServiceNeeds: boolean
 ): Promise<Result<OccupancyReportRow[]>> {
   return client
     .get<JsonOf<OccupancyReportRow[]>>(
@@ -276,7 +277,8 @@ export async function getOccupanciesReport(
       {
         params: {
           ...filters,
-          type: filters.type.split('_')[1]
+          type: filters.type.split('_')[1],
+          useNewServiceNeeds
         }
       }
     )
