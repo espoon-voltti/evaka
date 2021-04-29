@@ -36,6 +36,14 @@ function cookiePrefix(sessionType: SessionType) {
   return sessionType === 'enduser' ? 'evaka.eugw' : 'evaka.employee'
 }
 
+function sessionKey(id: string) {
+  return `sess:${id}`
+}
+
+function logoutKey(nameID: string, sessionIndex?: string) {
+  return `slo:${nameID}:::${sessionIndex}`
+}
+
 export function sessionCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.session`
 }
@@ -52,10 +60,6 @@ export function refreshLogoutToken() {
       await saveLogoutToken(req, req.session.idpProvider)
     }
   })
-}
-
-function logoutKey(nameID: string, sessionIndex?: string) {
-  return `slo:${nameID}:::${sessionIndex}`
 }
 
 async function tryParseProfile(
@@ -140,25 +144,25 @@ async function consumeLogoutRequest(
   if (!asyncRedisClient) return
 
   const profile = await tryParseProfile(req, saml)
-  // Prefer details from the SAML message (profile) but fall back to details
-  // from the session in case a) this wasn't a SAMLRequest b) it's malformed
-  // to ensure the logout token is deleted from the store even in non-SLO cases.
-  const nameID = profile?.nameID ?? req.user?.nameID
-  const sessionIndex = profile?.sessionIndex ?? req.user?.sessionIndex
 
-  if (!nameID) {
+  if (!profile?.nameID || !req.session?.logoutToken?.value) {
     logDebug(
       "Can't consume logout request without a SAMLRequest or session cookie, ignoring"
     )
     return
   }
 
-  const key = logoutKey(nameID, sessionIndex)
+  // Prefer details from the SAML message (profile) but fall back to details
+  // from the session in case a) this wasn't a SAMLRequest b) it's malformed
+  // to ensure the logout token is deleted from the store even in non-SLO cases.
+  const key = profile.nameID
+    ? logoutKey(profile.nameID, profile.sessionIndex)
+    : req.session.logoutToken.value
   const sid = await asyncRedisClient.get(key)
   if (sid) {
     // Ensure both session and logout keys are cleared in case no cookies were
     // available -> no req.session was available to be deleted.
-    await asyncRedisClient.del(`sess:${sid}`, key)
+    await asyncRedisClient.del(sessionKey(sid), key)
   }
 }
 
