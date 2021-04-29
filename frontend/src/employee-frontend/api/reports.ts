@@ -52,13 +52,15 @@ export async function getApplicationsReport(
 }
 
 export async function getRawReport(
-  filters: PeriodFilters
+  filters: PeriodFilters,
+  useNewServiceNeeds: boolean
 ): Promise<Result<RawReportRow[]>> {
   return client
     .get<JsonOf<RawReportRow[]>>('/reports/raw', {
       params: {
         from: filters.from.formatIso(),
-        to: filters.to.formatIso()
+        to: filters.to.formatIso(),
+        useNewServiceNeeds
       }
     })
     .then((res) =>
