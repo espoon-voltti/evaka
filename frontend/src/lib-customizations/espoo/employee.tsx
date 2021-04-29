@@ -8,8 +8,7 @@ import featureFlags from './featureFlags'
 
 const customizations: EmployeeCustomizations = {
   translations: {
-    fi: {
-    }
+    fi: {}
   },
   cityLogo: {
     src: EspooLogo,
