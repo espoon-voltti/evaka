@@ -71,7 +71,7 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
         animate: !isAutomatedTest
       })
     }
-  }, [selectedAddress])
+  }, [map, selectedAddress])
 
   useEffect(() => {
     if (selectedUnit && selectedUnit.location) {
@@ -79,7 +79,7 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
       map.stop()
       map.panTo([lat, lon], { animate: !isAutomatedTest })
     }
-  }, [selectedUnit])
+  }, [map, selectedUnit])
 
   return (
     <>
@@ -159,6 +159,10 @@ function UnitMarker({
               {unit.streetAddress}
               <br />
               {formatCareTypes(t, unit.type).join(', ')}
+              {unit.providerType === 'PRIVATE' &&
+                unit.preschoolApplyPeriod === null &&
+                unit.daycareApplyPeriod === null &&
+                unit.clubApplyPeriod === null && <div>{t.map.noApplying}</div>}
             </UnitDetailsLeft>
             {'drivingDistance' in unit && unit.drivingDistance !== null && (
               <UnitDetailsRight>

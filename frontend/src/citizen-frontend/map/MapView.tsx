@@ -59,7 +59,7 @@ export default React.memo(function MapView() {
     Loading.of()
   )
   const loadUnits = useRestApi(fetchUnits, setUnitsResult)
-  useEffect(() => loadUnits(careType), [careType])
+  useEffect(() => loadUnits(careType), [careType, loadUnits])
 
   const [filteredUnits, setFilteredUnits] = useState<Result<PublicUnit[]>>(
     filterUnits(unitsResult, careType, languages, providerTypes, shiftCare)
@@ -91,7 +91,7 @@ export default React.memo(function MapView() {
     } else {
       setUnitsWithDistances(Success.of([]))
     }
-  }, [selectedAddress, filteredUnits])
+  }, [loadDistance, selectedAddress, filteredUnits])
 
   useTitle(t, t.map.title)
 
