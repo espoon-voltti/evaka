@@ -154,15 +154,17 @@ function UnitMarker({
         <div data-qa={`map-popup-${unit.id}`}>
           <UnitName data-qa="map-popup-name">{unit.name}</UnitName>
           <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+          {unit.providerType === 'PRIVATE' &&
+            unit.preschoolApplyPeriod === null &&
+            unit.daycareApplyPeriod === null &&
+            unit.clubApplyPeriod === null && (
+              <div data-qa="map-popup-no-applying">{t.map.noApplying}</div>
+            )}
           <UnitDetails>
             <UnitDetailsLeft>
               {unit.streetAddress}
               <br />
               {formatCareTypes(t, unit.type).join(', ')}
-              {unit.providerType === 'PRIVATE' &&
-                unit.preschoolApplyPeriod === null &&
-                unit.daycareApplyPeriod === null &&
-                unit.clubApplyPeriod === null && <div>{t.map.noApplying}</div>}
             </UnitDetailsLeft>
             {'drivingDistance' in unit && unit.drivingDistance !== null && (
               <UnitDetailsRight>
