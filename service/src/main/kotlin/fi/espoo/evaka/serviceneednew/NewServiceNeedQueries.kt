@@ -52,6 +52,7 @@ fun Database.Read.getServiceNeedsByUnit(
         .toList()
 }
 
+// language=sql
 val migrationSqlCases = """
     CASE
         WHEN p.type = 'DAYCARE' AND sn.hours_per_week >= 35 AND NOT sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen, vähintään 35h'
@@ -61,6 +62,16 @@ val migrationSqlCases = """
         WHEN p.type = 'DAYCARE' AND sn.hours_per_week <= 25 AND NOT sn.part_day AND sn.part_week THEN 'Osaviikkoinen, enintään 25h'
         WHEN p.type = 'DAYCARE_PART_TIME' AND sn.hours_per_week <= 25 AND sn.part_day AND NOT sn.part_week THEN 'Osapäiväinen'
         WHEN p.type = 'DAYCARE_PART_TIME' AND sn.hours_per_week <= 25 AND sn.part_day AND sn.part_week THEN 'Osapäiväinen ja osaviikkoinen'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week >= 45 AND NOT sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, vähintään 45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 35 AND sn.hours_per_week < 45 AND NOT sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 35-45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND NOT sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 25-35h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND NOT sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 25-35h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 20 AND sn.hours_per_week <= 25 AND NOT sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 20-25h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week <= 20 AND NOT sn.part_day AND sn.part_week THEN '5-vuotiaiden ilmainen osaviikkoinen'
+        WHEN p.type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND sn.hours_per_week > 20 AND sn.hours_per_week <= 25 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden osapäiväinen, 20-25h'
+        WHEN p.type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND sn.hours_per_week <= 20 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden ilmainen osapäiväinen'
+        WHEN p.type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND sn.hours_per_week > 20 AND sn.hours_per_week <= 25 AND sn.part_day AND sn.part_week THEN '5-vuotiaiden osapäiväinen ja osaviikkoinen, 20-25h'
+        WHEN p.type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND sn.hours_per_week <= 20 AND sn.part_day AND sn.part_week THEN '5-vuotiaiden ilmainen osapäiväinen ja osaviikkoinen'
         WHEN p.type = 'PRESCHOOL' AND sn.hours_per_week <= 20 THEN 'Esiopetus ilman liittyvää'
         WHEN p.type = 'PREPARATORY' AND sn.hours_per_week <= 25 THEN 'Valmistava opetus ilman liittyvää'
         WHEN p.type = 'CLUB' THEN 'Kerho'
@@ -82,6 +93,21 @@ val migrationSqlCases = """
         WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 40 AND sn.part_day AND NOT sn.part_week THEN 'Osapäiväinen liittyvä, yhteensä enintään 40h'
         WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week > 40 AND sn.hours_per_week < 50 AND sn.part_day AND sn.part_week THEN 'Osapäiväinen ja osaviikkoinen liittyvä, yhteensä 40-50h'
         WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 40 AND sn.part_day AND sn.part_week THEN 'Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h'
+
+        -- invalid but easily fixable cases
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week >= 35 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen, vähintään 35h'
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week < 35 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen, 25-35h'
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week >= 35 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen, vähintään 35h'
+        WHEN p.type = 'DAYCARE' AND sn.hours_per_week > 25 AND sn.hours_per_week < 35 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen, 25-35h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week >= 45 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, vähintään 45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 35 AND sn.hours_per_week < 45 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 35-45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 25-35h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 25-35h'
+        WHEN p.type = 'PRESCHOOL_DAYCARE' AND sn.hours_per_week >= 45 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen liittyvä, yhteensä vähintään 45h'
+        WHEN p.type = 'PRESCHOOL_DAYCARE' AND sn.hours_per_week >= 45 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen liittyvä, yhteensä vähintään 45h'
+        WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week >= 50 AND sn.part_day AND NOT sn.part_week THEN 'Kokopäiväinen liittyvä, yhteensä vähintään 50h'
+        WHEN p.type = 'PREPARATORY_DAYCARE' AND sn.hours_per_week >= 50 AND sn.part_day AND sn.part_week THEN 'Osaviikkoinen liittyvä, yhteensä vähintään 50h'
+
         ELSE 'undefined'
     END
 """.trimIndent()
