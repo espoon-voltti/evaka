@@ -12,6 +12,7 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
+import { resetDatabase } from 'e2e-test-common/dev-api'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -19,6 +20,7 @@ let nav: EmployeeNav
 let childInfo: ChildInformationPage
 
 beforeAll(async () => {
+  await resetDatabase()
   ;[fixtures] = await initializeAreaAndPersonData()
 })
 beforeEach(async () => {
