@@ -67,7 +67,7 @@ export default function App() {
                     <Route
                       exact
                       path="/messages"
-                      component={requireAuth(MessagesPage)}
+                      component={requireAuth(MessagesPage, false)}
                     />
                   )}
                   <Route path="/" component={RedirectToMap} />

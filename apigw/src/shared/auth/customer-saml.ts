@@ -75,8 +75,8 @@ async function verifyKeycloakProfile(
 
   return {
     id: person.id,
-    userType: 'ENDUSER',
-    globalRoles: ['END_USER'],
+    userType: 'CITIZEN_WEAK',
+    globalRoles: ['CITIZEN_WEAK'],
     allScopedRoles: [],
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
