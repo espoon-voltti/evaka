@@ -5,6 +5,23 @@
 import { UUID } from '../../types'
 import { CareType, ProviderType, UnitLanguage } from './enums'
 import { Coordinate } from './Coordinate'
+import DateRange from 'lib-common/date-range'
+import { JsonOf } from 'lib-common/json'
+
+export function deserializePublicUnit(unit: JsonOf<PublicUnit>): PublicUnit {
+  return {
+    ...unit,
+    daycareApplyPeriod: unit.daycareApplyPeriod
+      ? DateRange.parseJson(unit.daycareApplyPeriod)
+      : null,
+    preschoolApplyPeriod: unit.preschoolApplyPeriod
+      ? DateRange.parseJson(unit.preschoolApplyPeriod)
+      : null,
+    clubApplyPeriod: unit.clubApplyPeriod
+      ? DateRange.parseJson(unit.clubApplyPeriod)
+      : null
+  }
+}
 
 export type PublicUnit = {
   id: UUID
@@ -21,4 +38,7 @@ export type PublicUnit = {
   location: Coordinate | null
   ghostUnit: boolean | undefined
   roundTheClock: boolean
+  daycareApplyPeriod: DateRange | null
+  preschoolApplyPeriod: DateRange | null
+  clubApplyPeriod: DateRange | null
 }

@@ -281,9 +281,12 @@ SELECT
     opening_date,
     closing_date,
     ghost_unit,
-    round_the_clock
+    round_the_clock,
+    club_apply_period,
+    daycare_apply_period,
+    preschool_apply_period
 FROM daycare
-WHERE $applyPeriod && daterange(:date, null, '[]')
+WHERE $applyPeriod && daterange(:date, null, '[]') OR provider_type = 'PRIVATE'
 ORDER BY name ASC
     """.trimIndent()
 

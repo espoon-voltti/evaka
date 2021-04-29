@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Coordinate
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
@@ -90,7 +91,10 @@ data class PublicUnit(
     val url: String?,
     val location: Coordinate?,
     val ghostUnit: Boolean?,
-    val roundTheClock: Boolean
+    val roundTheClock: Boolean,
+    val daycareApplyPeriod: DateRange?,
+    val preschoolApplyPeriod: DateRange?,
+    val clubApplyPeriod: DateRange?
 )
 
 data class AreaJSON(
