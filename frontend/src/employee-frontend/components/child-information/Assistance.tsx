@@ -2,34 +2,39 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { faHandHolding } from 'lib-icons'
 import { UUID } from '../../types'
 import AssistanceNeed from '../../components/child-information/AssistanceNeed'
 import AssistanceAction from '../../components/child-information/AssistanceAction'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 export interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-function Assistance({ id, open }: Props) {
+function Assistance({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
+
+  const [open, setOpen] = useState(startOpen)
 
   return (
     <div>
-      <CollapsibleSection
-        icon={faHandHolding}
-        title={i18n.childInformation.assistance.title}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        //icon={faHandHolding}
+        title={<H2 noMargin>{i18n.childInformation.assistance.title}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="assistance-collapsible"
       >
         <AssistanceNeed id={id} />
         <div className="separator large" />
         <AssistanceAction id={id} />
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 }

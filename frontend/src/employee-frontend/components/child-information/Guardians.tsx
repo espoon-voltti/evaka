@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
@@ -14,21 +14,23 @@ import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
-import { NameTd } from '../../components/PersonProfile'
+import { NameTd } from '../PersonProfile'
 import { ChildContext } from '../../state'
-import { faFemale } from 'lib-icons'
 import { getPersonGuardians } from '../../api/person'
 import { getAge } from 'lib-common/utils/local-date'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-const Guardians = React.memo(function Guardians({ id, open }: Props) {
+const Guardians = React.memo(function Guardians({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { guardians, setGuardians } = useContext(ChildContext)
+
+  const [open, setOpen] = useState(startOpen)
 
   useEffect(() => {
     setGuardians(Loading.of())
@@ -70,10 +72,13 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
 
   return (
     <div>
-      <CollapsibleSection
-        icon={faFemale}
-        title={i18n.personProfile.guardians}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        //icon={faFemale}
+        title={<H2 noMargin>{i18n.personProfile.guardians}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-guardians-collapsible"
       >
         <Table data-qa="table-of-guardians">
@@ -89,7 +94,7 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
         </Table>
         {guardians.isLoading && <Loader />}
         {guardians.isFailure && <div>{i18n.common.loadingFailed}</div>}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

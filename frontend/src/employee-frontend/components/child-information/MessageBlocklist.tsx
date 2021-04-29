@@ -12,10 +12,8 @@ import { Loading } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { P } from 'lib-components/typography'
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import React, { useContext } from 'react'
+import { H2, P } from 'lib-components/typography'
+import React, { useContext, useState } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -23,18 +21,24 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { UIContext } from 'employee-frontend/state/ui'
 import { UserContext } from 'employee-frontend/state/user'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 
 interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
+const MessageBlocklist = React.memo(function ChildDetails({
+  id,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
 
   const { roles } = useContext(UserContext)
   const { setErrorMessage } = useContext(UIContext)
   const { recipients, setRecipients } = useContext(ChildContext)
+
+  const [open, setOpen] = useState(startOpen)
 
   const loadData = useRestApi(getChildRecipients, setRecipients)
 
@@ -56,11 +60,14 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
 
   return (
     <div className="child-message-blocklist">
-      <CollapsibleSection
+      <CollapsibleContentArea
+        //icon={faEnvelope}
+        title={<H2 noMargin>{i18n.childInformation.messaging.title}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="child-message-blocklist-collapsible"
-        icon={faEnvelope}
-        title={i18n.childInformation.messaging.title}
-        startCollapsed={!open}
       >
         <P>{i18n.childInformation.messaging.info}</P>
         <Table>
@@ -139,7 +146,7 @@ const MessageBlocklist = React.memo(function ChildDetails({ id, open }: Props) {
               ))}
           </Tbody>
         </Table>
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

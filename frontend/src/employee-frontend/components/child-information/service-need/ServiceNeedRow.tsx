@@ -100,6 +100,7 @@ function ServiceNeedRow({ serviceNeed, onReload }: Props) {
         ) : (
           <LabelValueList
             spacing="large"
+            labelWidth="240px"
             contents={[
               {
                 label: i18n.childInformation.serviceNeed.hoursPerWeek,

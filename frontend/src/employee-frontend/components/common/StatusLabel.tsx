@@ -11,7 +11,8 @@ import colors from 'lib-components/colors'
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
 
 const Container = styled.div<{ status: StatusLabelType }>`
-  height: 25px;
+  height: 24px;
+  line-height: 22px;
   width: fit-content;
   border-radius: 12px;
   padding: 0 10px;

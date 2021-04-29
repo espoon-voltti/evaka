@@ -6,7 +6,7 @@ import React, { Fragment, ReactNode } from 'react'
 import styled from 'styled-components'
 
 type Spacing = 'small' | 'large'
-type LabelWidth = '25%' | 'fit-content(40%)'
+type LabelWidth = '25%' | 'fit-content(40%)' | string
 
 type Props = {
   spacing: Spacing

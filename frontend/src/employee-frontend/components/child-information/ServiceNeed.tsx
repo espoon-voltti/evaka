@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
 import { Loading } from 'lib-common/api'
-import { ChildContext } from '../../state/child'
-import { faClock } from 'lib-icons'
+import { ChildContext } from '../../state'
 import Loader from 'lib-components/atoms/Loader'
 import { UUID } from '../../types'
 import ServiceNeedRow from './service-need/ServiceNeedRow'
@@ -16,21 +15,24 @@ import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
 import { getServiceNeeds } from '../../api/child/service-needs'
 import { getPlacements } from '../../api/child/placements'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { RequireRole } from '../../utils/roles'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 export interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
+const ServiceNeed = React.memo(function ServiceNeed({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
   const { serviceNeeds, setServiceNeeds, setPlacements } = useContext(
     ChildContext
   )
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const refSectionTop = useRef(null)
+
+  const [open, setOpen] = useState(startOpen)
 
   const loadData = () => {
     setServiceNeeds(Loading.of())
@@ -62,10 +64,13 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
 
   return (
     <div ref={refSectionTop}>
-      <CollapsibleSection
-        icon={faClock}
-        title={i18n.childInformation.serviceNeed.title}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        //icon={faClock}
+        title={<H2 noMargin>{i18n.childInformation.serviceNeed.title}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="service-need-collapsible"
       >
         <RequireRole oneOf={['UNIT_SUPERVISOR', 'ADMIN']}>
@@ -86,7 +91,7 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
           </>
         )}
         {renderServiceNeeds()}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

@@ -73,6 +73,7 @@ const StyledButton = styled.button`
 
   &.flipped {
     flex-direction: row-reverse;
+    margin-right: -12px;
 
     .icon-wrapper-outer {
       margin: -4px -4px -4px ${defaultMargins.s};

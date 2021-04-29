@@ -13,23 +13,25 @@ import {
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { FamilyContact } from '../../types/family-overview'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { faUsers } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { formatName } from '../../utils'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 interface FamilyContactsProps {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-function FamilyContacts({ id, open }: FamilyContactsProps) {
+function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
   const { i18n } = useTranslation()
   const [result, setResult] = useState<Result<FamilyContact[]>>(Loading.of())
+
+  const [open, setOpen] = useState(startOpen)
 
   const loadContacts = useRestApi(getFamilyContacts, setResult)
   useEffect(() => loadContacts(id), [id, loadContacts])
@@ -49,10 +51,13 @@ function FamilyContacts({ id, open }: FamilyContactsProps) {
     .map((v: number) => ({ label: String(v), value: String(v) }))
 
   return (
-    <CollapsibleSection
-      icon={faUsers}
-      title={i18n.childInformation.familyContacts.title}
-      startCollapsed={!open}
+    <CollapsibleContentArea
+      //icon={faUsers}
+      title={<H2 noMargin>{i18n.childInformation.familyContacts.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="family-contacts-collapsible"
     >
       {result.isLoading && <SpinnerSegment />}
@@ -113,7 +118,7 @@ function FamilyContacts({ id, open }: FamilyContactsProps) {
           </Tbody>
         </Table>
       )}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 }
 

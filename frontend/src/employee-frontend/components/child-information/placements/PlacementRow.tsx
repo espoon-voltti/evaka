@@ -47,7 +47,7 @@ const DataRow = styled.div`
 `
 
 const DataLabel = styled.div`
-  width: 41.6666667%;
+  width: 240px;
   padding: 0 40px 0 0;
   margin: 0;
   font-weight: 600;

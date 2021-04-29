@@ -2,27 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import * as _ from 'lodash'
 
 import { useTranslation } from '../../state/i18n'
 import { ChildContext, ChildState } from '../../state/child'
-import { faUser } from 'lib-icons'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 type Props = {
-  open: boolean
+  startOpen: boolean
 }
 
-const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
+const FridgeParents = React.memo(function FridgeParents({ startOpen }: Props) {
   const { i18n } = useTranslation()
   const { parentships } = useContext<ChildState>(ChildContext)
+
+  const [open, setOpen] = useState(startOpen)
 
   function renderFridgeParents() {
     if (parentships.isLoading) {
@@ -74,14 +76,17 @@ const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
 
   return (
     <div className="fridge-parents-section">
-      <CollapsibleSection
-        icon={faUser}
-        title={i18n.childInformation.fridgeParents.title}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        //icon={faUser}
+        title={<H2 noMargin>{i18n.childInformation.fridgeParents.title}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="fridge-parents-collapsible"
       >
         {renderFridgeParents()}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

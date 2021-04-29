@@ -67,7 +67,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
           onClick={() => setCreatingNew(true)}
           text={t.createNewBtn}
           icon={faPlus}
-          disabled={creatingNew}
+          disabled={creatingNew || editingId !== null}
         />
       </HeaderRow>
       {serviceNeeds.length === 0 && !creatingNew ? (

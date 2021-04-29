@@ -2,44 +2,45 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { faFileAlt } from 'lib-icons'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
-import { useEffect } from 'react'
 import { Loading } from 'lib-common/api'
-import { useContext } from 'react'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { getChildApplicationSummaries } from '../../api/person'
 import { ApplicationSummary } from '../../types/application'
-import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
+import { DateTd, NameTd, StatusTd } from '../PersonProfile'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { ChildContext } from '../../state'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { RequireRole } from '../../utils/roles'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { UIContext } from '../../state/ui'
 import CreateApplicationModal from '../../components/child-information/CreateApplicationModal'
-import { inferApplicationType } from '../../components/person-profile/PersonApplications'
+import { inferApplicationType } from '../person-profile/PersonApplications'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
 const ChildApplications = React.memo(function ChildApplications({
   id,
-  open
+  startOpen
 }: Props) {
   const { i18n } = useTranslation()
   const { applications, setApplications, person, guardians } = useContext(
     ChildContext
   )
   const { uiMode, toggleUiMode } = useContext(UIContext)
+
+  const [open, setOpen] = useState(startOpen)
 
   const loadData = () => {
     setApplications(Loading.of())
@@ -106,11 +107,14 @@ const ChildApplications = React.memo(function ChildApplications({
   }
 
   return (
-    <CollapsibleSection
+    <CollapsibleContentArea
+      //icon={faFileAlt}
+      title={<H2 noMargin>{i18n.childInformation.application.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="applications-collapsible"
-      icon={faFileAlt}
-      title={i18n.childInformation.application.title}
-      startCollapsed={!open}
     >
       <RequireRole oneOf={['SERVICE_WORKER', 'ADMIN']}>
         <AddButtonRow
@@ -147,7 +151,7 @@ const ChildApplications = React.memo(function ChildApplications({
             guardians={guardians.getOrElse([])}
           />
         )}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 

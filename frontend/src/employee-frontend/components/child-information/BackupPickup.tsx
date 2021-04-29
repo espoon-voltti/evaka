@@ -8,7 +8,6 @@ import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
@@ -18,7 +17,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import InputField from 'lib-components/atoms/form/InputField'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { faPen, faQuestion, faTrash, faTruck } from 'lib-icons'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { UUID } from '../../types'
 import {
@@ -31,24 +30,27 @@ import { useTranslation } from '../../state/i18n'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ChildBackupPickup } from '../../types/child'
 import { UIContext } from '../../state/ui'
-import { Label } from 'lib-components/typography'
+import { H2, Label } from 'lib-components/typography'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { RequireRole } from '../../utils/roles'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 
 interface BackupPickupProps {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-function BackupPickup({ id, open }: BackupPickupProps) {
+function BackupPickup({ id, startOpen }: BackupPickupProps) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
+
   const [result, setResult] = useState<Result<ChildBackupPickup[]>>(
     Loading.of()
   )
   const [backupPickup, setBackupPickup] = useState<
     ChildBackupPickup | undefined
   >(undefined)
+  const [open, setOpen] = useState(startOpen)
 
   const loadBackupPickups = useRestApi(getChildBackupPickups, setResult)
   useEffect(() => loadBackupPickups(id), [id, loadBackupPickups])
@@ -175,11 +177,14 @@ function BackupPickup({ id, open }: BackupPickupProps) {
   )
 
   return (
-    <CollapsibleSection
+    <CollapsibleContentArea
+      //icon={faTruck}
+      title={<H2 noMargin>{i18n.childInformation.backupPickups.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="backup-pickups-collapsible"
-      icon={faTruck}
-      title={i18n.childInformation.backupPickups.title}
-      startCollapsed={!open}
     >
       {result.isLoading && <SpinnerSegment />}
       {result.isFailure && <ErrorSegment />}
@@ -237,7 +242,7 @@ function BackupPickup({ id, open }: BackupPickupProps) {
       {uiMode === `create-backup-pickup` && <CreateBackupPickupModal />}
       {uiMode === `remove-backup-pickup` && <DeleteBackupPickupModal />}
       {uiMode === `edit-backup-pickup` && <EditBackupPickupModal />}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 }
 

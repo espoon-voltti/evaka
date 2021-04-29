@@ -18,7 +18,7 @@ import { requireRole } from '../../utils/roles'
 const ToolbarWrapper = styled.div`
   display: flex;
   align-items: baseline;
-  justify-content: end;
+  justify-content: flex-end;
 `
 
 const ToolbarButton = styled.button`
