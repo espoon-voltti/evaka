@@ -64,6 +64,7 @@ val migrationSqlCases = """
         WHEN p.type = 'DAYCARE_PART_TIME' AND sn.hours_per_week <= 25 AND sn.part_day AND sn.part_week THEN 'Osapäiväinen ja osaviikkoinen'
         WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week >= 45 AND NOT sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, vähintään 45h'
         WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 35 AND sn.hours_per_week < 45 AND NOT sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 35-45h'
+        WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 35 AND sn.hours_per_week < 45 AND NOT sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 35-45h'
         WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND NOT sn.part_day AND NOT sn.part_week THEN '5-vuotiaiden kokopäiväinen, 25-35h'
         WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 25 AND sn.hours_per_week <= 35 AND NOT sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 25-35h'
         WHEN p.type = 'DAYCARE_FIVE_YEAR_OLDS' AND sn.hours_per_week > 20 AND sn.hours_per_week <= 25 AND NOT sn.part_day AND sn.part_week THEN '5-vuotiaiden osaviikkoinen, 20-25h'
