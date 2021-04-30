@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test
 class GuardianQueriesIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 

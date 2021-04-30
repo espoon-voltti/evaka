@@ -37,12 +37,16 @@ import java.util.UUID
 class PlannedOccupancyTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     private val defaultPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
@@ -68,14 +72,14 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child over 3 years old with full time placement plan`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -94,14 +98,14 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child under 3 years old with full time placement plan`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2017, 1, 1),
                 PlacementType.DAYCARE
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -120,14 +124,14 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child over 3 years old with part time placement plan`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE_PART_TIME
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -146,14 +150,14 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child over 3 years old with only preschool placement plan`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.PRESCHOOL
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -172,14 +176,14 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child under 3 years old with part time placement plan`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2017, 1, 1),
                 PlacementType.DAYCARE_PART_TIME
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -198,15 +202,15 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child over 3 years old with full time placement plan and assistance need`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE,
                 3.0
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -225,15 +229,15 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child under 3 years old with full time placement plan and assistance need`() {
-        jdbi.handle(
-            createPlanOccupancyTestFixture(
+        db.transaction {
+            it.createPlanOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2017, 1, 1),
                 PlacementType.DAYCARE,
                 3.0
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -252,14 +256,14 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy calculation is correct for child over 3 years old with preschool placement plan and distinct daycare`() {
-        jdbi.handle(
-            createPreschoolPlanWithDistinctDaycareOccupancyTestFixture(
+        db.transaction {
+            it.createPreschoolPlanWithDistinctDaycareOccupancyTestFixture(
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 defaultPeriodSplit2
             )
-        )
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -282,17 +286,17 @@ class PlannedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy calculation is correct for child over 3 years old with full time placement plan over an existing part time placement`() {
         val childId = UUID.randomUUID()
-        jdbi.handle { h ->
-            createOccupancyTestFixture(
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(
                 childId,
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE_PART_TIME
-            )(h)
-            val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
+            )
+            val applicationId = insertTestApplication(tx.handle, childId = childId, guardianId = testAdult_1.id)
             insertTestPlacementPlan(
-                h,
+                tx.handle,
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE,
@@ -322,17 +326,17 @@ class PlannedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy calculation is correct for child over 3 years old with part time placement plan over an existing full time placement`() {
         val childId = UUID.randomUUID()
-        jdbi.handle { h ->
-            createOccupancyTestFixture(
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(
                 childId,
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
-            )(h)
-            val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
+            )
+            val applicationId = insertTestApplication(tx.handle, childId = childId, guardianId = testAdult_1.id)
             insertTestPlacementPlan(
-                h,
+                tx.handle,
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE_PART_TIME,
@@ -367,13 +371,13 @@ class PlannedOccupancyTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.handle.insertTestDaycare(DevDaycare(id = daycareId2, areaId = testDaycare.areaId, name = "foo"))
 
-            createPlanOccupancyTestFixture(
+            tx.createPlanOccupancyTestFixture(
                 childId,
                 daycareId2,
                 defaultPeriodSplit2,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE_PART_TIME
-            )(tx.handle)
+            )
 
             tx.handle.insertTestPlacement(DevPlacement(type = PlacementType.DAYCARE, childId = childId, unitId = daycareId1, startDate = defaultPeriod.start, endDate = defaultPeriod.end))
         }
@@ -405,17 +409,17 @@ class PlannedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy calculation picks latest placement plan when two placement plans are valid during same period`() {
         val childId = UUID.randomUUID()
-        jdbi.handle { h ->
-            createPlanOccupancyTestFixture(
+        db.transaction { tx ->
+            tx.createPlanOccupancyTestFixture(
                 childId,
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
-            )(h)
-            val applicationId = insertTestApplication(h, childId = childId, guardianId = testAdult_1.id)
+            )
+            val applicationId = insertTestApplication(tx.handle, childId = childId, guardianId = testAdult_1.id)
             insertTestPlacementPlan(
-                h,
+                tx.handle,
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE_PART_TIME,
@@ -443,8 +447,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy calculation is correct when the placement has been rejected`() {
         val childId = UUID.randomUUID()
-        jdbi.handle { h ->
-            createPlanOccupancyTestFixture(
+        db.transaction { tx ->
+            tx.createPlanOccupancyTestFixture(
                 childId,
                 testDaycare.id,
                 defaultPeriod,
@@ -453,8 +457,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 0.0,
                 defaultPeriod,
                 true
-
-            )(h)
+            )
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)

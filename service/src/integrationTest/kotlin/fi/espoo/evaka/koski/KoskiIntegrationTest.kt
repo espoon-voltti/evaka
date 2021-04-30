@@ -127,7 +127,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertSingleStudyRight(version = 0)
 
-        jdbi.handle {
+        db.transaction {
             it.createUpdate("UPDATE placement SET end_date = :endDate WHERE id = :id")
                 .bind("id", placementId)
                 .bind("endDate", preschoolTerm2019.end.minusDays(1))
@@ -337,9 +337,9 @@ class KoskiIntegrationTest : FullApplicationTest() {
             TestCase(testPeriod(0L to 1L), AssistanceBasis.DEVELOPMENTAL_DISABILITY_1),
             TestCase(testPeriod(2L to 3L), AssistanceBasis.DEVELOPMENTAL_DISABILITY_2)
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             testCases.forEach {
-                h.insertTestAssistanceNeed(
+                tx.handle.insertTestAssistanceNeed(
                     DevAssistanceNeed(
                         updatedBy = testDecisionMaker_1.id,
                         childId = testChild_1.id,
@@ -383,9 +383,9 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 AssistanceActionType.SPECIAL_GROUP
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             testCases.forEach {
-                h.insertTestAssistanceAction(
+                tx.handle.insertTestAssistanceAction(
                     DevAssistanceAction(
                         updatedBy = testDecisionMaker_1.id,
                         childId = testChild_1.id,
@@ -603,8 +603,8 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `a daycare with purchased provider type is marked as such in study rights`() {
-        val daycareId = jdbi.handle {
-            it.insertTestDaycare(
+        val daycareId = db.transaction {
+            it.handle.insertTestDaycare(
                 DevDaycare(areaId = testAreaId, providerType = ProviderType.PURCHASED)
             )
         }
@@ -619,8 +619,8 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `a daycare with private provider type is marked as purchased in study rights`() {
-        val daycareId = jdbi.handle {
-            it.insertTestDaycare(
+        val daycareId = db.transaction {
+            it.handle.insertTestDaycare(
                 DevDaycare(areaId = testAreaId, providerType = ProviderType.PRIVATE)
             )
         }
@@ -755,8 +755,8 @@ class KoskiIntegrationTest : FullApplicationTest() {
         daycareId: UUID = testDaycare.id,
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL
-    ): UUID = jdbi.handle {
-        it.insertTestPlacement(
+    ): UUID = db.transaction {
+        it.handle.insertTestPlacement(
             DevPlacement(
                 childId = child.id,
                 unitId = daycareId,
@@ -768,11 +768,11 @@ class KoskiIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertAbsences(childId: UUID, absenceType: AbsenceType, vararg periods: FiniteDateRange) =
-        jdbi.transaction { h ->
+        db.transaction { tx ->
             for (period in periods) {
                 for (date in period.dates()) {
                     insertTestAbsence(
-                        h,
+                        tx.handle,
                         childId = childId,
                         careType = CareType.PRESCHOOL,
                         date = date,

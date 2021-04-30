@@ -25,9 +25,9 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     @BeforeEach
     private fun beforeEach() {
         service = PersonStorageService()
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 

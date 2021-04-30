@@ -3,7 +3,6 @@ package fi.espoo.evaka.daycare.dao
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getClubTerms
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -15,7 +14,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle {
+        db.transaction {
             it.execute(
                 """INSERT INTO club_term (term, application_period) VALUES
                 ('[2020-08-13,2021-06-04]', '[2020-01-08,2020-01-20]'),
@@ -27,7 +26,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest() {
 
     @AfterEach
     internal fun tearDown() {
-        jdbi.handle { it.execute("TRUNCATE TABLE club_term") }
+        db.transaction { it.execute("TRUNCATE TABLE club_term") }
     }
 
     @Test

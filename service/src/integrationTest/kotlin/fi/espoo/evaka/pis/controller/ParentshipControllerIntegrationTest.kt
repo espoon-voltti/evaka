@@ -94,9 +94,9 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     fun `can update parentship duration`(user: AuthenticatedUser) {
         val adult = testPerson1()
         val child = testPerson2()
-        val parentship = jdbi.handle { h ->
-            h.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(500), child.dateOfBirth.plusDays(700))
-            h.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+        val parentship = db.transaction { tx ->
+            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(500), child.dateOfBirth.plusDays(700))
+            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
@@ -133,26 +133,30 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     fun `can delete parentship`(user: AuthenticatedUser) {
         val adult = testPerson1()
         val child = testPerson2()
-        jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100))
-            h.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
-            assertEquals(2, h.getParentships(headOfChildId = adult.id, childId = null).size)
+        val parentship = db.transaction { tx ->
+            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
+                tx.handle.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
+                assertEquals(2, tx.handle.getParentships(headOfChildId = adult.id, childId = null).size)
+            }
+        }
 
-            val delResponse = controller.deleteParentship(db, user, parentship.id)
-            assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
-            assertEquals(1, h.getParentships(headOfChildId = adult.id, childId = null).size)
+        val delResponse = controller.deleteParentship(db, user, parentship.id)
+        assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
+        db.read { r ->
+            assertEquals(1, r.handle.getParentships(headOfChildId = adult.id, childId = null).size)
         }
     }
 
     fun `cannot delete parentship`(user: AuthenticatedUser) {
         val adult = testPerson1()
         val child = testPerson2()
-        jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100))
-            h.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
-            assertEquals(2, h.getParentships(headOfChildId = adult.id, childId = null).size)
-            assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
+        val parentship = db.transaction { tx ->
+            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
+                tx.handle.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
+                assertEquals(2, tx.handle.getParentships(headOfChildId = adult.id, childId = null).size)
+            }
         }
+        assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
     }
 
     @Test
@@ -160,8 +164,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val parent = testPerson1()
         val child = testPerson2()
-        jdbi.handle { h ->
-            h.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+        db.transaction { tx ->
+            tx.handle.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         assertThrows<Forbidden> { controller.getParentships(db, user, headOfChildId = parent.id) }
     }
@@ -171,13 +175,13 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val parent = testPerson1()
         val child = testPerson2()
-        jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
-            val newStartDate = child.dateOfBirth.plusDays(100)
-            val newEndDate = child.dateOfBirth.plusDays(300)
-            val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-            assertThrows<Forbidden> { controller.updateParentship(db, user, parentship.id, requestBody) }
+        val parentship = db.transaction { tx ->
+            tx.handle.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
+        val newStartDate = child.dateOfBirth.plusDays(100)
+        val newEndDate = child.dateOfBirth.plusDays(300)
+        val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
+        assertThrows<Forbidden> { controller.updateParentship(db, user, parentship.id, requestBody) }
     }
 
     @Test
@@ -185,10 +189,10 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val parent = testPerson1()
         val child = testPerson2()
-        jdbi.handle { h ->
-            val parentship = h.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
-            assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
+        val parentship = db.transaction { tx ->
+            tx.handle.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
+        assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
     }
 
     @Test
@@ -209,8 +213,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         assertThrows<BadRequest> { controller.createParentship(db, user, request) }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON = jdbi.transaction { h ->
-        h.createPerson(
+    private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction { tx ->
+        tx.handle.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

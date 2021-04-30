@@ -31,22 +31,22 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @BeforeEach
     fun setUp() {
         val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
-        jdbi.handle {
-            resetDatabase(it)
+        db.transaction {
+            it.resetDatabase()
             it.execute(legacyDataSql)
         }
     }
 
     @Test
-    fun `creating an empty person sets their date of birth to current date`() = jdbi.handle { h ->
-        val identity: PersonDTO = h.createEmptyPerson()
+    fun `creating an empty person sets their date of birth to current date`() = db.transaction { tx ->
+        val identity: PersonDTO = tx.handle.createEmptyPerson()
         Assertions.assertEquals(identity.dateOfBirth, LocalDate.now())
     }
 
     @Test
-    fun `create person`() = jdbi.handle { h ->
+    fun `create person`() = db.transaction { tx ->
         val validSSN = "080512A918W"
-        val fetchedPerson = h.createPerson(
+        val fetchedPerson = tx.handle.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(validSSN),
                 firstName = "Matti",

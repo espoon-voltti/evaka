@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -62,9 +63,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
-        jdbi.handle { h ->
-            h.execute(
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+            tx.execute(
                 "INSERT INTO holiday (date) VALUES (?), (?), (?), (?), (?), (?)",
                 LocalDate.of(2019, 1, 1),
                 LocalDate.of(2019, 1, 6),
@@ -78,19 +79,21 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     @Test
     fun `invoice generation for child with a day long temporary placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -113,13 +116,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for child with one day long part day temporary placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -139,13 +142,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for child with a three day long temporary placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -165,16 +168,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for child with a two day long temporary placement and a day long part day temporary placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-        jdbi.handle(
+        db.transaction(
             insertPlacement(
                 testChild_1.id,
                 placementPeriod.copy(end = placementPeriod.end!!.minusDays(1)),
                 PlacementType.TEMPORARY_DAYCARE
             )
         )
-        jdbi.handle(
+        db.transaction(
             insertPlacement(
                 testChild_1.id,
                 placementPeriod.copy(start = placementPeriod.end!!),
@@ -182,9 +185,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -211,16 +214,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for two children with temporary placements at the same time`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        jdbi.handle(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
+        db.transaction(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -247,16 +250,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for two children with part day temporary placements at the same time`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        jdbi.handle(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
+        db.transaction(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -284,16 +287,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation for child with a two day long temporary placement that changes head of family during placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        jdbi.handle(
+        db.transaction(
             insertChildParentRelation(
                 testAdult_1.id,
                 testChild_1.id,
                 placementPeriod.copy(end = placementPeriod.start)
             )
         )
-        jdbi.handle(
+        db.transaction(
             insertChildParentRelation(
                 testAdult_2.id,
                 testChild_1.id,
@@ -301,9 +304,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(2, result.size)
         result.first().let { invoice ->
@@ -336,11 +339,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation for child with a day long temporary placement that has no family configured`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(0, result.size)
     }
@@ -348,15 +351,15 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for temporary placements does not pick non-temporary placements`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val temporaryPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
-        jdbi.handle(insertPlacement(testChild_1.id, temporaryPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(insertPlacement(testChild_1.id, temporaryPeriod, PlacementType.TEMPORARY_DAYCARE))
         val nonTemporaryPeriod = DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
-        jdbi.handle(insertPlacement(testChild_1.id, nonTemporaryPeriod))
+        db.transaction(insertPlacement(testChild_1.id, nonTemporaryPeriod))
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -378,7 +381,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with same price results in one invoice row`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -394,9 +397,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertDecisionsAndPlacements(
-                h,
+                tx.handle,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
@@ -404,9 +407,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -426,7 +429,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with same price and same fee alterations results in one invoice row`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -450,9 +453,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertDecisionsAndPlacements(
-                h,
+                tx.handle,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
@@ -460,9 +463,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -489,8 +492,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with the second one having another child results in one invoice row for the first child`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -506,9 +509,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertDecisionsAndPlacements(
-                h,
+                tx.handle,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(
@@ -528,9 +531,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -558,7 +561,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation from two fee decisions makes sure the sum is at most the monthly fee`() {
         // January 2019 has 22 operational days which results in daily price being rounded up
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -591,11 +594,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -630,7 +633,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation from two fee decisions makes sure the sum is at least the monthly fee`() {
         // March 2019 has 21 operational days which results in daily price being rounded down
         val period = DateRange(LocalDate.of(2019, 3, 1), LocalDate.of(2019, 3, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -663,11 +666,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -702,7 +705,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation from two fee decisions with cleanly split daily prices does not result in a rounding row`() {
         // February 2019 has 20 operational days which results in daily price being split evenly
         val period = DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 28))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -735,11 +738,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -766,8 +769,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with the second one having changed fee for second child results in one invoice row for the first child`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -791,9 +794,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertDecisionsAndPlacements(
-                h,
+                tx.handle,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(
@@ -805,9 +808,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -841,7 +844,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from fee decision with one fee alteration creates additional invoice row`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -865,11 +868,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -896,7 +899,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from fee decision with multiple fee alterations creates additional invoice rows`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -926,11 +929,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -965,7 +968,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from fee decision with a 95 percent discount fee alteration`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -989,11 +992,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1020,7 +1023,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `when two people have active fee decisions for the same child only one of them is invoiced`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1037,24 +1040,24 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h,
+                tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = period.start,
                 endDate = period.end!!
             )
             upsertFeeDecisions(
-                h,
+                tx.handle,
                 objectMapper,
                 listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1075,7 +1078,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `when a placement ends before the fee decision only the placement period is invoiced`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = period.copy(end = period.start.plusDays(7))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1092,24 +1095,24 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h,
+                tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = placementPeriod.start,
                 endDate = placementPeriod.end!!
             )
             upsertFeeDecisions(
-                h,
+                tx.handle,
                 objectMapper,
                 listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1139,9 +1142,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1173,9 +1176,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1207,9 +1210,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1234,9 +1237,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1267,9 +1270,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
 
@@ -1306,9 +1309,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
 
@@ -1346,9 +1349,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
         result.first().let { invoice ->
@@ -1373,9 +1376,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
 
@@ -1405,15 +1408,15 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(periods, absenceDays)
 
-        jdbi.transaction {
+        db.transaction {
             createAllDraftInvoices(
-                it,
+                it.handle,
                 objectMapper,
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
             )
         }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
 
@@ -1469,15 +1472,15 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(periods, absenceDays)
 
-        jdbi.transaction {
+        db.transaction {
             createAllDraftInvoices(
-                it,
+                it.handle,
                 objectMapper,
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
             )
         }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
 
@@ -1528,9 +1531,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
 
         assertEquals(1, result.size)
 
@@ -1555,7 +1558,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid only during weekend`() {
         val period = DateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31))
         val weekEnd = DateRange(LocalDate.of(2020, 5, 2), LocalDate.of(2020, 5, 3))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1572,11 +1575,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -1584,7 +1587,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid only for two weeks in a round the clock unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 18), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1601,11 +1604,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(15210, invoice.totalPrice())
@@ -1622,7 +1625,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid only during last weekend of month in a round the clock unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 30), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1639,11 +1642,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(3042, invoice.totalPrice())
@@ -1660,7 +1663,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid for all but new year in a round the clock unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 2), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1677,11 +1680,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice())
@@ -1698,7 +1701,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid for all but new year and the first weekend in a round the clock unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1715,11 +1718,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice())
@@ -1736,7 +1739,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid for only for the week with epiphany in a round the clock unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 10))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1753,11 +1756,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(6084, invoice.totalPrice())
@@ -1773,7 +1776,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation when is half a month in a round the clock unit and the rest in a regular unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -1808,11 +1811,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(28900, invoice.totalPrice())
@@ -1838,7 +1841,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for round the clock unit with a force majeure absence during the week`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1855,7 +1858,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
         db.transaction { tx ->
             absenceService.upsertAbsences(
                 tx,
@@ -1872,9 +1875,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(27379, invoice.totalPrice())
@@ -1895,7 +1898,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for round the clock unit with a force majeure absence during the weekend`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1912,7 +1915,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
         db.transaction { tx ->
             absenceService.upsertAbsences(
                 tx,
@@ -1929,9 +1932,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(27379, invoice.totalPrice())
@@ -1952,7 +1955,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation for round the clock unit with force majeure absences for the whole month`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1969,7 +1972,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
         db.transaction { tx ->
             absenceService.upsertAbsences(
                 tx,
@@ -1989,9 +1992,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
         result.first().let { invoice ->
             assertEquals(0, invoice.totalPrice())
@@ -2019,9 +2022,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             .toMap()
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -2042,7 +2045,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             ),
             PlacementType.DAYCARE_PART_TIME
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -2062,7 +2065,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 DateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31))
             )
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
     }
 
@@ -2084,7 +2087,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
             )
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -2104,7 +2107,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 1))
             )
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -2114,7 +2117,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             listOf(DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -2124,7 +2127,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             DateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
             listOf(DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
     }
 
@@ -2144,7 +2147,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
     }
 
@@ -2164,7 +2167,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
             )
         )
-        val result = jdbi.handle(getAllInvoices)
+        val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
     }
 
@@ -2184,10 +2187,10 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, invoicingPeriod))
-        jdbi.handle { h ->
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, invoicingPeriod))
+        db.transaction { tx ->
             upsertFeeDecisions(
-                h,
+                tx.handle,
                 objectMapper,
                 listOf(
                     decision.copy(validTo = invoicingPeriod.start.plusDays(7))
@@ -2195,8 +2198,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        placementPeriods.forEach { period -> jdbi.handle(insertPlacement(testChild_1.id, period, placementType)) }
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, invoicingPeriod) }
+        placementPeriods.forEach { period -> db.transaction(insertPlacement(testChild_1.id, period, placementType)) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper, invoicingPeriod) }
     }
 
     private fun initDataForAbsences(
@@ -2229,14 +2232,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            jdbi.handle(insertChildParentRelation(testAdult_1.id, child.id, period))
-            jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
+            db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
+            db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(decision)) }
 
-            val placementId = jdbi.handle(insertPlacement(child.id, period))
-            val groupId = jdbi.handle { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
-            jdbi.handle { h ->
+            val placementId = db.transaction(insertPlacement(child.id, period))
+            val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+            db.transaction { tx ->
                 insertTestDaycareGroupPlacement(
-                    h,
+                    tx.handle,
                     daycarePlacementId = placementId,
                     groupId = groupId,
                     startDate = period.start,
@@ -2282,9 +2285,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertPlacement(childId: UUID, period: DateRange, type: PlacementType = PlacementType.DAYCARE) = { h: Handle ->
+    private fun insertPlacement(childId: UUID, period: DateRange, type: PlacementType = PlacementType.DAYCARE) = { tx: Database.Transaction ->
         insertTestPlacement(
-            h,
+            tx.handle,
             childId = childId,
             unitId = testDaycare.id,
             startDate = period.start,
@@ -2293,9 +2296,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun insertChildParentRelation(headOfFamilyId: UUID, childId: UUID, period: DateRange) = { h: Handle ->
+    private fun insertChildParentRelation(headOfFamilyId: UUID, childId: UUID, period: DateRange) = { tx: Database.Transaction ->
         insertTestParentship(
-            h,
+            tx.handle,
             headOfFamilyId,
             childId,
             startDate = period.start,
@@ -2303,8 +2306,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private val getAllInvoices: (Handle) -> List<Invoice> = { h ->
-        h.createQuery(invoiceQueryBase)
+    private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
+        r.createQuery(invoiceQueryBase)
             .map(toInvoice)
             .list()
             .let(::flatten)

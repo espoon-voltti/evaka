@@ -31,7 +31,9 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     private val personId = UUID.randomUUID()
@@ -50,10 +52,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `insert valid income`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
-            val result = h.createQuery("SELECT id FROM income")
+            val result = tx.handle.createQuery("SELECT id FROM income")
                 .mapTo<UUID>()
                 .toList()
 
@@ -63,10 +65,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `insert adds updatedAt`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
-            val result = h.createQuery("SELECT updated_at FROM income")
+            val result = tx.handle.createQuery("SELECT updated_at FROM income")
                 .mapTo<Instant>()
                 .toList()
 
@@ -76,44 +78,44 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `insert income with invalid date range`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val income = testIncome.copy(
                 validFrom = LocalDate.of(2000, 1, 1),
                 validTo = LocalDate.of(1900, 1, 1)
             )
 
-            assertThrows<BadRequest> { upsertIncome(h, mapper, income, userId) }
+            assertThrows<BadRequest> { upsertIncome(tx.handle, mapper, income, userId) }
         }
     }
 
     @Test
     fun `insert income with completely overlapping date range`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
             val overlappingIncome = testIncome.copy(id = UUID.randomUUID())
 
-            assertThrows<Conflict> { upsertIncome(h, mapper, overlappingIncome, userId) }
+            assertThrows<Conflict> { upsertIncome(tx.handle, mapper, overlappingIncome, userId) }
         }
     }
 
     @Test
     fun `insert income with overlapping date range by one day`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
             val overlappingIncome = with(testIncome) {
                 this.copy(id = UUID.randomUUID(), validFrom = validTo!!, validTo = validTo!!.plusYears(1))
             }
 
-            assertThrows<Conflict> { upsertIncome(h, mapper, overlappingIncome, userId) }
+            assertThrows<Conflict> { upsertIncome(tx.handle, mapper, overlappingIncome, userId) }
         }
     }
 
     @Test
     fun `getIncome with no income`() {
-        jdbi.handle { h ->
-            val result = getIncome(h, mapper, UUID.randomUUID())
+        db.transaction { tx ->
+            val result = getIncome(tx.handle, mapper, UUID.randomUUID())
 
             assertNull(result)
         }
@@ -121,10 +123,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getIncome with single income`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
-            val result = getIncome(h, mapper, testIncome.id!!)
+            val result = getIncome(tx.handle, mapper, testIncome.id!!)
 
             assertNotNull(result)
         }
@@ -132,10 +134,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getIncomesForPerson with single income`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
-            val result = getIncomesForPerson(h, mapper, personId)
+            val result = getIncomesForPerson(tx.handle, mapper, personId)
 
             assertEquals(1, result.size)
         }
@@ -143,11 +145,11 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getIncomesForPerson with multiple incomes`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
             with(testIncome) {
                 upsertIncome(
-                    h,
+                    tx.handle,
                     mapper,
                     this.copy(
                         id = UUID.randomUUID(),
@@ -159,7 +161,7 @@ class IncomeQueriesTest : PureJdbiTest() {
             }
             with(testIncome) {
                 upsertIncome(
-                    h,
+                    tx.handle,
                     mapper,
                     this.copy(
                         id = UUID.randomUUID(),
@@ -170,7 +172,7 @@ class IncomeQueriesTest : PureJdbiTest() {
                 )
             }
 
-            val result = getIncomesForPerson(h, mapper, personId)
+            val result = getIncomesForPerson(tx.handle, mapper, personId)
 
             assertEquals(3, result.size)
         }
@@ -178,8 +180,8 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `update valid income`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
             val updated = testIncome.copy(
                 data = mapOf(
@@ -189,9 +191,9 @@ class IncomeQueriesTest : PureJdbiTest() {
                     )
                 )
             )
-            upsertIncome(h, mapper, updated, userId)
+            upsertIncome(tx.handle, mapper, updated, userId)
 
-            val result = getIncomesForPerson(h, mapper, personId)
+            val result = getIncomesForPerson(tx.handle, mapper, personId)
 
             assertEquals(1, result.size)
             assertEquals(1000, result.first().total())
@@ -200,19 +202,19 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `update with invalid date range`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
             val updated = with(testIncome) { this.copy(validTo = validFrom.minusDays(1)) }
 
-            assertThrows<BadRequest> { upsertIncome(h, mapper, updated, userId) }
+            assertThrows<BadRequest> { upsertIncome(tx.handle, mapper, updated, userId) }
         }
     }
 
     @Test
     fun `update with overlapping date range`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
 
             val anotherIncome = with(testIncome) {
                 this.copy(
@@ -221,17 +223,17 @@ class IncomeQueriesTest : PureJdbiTest() {
                     validTo = validTo!!.plusDays(1).plusMonths(1)
                 )
             }
-            upsertIncome(h, mapper, anotherIncome, userId)
+            upsertIncome(tx.handle, mapper, anotherIncome, userId)
 
             val updated = anotherIncome.copy(validFrom = testIncome.validFrom)
 
-            assertThrows<Conflict> { upsertIncome(h, mapper, updated, userId) }
+            assertThrows<Conflict> { upsertIncome(tx.handle, mapper, updated, userId) }
         }
     }
 
     @Test
     fun `update with multiple incomes only updates one of them`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val secondIncome = with(testIncome) {
                 this.copy(id = UUID.randomUUID(), validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
             }
@@ -239,9 +241,9 @@ class IncomeQueriesTest : PureJdbiTest() {
                 this.copy(id = UUID.randomUUID(), validFrom = validFrom.plusYears(2), validTo = validTo!!.plusYears(2))
             }
 
-            upsertIncome(h, mapper, testIncome, userId)
-            upsertIncome(h, mapper, secondIncome, userId)
-            upsertIncome(h, mapper, thirdIncome, userId)
+            upsertIncome(tx.handle, mapper, testIncome, userId)
+            upsertIncome(tx.handle, mapper, secondIncome, userId)
+            upsertIncome(tx.handle, mapper, thirdIncome, userId)
 
             val updated = testIncome.copy(
                 data = mapOf(
@@ -251,9 +253,9 @@ class IncomeQueriesTest : PureJdbiTest() {
                     )
                 )
             )
-            upsertIncome(h, mapper, updated, userId)
+            upsertIncome(tx.handle, mapper, updated, userId)
 
-            val result = getIncomesForPerson(h, mapper, personId)
+            val result = getIncomesForPerson(tx.handle, mapper, personId)
 
             assertEquals(thirdIncome.total(), result[0].total())
             assertEquals(secondIncome.total(), result[1].total())
@@ -263,10 +265,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getIncomesFrom with from before both`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
             upsertIncome(
-                h, mapper,
+                tx.handle, mapper,
                 testIncome.copy(
                     id = UUID.randomUUID(),
                     validFrom = testIncome.validTo!!.plusDays(1),
@@ -276,7 +278,7 @@ class IncomeQueriesTest : PureJdbiTest() {
             )
 
             val result = getIncomesFrom(
-                h,
+                tx.handle,
                 mapper,
                 listOf(testIncome.personId),
                 testIncome.validFrom
@@ -288,10 +290,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getIncomesFrom with from before second`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
             upsertIncome(
-                h, mapper,
+                tx.handle, mapper,
                 testIncome.copy(
                     id = UUID.randomUUID(),
                     validFrom = testIncome.validTo!!.plusDays(1),
@@ -301,7 +303,7 @@ class IncomeQueriesTest : PureJdbiTest() {
             )
 
             val result = getIncomesFrom(
-                h,
+                tx.handle,
                 mapper,
                 listOf(testIncome.personId),
                 testIncome.validTo!!.plusDays(1)
@@ -313,10 +315,10 @@ class IncomeQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getIncomesFrom with from after both`() {
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, userId)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, userId)
             upsertIncome(
-                h, mapper,
+                tx.handle, mapper,
                 testIncome.copy(
                     id = UUID.randomUUID(),
                     validFrom = testIncome.validTo!!.plusDays(1),
@@ -326,7 +328,7 @@ class IncomeQueriesTest : PureJdbiTest() {
             )
 
             val result = getIncomesFrom(
-                h,
+                tx.handle,
                 mapper,
                 listOf(testIncome.personId),
                 testIncome.validTo!!.plusYears(1).plusDays(1)

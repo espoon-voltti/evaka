@@ -8,10 +8,8 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
-import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
@@ -29,10 +27,9 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     lateinit var controller: EmployeeController
 
     @BeforeEach
-    override fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+    internal fun setUp() {
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 

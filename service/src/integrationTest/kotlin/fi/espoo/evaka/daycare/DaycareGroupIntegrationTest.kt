@@ -46,10 +46,10 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     protected fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
         }
     }
 
@@ -93,8 +93,8 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
             endDate = null,
             deletable = true
         )
-        jdbi.handle {
-            it.insertTestDaycareGroup(
+        db.transaction {
+            it.handle.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = group.id,
                     daycareId = group.daycareId,
@@ -105,11 +105,11 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
         }
         getAndAssertGroup(group)
 
-        jdbi.handle { h ->
-            h.insertTestPerson(DevPerson(testChild_1.id))
-            h.insertTestChild(DevChild(testChild_1.id))
+        db.transaction { tx ->
+            tx.handle.insertTestPerson(DevPerson(testChild_1.id))
+            tx.handle.insertTestChild(DevChild(testChild_1.id))
             insertTestBackupCare(
-                h,
+                tx.handle,
                 DevBackupCare(
                     childId = testChild_1.id,
                     groupId = group.id,

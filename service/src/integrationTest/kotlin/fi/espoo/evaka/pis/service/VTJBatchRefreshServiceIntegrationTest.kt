@@ -49,9 +49,9 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
         service = VTJBatchRefreshService(
             fridgeFamilyService = fridgeFamilyService,
@@ -128,15 +128,15 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             VALUES (:partnershipId, :index, :personId, :startDate, 'infinity')
             """.trimIndent()
         val partnershipId = UUID.randomUUID()
-        jdbi.handle { h ->
-            h.createUpdate(sql)
+        db.transaction { tx ->
+            tx.createUpdate(sql)
                 .bind("partnershipId", partnershipId)
                 .bind("index", 1)
                 .bind("personId", testAdult_1.id)
                 .bind("startDate", LocalDate.of(2000, 1, 1))
                 .execute()
 
-            h.createUpdate(sql)
+            tx.createUpdate(sql)
                 .bind("partnershipId", partnershipId)
                 .bind("index", 2)
                 .bind("personId", testAdult_2.id)
@@ -170,8 +170,8 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             VALUES (:partnershipId, :index, :personId, :startDate, :endDate)
             """.trimIndent()
         val partnershipId = UUID.randomUUID()
-        jdbi.handle { h ->
-            h.createUpdate(sql)
+        db.transaction { tx ->
+            tx.createUpdate(sql)
                 .bind("partnershipId", partnershipId)
                 .bind("index", 1)
                 .bind("personId", testAdult_1.id)
@@ -179,7 +179,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
                 .bind("endDate", LocalDate.of(2010, 1, 1))
                 .execute()
 
-            h.createUpdate(sql)
+            tx.createUpdate(sql)
                 .bind("partnershipId", partnershipId)
                 .bind("index", 2)
                 .bind("personId", testAdult_2.id)

@@ -55,17 +55,17 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            h.insertTestEmployee(
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.handle.insertTestEmployee(
                 DevEmployee(
                     id = testRoundTheClockDaycareSupervisor.id,
                     externalId = testRoundTheClockDaycareSupervisorExternalId
                 )
             )
             updateDaycareAcl(
-                h,
+                tx.handle,
                 testRoundTheClockDaycare.id!!,
                 testRoundTheClockDaycareSupervisorExternalId,
                 UserRole.UNIT_SUPERVISOR
@@ -81,14 +81,13 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `application found returns 200`() {
-        val applicationId = jdbi.handle {
-            h ->
-            insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(h = tx.handle, childId = testChild_1.id, guardianId = testAdult_1.id)
         }
 
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestApplicationForm(
-                h = h,
+                h = tx.handle,
                 applicationId = applicationId,
                 document = validDaycareForm.copy(
                     apply = validDaycareForm.apply.copy(
@@ -120,21 +119,21 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `restricted child address is hidden`() {
-        val childId = jdbi.handle {
-            it.insertTestPerson(
+        val childId = db.transaction {
+            it.handle.insertTestPerson(
                 DevPerson(
                     restrictedDetailsEnabled = true
                 )
             )
         }
 
-        val applicationId = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = childId, guardianId = testAdult_1.id)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(h = tx.handle, childId = childId, guardianId = testAdult_1.id)
         }
 
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestApplicationForm(
-                h = h,
+                h = tx.handle,
                 applicationId = applicationId,
                 document = validDaycareForm.copy(
                     child = validDaycareForm.child.copy(
@@ -161,21 +160,21 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `restricted guardian address is hidden`() {
-        val guardianId = jdbi.handle {
-            it.insertTestPerson(
+        val guardianId = db.transaction {
+            it.handle.insertTestPerson(
                 DevPerson(
                     restrictedDetailsEnabled = true
                 )
             )
         }
 
-        val applicationId = jdbi.handle { h ->
-            insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardianId)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(h = tx.handle, childId = testChild_1.id, guardianId = guardianId)
         }
 
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestApplicationForm(
-                h = h,
+                h = tx.handle,
                 applicationId = applicationId,
                 document = validDaycareForm.copy(
                     guardian = validDaycareForm.guardian.copy(
@@ -202,24 +201,24 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `old drafts are removed`() {
-        val (old, id1, id2) = jdbi.handle { h ->
+        val (old, id1, id2) = db.transaction { tx ->
             listOf(
-                insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
-                insertTestApplication(h = h, childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
-                insertTestApplication(h = h, childId = testChild_3.id, guardianId = testAdult_1.id)
+                insertTestApplication(h = tx.handle, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                insertTestApplication(h = tx.handle, childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                insertTestApplication(h = tx.handle, childId = testChild_3.id, guardianId = testAdult_1.id)
             )
         }
 
-        jdbi.handle { h ->
-            h.createUpdate("""update application set created = :createdAt where id = :applicationId""")
+        db.transaction { tx ->
+            tx.handle.createUpdate("""update application set created = :createdAt where id = :applicationId""")
                 .bind("applicationId", old)
                 .bind("createdAt", Instant.parse("2020-01-01T00:00:00Z"))
                 .execute()
         }
 
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val data =
-                h.createQuery("""select id from application""")
+                tx.handle.createQuery("""select id from application""")
                     .mapTo<UUID>()
                     .toList()
 
@@ -232,9 +231,9 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         assertEquals(204, res.statusCode)
 
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val data =
-                h.createQuery("""select id from application""")
+                tx.handle.createQuery("""select id from application""")
                     .mapTo<UUID>()
                     .toSet()
 

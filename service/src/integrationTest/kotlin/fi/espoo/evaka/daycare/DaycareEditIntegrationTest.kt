@@ -16,7 +16,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
@@ -89,10 +88,10 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            h.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testAreaId, name = testDaycare.name))
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.handle.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testAreaId, name = testDaycare.name))
         }
     }
 

@@ -38,14 +38,18 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
-        jdbi.handle { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, id = groupId)) }
-        jdbi.handle { h -> insertTestCaretakers(h, groupId = groupId, amount = 3.0, startDate = LocalDate.of(2019, 1, 1)) }
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, id = groupId))
+            insertTestCaretakers(tx.handle, groupId = groupId, amount = 3.0, startDate = LocalDate.of(2019, 1, 1))
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     private val day1 = LocalDate.of(2019, 1, 1)
@@ -65,7 +69,9 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `occupancy for a child present is counted normally`() {
-        jdbi.handle(createOccupancyTestFixture(testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
+        db.transaction {
+            it.createOccupancyTestFixture(testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -79,10 +85,12 @@ class RealizedOccupancyTest : FullApplicationTest() {
     fun `group level occupancy for a child present is counted normally`() {
         val childId = UUID.randomUUID()
         val placementId = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE, placementId = placementId))
-        jdbi.handle { h -> insertTestStaffAttendance(h, groupId = groupId, count = 1.0, date = day1) }
-        jdbi.handle { h -> insertTestStaffAttendance(h, groupId = groupId, count = 2.0, date = day2) }
-        jdbi.handle { h -> insertTestDaycareGroupPlacement(h, placementId, groupId, startDate = defaultPeriod.start, endDate = defaultPeriod.end) }
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE, placementId = placementId)
+            insertTestStaffAttendance(tx.handle, groupId = groupId, count = 1.0, date = day1)
+            insertTestStaffAttendance(tx.handle, groupId = groupId, count = 2.0, date = day2)
+            insertTestDaycareGroupPlacement(tx.handle, placementId, groupId, startDate = defaultPeriod.start, endDate = defaultPeriod.end)
+        }
 
         val result = fetchAndParseOccupancyByGroups(testDaycare.id, defaultPeriod)
 
@@ -106,13 +114,15 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @Test
     fun `realized occupancy during backupcare affects the backup daycare unit`() {
         val backupCareChild = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(backupCareChild, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
-        jdbi.handle { h -> insertTestBackUpCare(h, backupCareChild, testDaycare2.id, day2, day2) }
-
         val normalPlacementChild1 = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(normalPlacementChild1, testDaycare2.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
         val normalPlacementChild2 = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(normalPlacementChild2, testDaycare2.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(backupCareChild, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+            insertTestBackUpCare(tx.handle, backupCareChild, testDaycare2.id, day2, day2)
+
+            tx.createOccupancyTestFixture(normalPlacementChild1, testDaycare2.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+            tx.createOccupancyTestFixture(normalPlacementChild2, testDaycare2.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+        }
 
         val resultOriginalUnit = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
         assertEquals(
@@ -136,9 +146,11 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @Test
     fun `realized occupancy during backupcare with absence from backup care`() {
         val childId = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
-        jdbi.handle { h -> insertTestBackUpCare(h, childId, testDaycare2.id, day1, day2) }
-        jdbi.handle { h -> insertTestAbsence(h, childId = childId, date = day2, careType = CareType.DAYCARE, absenceType = AbsenceType.SICKLEAVE) }
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+            insertTestBackUpCare(tx.handle, childId, testDaycare2.id, day1, day2)
+            insertTestAbsence(tx.handle, childId = childId, date = day2, careType = CareType.DAYCARE, absenceType = AbsenceType.SICKLEAVE)
+        }
 
         val resultBackupUnit = fetchAndParseOccupancy(testDaycare2.id, defaultPeriod)
         assertEquals(
@@ -153,8 +165,10 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy for a child absent is not counted`() {
         val childId = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
-        jdbi.handle { h -> insertTestAbsence(h, childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE) }
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+            insertTestAbsence(tx.handle, childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE)
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -170,8 +184,10 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy for a child with absence of type PRESENCE is counted normally`() {
         val childId = UUID.randomUUID()
-        jdbi.handle(createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE))
-        jdbi.handle { h -> insertTestAbsence(h, childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE, absenceType = AbsenceType.PRESENCE) }
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
+            insertTestAbsence(tx.handle, childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE, absenceType = AbsenceType.PRESENCE)
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -183,8 +199,10 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `caretaker count is based on attendance`() {
-        jdbi.handle { h -> insertTestStaffAttendance(h, groupId = groupId, date = LocalDate.of(2019, 1, 1), count = 2.0) }
-        jdbi.handle { h -> insertTestStaffAttendance(h, groupId = groupId, date = LocalDate.of(2019, 1, 2), count = 1.5) }
+        db.transaction { tx ->
+            insertTestStaffAttendance(tx.handle, groupId = groupId, date = LocalDate.of(2019, 1, 1), count = 2.0)
+            insertTestStaffAttendance(tx.handle, groupId = groupId, date = LocalDate.of(2019, 1, 2), count = 1.5)
+        }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
@@ -212,11 +230,11 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @Test
     fun `realized occupancy is not calculated for dates in the future`() {
         val period = FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now().plusDays(7))
-        jdbi.handle { h ->
-            createOccupancyTestFixture(testDaycare.id, period, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)(h)
+        db.transaction { tx ->
+            tx.createOccupancyTestFixture(testDaycare.id, period, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)
             generateSequence(period.start) { date -> date.plusDays(1) }
                 .takeWhile { date -> date <= LocalDate.now() }
-                .forEach { date -> insertTestStaffAttendance(h, groupId = groupId, date = date, count = 1.0) }
+                .forEach { date -> insertTestStaffAttendance(tx.handle, groupId = groupId, date = date, count = 1.0) }
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, period)

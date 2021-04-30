@@ -30,12 +30,16 @@ import java.util.UUID
 class FamilyOverviewTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     @Test
@@ -124,16 +128,16 @@ class FamilyOverviewTest : FullApplicationTest() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        jdbi.handle { h -> h.createParentship(testChild_1.id, testAdult_1.id, from, to) }
+        db.transaction { it.handle.createParentship(testChild_1.id, testAdult_1.id, from, to) }
     }
 
     private fun createTestFixture1plus2() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        jdbi.handle { h ->
-            h.createParentship(testChild_1.id, testAdult_1.id, from, to)
-            h.createParentship(testChild_2.id, testAdult_1.id, from, to)
+        db.transaction {
+            it.handle.createParentship(testChild_1.id, testAdult_1.id, from, to)
+            it.handle.createParentship(testChild_2.id, testAdult_1.id, from, to)
         }
     }
 
@@ -141,10 +145,10 @@ class FamilyOverviewTest : FullApplicationTest() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        jdbi.handle { h ->
-            h.createParentship(testChild_1.id, testAdult_1.id, from, to)
-            h.createParentship(testChild_2.id, testAdult_1.id, from, to)
-            h.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
+        db.transaction {
+            it.handle.createParentship(testChild_1.id, testAdult_1.id, from, to)
+            it.handle.createParentship(testChild_2.id, testAdult_1.id, from, to)
+            it.handle.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
         }
     }
 }

@@ -13,7 +13,6 @@ import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
@@ -25,11 +24,9 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
-        jdbi.transaction { h ->
-            val partnershipId = UUID.randomUUID()
-            createPartnerRecord(h, partnershipId, 1, person1.id, startDate, endDate)
-            createPartnerRecord(h, partnershipId, 2, person2.id, startDate, endDate)
-        }
+        val partnershipId = UUID.randomUUID()
+        createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
+        createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
     }
 
     @Test
@@ -38,18 +35,16 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(200)
-        jdbi.transaction { h ->
-            val partnershipId = UUID.randomUUID()
-            createPartnerRecord(h, partnershipId, 1, person1.id, startDate1, endDate1)
-            createPartnerRecord(h, partnershipId, 2, person2.id, startDate1, endDate1)
+        UUID.randomUUID().let { partnershipId ->
+            createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate1)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate1, endDate1)
         }
 
         val startDate2 = endDate1.plusDays(1)
         val endDate2 = startDate2.plusDays(200)
-        jdbi.transaction { h ->
-            val partnershipId = UUID.randomUUID()
-            createPartnerRecord(h, partnershipId, 1, person1.id, startDate2, endDate2)
-            createPartnerRecord(h, partnershipId, 2, person2.id, startDate2, endDate2)
+        UUID.randomUUID().let { partnershipId ->
+            createPartnerRecord(partnershipId, 1, person1.id, startDate2, endDate2)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate2)
         }
     }
 
@@ -59,21 +54,18 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(200)
-        jdbi.transaction { h ->
-            val partnershipId = UUID.randomUUID()
-            createPartnerRecord(h, partnershipId, 1, person1.id, startDate1, endDate1)
-            createPartnerRecord(h, partnershipId, 2, person2.id, startDate1, endDate1)
+        UUID.randomUUID().let { partnershipId ->
+            createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate1)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate1, endDate1)
         }
 
         val startDate2 = endDate1.plusDays(0)
         val endDate2 = startDate2.plusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate2, endDate2)
-                createPartnerRecord(h, partnershipId, 2, person2.id, startDate2, endDate2)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate2, endDate2)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate2)
         }
     }
 
@@ -86,12 +78,10 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 2, person2.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 3, person3.id, startDate, endDate)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 3, person3.id, startDate, endDate)
         }
     }
 
@@ -104,12 +94,10 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 0, person1.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 1, person2.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 2, person3.id, startDate, endDate)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 0, person1.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 1, person2.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 2, person3.id, startDate, endDate)
         }
     }
 
@@ -122,12 +110,10 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 2, person2.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 2, person3.id, startDate, endDate)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 2, person3.id, startDate, endDate)
         }
     }
 
@@ -138,11 +124,9 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 2, person1.id, startDate, endDate)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 2, person1.id, startDate, endDate)
         }
     }
 
@@ -155,11 +139,9 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate1.plusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate1, endDate)
-                createPartnerRecord(h, partnershipId, 2, person2.id, startDate2, endDate)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate)
         }
     }
 
@@ -172,11 +154,9 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate2 = endDate1.plusDays(1)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate, endDate1)
-                createPartnerRecord(h, partnershipId, 2, person2.id, startDate, endDate2)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate1)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate2)
         }
     }
 
@@ -188,11 +168,9 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.minusDays(200)
 
         assertThatThrownBy {
-            jdbi.transaction { h ->
-                val partnershipId = UUID.randomUUID()
-                createPartnerRecord(h, partnershipId, 1, person1.id, startDate, endDate)
-                createPartnerRecord(h, partnershipId, 2, person2.id, startDate, endDate)
-            }
+            val partnershipId = UUID.randomUUID()
+            createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
+            createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
         }
     }
 
@@ -250,7 +228,6 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPartnerRecord(
-        h: Handle,
         partnershipId: UUID,
         indx: Int,
         personId: UUID,
@@ -264,21 +241,23 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
             VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
             """.trimIndent()
 
-        h.createUpdate(sql)
-            .bind("partnershipId", partnershipId)
-            .bind("indx", indx)
-            .bind("personId", personId)
-            .bind("startDate", startDate)
-            .bind("endDate", endDate)
-            .execute()
+        db.transaction { tx ->
+            tx.createUpdate(sql)
+                .bind("partnershipId", partnershipId)
+                .bind("indx", indx)
+                .bind("personId", personId)
+                .bind("startDate", startDate)
+                .bind("endDate", endDate)
+                .execute()
+        }
     }
 
     private fun createParentshipRecord(childId: UUID, parentId: UUID, startDate: LocalDate, endDate: LocalDate) =
-        jdbi.handle { h -> h.createParentship(childId, parentId, startDate, endDate) }
+        db.transaction { it.handle.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return jdbi.transaction {
-            it.createPerson(
+        return db.transaction {
+            it.handle.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,
