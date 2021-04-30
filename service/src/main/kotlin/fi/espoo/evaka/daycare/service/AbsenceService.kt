@@ -6,7 +6,6 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
@@ -134,7 +133,7 @@ class AbsenceService {
         .map {
             it to placementListByChild
                 .filter { placement -> DateRange(placement.startDate, placement.endDate).includes(it) }
-                .flatMap { placement -> getCareType(placement, it) }
+                .flatMap { placement -> getCareType(placement) }
         }
         .toMap()
 
@@ -148,27 +147,17 @@ class AbsenceService {
         }
         .toMap()
 
-    private fun getCareType(placement: AbsencePlacement, placementDate: LocalDate): List<CareType> =
+    private fun getCareType(placement: AbsencePlacement): List<CareType> =
         when (placement.type) {
             PlacementType.CLUB -> listOf(CareType.CLUB)
             PlacementType.PRESCHOOL,
             PlacementType.PREPARATORY -> listOf(CareType.PRESCHOOL)
             PlacementType.PRESCHOOL_DAYCARE,
             PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
-            PlacementType.DAYCARE -> {
-                if (isEntitledToFreeFiveYearsOldDaycare(placement.dob, placementDate))
-                    listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
-                else
-                    listOf(CareType.DAYCARE)
-            }
-            PlacementType.DAYCARE_PART_TIME -> {
-                if (isEntitledToFreeFiveYearsOldDaycare(placement.dob, placementDate))
-                    listOf(CareType.DAYCARE_5YO_FREE)
-                else
-                    listOf(CareType.DAYCARE)
-            }
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
-            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE)
+            PlacementType.DAYCARE -> listOf(CareType.DAYCARE)
+            PlacementType.DAYCARE_PART_TIME -> listOf(CareType.DAYCARE)
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
             PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
                 listOf(CareType.DAYCARE)
         }

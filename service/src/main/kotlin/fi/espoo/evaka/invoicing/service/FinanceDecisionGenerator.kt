@@ -54,7 +54,6 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -569,7 +568,7 @@ private fun getPaidPlacements(
         if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PermanentPlacementWithHours>>()
 
         val serviceNeeds = getServiceNeedsByChildDuringPeriod(h, child.id, from, null)
-        val placementsWithServiceNeeds = addServiceNeedsToPlacements(child.dateOfBirth, placements, serviceNeeds)
+        val placementsWithServiceNeeds = addServiceNeedsToPlacements(placements, serviceNeeds)
 
         child to placementsWithServiceNeeds
     }
@@ -596,29 +595,16 @@ private fun getActivePaidPlacements(h: Handle, childId: UUID, from: LocalDate): 
         .toList()
 }
 
-fun isEntitledToFreeFiveYearsOldDaycare(dateOfBirth: LocalDate, date: LocalDate = LocalDate.now(europeHelsinki)): Boolean {
-    return getFiveYearOldTerm(dateOfBirth).includes(date)
-}
-
-private fun getFiveYearOldTerm(dateOfBirth: LocalDate): DateRange {
-    val yearTheChildTurns5 = dateOfBirth.year + 5
-    return DateRange(LocalDate.of(yearTheChildTurns5, 8, 1), LocalDate.of(yearTheChildTurns5 + 1, 7, 31))
-}
-
 private fun addServiceNeedsToPlacements(
-    dateOfBirth: LocalDate,
     placements: List<Placement>,
     serviceNeeds: List<fi.espoo.evaka.serviceneed.ServiceNeed>
 ): List<Pair<DateRange, PermanentPlacementWithHours>> {
-    val fiveYearOldTerm = getFiveYearOldTerm(dateOfBirth)
-
     return placements.flatMap { placement ->
         val placementPeriod = DateRange(placement.startDate, placement.endDate)
-        asDistinctPeriods(serviceNeeds.map { DateRange(it.startDate, it.endDate) } + fiveYearOldTerm, placementPeriod)
+        asDistinctPeriods(serviceNeeds.map { DateRange(it.startDate, it.endDate) }, placementPeriod)
             .map { period ->
                 val serviceNeed = serviceNeeds.find { (DateRange(it.startDate, it.endDate)).contains(period) }
-                val isFiveYearOld = fiveYearOldTerm.contains(period)
-                val placementType = getPlacementType(placement, isFiveYearOld)
+                val placementType = getPlacementType(placement)
                 period to PermanentPlacementWithHours(
                     unit = placement.unitId,
                     type = placementType,
@@ -630,12 +616,11 @@ private fun addServiceNeedsToPlacements(
     }
 }
 
-private fun getPlacementType(placement: Placement, isFiveYearOld: Boolean): PlacementType =
+private fun getPlacementType(placement: Placement): PlacementType =
     when (placement.type) {
         fi.espoo.evaka.placement.PlacementType.DAYCARE,
         fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME ->
-            if (isFiveYearOld) PlacementType.FIVE_YEARS_OLD_DAYCARE
-            else PlacementType.DAYCARE
+            PlacementType.DAYCARE
         fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
             PlacementType.FIVE_YEARS_OLD_DAYCARE

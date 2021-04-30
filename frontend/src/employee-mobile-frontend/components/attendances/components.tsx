@@ -188,12 +188,7 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
         :{' '}
         {absentFrom.map((careType) => (
           <div key={careType}>
-            {formatCareType(
-              careType,
-              child.placementType,
-              child.entitledToFreeFiveYearsOldDaycare,
-              i18n
-            )}
+            {formatCareType(careType, child.placementType, i18n)}
           </div>
         ))}
       </InfoText>

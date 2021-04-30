@@ -8,8 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -149,9 +147,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `daycare placement maps correctly for 5-year-old children in 2019-2020`() {
-        // children born in 2014 are entitled to partially free daycare during the year 2019-2020
-        insertGroupPlacement(childId, LocalDate.of(2014, 1, 1), PlacementType.DAYCARE)
+    fun `daycare placement maps correctly for 5-year-old children`() {
+        insertGroupPlacement(childId, LocalDate.of(2014, 1, 1), PlacementType.DAYCARE_FIVE_YEAR_OLDS)
 
         val placementDate = LocalDate.of(2019, 8, 1)
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
@@ -166,35 +163,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `part time daycare placement maps correctly for 5-year-old children in 2019-2020`() {
-        // children born in 2014 are entitled to partially free daycare during the year 2019-2020
-        insertGroupPlacement(childId, LocalDate.of(2014, 1, 1), PlacementType.DAYCARE_PART_TIME)
+    fun `part time daycare placement maps correctly for 5-year-old children`() {
+        insertGroupPlacement(childId, LocalDate.of(2014, 1, 1), PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS)
 
         val placementDate = LocalDate.of(2019, 8, 1)
         val result =
             db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
-        val daysInMonth = placementDate.month.length(false)
-        val placements = result.children[0].placements
-        val careTypes = placements.getValue(placementDate)
-
-        assertEquals(daysInMonth, placements.size)
-        assertEquals(1, careTypes.size)
-        assertFalse(careTypes.contains(CareType.DAYCARE))
-        assertTrue(careTypes.contains(CareType.DAYCARE_5YO_FREE))
-    }
-
-    @Test
-    fun `daycare placement maps correctly for 5-year-old children in 2020-2021`() {
-        // children born in 2014 are entitled to partially free daycare during the year 2019-2020
-        insertGroupPlacement(
-            childId,
-            LocalDate.of(2015, 12, 31),
-            PlacementType.DAYCARE,
-            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
-        )
-
-        val placementDate = LocalDate.of(2020, 8, 1)
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
         val daysInMonth = placementDate.month.length(false)
         val placements = result.children[0].placements
         val careTypes = placements.getValue(placementDate)

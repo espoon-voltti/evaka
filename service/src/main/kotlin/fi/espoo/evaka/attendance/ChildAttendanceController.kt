@@ -5,10 +5,8 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
-import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
 import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
@@ -394,7 +392,6 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
             attendance = attendance,
             absences = absences,
             dailyServiceTimes = child.dailyServiceTimes,
-            entitledToFreeFiveYearsOldDaycare = isEntitledToFreeFiveYearsOldDaycare(child.dateOfBirth),
             dailyNote = daycareDailyNote
         )
     }
@@ -418,33 +415,21 @@ private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<
     return getCareTypes(placementBasics).all { type -> absences.map { it.careType }.contains(type) }
 }
 
-private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> {
-    val (placementType, dateOfBirth) = placementBasics
-    if (isEntitledToFreeFiveYearsOldDaycare(dateOfBirth)) {
-        if (placementType == PlacementType.DAYCARE) {
-            return listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
-        }
-        if (placementType == PlacementType.DAYCARE_PART_TIME) {
-            return listOf(CareType.DAYCARE_5YO_FREE)
-        }
-    }
-
-    return when (placementType) {
+private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> =
+    when (placementBasics.placementType) {
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
             listOf(CareType.PRESCHOOL)
         PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
             listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
-        PlacementType.DAYCARE_FIVE_YEAR_OLDS ->
-            return listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-            return listOf(CareType.DAYCARE_5YO_FREE)
+            listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
         PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
         PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
             listOf(CareType.DAYCARE)
         PlacementType.CLUB ->
             listOf(CareType.CLUB)
-    }.exhaust()
-}
+    }
 
 private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Set<CareType> {
     return listOfNotNull(
@@ -455,7 +440,7 @@ private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, ar
             wasAbsentFromPreschoolDaycare(placementBasics.placementType, arrived, departed)
         },
         CareType.DAYCARE.takeIf {
-            wasAbsentFrom5yoPaidDaycare(placementBasics, arrived, departed)
+            wasAbsentFrom5yoPaidDaycare(placementBasics.placementType, arrived, departed)
         }
     ).toSet()
 }
@@ -500,14 +485,11 @@ fun wasAbsentFromPreschoolDaycare(placementType: PlacementType, arrived: LocalTi
     return false
 }
 
-fun wasAbsentFrom5yoPaidDaycare(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Boolean {
-    val (placementType, dateOfBirth) = placementBasics
+private val fiveYearOldPlacementTypes =
+    listOf(PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS)
 
-    if (!isEntitledToFreeFiveYearsOldDaycare(dateOfBirth)) {
-        return false
-    }
-
-    if (placementType == PlacementType.DAYCARE) {
+fun wasAbsentFrom5yoPaidDaycare(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
+    if (fiveYearOldPlacementTypes.contains(placementType)) {
         return Duration.between(arrived, departed) <= fiveYearOldFreeLimit
     }
 

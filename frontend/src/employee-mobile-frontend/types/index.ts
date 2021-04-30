@@ -64,20 +64,28 @@ export type CareType =
 export function formatCareType(
   careType: CareType,
   placementType: PlacementType,
-  entitledToFreeFiveYearsOldDaycare: boolean,
   i18n: Translations
 ) {
   const isPreparatory =
     placementType === 'PREPARATORY' || placementType === 'PREPARATORY_DAYCARE'
 
-  if (careType === 'DAYCARE' && entitledToFreeFiveYearsOldDaycare)
+  if (
+    careType === 'DAYCARE' &&
+    fiveYearOldPlacementTypes.includes(placementType)
+  ) {
     return i18n.common.types.DAYCARE_5YO_PAID
+  }
 
   if (isPreparatory && careType === 'PRESCHOOL')
     return i18n.common.types.PREPARATORY_EDUCATION
 
   return i18n.absences.careTypes[careType]
 }
+
+const fiveYearOldPlacementTypes = [
+  'DAYCARE_FIVE_YEAR_OLDS',
+  'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
+]
 
 export interface AbsenceBackupCare {
   childId: string

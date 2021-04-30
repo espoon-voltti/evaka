@@ -50,7 +50,6 @@ export interface AttendanceChild {
   attendance: Attendance | null
   absences: Absence[]
   dailyServiceTimes: DailyServiceTimes | null
-  entitledToFreeFiveYearsOldDaycare: boolean
   dailyNote: DailyNote | null
 }
 
