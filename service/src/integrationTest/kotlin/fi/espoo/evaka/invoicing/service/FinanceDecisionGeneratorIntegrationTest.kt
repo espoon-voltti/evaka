@@ -39,9 +39,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
@@ -230,58 +228,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val result = getAllFeeDecisions()
 
         assertEquals(PlacementType.PREPARATORY_WITH_DAYCARE, result[0].parts[0].placement.type)
-    }
-
-    @Test
-    fun `fee decision placement infers FIVE_YEARS_OLD_DAYCARE from age correctly`() {
-        val fiveYearOld = db.transaction { tx ->
-            val id = tx.handle.insertTestPerson(DevPerson(dateOfBirth = LocalDate.of(2014, 1, 1)))
-            tx.handle.insertTestChild(DevChild(id))
-            id
-        }
-
-        val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertPlacement(fiveYearOld, placementPeriod, DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(fiveYearOld), placementPeriod)
-        insertServiceNeed(fiveYearOld, listOf(placementPeriod to 30.0))
-
-        db.transaction { generator.handlePlacement(it.handle, fiveYearOld, placementPeriod) }
-
-        val result = getAllFeeDecisions()
-
-        assertEquals(2, result.size)
-        result[0].let { decision ->
-            assertEquals(2, decision.familySize)
-            assertEquals(placementPeriod.start, decision.validFrom)
-            assertEquals(LocalDate.of(2019, 7, 31), decision.validTo)
-            assertEquals(23100, decision.totalFee())
-            assertEquals(1, decision.parts.size)
-            decision.parts[0].let { part ->
-                assertEquals(fiveYearOld, part.child.id)
-                assertEquals(28900, part.baseFee)
-                assertEquals(PlacementType.DAYCARE, part.placement.type)
-                assertEquals(ServiceNeed.GT_25_LT_35, part.placement.serviceNeed)
-                assertEquals(0, part.siblingDiscount)
-                assertEquals(23100, part.fee)
-                assertEquals(23100, part.finalFee())
-            }
-        }
-        result[1].let { decision ->
-            assertEquals(2, decision.familySize)
-            assertEquals(LocalDate.of(2019, 8, 1), decision.validFrom)
-            assertEquals(placementPeriod.end, decision.validTo)
-            assertEquals(10100, decision.totalFee())
-            assertEquals(1, decision.parts.size)
-            decision.parts[0].let { part ->
-                assertEquals(fiveYearOld, part.child.id)
-                assertEquals(28900, part.baseFee)
-                assertEquals(PlacementType.FIVE_YEARS_OLD_DAYCARE, part.placement.type)
-                assertEquals(ServiceNeed.LTE_15, part.placement.serviceNeed)
-                assertEquals(0, part.siblingDiscount)
-                assertEquals(10100, part.fee)
-                assertEquals(10100, part.finalFee())
-            }
-        }
     }
 
     @Test
@@ -2088,7 +2034,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
-        insertPlacement(testChild_2.id, period.copy(start = period.start.plusMonths(1)), DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_2.id, period.copy(start = period.start.plusMonths(1)), DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id)
 
         db.transaction { generator.handleFamilyUpdate(it.handle, testAdult_1.id, period) }
 

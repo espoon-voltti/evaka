@@ -88,7 +88,6 @@ data class Child(
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
-    val entitledToFreeFiveYearsOldDaycare: Boolean,
     val dailyNote: DaycareDailyNote?
 )
 

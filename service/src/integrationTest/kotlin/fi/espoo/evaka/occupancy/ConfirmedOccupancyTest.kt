@@ -368,29 +368,6 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     }
 
     @Test
-    fun `occupancy calculation is correct for 5-year-old child in daycare with part time hours`() {
-        db.transaction {
-            it.createOccupancyTestFixture(
-                unitId = testDaycare.id,
-                period = defaultPeriod,
-                dateOfBirth = LocalDate.of(2014, 1, 1),
-                placementType = PlacementType.DAYCARE,
-                hours = 20.0
-            )
-        }
-
-        val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
-
-        assertEquals(
-            listOf(
-                OccupancyPeriod(defaultPeriod.copy(end = LocalDate.of(2019, 7, 31)), 1.0, 1),
-                OccupancyPeriod(defaultPeriod.copy(start = LocalDate.of(2019, 8, 1)), 0.5, 1)
-            ),
-            result
-        )
-    }
-
-    @Test
     fun `occupancy calculation is correct for a child in full time 5-year-old daycare`() {
         db.transaction {
             it.createOccupancyTestFixture(
