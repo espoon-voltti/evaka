@@ -36,9 +36,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
+            tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -46,8 +45,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
                 endDate = placementEnd,
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
-            insertTestDaycareGroupPlacement(
-                h = tx.handle,
+            tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
                 startDate = placementStart,
@@ -65,8 +63,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
         ).toInstant()
 
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,

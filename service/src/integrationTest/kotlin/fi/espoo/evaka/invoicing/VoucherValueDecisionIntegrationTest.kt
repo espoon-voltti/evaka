@@ -48,10 +48,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
         db.transaction {
-            insertTestParentship(
-                it.handle,
+            it.insertGeneralTestFixtures()
+            it.insertTestParentship(
                 headOfChild = testAdult_1.id,
                 childId = testChild_1.id,
                 startDate = testChild_1.dateOfBirth,

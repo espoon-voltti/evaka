@@ -239,7 +239,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            tx.handle.insertTestPlacement(
+            tx.insertTestPlacement(
                 DevPlacement(
                     childId = draft.childId,
                     unitId = testDaycare2.id,

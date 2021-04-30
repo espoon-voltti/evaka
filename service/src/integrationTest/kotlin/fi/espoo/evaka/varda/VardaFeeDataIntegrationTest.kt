@@ -670,8 +670,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         insertDecisionWithApplication(db, child, period, unitId = daycareId)
         insertServiceNeed(db, child.id, period)
         db.transaction {
-            insertTestPlacement(
-                h = it.handle,
+            it.insertTestPlacement(
                 childId = child.id,
                 unitId = daycareId,
                 startDate = period.start,

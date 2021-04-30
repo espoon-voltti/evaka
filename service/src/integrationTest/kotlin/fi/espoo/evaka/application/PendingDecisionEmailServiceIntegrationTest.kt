@@ -50,15 +50,13 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 id = applicationId,
                 status = ApplicationStatus.WAITING_CONFIRMATION,
                 childId = childId,
                 guardianId = guardianId
             )
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )
@@ -153,7 +151,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     private fun createPendingDecision(sentDate: LocalDate, resolved: Instant?, pendingDecisionEmailSent: Instant?, pendingDecisionEmailsSentCount: Int, type: DecisionType = DecisionType.DAYCARE) {
         db.transaction { tx ->
-            tx.handle.insertTestDecision(
+            tx.insertTestDecision(
                 TestDecision(
                     applicationId = applicationId,
                     status = DecisionStatus.PENDING,

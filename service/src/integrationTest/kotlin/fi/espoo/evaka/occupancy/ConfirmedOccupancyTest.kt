@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestAbsence
@@ -81,15 +80,15 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
         db.transaction { it.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE, placementId = placementId) }
 
         val groupId1 = db.transaction { tx ->
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = LocalDate.of(2000, 1, 1))).also {
-                insertTestCaretakers(tx.handle, it, amount = 2.0, startDate = LocalDate.of(2000, 1, 1))
-                insertTestDaycareGroupPlacement(tx.handle, placementId, it, startDate = defaultPeriod.start, endDate = defaultPeriod.end)
+            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = LocalDate.of(2000, 1, 1))).also {
+                tx.insertTestCaretakers(it, amount = 2.0, startDate = LocalDate.of(2000, 1, 1))
+                tx.insertTestDaycareGroupPlacement(placementId, it, startDate = defaultPeriod.start, endDate = defaultPeriod.end)
             }
         }
 
         val groupId2 = db.transaction { tx ->
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = LocalDate.of(2000, 1, 1))).also {
-                insertTestCaretakers(tx.handle, it, amount = 1.0, startDate = LocalDate.of(2000, 1, 1))
+            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = LocalDate.of(2000, 1, 1))).also {
+                tx.insertTestCaretakers(it, amount = 1.0, startDate = LocalDate.of(2000, 1, 1))
             }
         }
 
@@ -244,8 +243,8 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
                 hours = 40.0
             )
-            insertTestAbsence(it.handle, childId = childId, date = defaultPeriod.start, careType = CareType.PRESCHOOL, absenceType = AbsenceType.SICKLEAVE)
-            insertTestAbsence(it.handle, childId = childId, date = defaultPeriod.start, careType = CareType.PRESCHOOL_DAYCARE, absenceType = AbsenceType.SICKLEAVE)
+            it.insertTestAbsence(childId = childId, date = defaultPeriod.start, careType = CareType.PRESCHOOL, absenceType = AbsenceType.SICKLEAVE)
+            it.insertTestAbsence(childId = childId, date = defaultPeriod.start, careType = CareType.PRESCHOOL_DAYCARE, absenceType = AbsenceType.SICKLEAVE)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -268,7 +267,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
                 placementType = PlacementType.PRESCHOOL_DAYCARE,
                 hours = 40.0
             )
-            insertTestBackUpCare(it.handle, childId, testDaycare2.id, defaultPeriod.start.plusDays(2), defaultPeriod.start.plusDays(5))
+            it.insertTestBackUpCare(childId, testDaycare2.id, defaultPeriod.start.plusDays(2), defaultPeriod.start.plusDays(5))
         }
 
         val resultOriginalUnit = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -530,8 +529,8 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     fun `occupancy calculation includes caretakers if they exist and calculates a percentage`() {
         db.transaction {
             it.createOccupancyTestFixture(testDaycare.id, defaultPeriod, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)
-            val groupId = it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
-            insertTestCaretakers(it.handle, groupId, amount = 1.0)
+            val groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
+            it.insertTestCaretakers(groupId, amount = 1.0)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -546,10 +545,10 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     fun `occupancy calculation works with multiple groups and caretakers`() {
         db.transaction { tx ->
             tx.createOccupancyTestFixture(testDaycare.id, defaultPeriod, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)
-            val groupId_1 = tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
-            insertTestCaretakers(tx.handle, groupId_1, amount = 1.0)
-            val groupId_2 = tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
-            insertTestCaretakers(tx.handle, groupId_2, amount = 1.0)
+            val groupId_1 = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
+            tx.insertTestCaretakers(groupId_1, amount = 1.0)
+            val groupId_2 = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
+            tx.insertTestCaretakers(groupId_2, amount = 1.0)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -564,8 +563,8 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     fun `occupancy calculation does not break if caretaker amount is 0`() {
         db.transaction { tx ->
             tx.createOccupancyTestFixture(testDaycare.id, defaultPeriod, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)
-            val groupId = tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
-            insertTestCaretakers(tx.handle, groupId, amount = 0.0)
+            val groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
+            tx.insertTestCaretakers(groupId, amount = 0.0)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -580,10 +579,10 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     fun `occupancy calculation does not break if caretaker amount of one group is 0`() {
         db.transaction { tx ->
             tx.createOccupancyTestFixture(testDaycare.id, defaultPeriod, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)
-            val groupId_1 = tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
-            insertTestCaretakers(tx.handle, groupId_1, amount = 1.0)
-            val groupId_2 = tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
-            insertTestCaretakers(tx.handle, groupId_2, amount = 0.0)
+            val groupId_1 = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
+            tx.insertTestCaretakers(groupId_1, amount = 1.0)
+            val groupId_2 = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, startDate = defaultPeriod.start))
+            tx.insertTestCaretakers(groupId_2, amount = 0.0)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -597,7 +596,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy calculation uses same coefficient for all placements into FAMILY or GROUP_FAMILY units`() {
         val unit = db.transaction { tx ->
-            tx.handle.insertTestDaycare(
+            tx.insertTestDaycare(
                 DevDaycare(areaId = testAreaId, name = "Ryhmis", type = setOf(fi.espoo.evaka.daycare.CareType.GROUP_FAMILY))
             ).also {
                 tx.createOccupancyTestFixture(it, defaultPeriod, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)

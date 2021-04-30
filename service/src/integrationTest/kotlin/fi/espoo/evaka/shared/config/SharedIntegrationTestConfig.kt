@@ -17,8 +17,8 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
@@ -70,9 +70,9 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
                 .run {
                     migrate()
                 }
-            Jdbi.create(it).handle { h ->
-                h.runDevScript("reset-database.sql")
-                h.resetDatabase()
+            Database(Jdbi.create(it)).transaction { tx ->
+                tx.runDevScript("reset-database.sql")
+                tx.resetDatabase()
             }
         }
     ).also {

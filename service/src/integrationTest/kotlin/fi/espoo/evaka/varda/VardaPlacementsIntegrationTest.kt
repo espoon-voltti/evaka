@@ -11,7 +11,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
@@ -460,8 +459,7 @@ internal fun insertPlacement(
     unitId: UUID = testDaycare.id
 ): UUID {
     return db.transaction {
-        insertTestPlacement(
-            it.handle,
+        it.insertTestPlacement(
             childId = childId,
             type = type,
             startDate = period.start,

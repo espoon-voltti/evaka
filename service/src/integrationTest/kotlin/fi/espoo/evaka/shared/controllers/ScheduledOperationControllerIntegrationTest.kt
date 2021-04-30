@@ -380,15 +380,13 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         status: ApplicationStatus = ApplicationStatus.SENT
     ): UUID {
         return db.transaction { tx ->
-            val applicationId = insertTestApplication(
-                h = tx.handle,
+            val applicationId = tx.insertTestApplication(
                 status = status,
                 childId = childId,
                 guardianId = testAdult_1.id,
                 transferApplication = true
             )
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication).copy(
                     type = type,
@@ -407,14 +405,12 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         childId: UUID = testChild_1.id
     ): UUID {
         return db.transaction { tx ->
-            val applicationId = insertTestApplication(
-                h = tx.handle,
+            val applicationId = tx.insertTestApplication(
                 status = ApplicationStatus.SENT,
                 childId = childId,
                 guardianId = testAdult_1.id
             )
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication).let { form ->
                     form.copy(
@@ -430,8 +426,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
 
     private fun createPlacement(type: PlacementType, dateRange: FiniteDateRange, childId: UUID = testChild_1.id) {
         db.transaction {
-            insertTestPlacement(
-                it.handle,
+            it.insertTestPlacement(
                 childId = childId,
                 type = type,
                 startDate = dateRange.start,

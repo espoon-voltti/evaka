@@ -51,13 +51,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             it.insertGeneralTestFixtures()
         }
         db.transaction {
-            groupId1 = it.handle.insertTestDaycareGroup(
+            groupId1 = it.insertTestDaycareGroup(
                 DevDaycareGroup(
                     daycareId = unitId,
                     startDate = placementStart
                 )
             )
-            groupId2 = it.handle.insertTestDaycareGroup(
+            groupId2 = it.insertTestDaycareGroup(
                 DevDaycareGroup(
                     daycareId = unitId,
                     startDate = placementStart
@@ -73,8 +73,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
             daycarePlacementId = oldPlacement.id
 
-            groupPlacementId = insertTestDaycareGroupPlacement(
-                it.handle,
+            groupPlacementId = it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId1,
                 startDate = placementStart,
@@ -476,10 +475,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 20)
             )
         }.first()
-        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
-            insertTestDaycareGroupPlacement(
-                it.handle,
+            it.insertTestDaycareGroupPlacement(
                 groupId = groupId,
                 daycarePlacementId = oldPlacement.id,
                 startDate = oldPlacement.startDate,
@@ -512,10 +510,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 30)
             )
         }.first()
-        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
-            insertTestDaycareGroupPlacement(
-                it.handle,
+            it.insertTestDaycareGroupPlacement(
                 groupId = groupId,
                 daycarePlacementId = oldPlacement.id,
                 startDate = oldPlacement.startDate,
@@ -563,10 +560,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 LocalDate.of(year, month, 30)
             )
         }.first()
-        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
-            insertTestDaycareGroupPlacement(
-                it.handle,
+            it.insertTestDaycareGroupPlacement(
                 groupId = groupId,
                 daycarePlacementId = oldPlacement.id,
                 startDate = oldPlacement.startDate,
@@ -706,8 +702,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val daycarePlacementType = PlacementType.DAYCARE
 
         db.transaction {
-            insertTestPlacement(
-                it.handle,
+            it.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_2.id,
                 unitId = testDaycare2.id,
@@ -762,8 +757,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val daycarePlacementType = PlacementType.DAYCARE
 
         db.transaction {
-            insertTestPlacement(
-                it.handle,
+            it.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_2.id,
                 unitId = testDaycare2.id,
@@ -784,8 +778,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
         db.transaction { tx ->
             groupPlacementDays.forEachIndexed { index, (startDate, endDate) ->
-                insertTestDaycareGroupPlacement(
-                    tx.handle,
+                tx.insertTestDaycareGroupPlacement(
                     id = groupPlacementIds[index],
                     groupId = groupId1,
                     daycarePlacementId = daycarePlacementId,

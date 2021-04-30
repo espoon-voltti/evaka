@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component
 @Profile("local")
 class DevDataInitializer(jdbi: Jdbi) {
     init {
-        jdbi.transaction { h ->
-            h.runDevScript("reset-database.sql")
-            h.ensureDevData()
+        Database(jdbi).transaction { tx ->
+            tx.runDevScript("reset-database.sql")
+            tx.ensureDevData()
         }
     }
 }

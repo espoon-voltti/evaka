@@ -43,7 +43,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
 
     @Test
     fun testUpdate() {
-        val groupId = db.transaction { tx -> tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+        val groupId = db.transaction { tx -> tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
         val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
         val id = createBackupCareAndAssert(period = period)
         val changedPeriod = period.copy(end = LocalDate.of(2020, 7, 7))
@@ -91,7 +91,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     @Test
     fun testChildBackupCare() {
         val groupName = "Test Group"
-        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName)) }
+        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName)) }
         val id = createBackupCareAndAssert(groupId = groupId)
         val (_, res, result) = http.get("/children/${testChild_1.id}/backup-cares")
             .asUser(serviceWorker)
@@ -124,11 +124,10 @@ class BackupCareIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
         val serviceNeedPeriod = FiniteDateRange(LocalDate.of(2020, 7, 3), period.end)
         val groupId = db.transaction { tx ->
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
         }
         db.transaction { tx ->
-            insertTestServiceNeed(
-                tx.handle,
+            tx.insertTestServiceNeed(
                 childId = testChild_1.id,
                 startDate = serviceNeedPeriod.start,
                 endDate = serviceNeedPeriod.end,

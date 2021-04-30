@@ -371,8 +371,8 @@ val allDaycares = setOf(testDaycare, testDaycare2)
 
 fun Database.Transaction.insertGeneralTestFixtures() {
     insertTestVardaOrganizer()
-    handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-    handle.insertTestCareArea(
+    insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+    insertTestCareArea(
         DevCareArea(
             id = testArea2Id,
             name = testDaycare2.areaName,
@@ -380,7 +380,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             areaCode = testArea2Code
         )
     )
-    handle.insertTestCareArea(
+    insertTestCareArea(
         DevCareArea(
             id = svebiTestId,
             name = testSvebiDaycare.areaName,
@@ -388,7 +388,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             areaCode = svebiTestCode
         )
     )
-    handle.insertTestDaycare(
+    insertTestDaycare(
         DevDaycare(
             areaId = svebiTestId,
             id = testSvebiDaycare.id,
@@ -396,7 +396,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             language = Language.sv
         )
     )
-    handle.insertTestDaycare(
+    insertTestDaycare(
         DevDaycare(
             areaId = testAreaId,
             id = testDaycare.id,
@@ -404,8 +404,8 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             ophOrganizerOid = defaultMunicipalOrganizerOid
         )
     )
-    handle.insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
-    handle.insertTestDaycare(
+    insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
+    insertTestDaycare(
         DevDaycare(
             areaId = testArea2Id,
             id = testDaycareNotInvoiced.id,
@@ -413,7 +413,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             invoicedByMunicipality = testDaycareNotInvoiced.invoicedByMunicipality
         )
     )
-    handle.insertTestDaycare(
+    insertTestDaycare(
         DevDaycare(
             areaId = testAreaId,
             id = testPurchasedDaycare.id,
@@ -423,7 +423,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             invoicedByMunicipality = false
         )
     )
-    handle.insertTestDaycare(
+    insertTestDaycare(
         DevDaycare(
             areaId = testVoucherDaycare.areaId,
             id = testVoucherDaycare.id,
@@ -433,7 +433,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             invoicedByMunicipality = false
         )
     )
-    handle.insertTestDaycare(
+    insertTestDaycare(
         DevDaycare(
             areaId = testVoucherDaycare2.areaId,
             id = testVoucherDaycare2.id,
@@ -444,12 +444,12 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         )
     )
 
-    handle.insertTestDaycare(testClub)
-    handle.insertTestDaycare(testGhostUnitDaycare)
-    handle.insertTestDaycare(testRoundTheClockDaycare)
+    insertTestDaycare(testClub)
+    insertTestDaycare(testGhostUnitDaycare)
+    insertTestDaycare(testRoundTheClockDaycare)
 
     testDecisionMaker_1.let {
-        handle.insertTestEmployee(
+        insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -460,7 +460,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     testDecisionMaker_2.let {
-        handle.insertTestEmployee(
+        insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -470,7 +470,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     unitSupervisorOfTestDaycare.let {
-        handle.insertTestEmployee(
+        insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -479,7 +479,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             )
         )
         updateDaycareAcl(
-            handle,
             testDaycare.id,
             unitSupervisorExternalId,
             UserRole.UNIT_SUPERVISOR
@@ -487,7 +486,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     allAdults.forEach {
-        handle.insertTestPerson(
+        insertTestPerson(
             DevPerson(
                 id = it.id,
                 dateOfBirth = it.dateOfBirth,
@@ -504,7 +503,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     allChildren.forEach {
-        handle.insertTestPerson(
+        insertTestPerson(
             DevPerson(
                 id = it.id,
                 dateOfBirth = it.dateOfBirth,
@@ -516,10 +515,10 @@ fun Database.Transaction.insertGeneralTestFixtures() {
                 postOffice = it.postOffice ?: ""
             )
         )
-        handle.insertTestChild(DevChild(id = it.id))
+        insertTestChild(DevChild(id = it.id))
     }
 
-    handle.insertTestPricing(
+    insertTestPricing(
         DevPricing(
             id = UUID.randomUUID(),
             validFrom = LocalDate.of(2000, 1, 1),
@@ -535,7 +534,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         )
     )
 
-    handle.insertTestVoucherValue(
+    insertTestVoucherValue(
         VoucherValue(id = UUID.randomUUID(), validity = DateRange(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
     )
 
@@ -639,7 +638,6 @@ fun Database.Transaction.insertApplication(
     guardianEmail: String = "abc@espoo.fi"
 ): ApplicationDetails {
     insertTestApplication(
-        h = handle,
         id = applicationId,
         sentDate = null,
         dueDate = null,
@@ -729,7 +727,6 @@ fun Database.Transaction.insertApplication(
         attachments = listOf()
     )
     insertTestApplicationForm(
-        h = handle,
         applicationId = applicationId,
         document = DaycareFormV0.fromApplication2(application)
     )

@@ -732,7 +732,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     fun `children over 18 years old are not included in families when determining base fee`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val birthday = LocalDate.of(2001, 7, 1)
-        val childTurning18Id = db.transaction { it.handle.insertTestPerson(DevPerson(dateOfBirth = birthday)) }
+        val childTurning18Id = db.transaction { it.insertTestPerson(DevPerson(dateOfBirth = birthday)) }
 
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, childTurning18Id), placementPeriod)
@@ -1753,8 +1753,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
     private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: UUID): UUID {
         return db.transaction { tx ->
-            insertTestPlacement(
-                tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = period.start,
@@ -1767,14 +1766,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     private fun insertFamilyRelations(headOfFamilyId: UUID, childIds: List<UUID>, period: DateRange) {
         db.transaction { tx ->
             childIds.forEach { childId ->
-                insertTestParentship(tx.handle, headOfFamilyId, childId, startDate = period.start, endDate = period.end!!)
+                tx.insertTestParentship(headOfFamilyId, childId, startDate = period.start, endDate = period.end!!)
             }
         }
     }
 
     private fun insertPartnership(adultId1: UUID, adultId2: UUID, period: DateRange) {
         db.transaction { tx ->
-            insertTestPartnership(tx.handle, adultId1, adultId2, startDate = period.start, endDate = period.end!!)
+            tx.insertTestPartnership(adultId1, adultId2, startDate = period.start, endDate = period.end!!)
         }
     }
 
@@ -1784,8 +1783,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         optionId: UUID
     ) {
         db.transaction { tx ->
-            insertTestNewServiceNeed(
-                tx.handle,
+            tx.insertTestNewServiceNeed(
                 placementId,
                 period,
                 optionId
@@ -1795,8 +1793,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
     private fun insertIncome(adultId: UUID, amount: Int, period: DateRange) {
         db.transaction { tx ->
-            insertTestIncome(
-                tx.handle,
+            tx.insertTestIncome(
                 objectMapper,
                 personId = adultId,
                 validFrom = period.start,
@@ -1815,8 +1812,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
     private fun insertFeeAlteration(childId: UUID, amount: Double, period: DateRange) {
         db.transaction { tx ->
-            insertTestFeeAlteration(
-                tx.handle,
+            tx.insertTestFeeAlteration(
                 childId,
                 type = FeeAlteration.Type.DISCOUNT,
                 amount = amount,

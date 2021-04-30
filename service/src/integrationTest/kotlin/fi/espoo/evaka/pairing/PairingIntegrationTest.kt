@@ -33,7 +33,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
-            updateDaycareAclWithEmployee(tx.handle, testUnitId, user.id, UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAclWithEmployee(testUnitId, user.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 

@@ -36,9 +36,9 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     protected fun insertDaycareGroup() {
         db.transaction { tx ->
             tx.resetDatabase()
-            tx.handle.insertTestCareArea(DevCareArea(id = areaId))
-            tx.handle.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
-            tx.handle.insertTestDaycareGroup(
+            tx.insertTestCareArea(DevCareArea(id = areaId))
+            tx.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
+            tx.insertTestDaycareGroup(
                 DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = groupStartDate)
             )
         }

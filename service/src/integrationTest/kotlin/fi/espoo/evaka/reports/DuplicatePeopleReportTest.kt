@@ -41,8 +41,8 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
         )
         val personWithoutSsn = personWithSsn.copy(id = UUID.randomUUID(), ssn = null)
         db.transaction {
-            it.handle.insertTestPerson(personWithSsn)
-            it.handle.insertTestPerson(personWithoutSsn)
+            it.insertTestPerson(personWithSsn)
+            it.insertTestPerson(personWithoutSsn)
         }
 
         val (_, _, result) = http.get("/reports/duplicate-people")
@@ -68,8 +68,8 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
         val personWithoutSsn =
             personWithSsn.copy(id = UUID.randomUUID(), firstName = firstName.split(" ")[0], ssn = null)
         db.transaction {
-            it.handle.insertTestPerson(personWithSsn)
-            it.handle.insertTestPerson(personWithoutSsn)
+            it.insertTestPerson(personWithSsn)
+            it.insertTestPerson(personWithoutSsn)
         }
 
         val (_, _, result) = http.get("/reports/duplicate-people")
@@ -95,8 +95,8 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
         val personWithoutSsn =
             personWithSsn.copy(id = UUID.randomUUID(), ssn = null, dateOfBirth = dateOfBirth.plusDays(1))
         db.transaction {
-            it.handle.insertTestPerson(personWithSsn)
-            it.handle.insertTestPerson(personWithoutSsn)
+            it.insertTestPerson(personWithSsn)
+            it.insertTestPerson(personWithoutSsn)
         }
 
         val (_, _, result) = http.get("/reports/duplicate-people")
@@ -121,8 +121,8 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
         val ssn2 = "010170-1124"
         val personWithSsn2 = personWithSsn1.copy(id = UUID.randomUUID(), ssn = ssn2)
         db.transaction {
-            it.handle.insertTestPerson(personWithSsn1)
-            it.handle.insertTestPerson(personWithSsn2)
+            it.insertTestPerson(personWithSsn1)
+            it.insertTestPerson(personWithSsn2)
         }
 
         val (_, _, result) = http.get("/reports/duplicate-people")

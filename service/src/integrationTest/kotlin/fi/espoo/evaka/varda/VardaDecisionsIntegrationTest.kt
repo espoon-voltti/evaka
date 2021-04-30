@@ -955,8 +955,7 @@ internal fun insertServiceNeed(
     hours: Double = 40.0
 ): UUID {
     return db.transaction {
-        insertTestServiceNeed(
-            it.handle,
+        it.insertTestServiceNeed(
             childId,
             testDecisionMaker_1.id,
             startDate = period.start,
@@ -996,9 +995,9 @@ fun insertDecisionWithApplication(
     sentDate: LocalDate = LocalDate.of(2019, 1, 1),
     decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED
 ): UUID = db.transaction {
-    val applicationId = insertTestApplication(it.handle, childId = child.id, guardianId = testAdult_1.id, sentDate = sentDate)
-    insertTestApplicationForm(
-        it.handle, applicationId,
+    val applicationId = it.insertTestApplication(childId = child.id, guardianId = testAdult_1.id, sentDate = sentDate)
+    it.insertTestApplicationForm(
+        applicationId,
         DaycareFormV0(
             type = ApplicationType.DAYCARE,
             partTime = false,
@@ -1024,15 +1023,14 @@ fun insertDecisionWithApplication(
         resolvedBy = testDecisionMaker_1.id,
         resolved = Instant.now()
     )
-    it.handle.insertTestDecision(acceptedDecision)
+    it.insertTestDecision(acceptedDecision)
 }
 
 fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: UUID, period: FiniteDateRange): Pair<UUID, UUID> {
     val decisionId = insertDecisionWithApplication(db, child = child, period = period, unitId = unitId)
     insertServiceNeed(db, child.id, period)
     return db.transaction {
-        val placementId = insertTestPlacement(
-            h = it.handle,
+        val placementId = it.insertTestPlacement(
             childId = child.id,
             unitId = unitId,
             startDate = period.start,

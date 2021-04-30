@@ -145,9 +145,9 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         dueDate: LocalDate,
         urgent: Boolean
     ): ApplicationDetails = db.transaction { tx ->
-        val applicationId = insertTestApplication(tx.handle, status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
+        val applicationId = tx.insertTestApplication(status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
         val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
-        insertTestApplicationForm(tx.handle, applicationId, validDaycareForm.copy(urgent = urgent))
+        tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
         fetchApplicationDetails(tx.handle, applicationId)!!
     }
 }

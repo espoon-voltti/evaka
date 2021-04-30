@@ -43,7 +43,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -397,15 +396,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx ->
-            insertDecisionsAndPlacements(
-                tx.handle,
-                listOf(
-                    decision.copy(validTo = period.start.plusDays(7)),
-                    decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
-                )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validTo = period.start.plusDays(7)),
+                decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
             )
-        }
+        )
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -453,15 +449,12 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx ->
-            insertDecisionsAndPlacements(
-                tx.handle,
-                listOf(
-                    decision.copy(validTo = period.start.plusDays(7)),
-                    decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
-                )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validTo = period.start.plusDays(7)),
+                decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
             )
-        }
+        )
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -509,27 +502,24 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx ->
-            insertDecisionsAndPlacements(
-                tx.handle,
-                listOf(
-                    decision.copy(validTo = period.start.plusDays(7)),
-                    decision.copy(
-                        id = UUID.randomUUID(),
-                        validFrom = period.start.plusDays(8),
-                        familySize = decision.familySize + 1,
-                        parts = decision.parts + createFeeDecisionPartFixture(
-                            childId = testChild_2.id,
-                            dateOfBirth = testChild_2.dateOfBirth,
-                            daycareId = testDaycare.id,
-                            baseFee = 28900,
-                            siblingDiscount = 50,
-                            fee = 14500
-                        )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validTo = period.start.plusDays(7)),
+                decision.copy(
+                    id = UUID.randomUUID(),
+                    validFrom = period.start.plusDays(8),
+                    familySize = decision.familySize + 1,
+                    parts = decision.parts + createFeeDecisionPartFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        daycareId = testDaycare.id,
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 14500
                     )
                 )
             )
-        }
+        )
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -594,7 +584,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
+        insertDecisionsAndPlacements(decisions)
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -666,7 +656,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
+        insertDecisionsAndPlacements(decisions)
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -738,7 +728,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
+        insertDecisionsAndPlacements(decisions)
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -794,19 +784,16 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx ->
-            insertDecisionsAndPlacements(
-                tx.handle,
-                listOf(
-                    decision.copy(validTo = period.start.plusDays(7)),
-                    decision.copy(
-                        id = UUID.randomUUID(),
-                        validFrom = period.start.plusDays(8),
-                        parts = listOf(decision.parts[0], decision.parts[1].copy(fee = 10000))
-                    )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validTo = period.start.plusDays(7)),
+                decision.copy(
+                    id = UUID.randomUUID(),
+                    validFrom = period.start.plusDays(8),
+                    parts = listOf(decision.parts[0], decision.parts[1].copy(fee = 10000))
                 )
             )
-        }
+        )
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -868,7 +855,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -929,7 +916,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -992,7 +979,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1041,8 +1028,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
         db.transaction { tx ->
-            insertTestPlacement(
-                tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = period.start,
@@ -1096,8 +1082,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
         db.transaction { tx ->
-            insertTestPlacement(
-                tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = placementPeriod.start,
@@ -1575,7 +1560,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1604,7 +1589,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1642,7 +1627,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1680,7 +1665,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1718,7 +1703,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1756,7 +1741,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1811,7 +1796,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, decisions) }
+        insertDecisionsAndPlacements(decisions)
 
         db.transaction { createAllDraftInvoices(it.handle, objectMapper, period) }
 
@@ -1858,7 +1843,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
             absenceService.upsertAbsences(
                 tx,
@@ -1915,7 +1900,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
             absenceService.upsertAbsences(
                 tx,
@@ -1972,7 +1957,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> insertDecisionsAndPlacements(tx.handle, listOf(decision)) }
+        insertDecisionsAndPlacements(listOf(decision))
         db.transaction { tx ->
             absenceService.upsertAbsences(
                 tx,
@@ -2236,10 +2221,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(decision)) }
 
             val placementId = db.transaction(insertPlacement(child.id, period))
-            val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+            val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
             db.transaction { tx ->
-                insertTestDaycareGroupPlacement(
-                    tx.handle,
+                tx.insertTestDaycareGroupPlacement(
                     daycarePlacementId = placementId,
                     groupId = groupId,
                     startDate = period.start,
@@ -2262,12 +2246,11 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             }
         }
 
-    private fun insertDecisionsAndPlacements(h: Handle, feeDecisions: List<FeeDecision>) {
-        upsertFeeDecisions(h, objectMapper, feeDecisions)
+    private fun insertDecisionsAndPlacements(feeDecisions: List<FeeDecision>) = db.transaction { tx ->
+        upsertFeeDecisions(tx.handle, objectMapper, feeDecisions)
         feeDecisions.forEach { decision ->
             decision.parts.forEach { part ->
-                insertTestPlacement(
-                    h,
+                tx.insertTestPlacement(
                     childId = part.child.id,
                     unitId = part.placement.unit,
                     startDate = decision.validFrom,
@@ -2286,8 +2269,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertPlacement(childId: UUID, period: DateRange, type: PlacementType = PlacementType.DAYCARE) = { tx: Database.Transaction ->
-        insertTestPlacement(
-            tx.handle,
+        tx.insertTestPlacement(
             childId = childId,
             unitId = testDaycare.id,
             startDate = period.start,
@@ -2297,8 +2279,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertChildParentRelation(headOfFamilyId: UUID, childId: UUID, period: DateRange) = { tx: Database.Transaction ->
-        insertTestParentship(
-            tx.handle,
+        tx.insertTestParentship(
             headOfFamilyId,
             childId,
             startDate = period.start,

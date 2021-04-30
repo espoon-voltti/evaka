@@ -64,8 +64,8 @@ class TimeIntegrationTest : PureJdbiTest() {
         var secondUnitId: UUID? = null
         var thirdUnitId: UUID? = null
         db.transaction { tx ->
-            secondUnitId = tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
-            thirdUnitId = tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))
+            secondUnitId = tx.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
+            thirdUnitId = tx.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))
             tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)")
                 .bind("ids", arrayOf(secondUnitId, thirdUnitId))
                 .execute()

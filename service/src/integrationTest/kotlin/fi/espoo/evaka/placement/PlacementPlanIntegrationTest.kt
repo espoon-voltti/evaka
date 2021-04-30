@@ -344,15 +344,14 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
         preparatory: Boolean = false
     ): UUID = db.transaction { tx ->
-        val applicationId = insertTestApplication(
-            tx.handle,
+        val applicationId = tx.insertTestApplication(
             status = status,
             guardianId = adult.id,
             childId = child.id
         )
         val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
-        insertTestApplicationForm(
-            tx.handle, applicationId,
+        tx.insertTestApplicationForm(
+            applicationId,
             DaycareFormV0(
                 type = type,
                 partTime = partTime,

@@ -185,7 +185,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     )
 
     private fun createTestPerson(devPerson: DevPerson): UUID = db.transaction { tx ->
-        tx.handle.insertTestPerson(devPerson)
+        tx.insertTestPerson(devPerson)
     }
 
     private fun createVtjPerson(person: DevPerson) {

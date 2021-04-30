@@ -18,7 +18,6 @@ import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
@@ -339,7 +338,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
         db.transaction { tx ->
             testCases.forEach {
-                tx.handle.insertTestAssistanceNeed(
+                tx.insertTestAssistanceNeed(
                     DevAssistanceNeed(
                         updatedBy = testDecisionMaker_1.id,
                         childId = testChild_1.id,
@@ -385,7 +384,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
         db.transaction { tx ->
             testCases.forEach {
-                tx.handle.insertTestAssistanceAction(
+                tx.insertTestAssistanceAction(
                     DevAssistanceAction(
                         updatedBy = testDecisionMaker_1.id,
                         childId = testChild_1.id,
@@ -604,7 +603,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `a daycare with purchased provider type is marked as such in study rights`() {
         val daycareId = db.transaction {
-            it.handle.insertTestDaycare(
+            it.insertTestDaycare(
                 DevDaycare(areaId = testAreaId, providerType = ProviderType.PURCHASED)
             )
         }
@@ -620,7 +619,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `a daycare with private provider type is marked as purchased in study rights`() {
         val daycareId = db.transaction {
-            it.handle.insertTestDaycare(
+            it.insertTestDaycare(
                 DevDaycare(areaId = testAreaId, providerType = ProviderType.PRIVATE)
             )
         }
@@ -756,7 +755,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL
     ): UUID = db.transaction {
-        it.handle.insertTestPlacement(
+        it.insertTestPlacement(
             DevPlacement(
                 childId = child.id,
                 unitId = daycareId,
@@ -771,8 +770,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             for (period in periods) {
                 for (date in period.dates()) {
-                    insertTestAbsence(
-                        tx.handle,
+                    tx.insertTestAbsence(
                         childId = childId,
                         careType = CareType.PRESCHOOL,
                         date = date,

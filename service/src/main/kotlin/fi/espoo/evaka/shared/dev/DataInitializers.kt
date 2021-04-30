@@ -25,7 +25,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.qualifier.QualifiedType
@@ -39,7 +38,7 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
-fun Handle.runDevScript(devScriptName: String) {
+fun Database.Transaction.runDevScript(devScriptName: String) {
     val path = "dev-data/" + devScriptName
     logger.info("Running SQL script: " + path)
     ClassPathResource(path).inputStream.use {
@@ -49,11 +48,11 @@ fun Handle.runDevScript(devScriptName: String) {
     }
 }
 
-fun Handle.resetDatabase() {
+fun Database.Transaction.resetDatabase() {
     execute("SELECT reset_database()")
 }
 
-fun Handle.ensureDevData() {
+fun Database.Transaction.ensureDevData() {
     if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
         listOf("espoo-dev-data.sql", "employees.sql", "preschool-terms.sql", "club-terms.sql").forEach { runDevScript(it) }
     }
@@ -65,14 +64,14 @@ fun Handle.ensureDevData() {
  * * all fields from `row` are bound separately as parameters
  * * SQL must return "id" column of type UUID
  */
-private fun Handle.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID = createUpdate(sql)
+private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sql: String): UUID = createUpdate(sql)
     .bindKotlin(row)
     .executeAndReturnGeneratedKeys()
     .mapTo<UUID>()
     .asSequence()
     .single()
 
-fun Handle.insertTestCareArea(area: DevCareArea): UUID = insertTestDataRow(
+fun Database.Transaction.insertTestCareArea(area: DevCareArea): UUID = insertTestDataRow(
     area,
     """
 INSERT INTO care_area (id, name, short_name, area_code, sub_cost_center)
@@ -81,7 +80,7 @@ RETURNING id
 """
 )
 
-fun Handle.insertTestDaycare(daycare: DevDaycare): UUID = insertTestDataRow(
+fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): UUID = insertTestDataRow(
     daycare,
     """
 WITH insert_unit_manager AS (
@@ -111,18 +110,16 @@ RETURNING id
 """
 )
 
-fun updateDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId, role: UserRole) {
-    h
-        .createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = :external_id), :daycare_id, :role)")
+fun Database.Transaction.updateDaycareAcl(daycareId: UUID, externalId: ExternalId, role: UserRole) {
+    createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = :external_id), :daycare_id, :role)")
         .bind("daycare_id", daycareId)
         .bind("external_id", externalId)
         .bind("role", role)
         .execute()
 }
 
-fun updateDaycareAclWithEmployee(h: Handle, daycareId: UUID, employeeId: UUID, role: UserRole) {
-    h
-        .createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (:employeeId, :daycare_id, :role)")
+fun Database.Transaction.updateDaycareAclWithEmployee(daycareId: UUID, employeeId: UUID, role: UserRole) {
+    createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES (:employeeId, :daycare_id, :role)")
         .bind("daycare_id", daycareId)
         .bind("employeeId", employeeId)
         .bind("role", role)
@@ -135,7 +132,7 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: 
         """
         INSERT INTO employee (id, first_name, last_name, email, external_id)
         VALUES (:id, :name, 'Yksikkö', null, null);
-        
+
         INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, :name);
         """.trimIndent()
 
@@ -146,15 +143,14 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: 
         .execute()
 }
 
-fun removeDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId) {
-    h
-        .createUpdate("DELETE FROM daycare_acl WHERE daycare_id=:daycare_id AND employee_id=(SELECT id from employee where external_id = :external_id)")
+fun Database.Transaction.removeDaycareAcl(daycareId: UUID, externalId: ExternalId) {
+    createUpdate("DELETE FROM daycare_acl WHERE daycare_id=:daycare_id AND employee_id=(SELECT id from employee where external_id = :external_id)")
         .bind("daycare_id", daycareId)
         .bind("external_id", externalId)
         .execute()
 }
 
-fun Handle.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
+fun Database.Transaction.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
@@ -163,7 +159,7 @@ RETURNING id
 """
 )
 
-fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) = this.handle.insertTestDataRow(
+fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) = insertTestDataRow(
     device,
     """
 INSERT INTO mobile_device (id, unit_id, name, deleted, long_term_token)
@@ -172,7 +168,7 @@ RETURNING id
     """
 )
 
-fun Handle.insertTestPerson(person: DevPerson) = insertTestDataRow(
+fun Database.Transaction.insertTestPerson(person: DevPerson) = insertTestDataRow(
     person,
     """
 INSERT INTO person (
@@ -188,21 +184,19 @@ RETURNING id
 """
 )
 
-fun insertTestParentship(
-    h: Handle,
+fun Database.Transaction.insertTestParentship(
     headOfChild: UUID,
     childId: UUID,
     id: UUID = UUID.randomUUID(),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
             VALUES (:id, :headOfChild, :childId, :startDate, :endDate)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -216,7 +210,7 @@ fun insertTestParentship(
     return id
 }
 
-fun Handle.insertTestParentship(parentship: DevParentship): DevParentship {
+fun Database.Transaction.insertTestParentship(parentship: DevParentship): DevParentship {
     val withId = if (parentship.id == null) parentship.copy(id = UUID.randomUUID()) else parentship
     // language=sql
     val sql =
@@ -228,21 +222,19 @@ fun Handle.insertTestParentship(parentship: DevParentship): DevParentship {
     return withId
 }
 
-fun insertTestPartnership(
-    h: Handle,
+fun Database.Transaction.insertTestPartnership(
     adult1: UUID,
     adult2: UUID,
     id: UUID = UUID.randomUUID(),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
             VALUES (:id, :index, :personId, :startDate, :endDate)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -253,13 +245,12 @@ fun insertTestPartnership(
             )
         )
         .execute()
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
             VALUES (:id, :index, :personId, :startDate, :endDate)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -273,8 +264,7 @@ fun insertTestPartnership(
     return id
 }
 
-fun insertTestApplication(
-    h: Handle,
+fun Database.Transaction.insertTestApplication(
     id: UUID = UUID.randomUUID(),
     sentDate: LocalDate? = LocalDate.of(2019, 1, 1),
     dueDate: LocalDate? = LocalDate.of(2019, 5, 1),
@@ -285,13 +275,12 @@ fun insertTestApplication(
     hideFromGuardian: Boolean = false,
     transferApplication: Boolean = false
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
             VALUES (:id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -309,8 +298,8 @@ fun insertTestApplication(
     return id
 }
 
-fun insertTestApplicationForm(h: Handle, applicationId: UUID, document: DaycareFormV0, revision: Int = 1) {
-    h.createUpdate(
+fun Database.Transaction.insertTestApplicationForm(applicationId: UUID, document: DaycareFormV0, revision: Int = 1) {
+    createUpdate(
         """
 UPDATE application_form SET latest = FALSE
 WHERE application_id = :applicationId AND revision < :revision
@@ -318,7 +307,7 @@ WHERE application_id = :applicationId AND revision < :revision
     ).bind("applicationId", applicationId)
         .bind("revision", revision)
         .execute()
-    h.createUpdate(
+    createUpdate(
         // language=SQL
         """
 INSERT INTO application_form (application_id, revision, document, latest)
@@ -331,8 +320,8 @@ VALUES (:applicationId, :revision, :document, TRUE)
         .execute()
 }
 
-fun insertTestClubApplicationForm(h: Handle, applicationId: UUID, document: ClubFormV0, revision: Int = 1) {
-    h.createUpdate(
+fun Database.Transaction.insertTestClubApplicationForm(applicationId: UUID, document: ClubFormV0, revision: Int = 1) {
+    createUpdate(
         """
 UPDATE application_form SET latest = FALSE
 WHERE application_id = :applicationId AND revision < :revision
@@ -340,7 +329,7 @@ WHERE application_id = :applicationId AND revision < :revision
     ).bind("applicationId", applicationId)
         .bind("revision", revision)
         .execute()
-    h.createUpdate(
+    createUpdate(
         // language=SQL
         """
 INSERT INTO application_form (application_id, revision, document, latest)
@@ -353,7 +342,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
         .execute()
 }
 
-fun Handle.insertTestChild(child: DevChild) = insertTestDataRow(
+fun Database.Transaction.insertTestChild(child: DevChild) = insertTestDataRow(
     child,
     """
 INSERT INTO child (id, allergies, diet, medication, additionalinfo, preferred_Name)
@@ -364,7 +353,7 @@ RETURNING id
     """
 )
 
-fun Handle.insertTestPlacement(placement: DevPlacement) = insertTestDataRow(
+fun Database.Transaction.insertTestPlacement(placement: DevPlacement) = insertTestDataRow(
     placement,
     """
 INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
@@ -373,8 +362,7 @@ RETURNING id
 """
 )
 
-fun insertTestPlacement(
-    h: Handle,
+fun Database.Transaction.insertTestPlacement(
     id: UUID = UUID.randomUUID(),
     childId: UUID = UUID.randomUUID(),
     unitId: UUID = UUID.randomUUID(),
@@ -382,13 +370,12 @@ fun insertTestPlacement(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date)
             VALUES (:id, :childId, :unitId, :type::placement_type, :startDate, :endDate)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -403,8 +390,7 @@ fun insertTestPlacement(
     return id
 }
 
-fun insertTestServiceNeed(
-    h: Handle,
+fun Database.Transaction.insertTestServiceNeed(
     childId: UUID,
     updatedBy: UUID,
     id: UUID = UUID.randomUUID(),
@@ -415,13 +401,12 @@ fun insertTestServiceNeed(
     partWeek: Boolean = false,
     shiftCare: Boolean = false
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO service_need (id, child_id, start_date, end_date, hours_per_week, part_day, part_week, shift_care, updated_by)
             VALUES (:id, :childId, :startDate, :endDate, :hoursPerWeek, :partDay, :partWeek, :shiftCare, :updatedBy)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -439,21 +424,19 @@ fun insertTestServiceNeed(
     return id
 }
 
-fun insertTestNewServiceNeed(
-    h: Handle,
+fun Database.Transaction.insertTestNewServiceNeed(
     placementId: UUID,
     period: FiniteDateRange,
     optionId: UUID,
     shiftCare: Boolean = false,
     id: UUID = UUID.randomUUID()
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
 INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care)
 VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare)
 """
-        )
+    )
         .bind("id", id)
         .bind("placementId", placementId)
         .bind("startDate", period.start)
@@ -464,8 +447,7 @@ VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare)
     return id
 }
 
-fun insertTestIncome(
-    h: Handle,
+fun Database.Transaction.insertTestIncome(
     objectMapper: ObjectMapper,
     personId: UUID,
     id: UUID = UUID.randomUUID(),
@@ -476,13 +458,12 @@ fun insertTestIncome(
     updatedAt: Instant = Instant.now(),
     updatedBy: UUID = UUID.randomUUID()
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, updated_at, updated_by)
             VALUES (:id, :personId, :validFrom, :validTo, :data, :effect::income_effect, :updatedAt, :updatedBy)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -502,8 +483,7 @@ fun insertTestIncome(
     return id
 }
 
-fun insertTestFeeAlteration(
-    h: Handle,
+fun Database.Transaction.insertTestFeeAlteration(
     childId: UUID,
     id: UUID = UUID.randomUUID(),
     type: FeeAlteration.Type = FeeAlteration.Type.DISCOUNT,
@@ -515,13 +495,12 @@ fun insertTestFeeAlteration(
     updatedAt: Instant = Instant.now(),
     updatedBy: UUID
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO fee_alteration (id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, updated_at, updated_by)
             VALUES (:id, :childId, :type::fee_alteration_type, :amount, :isAbsolute, :validFrom, :validTo, :notes, :updatedAt, :updatedBy)
-            """.trimIndent()
-        )
+        """.trimIndent()
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -540,7 +519,7 @@ fun insertTestFeeAlteration(
     return id
 }
 
-fun Handle.insertTestPricing(pricing: DevPricing) = insertTestDataRow(
+fun Database.Transaction.insertTestPricing(pricing: DevPricing) = insertTestDataRow(
     pricing,
     """
 INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus)
@@ -549,12 +528,12 @@ RETURNING id
     """.trimIndent()
 )
 
-fun Handle.insertTestVoucherValue(voucherValue: VoucherValue) = insertTestDataRow(
+fun Database.Transaction.insertTestVoucherValue(voucherValue: VoucherValue) = insertTestDataRow(
     voucherValue,
     "INSERT INTO voucher_value (id, validity, voucher_value) VALUES (:id, :validity, :voucherValue)"
 )
 
-fun Handle.insertTestDaycareGroup(group: DevDaycareGroup) = insertTestDataRow(
+fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) = insertTestDataRow(
     group,
     """
 INSERT INTO daycare_group (id, daycare_id, name, start_date)
@@ -562,21 +541,19 @@ VALUES (:id, :daycareId, :name, :startDate)
 """
 )
 
-fun insertTestDaycareGroupPlacement(
-    h: Handle,
+fun Database.Transaction.insertTestDaycareGroupPlacement(
     daycarePlacementId: UUID = UUID.randomUUID(),
     groupId: UUID = UUID.randomUUID(),
     id: UUID = UUID.randomUUID(),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
                 INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
                 VALUES (:id, :placementId, :groupId, :startDate, :endDate)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -590,8 +567,7 @@ fun insertTestDaycareGroupPlacement(
     return id
 }
 
-fun insertTestPlacementPlan(
-    h: Handle,
+fun Database.Transaction.insertTestPlacementPlan(
     applicationId: UUID,
     unitId: UUID,
     id: UUID = UUID.randomUUID(),
@@ -603,13 +579,12 @@ fun insertTestPlacementPlan(
     updated: Instant = Instant.now(),
     deleted: Boolean? = false
 ): UUID {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO placement_plan (id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date, updated, deleted)
             VALUES (:id, :unitId, :applicationId, :type::placement_type, :startDate, :endDate, :preschoolDaycareStartDate, :preschoolDaycareEndDate, :updated, :deleted)
             """
-        )
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -644,7 +619,7 @@ data class TestDecision(
     val pendingDecisionEmailSent: Instant? = null
 )
 
-fun Handle.insertTestDecision(decision: TestDecision) = insertTestDataRow(
+fun Database.Transaction.insertTestDecision(decision: TestDecision) = insertTestDataRow(
     decision,
     """
 INSERT INTO decision (created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent)
@@ -653,7 +628,7 @@ RETURNING id
 """
 )
 
-fun Handle.insertTestAssistanceNeed(assistanceNeed: DevAssistanceNeed) = insertTestDataRow(
+fun Database.Transaction.insertTestAssistanceNeed(assistanceNeed: DevAssistanceNeed) = insertTestDataRow(
     assistanceNeed,
     """
 INSERT INTO assistance_need (id, updated_by, child_id, start_date, end_date, capacity_factor, description, bases, other_basis)
@@ -662,7 +637,7 @@ RETURNING id
 """
 )
 
-fun Handle.insertTestAssistanceAction(assistanceAction: DevAssistanceAction) = insertTestDataRow(
+fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction) = insertTestDataRow(
     assistanceAction,
     """
 INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, actions, other_action, measures)
@@ -671,21 +646,19 @@ RETURNING id
 """
 )
 
-fun insertTestCaretakers(
-    h: Handle,
+fun Database.Transaction.insertTestCaretakers(
     groupId: UUID,
     id: UUID = UUID.randomUUID(),
     amount: Double = 3.0,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null
 ) {
-    h
-        .createUpdate(
-            """
+    createUpdate(
+        """
             INSERT INTO daycare_caretaker (id, group_id, amount, start_date, end_date)
             VALUES (:id, :groupId, :amount, :startDate, :endDate)
-            """.trimIndent()
-        )
+        """.trimIndent()
+    )
         .bindMap(
             mapOf(
                 "id" to id,
@@ -698,8 +671,7 @@ fun insertTestCaretakers(
         .execute()
 }
 
-fun insertTestStaffAttendance(
-    h: Handle,
+fun Database.Transaction.insertTestStaffAttendance(
     id: UUID = UUID.randomUUID(),
     groupId: UUID,
     date: LocalDate,
@@ -711,7 +683,7 @@ fun insertTestStaffAttendance(
         INSERT INTO staff_attendance (id, group_id, date, count)
         VALUES (:id, :groupId, :date, :count)
         """.trimIndent()
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to id,
@@ -723,8 +695,7 @@ fun insertTestStaffAttendance(
         .execute()
 }
 
-fun insertTestAbsence(
-    h: Handle,
+fun Database.Transaction.insertTestAbsence(
     id: UUID = UUID.randomUUID(),
     childId: UUID,
     date: LocalDate,
@@ -738,7 +709,7 @@ fun insertTestAbsence(
         INSERT INTO absence (id, child_id, date, care_type, absence_type, modified_by)
         VALUES (:id, :childId, :date, :careType, :absenceType, :modifiedBy)
         """.trimIndent()
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to id,
@@ -752,8 +723,7 @@ fun insertTestAbsence(
         .execute()
 }
 
-fun insertTestChildAttendance(
-    h: Handle,
+fun Database.Transaction.insertTestChildAttendance(
     id: UUID = UUID.randomUUID(),
     childId: UUID,
     unitId: UUID,
@@ -766,7 +736,7 @@ fun insertTestChildAttendance(
         INSERT INTO child_attendance (id, child_id, unit_id, arrived, departed)
         VALUES (:id, :childId, :unitId, :arrived, :departed)
         """.trimIndent()
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to id,
@@ -779,8 +749,7 @@ fun insertTestChildAttendance(
         .execute()
 }
 
-fun insertTestBackUpCare(
-    h: Handle,
+fun Database.Transaction.insertTestBackUpCare(
     childId: UUID,
     unitId: UUID,
     startDate: LocalDate,
@@ -794,7 +763,7 @@ fun insertTestBackUpCare(
         INSERT INTO backup_care (id, child_id, unit_id, start_date, end_date, group_id)
         VALUES (:id, :childId, :unitId, :startDate, :endDate, :groupId)
         """.trimIndent()
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to id,
@@ -808,10 +777,9 @@ fun insertTestBackUpCare(
         .execute()
 }
 
-fun insertTestBackupCare(
-    h: Handle,
+fun Database.Transaction.insertTestBackupCare(
     backupCare: DevBackupCare
-) = h.createUpdate(
+) = createUpdate(
     // language=SQL
     """
 INSERT INTO backup_care (id, child_id, unit_id, group_id, start_date, end_date)
@@ -826,7 +794,7 @@ VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
     .bind("endDate", backupCare.period.end)
     .execute()
 
-fun insertApplication(h: Handle, application: ApplicationWithForm): UUID {
+fun Database.Transaction.insertApplication(application: ApplicationWithForm): UUID {
     val id = application.id ?: UUID.randomUUID()
 
     //language=sql
@@ -836,7 +804,7 @@ fun insertApplication(h: Handle, application: ApplicationWithForm): UUID {
         VALUES(:id, :sentDate, :dueDate, :applicationStatus::application_status_type, :guardianId, :childId, :origin::application_origin_type, :checkedByAdmin, :hideFromGuardian, :transferApplication, :otherGuardianId)
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("sentDate", application.sentDate)
         .bind("dueDate", application.dueDate)
@@ -853,8 +821,8 @@ fun insertApplication(h: Handle, application: ApplicationWithForm): UUID {
     return id
 }
 
-fun insertApplicationForm(h: Handle, applicationForm: ApplicationForm): UUID {
-    h.createUpdate(
+fun Database.Transaction.insertApplicationForm(applicationForm: ApplicationForm): UUID {
+    createUpdate(
         """
 UPDATE application_form SET latest = FALSE
 WHERE application_id = :applicationId AND revision < :revision
@@ -871,7 +839,7 @@ WHERE application_id = :applicationId AND revision < :revision
         VALUES(:id, :applicationId, :created, :revision, :updated, :document::JSON, TRUE)
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("applicationId", applicationForm.applicationId)
         .bind("created", applicationForm.createdDate)
@@ -890,7 +858,7 @@ data class DevFamilyContact(
     val priority: Int
 )
 
-fun Handle.insertFamilyContact(contact: DevFamilyContact) = insertTestDataRow(
+fun Database.Transaction.insertFamilyContact(contact: DevFamilyContact) = insertTestDataRow(
     contact,
     """
 INSERT INTO family_contact (id, child_id, contact_person_id, priority)
@@ -899,7 +867,7 @@ RETURNING id
 """
 )
 
-fun Handle.deleteFamilyContact(id: UUID) = createUpdate("DELETE FROM family_contact WHERE id = :id").bind("id", id).execute()
+fun Database.Transaction.deleteFamilyContact(id: UUID) = createUpdate("DELETE FROM family_contact WHERE id = :id").bind("id", id).execute()
 
 data class DevBackupPickup(
     val id: UUID,
@@ -908,7 +876,7 @@ data class DevBackupPickup(
     val phone: String
 )
 
-fun Handle.insertBackupPickup(pickup: DevBackupPickup) = insertTestDataRow(
+fun Database.Transaction.insertBackupPickup(pickup: DevBackupPickup) = insertTestDataRow(
     pickup,
     """
 INSERT INTO backup_pickup (id, child_id, name, phone)
@@ -917,7 +885,7 @@ RETURNING id
 """
 )
 
-fun Handle.deleteBackupPickup(id: UUID) = createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).execute()
+fun Database.Transaction.deleteBackupPickup(id: UUID) = createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).execute()
 
 data class DevFridgeChild(
     val id: UUID,
@@ -927,7 +895,7 @@ data class DevFridgeChild(
     val endDate: LocalDate
 )
 
-fun Handle.insertFridgeChild(pickup: DevFridgeChild) = insertTestDataRow(
+fun Database.Transaction.insertFridgeChild(pickup: DevFridgeChild) = insertTestDataRow(
     pickup,
     """
 INSERT INTO fridge_child (id, child_id, head_of_child, start_date, end_date)
@@ -936,7 +904,7 @@ RETURNING id
 """
 )
 
-fun Handle.deleteFridgeChild(id: UUID) = createUpdate("DELETE FROM fridge_child WHERE id = :id").bind("id", id).execute()
+fun Database.Transaction.deleteFridgeChild(id: UUID) = createUpdate("DELETE FROM fridge_child WHERE id = :id").bind("id", id).execute()
 
 data class DevFridgePartner(
     val partnershipId: UUID,
@@ -946,7 +914,7 @@ data class DevFridgePartner(
     val endDate: LocalDate
 )
 
-fun Handle.insertFridgePartner(pickup: DevFridgePartner) = insertTestDataRow(
+fun Database.Transaction.insertFridgePartner(pickup: DevFridgePartner) = insertTestDataRow(
     pickup,
     """
 INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_date)
@@ -955,7 +923,7 @@ RETURNING partnership_id
 """
 )
 
-fun Handle.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()
+fun Database.Transaction.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()
 
 data class DevEmployeePin(
     val id: UUID,
@@ -965,7 +933,7 @@ data class DevEmployeePin(
     val locked: Boolean? = false
 )
 
-fun Handle.insertEmployeePin(employeePin: DevEmployeePin) = insertTestDataRow(
+fun Database.Transaction.insertEmployeePin(employeePin: DevEmployeePin) = insertTestDataRow(
     employeePin,
     """
 INSERT INTO employee_pin (id, user_id, pin, locked)
@@ -974,9 +942,9 @@ RETURNING id
 """
 )
 
-fun Handle.getEmployeeIdByExternalId(externalId: String) = createQuery("SELECT id FROM employee WHERE external_id = :id")
+fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) = createQuery("SELECT id FROM employee WHERE external_id = :id")
     .bind("id", externalId)
     .mapTo<UUID>()
     .first()
 
-fun Handle.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()
+fun Database.Transaction.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()

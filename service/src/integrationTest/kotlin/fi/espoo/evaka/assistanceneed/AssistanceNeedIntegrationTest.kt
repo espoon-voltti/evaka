@@ -287,7 +287,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     private fun givenAssistanceNeed(start: Int, end: Int, childId: UUID = testChild_1.id): UUID {
         return db.transaction {
-            it.handle.insertTestAssistanceNeed(
+            it.insertTestAssistanceNeed(
                 DevAssistanceNeed(
                     childId = childId,
                     startDate = testDate(start),

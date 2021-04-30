@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
@@ -40,8 +39,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, id = groupId))
-            insertTestCaretakers(tx.handle, groupId = groupId, amount = 3.0, startDate = LocalDate.of(2019, 1, 1))
+            tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, id = groupId))
+            tx.insertTestCaretakers(groupId = groupId, amount = 3.0, startDate = LocalDate.of(2019, 1, 1))
         }
     }
 
@@ -87,9 +86,9 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val placementId = UUID.randomUUID()
         db.transaction { tx ->
             tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE, placementId = placementId)
-            insertTestStaffAttendance(tx.handle, groupId = groupId, count = 1.0, date = day1)
-            insertTestStaffAttendance(tx.handle, groupId = groupId, count = 2.0, date = day2)
-            insertTestDaycareGroupPlacement(tx.handle, placementId, groupId, startDate = defaultPeriod.start, endDate = defaultPeriod.end)
+            tx.insertTestStaffAttendance(groupId = groupId, count = 1.0, date = day1)
+            tx.insertTestStaffAttendance(groupId = groupId, count = 2.0, date = day2)
+            tx.insertTestDaycareGroupPlacement(placementId, groupId, startDate = defaultPeriod.start, endDate = defaultPeriod.end)
         }
 
         val result = fetchAndParseOccupancyByGroups(testDaycare.id, defaultPeriod)
@@ -118,7 +117,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val normalPlacementChild2 = UUID.randomUUID()
         db.transaction { tx ->
             tx.createOccupancyTestFixture(backupCareChild, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
-            insertTestBackUpCare(tx.handle, backupCareChild, testDaycare2.id, day2, day2)
+            tx.insertTestBackUpCare(backupCareChild, testDaycare2.id, day2, day2)
 
             tx.createOccupancyTestFixture(normalPlacementChild1, testDaycare2.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
             tx.createOccupancyTestFixture(normalPlacementChild2, testDaycare2.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
@@ -148,8 +147,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val childId = UUID.randomUUID()
         db.transaction { tx ->
             tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
-            insertTestBackUpCare(tx.handle, childId, testDaycare2.id, day1, day2)
-            insertTestAbsence(tx.handle, childId = childId, date = day2, careType = CareType.DAYCARE, absenceType = AbsenceType.SICKLEAVE)
+            tx.insertTestBackUpCare(childId, testDaycare2.id, day1, day2)
+            tx.insertTestAbsence(childId = childId, date = day2, careType = CareType.DAYCARE, absenceType = AbsenceType.SICKLEAVE)
         }
 
         val resultBackupUnit = fetchAndParseOccupancy(testDaycare2.id, defaultPeriod)
@@ -167,7 +166,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val childId = UUID.randomUUID()
         db.transaction { tx ->
             tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
-            insertTestAbsence(tx.handle, childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE)
+            tx.insertTestAbsence(childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -186,7 +185,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val childId = UUID.randomUUID()
         db.transaction { tx ->
             tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
-            insertTestAbsence(tx.handle, childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE, absenceType = AbsenceType.PRESENCE)
+            tx.insertTestAbsence(childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE, absenceType = AbsenceType.PRESENCE)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -200,8 +199,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @Test
     fun `caretaker count is based on attendance`() {
         db.transaction { tx ->
-            insertTestStaffAttendance(tx.handle, groupId = groupId, date = LocalDate.of(2019, 1, 1), count = 2.0)
-            insertTestStaffAttendance(tx.handle, groupId = groupId, date = LocalDate.of(2019, 1, 2), count = 1.5)
+            tx.insertTestStaffAttendance(groupId = groupId, date = LocalDate.of(2019, 1, 1), count = 2.0)
+            tx.insertTestStaffAttendance(groupId = groupId, date = LocalDate.of(2019, 1, 2), count = 1.5)
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
@@ -234,7 +233,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
             tx.createOccupancyTestFixture(testDaycare.id, period, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)
             generateSequence(period.start) { date -> date.plusDays(1) }
                 .takeWhile { date -> date <= LocalDate.now() }
-                .forEach { date -> insertTestStaffAttendance(tx.handle, groupId = groupId, date = date, count = 1.0) }
+                .forEach { date -> tx.insertTestStaffAttendance(groupId = groupId, date = date, count = 1.0) }
         }
 
         val result = fetchAndParseOccupancy(testDaycare.id, period)

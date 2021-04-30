@@ -50,7 +50,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.createMobileDeviceToUnit(userId, testDaycare.id)
         }
     }
@@ -322,8 +322,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     fun `post full day absence - happy case when coming to preschool`() {
         // previous day attendance should have no effect
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = ZonedDateTime.now(europeHelsinki).minusDays(1).minusHours(1).toInstant(),
@@ -437,8 +436,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun givenChildPlacement(placementType: PlacementType) {
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -446,8 +444,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
                 endDate = placementEnd,
                 type = placementType
             )
-            insertTestDaycareGroupPlacement(
-                h = tx.handle,
+            tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
                 startDate = placementStart,
@@ -463,8 +460,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun givenChildPresent(arrived: LocalTime = roundedTimeNow().minusHours(1)) {
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(arrived), europeHelsinki).toInstant(),
@@ -480,8 +476,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         departed: LocalTime = roundedTimeNow().minusMinutes(10)
     ) {
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = ZonedDateTime.of(LocalDate.now(europeHelsinki).atTime(arrived), europeHelsinki).toInstant(),
@@ -495,7 +490,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun givenChildAbsent(absentFrom: List<CareType>, absenceType: AbsenceType) {
         absentFrom.forEach { careType ->
             db.transaction {
-                insertTestAbsence(h = it.handle, childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())
+                it.insertTestAbsence(childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())
             }
         }
     }

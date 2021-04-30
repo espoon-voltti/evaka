@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -93,13 +92,10 @@ WHERE id = :unitId
             LocalDate.of(2020, 3, 17),
             LocalDate.of(2023, 7, 31)
         )
-        val applicationId = db.transaction {
-            insertInitialData(
-                it,
-                type = PlacementType.DAYCARE,
-                period = period
-            )
-        }
+        val applicationId = insertInitialData(
+            type = PlacementType.DAYCARE,
+            period = period
+        )
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -131,13 +127,10 @@ WHERE id = :unitId
             LocalDate.of(2020, 3, 18),
             LocalDate.of(2023, 7, 29)
         )
-        val applicationId = db.transaction {
-            insertInitialData(
-                it,
-                type = PlacementType.DAYCARE_PART_TIME,
-                period = period
-            )
-        }
+        val applicationId = insertInitialData(
+            type = PlacementType.DAYCARE_PART_TIME,
+            period = period
+        )
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -169,13 +162,10 @@ WHERE id = :unitId
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
         )
-        val applicationId = db.transaction {
-            insertInitialData(
-                it,
-                type = PlacementType.PRESCHOOL,
-                period = period
-            )
-        }
+        val applicationId = insertInitialData(
+            type = PlacementType.PRESCHOOL,
+            period = period
+        )
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -219,15 +209,12 @@ WHERE id = :unitId
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
-        val applicationId = db.transaction {
-            insertInitialData(
-                it,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                period = period,
-                preschoolDaycarePeriod = preschoolDaycarePeriod,
-                preparatoryEducation = false
-            )
-        }
+        val applicationId = insertInitialData(
+            type = PlacementType.PRESCHOOL_DAYCARE,
+            period = period,
+            preschoolDaycarePeriod = preschoolDaycarePeriod,
+            preparatoryEducation = false
+        )
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -275,15 +262,12 @@ WHERE id = :unitId
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
-        val applicationId = db.transaction {
-            insertInitialData(
-                it,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                period = period,
-                preschoolDaycarePeriod = preschoolDaycarePeriod,
-                preparatoryEducation = true
-            )
-        }
+        val applicationId = insertInitialData(
+            type = PlacementType.PRESCHOOL_DAYCARE,
+            period = period,
+            preschoolDaycarePeriod = preschoolDaycarePeriod,
+            preparatoryEducation = true
+        )
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -399,13 +383,10 @@ WHERE id = :unitId
             LocalDate.of(2020, 3, 17),
             LocalDate.of(2023, 7, 31)
         )
-        val applicationId = db.transaction {
-            insertInitialData(
-                it,
-                type = PlacementType.DAYCARE,
-                period = period
-            )
-        }
+        val applicationId = insertInitialData(
+            type = PlacementType.DAYCARE,
+            period = period
+        )
         val invalidRoleLists = listOf(
             setOf(UserRole.UNIT_SUPERVISOR),
             setOf(UserRole.FINANCE_ADMIN),
@@ -421,7 +402,6 @@ WHERE id = :unitId
     }
 
     private fun insertInitialData(
-        tx: Database.Transaction,
         type: PlacementType,
         unit: UnitData.Detailed = testDaycare,
         adult: PersonData.Detailed = testAdult_5,
@@ -429,16 +409,15 @@ WHERE id = :unitId
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false
-    ): UUID {
-        val applicationId = insertTestApplication(
-            tx.handle,
+    ): UUID = db.transaction { tx ->
+        val applicationId = tx.insertTestApplication(
             status = ApplicationStatus.WAITING_PLACEMENT,
             guardianId = adult.id,
             childId = child.id
         )
         val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
-        insertTestApplicationForm(
-            tx.handle, applicationId,
+        tx.insertTestApplicationForm(
+            applicationId,
             DaycareFormV0(
                 type = type.toApplicationType(),
                 partTime = type == PlacementType.DAYCARE_PART_TIME,
@@ -464,6 +443,6 @@ WHERE id = :unitId
             )
         )
 
-        return applicationId
+        applicationId
     }
 }

@@ -10,7 +10,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestChild
@@ -54,8 +53,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         val child = testChild_1
         val daycare = testDaycare
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = child.id,
                 unitId = daycare.id,
                 startDate = LocalDate.now().minusMonths(1),
@@ -84,8 +82,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         val testOrganizationOid = defaultMunicipalOrganizerOid
         val daycareId = testDaycare.id
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = daycareId,
                 startDate = LocalDate.now().minusMonths(1),
@@ -112,8 +109,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         val daycareId = testPurchasedDaycare.id
         insertTestVardaUnit(db, daycareId)
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = daycareId,
                 startDate = LocalDate.now().minusMonths(1),
@@ -137,8 +133,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `child before varda begin date is not uploaded to Varda`() {
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = getVardaMinDate().minusDays(5),
@@ -152,8 +147,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `child is uploaded despite daycare itself is not sent to varda`() {
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,
                 startDate = LocalDate.now().minusMonths(2),
@@ -172,8 +166,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 .bind("id", daycareId)
                 .execute()
 
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = daycareId,
                 startDate = LocalDate.now().minusMonths(2),
@@ -187,8 +180,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `child already in database is not sent to Varda`() {
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusMonths(2),
@@ -209,8 +201,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 .bind("id", testDaycare.id)
                 .execute()
 
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusMonths(2),
@@ -227,8 +218,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating daycare organizer oid yields new varda_child`() {
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusMonths(2),
@@ -255,7 +245,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         val child = namelessChild
         val daycare = testDaycare
         db.transaction { tx ->
-            tx.handle.insertTestPerson(
+            tx.insertTestPerson(
                 DevPerson(
                     id = child.id,
                     dateOfBirth = child.dateOfBirth,
@@ -267,10 +257,9 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                     postOffice = child.postOffice ?: ""
                 )
             )
-            tx.handle.insertTestChild(DevChild(id = child.id))
+            tx.insertTestChild(DevChild(id = child.id))
 
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = child.id,
                 unitId = daycare.id,
                 startDate = LocalDate.now().minusMonths(1),
