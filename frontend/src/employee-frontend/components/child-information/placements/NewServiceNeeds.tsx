@@ -259,8 +259,8 @@ function NewServiceNeedEditorRow({
 
   return (
     <Tr>
-      <Td>
-        <FixedSpaceRow spacing="xs">
+      <StyledTd>
+        <FixedSpaceRow spacing="xs" alignItems="center">
           <DatePickerDeprecated
             date={form.startDate}
             onChange={(date) => setForm({ ...form, startDate: date })}
@@ -275,25 +275,25 @@ function NewServiceNeedEditorRow({
             maxDate={placement.endDate}
           />
         </FixedSpaceRow>
-      </Td>
-      <Td>
+      </StyledTd>
+      <StyledTd>
         <SimpleSelect
           options={options}
           value={form.optionId}
           onChange={(e) => setForm({ ...form, optionId: e.target.value })}
           placeholder={t.optionPlaceholder}
         />
-      </Td>
-      <Td>
+      </StyledTd>
+      <StyledTd>
         <Checkbox
           label={t.shiftCare}
           hiddenLabel
           checked={form.shiftCare}
           onChange={(checked) => setForm({ ...form, shiftCare: checked })}
         />
-      </Td>
-      <Td>
-        <FixedSpaceRow justifyContent="flex-end">
+      </StyledTd>
+      <StyledTd>
+        <FixedSpaceRow justifyContent="flex-end" spacing="m">
           <InlineButton
             onClick={onCancel}
             text={i18n.common.cancel}
@@ -305,10 +305,14 @@ function NewServiceNeedEditorRow({
             disabled={submitting || !formIsValid}
           />
         </FixedSpaceRow>
-      </Td>
+      </StyledTd>
     </Tr>
   )
 }
+
+const StyledTd = styled(Td)`
+  vertical-align: middle;
+`
 
 const HeaderRow = styled.div`
   display: flex;

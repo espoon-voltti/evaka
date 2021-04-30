@@ -79,12 +79,12 @@ export default function BackupCareRow({ childId, backupCare }: Props) {
         <BackupCareForm childId={childId} backupCare={backupCare} />
       ) : (
         <Row data-qa="backup-care-row">
-          <UnitName size={4} data-qa="unit">
+          <UnitName size={4} noMargin data-qa="unit">
             <a href={`/employee/units/${backupCare.unit.id}`}>
               {backupCare.unit.name}
             </a>
           </UnitName>
-          <Period size={4} data-qa="period">
+          <Period size={4} noMargin data-qa="period">
             {`${backupCare.period.start.format()} - ${backupCare.period.end.format()}`}
           </Period>
 
