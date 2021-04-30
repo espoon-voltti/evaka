@@ -292,7 +292,8 @@ export default React.memo(function AttendancePageWrapper({
           />
           <Tabs tabs={tabs} mobile />
 
-          <FullHeightContentArea
+          <ContentArea
+            fullHeight
             opaque={false}
             paddingVertical={'s'}
             paddingHorizontal={'zero'}
@@ -336,7 +337,7 @@ export default React.memo(function AttendancePageWrapper({
               />
               <Redirect to={`${path}/coming`} />
             </Switch>
-          </FullHeightContentArea>
+          </ContentArea>
           <BottomNavbar
             selected="child"
             staffCount={
@@ -373,10 +374,6 @@ const NoMarginTitle = styled(Title)`
     margin-left: ${defaultMargins.m};
     color: ${colors.greyscale.white};
   }
-`
-
-const FullHeightContentArea = styled(ContentArea)`
-  height: 100%;
 `
 
 const Bold = styled.div`
