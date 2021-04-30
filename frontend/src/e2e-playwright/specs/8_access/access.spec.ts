@@ -12,6 +12,11 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ChildInformationPage from 'e2e-playwright/pages/employee/child-information-page'
+import {
+  insertEmployeeFixture,
+  resetDatabase,
+  setAclForDaycares
+} from 'e2e-test-common/dev-api'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -19,7 +24,70 @@ let nav: EmployeeNav
 let childInfo: ChildInformationPage
 
 beforeAll(async () => {
+  await resetDatabase()
   ;[fixtures] = await initializeAreaAndPersonData()
+  await insertEmployeeFixture({
+    id: config.serviceWorkerAad,
+    externalId: `espoo-ad:${config.serviceWorkerAad}`,
+    email: 'paula.palveluohjaaja@espoo.fi',
+    firstName: 'Paula',
+    lastName: 'Palveluohjaaja',
+    roles: ['SERVICE_WORKER']
+  })
+  await insertEmployeeFixture({
+    id: config.financeAdminAad,
+    externalId: `espoo-ad:${config.financeAdminAad}`,
+    email: 'lasse.laskuttaja@espoo.fi',
+    firstName: 'Lasse',
+    lastName: 'Laskuttaja',
+    roles: ['FINANCE_ADMIN']
+  })
+  await insertEmployeeFixture({
+    id: config.directorAad,
+    externalId: `espoo-ad:${config.directorAad}`,
+    email: 'raisa.raportoija@espoo.fi',
+    firstName: 'Raisa',
+    lastName: 'Raportoija',
+    roles: ['DIRECTOR']
+  })
+  await insertEmployeeFixture({
+    id: config.unitSupervisorAad,
+    externalId: `espoo-ad:${config.unitSupervisorAad}`,
+    email: 'essi.esimies@espoo.fi',
+    firstName: 'Essi',
+    lastName: 'Esimies',
+    roles: []
+  })
+  await setAclForDaycares(
+    `espoo-ad:${config.unitSupervisorAad}`,
+    fixtures.daycareFixture.id
+  )
+  await insertEmployeeFixture({
+    id: config.staffAad,
+    externalId: `espoo-ad:${config.staffAad}`,
+    email: 'kaisa.kasvattaja@espoo.fi',
+    firstName: 'Kaisa',
+    lastName: 'Kasvattaja',
+    roles: []
+  })
+  await setAclForDaycares(
+    `espoo-ad:${config.staffAad}`,
+    fixtures.daycareFixture.id,
+    'STAFF'
+  )
+  await insertEmployeeFixture({
+    id: config.specialEducationTeacher,
+    externalId: `espoo-ad:${config.specialEducationTeacher}`,
+    email: 'erkki.erityisopettaja@espoo.fi',
+    firstName: 'Erkki',
+    lastName: 'Erityisopettaja',
+    roles: []
+  })
+  await setAclForDaycares(
+    `espoo-ad:${config.specialEducationTeacher}`,
+    fixtures.daycareFixture.id,
+    'SPECIAL_EDUCATION_TEACHER'
+  )
 })
 beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()

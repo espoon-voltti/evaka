@@ -108,7 +108,8 @@ const sv: Translations = {
       list: 'Lista på enheter'
     },
     serviceVoucherLink:
-      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer'
+      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik/Servicesedel/Information_till_familjer',
+    noApplying: 'Ingen sökning via eVaka, kontakta tjänsten'
   },
   messages: {
     inboxTitle: 'Inkorg',

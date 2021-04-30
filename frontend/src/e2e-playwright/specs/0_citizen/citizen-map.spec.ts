@@ -43,6 +43,17 @@ const testStreet: DigitransitFeature = {
   }
 }
 
+const privateDaycareWithoutPeriods: Daycare = {
+  ...daycare2Fixture,
+  name: 'Private daycare',
+  id: '9db9e8f7-2091-4be1-b091-fe10790e107a',
+  location: { lat: 60.1601417, lon: 24.7830233 },
+  daycareApplyPeriod: null,
+  preschoolApplyPeriod: null,
+  clubApplyPeriod: null,
+  providerType: 'PRIVATE'
+}
+
 let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
@@ -52,6 +63,10 @@ beforeAll(async () => {
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
   await Fixture.daycare().with(preschoolFixture).careArea(careArea).save()
   await Fixture.daycare().with(swedishDaycare).careArea(careArea).save()
+  await Fixture.daycare()
+    .with(privateDaycareWithoutPeriods)
+    .careArea(careArea)
+    .save()
 })
 beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
@@ -148,17 +163,17 @@ describe('Citizen map page', () => {
   test('Unit markers can be clicked to open a popup', async () => {
     await mapPage.map.zoomInFully()
 
-    async function testMapPopup(daycare: Daycare) {
-      await mapPage.listItemFor(daycare).click()
-      await mapPage.map.markerFor(daycare).click()
-      await waitUntilEqual(
-        () => mapPage.map.popupFor(daycare).name,
-        daycare.name
-      )
-    }
-
-    await testMapPopup(daycare2Fixture)
+    await mapPage.testMapPopup(daycare2Fixture)
     await mapPage.unitDetailsPanel.backButton.click()
-    await testMapPopup(swedishDaycare)
+    await mapPage.testMapPopup(swedishDaycare)
+  })
+  test('Private unit without any periods will show up on the map', async () => {
+    await mapPage.map.zoomInFully()
+
+    await mapPage.testMapPopup(privateDaycareWithoutPeriods)
+    await waitUntilEqual(
+      () => mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying,
+      'Ei hakua eVakan kautta, ota yhteys yksikköön'
+    )
   })
 })

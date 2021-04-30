@@ -23,7 +23,10 @@ import {
   AttachmentType
 } from 'lib-common/api-types/application/enums'
 import { client } from '../api-client'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import {
+  deserializePublicUnit,
+  PublicUnit
+} from 'lib-common/api-types/units/PublicUnit'
 import { UUID } from 'lib-common/types'
 
 export type ApplicationUnitType =
@@ -45,7 +48,7 @@ export async function getApplicationUnits(
         ...(shiftCare && { shiftCare: shiftCare })
       }
     })
-    return Success.of(data)
+    return Success.of(data.map(deserializePublicUnit))
   } catch (e) {
     return Failure.fromError(e)
   }

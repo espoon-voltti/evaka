@@ -71,7 +71,7 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
         animate: !isAutomatedTest
       })
     }
-  }, [selectedAddress])
+  }, [map, selectedAddress])
 
   useEffect(() => {
     if (selectedUnit && selectedUnit.location) {
@@ -79,7 +79,7 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
       map.stop()
       map.panTo([lat, lon], { animate: !isAutomatedTest })
     }
-  }, [selectedUnit])
+  }, [map, selectedUnit])
 
   return (
     <>
@@ -154,6 +154,12 @@ function UnitMarker({
         <div data-qa={`map-popup-${unit.id}`}>
           <UnitName data-qa="map-popup-name">{unit.name}</UnitName>
           <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+          {unit.providerType === 'PRIVATE' &&
+            unit.preschoolApplyPeriod === null &&
+            unit.daycareApplyPeriod === null &&
+            unit.clubApplyPeriod === null && (
+              <div data-qa="map-popup-no-applying">{t.map.noApplying}</div>
+            )}
           <UnitDetails>
             <UnitDetailsLeft>
               {unit.streetAddress}

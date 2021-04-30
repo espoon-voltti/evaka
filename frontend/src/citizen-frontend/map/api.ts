@@ -6,7 +6,10 @@ import axios from 'axios'
 import _ from 'lodash'
 import { JsonOf } from 'lib-common/json'
 import { Failure, Result, Success } from 'lib-common/api'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import {
+  deserializePublicUnit,
+  PublicUnit
+} from 'lib-common/api-types/units/PublicUnit'
 import { Coordinate } from 'lib-common/api-types/units/Coordinate'
 import { client } from '../api-client'
 import { MapAddress } from '../map/MapView'
@@ -20,7 +23,7 @@ export async function fetchUnits(
 ): Promise<Result<PublicUnit[]>> {
   return client
     .get<JsonOf<PublicUnit[]>>(`/public/units/${type}`)
-    .then((res) => Success.of(res.data))
+    .then(({ data }) => Success.of(data.map(deserializePublicUnit)))
     .catch((e) => Failure.fromError(e))
 }
 

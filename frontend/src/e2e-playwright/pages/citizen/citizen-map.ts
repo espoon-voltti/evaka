@@ -4,7 +4,7 @@
 
 import { Page } from 'playwright'
 import { Daycare } from 'e2e-test-common/dev-api/types'
-import { delay } from '../../utils'
+import { delay, waitUntilEqual } from '../../utils'
 import {
   descendantInput,
   RawElement,
@@ -50,6 +50,12 @@ export default class CitizenMapPage {
 
   listItemFor(daycare: Daycare) {
     return new RawElement(this.page, `[data-qa="map-unit-list-${daycare.id}"]`)
+  }
+
+  async testMapPopup(daycare: Daycare) {
+    await this.listItemFor(daycare).click()
+    await this.map.markerFor(daycare).click()
+    await waitUntilEqual(() => this.map.popupFor(daycare).name, daycare.name)
   }
 }
 
@@ -118,9 +124,14 @@ class MapMarker extends RawElement {}
 
 class MapPopup extends RawElement {
   readonly #name = `${this.selector} [data-qa="map-popup-name"]`
+  readonly #noApplying = `${this.selector} [data-qa="map-popup-no-applying"]`
 
   get name(): Promise<string | null> {
     return this.page.textContent(this.#name)
+  }
+
+  get noApplying(): Promise<string | null> {
+    return this.page.textContent(this.#noApplying)
   }
 }
 
