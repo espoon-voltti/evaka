@@ -1931,6 +1931,7 @@ INSERT INTO service_need_option (name, valid_placement_type, default_option, fee
     ('5-vuotiaiden kokopäiväinen, vähintään 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.8, 1.0, 1.0, 45, FALSE, FALSE),
     ('5-vuotiaiden kokopäiväinen, 35-45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, FALSE),
     ('5-vuotiaiden kokopäiväinen, 25-35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, FALSE),
+    ('5-vuotiaiden osaviikkoinen, 35-45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, TRUE),
     ('5-vuotiaiden osaviikkoinen, 25-35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, TRUE),
     ('5-vuotiaiden osaviikkoinen, 20-25h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 1.0, 25, FALSE, TRUE),
     ('5-vuotiaiden ilmainen osaviikkoinen', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 1.0, 20, FALSE, TRUE),
