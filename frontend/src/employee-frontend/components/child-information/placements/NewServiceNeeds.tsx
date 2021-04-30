@@ -212,48 +212,35 @@ function NewServiceNeedEditorRow({
     if (form.startDate && form.endDate && form.optionId) {
       setSubmitting(true)
 
-      if (editingId) {
-        void updateNewServiceNeed(editingId, {
-          startDate: form.startDate,
-          endDate: form.endDate,
-          optionId: form.optionId,
-          shiftCare: form.shiftCare
-        })
-          .then((res) => {
-            if (res.isSuccess) {
-              onSuccess()
-            } else {
-              setErrorMessage({
-                type: 'error',
-                title: i18n.common.error.unknown,
-                text: i18n.common.error.saveFailed,
-                resolveLabel: i18n.common.ok
-              })
-            }
+      const request = editingId
+        ? updateNewServiceNeed(editingId, {
+            startDate: form.startDate,
+            endDate: form.endDate,
+            optionId: form.optionId,
+            shiftCare: form.shiftCare
           })
-          .finally(() => setSubmitting(false))
-      } else {
-        void createNewServiceNeed({
-          placementId: placement.id,
-          startDate: form.startDate,
-          endDate: form.endDate,
-          optionId: form.optionId,
-          shiftCare: form.shiftCare
-        })
-          .then((res) => {
-            if (res.isSuccess) {
-              onSuccess()
-            } else {
-              setErrorMessage({
-                type: 'error',
-                title: i18n.common.error.unknown,
-                text: i18n.common.error.saveFailed,
-                resolveLabel: i18n.common.ok
-              })
-            }
+        : createNewServiceNeed({
+            placementId: placement.id,
+            startDate: form.startDate,
+            endDate: form.endDate,
+            optionId: form.optionId,
+            shiftCare: form.shiftCare
           })
-          .finally(() => setSubmitting(false))
-      }
+
+      void request
+        .then((res) => {
+          if (res.isSuccess) {
+            onSuccess()
+          } else {
+            setErrorMessage({
+              type: 'error',
+              title: i18n.common.error.unknown,
+              text: i18n.common.error.saveFailed,
+              resolveLabel: i18n.common.ok
+            })
+          }
+        })
+        .finally(() => setSubmitting(false))
     }
   }
 
