@@ -34,7 +34,8 @@ import {
   BackupPickup,
   FridgeChild,
   FridgePartner,
-  EmployeePin
+  EmployeePin,
+  UserRole
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -359,10 +360,11 @@ export async function insertParentshipFixtures(
 
 export async function setAclForDaycares(
   externalId: string,
-  daycareId: UUID
+  daycareId: UUID,
+  role?: UserRole
 ): Promise<void> {
   try {
-    await devClient.put(`/daycares/${daycareId}/acl`, { externalId })
+    await devClient.put(`/daycares/${daycareId}/acl`, { externalId, role })
   } catch (e) {
     throw new DevApiError(e)
   }

@@ -166,13 +166,13 @@ class DevApi(
     }
 
     @PutMapping("/daycares/{daycareId}/acl")
-    fun allowSupervisorToAccessDaycare(
+    fun addAclRoleForDaycare(
         db: Database,
         @PathVariable daycareId: UUID,
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            updateDaycareAcl(tx.handle, daycareId, body.externalId, UserRole.UNIT_SUPERVISOR)
+            updateDaycareAcl(tx.handle, daycareId, body.externalId, body.role?: UserRole.UNIT_SUPERVISOR)
         }
         return ResponseEntity.noContent().build()
     }
@@ -1247,7 +1247,8 @@ data class DevMobileDevice(
 )
 
 data class DaycareAclInsert(
-    val externalId: ExternalId
+    val externalId: ExternalId,
+    val role: UserRole?
 )
 
 data class PlacementPlan(
