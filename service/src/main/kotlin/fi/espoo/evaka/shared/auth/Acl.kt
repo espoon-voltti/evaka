@@ -192,6 +192,21 @@ WHERE sn.id = :serviceNeedId AND acl.employee_id = :userId
         }
     )
 
+    fun getRolesForNewServiceNeed(user: AuthenticatedUser, serviceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM new_service_need
+JOIN placement ON placement.id = new_service_need.placement_id
+JOIN daycare_acl_view ON placement.unit_id = daycare_acl_view.daycare_id
+WHERE employee_id = :userId AND new_service_need.id = :serviceNeedId
+                """.trimIndent()
+            ).bind("serviceNeedId", serviceNeedId).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
     fun getRolesForPairing(user: AuthenticatedUser, pairingId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(

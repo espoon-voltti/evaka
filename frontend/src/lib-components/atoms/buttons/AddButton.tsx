@@ -19,6 +19,7 @@ const StyledButton = styled.button`
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  padding: 0;
 
   background: none;
   border: none;

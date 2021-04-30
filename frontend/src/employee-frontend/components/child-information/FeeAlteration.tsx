@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { faMoneyCheckEdit, faQuestion } from 'lib-icons'
+import { faQuestion } from 'lib-icons'
 import Loader from 'lib-components/atoms/Loader'
 import { Gap } from 'lib-components/white-space'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -23,22 +23,28 @@ import {
 } from '../../api/child/fee-alteration'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { scrollToRef } from '../../utils'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`
 
 interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
+const FeeAlteration = React.memo(function FeeAlteration({
+  id,
+  startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
     UIContext
   )
   const { feeAlterations, setFeeAlterations } = useContext(ChildContext)
+
+  const [open, setOpen] = useState(startOpen)
   const [deleted, setDeleted] = useState<FeeAlteration>()
   const refSectionTop = useRef(null)
 
@@ -86,10 +92,12 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
 
   return (
     <div ref={refSectionTop}>
-      <CollapsibleSection
-        icon={faMoneyCheckEdit}
-        title={i18n.childInformation.feeAlteration.title}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        title={<H2 noMargin>{i18n.childInformation.feeAlteration.title}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="fee-alteration-collapsible"
       >
         <AddButtonRow
@@ -112,7 +120,7 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
           />
         ) : null}
         {content()}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
       {deleted ? (
         <InfoModal
           iconColour={'orange'}

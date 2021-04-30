@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,7 +10,8 @@ import {
   AssistanceNeed,
   ChildBackupCare,
   Placement,
-  ServiceNeed
+  ServiceNeed,
+  ServiceNeedOption
 } from '../types/child'
 import { Loading, Result } from 'lib-common/api'
 import { PersonDetails } from '../types/person'
@@ -23,6 +24,8 @@ export interface ChildState {
   setPerson: (request: Result<PersonDetails>) => void
   serviceNeeds: Result<ServiceNeed[]>
   setServiceNeeds: (request: Result<ServiceNeed[]>) => void
+  serviceNeedOptions: Result<ServiceNeedOption[]>
+  setServiceNeedOptions: (request: Result<ServiceNeedOption[]>) => void
   assistanceNeeds: Result<AssistanceNeed[]>
   setAssistanceNeeds: (request: Result<AssistanceNeed[]>) => void
   assistanceActions: Result<AssistanceAction[]>
@@ -50,6 +53,8 @@ const defaultState: ChildState = {
   setPerson: () => undefined,
   serviceNeeds: Loading.of(),
   setServiceNeeds: () => undefined,
+  serviceNeedOptions: Loading.of(),
+  setServiceNeedOptions: () => undefined,
   assistanceNeeds: Loading.of(),
   setAssistanceNeeds: () => undefined,
   assistanceActions: Loading.of(),
@@ -85,6 +90,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [serviceNeeds, setServiceNeeds] = useState<Result<ServiceNeed[]>>(
     defaultState.serviceNeeds
   )
+  const [serviceNeedOptions, setServiceNeedOptions] = useState<
+    Result<ServiceNeedOption[]>
+  >(defaultState.serviceNeedOptions)
   const [assistanceNeeds, setAssistanceNeeds] = useState<
     Result<AssistanceNeed[]>
   >(defaultState.assistanceNeeds)
@@ -123,6 +131,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setPerson,
       serviceNeeds,
       setServiceNeeds,
+      serviceNeedOptions,
+      setServiceNeedOptions,
       assistanceNeeds,
       setAssistanceNeeds,
       assistanceActions,
@@ -149,6 +159,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setPerson,
       serviceNeeds,
       setServiceNeeds,
+      serviceNeedOptions,
+      setServiceNeedOptions,
       assistanceNeeds,
       setAssistanceNeeds,
       assistanceActions,

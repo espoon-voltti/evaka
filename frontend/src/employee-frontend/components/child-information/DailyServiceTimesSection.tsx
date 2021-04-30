@@ -4,8 +4,7 @@
 
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { Label, P } from 'lib-components/typography'
+import { H2, Label, P } from 'lib-components/typography'
 import React, { useContext, useState } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from '../../state/i18n'
@@ -25,7 +24,7 @@ import {
   getChildDailyServiceTimes,
   putChildDailyServiceTimes
 } from '../../api/child/daily-service-times'
-import { faClock, faPen } from 'lib-icons'
+import { faPen } from 'lib-icons'
 import styled from 'styled-components'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import {
@@ -40,6 +39,7 @@ import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
 import { NullableValues } from '../../types'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 
 const weekdays = [
   'monday',
@@ -93,15 +93,17 @@ interface ValidationResult {
 
 interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
 const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   id,
-  open
+  startOpen
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
+
+  const [open, setOpen] = useState(startOpen)
 
   const [apiData, setApiData] = useState<Result<DailyServiceTimes | null>>(
     Loading.of()
@@ -315,11 +317,13 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     Object.values(validationResult.friday).find((v) => v !== null) === undefined
 
   return (
-    <CollapsibleSection
+    <CollapsibleContentArea
+      title={<H2 noMargin>{i18n.childInformation.dailyServiceTimes.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="child-daily-service-times-collapsible"
-      icon={faClock}
-      title={i18n.childInformation.dailyServiceTimes.title}
-      startCollapsed={!open}
     >
       <P>
         {i18n.childInformation.dailyServiceTimes.info}
@@ -505,7 +509,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
           )}
         </>
       )}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 

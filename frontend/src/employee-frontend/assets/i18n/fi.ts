@@ -763,7 +763,9 @@ export const fi = {
         noServiceNeeds: 'Ei palveluntarpeita',
         period: 'Aikaväli',
         description: 'Kuvaus',
-        shiftCare: 'Vuorohoito'
+        shiftCare: 'Ilta/Vuoro',
+        createNewBtn: 'Luo uusi palveluntarve',
+        optionPlaceholder: 'Valitse...'
       }
     },
     fridgeParents: {

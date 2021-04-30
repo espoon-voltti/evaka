@@ -96,6 +96,19 @@ export interface AdditionalInformation {
   medication: string
 }
 
+export interface ServiceNeedOption {
+  id: UUID
+  name: string
+  validPlacementType: PlacementType
+  defaultOption: boolean
+  feeCoefficient: number
+  voucherValueCoefficient: number
+  occupancyCoefficient: number
+  daycareHoursPerWeek: number
+  partDay: boolean
+  partWeek: boolean
+}
+
 interface ServiceNeedOptionSummary {
   id: UUID
   name: string

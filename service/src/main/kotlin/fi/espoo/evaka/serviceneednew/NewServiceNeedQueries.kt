@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
@@ -50,6 +51,28 @@ fun Database.Read.getServiceNeedsByUnit(
         .bindNullable("end", endDate)
         .mapTo<NewServiceNeed>()
         .toList()
+}
+
+fun Database.Read.getNewServiceNeed(id: UUID): NewServiceNeed {
+    // language=sql
+    val sql = """
+        SELECT 
+            sn.id,
+            sn.placement_id,
+            sn.start_date,
+            sn.end_date,
+            sn.option_id,
+            sno.name as option_name,
+            sn.shift_care
+        FROM new_service_need sn
+        JOIN service_need_option sno on sn.option_id = sno.id
+        WHERE sn.id = :id
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("id", id)
+        .mapTo<NewServiceNeed>()
+        .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
 // language=sql
@@ -112,3 +135,91 @@ val migrationSqlCases = """
         ELSE 'undefined'
     END
 """.trimIndent()
+
+fun Database.Transaction.insertNewServiceNeed(
+    placementId: UUID,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    optionId: UUID,
+    shiftCare: Boolean
+) {
+    // language=sql
+    val sql = """
+        INSERT INTO new_service_need (placement_id, start_date, end_date, option_id, shift_care) 
+        VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare);
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("placementId", placementId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .bind("optionId", optionId)
+        .bind("shiftCare", shiftCare)
+        .execute()
+}
+
+fun Database.Transaction.updateNewServiceNeed(
+    id: UUID,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    optionId: UUID,
+    shiftCare: Boolean
+) {
+    // language=sql
+    val sql = """
+        UPDATE new_service_need
+        SET start_date = :startDate, end_date = :endDate, option_id = :optionId, shift_care = :shiftCare
+        WHERE id = :id
+    """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .bind("optionId", optionId)
+        .bind("shiftCare", shiftCare)
+        .execute()
+}
+
+fun Database.Transaction.deleteNewServiceNeed(
+    id: UUID
+) {
+    createUpdate("DELETE FROM new_service_need WHERE id = :id")
+        .bind("id", id)
+        .execute()
+}
+
+fun Database.Read.getOverlappingServiceNeeds(
+    placementId: UUID,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    excluding: UUID?
+): List<NewServiceNeed> {
+    // language=sql
+    val sql = """
+        SELECT 
+            sn.id,
+            sn.placement_id,
+            sn.start_date,
+            sn.end_date,
+            sn.option_id,
+            sno.name as option_name,
+            sn.shift_care
+        FROM new_service_need sn
+        JOIN service_need_option sno on sn.option_id = sno.id
+        WHERE placement_id = :placementId AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:startDate, :endDate, '[]')
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("placementId", placementId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .mapTo<NewServiceNeed>()
+        .list()
+        .filter { it.id != excluding }
+}
+
+fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
+    return createQuery("SELECT * FROM service_need_option")
+        .mapTo<ServiceNeedOption>()
+        .list()
+}

@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import * as _ from 'lodash'
 import { UUID } from '../../types'
 import Loader from 'lib-components/atoms/Loader'
 import { useTranslation } from '../../state/i18n'
-import { faHiking } from 'lib-icons'
 import { ChildContext } from '../../state'
 import { Loading } from 'lib-common/api'
 import { getChildBackupCares } from '../../api/child/backup-care'
@@ -15,18 +14,21 @@ import { UIContext } from '../../state/ui'
 import BackupCareForm from '../../components/child-information/backup-care/BackupCareForm'
 import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { RequireRole } from '../../utils/roles'
+import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
+import { H2 } from '../../../lib-components/typography'
 
 export interface Props {
   id: UUID
-  open: boolean
+  startOpen: boolean
 }
 
-export default function BackupCare({ id, open }: Props): JSX.Element {
+export default function BackupCare({ id, startOpen }: Props): JSX.Element {
   const { i18n } = useTranslation()
   const { backupCares, setBackupCares } = useContext(ChildContext)
   const { uiMode, toggleUiMode } = useContext(UIContext)
+
+  const [open, setOpen] = useState(startOpen)
 
   useEffect(() => {
     void getChildBackupCares(id).then((backupCares) => {
@@ -38,11 +40,13 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
   }, [id, setBackupCares])
 
   return (
-    <CollapsibleSection
+    <CollapsibleContentArea
+      title={<H2 noMargin>{i18n.childInformation.backupCares.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="backup-cares-collapsible"
-      icon={faHiking}
-      title={i18n.childInformation.backupCares.title}
-      startCollapsed={!open}
     >
       {backupCares.isLoading && <Loader />}
       {backupCares.isFailure && <div>{i18n.common.loadingFailed}</div>}
@@ -77,6 +81,6 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
           )}
         </div>
       )}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 }

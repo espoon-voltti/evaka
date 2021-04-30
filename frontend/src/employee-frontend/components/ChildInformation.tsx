@@ -42,12 +42,7 @@ import DailyServiceTimesSection from './child-information/DailyServiceTimesSecti
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
-  width: 70%;
-`
-
-const Section = styled.div`
-  margin-bottom: 70px;
-  width: 70%;
+  align-items: center;
 `
 
 const HeadOfFamilyLink = styled(Link)`
@@ -208,10 +203,12 @@ const ChildInformation = React.memo(function ChildInformation({
   return (
     <Container>
       <Gap size={'L'} />
-      <ContentArea opaque>
-        <div className="child-information-wrapper" data-person-id={id}>
+      <div className="child-information-wrapper" data-person-id={id}>
+        <ContentArea opaque>
           <HeaderRow>
-            <Title size={1}>{i18n.childInformation.title}</Title>
+            <Title size={1} noMargin>
+              {i18n.childInformation.title}
+            </Title>
             <div>
               {person.isSuccess && person.value.restrictedDetailsEnabled && (
                 <WarningLabel text={i18n.childInformation.restrictedDetails} />
@@ -236,19 +233,24 @@ const ChildInformation = React.memo(function ChildInformation({
               ) : null}
             </div>
           </HeaderRow>
-          <Section>
-            <ChildDetails id={id} />
-          </Section>
-          {layout.map(({ component, open }) => {
-            const Component = components[component]
-            return (
-              <Section key={component}>
-                <Component id={id} open={open} />
-              </Section>
-            )
-          })}
-        </div>
-      </ContentArea>
+        </ContentArea>
+
+        <Gap size={'m'} />
+
+        <ChildDetails id={id} />
+
+        <Gap size={'m'} />
+
+        {layout.map(({ component, open }) => {
+          const Component = components[component]
+          return (
+            <>
+              <Component id={id} startOpen={open} key={component} />
+              <Gap size={'m'} />
+            </>
+          )
+        })}
+      </div>
     </Container>
   )
 })
