@@ -98,12 +98,11 @@ export const CollapsibleContentArea = React.memo(
     }
 
     return (
-      <ContentArea {...props}>
+      <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
         <TitleContainer
           tabIndex={0}
           onClick={toggleOpen}
           data-qa={props['data-qa'] ? `${props['data-qa']}-header` : undefined}
-          data-status={open ? 'open' : 'closed'}
           onKeyUp={toggleOnEnter}
           className={classNames({ open })}
           open={open}
@@ -113,7 +112,10 @@ export const CollapsibleContentArea = React.memo(
           <CollapsibleContentAreaDescription
             numberOfErrors={validationErrors ?? 0}
           />
-          <TitleIcon icon={open ? faChevronUp : faChevronDown} />
+          <TitleIcon
+            icon={open ? faChevronUp : faChevronDown}
+            data-qa="collapsible-trigger"
+          />
         </TitleContainer>
         {open ? children : null}
       </ContentArea>
