@@ -234,7 +234,7 @@ function AclTable({
             onChangeGroups={
               onChangeAclGroups
                 ? (ids) => onChangeAclGroups(row.id, ids)
-                : async () => Success.of(undefined)
+                : () => Promise.resolve(Success.of(undefined))
             }
             rolesAllowedToEdit={rolesAllowedToEdit}
           />

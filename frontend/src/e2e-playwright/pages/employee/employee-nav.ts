@@ -88,8 +88,11 @@ export default class EmployeeNav {
     }
   }
 
-  async openTab(tab: 'reports') {
+  async openTab(tab: 'reports' | 'units') {
     switch (tab) {
+      case 'units':
+        await this.unitsTab.click()
+        break
       case 'reports':
         await this.reportsTab.click()
         break

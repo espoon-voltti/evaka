@@ -86,6 +86,8 @@ export default function MultiSelect<T extends object>({
 
             return (
               <OptionWrapper
+                data-qa="option"
+                data-id={getOptionId(data)}
                 ref={innerRef}
                 {...innerProps}
                 key={getOptionId(data)}
@@ -99,6 +101,21 @@ export default function MultiSelect<T extends object>({
                   selected={props.isSelected}
                 />
               </OptionWrapper>
+            )
+          },
+          MultiValueContainer: function MultiValueContainer({
+            data,
+            children,
+            innerProps
+          }) {
+            return (
+              <div
+                {...innerProps}
+                data-qa="multivalue"
+                data-id={getOptionId(data)}
+              >
+                {children}
+              </div>
             )
           }
         }}

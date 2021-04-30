@@ -44,6 +44,10 @@ export class RawElement {
     await this.page.waitForSelector(this.selector, { state: 'visible' })
   }
 
+  async getAttribute(name: string): Promise<string | null> {
+    return this.page.getAttribute(this.selector, name)
+  }
+
   find(descendant: string): RawElement {
     return new RawElement(this.page, `${this.selector} ${descendant}`)
   }
