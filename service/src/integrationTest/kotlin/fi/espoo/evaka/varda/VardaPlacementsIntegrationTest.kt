@@ -36,7 +36,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

@@ -34,7 +34,7 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
             tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
             tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
             tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
-            insertTestVardaOrganizer(tx.handle)
+            tx.insertTestVardaOrganizer()
         }
     }
 

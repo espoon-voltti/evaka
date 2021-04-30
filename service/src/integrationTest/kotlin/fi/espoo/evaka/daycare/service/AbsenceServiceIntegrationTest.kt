@@ -49,7 +49,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun prepare() {
         db.transaction {
-            insertGeneralTestFixtures(it.handle)
+            it.insertGeneralTestFixtures()
             it.handle.insertTestPerson(DevPerson(id = testUserId))
             it.handle.insertTestEmployee(DevEmployee(id = testUserId))
         }

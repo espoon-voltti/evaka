@@ -64,7 +64,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             tx.execute(
                 "INSERT INTO holiday (date) VALUES (?), (?), (?), (?), (?), (?)",
                 LocalDate.of(2019, 1, 1),

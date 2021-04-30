@@ -27,7 +27,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         service = PersonStorageService()
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

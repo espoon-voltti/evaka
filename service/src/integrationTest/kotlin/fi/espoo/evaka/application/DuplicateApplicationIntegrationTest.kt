@@ -31,7 +31,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
     internal fun setUp() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

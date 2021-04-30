@@ -27,7 +27,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -45,7 +44,6 @@ import fi.espoo.evaka.shared.dev.insertTestPricing
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -371,10 +369,10 @@ val allChildren = setOf(
 val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth, it.firstName, it.lastName, it.ssn) }
 val allDaycares = setOf(testDaycare, testDaycare2)
 
-fun insertGeneralTestFixtures(h: Handle) {
-    insertTestVardaOrganizer(h)
-    h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-    h.insertTestCareArea(
+fun Database.Transaction.insertGeneralTestFixtures() {
+    insertTestVardaOrganizer()
+    handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+    handle.insertTestCareArea(
         DevCareArea(
             id = testArea2Id,
             name = testDaycare2.areaName,
@@ -382,7 +380,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             areaCode = testArea2Code
         )
     )
-    h.insertTestCareArea(
+    handle.insertTestCareArea(
         DevCareArea(
             id = svebiTestId,
             name = testSvebiDaycare.areaName,
@@ -390,7 +388,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             areaCode = svebiTestCode
         )
     )
-    h.insertTestDaycare(
+    handle.insertTestDaycare(
         DevDaycare(
             areaId = svebiTestId,
             id = testSvebiDaycare.id,
@@ -398,7 +396,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             language = Language.sv
         )
     )
-    h.insertTestDaycare(
+    handle.insertTestDaycare(
         DevDaycare(
             areaId = testAreaId,
             id = testDaycare.id,
@@ -406,8 +404,8 @@ fun insertGeneralTestFixtures(h: Handle) {
             ophOrganizerOid = defaultMunicipalOrganizerOid
         )
     )
-    h.insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
-    h.insertTestDaycare(
+    handle.insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
+    handle.insertTestDaycare(
         DevDaycare(
             areaId = testArea2Id,
             id = testDaycareNotInvoiced.id,
@@ -415,7 +413,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             invoicedByMunicipality = testDaycareNotInvoiced.invoicedByMunicipality
         )
     )
-    h.insertTestDaycare(
+    handle.insertTestDaycare(
         DevDaycare(
             areaId = testAreaId,
             id = testPurchasedDaycare.id,
@@ -425,7 +423,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             invoicedByMunicipality = false
         )
     )
-    h.insertTestDaycare(
+    handle.insertTestDaycare(
         DevDaycare(
             areaId = testVoucherDaycare.areaId,
             id = testVoucherDaycare.id,
@@ -435,7 +433,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             invoicedByMunicipality = false
         )
     )
-    h.insertTestDaycare(
+    handle.insertTestDaycare(
         DevDaycare(
             areaId = testVoucherDaycare2.areaId,
             id = testVoucherDaycare2.id,
@@ -446,12 +444,12 @@ fun insertGeneralTestFixtures(h: Handle) {
         )
     )
 
-    h.insertTestDaycare(testClub)
-    h.insertTestDaycare(testGhostUnitDaycare)
-    h.insertTestDaycare(testRoundTheClockDaycare)
+    handle.insertTestDaycare(testClub)
+    handle.insertTestDaycare(testGhostUnitDaycare)
+    handle.insertTestDaycare(testRoundTheClockDaycare)
 
     testDecisionMaker_1.let {
-        h.insertTestEmployee(
+        handle.insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -462,7 +460,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     }
 
     testDecisionMaker_2.let {
-        h.insertTestEmployee(
+        handle.insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -472,7 +470,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     }
 
     unitSupervisorOfTestDaycare.let {
-        h.insertTestEmployee(
+        handle.insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
@@ -481,7 +479,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             )
         )
         updateDaycareAcl(
-            h,
+            handle,
             testDaycare.id,
             unitSupervisorExternalId,
             UserRole.UNIT_SUPERVISOR
@@ -489,7 +487,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     }
 
     allAdults.forEach {
-        h.insertTestPerson(
+        handle.insertTestPerson(
             DevPerson(
                 id = it.id,
                 dateOfBirth = it.dateOfBirth,
@@ -506,7 +504,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     }
 
     allChildren.forEach {
-        h.insertTestPerson(
+        handle.insertTestPerson(
             DevPerson(
                 id = it.id,
                 dateOfBirth = it.dateOfBirth,
@@ -518,10 +516,10 @@ fun insertGeneralTestFixtures(h: Handle) {
                 postOffice = it.postOffice ?: ""
             )
         )
-        h.insertTestChild(DevChild(id = it.id))
+        handle.insertTestChild(DevChild(id = it.id))
     }
 
-    h.insertTestPricing(
+    handle.insertTestPricing(
         DevPricing(
             id = UUID.randomUUID(),
             validFrom = LocalDate.of(2000, 1, 1),
@@ -537,21 +535,18 @@ fun insertGeneralTestFixtures(h: Handle) {
         )
     )
 
-    h.insertTestVoucherValue(
+    handle.insertTestVoucherValue(
         VoucherValue(id = UUID.randomUUID(), validity = DateRange(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
     )
 
-    h.insertPreschoolTerms()
+    insertPreschoolTerms()
 
-    h.insertServiceNeedOptions()
+    insertServiceNeedOptions()
 }
 
 fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
-fun resetDatabase(h: Handle) {
-    h.transaction { it.execute("SELECT reset_database()") }
-}
 
-fun Handle.insertPreschoolTerms() {
+fun Database.Transaction.insertPreschoolTerms() {
     //language=SQL
     val sql =
         """
@@ -595,7 +590,7 @@ VALUES (
     createUpdate(sql).execute()
 }
 
-fun Handle.insertServiceNeedOptions() {
+fun Database.Transaction.insertServiceNeedOptions() {
     val batch = prepareBatch(
         // language=sql
         """
@@ -609,7 +604,7 @@ VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :vouch
     batch.execute()
 }
 
-fun insertTestVardaOrganizer(h: Handle) {
+fun Database.Transaction.insertTestVardaOrganizer() {
     //language=SQL
     val sql =
         """
@@ -617,7 +612,7 @@ fun insertTestVardaOrganizer(h: Handle) {
             VALUES (:organizer, :email, :phone, :varda_organizer_id, :varda_organizer_oid, :url, :municipality_code)
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bindMap(
             mapOf(
                 "organizer" to "Espoo",
@@ -631,8 +626,7 @@ fun insertTestVardaOrganizer(h: Handle) {
         ).execute()
 }
 
-fun insertApplication(
-    h: Handle,
+fun Database.Transaction.insertApplication(
     guardian: PersonData.Detailed = testAdult_5,
     child: PersonData.Detailed = testChild_6,
     appliedType: PlacementType = PlacementType.PRESCHOOL_DAYCARE,
@@ -645,7 +639,7 @@ fun insertApplication(
     guardianEmail: String = "abc@espoo.fi"
 ): ApplicationDetails {
     insertTestApplication(
-        h = h,
+        h = handle,
         id = applicationId,
         sentDate = null,
         dueDate = null,
@@ -735,7 +729,7 @@ fun insertApplication(
         attachments = listOf()
     )
     insertTestApplicationForm(
-        h = h,
+        h = handle,
         applicationId = applicationId,
         document = DaycareFormV0.fromApplication2(application)
     )

@@ -27,7 +27,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

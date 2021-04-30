@@ -39,7 +39,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, id = groupId))
             insertTestCaretakers(tx.handle, groupId = groupId, amount = 3.0, startDate = LocalDate.of(2019, 1, 1))
         }

@@ -37,7 +37,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             insertTestPlacement(
                 tx.handle,
                 childId = testChild_1.id,

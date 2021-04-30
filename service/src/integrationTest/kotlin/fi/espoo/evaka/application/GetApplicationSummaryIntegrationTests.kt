@@ -35,7 +35,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
 
             createApplication(h = tx.handle, child = testChild_1, guardian = testAdult_1)
             createApplication(h = tx.handle, child = testChild_2, guardian = testAdult_1, attachment = true)

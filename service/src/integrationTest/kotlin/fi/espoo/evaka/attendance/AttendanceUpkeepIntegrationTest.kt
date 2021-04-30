@@ -35,7 +35,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
             insertTestPlacement(
                 h = tx.handle,

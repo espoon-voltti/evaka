@@ -34,7 +34,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

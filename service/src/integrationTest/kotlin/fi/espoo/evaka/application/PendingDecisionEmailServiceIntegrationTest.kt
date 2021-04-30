@@ -48,7 +48,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     internal fun setUp() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
 
             insertTestApplication(
                 h = tx.handle,

@@ -28,7 +28,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     fun setup() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             tx.handle.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = groupId,

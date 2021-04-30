@@ -105,7 +105,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
 
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = secondGroupId, daycareId = secondUnitId, name = secondGroupName))

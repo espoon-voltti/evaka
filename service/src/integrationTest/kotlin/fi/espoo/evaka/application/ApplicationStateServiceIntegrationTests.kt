@@ -53,7 +53,6 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -96,7 +95,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         MockEvakaMessageClient.clearMessages()
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -104,8 +103,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - preschool has due date same as sent date`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
@@ -130,8 +128,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has due date after 4 months if not urgent`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 urgent = false,
                 applicationId = applicationId,
@@ -164,8 +161,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has due date after 2 weeks if urgent and has attachments`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 guardian = testAdult_1,
                 appliedType = PlacementType.DAYCARE,
                 urgent = true,
@@ -197,8 +193,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - urgent daycare application gets due date from first received attachment`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 guardian = testAdult_1,
                 appliedType = PlacementType.DAYCARE,
                 urgent = true,
@@ -238,8 +233,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has not due date if a transfer application`() {
         db.transaction { tx ->
             // given
-            val draft = insertApplication(
-                tx.handle,
+            val draft = tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 urgent = false,
                 applicationId = applicationId,
@@ -270,8 +264,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 hasAdditionalInfo = false,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -294,8 +287,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with otherInfo - status is changed and checkedByAdmin defaults false`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 hasAdditionalInfo = true,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -317,8 +309,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - guardian contact details are updated`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -341,8 +332,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - empty application guardian email does not wipe out person email`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                h = tx.handle,
+            tx.insertApplication(
                 guardian = testAdult_6,
                 appliedType = PlacementType.DAYCARE,
                 applicationId = applicationId,
@@ -367,8 +357,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - child is upserted with diet and allergies`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 hasAdditionalInfo = true,
                 applicationId = applicationId
@@ -391,8 +380,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `setVerified and setUnverified - changes checkedByAdmin`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 hasAdditionalInfo = true,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -426,7 +414,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelApplication from SENT - status is changed`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
+            tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -444,7 +432,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelApplication from WAITING_PLACEMENT - status is changed`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
+            tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -463,7 +451,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `returnToSent - status is changed`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
+            tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -482,8 +470,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - daycare`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -541,8 +528,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - daycare part-time`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.DAYCARE_PART_TIME,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -600,8 +586,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - preschool`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
@@ -675,8 +660,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - preschool with daycare`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -751,8 +735,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelPlacementPlan - removes placement plan and decision drafts and changes status`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -846,8 +829,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     ) {
         // given
         db.transaction { tx ->
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 guardian = applier,
                 child = child,
@@ -911,8 +893,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendPlacementProposal - updates status`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -946,8 +927,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `withdrawPlacementProposal - updates status`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -984,8 +964,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - sends decisions and updates status`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
                 guardian = testAdult_1,
                 applicationId = applicationId,
@@ -1039,8 +1019,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - if no decisions are marked for sending do nothing`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
                 guardian = testAdult_1, applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
@@ -1106,8 +1086,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - throws if some application is pending response`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 child = testChild_2,
                 guardian = testAdult_1, applicationId = applicationId,
@@ -1136,8 +1115,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - throws if some application has been rejected`() {
         db.transaction { tx ->
             // given
-            insertApplication(
-                tx.handle,
+            tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 child = testChild_2,
                 guardian = testAdult_1, applicationId = applicationId,
@@ -1171,17 +1149,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `reject preschool decision rejects preschool daycare decision too`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.rejectDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                getDecision(tx, DecisionType.PRESCHOOL).id
             )
         }
         db.read { tx ->
@@ -1189,10 +1166,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(ApplicationStatus.REJECTED, application.status)
 
-            with(getDecision(tx.handle, DecisionType.PRESCHOOL)) {
+            with(getDecision(tx, DecisionType.PRESCHOOL)) {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
-            with(getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE)) {
+            with(getDecision(tx, DecisionType.PRESCHOOL_DAYCARE)) {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
 
@@ -1206,24 +1183,23 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `accept preschool and reject preschool daycare`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
             service.rejectDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id
             )
         }
         db.read { tx ->
@@ -1231,10 +1207,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
-            with(getDecision(tx.handle, DecisionType.PRESCHOOL)) {
+            with(getDecision(tx, DecisionType.PRESCHOOL)) {
                 assertEquals(DecisionStatus.ACCEPTED, status)
             }
-            with(getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE)) {
+            with(getDecision(tx, DecisionType.PRESCHOOL_DAYCARE)) {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
 
@@ -1253,17 +1229,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `accept preschool application with maxFeeAccepted - new income has been created`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1293,15 +1268,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1332,15 +1308,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1371,15 +1348,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1410,15 +1388,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.minusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1451,15 +1430,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.plusMonths(6)
             )
             upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1490,15 +1470,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx, preferredStartDate = null)
         }
+        workflowForPreschoolDaycareDecisions(preferredStartDate = null)
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1527,15 +1508,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1565,15 +1547,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1604,15 +1587,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1644,15 +1628,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1683,15 +1668,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1722,15 +1708,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1761,15 +1748,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.plusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1800,15 +1788,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = mainPeriod.start.minusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
-            workflowForPreschoolDaycareDecisions(tx)
         }
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1826,10 +1815,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `enduser can accept and reject own decisions`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             val user = AuthenticatedUser.Citizen(testAdult_5.id)
@@ -1837,7 +1825,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 tx,
                 user,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
                 isEnduser = true
             )
@@ -1845,7 +1833,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 tx,
                 user,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                 isEnduser = true
             )
 
@@ -1857,10 +1845,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `enduser can not accept decision of someone else`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             val user = AuthenticatedUser.Citizen(testAdult_1.id)
             // when
@@ -1869,7 +1856,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     user,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start,
                     isEnduser = true
                 )
@@ -1879,10 +1866,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `enduser can not reject decision of someone else`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             val user = AuthenticatedUser.Citizen(testAdult_1.id)
@@ -1891,7 +1877,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     user,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                     isEnduser = true
                 )
             }
@@ -1900,24 +1886,23 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `accept preschool and accept preschool daycare`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                 connectedPeriod.start
             )
         }
@@ -1926,10 +1911,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
-            with(getDecision(tx.handle, DecisionType.PRESCHOOL)) {
+            with(getDecision(tx, DecisionType.PRESCHOOL)) {
                 assertEquals(DecisionStatus.ACCEPTED, status)
             }
-            with(getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE)) {
+            with(getDecision(tx, DecisionType.PRESCHOOL_DAYCARE)) {
                 assertEquals(DecisionStatus.ACCEPTED, status)
             }
 
@@ -1951,10 +1936,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `accept preschool daycare first throws`() {
-        db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
-        }
+        // given
+        workflowForPreschoolDaycareDecisions()
+
         db.transaction { tx ->
             // when / then
             assertThrows<BadRequest> {
@@ -1962,7 +1946,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     serviceWorker,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
+                    getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                     mainPeriod.start
                 )
             }
@@ -1971,14 +1955,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `accepting already accepted decision throws`() {
+        // given
+        workflowForPreschoolDaycareDecisions()
         db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -1989,7 +1973,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     serviceWorker,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start
                 )
             }
@@ -1998,14 +1982,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `accepting already rejected decision throws`() {
+        // given
+        workflowForPreschoolDaycareDecisions()
         db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
             service.rejectDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                getDecision(tx, DecisionType.PRESCHOOL).id
             )
         }
         db.transaction { tx ->
@@ -2015,7 +1999,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     serviceWorker,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start
                 )
             }
@@ -2024,14 +2008,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `rejecting already accepted decision throws`() {
+        // given
+        workflowForPreschoolDaycareDecisions()
         db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
             service.acceptDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
@@ -2042,7 +2026,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     serviceWorker,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                    getDecision(tx, DecisionType.PRESCHOOL).id
                 )
             }
         }
@@ -2050,14 +2034,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     @Test
     fun `rejecting already rejected decision throws`() {
+        // given
+        workflowForPreschoolDaycareDecisions()
         db.transaction { tx ->
-            // given
-            workflowForPreschoolDaycareDecisions(tx)
             service.rejectDecision(
                 tx,
                 serviceWorker,
                 applicationId,
-                getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                getDecision(tx, DecisionType.PRESCHOOL).id
             )
         }
         db.transaction { tx ->
@@ -2067,36 +2051,37 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     tx,
                     serviceWorker,
                     applicationId,
-                    getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                    getDecision(tx, DecisionType.PRESCHOOL).id
                 )
             }
         }
     }
 
-    private fun getDecision(h: Handle, type: DecisionType): Decision =
-        getDecisionsByApplication(h, applicationId, AclAuthorization.All).first { it.type == type }
+    private fun getDecision(r: Database.Read, type: DecisionType): Decision =
+        getDecisionsByApplication(r.handle, applicationId, AclAuthorization.All).first { it.type == type }
 
-    private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction, preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1)) {
-        insertApplication(
-            tx.handle,
-            guardian = testAdult_5,
-            maxFeeAccepted = true,
-            appliedType = PlacementType.PRESCHOOL_DAYCARE,
-            applicationId = applicationId,
-            preferredStartDate = preferredStartDate
-        )
-        service.sendApplication(tx, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            tx,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
+    private fun workflowForPreschoolDaycareDecisions(preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1)) {
+        db.transaction { tx ->
+            tx.insertApplication(
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = preferredStartDate
             )
-        )
-        service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
+            )
+            service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
+        }
     }
 }

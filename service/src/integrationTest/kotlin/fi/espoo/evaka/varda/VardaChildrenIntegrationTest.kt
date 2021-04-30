@@ -40,7 +40,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
         insertTestVardaUnit(db, testDaycare.id)
         uploadChildren()

@@ -26,10 +26,10 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
     @BeforeEach
     protected fun beforeEach() {
         db.transaction {
-            resetDatabase(it.handle)
-            insertGeneralTestFixtures(it.handle)
-            user = AuthenticatedUser.Citizen(testAdult_5.id)
+            it.resetDatabase()
+            it.insertGeneralTestFixtures()
         }
+        user = AuthenticatedUser.Citizen(testAdult_5.id)
     }
 
     @AfterEach
@@ -43,7 +43,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
     fun `Enduser can upload attachments up to the limit`() {
         val maxAttachments = env.getProperty("fi.espoo.evaka.maxAttachmentsPerUser")!!.toInt()
         db.transaction {
-            insertApplication(it.handle, applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
+            it.insertApplication(applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
         }
         for (i in 1..maxAttachments) {
             Assertions.assertTrue(uploadAttachment(applicationId, user))

@@ -58,7 +58,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -69,10 +69,10 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val user = AuthenticatedUser.Citizen(testAdult_5.id)
 
         db.transaction { tx ->
-            insertApplication(tx.handle, guardian = testAdult_5, applicationId = id_to_be_deleted)
+            tx.insertApplication(guardian = testAdult_5, applicationId = id_to_be_deleted)
             setApplicationCreatedDate(tx, id_to_be_deleted, LocalDate.now().minusDays(32))
 
-            insertApplication(tx.handle, guardian = testAdult_5, applicationId = id_not_to_be_deleted)
+            tx.insertApplication(guardian = testAdult_5, applicationId = id_not_to_be_deleted)
             setApplicationCreatedDate(tx, id_not_to_be_deleted, LocalDate.now().minusDays(31))
         }
 

@@ -28,7 +28,7 @@ class VardaOrganizerIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
         mockEndpoint.cleanUp()
     }

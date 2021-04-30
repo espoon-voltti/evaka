@@ -47,7 +47,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun setUp() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             insertTestPlacement(
                 h = tx.handle,
                 childId = childId,

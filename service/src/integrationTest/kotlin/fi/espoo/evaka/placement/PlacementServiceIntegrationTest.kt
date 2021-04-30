@@ -48,7 +48,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     internal fun setUp() {
         db.transaction {
             it.resetDatabase()
-            insertGeneralTestFixtures(it.handle)
+            it.insertGeneralTestFixtures()
         }
         db.transaction {
             groupId1 = it.handle.insertTestDaycareGroup(

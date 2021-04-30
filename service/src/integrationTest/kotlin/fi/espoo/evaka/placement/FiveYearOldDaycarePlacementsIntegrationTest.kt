@@ -22,7 +22,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction {
             it.resetDatabase()
-            insertGeneralTestFixtures(it.handle)
+            it.insertGeneralTestFixtures()
         }
     }
 

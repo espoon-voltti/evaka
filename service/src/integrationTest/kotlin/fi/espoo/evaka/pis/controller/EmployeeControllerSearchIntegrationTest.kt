@@ -29,7 +29,7 @@ class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

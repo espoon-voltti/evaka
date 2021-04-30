@@ -49,7 +49,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         mergeService = MergeService(asyncJobRunnerMock)
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
