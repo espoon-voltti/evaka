@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.service.getChildGuardians
+import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
@@ -15,6 +17,7 @@ import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -34,6 +37,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     private fun afterEach() {
         db.transaction { tx ->
             tx.deleteDvvModificationToken("100")
+            DvvIntegrationTestPersonService.resetSsnUpdateCounts()
         }
     }
 
@@ -57,6 +61,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         createTestPerson(testPerson.copy(ssn = "010180-999A"))
         dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("010180-999A"))
         assertEquals(LocalDate.parse("2019-07-30"), db.read { it.handle.getPersonBySSN("010180-999A") }?.dateOfDeath)
+        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("010180-999A"))
     }
 
     @Test
@@ -68,6 +73,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals("", modifiedPerson.streetAddress)
         assertEquals("", modifiedPerson.postalCode)
         assertEquals("", modifiedPerson.postOffice)
+        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("020180-999Y"))
     }
 
     @Test
@@ -80,6 +86,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals("Vanhakatu 10h5 3", modifiedPerson.streetAddress)
         assertEquals("02230", modifiedPerson.postalCode)
         assertEquals("Espoo", modifiedPerson.postOffice)
+        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("020180-999Y"))
     }
 
     @Test
@@ -91,29 +98,44 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals("02940", modifiedPerson.postalCode)
         assertEquals("ESPOO", modifiedPerson.postOffice)
         assertEquals("123456789V1B033 ", modifiedPerson.residenceCode)
+        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("040180-9998"))
     }
 
     @Test
     fun `person ssn change`() {
         val testId = createTestPerson(testPerson.copy(ssn = "010181-999K"))
+        // Should update SSN from 010181-999K to 010181-999C
         dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("010181-999K"))
         assertEquals(testId, db.read { it.handle.getPersonBySSN("010281-999C") }?.id)
+        assertEquals(null, db.read { it.handle.getPersonBySSN("010281-999K") })
+        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("010281-999K"))
+        assertEquals(0, DvvIntegrationTestPersonService.getSsnUpdateCount("010281-999C"))
     }
 
     @Test
     fun `new custodian added`() {
-        var caretaker: DevPerson = testPerson.copy(ssn = "050180-999W")
-        val custodian = testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W", guardians = listOf(caretaker))
+        val custodian = testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W")
+        var caretaker: DevPerson = testPerson.copy(ssn = "050180-999W", dependants = listOf(custodian))
+
         caretaker = caretaker.copy(dependants = listOf(custodian))
 
         createTestPerson(custodian)
         createVtjPerson(custodian)
         createVtjPerson(caretaker)
 
-        dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("050118A999W"))
+        dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("050180-999W"))
         val dvvCustodian = db.read { it.handle.getPersonBySSN("050118A999W") }!!
         assertEquals("Harri", dvvCustodian.firstName)
         assertEquals("Huollettava", dvvCustodian.lastName)
+        assertTrue(
+            db.read { tx ->
+                tx.getChildGuardians(dvvCustodian.id)
+                    .map { tx.handle.getPersonById(it) }.filterNotNull()
+                    .any() { guardian -> guardian.identity.toString() == caretaker.ssn }
+            }
+        )
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount(caretaker.ssn.toString()))
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnCustodianUpdateCount(caretaker.ssn.toString()))
     }
 
     @Test
@@ -130,6 +152,44 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         val dvvCaretaker = db.read { it.handle.getPersonBySSN("060180-999J") }!!
         assertEquals("Harri", dvvCaretaker.firstName)
         assertEquals("Huoltaja", dvvCaretaker.lastName)
+
+        assertTrue(
+            db.read { tx ->
+                tx.getGuardianChildIds(dvvCaretaker.id)
+                    .map { tx.handle.getPersonById(it) }.filterNotNull()
+                    .any() { child -> child.identity.toString() == custodian.ssn }
+            }
+        )
+
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount(caretaker.ssn.toString()))
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnCustodianUpdateCount(caretaker.ssn.toString()))
+    }
+
+    @Test
+    fun `new single caretaker ordered`() {
+        var custodian: DevPerson = testPerson.copy(ssn = "010118-999A")
+        val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999", dependants = listOf(custodian))
+        custodian = custodian.copy(guardians = listOf(caretaker))
+
+        createTestPerson(custodian)
+        createVtjPerson(custodian)
+        createVtjPerson(caretaker)
+
+        dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("yksinhuoltaja-muutos"))
+        val dvvCaretaker = db.read { it.handle.getPersonBySSN(caretaker.ssn!!) }!!
+        assertEquals("Harri", dvvCaretaker.firstName)
+        assertEquals("Huoltaja", dvvCaretaker.lastName)
+
+        assertTrue(
+            db.read { tx ->
+                tx.getGuardianChildIds(dvvCaretaker.id)
+                    .map { tx.handle.getPersonById(it) }.filterNotNull()
+                    .any() { child -> child.identity.toString() == custodian.ssn }
+            }
+        )
+
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnUpdateCount(caretaker.ssn.toString()))
+        assertEquals(1, DvvIntegrationTestPersonService.getSsnCustodianUpdateCount(caretaker.ssn.toString()))
     }
 
     @Test
