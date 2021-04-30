@@ -29,33 +29,33 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 
     @Test
     fun `no applications means no duplicates`() {
-        jdbi.handle { h -> assertFalse(duplicateApplicationExists(h, childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.DAYCARE)) }
     }
 
     @Test
     fun `duplicate is found`() {
         addDaycareApplication()
-        jdbi.handle { h -> assertTrue(duplicateApplicationExists(h, childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertTrue(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.DAYCARE)) }
     }
 
     @Test
     fun `application for a different child is not a duplicate`() {
         addDaycareApplication()
-        jdbi.handle { h -> assertFalse(duplicateApplicationExists(h, childId2, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId2, guardianId, ApplicationType.DAYCARE)) }
     }
 
     @Test
     fun `application for a different type is not a duplicate`() {
         addDaycareApplication()
-        jdbi.handle { h -> assertFalse(duplicateApplicationExists(h, childId, guardianId, ApplicationType.PRESCHOOL)) }
+        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.PRESCHOOL)) }
     }
 
     @Test
@@ -63,19 +63,19 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
         addDaycareApplication(ApplicationStatus.ACTIVE)
         addDaycareApplication(ApplicationStatus.REJECTED)
         addDaycareApplication(ApplicationStatus.CANCELLED)
-        jdbi.handle { h -> assertFalse(duplicateApplicationExists(h, childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.DAYCARE)) }
     }
 
     private fun addDaycareApplication(status: ApplicationStatus = ApplicationStatus.SENT) {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val appId = insertTestApplication(
-                h = h,
+                h = tx.handle,
                 status = status,
                 childId = childId,
                 guardianId = guardianId
             )
             insertTestApplicationForm(
-                h = h,
+                h = tx.handle,
                 applicationId = appId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )

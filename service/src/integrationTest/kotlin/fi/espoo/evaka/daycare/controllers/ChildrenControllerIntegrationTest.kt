@@ -31,9 +31,9 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle { h ->
-            h.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-            child = h.createChild(
+        db.transaction { tx ->
+            tx.handle.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+            child = tx.handle.createChild(
                 Child(
                     id = childId,
                     additionalInformation = AdditionalInformation(
@@ -48,10 +48,10 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @AfterEach
     internal fun tearDown() {
-        jdbi.handle {
-            it.execute("DELETE FROM assistance_need")
-            it.execute("DELETE FROM service_need")
-            it.execute("DELETE FROM person WHERE id = '$childId'")
+        db.transaction {
+            it.handle.execute("DELETE FROM assistance_need")
+            it.handle.execute("DELETE FROM service_need")
+            it.handle.execute("DELETE FROM person WHERE id = '$childId'")
         }
     }
 

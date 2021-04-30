@@ -26,12 +26,16 @@ import java.util.UUID
 class StartingPlacementsReportTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     @Test
@@ -122,9 +126,9 @@ class StartingPlacementsReportTest : FullApplicationTest() {
     }
 
     private fun insertPlacement(childId: UUID, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1)) =
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h,
+                tx.handle,
                 childId = childId,
                 unitId = testDaycare.id,
                 startDate = startDate,

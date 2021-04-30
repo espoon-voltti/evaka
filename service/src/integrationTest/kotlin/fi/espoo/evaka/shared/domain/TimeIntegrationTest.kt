@@ -24,17 +24,21 @@ import java.util.UUID
 class TimeIntegrationTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     @Test
     fun `operational days with no holidays or round the clock units in database`() {
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare.id))
@@ -42,13 +46,13 @@ class TimeIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `operational days with no holidays and a round the clock unit in database`() {
-        jdbi.handle { h ->
-            h.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
         }
 
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare2.id))
@@ -59,15 +63,15 @@ class TimeIntegrationTest : PureJdbiTest() {
     fun `operational days with no holidays and multiple round the clock units in database`() {
         var secondUnitId: UUID? = null
         var thirdUnitId: UUID? = null
-        jdbi.handle { h ->
-            secondUnitId = h.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
-            thirdUnitId = h.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))
-            h.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)")
+        db.transaction { tx ->
+            secondUnitId = tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
+            thirdUnitId = tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))
+            tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)")
                 .bind("ids", arrayOf(secondUnitId, thirdUnitId))
                 .execute()
         }
 
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare.id))
@@ -78,13 +82,13 @@ class TimeIntegrationTest : PureJdbiTest() {
     @Test
     fun `operational days with a weekday holiday and no round the clock units in database`() {
         val newYear = LocalDate.of(2020, 1, 1)
-        jdbi.handle { h ->
-            h.createUpdate("INSERT INTO holiday (date) VALUES (:date)")
+        db.transaction { tx ->
+            tx.createUpdate("INSERT INTO holiday (date) VALUES (:date)")
                 .bind("date", newYear)
                 .execute()
         }
 
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         val weekdaysWithoutHolidays = january2020Weekdays.filter { it != newYear }
         assertEquals(weekdaysWithoutHolidays, result.generalCase)
@@ -95,14 +99,14 @@ class TimeIntegrationTest : PureJdbiTest() {
     fun `operational days with multiple weekday holidays and no round the clock units in database`() {
         val newYear = LocalDate.of(2020, 1, 1)
         val epiphany = LocalDate.of(2020, 1, 6)
-        jdbi.handle { h ->
-            h.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
+        db.transaction { tx ->
+            tx.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
                 .bind("date1", newYear)
                 .bind("date2", epiphany)
                 .execute()
         }
 
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         val weekdaysWithoutHolidays = january2020Weekdays.filter { it != newYear && it != epiphany }
         assertEquals(weekdaysWithoutHolidays, result.generalCase)
@@ -112,13 +116,13 @@ class TimeIntegrationTest : PureJdbiTest() {
     @Test
     fun `operational days with a weekend holiday and no round the clock units in database`() {
         val someHoliday = LocalDate.of(2020, 1, 4)
-        jdbi.handle { h ->
-            h.createUpdate("INSERT INTO holiday (date) VALUES (:date)")
+        db.transaction { tx ->
+            tx.createUpdate("INSERT INTO holiday (date) VALUES (:date)")
                 .bind("date", someHoliday)
                 .execute()
         }
 
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare.id))
@@ -128,18 +132,18 @@ class TimeIntegrationTest : PureJdbiTest() {
     fun `operational days with multiple weekday holidays and a round the clock unit in database`() {
         val newYear = LocalDate.of(2020, 1, 1)
         val epiphany = LocalDate.of(2020, 1, 6)
-        jdbi.handle { h ->
-            h.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
+        db.transaction { tx ->
+            tx.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
                 .bind("date1", newYear)
                 .bind("date2", epiphany)
                 .execute()
 
-            h.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
+            tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
         }
 
-        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
+        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
 
         val weekdaysWithoutHolidays = january2020Weekdays.filter { it != newYear && it != epiphany }
         assertEquals(weekdaysWithoutHolidays, result.generalCase)

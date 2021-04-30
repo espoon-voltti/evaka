@@ -149,18 +149,22 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
         (integrationClient as InvoiceIntegrationClient.MockClient).sentBatches.clear()
     }
 
     @Test
     fun `search works with draft status parameter`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val drafts = testInvoices.filter { it.status === InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=DRAFT")
@@ -176,7 +180,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with sent status parameter`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = testInvoices.filter { it.status === InvoiceStatus.SENT }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=SENT")
@@ -192,7 +196,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with canceled status parameter`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val canceled = testInvoices.filter { it.status === InvoiceStatus.CANCELED }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=CANCELED")
@@ -208,7 +212,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with multiple status parameters`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sentAndCanceled =
             testInvoices.filter { it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED }
 
@@ -226,7 +230,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `search works with all status parameters`() {
         val testInvoiceSubset = testInvoices.take(2)
-        jdbi.handle { h -> upsertInvoices(h, testInvoiceSubset) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoiceSubset) }
         val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&status=DRAFT,SENT,CANCELED")
@@ -242,7 +246,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with existing area param`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=test_area")
@@ -258,7 +262,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with area and status params`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=test_area&status=DRAFT")
@@ -274,7 +278,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with non existant area param`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=non_existent")
             .asUser(testUser)
@@ -289,7 +293,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with multiple partial search terms`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get(
             "/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(
@@ -309,7 +313,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with multiple more specific search terms`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get(
             "/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.lastName.substring(
@@ -329,7 +333,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with multiple search terms where one does not match anything`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch")
             .asUser(testUser)
@@ -344,7 +348,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with child name as search term`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&searchTerms=${testChild_2.firstName}")
             .asUser(testUser)
@@ -359,7 +363,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with ssn as search term`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.ssn}")
             .asUser(testUser)
@@ -374,7 +378,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with date of birth as search term`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, result) = http.get(
             "/invoices/search?page=1&pageSize=200&searchTerms=${testAdult_1.ssn!!.substring(
@@ -394,7 +398,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search with pageSize 1 will find only one result`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).first())
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=1&sortBy=START&sortDirection=ASC")
@@ -410,7 +414,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search with pageSize 1 and pageNumber 2 will find the second result`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id }))[1])
 
         val (_, response, result) = http.get("/invoices/search?page=2&pageSize=1&sortBy=START&sortDirection=ASC")
@@ -426,7 +430,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search with pageSize 2 and pageNumber 1 will find first two results`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).subList(0, 2)
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=2&sortBy=START&sortDirection=ASC")
@@ -442,7 +446,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search gives correct total and page composition when using filters`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = testInvoices
             .filter { it.status == InvoiceStatus.DRAFT }
             .sortedBy { it.periodStart }
@@ -462,7 +466,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getInvoice works with existing invoice`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val invoice = testInvoices[0]
 
         val (_, response, result) = http.get("/invoices/${invoice.id}")
@@ -478,7 +482,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getInvoice returns not found with non-existant invoice`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
 
         val (_, response, _) = http.get("/invoices/00000000-0000-0000-0000-000000000000")
             .asUser(testUser)
@@ -488,7 +492,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `send works with draft invoice`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         val (_, response, _) = http.post("/invoices/send")
@@ -500,7 +504,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `send returns bad request for sent status invoice`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         val (_, response, _) = http.post("/invoices/send")
@@ -512,7 +516,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `send updates invoice status and number and sent fields`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         val (_, response, _) = http.post("/invoices/send")
@@ -550,7 +554,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.handle { h -> upsertInvoices(h, drafts) }
+        db.transaction { tx -> upsertInvoices(tx.handle, drafts) }
 
         val (_, response, _) = http.post("/invoices/send")
             .jsonBody(objectMapper.writeValueAsString(drafts.map { it.id }))
@@ -558,11 +562,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response.statusCode)
 
-        val sentInvoices = jdbi.handle { h -> getInvoicesByIds(h, drafts.map { it.id }) }
+        val sentInvoices = db.transaction { tx -> getInvoicesByIds(tx.handle, drafts.map { it.id }) }
 
         assertThat(sentInvoices.all { it.status == InvoiceStatus.SENT }).isTrue()
 
-        val maxInvoiceNumber = jdbi.handle { h -> getMaxInvoiceNumber(h) }
+        val maxInvoiceNumber = db.transaction { tx -> getMaxInvoiceNumber(tx.handle) }
         assertEquals(4999999999L + drafts.size, maxInvoiceNumber)
     }
 
@@ -579,7 +583,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             }
         }
 
-        jdbi.handle { h -> upsertInvoices(h, drafts + sentInvoice) }
+        db.transaction { tx -> upsertInvoices(tx.handle, drafts + sentInvoice) }
 
         val (_, response, _) = http.post("/invoices/send")
             .jsonBody(objectMapper.writeValueAsString(drafts.map { it.id }))
@@ -587,14 +591,14 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response.statusCode)
 
-        val maxInvoiceNumber = jdbi.handle { h -> getMaxInvoiceNumber(h) }
+        val maxInvoiceNumber = db.transaction { tx -> getMaxInvoiceNumber(tx.handle) }
         assertEquals(sentInvoice.number!! + drafts.size, maxInvoiceNumber)
     }
 
     @Test
     fun `mark as sent updates invoice status and sent fields`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.WAITING_FOR_SENDING)
-        jdbi.handle { h -> upsertInvoices(h, listOf(invoice)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(invoice)) }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
             .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id)))
@@ -623,7 +627,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `mark as sent returns bad request if invoice status is wrong`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
-        jdbi.handle { h -> upsertInvoices(h, listOf(invoice)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(invoice)) }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
             .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id)))
@@ -635,7 +639,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `mark as sent returns bad request if one of the ids is incorrect`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
-        jdbi.handle { h -> upsertInvoices(h, listOf(invoice)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(invoice)) }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
             .jsonBody(objectMapper.writeValueAsString(listOf(invoice.id, UUID.randomUUID())))
@@ -646,7 +650,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateInvoice works on drafts without updates`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
         val (_, response, _) = http.put("/invoices/${draft.id}")
@@ -658,7 +662,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateInvoice returns bad request on sent invoices`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
         val (_, response, _) = http.put("/invoices/${sent.id}")
@@ -670,7 +674,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateInvoice updates invoice row areaCode, costCenter, subCostCenter and adds a new row`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
         val updated = original.copy(
             rows = original.rows.map {
@@ -704,7 +708,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateInvoice does not update invoice status, periods, invoiceDate, dueDate or headOfFamily`() {
-        jdbi.handle { h -> upsertInvoices(h, testInvoices) }
+        db.transaction { tx -> upsertInvoices(tx.handle, testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
         val updated = original.copy(
             status = InvoiceStatus.SENT,
@@ -739,7 +743,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices works with one decision`() {
         val decision = testDecisions.find { it.status == FeeDecisionStatus.SENT }!!
-        jdbi.handle { h -> insertDecisions(h, listOf(decision)) }
+        db.transaction { tx -> insertDecisions(tx.handle, listOf(decision)) }
 
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -766,7 +770,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices works with two decisions`() {
         val testDecisions2 = testDecisions.filter { it.status == FeeDecisionStatus.SENT }.take(2)
-        jdbi.handle { h -> insertDecisions(h, testDecisions2) }
+        db.transaction { tx -> insertDecisions(tx.handle, testDecisions2) }
 
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -793,7 +797,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices is idempotent`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
-        jdbi.handle { h -> insertDecisions(h, decisions) }
+        db.transaction { tx -> insertDecisions(tx.handle, decisions) }
 
         for (i in 1..4) {
             val (_, response, _) = http.post("/invoices/create-drafts")
@@ -822,15 +826,15 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices generates no drafts from already invoiced decisions`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
-        jdbi.handle { h -> insertDecisions(h, decisions) }
+        db.transaction { tx -> insertDecisions(tx.handle, decisions) }
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
         assertEquals(204, response1.statusCode)
 
-        val draftIds = jdbi.handle { h ->
-            searchInvoices(h, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf()).map { it.id }
+        val draftIds = db.transaction { tx ->
+            searchInvoices(tx.handle, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf()).map { it.id }
         }
         assertThat(draftIds).isNotEmpty
 
@@ -840,8 +844,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response2.statusCode)
 
-        val sents = jdbi.handle { h ->
-            searchInvoices(h, listOf(InvoiceStatus.SENT), listOf(), null, listOf())
+        val sents = db.transaction { tx ->
+            searchInvoices(tx.handle, listOf(InvoiceStatus.SENT), listOf(), null, listOf())
         }
         assertThat(sents).isNotEmpty
 
@@ -850,8 +854,8 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response3.statusCode)
 
-        val drafts = jdbi.handle { h ->
-            searchInvoices(h, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
+        val drafts = db.transaction { tx ->
+            searchInvoices(tx.handle, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
         }
         assertThat(drafts).isEmpty()
     }
@@ -859,15 +863,15 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices overrides drafts`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!).take(1)
-        jdbi.handle { h -> insertDecisions(h, decisions) }
+        db.transaction { tx -> insertDecisions(tx.handle, decisions) }
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
             .responseString()
         assertEquals(204, response1.statusCode)
 
-        val originalDrafts = jdbi.handle { h ->
-            searchInvoices(h, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
+        val originalDrafts = db.transaction { tx ->
+            searchInvoices(tx.handle, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
         }
         assertEquals(1, originalDrafts.size)
 
@@ -876,11 +880,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response3.statusCode)
 
-        val originalDraft = jdbi.handle { h -> getInvoice(h, originalDrafts.first().id) }
+        val originalDraft = db.transaction { tx -> getInvoice(tx.handle, originalDrafts.first().id) }
         assertEquals(null, originalDraft)
 
-        val newDrafts = jdbi.handle { h ->
-            searchInvoices(h, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
+        val newDrafts = db.transaction { tx ->
+            searchInvoices(tx.handle, listOf(InvoiceStatus.DRAFT), listOf(), null, listOf())
         }
         assertEquals(1, newDrafts.size)
     }
@@ -888,7 +892,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `sending an invoice uses the recipient's actual address if it's valid`() {
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        jdbi.handle { h -> upsertInvoices(h, listOf(draft)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(draft)) }
 
         val (_, response, _) = http.post("/invoices/send")
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
@@ -912,10 +916,10 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `sending an invoice uses a fallback address when the recipient's actual address is partially incomplete`() {
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        jdbi.handle { h -> upsertInvoices(h, listOf(draft)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(draft)) }
 
-        jdbi.handle { h ->
-            h
+        db.transaction { tx ->
+            tx
                 .createUpdate("UPDATE person SET street_address = :emptyStreetAddress WHERE id = :id")
                 .bind("emptyStreetAddress", "")
                 .bind("id", testAdult_1.id)
@@ -944,13 +948,13 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `sending an invoice uses the recipient's invoicing address when it's complete`() {
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        jdbi.handle { h -> upsertInvoices(h, listOf(draft)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(draft)) }
 
         val streetAddress = "Testikatu 1"
         val postalCode = "00100"
         val postOffice = "Helsinki"
-        jdbi.handle { h ->
-            h
+        db.transaction { tx ->
+            tx
                 .createUpdate(
                     """
                 UPDATE person SET
@@ -998,7 +1002,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                 createInvoiceRowFixture(childId = testChild_1.id)
             )
         )
-        jdbi.handle { h -> upsertInvoices(h, listOf(draft)) }
+        db.transaction { tx -> upsertInvoices(tx.handle, listOf(draft)) }
 
         val (_, response, _) = http.post("/invoices/send")
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))

@@ -368,90 +368,93 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `deleting group placement works`() {
-        jdbi.handle { h ->
-            val groupPlacementId =
-                h.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
-
-            val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
-                .asUser(unitSupervisor)
-                .response()
-
-            Assertions.assertThat(res.statusCode).isEqualTo(204)
-
-            val (_, _, result) = http.get("/placements?daycareId=$daycareId")
-                .asUser(unitSupervisor)
-                .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
-
-            val groupPlacementsAfter = result.get().toList()[0].groupPlacements
-            Assertions.assertThat(groupPlacementsAfter).hasSize(1)
-            Assertions.assertThat(groupPlacementsAfter.first().groupId).isNull()
+        val groupPlacementId = db.transaction { tx ->
+            tx.handle.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
         }
+
+        val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
+            .asUser(unitSupervisor)
+            .response()
+
+        Assertions.assertThat(res.statusCode).isEqualTo(204)
+
+        val (_, _, result) = http.get("/placements?daycareId=$daycareId")
+            .asUser(unitSupervisor)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
+
+        val groupPlacementsAfter = result.get().toList()[0].groupPlacements
+        Assertions.assertThat(groupPlacementsAfter).hasSize(1)
+        Assertions.assertThat(groupPlacementsAfter.first().groupId).isNull()
     }
 
     @Test
     fun `unit supervisor sees placements to her unit only`() {
-        jdbi.handle { h ->
-            val allowedId = insertTestPlacement(
-                h = h,
+        val allowedId = db.transaction { tx ->
+            insertTestPlacement(
+                h = tx.handle,
                 childId = childId,
                 unitId = daycareId,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(1)
             )
+        }
 
-            val restrictedId = insertTestPlacement(
-                h = h,
+        val restrictedId = db.transaction { tx ->
+            insertTestPlacement(
+                h = tx.handle,
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = LocalDate.now().minusDays(2),
                 endDate = LocalDate.now().minusDays(1)
             )
-
-            val (_, res, result) = http.get("/placements?childId=$childId")
-                .asUser(unitSupervisor)
-                .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
-
-            org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
-
-            val placements = result.get().toList()
-            val allowed = placements.find { it.id == allowedId }!!
-            val restricted = placements.find { it.id == restrictedId }!!
-
-            org.junit.jupiter.api.Assertions.assertFalse(allowed.isRestrictedFromUser)
-            org.junit.jupiter.api.Assertions.assertTrue(restricted.isRestrictedFromUser)
         }
+
+        val (_, res, result) = http.get("/placements?childId=$childId")
+            .asUser(unitSupervisor)
+            .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)
+
+        org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
+
+        val placements = result.get().toList()
+        val allowed = placements.find { it.id == allowedId }!!
+        val restricted = placements.find { it.id == restrictedId }!!
+
+        org.junit.jupiter.api.Assertions.assertFalse(allowed.isRestrictedFromUser)
+        org.junit.jupiter.api.Assertions.assertTrue(restricted.isRestrictedFromUser)
     }
 
     @Test
     fun `unit supervisor can modify placements in her daycare only`() {
-        jdbi.handle { h ->
-            val newStart = placementStart.plusDays(1)
-            val newEnd = placementEnd.minusDays(2)
-            val allowedId = testPlacement.id
-            val restrictedId = insertTestPlacement(
-                h = h,
+        val newStart = placementStart.plusDays(1)
+        val newEnd = placementEnd.minusDays(2)
+        val allowedId = testPlacement.id
+        val restrictedId = db.transaction { tx ->
+            insertTestPlacement(
+                h = tx.handle,
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = placementEnd.plusDays(1),
                 endDate = placementEnd.plusMonths(2)
             )
-            val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
+        }
+        val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
 
-            val (_, forbidden, _) = http.put("/placements/$restrictedId")
-                .objectBody(bodyObject = body, mapper = objectMapper)
-                .asUser(unitSupervisor)
-                .response()
+        val (_, forbidden, _) = http.put("/placements/$restrictedId")
+            .objectBody(bodyObject = body, mapper = objectMapper)
+            .asUser(unitSupervisor)
+            .response()
 
-            org.junit.jupiter.api.Assertions.assertEquals(403, forbidden.statusCode)
+        org.junit.jupiter.api.Assertions.assertEquals(403, forbidden.statusCode)
 
-            val (_, allowed, _) = http.put("/placements/$allowedId")
-                .objectBody(bodyObject = body, mapper = objectMapper)
-                .asUser(unitSupervisor)
-                .response()
+        val (_, allowed, _) = http.put("/placements/$allowedId")
+            .objectBody(bodyObject = body, mapper = objectMapper)
+            .asUser(unitSupervisor)
+            .response()
 
-            org.junit.jupiter.api.Assertions.assertEquals(204, allowed.statusCode)
+        org.junit.jupiter.api.Assertions.assertEquals(204, allowed.statusCode)
 
-            val updated = h.getPlacementsForChild(childId).find { it.id == allowedId }!!
+        db.read { r ->
+            val updated = r.handle.getPlacementsForChild(childId).find { it.id == allowedId }!!
             org.junit.jupiter.api.Assertions.assertEquals(newStart, updated.startDate)
             org.junit.jupiter.api.Assertions.assertEquals(newEnd, updated.endDate)
         }
@@ -459,92 +462,94 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `unit supervisor can't modify placement if it overlaps with another that supervisor doesn't have the rights to`() {
-        jdbi.handle { h ->
-            val newEnd = placementEnd.plusDays(1)
-            val allowedId = testPlacement.id
+        val newEnd = placementEnd.plusDays(1)
+        val allowedId = testPlacement.id
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = newEnd,
                 endDate = newEnd.plusMonths(2)
             )
-            val body = PlacementUpdateRequestBody(
-                startDate = placementStart,
-                endDate = newEnd
-            ) // endDate overlaps with another placement
-
-            val (_, res, _) = http.put("/placements/$allowedId")
-                .objectBody(bodyObject = body, mapper = objectMapper)
-                .asUser(unitSupervisor)
-                .response()
-
-            org.junit.jupiter.api.Assertions.assertEquals(409, res.statusCode)
         }
+        val body = PlacementUpdateRequestBody(
+            startDate = placementStart,
+            endDate = newEnd
+        ) // endDate overlaps with another placement
+
+        val (_, res, _) = http.put("/placements/$allowedId")
+            .objectBody(bodyObject = body, mapper = objectMapper)
+            .asUser(unitSupervisor)
+            .response()
+
+        org.junit.jupiter.api.Assertions.assertEquals(409, res.statusCode)
     }
 
     @Test
     fun `unit supervisor can modify placement if it overlaps with another that supervisor has the rights to`() {
-        jdbi.handle { h ->
-            val newEnd = placementEnd.plusDays(1)
-            val secondPlacement = insertTestPlacement(
-                h = h,
+        val newEnd = placementEnd.plusDays(1)
+        val secondPlacement = db.transaction { tx ->
+            insertTestPlacement(
+                h = tx.handle,
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = newEnd,
                 endDate = newEnd.plusMonths(2)
-            )
-            updateDaycareAclWithEmployee(h, testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
-            val body = PlacementUpdateRequestBody(
-                startDate = placementStart,
-                endDate = newEnd
-            ) // endDate overlaps with another placement
-
-            val (_, res, _) = http.put("/placements/${testPlacement.id}")
-                .objectBody(bodyObject = body, mapper = objectMapper)
-                .asUser(unitSupervisor)
-                .response()
-
-            org.junit.jupiter.api.Assertions.assertEquals(204, res.statusCode)
-
-            val placements = h.getPlacementsForChild(childId)
-            val first = placements.find { it.id == testPlacement.id }!!
-            val second = placements.find { it.id == secondPlacement }!!
-
-            org.junit.jupiter.api.Assertions.assertEquals(newEnd, first.endDate)
-            org.junit.jupiter.api.Assertions.assertEquals(newEnd.plusDays(1), second.startDate)
+            ).also {
+                updateDaycareAclWithEmployee(tx.handle, testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+            }
         }
+
+        val body = PlacementUpdateRequestBody(
+            startDate = placementStart,
+            endDate = newEnd
+        ) // endDate overlaps with another placement
+        val (_, res, _) = http.put("/placements/${testPlacement.id}")
+            .objectBody(bodyObject = body, mapper = objectMapper)
+            .asUser(unitSupervisor)
+            .response()
+
+        org.junit.jupiter.api.Assertions.assertEquals(204, res.statusCode)
+
+        val placements = db.read { r ->
+            r.handle.getPlacementsForChild(childId)
+        }
+        val first = placements.find { it.id == testPlacement.id }!!
+        val second = placements.find { it.id == secondPlacement }!!
+
+        org.junit.jupiter.api.Assertions.assertEquals(newEnd, first.endDate)
+        org.junit.jupiter.api.Assertions.assertEquals(newEnd.plusDays(1), second.startDate)
     }
 
     @Test
     fun `staff can't modify placements`() {
-        jdbi.handle { h ->
-            updateDaycareAclWithEmployee(h, daycareId, staff.id, UserRole.STAFF)
-            val newStart = placementStart.plusDays(1)
-            val newEnd = placementEnd.minusDays(2)
-            val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
-
-            val (_, res, _) = http.put("/placements/$daycareId")
-                .objectBody(bodyObject = body, mapper = objectMapper)
-                .asUser(unitSupervisor)
-                .response()
-
-            org.junit.jupiter.api.Assertions.assertEquals(403, res.statusCode)
+        db.transaction { tx ->
+            updateDaycareAclWithEmployee(tx.handle, daycareId, staff.id, UserRole.STAFF)
         }
+        val newStart = placementStart.plusDays(1)
+        val newEnd = placementEnd.minusDays(2)
+        val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
+
+        val (_, res, _) = http.put("/placements/$daycareId")
+            .objectBody(bodyObject = body, mapper = objectMapper)
+            .asUser(unitSupervisor)
+            .response()
+
+        org.junit.jupiter.api.Assertions.assertEquals(403, res.statusCode)
     }
 
     @Test
     fun `service worker cannot remove placements`() {
-        jdbi.handle { h ->
-            val groupPlacementId =
-                h.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
-
-            val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
-                .asUser(serviceWorker)
-                .response()
-
-            Assertions.assertThat(res.statusCode).isEqualTo(403)
+        val groupPlacementId = db.transaction { tx ->
+            tx.handle.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
         }
+
+        val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
+            .asUser(serviceWorker)
+            .response()
+
+        Assertions.assertThat(res.statusCode).isEqualTo(403)
     }
 
     private fun createGroupPlacement(

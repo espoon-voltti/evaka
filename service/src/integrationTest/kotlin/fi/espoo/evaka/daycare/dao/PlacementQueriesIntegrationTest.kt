@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,10 +26,10 @@ class PlacementQueriesIntegrationTest : PureJdbiTest() {
     @BeforeEach
     fun setUp() {
         val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
-        jdbi.handle {
-            resetDatabase(it)
-            it.execute(legacyDataSql)
-            it.execute(
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.execute(legacyDataSql)
+            tx.execute(
                 // language=sql
                 """
                 INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)

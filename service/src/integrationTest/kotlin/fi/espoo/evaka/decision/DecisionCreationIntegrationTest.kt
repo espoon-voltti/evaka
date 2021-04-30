@@ -66,10 +66,10 @@ class DecisionCreationIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            h.createUpdate(
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.createUpdate(
                 // language=SQL
                 """
 UPDATE daycare SET

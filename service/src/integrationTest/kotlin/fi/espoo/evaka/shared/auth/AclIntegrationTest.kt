@@ -94,7 +94,7 @@ class AclIntegrationTest : PureJdbiTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { it.execute("TRUNCATE daycare_acl") }
+        db.transaction { it.execute("TRUNCATE daycare_acl") }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -131,7 +131,7 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(negativeAclRoles, acl.getRolesForUnitGroup(user, groupId))
         assertEquals(negativeAclRoles, acl.getRolesForDailyNote(user, noteId))
 
-        jdbi.handle { it.insertDaycareAclRow(daycareId, employeeId, role) }
+        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, role) }
 
         assertEquals(positiveAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))

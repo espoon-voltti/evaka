@@ -38,14 +38,14 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle {
+        db.transaction {
             it.execute("INSERT INTO care_area (id, name, short_name) VALUES ('$areaId', 'test', 'test')")
         }
     }
 
     @AfterEach
     internal fun tearDown() {
-        jdbi.handle {
+        db.transaction {
             it.execute("DELETE FROM daycare WHERE care_area_id = '$areaId'")
             it.execute("DELETE FROM care_area WHERE id = '$areaId'")
         }
@@ -65,7 +65,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         )
         val prepPreschoolId = createDaycare(prepPreschool)
 
-        val areas = jdbi.handle { it.getAreas().filter { area -> area.id == areaId } }
+        val areas = db.transaction { it.handle.getAreas().filter { area -> area.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -88,7 +88,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         val preschool1 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
         val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
 
-        val areas = jdbi.handle { it.getAreas().filter { area -> area.id == areaId } }
+        val areas = db.transaction { it.handle.getAreas().filter { area -> area.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -98,9 +98,9 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         }
     }
 
-    private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): UUID = jdbi.handle {
-        val id = it.createDaycare(location.care_area_id, location.name)
-        it.updateDaycare(
+    private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): UUID = db.transaction { tx ->
+        val id = tx.handle.createDaycare(location.care_area_id, location.name)
+        tx.handle.updateDaycare(
             id,
             DaycareFields(
                 name = location.name,

@@ -24,9 +24,9 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle { h ->
-            h.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-            child = h.createChild(
+        db.transaction { tx ->
+            tx.handle.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+            child = tx.handle.createChild(
                 Child(
                     id = childId,
                     additionalInformation = AdditionalInformation(
@@ -41,12 +41,12 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
 
     @AfterEach
     internal fun tearDown() {
-        jdbi.handle { it.execute("DELETE FROM person WHERE id = '$childId'") }
+        db.transaction { it.execute("DELETE FROM person WHERE id = '$childId'") }
     }
 
     @Test
     fun `add and fetch child data`() {
-        val fetchedChild = jdbi.handle { it.getChild(childId) }
+        val fetchedChild = db.transaction { it.handle.getChild(childId) }
 
         assertEquals(child, fetchedChild)
     }
@@ -61,9 +61,9 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        jdbi.handle { it.updateChild(updated) }
+        db.transaction { it.handle.updateChild(updated) }
 
-        val actual = jdbi.handle { it.getChild(childId) }
+        val actual = db.transaction { it.handle.getChild(childId) }
         assertEquals(actual, updated)
     }
 }

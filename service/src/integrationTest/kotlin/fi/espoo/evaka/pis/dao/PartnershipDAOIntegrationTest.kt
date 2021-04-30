@@ -20,12 +20,14 @@ import java.time.LocalDate
 
 class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
     @Test
-    fun `test creating partnership`() = jdbi.handle { h ->
+    fun `test creating partnership`() {
         val person1 = testPerson1()
         val person2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val partnership = h.createPartnership(person1.id, person2.id, startDate, endDate)
+        val partnership = db.transaction { tx ->
+            tx.handle.createPartnership(person1.id, person2.id, startDate, endDate)
+        }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
@@ -33,45 +35,45 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `test fetching partnerships by person`() = jdbi.handle { h ->
+    fun `test fetching partnerships by person`() {
         val person1 = testPerson1()
         val person2 = testPerson2()
         val person3 = testPerson3()
 
-        val partnership1 = h.createPartnership(person1.id, person2.id, LocalDate.now(), LocalDate.now().plusDays(200))
-        val partnership2 = h.createPartnership(person2.id, person3.id, LocalDate.now().plusDays(300), LocalDate.now().plusDays(400))
+        val partnership1 = db.transaction { it.handle.createPartnership(person1.id, person2.id, LocalDate.now(), LocalDate.now().plusDays(200)) }
+        val partnership2 = db.transaction { it.handle.createPartnership(person2.id, person3.id, LocalDate.now().plusDays(300), LocalDate.now().plusDays(400)) }
 
-        val person1Partnerships = h.getPartnershipsForPerson(person1.id)
+        val person1Partnerships = db.read { it.handle.getPartnershipsForPerson(person1.id) }
         assertEquals(listOf(partnership1), person1Partnerships)
 
-        val person2Partnerships = h.getPartnershipsForPerson(person2.id)
+        val person2Partnerships = db.read { it.handle.getPartnershipsForPerson(person2.id) }
         assertEquals(listOf(partnership1, partnership2), person2Partnerships)
 
-        val person3Partnerships = h.getPartnershipsForPerson(person3.id)
+        val person3Partnerships = db.read { it.handle.getPartnershipsForPerson(person3.id) }
         assertEquals(listOf(partnership2), person3Partnerships)
     }
 
     @Test
-    fun `test partnership without endDate`() = jdbi.handle { h ->
+    fun `test partnership without endDate`() {
         val person1 = testPerson1()
         val person2 = testPerson2()
         val startDate = LocalDate.now()
-        val partnership = h.createPartnership(person1.id, person2.id, startDate, endDate = null)
+        val partnership = db.transaction { it.handle.createPartnership(person1.id, person2.id, startDate, endDate = null) }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
         assertEquals(null, partnership.endDate)
 
-        val fetched = h.getPartnershipsForPerson(person1.id).first()
+        val fetched = db.read { it.handle.getPartnershipsForPerson(person1.id).first() }
         assertEquals(partnership.id, fetched.id)
         assertEquals(2, fetched.partners.size)
         assertEquals(startDate, fetched.startDate)
         assertEquals(null, fetched.endDate)
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return jdbi.transaction {
-            it.createPerson(
+    private fun createPerson(ssn: String, firstName: String): PersonDTO =
+        db.transaction {
+            it.handle.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,
@@ -81,7 +83,6 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
                 )
             )
         }
-    }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
     private fun testPerson2() = createPerson("150786-1766", "Iines")

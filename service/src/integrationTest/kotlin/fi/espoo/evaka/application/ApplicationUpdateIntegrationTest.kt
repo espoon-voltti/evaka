@@ -55,7 +55,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val result = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        val result = db.transaction { fetchApplicationDetails(it.handle, application.id) }
         assertEquals(sentDate.plusMonths(4), result?.dueDate)
     }
 
@@ -76,14 +76,14 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val beforeSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        val beforeSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
         assertNull(beforeSendingAttachment?.dueDate)
 
         // when
         uploadAttachment(applicationId = application.id, serviceWorker)
 
         // then
-        val afterSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        val afterSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
         assertEquals(LocalDate.now().plusWeeks(2), afterSendingAttachment?.dueDate)
     }
 
@@ -108,7 +108,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val result = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        val result = db.transaction { fetchApplicationDetails(it.handle, application.id) }
         assertEquals(originalDueDate, result?.dueDate)
     }
 
@@ -128,7 +128,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val beforeSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        val beforeSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
         assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
         assertTrue(HelsinkiDateTime.now().durationSince(beforeSendingAttachment.dueDateSetManuallyAt ?: throw Error("dueDateSetManuallyAt should have been set")).seconds <= 5, "dueDateSetManuallyAt should have been about now")
 
@@ -136,7 +136,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         uploadAttachment(applicationId = application.id, serviceWorker)
 
         // then
-        val afterSendingAttachment = jdbi.handle { fetchApplicationDetails(it, application.id) }
+        val afterSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
         assertEquals(manuallySetDueDate, afterSendingAttachment?.dueDate)
     }
 
@@ -144,10 +144,10 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         sentDate: LocalDate,
         dueDate: LocalDate,
         urgent: Boolean
-    ): ApplicationDetails = jdbi.handle { h ->
-        val applicationId = insertTestApplication(h, status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
+    ): ApplicationDetails = db.transaction { tx ->
+        val applicationId = insertTestApplication(tx.handle, status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
         val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
-        insertTestApplicationForm(h, applicationId, validDaycareForm.copy(urgent = urgent))
-        fetchApplicationDetails(h, applicationId)!!
+        insertTestApplicationForm(tx.handle, applicationId, validDaycareForm.copy(urgent = urgent))
+        fetchApplicationDetails(tx.handle, applicationId)!!
     }
 }

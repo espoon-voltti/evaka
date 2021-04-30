@@ -40,13 +40,13 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     protected fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            admin = AuthenticatedUser.Employee(h.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))), roles = setOf(UserRole.ADMIN))
-            h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+        db.transaction { tx ->
+            tx.resetDatabase()
+            admin = AuthenticatedUser.Employee(tx.handle.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))), roles = setOf(UserRole.ADMIN))
+            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
             employee.also {
-                h.insertTestEmployee(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName, email = it.email))
+                tx.handle.insertTestEmployee(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName, email = it.email))
             }
         }
     }

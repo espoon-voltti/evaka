@@ -33,13 +33,13 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
 
-            createApplication(h = h, child = testChild_1, guardian = testAdult_1)
-            createApplication(h = h, child = testChild_2, guardian = testAdult_1, attachment = true)
-            createApplication(h = h, child = testChild_3, guardian = testAdult_1, urgent = true)
+            createApplication(h = tx.handle, child = testChild_1, guardian = testAdult_1)
+            createApplication(h = tx.handle, child = testChild_2, guardian = testAdult_1, attachment = true)
+            createApplication(h = tx.handle, child = testChild_3, guardian = testAdult_1, urgent = true)
         }
     }
 

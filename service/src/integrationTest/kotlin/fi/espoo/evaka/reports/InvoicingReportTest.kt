@@ -33,12 +33,16 @@ import java.util.UUID
 class InvoicingReportTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     @Test
@@ -107,9 +111,9 @@ class InvoicingReportTest : FullApplicationTest() {
     )
 
     private fun insertInvoices(date: LocalDate) {
-        jdbi.handle { h ->
-            upsertInvoices(h, testInvoices)
-            h.createUpdate(
+        db.transaction {
+            upsertInvoices(it.handle, testInvoices)
+            it.createUpdate(
                 """
                 UPDATE invoice SET sent_at = :sentAt
                 """.trimIndent()

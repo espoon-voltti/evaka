@@ -35,11 +35,11 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
             insertTestPlacement(
-                h,
+                tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusDays(1),
@@ -119,7 +119,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = jdbi.handle { h -> getServiceNeedsByChild(h, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
@@ -188,7 +188,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = jdbi.handle { h -> getServiceNeedsByChild(h, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -205,7 +205,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = jdbi.handle { h -> getServiceNeedsByChild(h, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -222,7 +222,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = jdbi.handle { h -> getServiceNeedsByChild(h, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
@@ -239,7 +239,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = jdbi.handle { h -> getServiceNeedsByChild(h, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
@@ -342,68 +342,65 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getServiceNeedsByChildDuringPeriod works with null end date in DB`() {
-        jdbi.handle { h ->
-            val startDate = 5
-            givenServiceNeed(startDate, null, testChild_1.id)
+        val startDate = 5
+        givenServiceNeed(startDate, null, testChild_1.id)
 
-            val results =
-                getServiceNeedsByChildDuringPeriod(h, testChild_1.id, testDate(startDate), testDate(startDate + 5))
-            assertEquals(1, results.size)
-
-            val serviceNeed = results[0]
-            assertEquals(testDate(startDate), serviceNeed.startDate)
-            assertNull(serviceNeed.endDate)
+        val results = db.transaction { tx ->
+            getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(startDate), testDate(startDate + 5))
         }
+        assertEquals(1, results.size)
+
+        val serviceNeed = results[0]
+        assertEquals(testDate(startDate), serviceNeed.startDate)
+        assertNull(serviceNeed.endDate)
     }
 
     @Test
     fun `getServiceNeedsByChildDuringPeriod works with null end date in query`() {
-        jdbi.handle { h ->
-            val startDate = 5
-            val endDate = 10
-            givenServiceNeed(startDate, endDate, testChild_1.id)
+        val startDate = 5
+        val endDate = 10
+        givenServiceNeed(startDate, endDate, testChild_1.id)
 
-            val results = getServiceNeedsByChildDuringPeriod(h, testChild_1.id, testDate(startDate), null)
-            assertEquals(1, results.size)
-
-            val serviceNeed = results[0]
-            assertEquals(testDate(startDate), serviceNeed.startDate)
-            assertEquals(testDate(endDate), serviceNeed.endDate)
+        val results = db.transaction { tx ->
+            getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(startDate), null)
         }
+        assertEquals(1, results.size)
+
+        val serviceNeed = results[0]
+        assertEquals(testDate(startDate), serviceNeed.startDate)
+        assertEquals(testDate(endDate), serviceNeed.endDate)
     }
 
     @Test
     fun `getServiceNeedsByChildDuringPeriod works with null end date in query and DB`() {
-        jdbi.handle { h ->
-            val startDate = 5
-            givenServiceNeed(startDate, null, testChild_1.id)
+        val startDate = 5
+        givenServiceNeed(startDate, null, testChild_1.id)
 
-            val results = getServiceNeedsByChildDuringPeriod(h, testChild_1.id, testDate(startDate), null)
-            assertEquals(1, results.size)
+        val results = db.transaction { tx -> getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(startDate), null) }
+        assertEquals(1, results.size)
 
-            val serviceNeed = results[0]
-            assertEquals(testDate(startDate), serviceNeed.startDate)
-            assertNull(serviceNeed.endDate)
-        }
+        val serviceNeed = results[0]
+        assertEquals(testDate(startDate), serviceNeed.startDate)
+        assertNull(serviceNeed.endDate)
     }
 
     @Test
     fun `getServiceNeedsByChildDuringPeriod does not return anything when query dates doesn't match`() {
-        jdbi.handle { h ->
-            val startDate = 5
-            givenServiceNeed(startDate, null, testChild_1.id)
+        val startDate = 5
+        givenServiceNeed(startDate, null, testChild_1.id)
 
-            val results = getServiceNeedsByChildDuringPeriod(h, testChild_1.id, testDate(1), testDate(4))
-            assertEquals(0, results.size)
+        val results = db.transaction { tx ->
+            getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(1), testDate(4))
         }
+        assertEquals(0, results.size)
     }
 
     private fun testDate(day: Int) = LocalDate.of(2000, 1, day)
 
     private fun givenServiceNeed(start: Int, end: Int?, childId: UUID = testChild_1.id): UUID {
-        return jdbi.handle { h ->
+        return db.transaction { tx ->
             insertTestServiceNeed(
-                h = h,
+                h = tx.handle,
                 childId = childId,
                 startDate = testDate(start),
                 endDate = if (end == null) null else testDate(end),

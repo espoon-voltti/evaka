@@ -67,270 +67,306 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
         MockEmailClient.emails.clear()
     }
 
     @Test
     fun `email is sent after end user sends application`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm.copy(
-                    guardian = guardianAsDaycareAdult,
-                    apply = validDaycareForm.apply.copy(
-                        preferredUnits = listOf(testDaycare.id)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
+                childId = testChild_1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm.copy(
+                        guardian = guardianAsDaycareAdult,
+                        apply = validDaycareForm.apply.copy(
+                            preferredUnits = listOf(testDaycare.id)
+                        )
                     )
                 )
-            )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            assertEquals(1, asyncJobRunner.getPendingJobCount())
-
-            asyncJobRunner.runPendingJobsSync()
-
-            val sentMails = MockEmailClient.emails
-            assertEquals(1, sentMails.size)
-
-            val sentMail = sentMails[0]
-            assertEquals(guardian.email, sentMail.toAddress)
-            assertEquals(guardian.id.toString(), sentMail.traceId)
-            assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
+            }
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx ->
+            assertApplicationIsSent(tx.handle, applicationId)
+        }
+
+        assertEquals(1, asyncJobRunner.getPendingJobCount())
+        asyncJobRunner.runPendingJobsSync()
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(1, sentMails.size)
+
+        val sentMail = sentMails[0]
+        assertEquals(guardian.email, sentMail.toAddress)
+        assertEquals(guardian.id.toString(), sentMail.traceId)
+        assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
     }
 
     @Test
     fun `swedish email is sent after end user sends application to svebi daycare`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm.copy(
-                    guardian = guardianAsDaycareAdult,
-                    apply = validDaycareForm.apply.copy(
-                        preferredUnits = listOf(testSvebiDaycare.id)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
+                childId = testChild_1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm.copy(
+                        guardian = guardianAsDaycareAdult,
+                        apply = validDaycareForm.apply.copy(
+                            preferredUnits = listOf(testSvebiDaycare.id)
+                        )
                     )
                 )
-            )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            asyncJobRunner.runPendingJobsSync(1)
-
-            val sentMails = MockEmailClient.emails
-            assertEquals(1, sentMails.size)
-
-            val sentMail = sentMails[0]
-            assertEquals(guardian.email, sentMail.toAddress)
-            assertEquals(guardian.id.toString(), sentMail.traceId)
-            assertEquals("Vi har tagit emot din ansökan", sentMail.subject)
+            }
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        asyncJobRunner.runPendingJobsSync(1)
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(1, sentMails.size)
+
+        val sentMail = sentMails[0]
+        assertEquals(guardian.email, sentMail.toAddress)
+        assertEquals(guardian.id.toString(), sentMail.traceId)
+        assertEquals("Vi har tagit emot din ansökan", sentMail.subject)
     }
 
     @Test
     fun `email is sent after service worker sends application`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(
-                h = h,
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED,
                 hideFromGuardian = false
-            )
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm.copy(
-                    guardian = guardianAsDaycareAdult,
-                    apply = validDaycareForm.apply.copy(
-                        preferredUnits = listOf(testDaycare.id)
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm.copy(
+                        guardian = guardianAsDaycareAdult,
+                        apply = validDaycareForm.apply.copy(
+                            preferredUnits = listOf(testDaycare.id)
+                        )
                     )
                 )
-            )
-            val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
-                .asUser(serviceWorker)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            assertEquals(1, asyncJobRunner.getPendingJobCount())
-
-            asyncJobRunner.runPendingJobsSync(1)
-            assertEquals(0, asyncJobRunner.getPendingJobCount())
-
-            val sentMails = MockEmailClient.emails
-            assertEquals(1, sentMails.size)
-
-            val sentMail = sentMails[0]
-            assertEquals(guardian.email, sentMail.toAddress)
-            assertEquals(guardian.id.toString(), sentMail.traceId)
+            }
         }
+        val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
+            .asUser(serviceWorker)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertEquals(1, asyncJobRunner.getPendingJobCount())
+
+        asyncJobRunner.runPendingJobsSync(1)
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(1, sentMails.size)
+
+        val sentMail = sentMails[0]
+        assertEquals(guardian.email, sentMail.toAddress)
+        assertEquals(guardian.id.toString(), sentMail.traceId)
     }
 
     @Test
     fun `email is sent after sending club application`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
-            insertTestClubApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validClubForm
-            )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-
-            asyncJobRunner.runPendingJobsSync(1)
-            assertEquals(0, asyncJobRunner.getPendingJobCount())
-
-            val sentMails = MockEmailClient.emails
-
-            assertEquals(1, sentMails.size)
-
-            val sentMail = sentMails.first()
-            assertEquals(guardian.id.toString(), sentMail.traceId)
-            assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
+                childId = testChild_1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED
+            ).also { id ->
+                insertTestClubApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validClubForm
+                )
+            }
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+
+        asyncJobRunner.runPendingJobsSync(1)
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+        val sentMails = MockEmailClient.emails
+
+        assertEquals(1, sentMails.size)
+
+        val sentMail = sentMails.first()
+        assertEquals(guardian.id.toString(), sentMail.traceId)
+        assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
     }
 
     @Test
     fun `email is not sent when provider type of preferred unit is private voucher`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm.copy(
-                    guardian = guardianAsDaycareAdult,
-                    apply = validDaycareForm.apply.copy(
-                        preferredUnits = listOf(testVoucherDaycare.id)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
+                childId = testChild_1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm.copy(
+                        guardian = guardianAsDaycareAdult,
+                        apply = validDaycareForm.apply.copy(
+                            preferredUnits = listOf(testVoucherDaycare.id)
+                        )
                     )
                 )
-            )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            assertEquals(0, asyncJobRunner.getPendingJobCount())
-            assertEquals(0, MockEmailClient.emails.size)
+            }
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        assertEquals(0, MockEmailClient.emails.size)
     }
 
     @Test
     fun `email is not sent when service workers sends hidden application`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(
-                h = h,
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED,
                 hideFromGuardian = true
-            )
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm.copy(
-                    guardian = guardianAsDaycareAdult,
-                    apply = validDaycareForm.apply.copy(
-                        preferredUnits = listOf(testDaycare.id)
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm.copy(
+                        guardian = guardianAsDaycareAdult,
+                        apply = validDaycareForm.apply.copy(
+                            preferredUnits = listOf(testDaycare.id)
+                        )
                     )
                 )
-            )
-            val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
-                .asUser(serviceWorker)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            assertEquals(0, asyncJobRunner.getPendingJobCount())
-
-            val sentMails = MockEmailClient.emails
-            assertEquals(0, sentMails.size)
+            }
         }
+        val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
+            .asUser(serviceWorker)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(0, sentMails.size)
     }
 
     @Test
     fun `email is not sent to invalid email`() {
-        jdbi.handle { h ->
-            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED)
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm.copy(
-                    guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
-                    apply = validDaycareForm.apply.copy(
-                        preferredUnits = listOf(testDaycare.id)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
+                childId = testChild_1.id,
+                guardianId = testAdult_1.id,
+                status = ApplicationStatus.CREATED
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm.copy(
+                        guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
+                        apply = validDaycareForm.apply.copy(
+                            preferredUnits = listOf(testDaycare.id)
+                        )
                     )
                 )
-            )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            assertEquals(1, asyncJobRunner.getPendingJobCount())
-
-            asyncJobRunner.runPendingJobsSync()
-
-            val sentMails = MockEmailClient.emails
-            assertEquals(0, sentMails.size)
+            }
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertEquals(1, asyncJobRunner.getPendingJobCount())
+
+        asyncJobRunner.runPendingJobsSync()
+
+        val sentMails = MockEmailClient.emails
+        assertEquals(0, sentMails.size)
     }
 
     @Test
     fun `application keeps its manually set sent date after it is sent`() {
-        jdbi.handle { h ->
-            val manuallySetSentDate = LocalDate.of(2020, 1, 1)
-            val applicationId = insertTestApplication(
-                h = h,
+        val manuallySetSentDate = LocalDate.of(2020, 1, 1)
+        val applicationId = db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
                 childId = testChild_1.id,
                 guardianId = testAdult_1.id,
                 status = ApplicationStatus.CREATED,
                 sentDate = manuallySetSentDate
-            )
-            insertTestApplicationForm(
-                h = h,
-                applicationId = applicationId,
-                document = validDaycareForm
-            )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-            assertEquals(1, asyncJobRunner.getPendingJobCount())
-
-            asyncJobRunner.runPendingJobsSync()
-
-            val result = fetchApplicationDetails(h, applicationId)
-            assertEquals(manuallySetSentDate, result?.sentDate)
+            ).also { id ->
+                insertTestApplicationForm(
+                    h = tx.handle,
+                    applicationId = id,
+                    document = validDaycareForm
+                )
+            }
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertEquals(1, asyncJobRunner.getPendingJobCount())
+
+        asyncJobRunner.runPendingJobsSync()
+
+        val result = db.read { tx -> fetchApplicationDetails(tx.handle, applicationId) }
+        assertEquals(manuallySetSentDate, result?.sentDate)
     }
 
     @Test

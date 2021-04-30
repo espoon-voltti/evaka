@@ -38,12 +38,16 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun setup() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
@@ -73,7 +77,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getFeeAlterations works with single fee alteration in DB`() {
-        jdbi.handle { h -> upsertFeeAlteration(h, testFeeAlteration) }
+        db.transaction { tx -> upsertFeeAlteration(tx.handle, testFeeAlteration) }
 
         val (_, response, result) = http.get("/fee-alterations?personId=$personId")
             .asUser(user)
@@ -93,8 +97,8 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
             ),
             testFeeAlteration
         )
-        jdbi.handle { h ->
-            feeAlterations.forEach { upsertFeeAlteration(h, it) }
+        db.transaction { tx ->
+            feeAlterations.forEach { upsertFeeAlteration(tx.handle, it) }
         }
 
         val (_, response, result) = http.get("/fee-alterations?personId=$personId")
@@ -135,7 +139,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateFeeAlterations works with valid fee alteration`() {
-        jdbi.handle { h -> upsertFeeAlteration(h, testFeeAlteration) }
+        db.transaction { tx -> upsertFeeAlteration(tx.handle, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(amount = 100)
         http.put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
@@ -156,7 +160,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `updateFeeAlterations throws with invalid date rage`() {
-        jdbi.handle { h -> upsertFeeAlteration(h, testFeeAlteration) }
+        db.transaction { tx -> upsertFeeAlteration(tx.handle, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
         val (_, response, _) = http.put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
@@ -169,9 +173,9 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     @Test
     fun `delete works with existing fee alteration`() {
         val deletedId = UUID.randomUUID()
-        jdbi.handle { h ->
-            upsertFeeAlteration(h, testFeeAlteration)
-            upsertFeeAlteration(h, testFeeAlteration.copy(id = deletedId))
+        db.transaction { tx ->
+            upsertFeeAlteration(tx.handle, testFeeAlteration)
+            upsertFeeAlteration(tx.handle, testFeeAlteration.copy(id = deletedId))
         }
 
         http.delete("/fee-alterations/$deletedId")
@@ -189,7 +193,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete does nothing with non existant id`() {
-        jdbi.handle { h -> upsertFeeAlteration(h, testFeeAlteration) }
+        db.transaction { tx -> upsertFeeAlteration(tx.handle, testFeeAlteration) }
 
         http.delete("/fee-alterations/${UUID.randomUUID()}")
             .asUser(user)

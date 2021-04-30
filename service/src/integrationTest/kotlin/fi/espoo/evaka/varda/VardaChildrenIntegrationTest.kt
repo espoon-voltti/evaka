@@ -38,14 +38,14 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            insertTestVardaUnit(db, testDaycare.id)
-            uploadChildren()
-            assertEquals(0, getUploadedChildren(db).size)
-            mockEndpoint.children.clear()
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
+        insertTestVardaUnit(db, testDaycare.id)
+        uploadChildren()
+        assertEquals(0, getUploadedChildren(db).size)
+        mockEndpoint.children.clear()
         mockEndpoint.cleanUp()
     }
 
@@ -53,209 +53,209 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     fun `child is uploaded to Varda and is correctly stored into database after upload`() {
         val child = testChild_1
         val daycare = testDaycare
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = child.id,
                 unitId = daycare.id,
                 startDate = LocalDate.now().minusMonths(1),
                 endDate = LocalDate.now().plusMonths(1)
             )
-
-            uploadChildren()
-
-            val uploads = getUploadedChildren(db)
-            assertEquals(1, uploads.size)
-
-            val childRow = uploads[0]
-            assertNotNull(childRow.id)
-            assertEquals(child.id, childRow.personId)
-            assertNotNull(childRow.vardaPersonId)
-            assertNotNull(childRow.vardaPersonOid)
-            assertNotNull(childRow.vardaChildId)
-            assertNotNull(childRow.createdAt)
-            assertNotNull(childRow.modifiedAt)
-            assertNotNull(childRow.uploadedAt)
         }
+
+        uploadChildren()
+
+        val uploads = getUploadedChildren(db)
+        assertEquals(1, uploads.size)
+
+        val childRow = uploads[0]
+        assertNotNull(childRow.id)
+        assertEquals(child.id, childRow.personId)
+        assertNotNull(childRow.vardaPersonId)
+        assertNotNull(childRow.vardaPersonOid)
+        assertNotNull(childRow.vardaChildId)
+        assertNotNull(childRow.createdAt)
+        assertNotNull(childRow.modifiedAt)
+        assertNotNull(childRow.uploadedAt)
     }
 
     @Test
     fun `non-PAOS child is uploaded to Varda with correct payload`() {
-        jdbi.handle { h ->
-            val testOrganizationOid = defaultMunicipalOrganizerOid
-            val daycareId = testDaycare.id
+        val testOrganizationOid = defaultMunicipalOrganizerOid
+        val daycareId = testDaycare.id
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = daycareId,
                 startDate = LocalDate.now().minusMonths(1),
                 endDate = LocalDate.now().plusMonths(1)
             )
 
-            h.createUpdate("update daycare set oph_organizer_oid = :oid where id = :id")
+            tx.createUpdate("update daycare set oph_organizer_oid = :oid where id = :id")
                 .bind("id", daycareId)
                 .bind("oid", testOrganizationOid)
                 .execute()
-
-            uploadChildren()
-            val payload = mockEndpoint.children.values.first()
-            assertEquals(1, getUploadedChildren(db).size)
-            assertEquals(defaultMunicipalOrganizerOid, payload.organizerOid)
-            assertNull(payload.ownOrganizationOid)
-            assertNull(payload.paosOrganizationOid)
         }
+
+        uploadChildren()
+        val payload = mockEndpoint.children.values.first()
+        assertEquals(1, getUploadedChildren(db).size)
+        assertEquals(defaultMunicipalOrganizerOid, payload.organizerOid)
+        assertNull(payload.ownOrganizationOid)
+        assertNull(payload.paosOrganizationOid)
     }
 
     @Test
     fun `PAOS child is uploaded to Varda with correct payload`() {
-        jdbi.handle { h ->
-            val testOrganizationOid = "1.22.333.4444.55555"
-            val daycareId = testPurchasedDaycare.id
-            insertTestVardaUnit(db, daycareId)
+        val testOrganizationOid = "1.22.333.4444.55555"
+        val daycareId = testPurchasedDaycare.id
+        insertTestVardaUnit(db, daycareId)
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = daycareId,
                 startDate = LocalDate.now().minusMonths(1),
                 endDate = LocalDate.now().plusMonths(1)
             )
 
-            h.createUpdate("update daycare set oph_organizer_oid = :oid where id = :id")
+            tx.createUpdate("update daycare set oph_organizer_oid = :oid where id = :id")
                 .bind("id", daycareId)
                 .bind("oid", testOrganizationOid)
                 .execute()
-
-            uploadChildren()
-            val payload = mockEndpoint.children.values.first()
-            assertEquals(1, getUploadedChildren(db).size)
-            assertNull(payload.organizerOid)
-            assertEquals(defaultMunicipalOrganizerOid, payload.ownOrganizationOid)
-            assertEquals(testOrganizationOid, payload.paosOrganizationOid)
         }
+
+        uploadChildren()
+        val payload = mockEndpoint.children.values.first()
+        assertEquals(1, getUploadedChildren(db).size)
+        assertNull(payload.organizerOid)
+        assertEquals(defaultMunicipalOrganizerOid, payload.ownOrganizationOid)
+        assertEquals(testOrganizationOid, payload.paosOrganizationOid)
     }
 
     @Test
     fun `child before varda begin date is not uploaded to Varda`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = getVardaMinDate().minusDays(5),
                 endDate = getVardaMinDate().minusDays(1)
             )
-
-            uploadChildren()
-            assertEquals(0, getUploadedChildren(db).size)
         }
+        uploadChildren()
+        assertEquals(0, getUploadedChildren(db).size)
     }
 
     @Test
     fun `child is uploaded despite daycare itself is not sent to varda`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-            uploadChildren()
-            assertEquals(1, getUploadedChildren(db).size)
         }
+        uploadChildren()
+        assertEquals(1, getUploadedChildren(db).size)
     }
 
     @Test
     fun `child is not uploaded if upload_to_varda is false`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val daycareId = testDaycare2.id
-            h.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id")
+            tx.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id")
                 .bind("id", daycareId)
                 .execute()
 
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = daycareId,
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-            uploadChildren()
-            assertEquals(0, getUploadedChildren(db).size)
         }
+        uploadChildren()
+        assertEquals(0, getUploadedChildren(db).size)
     }
 
     @Test
     fun `child already in database is not sent to Varda`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-
-            uploadChildren()
-            val uploadedAt = getUploadedChildren(db)[0].uploadedAt
-
-            uploadChildren()
-            assertEquals(uploadedAt, getUploadedChildren(db)[0].uploadedAt)
         }
+        uploadChildren()
+        val uploadedAt = getUploadedChildren(db)[0].uploadedAt
+
+        uploadChildren()
+        assertEquals(uploadedAt, getUploadedChildren(db)[0].uploadedAt)
     }
 
     @Test
     fun `varda child gets organizer oid from daycare`() {
-        jdbi.handle { h ->
-            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
 
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-
-            uploadChildren()
-            val organizerOid = getUploadedChildren(db)[0].ophOrganizerOid
-
-            assertEquals("1.22.333.4444.1", organizerOid)
         }
+
+        uploadChildren()
+        val organizerOid = getUploadedChildren(db)[0].ophOrganizerOid
+
+        assertEquals("1.22.333.4444.1", organizerOid)
     }
 
     @Test
     fun `updating daycare organizer oid yields new varda_child`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-            uploadChildren()
+        }
+        uploadChildren()
 
-            assertEquals(1, getUploadedChildren(db).size)
+        assertEquals(1, getUploadedChildren(db).size)
 
-            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
-
-            uploadChildren()
-
-            assertEquals(2, getUploadedChildren(db).size)
         }
+
+        uploadChildren()
+
+        assertEquals(2, getUploadedChildren(db).size)
     }
 
     @Test
     fun `nameless child is not uploaded to Varda`() {
         val child = namelessChild
         val daycare = testDaycare
-        jdbi.handle { h ->
-            h.insertTestPerson(
+        db.transaction { tx ->
+            tx.handle.insertTestPerson(
                 DevPerson(
                     id = child.id,
                     dateOfBirth = child.dateOfBirth,
@@ -267,21 +267,21 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                     postOffice = child.postOffice ?: ""
                 )
             )
-            h.insertTestChild(DevChild(id = child.id))
+            tx.handle.insertTestChild(DevChild(id = child.id))
 
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 childId = child.id,
                 unitId = daycare.id,
                 startDate = LocalDate.now().minusMonths(1),
                 endDate = LocalDate.now().plusMonths(1)
             )
-
-            uploadChildren()
-
-            val uploads = getUploadedChildren(db)
-            assertEquals(0, uploads.size)
         }
+
+        uploadChildren()
+
+        val uploads = getUploadedChildren(db)
+        assertEquals(0, uploads.size)
     }
 
     private fun uploadChildren() {

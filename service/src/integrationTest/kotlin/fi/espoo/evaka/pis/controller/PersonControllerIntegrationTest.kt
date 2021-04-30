@@ -150,7 +150,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
         assertEquals(HttpStatus.OK, actual.statusCode)
 
-        val updated = jdbi.handle { it.getPersonById(person.id) }
+        val updated = db.read { it.handle.getPersonById(person.id) }
         assertEquals(contactInfo.email, updated?.email)
         assertEquals(contactInfo.invoicingStreetAddress, updated?.invoicingStreetAddress)
         assertEquals(contactInfo.invoicingPostalCode, updated?.invoicingPostalCode)
@@ -160,8 +160,8 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(): PersonDTO {
         val ssn = "140881-172X"
-        return jdbi.transaction {
-            it.createPerson(
+        return db.transaction {
+            it.handle.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = "Matti",

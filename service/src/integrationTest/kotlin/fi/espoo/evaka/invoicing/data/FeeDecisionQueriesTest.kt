@@ -94,66 +94,70 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     @Test
     fun `getByIds with zero ids`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = getFeeDecisionsByIds(h, objectMapper, listOf())
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, listOf())
             assertEquals(0, result.size)
         }
     }
 
     @Test
     fun `getByIds with one id`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = getFeeDecisionsByIds(h, objectMapper, listOf(testDecisions[0].id))
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, listOf(testDecisions[0].id))
             assertEquals(1, result.size)
         }
     }
 
     @Test
     fun `getByIds with two ids`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = getFeeDecisionsByIds(h, objectMapper, listOf(testDecisions[0].id, testDecisions[1].id))
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, listOf(testDecisions[0].id, testDecisions[1].id))
             assertEquals(2, result.size)
         }
     }
 
     @Test
     fun `getByIds with missing ids`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = getFeeDecisionsByIds(h, objectMapper, listOf(UUID.randomUUID(), UUID.randomUUID()))
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, listOf(UUID.randomUUID(), UUID.randomUUID()))
             assertEquals(0, result.size)
         }
     }
 
     @Test
     fun `upsert with existing row`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val updated = testDecisions[0].copy(decisionNumber = 100)
-            upsertFeeDecisions(h, objectMapper, listOf(updated))
+            upsertFeeDecisions(tx.handle, objectMapper, listOf(updated))
 
-            val result = getFeeDecisionsByIds(h, objectMapper, listOf(updated.id))
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, listOf(updated.id))
             assertEquals(100.toLong(), result[0].decisionNumber)
         }
     }
 
     @Test
     fun `upsert updates parts`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val updated = testDecisions.map {
                 it.copy(
                     parts = it.parts.map { part ->
@@ -172,9 +176,9 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
                     }
                 )
             }
-            upsertFeeDecisions(h, objectMapper, updated)
+            upsertFeeDecisions(tx.handle, objectMapper, updated)
 
-            val result = getFeeDecisionsByIds(h, objectMapper, testDecisions.map { it.id })
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, testDecisions.map { it.id })
             with(result[0]) {
                 assertEquals(updated[0].parts, parts)
             }
@@ -191,33 +195,33 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `upsert with empty list`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            upsertFeeDecisions(h, objectMapper, emptyList())
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            upsertFeeDecisions(tx.handle, objectMapper, emptyList())
 
-            val result = getFeeDecisionsByIds(h, objectMapper, testDecisions.map { it.id })
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, testDecisions.map { it.id })
             assertEquals(testDecisions.sortedBy { it.status }, result.sortedBy { it.status })
         }
     }
 
     @Test
     fun `upsert does not affect createdAt`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val initialCreatedAt = testDecisions[0].createdAt
             val decision = testDecisions[0].copy(decisionNumber = 314159265)
-            upsertFeeDecisions(h, objectMapper, listOf(decision))
+            upsertFeeDecisions(tx.handle, objectMapper, listOf(decision))
 
-            val result = getFeeDecisionsByIds(h, objectMapper, listOf(decision.id))
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, listOf(decision.id))
             assertEquals(initialCreatedAt, result[0].createdAt)
         }
     }
 
     @Test
     fun `getDecision existing id`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = getFeeDecision(h, objectMapper, testDecisions[0].id)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = getFeeDecision(tx.handle, objectMapper, testDecisions[0].id)
             assertNotNull(result)
             assertEquals(toDetailed(testDecisions[0]), result)
         }
@@ -225,38 +229,38 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `getDecision non-existant id`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = getFeeDecision(h, objectMapper, UUID.randomUUID())
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = getFeeDecision(tx.handle, objectMapper, UUID.randomUUID())
             assertNull(result)
         }
     }
 
     @Test
     fun `find for head of family`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val result = findFeeDecisionsForHeadOfFamily(h, objectMapper, testAdult_1.id, testPeriod, null)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val result = findFeeDecisionsForHeadOfFamily(tx.handle, objectMapper, testAdult_1.id, testPeriod, null)
             assertEquals(2, result.size)
         }
     }
 
     @Test
     fun `find for head of family without to date`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val result =
-                findFeeDecisionsForHeadOfFamily(h, objectMapper, testAdult_1.id, DateRange(testPeriod.start, null), null)
+                findFeeDecisionsForHeadOfFamily(tx.handle, objectMapper, testAdult_1.id, DateRange(testPeriod.start, null), null)
             assertEquals(2, result.size)
         }
     }
 
     @Test
     fun `find for head of family with wrong id`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val result = findFeeDecisionsForHeadOfFamily(
-                h,
+                tx.handle,
                 objectMapper,
                 UUID.randomUUID(),
                 DateRange(testPeriod.start, null),
@@ -268,11 +272,11 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `find for head of family with draft status`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val result =
                 findFeeDecisionsForHeadOfFamily(
-                    h,
+                    tx.handle,
                     objectMapper,
                     testAdult_1.id,
                     testPeriod,
@@ -284,11 +288,11 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `find for head of family with sent status`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             val result =
                 findFeeDecisionsForHeadOfFamily(
-                    h,
+                    tx.handle,
                     objectMapper,
                     testAdult_1.id,
                     testPeriod,
@@ -300,12 +304,12 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `activateDrafts with one decision`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-            upsertFeeDecisions(h, objectMapper, listOf(draft))
-            approveFeeDecisionDraftsForSending(h, listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now())
+            upsertFeeDecisions(tx.handle, objectMapper, listOf(draft))
+            approveFeeDecisionDraftsForSending(tx.handle, listOf(draft.id), testDecisionMaker_1.id, approvedAt = Instant.now())
 
-            val result = getFeeDecision(h, objectMapper, testDecisions[0].id)!!
+            val result = getFeeDecision(tx.handle, objectMapper, testDecisions[0].id)!!
             assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, result.status)
             assertEquals(1L, result.decisionNumber)
             assertEquals(testDecisionMaker_1, result.approvedBy)
@@ -315,7 +319,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `approveDraftsForSending with multiple decisions`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             val decisions = listOf(
                 testDecisions[0],
                 testDecisions[0].copy(
@@ -324,11 +328,11 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
                     validTo = testPeriod.end!!.minusYears(1)
                 )
             )
-            upsertFeeDecisions(h, objectMapper, decisions)
+            upsertFeeDecisions(tx.handle, objectMapper, decisions)
 
-            approveFeeDecisionDraftsForSending(h, decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now())
+            approveFeeDecisionDraftsForSending(tx.handle, decisions.map { it.id }, testDecisionMaker_1.id, approvedAt = Instant.now())
 
-            val result = getFeeDecisionsByIds(h, objectMapper, decisions.map { it.id }).sortedBy { it.decisionNumber }
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, decisions.map { it.id }).sortedBy { it.decisionNumber }
             with(result[0]) {
                 assertEquals(FeeDecisionStatus.WAITING_FOR_SENDING, status)
                 assertEquals(1L, decisionNumber)
@@ -342,56 +346,56 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
 
     @Test
     fun `delete with empty list`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            val before = getFeeDecisionsByIds(h, objectMapper, testDecisions.map { it.id })
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            val before = getFeeDecisionsByIds(tx.handle, objectMapper, testDecisions.map { it.id })
 
-            deleteFeeDecisions(h, listOf())
+            deleteFeeDecisions(tx.handle, listOf())
 
-            val after = getFeeDecisionsByIds(h, objectMapper, testDecisions.map { it.id })
+            val after = getFeeDecisionsByIds(tx.handle, objectMapper, testDecisions.map { it.id })
             assertEquals(before, after)
         }
     }
 
     @Test
     fun `delete with one id`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            deleteFeeDecisions(h, listOf(testDecisions[0].id))
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            deleteFeeDecisions(tx.handle, listOf(testDecisions[0].id))
 
-            val result = getFeeDecisionsByIds(h, objectMapper, testDecisions.map { it.id })
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, testDecisions.map { it.id })
             assertEquals(testDecisions.drop(1), result)
         }
     }
 
     @Test
     fun `delete with two ids`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
-            deleteFeeDecisions(h, testDecisions.map { it.id })
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
+            deleteFeeDecisions(tx.handle, testDecisions.map { it.id })
 
-            val result = getFeeDecisionsByIds(h, objectMapper, testDecisions.map { it.id })
+            val result = getFeeDecisionsByIds(tx.handle, objectMapper, testDecisions.map { it.id })
             assertEquals(emptyList<FeeDecision>(), result)
         }
     }
 
     @Test
     fun `getInvoiceable`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
 
             val result =
-                getInvoiceableFeeDecisions(h, objectMapper, DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)))
+                getInvoiceableFeeDecisions(tx.handle, objectMapper, DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)))
             assertEquals(2, result.size)
         }
     }
 
     @Test
     fun `searchIgnoresAccent`() {
-        jdbi.handle { h ->
-            upsertFeeDecisions(h, objectMapper, testDecisions)
+        db.transaction { tx ->
+            upsertFeeDecisions(tx.handle, objectMapper, testDecisions)
             upsertFeeDecisions(
-                h, objectMapper,
+                tx.handle, objectMapper,
                 listOf(
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.DRAFT,
@@ -408,12 +412,12 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
                     )
                 )
             )
-
-            searchAndAssert("Viren", "Virén")
-            searchAndAssert("Virén", "Virén")
-            searchAndAssert("Visa Viren", "Virén")
-            searchAndAssert("Visa Virén", "Virén")
         }
+
+        searchAndAssert("Viren", "Virén")
+        searchAndAssert("Virén", "Virén")
+        searchAndAssert("Visa Viren", "Virén")
+        searchAndAssert("Visa Virén", "Virén")
     }
 
     private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {

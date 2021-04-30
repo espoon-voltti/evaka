@@ -30,9 +30,9 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 
@@ -114,7 +114,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceNeeds = jdbi.handle { h -> getAssistanceNeedsByChild(h, testChild_1.id) }
+        val assistanceNeeds = db.transaction { tx -> getAssistanceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
         assertTrue(assistanceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
         assertTrue(assistanceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
@@ -170,7 +170,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceNeeds = jdbi.handle { h -> getAssistanceNeedsByChild(h, testChild_1.id) }
+        val assistanceNeeds = db.transaction { tx -> getAssistanceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
         assertTrue(assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(assistanceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -187,7 +187,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceNeeds = jdbi.handle { h -> getAssistanceNeedsByChild(h, testChild_1.id) }
+        val assistanceNeeds = db.transaction { tx -> getAssistanceNeedsByChild(tx.handle, testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
         assertTrue(assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(assistanceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
@@ -286,8 +286,8 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
     private fun testDate(day: Int) = LocalDate.of(2000, 1, day)
 
     private fun givenAssistanceNeed(start: Int, end: Int, childId: UUID = testChild_1.id): UUID {
-        return jdbi.handle {
-            it.insertTestAssistanceNeed(
+        return db.transaction {
+            it.handle.insertTestAssistanceNeed(
                 DevAssistanceNeed(
                     childId = childId,
                     startDate = testDate(start),

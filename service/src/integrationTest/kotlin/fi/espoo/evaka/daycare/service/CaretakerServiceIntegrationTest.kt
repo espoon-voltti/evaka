@@ -26,17 +26,17 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
 
     @BeforeEach
     fun setup() {
-        jdbi.handle {
-            resetDatabase(it)
-            insertGeneralTestFixtures(it)
-            it.insertTestDaycareGroup(
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.handle.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = groupId,
                     daycareId = daycareId,
                     startDate = groupStart
                 )
             )
-            it.execute(
+            tx.execute(
                 "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (?, ?, 3)",
                 groupId,
                 groupStart

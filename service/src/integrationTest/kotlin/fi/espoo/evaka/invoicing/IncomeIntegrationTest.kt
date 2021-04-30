@@ -48,12 +48,16 @@ class IncomeIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { tx ->
+            tx.resetDatabase()
+        }
     }
 
     private fun testIncome() = Income(
@@ -81,7 +85,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `getIncome works with single income in DB`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -105,7 +109,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             ),
             testIncome
         )
-        jdbi.handle { h -> incomes.forEach { upsertIncome(h, mapper, it, financeUser.id) } }
+        db.transaction { tx -> incomes.forEach { upsertIncome(tx.handle, mapper, it, financeUser.id) } }
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -151,7 +155,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome splits earlier indefinite income`() {
         val firstIncome = testIncome().copy(validTo = null)
-        jdbi.handle { h -> upsertIncome(h, mapper, firstIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, firstIncome, financeUser.id) }
 
         val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusMonths(1))
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
@@ -160,7 +164,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(200, postResponse.statusCode)
 
-        val result = jdbi.handle { h -> getIncomesForPerson(h, mapper, testAdult_1.id) }
+        val result = db.transaction { tx -> getIncomesForPerson(tx.handle, mapper, testAdult_1.id) }
 
         assertEquals(2, result.size)
 
@@ -176,7 +180,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome throws with partly overlapping date range`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val overlappingIncome =
             testIncome.let { it.copy(validFrom = it.validFrom.plusDays(10), validTo = null) }
@@ -191,7 +195,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome throws with identical date range`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val (_, postResponse, _) = http.post("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -203,7 +207,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `createIncome throws with covering date range`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val overlappingIncome =
             testIncome.let { it.copy(validFrom = it.validTo!!.minusMonths(1), validTo = it.validTo!!.plusYears(1)) }
@@ -238,7 +242,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome works with valid income`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val updated = testIncome.copy(
             data = mapOf(
@@ -268,7 +272,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome throws with invalid date rage`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val updated = testIncome.copy(validTo = testIncome.validFrom.minusDays(1))
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
@@ -281,7 +285,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome throws with overlapping date rage`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val anotherIncome = with(testIncome) {
             this.copy(
@@ -290,7 +294,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
                 validTo = validTo!!.plusYears(1)
             )
         }
-        jdbi.handle { h -> upsertIncome(h, mapper, anotherIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, anotherIncome, financeUser.id) }
 
         val updated = testIncome.copy(validTo = anotherIncome.validTo)
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
@@ -303,7 +307,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
     @Test
     fun `updateIncome removes data if effect is not INCOME`() {
         val testIncome = testIncome()
-        jdbi.handle { h -> upsertIncome(h, mapper, testIncome, financeUser.id) }
+        db.transaction { tx -> upsertIncome(tx.handle, mapper, testIncome, financeUser.id) }
 
         val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
         val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
@@ -333,12 +337,12 @@ class IncomeIntegrationTest : FullApplicationTest() {
                 validTo = validTo!!.plusYears(1)
             )
         }
-        jdbi.handle { h ->
-            upsertIncome(h, mapper, testIncome, financeUser.id)
-            upsertIncome(h, mapper, anotherIncome, financeUser.id)
+        db.transaction { tx ->
+            upsertIncome(tx.handle, mapper, testIncome, financeUser.id)
+            upsertIncome(tx.handle, mapper, anotherIncome, financeUser.id)
         }
 
-        val resultBeforeDelete = jdbi.handle { h -> getIncomesForPerson(h, mapper, testIncome.personId) }
+        val resultBeforeDelete = db.transaction { tx -> getIncomesForPerson(tx.handle, mapper, testIncome.personId) }
 
         assertEquals(2, resultBeforeDelete.size)
 
@@ -348,7 +352,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
 
         assertEquals(204, deleteResponse.statusCode)
 
-        val resultAfterDelete = jdbi.handle { h -> getIncomesForPerson(h, mapper, testIncome.personId) }
+        val resultAfterDelete = db.transaction { tx -> getIncomesForPerson(tx.handle, mapper, testIncome.personId) }
 
         assertEquals(1, resultAfterDelete.size)
     }

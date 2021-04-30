@@ -24,16 +24,16 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            storeDvvModificationToken(h, "100", "101", 0, 0)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            storeDvvModificationToken(tx.handle, "100", "101", 0, 0)
         }
     }
 
     @AfterEach
     private fun afterEach() {
-        jdbi.handle { h ->
-            deleteDvvModificationToken(h, "100")
+        db.transaction { tx ->
+            deleteDvvModificationToken(tx.handle, "100")
         }
     }
 
@@ -184,8 +184,8 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         restrictedDetailsEnabled = false
     )
 
-    private fun createTestPerson(devPerson: DevPerson): UUID = jdbi.handle { h ->
-        h.insertTestPerson(devPerson)
+    private fun createTestPerson(devPerson: DevPerson): UUID = db.transaction { tx ->
+        tx.handle.insertTestPerson(devPerson)
     }
 
     private fun createVtjPerson(person: DevPerson) {

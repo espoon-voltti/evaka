@@ -23,7 +23,6 @@ import fi.espoo.evaka.test.getBackupCareRowsByChild
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -36,17 +35,17 @@ class BackupCareIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 
     @Test
-    fun testUpdate(): Unit = jdbi.handle { h ->
-        val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+    fun testUpdate() {
+        val groupId = db.transaction { tx -> tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
         val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-        val id = createBackupCareAndAssert(h, period = period)
+        val id = createBackupCareAndAssert(period = period)
         val changedPeriod = period.copy(end = LocalDate.of(2020, 7, 7))
         val (_, res, _) = http.post("/backup-cares/$id")
             .jsonBody(
@@ -60,18 +59,20 @@ class BackupCareIntegrationTest : FullApplicationTest() {
             .asUser(serviceWorker)
             .response()
         Assertions.assertTrue(res.isSuccessful)
-        getBackupCareRowsByChild(h, testChild_1.id).one().also {
-            Assertions.assertEquals(id, it.id)
-            Assertions.assertEquals(testChild_1.id, it.childId)
-            Assertions.assertEquals(testDaycare.id, it.unitId)
-            Assertions.assertEquals(groupId, it.groupId)
-            Assertions.assertEquals(changedPeriod, it.period())
+        db.read { r ->
+            getBackupCareRowsByChild(r.handle, testChild_1.id).one().also {
+                Assertions.assertEquals(id, it.id)
+                Assertions.assertEquals(testChild_1.id, it.childId)
+                Assertions.assertEquals(testDaycare.id, it.unitId)
+                Assertions.assertEquals(groupId, it.groupId)
+                Assertions.assertEquals(changedPeriod, it.period())
+            }
         }
     }
 
     @Test
-    fun testOverlapError(): Unit = jdbi.handle { h ->
-        createBackupCareAndAssert(h)
+    fun testOverlapError() {
+        createBackupCareAndAssert()
         val (_, res, _) = http.post("/children/${testChild_1.id}/backup-cares")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -88,10 +89,10 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun testChildBackupCare(): Unit = jdbi.handle { h ->
+    fun testChildBackupCare() {
         val groupName = "Test Group"
-        val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
-        val id = createBackupCareAndAssert(h, groupId = groupId)
+        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName)) }
+        val id = createBackupCareAndAssert(groupId = groupId)
         val (_, res, result) = http.get("/children/${testChild_1.id}/backup-cares")
             .asUser(serviceWorker)
             .responseObject<ChildBackupCaresResponse>(objectMapper)
@@ -118,19 +119,23 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun testUnitBackupCare(): Unit = jdbi.handle { h ->
+    fun testUnitBackupCare() {
         val groupName = "Test Group"
-        val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
         val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
         val serviceNeedPeriod = FiniteDateRange(LocalDate.of(2020, 7, 3), period.end)
-        insertTestServiceNeed(
-            h,
-            childId = testChild_1.id,
-            startDate = serviceNeedPeriod.start,
-            endDate = serviceNeedPeriod.end,
-            updatedBy = testDecisionMaker_1.id
-        )
-        val id = createBackupCareAndAssert(h, groupId = groupId)
+        val groupId = db.transaction { tx ->
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
+        }
+        db.transaction { tx ->
+            insertTestServiceNeed(
+                tx.handle,
+                childId = testChild_1.id,
+                startDate = serviceNeedPeriod.start,
+                endDate = serviceNeedPeriod.end,
+                updatedBy = testDecisionMaker_1.id
+            )
+        }
+        val id = createBackupCareAndAssert(groupId = groupId)
         val (_, res, result) = http.get(
             "/daycares/${testDaycare.id}/backup-cares",
             listOf(
@@ -166,7 +171,6 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     }
 
     private fun createBackupCareAndAssert(
-        h: Handle,
         childId: UUID = testChild_1.id,
         unitId: UUID = testDaycare.id,
         groupId: UUID? = null,
@@ -188,12 +192,14 @@ class BackupCareIntegrationTest : FullApplicationTest() {
 
         val id = result.get().id
 
-        getBackupCareRowById(h, id).one().also {
-            Assertions.assertEquals(id, it.id)
-            Assertions.assertEquals(childId, it.childId)
-            Assertions.assertEquals(unitId, it.unitId)
-            Assertions.assertEquals(groupId, it.groupId)
-            Assertions.assertEquals(period, it.period())
+        db.read { r ->
+            getBackupCareRowById(r.handle, id).one().also {
+                Assertions.assertEquals(id, it.id)
+                Assertions.assertEquals(childId, it.childId)
+                Assertions.assertEquals(unitId, it.unitId)
+                Assertions.assertEquals(groupId, it.groupId)
+                Assertions.assertEquals(period, it.period())
+            }
         }
         return id
     }

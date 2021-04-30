@@ -75,51 +75,59 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `service worker can delete partnerships`() {
-        `can delete partnership`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        canDeletePartnership(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can delete partnerships`() {
-        `can delete partnership`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        canDeletePartnership(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can delete partnerships`() {
-        `can delete partnership`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        canDeletePartnership(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
-    fun `can delete partnership`(user: AuthenticatedUser) = jdbi.handle { h ->
+    private fun canDeletePartnership(user: AuthenticatedUser) {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership1 = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100))
-        h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
-        assertEquals(2, h.getPartnershipsForPerson(adult1.id).size)
+        val partnership1 = db.transaction { tx ->
+            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100)).also {
+                tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
+                assertEquals(2, tx.handle.getPartnershipsForPerson(adult1.id).size)
+            }
+        }
 
         val delResponse = controller.deletePartnership(db, user, partnership1.id)
         assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
-        assertEquals(1, h.getPartnershipsForPerson(adult1.id).size)
+        db.read { r ->
+            assertEquals(1, r.handle.getPartnershipsForPerson(adult1.id).size)
+        }
     }
 
     @Test
     fun `service worker can update partnerships`() {
-        `can update partnership duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `unit supervisor can update partnerships`() {
-        `can update partnership duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `finance admin can update partnerships`() {
-        `can update partnership duration`(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
+        canUpdatePartnershipDuration(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
-    fun `can update partnership duration`(user: AuthenticatedUser) = jdbi.handle { h ->
+    private fun canUpdatePartnershipDuration(user: AuthenticatedUser) {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership1 = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
-        h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+        val partnership1 = db.transaction { tx ->
+            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
+                tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+            }
+        }
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
@@ -140,12 +148,15 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `can updating partnership duration to overlap throws conflict`() = jdbi.handle { h ->
+    fun `can updating partnership duration to overlap throws conflict`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership1 = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
-        h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+        val partnership1 = db.transaction { tx ->
+            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
+                tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+            }
+        }
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(600)
@@ -156,11 +167,13 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `error is thrown if enduser tries to get partnerships`() = jdbi.handle { h ->
+    fun `error is thrown if enduser tries to get partnerships`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        db.transaction { tx ->
+            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        }
 
         assertThrows<Forbidden> {
             controller.getPartnerships(db, user, adult1.id)
@@ -182,11 +195,13 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `error is thrown if enduser tries to update partnerships`() = jdbi.handle { h ->
+    fun `error is thrown if enduser tries to update partnerships`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        val partnership = db.transaction { tx ->
+            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        }
 
         val requestBody = PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
         assertThrows<Forbidden> {
@@ -195,17 +210,21 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `error is thrown if enduser tries to delete a partnership`() = jdbi.handle { h ->
+    fun `error is thrown if enduser tries to delete a partnership`() {
         val user = AuthenticatedUser.Citizen(UUID.randomUUID())
-        val partnership = h.createPartnership(testPerson1().id, testPerson2().id, LocalDate.now(), LocalDate.now().plusDays(200))
+        val adult1 = testPerson1()
+        val adult2 = testPerson2()
+        val partnership = db.transaction { tx ->
+            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        }
 
         assertThrows<Forbidden> {
             controller.deletePartnership(db, user, partnership.id)
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON = jdbi.transaction { h ->
-        h.createPerson(
+    private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction { tx ->
+        tx.handle.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

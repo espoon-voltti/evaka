@@ -47,36 +47,38 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
     @BeforeEach
     internal fun setUp() {
         mergeService = MergeService(asyncJobRunnerMock)
-        jdbi.handle(::resetDatabase)
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+        }
     }
 
     @Test
     fun `empty person can be deleted`() {
         val id = UUID.randomUUID()
-        jdbi.handle {
-            it.insertTestPerson(DevPerson(id = id))
-            it.insertTestChild(DevChild(id))
+        db.transaction {
+            it.handle.insertTestPerson(DevPerson(id = id))
+            it.handle.insertTestChild(DevChild(id))
         }
 
-        val countBefore = jdbi.handle { it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size }
+        val countBefore = db.read { it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size }
         assertEquals(1, countBefore)
 
         db.transaction {
             mergeService.deleteEmptyPerson(it, id)
         }
 
-        val countAfter = jdbi.handle { it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size }
+        val countAfter = db.read { it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size }
         assertEquals(0, countAfter)
     }
 
     @Test
     fun `cannot delete person with data - placement`() {
         val id = UUID.randomUUID()
-        jdbi.handle {
-            it.insertTestPerson(DevPerson(id = id))
-            it.insertTestChild(DevChild(id))
-            it.insertTestPlacement(
+        db.transaction {
+            it.handle.insertTestPerson(DevPerson(id = id))
+            it.handle.insertTestChild(DevChild(id))
+            it.handle.insertTestPlacement(
                 DevPlacement(
                     childId = id,
                     unitId = testDaycare.id
@@ -94,22 +96,22 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val childId = UUID.randomUUID()
         val validFrom = LocalDate.of(2010, 1, 1)
         val validTo = LocalDate.of(2020, 12, 30)
-        jdbi.handle {
-            it.insertTestPerson(DevPerson(id = childId))
-            it.insertTestPerson(DevPerson(id = adultId))
-            it.insertTestPerson(DevPerson(id = adultIdDuplicate))
-            insertTestParentship(it, headOfChild = adultId, childId = childId, startDate = LocalDate.of(2015, 1, 1), endDate = LocalDate.of(2030, 1, 1))
-            insertTestIncome(it, objectMapper, adultIdDuplicate, validFrom = validFrom, validTo = validTo)
+        db.transaction {
+            it.handle.insertTestPerson(DevPerson(id = childId))
+            it.handle.insertTestPerson(DevPerson(id = adultId))
+            it.handle.insertTestPerson(DevPerson(id = adultIdDuplicate))
+            insertTestParentship(it.handle, headOfChild = adultId, childId = childId, startDate = LocalDate.of(2015, 1, 1), endDate = LocalDate.of(2030, 1, 1))
+            insertTestIncome(it.handle, objectMapper, adultIdDuplicate, validFrom = validFrom, validTo = validTo)
         }
 
-        val countBefore = jdbi.handle { it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultIdDuplicate).map { _, _ -> 1 }.list().size }
+        val countBefore = db.read { it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultIdDuplicate).map { _, _ -> 1 }.list().size }
         assertEquals(1, countBefore)
 
         db.transaction {
             mergeService.mergePeople(it, adultId, adultIdDuplicate)
         }
 
-        val countAfter = jdbi.handle { it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultId).map { _, _ -> 1 }.list().size }
+        val countAfter = db.read { it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultId).map { _, _ -> 1 }.list().size }
         assertEquals(1, countAfter)
 
         verify(asyncJobRunnerMock).plan(
@@ -121,27 +123,27 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
     fun `merging child moves placements and service needs`() {
         val childId = UUID.randomUUID()
         val childIdDuplicate = UUID.randomUUID()
-        jdbi.handle {
-            it.insertTestPerson(DevPerson(id = childId))
-            it.insertTestPerson(DevPerson(id = childIdDuplicate))
-            it.insertTestChild(DevChild(childIdDuplicate))
+        db.transaction {
+            it.handle.insertTestPerson(DevPerson(id = childId))
+            it.handle.insertTestPerson(DevPerson(id = childIdDuplicate))
+            it.handle.insertTestChild(DevChild(childIdDuplicate))
         }
-        val employeeId = jdbi.handle { it.insertTestEmployee(DevEmployee()) }
+        val employeeId = db.transaction { it.handle.insertTestEmployee(DevEmployee()) }
         val from = LocalDate.of(2010, 1, 1)
         val to = LocalDate.of(2020, 12, 30)
-        jdbi.handle {
-            it.insertTestPlacement(DevPlacement(childId = childIdDuplicate, unitId = testDaycare.id, startDate = from, endDate = to))
-            insertTestServiceNeed(it, childIdDuplicate, startDate = from, endDate = to, updatedBy = employeeId)
+        db.transaction {
+            it.handle.insertTestPlacement(DevPlacement(childId = childIdDuplicate, unitId = testDaycare.id, startDate = from, endDate = to))
+            insertTestServiceNeed(it.handle, childIdDuplicate, startDate = from, endDate = to, updatedBy = employeeId)
         }
 
-        val countBefore = jdbi.handle { it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childIdDuplicate).map { _, _ -> 1 }.list().size }
+        val countBefore = db.read { it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childIdDuplicate).map { _, _ -> 1 }.list().size }
         assertEquals(1, countBefore)
 
         db.transaction {
             mergeService.mergePeople(it, childId, childIdDuplicate)
         }
 
-        val countAfter = jdbi.handle { it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childId).map { _, _ -> 1 }.list().size }
+        val countAfter = db.read { it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childId).map { _, _ -> 1 }.list().size }
         assertEquals(1, countAfter)
 
         verifyZeroInteractions(asyncJobRunnerMock)
@@ -152,17 +154,17 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val adultId = UUID.randomUUID()
         val childId = UUID.randomUUID()
         val childIdDuplicate = UUID.randomUUID()
-        jdbi.handle {
-            it.insertTestPerson(DevPerson(id = adultId))
-            it.insertTestPerson(DevPerson(id = childId))
-            it.insertTestChild(DevChild(childId))
-            it.insertTestPerson(DevPerson(id = childIdDuplicate))
-            it.insertTestChild(DevChild(childIdDuplicate))
-            insertTestParentship(it, headOfChild = adultId, childId = childId, startDate = LocalDate.of(2015, 1, 1), endDate = LocalDate.of(2030, 1, 1))
+        db.transaction {
+            it.handle.insertTestPerson(DevPerson(id = adultId))
+            it.handle.insertTestPerson(DevPerson(id = childId))
+            it.handle.insertTestChild(DevChild(childId))
+            it.handle.insertTestPerson(DevPerson(id = childIdDuplicate))
+            it.handle.insertTestChild(DevChild(childIdDuplicate))
+            insertTestParentship(it.handle, headOfChild = adultId, childId = childId, startDate = LocalDate.of(2015, 1, 1), endDate = LocalDate.of(2030, 1, 1))
         }
         val placementStart = LocalDate.of(2017, 1, 1)
         val placementEnd = LocalDate.of(2020, 12, 30)
-        jdbi.handle { it.insertTestPlacement(DevPlacement(childId = childIdDuplicate, unitId = testDaycare.id, startDate = placementStart, endDate = placementEnd)) }
+        db.transaction { it.handle.insertTestPlacement(DevPlacement(childId = childIdDuplicate, unitId = testDaycare.id, startDate = placementStart, endDate = placementEnd)) }
 
         db.transaction {
             mergeService.mergePeople(it, childId, childIdDuplicate)
