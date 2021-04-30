@@ -90,7 +90,7 @@ export default React.memo(function AttendancePageWrapper({
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [groupIdOrAll, unitId, currentPage])
+  }, [loadDaycareAttendances, groupIdOrAll, unitId, currentPage])
 
   const today = LocalDate.today()
   useEffect(() => {
@@ -115,7 +115,7 @@ export default React.memo(function AttendancePageWrapper({
       )
       setSearchResults(filteredData)
     }
-  }, [freeText])
+  }, [freeText, attendanceResponse])
 
   useEffect(() => {
     const selectedGroup =
@@ -130,7 +130,7 @@ export default React.memo(function AttendancePageWrapper({
     return () => {
       setSelectedGroup(undefined)
     }
-  }, [attendanceResponse])
+  }, [attendanceResponse, groupIdOrAll])
 
   const totalAttendances = attendanceResponse.isSuccess
     ? groupIdOrAll === 'all'
