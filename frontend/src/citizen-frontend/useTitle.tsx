@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useEffect } from 'react'
-import { Translations } from './localization'
+import { Translations } from 'lib-customizations/citizen'
 
 export default function useTitle(
   t: Translations,

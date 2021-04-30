@@ -4,8 +4,7 @@
 
 import { P } from 'lib-components/typography'
 import React from 'react'
-import { Translations } from '.'
-import { svCustomizations } from 'lib-customizations/citizen'
+import { Translations } from 'lib-customizations/citizen'
 
 const sv: Translations = {
   common: {
@@ -59,17 +58,20 @@ const sv: Translations = {
     logout: 'Logga ut'
   },
   footer: {
-    cityLabel: svCustomizations.footer.cityLabel,
+    cityLabel: '© Esbo stad',
     privacyPolicy: 'Dataskyddsbeskrivningar',
-    privacyPolicyLink: svCustomizations.footer.privacyPolicyLink,
+    privacyPolicyLink:
+      'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
     sendFeedback: 'Skicka feedback',
-    sendFeedbackLink: svCustomizations.footer.sendFeedbackLink
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   map: {
     title: 'Enheter på kartan',
-    mainInfo: svCustomizations.map.mainInfo,
+    mainInfo:
+      'I den här vyn kan du på kartan söka enheter med småbarnspedagogik och förskola.',
     searchLabel: 'Sök med adress eller enhetens namn',
-    searchPlaceholder: svCustomizations.map.searchPlaceholder,
+    searchPlaceholder: 'T.ex. Kilovägen eller Purola daghem',
     address: 'Adress',
     noResults: 'Inga sökresultat',
     distanceWalking: 'Avstånd från vald enhet gående',
@@ -1061,9 +1063,16 @@ const sv: Translations = {
     }
   },
   applicationsList: {
-    title: svCustomizations.applicationsList.title,
+    title: 'Ansökan till småbarnspedagogik eller anmälan till förskolan',
     summary: function ApplicationListSummaryText() {
-      return <P width="800px">{svCustomizations.applicationsList.summary}</P>
+      return (
+        <P width="800px">
+          Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka
+          om plats i småbarnspedagogisk verksamhet. Uppgifter om
+          vårdnadshavarens barn kommer automatiskt från befolkningsdatabasen
+          till denna sida.
+        </P>
+      )
     },
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Inga ansökningar',

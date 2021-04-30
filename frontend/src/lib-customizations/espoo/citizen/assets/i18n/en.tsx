@@ -4,8 +4,7 @@
 
 import { P } from 'lib-components/typography'
 import React from 'react'
-import { Translations } from '.'
-import { enCustomizations } from 'lib-customizations/citizen'
+import { Translations } from 'lib-customizations/citizen'
 
 const en: Translations = {
   common: {
@@ -59,17 +58,20 @@ const en: Translations = {
     logout: 'Log out'
   },
   footer: {
-    cityLabel: enCustomizations.footer.cityLabel,
+    cityLabel: '© City of Espoo',
     privacyPolicy: 'Privacy Notices',
-    privacyPolicyLink: enCustomizations.footer.privacyPolicyLink,
+    privacyPolicyLink:
+      'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
     sendFeedback: 'Give feedback',
-    sendFeedbackLink: enCustomizations.footer.sendFeedbackLink
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   map: {
     title: 'Units on the map',
-    mainInfo: enCustomizations.map.mainInfo,
+    mainInfo:
+      "In this view, you can search the map for Espoo's early childhood education, pre-primary education and club places.",
     searchLabel: 'Search by your own address or by a unit name',
-    searchPlaceholder: enCustomizations.map.searchPlaceholder,
+    searchPlaceholder: 'For example Kilontie 3 or Purolan päiväkoti',
     address: 'Address',
     noResults: 'No results',
     distanceWalking: 'Walking distance from selected address',
@@ -1110,9 +1112,18 @@ const en: Translations = {
     }
   },
   applicationsList: {
-    title: enCustomizations.applicationsList.title,
+    title:
+      'Applying for early childhood education or a club and enrolling for pre-primary education',
     summary: function ApplicationListSummaryText() {
-      return <P width="800px">{enCustomizations.applicationsList.summary}</P>
+      return (
+        <P width="800px">
+          A child’s guardian can submit an application for early childhood
+          education or a club and enrol the child to pre-primary education.
+          Information on the guardian’s children is automatically retrieved from
+          the Digital and Population Data Services Agency and displayed in this
+          view.
+        </P>
+      )
     },
     pageLoadError: 'Failed to load guardian applications',
     noApplications: 'No applications',

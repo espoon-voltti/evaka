@@ -4,7 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import { InputInfo } from 'lib-components/atoms/form/InputField'
-import { Translations } from './localization'
+import { Translations } from 'lib-customizations/citizen'
 import { parse } from 'date-fns'
 
 export const SSN_REGEXP = /^[0-9]{6}[+\-A][0-9]{3}[0-9ABCDEFHJKLMNPRSTUVWXY]$/

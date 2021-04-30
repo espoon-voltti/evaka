@@ -4,16 +4,15 @@
 
 import type { CitizenCustomizations } from 'lib-customizations/types'
 import EspooLogo from './espoo-logo.svg'
-import enCustomizations from './enCustomizations'
-import fiCustomizations from './fiCustomizations'
-import svCustomizations from './svCustomizations'
 import mapConfig from './mapConfig'
 import featureFlags from './featureFlags'
 
 const customizations: CitizenCustomizations = {
-  fiCustomizations,
-  enCustomizations,
-  svCustomizations,
+  translations: {
+    fi: {},
+    sv: {},
+    en: {}
+  },
   cityLogo: {
     src: EspooLogo,
     alt: 'Espoo Logo'
