@@ -318,7 +318,6 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
 
   return (
     <CollapsibleContentArea
-      //icon={faClock}
       title={<H2 noMargin>{i18n.childInformation.dailyServiceTimes.title}</H2>}
       open={open}
       toggleOpen={() => setOpen(!open)}

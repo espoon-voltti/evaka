@@ -52,7 +52,6 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
 
   return (
     <CollapsibleContentArea
-      //icon={faUsers}
       title={<H2 noMargin>{i18n.childInformation.familyContacts.title}</H2>}
       open={open}
       toggleOpen={() => setOpen(!open)}

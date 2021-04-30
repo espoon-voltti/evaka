@@ -178,7 +178,6 @@ function BackupPickup({ id, startOpen }: BackupPickupProps) {
 
   return (
     <CollapsibleContentArea
-      //icon={faTruck}
       title={<H2 noMargin>{i18n.childInformation.backupPickups.title}</H2>}
       open={open}
       toggleOpen={() => setOpen(!open)}

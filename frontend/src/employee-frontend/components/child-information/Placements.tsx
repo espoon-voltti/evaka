@@ -85,7 +85,6 @@ const Placements = React.memo(function Placements({ id, startOpen }: Props) {
   return (
     <div>
       <CollapsibleContentArea
-        //icon={faMapMarkerAlt}
         title={<H2 noMargin>{i18n.childInformation.placements.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

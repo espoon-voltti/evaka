@@ -73,7 +73,6 @@ const Guardians = React.memo(function Guardians({ id, startOpen }: Props) {
   return (
     <div>
       <CollapsibleContentArea
-        //icon={faFemale}
         title={<H2 noMargin>{i18n.personProfile.guardians}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

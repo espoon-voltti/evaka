@@ -23,7 +23,6 @@ function Assistance({ id, startOpen }: Props) {
   return (
     <div>
       <CollapsibleContentArea
-        //icon={faHandHolding}
         title={<H2 noMargin>{i18n.childInformation.assistance.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

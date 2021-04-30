@@ -41,7 +41,6 @@ export default function BackupCare({ id, startOpen }: Props): JSX.Element {
 
   return (
     <CollapsibleContentArea
-      //icon={faHiking}
       title={<H2 noMargin>{i18n.childInformation.backupCares.title}</H2>}
       open={open}
       toggleOpen={() => setOpen(!open)}

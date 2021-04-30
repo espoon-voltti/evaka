@@ -61,7 +61,6 @@ const MessageBlocklist = React.memo(function ChildDetails({
   return (
     <div className="child-message-blocklist">
       <CollapsibleContentArea
-        //icon={faEnvelope}
         title={<H2 noMargin>{i18n.childInformation.messaging.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

@@ -25,7 +25,6 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
   return (
     <div className="person-details-section">
       <CollapsibleContentArea
-        //icon={faChild}
         title={<H2 noMargin>{i18n.childInformation.personDetails.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

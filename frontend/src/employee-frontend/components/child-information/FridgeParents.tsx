@@ -77,7 +77,6 @@ const FridgeParents = React.memo(function FridgeParents({ startOpen }: Props) {
   return (
     <div className="fridge-parents-section">
       <CollapsibleContentArea
-        //icon={faUser}
         title={<H2 noMargin>{i18n.childInformation.fridgeParents.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

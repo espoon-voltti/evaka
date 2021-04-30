@@ -65,7 +65,6 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, startOpen }: Props) {
   return (
     <div ref={refSectionTop}>
       <CollapsibleContentArea
-        //icon={faClock}
         title={<H2 noMargin>{i18n.childInformation.serviceNeed.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}

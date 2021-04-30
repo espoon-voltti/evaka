@@ -108,7 +108,6 @@ const ChildApplications = React.memo(function ChildApplications({
 
   return (
     <CollapsibleContentArea
-      //icon={faFileAlt}
       title={<H2 noMargin>{i18n.childInformation.application.title}</H2>}
       open={open}
       toggleOpen={() => setOpen(!open)}

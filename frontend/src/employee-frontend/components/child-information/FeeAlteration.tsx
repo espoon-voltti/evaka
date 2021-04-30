@@ -93,7 +93,6 @@ const FeeAlteration = React.memo(function FeeAlteration({
   return (
     <div ref={refSectionTop}>
       <CollapsibleContentArea
-        //icon={faMoneyCheckEdit}
         title={<H2 noMargin>{i18n.childInformation.feeAlteration.title}</H2>}
         open={open}
         toggleOpen={() => setOpen(!open)}
