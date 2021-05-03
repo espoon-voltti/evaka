@@ -1265,7 +1265,7 @@ export const fi = {
       update: 'Muokkaa tietoja',
       daycareDailyNote: {
         header: 'Päivän muistiinpanot',
-        groupNoteHeader: 'Päivän muistiinpanot koko ryhmälle',
+        groupNoteHeader: 'Päivän muistiinpano koko ryhmälle',
         notesHeader: 'Päivän tapahtumia (ei terveystietoja)',
         groupNotesHeader: 'Koko ryhmää koskeva muistiinpano',
         notesHint: 'Mitä tänään opin, leikin, oivalsin.',
@@ -1275,7 +1275,8 @@ export const fi = {
         sleepingHours: 'tuntia',
         reminderHeader: 'Muistettavia asioita',
         otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
-        groupNoteModalAddLink: 'Lisää muistiinpano koko ryhmälle',
+        groupNoteModalAddLink: 'Päivän muistiinpano koko ryhmälle',
+        groupNoteHint: 'Kirjoita muistiinpano ja ajankohta',
         groupNoteModalModifyLink:
           'Muokkaa tai poista muistiinpano koko ryhmälle',
         edit: 'Lisää päivän muistiinpano',
