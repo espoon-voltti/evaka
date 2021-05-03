@@ -230,7 +230,7 @@ class DvvModificationsService(
     }
 
     fun getDvvModifications(tx: Database.Transaction, ssns: List<String>): List<DvvModification> {
-        val token = getNextDvvModificationToken(tx.handle)
+        val token = tx.getNextDvvModificationToken()
         return getAllPagesOfDvvModifications(tx, ssns, token, emptyList())
     }
 
@@ -245,8 +245,7 @@ class DvvModificationsService(
             val combinedModifications = alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
             if (dvvModificationsResponse.ajanTasalla) {
                 if (dvvModificationsResponse.viimeisinKirjausavain != token)
-                    storeDvvModificationToken(
-                        tx.handle,
+                    tx.storeDvvModificationToken(
                         token,
                         dvvModificationsResponse.viimeisinKirjausavain,
                         ssns.size,

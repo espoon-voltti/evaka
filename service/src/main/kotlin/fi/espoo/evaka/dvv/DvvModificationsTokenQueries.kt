@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.dvv
 
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 
-fun storeDvvModificationToken(h: Handle, token: String, nextToken: String, ssnsSent: Int, modificationsReceived: Int) {
-    h.createUpdate(
+fun Database.Transaction.storeDvvModificationToken(token: String, nextToken: String, ssnsSent: Int, modificationsReceived: Int) {
+    createUpdate(
         """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
 VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
@@ -21,10 +21,10 @@ VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
         .execute()
 }
 
-fun getNextDvvModificationToken(h: Handle): String {
-    return h.createQuery(
+fun Database.Read.getNextDvvModificationToken(): String {
+    return createQuery(
         """
-SELECT next_token 
+SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
@@ -32,15 +32,15 @@ LIMIT 1
     ).mapTo<String>().one()
 }
 
-fun getDvvModificationToken(h: Handle, token: String): DvvModificationToken? {
-    return h.createQuery("""SELECT * FROM dvv_modification_token WHERE token = :token""")
+fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
+    return createQuery("""SELECT * FROM dvv_modification_token WHERE token = :token""")
         .bind("token", token)
         .mapTo<DvvModificationToken>()
         .one()
 }
 
-fun deleteDvvModificationToken(h: Handle, token: String) {
-    h.createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""").bind("token", token).execute()
+fun Database.Transaction.deleteDvvModificationToken(token: String) {
+    createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""").bind("token", token).execute()
 }
 
 data class DvvModificationToken(
