@@ -13,7 +13,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -60,7 +59,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
             .response()
         Assertions.assertTrue(res.isSuccessful)
         db.read { r ->
-            getBackupCareRowsByChild(r.handle, testChild_1.id).one().also {
+            r.getBackupCareRowsByChild(testChild_1.id).one().also {
                 Assertions.assertEquals(id, it.id)
                 Assertions.assertEquals(testChild_1.id, it.childId)
                 Assertions.assertEquals(testDaycare.id, it.unitId)
@@ -192,7 +191,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
         val id = result.get().id
 
         db.read { r ->
-            getBackupCareRowById(r.handle, id).one().also {
+            r.getBackupCareRowById(id).one().also {
                 Assertions.assertEquals(id, it.id)
                 Assertions.assertEquals(childId, it.childId)
                 Assertions.assertEquals(unitId, it.unitId)

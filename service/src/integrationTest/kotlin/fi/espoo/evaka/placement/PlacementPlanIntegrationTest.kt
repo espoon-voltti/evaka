@@ -21,7 +21,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -323,14 +322,14 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         assertTrue(res.isSuccessful)
 
         db.read { r ->
-            getPlacementPlanRowByApplication(r.handle, applicationId).one().also {
+            r.getPlacementPlanRowByApplication(applicationId).one().also {
                 assertEquals(type, it.type)
                 assertEquals(proposal.unitId, it.unitId)
                 assertEquals(proposal.period, it.period())
                 assertEquals(proposal.preschoolDaycarePeriod, it.preschoolDaycarePeriod())
                 assertEquals(false, it.deleted)
             }
-            assertEquals(ApplicationStatus.WAITING_DECISION, getApplicationStatus(r.handle, applicationId))
+            assertEquals(ApplicationStatus.WAITING_DECISION, r.getApplicationStatus(applicationId))
         }
     }
     private fun insertInitialData(

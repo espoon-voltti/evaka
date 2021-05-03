@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -41,7 +40,6 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -111,7 +109,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
+        val decisions = createDecisions(applicationId)
         assertEquals(1, decisions.size)
 
         val decision = decisions[0]
@@ -146,7 +144,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
+        val decisions = createDecisions(applicationId)
         assertEquals(1, decisions.size)
 
         val decision = decisions[0]
@@ -189,7 +187,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
+        val decisions = createDecisions(applicationId)
         assertEquals(1, decisions.size)
 
         val decision = decisions[0]
@@ -238,7 +236,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
+        val decisions = createDecisions(applicationId)
         assertEquals(2, decisions.size)
 
         val decision = decisions.find { it.type == DecisionType.PRESCHOOL }!!
@@ -291,7 +289,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
+        val decisions = createDecisions(applicationId)
         assertEquals(2, decisions.size)
 
         val decision = decisions.find { it.type == DecisionType.PREPARATORY_EDUCATION }!!
@@ -352,7 +350,6 @@ WHERE id = :unitId
     }
 
     private fun createDecisions(
-        h: Handle,
         applicationId: UUID
     ): List<DecisionTableRow> {
         val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-decisions-without-proposal")
@@ -362,7 +359,7 @@ WHERE id = :unitId
 
         asyncJobRunner.runPendingJobsSync()
 
-        val rows = getDecisionRowsByApplication(h, applicationId).list()
+        val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).list() }
         rows.forEach { row ->
             assertEquals(serviceWorker.id, row.createdBy)
             assertEquals(DecisionStatus.PENDING, row.status)
@@ -372,8 +369,9 @@ WHERE id = :unitId
             assertNotNull(row.sentDate)
             assertNotNull(row.documentUri)
         }
-        assertEquals(ApplicationStatus.WAITING_CONFIRMATION, getApplicationStatus(h, applicationId))
-
+        db.read { r ->
+            assertEquals(ApplicationStatus.WAITING_CONFIRMATION, r.getApplicationStatus(applicationId))
+        }
         return rows
     }
 
