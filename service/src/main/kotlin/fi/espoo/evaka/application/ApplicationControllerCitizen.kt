@@ -254,7 +254,7 @@ class ApplicationControllerCitizen(
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
-        return ResponseEntity.ok(db.read { getOwnDecisions(it, user.id) })
+        return ResponseEntity.ok(db.read { it.getOwnDecisions(user.id) })
     }
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -271,7 +271,7 @@ class ApplicationControllerCitizen(
                 ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
                 ?: throw NotFound("Application not found")
 
-            getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -320,7 +320,7 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.transaction { tx ->
-            if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == id }) {
+            if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
                 logger.warn { "Citizen ${user.id} tried to download decision $id" }
                 throw NotFound("Decision not found")
             }

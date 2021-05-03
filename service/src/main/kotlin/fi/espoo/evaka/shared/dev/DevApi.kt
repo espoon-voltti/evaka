@@ -290,8 +290,7 @@ class DevApi(
     fun createDecisions(db: Database, @RequestBody decisions: List<DecisionRequest>): ResponseEntity<Unit> {
         db.transaction { tx ->
             decisions.forEach { decision ->
-                insertDecision(
-                    tx.handle,
+                tx.insertDecision(
                     decision.id,
                     decision.employeeId,
                     LocalDate.now(ZoneId.of("Europe/Helsinki")),
@@ -334,7 +333,7 @@ class DevApi(
         @PathVariable applicationId: UUID
     ): ResponseEntity<List<Decision>> {
         return db.read { tx ->
-            getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
         }.let { ResponseEntity.ok(it) }
     }
 

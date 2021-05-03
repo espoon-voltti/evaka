@@ -56,7 +56,7 @@ class DecisionService(
         applicationId: UUID,
         sendAsMessage: Boolean
     ): List<UUID> {
-        val decisionIds = finalizeDecisions(tx.handle, applicationId)
+        val decisionIds = tx.finalizeDecisions(applicationId)
         asyncJobRunner.plan(tx, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
         return decisionIds
     }
@@ -66,7 +66,7 @@ class DecisionService(
         user: AuthenticatedUser,
         decisionId: UUID
     ) {
-        val decision = getDecision(tx.handle, decisionId) ?: throw NotFound("No decision with id: $decisionId")
+        val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val decisionLanguage = determineDecisionLanguage(decision, tx)
         val application = tx.fetchApplicationDetails(decision.applicationId)
             ?: throw NotFound("Application ${decision.applicationId} was not found")
@@ -80,9 +80,7 @@ class DecisionService(
             decision, application, guardian, child, decisionLanguage, unitManager
         )
 
-        updateDecisionGuardianDocumentUri(
-            tx.handle, decisionId, guardianDecisionURI
-        )
+        tx.updateDecisionGuardianDocumentUri(decisionId, guardianDecisionURI)
 
         if (application.otherGuardianId != null &&
             isDecisionForSecondGuardianRequired(decision, application, tx)
@@ -93,8 +91,7 @@ class DecisionService(
             val otherGuardianDecisionURI = createAndUploadDecision(
                 decision, application, otherGuardian, child, decisionLanguage, unitManager
             )
-            updateDecisionOtherGuardianDocumentUri(
-                tx.handle,
+            tx.updateDecisionOtherGuardianDocumentUri(
                 decisionId,
                 otherGuardianDecisionURI
             )
@@ -143,7 +140,7 @@ class DecisionService(
         tx: Database.Transaction
     ): String {
         return if (decision.type == DecisionType.CLUB) "fi"
-        else getDecisionLanguage(tx.handle, decision.id)
+        else tx.getDecisionLanguage(decision.id)
     }
 
     private fun constructObjectKey(
@@ -170,7 +167,7 @@ class DecisionService(
         }
 
     fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: UUID) {
-        val decision = getDecision(tx.handle, decisionId) ?: throw NotFound("No decision with id: $decisionId")
+        val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
         val application = tx.fetchApplicationDetails(applicationId)
@@ -218,7 +215,7 @@ class DecisionService(
             return
         }
 
-        val lang = getDecisionLanguage(tx.handle, decision.id)
+        val lang = tx.getDecisionLanguage(decision.id)
         val sendAddress = getSendAddress(guardian, lang)
         // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
@@ -242,9 +239,9 @@ class DecisionService(
     }
 
     fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Document {
-        val decision = getDecision(tx.handle, decisionId)
+        val decision = tx.getDecision(decisionId)
             ?: throw NotFound("No decision $decisionId found")
-        val lang = getDecisionLanguage(tx.handle, decisionId)
+        val lang = tx.getDecisionLanguage(decisionId)
         return decision.documentUri
             ?.let(URI::create)
             ?.let(s3Client::get)

@@ -508,7 +508,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(1, decisionDrafts.size)
             assertEquals(
                 DecisionDraft(
@@ -566,7 +566,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(1, decisionDrafts.size)
             assertEquals(
                 DecisionDraft(
@@ -624,7 +624,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
             decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
@@ -699,7 +699,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
             decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
@@ -765,7 +765,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val placementPlan = getPlacementPlan(tx.handle, applicationId)
             assertEquals(null, placementPlan)
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(0, decisionDrafts.size)
         }
     }
@@ -862,7 +862,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
             }
 
-            val decisionsByApplication = getDecisionsByApplication(it.handle, applicationId, AclAuthorization.All)
+            val decisionsByApplication = it.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(1, decisionsByApplication.size)
             val decision = decisionsByApplication.first()
             assertNotNull(decision.sentDate)
@@ -918,7 +918,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
     }
@@ -955,7 +955,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
     }
@@ -1002,7 +1002,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
-            val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(2, decisionsByApplication.size)
             decisionsByApplication.forEach { decision ->
                 assertNotNull(decision.sentDate)
@@ -1037,7 +1037,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            fetchDecisionDrafts(tx.handle, applicationId).map { draft ->
+            tx.fetchDecisionDrafts(applicationId).map { draft ->
                 DecisionDraftService.DecisionDraftUpdate(
                     id = draft.id,
                     unitId = draft.unitId,
@@ -1065,10 +1065,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
-            val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisionsByApplication.size)
 
             val messages = MockEvakaMessageClient.getMessages()
@@ -2058,7 +2058,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     private fun getDecision(r: Database.Read, type: DecisionType): Decision =
-        getDecisionsByApplication(r.handle, applicationId, AclAuthorization.All).first { it.type == type }
+        r.getDecisionsByApplication(applicationId, AclAuthorization.All).first { it.type == type }
 
     private fun workflowForPreschoolDaycareDecisions(preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1)) {
         db.transaction { tx ->

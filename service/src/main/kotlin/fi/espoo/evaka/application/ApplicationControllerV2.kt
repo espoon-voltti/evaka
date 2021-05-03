@@ -260,7 +260,7 @@ class ApplicationControllerV2(
         return db.transaction { tx ->
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, acl.getAuthorizedUnits(user))
+            val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
             val guardians =
                 personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
@@ -334,7 +334,7 @@ class ApplicationControllerV2(
 
             val placementUnitName = getPlacementPlanUnitName(tx.handle, applicationId)
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
             val applicationGuardian = personService.getUpToDatePerson(tx, user, application.guardianId)

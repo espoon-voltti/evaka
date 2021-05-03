@@ -357,7 +357,7 @@
 
          verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
 
-         val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+         val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
 
          val decision = decisions.find { it.id == decisionId }
              ?: throw NotFound("Decision $decisionId not found on application $applicationId")
@@ -382,7 +382,7 @@
 
          // everything validated now!
 
-         markDecisionAccepted(tx.handle, user, decision.id, requestedStartDate)
+         tx.markDecisionAccepted(user, decision.id, requestedStartDate)
 
          placementPlanService.applyPlacementPlan(
              tx,
@@ -414,7 +414,7 @@
 
          verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))
 
-         val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+         val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
          val decision = decisions.find { it.id == decisionId }
              ?: throw NotFound("Decision $decisionId not found on application $applicationId")
 
@@ -422,12 +422,12 @@
              throw BadRequest("Decision is not pending")
          }
 
-         markDecisionRejected(tx.handle, user, decisionId)
+         tx.markDecisionRejected(user, decisionId)
 
          val alsoReject = if (decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)) {
              decisions.find { it.type === DecisionType.PRESCHOOL_DAYCARE && it.status == DecisionStatus.PENDING }
          } else null
-         alsoReject?.let { markDecisionRejected(tx.handle, user, it.id) }
+         alsoReject?.let { tx.markDecisionRejected(user, it.id) }
 
          placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
@@ -602,7 +602,7 @@
 
      private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
          val sendBySfi = canSendDecisionsBySfi(tx, user, application)
-         val decisionDrafts = fetchDecisionDrafts(tx.handle, application.id)
+         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
          if (decisionDrafts.any { it.planned }) {
              decisionService.finalizeDecisions(tx, user, application.id, sendBySfi)
              tx.updateApplicationStatus(application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
