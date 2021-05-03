@@ -70,7 +70,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("yksinhuoltaja-muutos"))
         assertEquals("HUOLLETTAVA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val custodian = response.muutokset[0].tietoryhmat[0] as CustodianLimitedDvvInfoGroup
-        assertEquals("010118-9999", custodian.huollettava.henkilotunnus)
+        assertEquals("010118-999A", custodian.huollettava.henkilotunnus)
         assertEquals("2020-09-08", custodian.huoltosuhteenAlkupv?.arvo)
     }
 

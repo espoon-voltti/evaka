@@ -28,6 +28,8 @@ class DvvModificationsService(
 
     fun updatePersonsFromDvv(db: Database, ssns: List<String>): Int {
         return db.transaction { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
+            val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
+
             modificationsForPersons.map { personModifications ->
                 personModifications.tietoryhmat.map { infoGroup ->
                     try {
@@ -53,24 +55,17 @@ class DvvModificationsService(
                                 personModifications.henkilotunnus,
                                 infoGroup
                             )
-                            is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(
-                                db,
-                                personModifications.henkilotunnus,
-                                infoGroup
-                            )
-                            is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(db, infoGroup)
-                            is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(
-                                db,
-                                personModifications.henkilotunnus,
-                                infoGroup
-                            )
-                            is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(
-                                db,
-                                personModifications.henkilotunnus,
-                                infoGroup
-                            )
+                            is CustodianLimitedDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            is CaretakerLimitedDvvInfoGroup -> {
+                                if (infoGroup.huoltaja.henkilotunnus != null)
+                                    ssnsToUpdateFromVtj.add(infoGroup.huoltaja.henkilotunnus)
+                                else
+                                    logger.info("Dvv modification ignored for caretaker: ssn is null")
+                            }
+                            is PersonNameDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
+                            is PersonNameChangeDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
-                            else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map{it.tietoryhma}.joinToString(", ")})")
+                            else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma} (all modification in this group: ${personModifications.tietoryhmat.map { it.tietoryhma }.joinToString(", ")})")
                         }
                     } catch (e: Throwable) {
                         logger.error(e) {
@@ -82,6 +77,17 @@ class DvvModificationsService(
                             }: ${e.message}"
                         }
                     }
+                }
+            }
+
+            logger.info("Dvv modifications: updating ${ssnsToUpdateFromVtj.size} persons from VTJ")
+
+            ssnsToUpdateFromVtj.forEach { ssn ->
+                db.transaction { tx ->
+                    personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(ssn))
+                }?.let {
+                    logger.info("Refreshing all VTJ information for person ${it.id}")
+                    fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, AuthenticatedUser.SystemInternalUser.id))
                 }
             }
 
@@ -158,67 +164,6 @@ class DvvModificationsService(
                         residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus
                     )
                 )
-            }
-        }
-    }
-
-    private fun handleCustodianLimitedDvvInfoGroup(
-        db: Database,
-        ssn: String,
-        custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup
-    ) {
-        val user = AuthenticatedUser.SystemInternalUser
-        db.transaction { tx ->
-            personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
-        }?.let {
-            logger.info("Dvv modification ${custodianLimitedDvvInfoGroup.muutosattribuutti} for ${it.id}: refreshing all custodian/caretaker info from DVV")
-            fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
-        }
-    }
-
-    private fun handleCaretakerLimitedDvvInfoGroup(
-        db: Database,
-        caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup
-    ) {
-        val user = AuthenticatedUser.SystemInternalUser
-        if (caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus != null) {
-            db.transaction { tx ->
-                personService.getOrCreatePerson(
-                    tx,
-                    user,
-                    ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus)
-                )
-            }?.let {
-                logger.info("Dvv modification ${caretakerLimitedDvvInfoGroup.muutosattribuutti} for ${it.id}: refreshing all caretaker/custodian info from DVV")
-                fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
-            }
-        } else {
-            logger.info("Dvv modification ignored for caretaker: ssn is null")
-        }
-    }
-
-    private fun handlePersonNameDvvInfoGroup(
-        db: Database,
-        ssn: String,
-        personNameDvvInfoGroup: PersonNameDvvInfoGroup
-    ) = db.transaction { tx ->
-        tx.handle.getPersonBySSN(ssn)?.let {
-            val user = AuthenticatedUser.SystemInternalUser
-            personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
-                logger.info("Dvv modification for ${it.id}: name ${personNameDvvInfoGroup.muutosattribuutti}, refreshed all info from DVV")
-            }
-        }
-    }
-
-    private fun handlePersonNameChangeDvvInfoGroup(
-        db: Database,
-        ssn: String,
-        personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup
-    ) = db.transaction { tx ->
-        tx.handle.getPersonBySSN(ssn)?.let {
-            val user = AuthenticatedUser.SystemInternalUser
-            personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
-                logger.info("Dvv modification for ${it.id}: name has changed: ${personNameChangeDvvInfoGroup.muutosattribuutti} - ${personNameChangeDvvInfoGroup.nimilaji}, refreshed all info from DVV")
             }
         }
     }

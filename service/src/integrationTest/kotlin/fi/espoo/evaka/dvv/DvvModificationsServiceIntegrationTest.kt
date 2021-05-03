@@ -166,7 +166,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     }
 
     @Test
-    fun `new single caretaker ordered`() {
+    fun `new single caretaker modification groups cause only one VTJ update`() {
         var custodian: DevPerson = testPerson.copy(ssn = "010118-999A")
         val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999", dependants = listOf(custodian))
         custodian = custodian.copy(guardians = listOf(caretaker))
