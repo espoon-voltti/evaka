@@ -65,7 +65,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { insertGeneralTestFixtures(it.handle) }
+        db.transaction { it.insertGeneralTestFixtures() }
         insertVardaUnit(db)
         mockEndpoint.cleanUp()
     }
@@ -670,8 +670,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         insertDecisionWithApplication(db, child, period, unitId = daycareId)
         insertServiceNeed(db, child.id, period)
         db.transaction {
-            insertTestPlacement(
-                h = it.handle,
+            it.insertTestPlacement(
                 childId = child.id,
                 unitId = daycareId,
                 startDate = period.start,

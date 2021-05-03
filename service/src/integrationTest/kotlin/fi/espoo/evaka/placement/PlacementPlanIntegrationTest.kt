@@ -21,7 +21,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -50,7 +49,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -323,14 +322,14 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         assertTrue(res.isSuccessful)
 
         db.read { r ->
-            getPlacementPlanRowByApplication(r.handle, applicationId).one().also {
+            r.getPlacementPlanRowByApplication(applicationId).one().also {
                 assertEquals(type, it.type)
                 assertEquals(proposal.unitId, it.unitId)
                 assertEquals(proposal.period, it.period())
                 assertEquals(proposal.preschoolDaycarePeriod, it.preschoolDaycarePeriod())
                 assertEquals(false, it.deleted)
             }
-            assertEquals(ApplicationStatus.WAITING_DECISION, getApplicationStatus(r.handle, applicationId))
+            assertEquals(ApplicationStatus.WAITING_DECISION, r.getApplicationStatus(applicationId))
         }
     }
     private fun insertInitialData(
@@ -344,15 +343,14 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
         preparatory: Boolean = false
     ): UUID = db.transaction { tx ->
-        val applicationId = insertTestApplication(
-            tx.handle,
+        val applicationId = tx.insertTestApplication(
             status = status,
             guardianId = adult.id,
             childId = child.id
         )
         val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
-        insertTestApplicationForm(
-            tx.handle, applicationId,
+        tx.insertTestApplicationForm(
+            applicationId,
             DaycareFormV0(
                 type = type,
                 partTime = partTime,

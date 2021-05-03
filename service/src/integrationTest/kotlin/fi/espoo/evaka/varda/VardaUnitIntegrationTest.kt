@@ -31,10 +31,10 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
-            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
-            insertTestVardaOrganizer(tx.handle)
+            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
+            tx.insertTestVardaOrganizer()
         }
     }
 
@@ -50,7 +50,7 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
         assertEquals(2, getVardaUnits(db).size)
 
         db.transaction {
-            it.handle.insertTestDaycare(
+            it.insertTestDaycare(
                 DevDaycare(
                     areaId = testAreaId,
                     id = testPurchasedDaycare.id,

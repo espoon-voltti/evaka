@@ -90,8 +90,8 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.handle.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testAreaId, name = testDaycare.name))
+            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testAreaId, name = testDaycare.name))
         }
     }
 

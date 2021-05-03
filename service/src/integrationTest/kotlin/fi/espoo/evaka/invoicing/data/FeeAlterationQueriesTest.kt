@@ -25,7 +25,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

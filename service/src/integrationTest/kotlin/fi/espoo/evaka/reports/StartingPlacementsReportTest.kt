@@ -12,7 +12,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -27,7 +26,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -127,8 +126,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
 
     private fun insertPlacement(childId: UUID, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1)) =
         db.transaction { tx ->
-            insertTestPlacement(
-                tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = testDaycare.id,
                 startDate = startDate,

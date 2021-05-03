@@ -31,7 +31,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -71,7 +70,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
         MockEmailClient.emails.clear()
     }
@@ -79,14 +78,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Test
     fun `email is sent after end user sends application`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm.copy(
                         guardian = guardianAsDaycareAdult,
@@ -103,9 +100,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx ->
-            assertApplicationIsSent(tx.handle, applicationId)
-        }
+        assertApplicationIsSent(applicationId)
 
         assertEquals(1, asyncJobRunner.getPendingJobCount())
         asyncJobRunner.runPendingJobsSync()
@@ -122,14 +117,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Test
     fun `swedish email is sent after end user sends application to svebi daycare`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm.copy(
                         guardian = guardianAsDaycareAdult,
@@ -147,7 +140,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
         assertEquals(204, res.statusCode)
 
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
         asyncJobRunner.runPendingJobsSync(1)
 
         val sentMails = MockEmailClient.emails
@@ -162,15 +155,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Test
     fun `email is sent after service worker sends application`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED,
                 hideFromGuardian = false
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm.copy(
                         guardian = guardianAsDaycareAdult,
@@ -186,7 +177,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         asyncJobRunner.runPendingJobsSync(1)
@@ -203,14 +194,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Test
     fun `email is sent after sending club application`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED
             ).also { id ->
-                insertTestClubApplicationForm(
-                    h = tx.handle,
+                tx.insertTestClubApplicationForm(
                     applicationId = id,
                     document = validClubForm
                 )
@@ -222,7 +211,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
 
         asyncJobRunner.runPendingJobsSync(1)
         assertEquals(0, asyncJobRunner.getPendingJobCount())
@@ -238,47 +227,44 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `email is sent after sending preschool application`() {
-        jdbi.handle { h ->
-            val applicationId = UUID.randomUUID()
-            insertApplication(
-                h,
+        val applicationId = UUID.randomUUID()
+        db.transaction { tx ->
+            tx.insertApplication(
                 guardian = guardian,
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-
-            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-                .asUser(endUser)
-                .response()
-
-            assertEquals(204, res.statusCode)
-            assertApplicationIsSent(h, applicationId)
-
-            asyncJobRunner.runPendingJobsSync(1)
-            assertEquals(0, asyncJobRunner.getPendingJobCount())
-
-            val sentMails = MockEmailClient.emails
-
-            assertEquals(1, sentMails.size)
-
-            val sentMail = sentMails.first()
-            assertEquals(guardian.id.toString(), sentMail.traceId)
-            assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
         }
+
+        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
+            .asUser(endUser)
+            .response()
+
+        assertEquals(204, res.statusCode)
+        assertApplicationIsSent(applicationId)
+
+        asyncJobRunner.runPendingJobsSync(1)
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+        val sentMails = MockEmailClient.emails
+
+        assertEquals(1, sentMails.size)
+
+        val sentMail = sentMails.first()
+        assertEquals(guardian.id.toString(), sentMail.traceId)
+        assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
     }
 
     @Test
     fun `email is not sent when provider type of preferred unit is private voucher`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm.copy(
                         guardian = guardianAsDaycareAdult,
@@ -295,7 +281,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
         assertEquals(0, asyncJobRunner.getPendingJobCount())
         assertEquals(0, MockEmailClient.emails.size)
     }
@@ -303,15 +289,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Test
     fun `email is not sent when service workers sends hidden application`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = guardian.id,
                 status = ApplicationStatus.CREATED,
                 hideFromGuardian = true
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm.copy(
                         guardian = guardianAsDaycareAdult,
@@ -327,7 +311,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
         assertEquals(0, asyncJobRunner.getPendingJobCount())
 
         val sentMails = MockEmailClient.emails
@@ -337,14 +321,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Test
     fun `email is not sent to invalid email`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = testAdult_1.id,
                 status = ApplicationStatus.CREATED
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm.copy(
                         guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
@@ -361,7 +343,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         asyncJobRunner.runPendingJobsSync()
@@ -374,15 +356,13 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     fun `application keeps its manually set sent date after it is sent`() {
         val manuallySetSentDate = LocalDate.of(2020, 1, 1)
         val applicationId = db.transaction { tx ->
-            insertTestApplication(
-                h = tx.handle,
+            tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = testAdult_1.id,
                 status = ApplicationStatus.CREATED,
                 sentDate = manuallySetSentDate
             ).also { id ->
-                insertTestApplicationForm(
-                    h = tx.handle,
+                tx.insertTestApplicationForm(
                     applicationId = id,
                     document = validDaycareForm
                 )
@@ -394,12 +374,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(204, res.statusCode)
-        db.read { tx -> assertApplicationIsSent(tx.handle, applicationId) }
+        assertApplicationIsSent(applicationId)
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         asyncJobRunner.runPendingJobsSync()
 
-        val result = db.read { tx -> fetchApplicationDetails(tx.handle, applicationId) }
+        val result = db.read { r -> fetchApplicationDetails(r.handle, applicationId) }
         assertEquals(manuallySetSentDate, result?.sentDate)
     }
 
@@ -443,7 +423,9 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         assert(email.textBody.contains(expectedTextPart, true))
     }
 
-    private fun assertApplicationIsSent(h: Handle, applicationId: UUID) {
-        assertEquals(ApplicationStatus.SENT, fetchApplicationDetails(h, applicationId)!!.status)
+    private fun assertApplicationIsSent(applicationId: UUID) {
+        db.read {
+            assertEquals(ApplicationStatus.SENT, fetchApplicationDetails(it.handle, applicationId)!!.status)
+        }
     }
 }

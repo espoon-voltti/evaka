@@ -32,8 +32,8 @@ class PairingIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
-            updateDaycareAclWithEmployee(tx.handle, testUnitId, user.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertGeneralTestFixtures()
+            tx.updateDaycareAclWithEmployee(testUnitId, user.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 

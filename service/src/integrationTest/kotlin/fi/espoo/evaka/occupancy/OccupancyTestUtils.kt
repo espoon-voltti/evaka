@@ -49,10 +49,9 @@ fun Database.Transaction.createOccupancyTestFixture(
     assistanceExtra: Double? = null,
     placementId: UUID = UUID.randomUUID()
 ) {
-    handle.insertTestPerson(DevPerson(id = childId, dateOfBirth = dateOfBirth))
-    handle.insertTestChild(DevChild(id = childId))
+    insertTestPerson(DevPerson(id = childId, dateOfBirth = dateOfBirth))
+    insertTestChild(DevChild(id = childId))
     insertTestPlacement(
-        handle,
         childId = childId,
         unitId = unitId,
         type = placementType,
@@ -62,7 +61,6 @@ fun Database.Transaction.createOccupancyTestFixture(
     )
     if (hours != null) {
         insertTestServiceNeed(
-            handle,
             childId = childId,
             hoursPerWeek = hours,
             startDate = period.start,
@@ -71,7 +69,7 @@ fun Database.Transaction.createOccupancyTestFixture(
         )
     }
     if (assistanceExtra != null) {
-        handle.insertTestAssistanceNeed(
+        insertTestAssistanceNeed(
             DevAssistanceNeed(
                 childId = childId,
                 startDate = period.start,
@@ -112,11 +110,10 @@ fun Database.Transaction.createPlanOccupancyTestFixture(
     preschoolDaycarePeriod: FiniteDateRange = period,
     deletedPlacementPlan: Boolean? = false
 ) {
-    handle.insertTestPerson(DevPerson(id = childId, dateOfBirth = dateOfBirth))
-    handle.insertTestChild(DevChild(id = childId))
-    val applicationId = insertTestApplication(handle, childId = childId, guardianId = testAdult_1.id)
+    insertTestPerson(DevPerson(id = childId, dateOfBirth = dateOfBirth))
+    insertTestChild(DevChild(id = childId))
+    val applicationId = insertTestApplication(childId = childId, guardianId = testAdult_1.id)
     insertTestPlacementPlan(
-        handle,
         applicationId = applicationId,
         unitId = unitId,
         type = placementType,
@@ -127,7 +124,7 @@ fun Database.Transaction.createPlanOccupancyTestFixture(
         deleted = deletedPlacementPlan
     )
     if (assistanceExtra != null) {
-        handle.insertTestAssistanceNeed(
+        insertTestAssistanceNeed(
             DevAssistanceNeed(
                 childId = childId,
                 startDate = period.start,

@@ -48,10 +48,9 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { insertGeneralTestFixtures(it.handle) }
         db.transaction {
-            insertTestParentship(
-                it.handle,
+            it.insertGeneralTestFixtures()
+            it.insertTestParentship(
                 headOfChild = testAdult_1.id,
                 childId = testChild_1.id,
                 startDate = testChild_1.dateOfBirth,
@@ -62,7 +61,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
 
     @AfterEach
     fun afterEach() {
-        db.transaction { resetDatabase(it.handle) }
+        db.transaction { it.resetDatabase() }
     }
 
     private val startDate = LocalDate.now().minusMonths(1)

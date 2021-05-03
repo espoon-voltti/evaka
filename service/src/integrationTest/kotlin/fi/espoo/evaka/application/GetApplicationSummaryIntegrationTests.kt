@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.test.validDaycareApplication
@@ -23,7 +22,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDecisionMaker_1
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,12 +33,11 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
-
-            createApplication(h = tx.handle, child = testChild_1, guardian = testAdult_1)
-            createApplication(h = tx.handle, child = testChild_2, guardian = testAdult_1, attachment = true)
-            createApplication(h = tx.handle, child = testChild_3, guardian = testAdult_1, urgent = true)
+            tx.insertGeneralTestFixtures()
         }
+        createApplication(child = testChild_1, guardian = testAdult_1)
+        createApplication(child = testChild_2, guardian = testAdult_1, attachment = true)
+        createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
     }
 
     @Test
@@ -71,11 +68,13 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         return result.get()
     }
 
-    private fun createApplication(h: Handle, child: PersonData.Detailed, guardian: PersonData.Detailed, attachment: Boolean = false, urgent: Boolean = false) {
-        val applicationId = insertTestApplication(h, childId = child.id, guardianId = guardian.id)
-
-        val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent)
-        insertTestApplicationForm(h, applicationId, form)
+    private fun createApplication(child: PersonData.Detailed, guardian: PersonData.Detailed, attachment: Boolean = false, urgent: Boolean = false) {
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(childId = child.id, guardianId = guardian.id).also { id ->
+                val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent)
+                tx.insertTestApplicationForm(id, form)
+            }
+        }
 
         if (attachment) {
             uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id))

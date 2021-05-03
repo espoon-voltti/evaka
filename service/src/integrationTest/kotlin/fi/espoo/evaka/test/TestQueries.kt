@@ -8,14 +8,14 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-fun getApplicationStatus(h: Handle, applicationId: UUID): ApplicationStatus = h.createQuery(
+fun Database.Read.getApplicationStatus(applicationId: UUID): ApplicationStatus = createQuery(
     // language=SQL
     """
 SELECT status
@@ -45,12 +45,12 @@ data class DecisionTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun getDecisionRowsByApplication(h: Handle, applicationId: UUID) = h.createQuery(
+fun Database.Read.getDecisionRowsByApplication(applicationId: UUID) = createQuery(
     // language=SQL
     "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
 ).bind("applicationId", applicationId).mapTo<DecisionTableRow>()
 
-fun getDecisionRowById(h: Handle, id: UUID) = h.createQuery(
+fun Database.Read.getDecisionRowById(id: UUID) = createQuery(
     // language=SQL
     "SELECT * FROM decision WHERE id = :id"
 ).bind("id", id).mapTo<DecisionTableRow>()
@@ -66,7 +66,7 @@ data class PlacementTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun getPlacementRowsByChild(h: Handle, childId: UUID) = h.createQuery(
+fun Database.Read.getPlacementRowsByChild(childId: UUID) = createQuery(
     // language=SQL
     "SELECT * FROM placement WHERE child_id = :childId ORDER BY start_date"
 ).bind("childId", childId).mapTo<PlacementTableRow>()
@@ -92,7 +92,7 @@ data class PlacementPlanTableRow(
         ) else null
 }
 
-fun getPlacementPlanRowByApplication(h: Handle, applicationId: UUID) = h.createQuery(
+fun Database.Read.getPlacementPlanRowByApplication(applicationId: UUID) = createQuery(
     // language=SQL
     "SELECT * FROM placement_plan WHERE application_id = :applicationId"
 ).bind("applicationId", applicationId).mapTo<PlacementPlanTableRow>()
@@ -108,12 +108,12 @@ data class BackupCareTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun getBackupCareRowById(h: Handle, id: UUID) = h.createQuery(
+fun Database.Read.getBackupCareRowById(id: UUID) = createQuery(
     // language=SQL
     "SELECT * FROM backup_care WHERE id = :id"
 ).bind("id", id).mapTo<BackupCareTableRow>()
 
-fun getBackupCareRowsByChild(h: Handle, childId: UUID) = h.createQuery(
+fun Database.Read.getBackupCareRowsByChild(childId: UUID) = createQuery(
     // language=SQL
     "SELECT * FROM backup_care WHERE child_id = :childId ORDER BY start_date"
 ).bind("childId", childId).mapTo<BackupCareTableRow>()

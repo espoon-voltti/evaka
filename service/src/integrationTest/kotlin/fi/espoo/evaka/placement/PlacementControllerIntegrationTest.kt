@@ -47,17 +47,16 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun setUp() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertGeneralTestFixtures()
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            tx.handle.insertTestDaycareGroup(testDaycareGroup)
+            tx.insertTestDaycareGroup(testDaycareGroup)
             testPlacement = tx.getDaycarePlacements(daycareId, null, null, null).first()
-            updateDaycareAclWithEmployee(tx.handle, daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAclWithEmployee(daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -390,8 +389,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `unit supervisor sees placements to her unit only`() {
         val allowedId = db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = LocalDate.now(),
@@ -400,8 +398,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         }
 
         val restrictedId = db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = LocalDate.now().minusDays(2),
@@ -429,8 +426,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val newEnd = placementEnd.minusDays(2)
         val allowedId = testPlacement.id
         val restrictedId = db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = placementEnd.plusDays(1),
@@ -465,8 +461,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val newEnd = placementEnd.plusDays(1)
         val allowedId = testPlacement.id
         db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = newEnd,
@@ -490,14 +485,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun `unit supervisor can modify placement if it overlaps with another that supervisor has the rights to`() {
         val newEnd = placementEnd.plusDays(1)
         val secondPlacement = db.transaction { tx ->
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = testDaycare2.id,
                 startDate = newEnd,
                 endDate = newEnd.plusMonths(2)
             ).also {
-                updateDaycareAclWithEmployee(tx.handle, testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+                tx.updateDaycareAclWithEmployee(testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
             }
         }
 
@@ -525,7 +519,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `staff can't modify placements`() {
         db.transaction { tx ->
-            updateDaycareAclWithEmployee(tx.handle, daycareId, staff.id, UserRole.STAFF)
+            tx.updateDaycareAclWithEmployee(daycareId, staff.id, UserRole.STAFF)
         }
         val newStart = placementStart.plusDays(1)
         val newEnd = placementEnd.minusDays(2)

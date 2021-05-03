@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -42,11 +41,11 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
     protected fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            admin = AuthenticatedUser.Employee(tx.handle.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))), roles = setOf(UserRole.ADMIN))
-            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+            admin = AuthenticatedUser.Employee(tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))), roles = setOf(UserRole.ADMIN))
+            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
             employee.also {
-                tx.handle.insertTestEmployee(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName, email = it.email))
+                tx.insertTestEmployee(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName, email = it.email))
             }
         }
     }

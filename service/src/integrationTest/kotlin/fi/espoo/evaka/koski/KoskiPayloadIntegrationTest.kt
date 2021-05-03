@@ -45,7 +45,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
             tx.setUnitOids()
         }
         koskiServer.clearData()
@@ -54,7 +54,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     @Test
     fun `simple preschool placement in 2019`() {
         db.transaction {
-            it.handle.insertTestPlacement(
+            it.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -152,7 +152,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     @Test
     fun `child with two preschool placements in the past`() {
         db.transaction {
-            it.handle.insertTestPlacement(
+            it.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -161,7 +161,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                     type = PlacementType.PRESCHOOL
                 )
             )
-            it.handle.insertTestPlacement(
+            it.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
@@ -357,7 +357,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                     endDate = LocalDate.of(2019, 5, 31),
                     type = PlacementType.PRESCHOOL
                 )
-            ).forEach { tx.handle.insertTestPlacement(it) }
+            ).forEach { tx.insertTestPlacement(it) }
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
@@ -602,7 +602,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     @Test
     fun `simple preparatory education placement in the past`() {
         db.transaction {
-            it.handle.insertTestPlacement(
+            it.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -745,7 +745,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
     @Test
     fun `deleting all placements voids the study right`() {
         val placementId = db.transaction {
-            it.handle.insertTestPlacement(
+            it.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,

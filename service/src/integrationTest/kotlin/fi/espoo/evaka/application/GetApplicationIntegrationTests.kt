@@ -57,15 +57,14 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
-            tx.handle.insertTestEmployee(
+            tx.insertGeneralTestFixtures()
+            tx.insertTestEmployee(
                 DevEmployee(
                     id = testRoundTheClockDaycareSupervisor.id,
                     externalId = testRoundTheClockDaycareSupervisorExternalId
                 )
             )
-            updateDaycareAcl(
-                tx.handle,
+            tx.updateDaycareAcl(
                 testRoundTheClockDaycare.id!!,
                 testRoundTheClockDaycareSupervisorExternalId,
                 UserRole.UNIT_SUPERVISOR
@@ -82,12 +81,11 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @Test
     fun `application found returns 200`() {
         val applicationId = db.transaction { tx ->
-            insertTestApplication(h = tx.handle, childId = testChild_1.id, guardianId = testAdult_1.id)
+            tx.insertTestApplication(childId = testChild_1.id, guardianId = testAdult_1.id)
         }
 
         db.transaction { tx ->
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = validDaycareForm.copy(
                     apply = validDaycareForm.apply.copy(
@@ -120,7 +118,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @Test
     fun `restricted child address is hidden`() {
         val childId = db.transaction {
-            it.handle.insertTestPerson(
+            it.insertTestPerson(
                 DevPerson(
                     restrictedDetailsEnabled = true
                 )
@@ -128,12 +126,11 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         }
 
         val applicationId = db.transaction { tx ->
-            insertTestApplication(h = tx.handle, childId = childId, guardianId = testAdult_1.id)
+            tx.insertTestApplication(childId = childId, guardianId = testAdult_1.id)
         }
 
         db.transaction { tx ->
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = validDaycareForm.copy(
                     child = validDaycareForm.child.copy(
@@ -161,7 +158,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     @Test
     fun `restricted guardian address is hidden`() {
         val guardianId = db.transaction {
-            it.handle.insertTestPerson(
+            it.insertTestPerson(
                 DevPerson(
                     restrictedDetailsEnabled = true
                 )
@@ -169,12 +166,11 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         }
 
         val applicationId = db.transaction { tx ->
-            insertTestApplication(h = tx.handle, childId = testChild_1.id, guardianId = guardianId)
+            tx.insertTestApplication(childId = testChild_1.id, guardianId = guardianId)
         }
 
         db.transaction { tx ->
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = validDaycareForm.copy(
                     guardian = validDaycareForm.guardian.copy(
@@ -203,14 +199,14 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
     fun `old drafts are removed`() {
         val (old, id1, id2) = db.transaction { tx ->
             listOf(
-                insertTestApplication(h = tx.handle, childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
-                insertTestApplication(h = tx.handle, childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
-                insertTestApplication(h = tx.handle, childId = testChild_3.id, guardianId = testAdult_1.id)
+                tx.insertTestApplication(childId = testChild_1.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                tx.insertTestApplication(childId = testChild_2.id, guardianId = testAdult_1.id, status = ApplicationStatus.CREATED),
+                tx.insertTestApplication(childId = testChild_3.id, guardianId = testAdult_1.id)
             )
         }
 
         db.transaction { tx ->
-            tx.handle.createUpdate("""update application set created = :createdAt where id = :applicationId""")
+            tx.createUpdate("""update application set created = :createdAt where id = :applicationId""")
                 .bind("applicationId", old)
                 .bind("createdAt", Instant.parse("2020-01-01T00:00:00Z"))
                 .execute()
@@ -297,14 +293,12 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
     private fun createPlacementProposalWithAttachments(unitId: UUID): UUID {
         val applicationId = db.transaction { tx ->
-            val applicationId = insertTestApplication(
-                tx.handle,
+            val applicationId = tx.insertTestApplication(
                 childId = testChild_1.id,
                 guardianId = endUser.id,
                 status = ApplicationStatus.CREATED
             )
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = applicationId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )

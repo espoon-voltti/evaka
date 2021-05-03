@@ -113,11 +113,11 @@ class DevApi(
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database): ResponseEntity<Unit> {
         db.transaction {
-            it.handle.resetDatabase()
+            it.resetDatabase()
 
             // Terms are not inserted by fixtures
-            it.handle.runDevScript("preschool-terms.sql")
-            it.handle.runDevScript("club-terms.sql")
+            it.runDevScript("preschool-terms.sql")
+            it.runDevScript("club-terms.sql")
         }
         return ResponseEntity.noContent().build()
     }
@@ -143,7 +143,7 @@ class DevApi(
 
     @PostMapping("/care-areas")
     fun createCareAreas(db: Database, @RequestBody careAreas: List<DevCareArea>): ResponseEntity<Unit> {
-        db.transaction { careAreas.forEach { careArea -> it.handle.insertTestCareArea(careArea) } }
+        db.transaction { careAreas.forEach { careArea -> it.insertTestCareArea(careArea) } }
         return ResponseEntity.noContent().build()
     }
 
@@ -155,7 +155,7 @@ class DevApi(
 
     @PostMapping("/daycares")
     fun createDaycares(db: Database, @RequestBody daycares: List<DevDaycare>): ResponseEntity<Unit> {
-        db.transaction { daycares.forEach { daycare -> it.handle.insertTestDaycare(daycare) } }
+        db.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } }
         return ResponseEntity.noContent().build()
     }
 
@@ -172,7 +172,7 @@ class DevApi(
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            updateDaycareAcl(tx.handle, daycareId, body.externalId, body.role ?: UserRole.UNIT_SUPERVISOR)
+            tx.updateDaycareAcl(daycareId, body.externalId, body.role ?: UserRole.UNIT_SUPERVISOR)
         }
         return ResponseEntity.noContent().build()
     }
@@ -184,7 +184,7 @@ class DevApi(
         @PathVariable externalId: ExternalId
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            removeDaycareAcl(tx.handle, daycareId, externalId)
+            tx.removeDaycareAcl(daycareId, externalId)
         }
         return ResponseEntity.ok().build()
     }
@@ -192,7 +192,7 @@ class DevApi(
     @PostMapping("/daycare-groups")
     fun createDaycareGroups(db: Database, @RequestBody groups: List<DevDaycareGroup>): ResponseEntity<Unit> {
         db.transaction {
-            groups.forEach { group -> it.handle.insertTestDaycareGroup(group) }
+            groups.forEach { group -> it.insertTestDaycareGroup(group) }
         }
         return ResponseEntity.noContent().build()
     }
@@ -215,9 +215,8 @@ class DevApi(
 
     @PostMapping("/daycare-group-placements")
     fun createDaycareGroupPlacement(db: Database, @RequestBody placements: List<DevDaycareGroupPlacement>): ResponseEntity<Unit> {
-
-        db.transaction {
-            placements.forEach { placement -> insertTestDaycareGroupPlacement(it.handle, placement.daycarePlacementId, placement.daycareGroupId, placement.id, placement.startDate, placement.endDate) }
+        db.transaction { tx ->
+            placements.forEach { tx.insertTestDaycareGroupPlacement(it.daycarePlacementId, it.daycareGroupId, it.id, it.startDate, it.endDate) }
         }
         return ResponseEntity.noContent().build()
     }
@@ -243,8 +242,7 @@ class DevApi(
     fun createDaycareCaretakers(db: Database, @RequestBody caretakers: List<Caretaker>): ResponseEntity<Unit> {
         db.transaction { tx ->
             caretakers.forEach { caretaker ->
-                insertTestCaretakers(
-                    tx.handle,
+                tx.insertTestCaretakers(
                     caretaker.groupId,
                     amount = caretaker.amount,
                     startDate = caretaker.startDate,
@@ -259,7 +257,7 @@ class DevApi(
     fun createChildren(db: Database, @RequestBody children: List<DevChild>): ResponseEntity<Unit> {
         db.transaction { tx ->
             children.forEach {
-                tx.handle.insertTestChild(it)
+                tx.insertTestChild(it)
             }
         }
         return ResponseEntity.noContent().build()
@@ -274,7 +272,7 @@ class DevApi(
 
     @PostMapping("/daycare-placements")
     fun createDaycarePlacements(db: Database, @RequestBody placements: List<DevPlacement>): ResponseEntity<Unit> {
-        db.transaction { placements.forEach { placement -> it.handle.insertTestPlacement(placement) } }
+        db.transaction { placements.forEach { placement -> it.insertTestPlacement(placement) } }
         return ResponseEntity.noContent().build()
     }
 
@@ -410,7 +408,7 @@ RETURNING id
     @PostMapping("/person/create")
     fun createPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<UUID> {
         return db.transaction { tx ->
-            val personId = tx.handle.insertTestPerson(body)
+            val personId = tx.insertTestPerson(body)
             val dto = body.copy(id = personId).toPersonDTO()
             if (dto.identity is ExternalIdentifier.SSN) {
                 tx.updatePersonFromVtj(dto)
@@ -470,7 +468,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
         db: Database,
         @RequestBody parentships: List<DevParentship>
     ): ResponseEntity<List<DevParentship>> {
-        return db.transaction { tx -> parentships.map { tx.handle.insertTestParentship(it) } }
+        return db.transaction { tx -> parentships.map { tx.insertTestParentship(it) } }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -481,7 +479,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @PostMapping("/employee")
     fun createEmployee(db: Database, @RequestBody body: DevEmployee): ResponseEntity<UUID> {
-        return ResponseEntity.ok(db.transaction { it.handle.insertTestEmployee(body) })
+        return ResponseEntity.ok(db.transaction { it.insertTestEmployee(body) })
     }
 
     @DeleteMapping("/employee/{id}")
@@ -526,7 +524,7 @@ RETURNING id
 
     @PostMapping("/child")
     fun insertChild(db: Database, @RequestBody body: DevPerson): ResponseEntity<UUID> = db.transaction {
-        val id = it.handle.insertTestPerson(
+        val id = it.insertTestPerson(
             DevPerson(
                 id = body.id,
                 dateOfBirth = body.dateOfBirth,
@@ -539,13 +537,13 @@ RETURNING id
                 restrictedDetailsEnabled = body.restrictedDetailsEnabled
             )
         )
-        it.handle.insertTestChild(DevChild(id = id))
+        it.insertTestChild(DevChild(id = id))
         ResponseEntity.ok(id)
     }
 
     @PostMapping("/backup-cares")
     fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>): ResponseEntity<Unit> {
-        db.transaction { tx -> backupCares.forEach { insertTestBackupCare(tx.handle, it) } }
+        db.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } }
         return ResponseEntity.noContent().build()
     }
 
@@ -557,10 +555,9 @@ RETURNING id
         val uuids =
             db.transaction { tx ->
                 applications.map { application ->
-                    val id = insertApplication(tx.handle, application)
+                    val id = tx.insertApplication(application)
                     application.form?.let { applicationFormString ->
-                        insertApplicationForm(
-                            tx.handle,
+                        tx.insertApplicationForm(
                             ApplicationForm(
                                 applicationId = id,
                                 revision = 1,
@@ -838,49 +835,49 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @PostMapping("/family-contact")
     fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>): ResponseEntity<Unit> {
-        db.transaction { contacts.forEach { contact -> it.handle.insertFamilyContact(contact) } }
+        db.transaction { contacts.forEach { contact -> it.insertFamilyContact(contact) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/family-contact/{id}")
     fun deleteFamilyContact(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteFamilyContact(id) }
+        db.transaction { it.deleteFamilyContact(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/backup-pickup")
     fun createBackupPickup(db: Database, @RequestBody backupPickups: List<DevBackupPickup>): ResponseEntity<Unit> {
-        db.transaction { backupPickups.forEach { backupPickup -> it.handle.insertBackupPickup(backupPickup) } }
+        db.transaction { backupPickups.forEach { backupPickup -> it.insertBackupPickup(backupPickup) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/backup-pickup/{id}")
     fun deleteBackupPickup(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteBackupPickup(id) }
+        db.transaction { it.deleteBackupPickup(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/fridge-child")
     fun createFridgeChild(db: Database, @RequestBody fridgeChildren: List<DevFridgeChild>): ResponseEntity<Unit> {
-        db.transaction { fridgeChildren.forEach { child -> it.handle.insertFridgeChild(child) } }
+        db.transaction { fridgeChildren.forEach { child -> it.insertFridgeChild(child) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/fridge-child/{id}")
     fun deleteFridgeChild(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteFridgeChild(id) }
+        db.transaction { it.deleteFridgeChild(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/fridge-partner")
     fun createFridgePartner(db: Database, @RequestBody fridgePartners: List<DevFridgePartner>): ResponseEntity<Unit> {
-        db.transaction { fridgePartners.forEach { partner -> it.handle.insertFridgePartner(partner) } }
+        db.transaction { fridgePartners.forEach { partner -> it.insertFridgePartner(partner) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/fridge-partner/{id}")
     fun deleteFridgePartner(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteFridgePartner(id) }
+        db.transaction { it.deleteFridgePartner(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -890,10 +887,10 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
             employeePins.forEach { employeePin ->
                 val userId =
                     if (employeePin.userId != null) employeePin.userId
-                    else if (!employeePin.employeeExternalId.isNullOrBlank()) it.handle.getEmployeeIdByExternalId(employeePin.employeeExternalId)
+                    else if (!employeePin.employeeExternalId.isNullOrBlank()) it.getEmployeeIdByExternalId(employeePin.employeeExternalId)
                     else throw Error("Cannot create dev employee pin: user id and external user id missing")
 
-                it.handle.insertEmployeePin(employeePin.copy(userId = userId))
+                it.insertEmployeePin(employeePin.copy(userId = userId))
             }
         }
         return ResponseEntity.noContent().build()
@@ -901,7 +898,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
 
     @DeleteMapping("/employee-pin/{id}")
     fun deleteEmployeePin(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployeePin(id) }
+        db.transaction { it.deleteEmployeePin(id) }
         return ResponseEntity.noContent().build()
     }
 }

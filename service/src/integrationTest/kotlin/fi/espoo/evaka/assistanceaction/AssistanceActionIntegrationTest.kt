@@ -32,7 +32,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -279,7 +279,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     private fun givenAssistanceAction(start: Int, end: Int, childId: UUID = testChild_1.id): UUID {
         return db.transaction {
-            it.handle.insertTestAssistanceAction(
+            it.insertTestAssistanceAction(
                 DevAssistanceAction(
                     childId = childId,
                     startDate = testDate(start),

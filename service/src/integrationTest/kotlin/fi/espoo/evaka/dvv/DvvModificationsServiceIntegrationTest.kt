@@ -154,7 +154,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         // until token is 0 and then it will return ajanTasalla=true
         // So if the paging works correctly there should Math.abs(original_token) + 1 identical records
         db.transaction {
-            resetDatabase(it.handle)
+            it.resetDatabase()
             storeDvvModificationToken(it.handle, "10000", "-2", 0, 0)
         }
         try {
@@ -185,7 +185,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     )
 
     private fun createTestPerson(devPerson: DevPerson): UUID = db.transaction { tx ->
-        tx.handle.insertTestPerson(devPerson)
+        tx.insertTestPerson(devPerson)
     }
 
     private fun createVtjPerson(person: DevPerson) {

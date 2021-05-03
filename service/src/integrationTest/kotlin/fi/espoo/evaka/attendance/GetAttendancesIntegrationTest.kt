@@ -53,11 +53,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
-            insertTestPlacement(
-                h = tx.handle,
+            tx.insertGeneralTestFixtures()
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
+            tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -65,8 +64,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 endDate = placementEnd,
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
-            insertTestDaycareGroupPlacement(
-                h = tx.handle,
+            tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
                 startDate = placementStart,
@@ -88,8 +86,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @Test
     fun `child is coming`() {
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
@@ -106,8 +103,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @Test
     fun `child is in backup care in another unit`() {
         db.transaction {
-            insertTestBackUpCare(
-                h = it.handle,
+            it.insertTestBackUpCare(
                 childId = testChild_1.id,
                 unitId = testDaycare2.id,
                 groupId = groupId2,
@@ -122,8 +118,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @Test
     fun `child is in backup care in same another unit`() {
         db.transaction {
-            insertTestBackUpCare(
-                h = it.handle,
+            it.insertTestBackUpCare(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 groupId = groupId,
@@ -142,8 +137,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     fun `child is present`() {
         val arrived = OffsetDateTime.now().minusHours(3).toInstant()
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
@@ -164,8 +158,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         val arrived = OffsetDateTime.now().minusHours(3).toInstant()
         val departed = OffsetDateTime.now().minusMinutes(1).toInstant()
         db.transaction {
-            insertTestChildAttendance(
-                h = it.handle,
+            it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
@@ -184,15 +177,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @Test
     fun `child is absent`() {
         db.transaction {
-            insertTestAbsence(
-                h = it.handle,
+            it.insertTestAbsence(
                 childId = testChild_1.id,
                 careType = CareType.PRESCHOOL,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
-            insertTestAbsence(
-                h = it.handle,
+            it.insertTestAbsence(
                 childId = testChild_1.id,
                 careType = CareType.PRESCHOOL_DAYCARE,
                 date = LocalDate.now(),

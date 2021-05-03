@@ -39,7 +39,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 

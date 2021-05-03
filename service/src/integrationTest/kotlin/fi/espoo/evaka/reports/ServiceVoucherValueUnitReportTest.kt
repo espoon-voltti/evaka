@@ -48,7 +48,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { insertGeneralTestFixtures(it.handle) }
+        db.transaction { it.insertGeneralTestFixtures() }
     }
 
     @AfterEach

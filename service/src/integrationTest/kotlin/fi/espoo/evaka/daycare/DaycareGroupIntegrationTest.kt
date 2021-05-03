@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -48,8 +47,8 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
     protected fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+            tx.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
         }
     }
 
@@ -94,7 +93,7 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
             deletable = true
         )
         db.transaction {
-            it.handle.insertTestDaycareGroup(
+            it.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = group.id,
                     daycareId = group.daycareId,
@@ -106,10 +105,9 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
         getAndAssertGroup(group)
 
         db.transaction { tx ->
-            tx.handle.insertTestPerson(DevPerson(testChild_1.id))
-            tx.handle.insertTestChild(DevChild(testChild_1.id))
-            insertTestBackupCare(
-                tx.handle,
+            tx.insertTestPerson(DevPerson(testChild_1.id))
+            tx.insertTestChild(DevChild(testChild_1.id))
+            tx.insertTestBackupCare(
                 DevBackupCare(
                     childId = testChild_1.id,
                     groupId = group.id,

@@ -33,8 +33,8 @@ class SystemIdentityControllerTest : FullApplicationTest() {
     @BeforeEach
     protected fun beforeEach() {
         db.transaction { it.resetDatabase() }
-        areaId = db.transaction { it.handle.insertTestCareArea(DevCareArea()) }
-        unitId = db.transaction { it.handle.insertTestDaycare(DevDaycare(areaId = areaId)) }
+        areaId = db.transaction { it.insertTestCareArea(DevCareArea()) }
+        unitId = db.transaction { it.insertTestDaycare(DevDaycare(areaId = areaId)) }
     }
 
     @Test
@@ -59,7 +59,7 @@ class SystemIdentityControllerTest : FullApplicationTest() {
     }
 
     private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): UUID {
-        val id = handle.insertTestEmployee(DevEmployee())
+        val id = insertTestEmployee(DevEmployee())
         insertTestMobileDevice(
             DevMobileDevice(
                 id = id,

@@ -31,7 +31,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
     internal fun setUp() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -68,14 +68,12 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
 
     private fun addDaycareApplication(status: ApplicationStatus = ApplicationStatus.SENT) {
         db.transaction { tx ->
-            val appId = insertTestApplication(
-                h = tx.handle,
+            val appId = tx.insertTestApplication(
                 status = status,
                 childId = childId,
                 guardianId = guardianId
             )
-            insertTestApplicationForm(
-                h = tx.handle,
+            tx.insertTestApplicationForm(
                 applicationId = appId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )

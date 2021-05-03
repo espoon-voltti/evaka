@@ -49,9 +49,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     @BeforeEach
     private fun prepare() {
         db.transaction {
-            insertGeneralTestFixtures(it.handle)
-            it.handle.insertTestPerson(DevPerson(id = testUserId))
-            it.handle.insertTestEmployee(DevEmployee(id = testUserId))
+            it.insertGeneralTestFixtures()
+            it.insertTestPerson(DevPerson(id = testUserId))
+            it.insertTestEmployee(DevEmployee(id = testUserId))
         }
         insertDaycareGroup()
     }
@@ -374,8 +374,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val childId2 = UUID.randomUUID()
         insertGroupPlacement(childId, LocalDate.of(2013, 1, 1), PlacementType.PRESCHOOL_DAYCARE)
         db.transaction {
-            it.handle.insertTestPerson(DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)))
-            it.handle.insertTestChild(DevChild(childId2))
+            it.insertTestPerson(DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)))
+            it.insertTestChild(DevChild(childId2))
         }
 
         val absenceDate = placementEnd
@@ -413,20 +413,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `backup care children are returned with correct care types`() {
         db.transaction {
-            it.handle.insertTestPerson(DevPerson(id = childId, dateOfBirth = LocalDate.of(2013, 1, 1)))
-            it.handle.insertTestChild(DevChild(childId))
+            it.insertTestPerson(DevPerson(id = childId, dateOfBirth = LocalDate.of(2013, 1, 1)))
+            it.insertTestChild(DevChild(childId))
         }
         db.transaction { tx ->
-            insertTestPlacement(
-                tx.handle,
+            tx.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = placementStart,
                 endDate = placementEnd,
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
-            insertTestBackupCare(
-                tx.handle,
+            tx.insertTestBackupCare(
                 DevBackupCare(
                     childId = childId,
                     unitId = daycareId,
@@ -479,7 +477,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
     private fun insertDaycareGroup() {
         db.transaction {
-            it.handle.insertTestDaycareGroup(
+            it.insertTestDaycareGroup(
                 DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = placementStart)
             )
         }
@@ -492,9 +490,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd)
     ) {
         db.transaction {
-            it.handle.insertTestPerson(DevPerson(id = childId, dateOfBirth = dob))
-            it.handle.insertTestChild(DevChild(childId))
-            val daycarePlacementId = it.handle.insertTestPlacement(
+            it.insertTestPerson(DevPerson(id = childId, dateOfBirth = dob))
+            it.insertTestChild(DevChild(childId))
+            val daycarePlacementId = it.insertTestPlacement(
                 DevPlacement(
                     childId = childId,
                     unitId = daycareId,
@@ -503,8 +501,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
                     endDate = placementPeriod.end
                 )
             )
-            insertTestDaycareGroupPlacement(
-                h = it.handle, daycarePlacementId = daycarePlacementId, groupId = groupId,
+            it.insertTestDaycareGroupPlacement(
+                daycarePlacementId = daycarePlacementId, groupId = groupId,
                 startDate = placementPeriod.start, endDate = placementPeriod.end
             )
         }
@@ -520,7 +518,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     private fun insertGroupPlacements(children: List<ChildSeed>, placementType: PlacementType) {
         children.forEach {
             db.transaction { tx ->
-                tx.handle.insertTestPerson(
+                tx.insertTestPerson(
                     DevPerson(
                         id = it.id,
                         firstName = it.firstName,
@@ -528,8 +526,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
                         dateOfBirth = it.dob
                     )
                 )
-                tx.handle.insertTestChild(DevChild(it.id))
-                val daycarePlacementId = tx.handle.insertTestPlacement(
+                tx.insertTestChild(DevChild(it.id))
+                val daycarePlacementId = tx.insertTestPlacement(
                     DevPlacement(
                         childId = it.id,
                         unitId = daycareId,
@@ -538,8 +536,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
                         endDate = placementEnd
                     )
                 )
-                insertTestDaycareGroupPlacement(
-                    h = tx.handle, daycarePlacementId = daycarePlacementId, groupId = groupId,
+                tx.insertTestDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId, groupId = groupId,
                     startDate = placementStart, endDate = placementEnd
                 )
             }

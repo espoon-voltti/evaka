@@ -52,15 +52,15 @@ class AclIntegrationTest : PureJdbiTest() {
     @BeforeAll
     fun before() {
         db.transaction {
-            employeeId = it.handle.insertTestEmployee(DevEmployee())
-            val areaId = it.handle.insertTestCareArea(DevCareArea(name = "Test area"))
-            daycareId = it.handle.insertTestDaycare(DevDaycare(areaId = areaId))
-            groupId = it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
-            val guardianId = it.handle.insertTestPerson(DevPerson())
-            childId = it.handle.insertTestPerson(DevPerson())
-            it.handle.insertTestChild(DevChild(id = childId))
-            applicationId = insertTestApplication(it.handle, childId = childId, guardianId = guardianId)
-            decisionId = it.handle.insertTestDecision(
+            employeeId = it.insertTestEmployee(DevEmployee())
+            val areaId = it.insertTestCareArea(DevCareArea(name = "Test area"))
+            daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
+            groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
+            val guardianId = it.insertTestPerson(DevPerson())
+            childId = it.insertTestPerson(DevPerson())
+            it.insertTestChild(DevChild(id = childId))
+            applicationId = it.insertTestApplication(childId = childId, guardianId = guardianId)
+            decisionId = it.insertTestDecision(
                 TestDecision(
                     createdBy = employeeId,
                     unitId = daycareId,
@@ -70,8 +70,8 @@ class AclIntegrationTest : PureJdbiTest() {
                     endDate = LocalDate.of(2100, 1, 1)
                 )
             )
-            placementId = insertTestPlacement(it.handle, childId = childId, unitId = daycareId)
-            mobileId = it.handle.insertTestEmployee(DevEmployee())
+            placementId = it.insertTestPlacement(childId = childId, unitId = daycareId)
+            mobileId = it.insertTestEmployee(DevEmployee())
             noteId = it.createDaycareDailyNote(
                 DaycareDailyNote(
                     id = null,

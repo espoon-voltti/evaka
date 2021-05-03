@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -38,7 +37,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -294,9 +293,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE_PART_TIME
             )
-            val applicationId = insertTestApplication(tx.handle, childId = childId, guardianId = testAdult_1.id)
-            insertTestPlacementPlan(
-                tx.handle,
+            val applicationId = tx.insertTestApplication(childId = childId, guardianId = testAdult_1.id)
+            tx.insertTestPlacementPlan(
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE,
@@ -334,9 +332,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
             )
-            val applicationId = insertTestApplication(tx.handle, childId = childId, guardianId = testAdult_1.id)
-            insertTestPlacementPlan(
-                tx.handle,
+            val applicationId = tx.insertTestApplication(childId = childId, guardianId = testAdult_1.id)
+            tx.insertTestPlacementPlan(
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE_PART_TIME,
@@ -369,7 +366,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
         val daycareId2 = UUID.randomUUID()
 
         db.transaction { tx ->
-            tx.handle.insertTestDaycare(DevDaycare(id = daycareId2, areaId = testDaycare.areaId, name = "foo"))
+            tx.insertTestDaycare(DevDaycare(id = daycareId2, areaId = testDaycare.areaId, name = "foo"))
 
             tx.createPlanOccupancyTestFixture(
                 childId,
@@ -379,7 +376,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 PlacementType.DAYCARE_PART_TIME
             )
 
-            tx.handle.insertTestPlacement(DevPlacement(type = PlacementType.DAYCARE, childId = childId, unitId = daycareId1, startDate = defaultPeriod.start, endDate = defaultPeriod.end))
+            tx.insertTestPlacement(DevPlacement(type = PlacementType.DAYCARE, childId = childId, unitId = daycareId1, startDate = defaultPeriod.start, endDate = defaultPeriod.end))
         }
 
         val result1 = fetchAndParseOccupancy(daycareId1, defaultPeriod)
@@ -417,9 +414,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 LocalDate.of(2015, 1, 1),
                 PlacementType.DAYCARE
             )
-            val applicationId = insertTestApplication(tx.handle, childId = childId, guardianId = testAdult_1.id)
-            insertTestPlacementPlan(
-                tx.handle,
+            val applicationId = tx.insertTestApplication(childId = childId, guardianId = testAdult_1.id)
+            tx.insertTestPlacementPlan(
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE_PART_TIME,

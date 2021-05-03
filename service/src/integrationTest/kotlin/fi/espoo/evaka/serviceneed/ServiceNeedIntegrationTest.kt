@@ -37,9 +37,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
-            insertTestPlacement(
-                tx.handle,
+            tx.insertGeneralTestFixtures()
+            tx.insertTestPlacement(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusDays(1),
@@ -399,8 +398,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun givenServiceNeed(start: Int, end: Int?, childId: UUID = testChild_1.id): UUID {
         return db.transaction { tx ->
-            insertTestServiceNeed(
-                h = tx.handle,
+            tx.insertTestServiceNeed(
                 childId = childId,
                 startDate = testDate(start),
                 endDate = if (end == null) null else testDate(end),

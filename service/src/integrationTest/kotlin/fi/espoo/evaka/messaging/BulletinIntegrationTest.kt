@@ -83,7 +83,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     """.trimIndent()
 
     private fun insertChildToGroup(tx: Database.Transaction, childId: UUID, guardianId: UUID, groupId: UUID, unitId: UUID) {
-        val daycarePlacementId = tx.handle.insertTestPlacement(
+        val daycarePlacementId = tx.insertTestPlacement(
             DevPlacement(
                 childId = childId,
                 unitId = unitId,
@@ -91,8 +91,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
                 endDate = placementEnd
             )
         )
-        insertTestDaycareGroupPlacement(
-            h = tx.handle,
+        tx.insertTestDaycareGroupPlacement(
             daycarePlacementId = daycarePlacementId,
             groupId = groupId,
             startDate = placementStart,
@@ -105,10 +104,10 @@ class BulletinIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
 
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = secondGroupId, daycareId = secondUnitId, name = secondGroupName))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(DevDaycareGroup(id = secondGroupId, daycareId = secondUnitId, name = secondGroupName))
 
             insertChildToGroup(tx, childId, guardianPerson.id, groupId, unitId)
             insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, secondUnitId)
@@ -116,14 +115,14 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
             tx.handle.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
-            tx.handle.insertTestEmployee(
+            tx.insertTestEmployee(
                 DevEmployee(
                     id = supervisorId,
                     firstName = "Elina",
                     lastName = "Esimies"
                 )
             )
-            tx.handle.insertTestEmployee(
+            tx.insertTestEmployee(
                 DevEmployee(
                     id = staffId
                 )

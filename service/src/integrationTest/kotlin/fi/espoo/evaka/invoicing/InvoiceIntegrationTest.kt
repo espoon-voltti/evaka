@@ -47,7 +47,6 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.assertj.core.api.Assertions.assertThat
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -150,7 +149,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            insertGeneralTestFixtures(tx.handle)
+            tx.insertGeneralTestFixtures()
         }
     }
 
@@ -743,7 +742,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices works with one decision`() {
         val decision = testDecisions.find { it.status == FeeDecisionStatus.SENT }!!
-        db.transaction { tx -> insertDecisions(tx.handle, listOf(decision)) }
+        insertDecisions(listOf(decision))
 
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -770,7 +769,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices works with two decisions`() {
         val testDecisions2 = testDecisions.filter { it.status == FeeDecisionStatus.SENT }.take(2)
-        db.transaction { tx -> insertDecisions(tx.handle, testDecisions2) }
+        insertDecisions(testDecisions2)
 
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -797,7 +796,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices is idempotent`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
-        db.transaction { tx -> insertDecisions(tx.handle, decisions) }
+        insertDecisions(decisions)
 
         for (i in 1..4) {
             val (_, response, _) = http.post("/invoices/create-drafts")
@@ -826,7 +825,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices generates no drafts from already invoiced decisions`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
-        db.transaction { tx -> insertDecisions(tx.handle, decisions) }
+        insertDecisions(decisions)
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -863,7 +862,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices overrides drafts`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!).take(1)
-        db.transaction { tx -> insertDecisions(tx.handle, decisions) }
+        insertDecisions(decisions)
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -1025,11 +1024,11 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertDecisions(h: Handle, decisions: List<FeeDecision>) {
-        upsertFeeDecisions(h, objectMapper, decisions)
+    private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->
+        upsertFeeDecisions(tx.handle, objectMapper, decisions)
         decisions.forEach { decision ->
             decision.parts.forEach { part ->
-                h.insertTestPlacement(
+                tx.insertTestPlacement(
                     DevPlacement(
                         childId = part.child.id,
                         unitId = part.placement.unit,
@@ -1037,8 +1036,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                         endDate = decision.validTo!!
                     )
                 )
-                insertTestParentship(
-                    h,
+                tx.insertTestParentship(
                     headOfChild = decision.headOfFamily.id,
                     childId = part.child.id,
                     startDate = decision.validFrom,
