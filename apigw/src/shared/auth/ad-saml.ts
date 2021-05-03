@@ -101,20 +101,19 @@ export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
     if (!adConfig) throw Error('Missing AD SAML configuration')
     return new SamlStrategy(
       {
+        acceptedClockSkewMs: 0,
+        audience: adConfig.issuer,
         callbackUrl: adConfig.callbackUrl,
-        entryPoint: adConfig.entryPointUrl,
-        logoutUrl: adConfig.logoutUrl,
-        issuer: adConfig.issuer,
         cert: adConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
         ),
-        privateCert: readFileSync(adConfig.privateCert, {
-          encoding: 'utf8'
-        }),
-        identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
         disableRequestedAuthnContext: true,
-        signatureAlgorithm: 'sha256',
-        acceptedClockSkewMs: 0
+        entryPoint: adConfig.entryPointUrl,
+        identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+        issuer: adConfig.issuer,
+        logoutUrl: adConfig.logoutUrl,
+        privateCert: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
+        signatureAlgorithm: 'sha256'
       },
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

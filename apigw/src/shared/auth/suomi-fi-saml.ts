@@ -66,19 +66,20 @@ export default function createSuomiFiStrategy(): Strategy | DummyStrategy {
     })
     return new Strategy(
       {
+        acceptedClockSkewMs: 0,
+        audience: sfiConfig.issuer,
         callbackUrl: sfiConfig.callbackUrl,
-        entryPoint: sfiConfig.entryPoint,
-        logoutUrl: sfiConfig.logoutUrl,
-        issuer: sfiConfig.issuer,
         cert: sfiConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
         ),
-        privateCert: privateCert,
         decryptionPvk: privateCert,
-        identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
         disableRequestedAuthnContext: true,
-        signatureAlgorithm: 'sha256',
-        acceptedClockSkewMs: 0
+        entryPoint: sfiConfig.entryPoint,
+        identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+        issuer: sfiConfig.issuer,
+        logoutUrl: sfiConfig.logoutUrl,
+        privateCert: privateCert,
+        signatureAlgorithm: 'sha256'
       },
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
