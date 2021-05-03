@@ -26,7 +26,7 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
       callbackUrl: evakaSamlConfig.callbackUrl,
       entryPoint: evakaSamlConfig.entryPoint,
       logoutUrl: evakaSamlConfig.entryPoint,
-      acceptedClockSkewMs: -1,
+      acceptedClockSkewMs: 0,
       cert: publicCert,
       privateCert: privateCert,
       decryptionPvk: privateCert,

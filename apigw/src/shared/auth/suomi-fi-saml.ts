@@ -78,7 +78,7 @@ export default function createSuomiFiStrategy(): Strategy | DummyStrategy {
         identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
         disableRequestedAuthnContext: true,
         signatureAlgorithm: 'sha256',
-        acceptedClockSkewMs: -1
+        acceptedClockSkewMs: 0
       },
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
