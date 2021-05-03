@@ -89,10 +89,10 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         scheduledOperationController.removeOldDraftApplications(db)
 
         db.read {
-            assertNull(fetchApplicationDetails(it.handle, id_to_be_deleted))
+            assertNull(it.fetchApplicationDetails(id_to_be_deleted))
             assertEquals(0, it.getApplicationAttachments(id_to_be_deleted).size)
 
-            assertNotNull(fetchApplicationDetails(it.handle, id_not_to_be_deleted)!!)
+            assertNotNull(it.fetchApplicationDetails(id_not_to_be_deleted)!!)
             assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
         }
     }

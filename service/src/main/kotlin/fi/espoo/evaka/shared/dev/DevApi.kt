@@ -324,7 +324,7 @@ class DevApi(
         @PathVariable applicationId: UUID
     ): ResponseEntity<ApplicationDetails> {
         return db.read { tx ->
-            fetchApplicationDetails(tx.handle, applicationId)
+            tx.fetchApplicationDetails(applicationId)
         }?.let { ResponseEntity.ok(it) } ?: throw NotFound("application not found")
     }
 
@@ -583,7 +583,7 @@ RETURNING id
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            val application = fetchApplicationDetails(tx.handle, applicationId)
+            val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("application $applicationId not found")
             val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) FiniteDateRange(
                 placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!

@@ -89,7 +89,7 @@ class DecisionController(
 
         return db.transaction { tx ->
             val decision = getDecision(tx.handle, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-            val application = fetchApplicationDetails(tx.handle, decision.applicationId)
+            val application = tx.fetchApplicationDetails(decision.applicationId)
                 ?: error("Cannot find application for decision id '$decisionId'")
 
             val child = personService.getUpToDatePerson(

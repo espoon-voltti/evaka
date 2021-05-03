@@ -68,7 +68,7 @@ class DecisionService(
     ) {
         val decision = getDecision(tx.handle, decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val decisionLanguage = determineDecisionLanguage(decision, tx)
-        val application = fetchApplicationDetails(tx.handle, decision.applicationId)
+        val application = tx.fetchApplicationDetails(decision.applicationId)
             ?: throw NotFound("Application ${decision.applicationId} was not found")
         val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
@@ -173,7 +173,7 @@ class DecisionService(
         val decision = getDecision(tx.handle, decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
-        val application = fetchApplicationDetails(tx.handle, applicationId)
+        val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
         val currentVtjGuardianIds = personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, decision.childId).map { person -> person.id }

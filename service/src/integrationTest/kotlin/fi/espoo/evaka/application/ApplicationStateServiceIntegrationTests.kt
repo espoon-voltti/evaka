@@ -117,7 +117,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
             assertEquals(LocalDate.now(), application.sentDate)
             assertEquals(LocalDate.now(), application.dueDate)
@@ -141,14 +141,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(LocalDate.now().plusMonths(4), application.dueDate)
         }
     }
 
     private fun assertDueDate(applicationId: UUID, expected: Instant?) {
         db.read {
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             if (expected != null) {
                 assertEquals(LocalDate.ofInstant(expected, europeHelsinki), application.dueDate)
             } else {
@@ -254,7 +254,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.transferApplication)
             assertEquals(null, application.dueDate)
         }
@@ -277,7 +277,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
         }
@@ -300,7 +300,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(false, application.checkedByAdmin)
         }
     }
@@ -394,7 +394,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
         }
@@ -404,7 +404,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(false, application.checkedByAdmin)
         }
@@ -423,7 +423,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.CANCELLED, application.status)
         }
     }
@@ -442,7 +442,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.CANCELLED, application.status)
         }
     }
@@ -461,7 +461,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
         }
     }
@@ -492,7 +492,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -550,7 +550,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -608,7 +608,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -683,7 +683,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -759,7 +759,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)
@@ -855,7 +855,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         // then
         db.read {
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             if (manualMailing) {
                 assertEquals(ApplicationStatus.WAITING_MAILING, application.status)
             } else {
@@ -915,7 +915,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
             val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
@@ -952,7 +952,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
@@ -999,7 +999,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
             val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
@@ -1062,7 +1062,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
             val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
@@ -1163,7 +1163,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.REJECTED, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
@@ -1204,7 +1204,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
@@ -1244,7 +1244,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1283,7 +1283,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(2, incomes.size)
@@ -1323,7 +1323,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1363,7 +1363,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1403,7 +1403,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1445,7 +1445,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1485,7 +1485,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1523,7 +1523,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1562,7 +1562,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1602,7 +1602,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1643,7 +1643,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1683,7 +1683,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1723,7 +1723,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1763,7 +1763,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1803,7 +1803,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
@@ -1838,7 +1838,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
 
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
         }
     }
@@ -1908,7 +1908,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
