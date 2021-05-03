@@ -8027,13 +8027,13 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^1.4.0":
-  version: 1.5.3
-  resolution: "xml-crypto@npm:1.5.3"
+"xml-crypto@npm:2.1.2":
+  version: 2.1.2
+  resolution: "xml-crypto@npm:2.1.2"
   dependencies:
-    xmldom: 0.1.27
-    xpath: 0.0.27
-  checksum: e921a58bb766903a0a563674c1f3464505bd0e2f30af6d5097b93c1caca70d4ed5efc1df2702c31f3b2c20e84656fb7da26d52083eb98b4a7bd3a9f8698f6c4c
+    xmldom: ^0.6.0
+    xpath: 0.0.32
+  checksum: 3b7ecafdb7d80fcc537eda515afb644d113b6216338f33129da741cdfc04884d0bcc3befcaeecc1b6cb4905f6b368e507f2bbc756cbabae50f0b9b5aada7553d
   languageName: node
   linkType: hard
 
@@ -8087,13 +8087,6 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"xmldom@npm:0.1.27":
-  version: 0.1.27
-  resolution: "xmldom@npm:0.1.27"
-  checksum: 2f764d1c0bce73ed44a362cb6247a14644d40c34cee72e49319324de99da4bc8883b9e0b4d32b778067d66c9c9202e9dae600b2af280193f1fc460917b07ca4e
-  languageName: node
-  linkType: hard
-
 "xmldom@npm:0.1.x, xmldom@npm:~0.1.15":
   version: 0.1.31
   resolution: "xmldom@npm:0.1.31"
@@ -8101,10 +8094,24 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
+"xmldom@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "xmldom@npm:0.6.0"
+  checksum: cca0cddf6f95e9bfa2432a9a819f97b840e6b36fad8017833f5c7d298b4fd69ef2e3e7b5dd68f1e53ec5dd4075bfc8f68e425b06928adc0a21c9bacf0af02b0c
+  languageName: node
+  linkType: hard
+
 "xpath@npm:0.0.27":
   version: 0.0.27
   resolution: "xpath@npm:0.0.27"
   checksum: 37d5326958d39b092b5a05410d694d97bf82d5d2651c8581506152a517394359a5bd1919be00e18a81b3064e4a9b16bed24b39d612ee468f1c4406272c684063
+  languageName: node
+  linkType: hard
+
+"xpath@npm:0.0.32":
+  version: 0.0.32
+  resolution: "xpath@npm:0.0.32"
+  checksum: 7e87cc83a18497df5db9efa7cfe37036f97f2e35fd3fd4c0ab8695ee6ef930008ba17866226de630ac1c47b7785d318d76cecca975b5818817da3572eeb7e5b0
   languageName: node
   linkType: hard
 
