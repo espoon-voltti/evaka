@@ -11,7 +11,7 @@ import { useTranslation } from '../../../state/i18n'
 import Toolbar from '../../common/Toolbar'
 import styled from 'styled-components'
 import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
-import { faPlus } from 'lib-icons'
+import { faExclamation, faPlus, faQuestion } from 'lib-icons'
 import LocalDate from '../../../../lib-common/local-date'
 import { UUID } from '../../../types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -25,6 +25,7 @@ import {
   updateNewServiceNeed
 } from '../../../api/child/new-service-needs'
 import { UIContext } from '../../../state/ui'
+import InfoModal from '../../../../lib-components/molecules/modals/InfoModal'
 
 interface DropdownOption {
   label: string
@@ -44,6 +45,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
 
   const [creatingNew, setCreatingNew] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { serviceNeedOptions } = useContext(ChildContext)
   const options = serviceNeedOptions.isSuccess
@@ -54,10 +56,6 @@ function NewServiceNeeds({ placement, reload }: Props) {
           value: opt.id
         }))
     : []
-
-  const onDelete = (id: UUID) => {
-    void deleteNewServiceNeed(id).then(reload)
-  }
 
   return (
     <div>
@@ -126,13 +124,29 @@ function NewServiceNeeds({ placement, reload }: Props) {
                   key={sn.id}
                   serviceNeed={sn}
                   onEdit={() => setEditingId(sn.id)}
-                  onDelete={() => onDelete(sn.id)}
+                  onDelete={() => setDeletingId(sn.id)}
                   disabled={creatingNew || editingId !== null}
                 />
               )
             )}
           </Tbody>
         </Table>
+      )}
+
+      {deletingId && (
+        <InfoModal
+          title={t.deleteServiceNeed.confirmTitle}
+          iconColour={'orange'}
+          icon={faQuestion}
+          resolve={{
+            action: () => deleteNewServiceNeed(deletingId).then(reload),
+            label: t.deleteServiceNeed.btn
+          }}
+          reject={{
+            action: () => setDeletingId(null),
+            label: i18n.common.cancel
+          }}
+        />
       )}
     </div>
   )
@@ -200,6 +214,7 @@ function NewServiceNeedEditorRow({
 
   const { setErrorMessage } = useContext(UIContext)
   const [form, setForm] = useState<FormData>(initialForm)
+  const [overlapWarning, setOverlapWarning] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const formIsValid =
@@ -209,6 +224,27 @@ function NewServiceNeedEditorRow({
     !form.endDate.isBefore(form.startDate)
 
   const onSubmit = () => {
+    if (
+      form.startDate !== undefined &&
+      form.endDate !== undefined &&
+      form.optionId
+    ) {
+      if (
+        placement.serviceNeeds.find(
+          (sn) =>
+            sn.id !== editingId &&
+            sn.startDate.isEqualOrBefore(form.endDate!) &&
+            sn.endDate.isEqualOrAfter(form.startDate!)
+        ) !== undefined
+      ) {
+        setOverlapWarning(true)
+      } else {
+        onConfirmSave()
+      }
+    }
+  }
+
+  const onConfirmSave = () => {
     if (form.startDate && form.endDate && form.optionId) {
       setSubmitting(true)
 
@@ -245,55 +281,74 @@ function NewServiceNeedEditorRow({
   }
 
   return (
-    <Tr>
-      <StyledTd>
-        <FixedSpaceRow spacing="xs" alignItems="center">
-          <DatePickerDeprecated
-            date={form.startDate}
-            onChange={(date) => setForm({ ...form, startDate: date })}
-            minDate={placement.startDate}
-            maxDate={placement.endDate}
+    <>
+      <Tr>
+        <StyledTd>
+          <FixedSpaceRow spacing="xs" alignItems="center">
+            <DatePickerDeprecated
+              date={form.startDate}
+              onChange={(date) => setForm({ ...form, startDate: date })}
+              minDate={placement.startDate}
+              maxDate={placement.endDate}
+            />
+            <span>-</span>
+            <DatePickerDeprecated
+              date={form.endDate}
+              onChange={(date) => setForm({ ...form, endDate: date })}
+              minDate={placement.startDate}
+              maxDate={placement.endDate}
+            />
+          </FixedSpaceRow>
+        </StyledTd>
+        <StyledTd>
+          <SimpleSelect
+            options={options}
+            value={form.optionId}
+            onChange={(e) => setForm({ ...form, optionId: e.target.value })}
+            placeholder={t.optionPlaceholder}
           />
-          <span>-</span>
-          <DatePickerDeprecated
-            date={form.endDate}
-            onChange={(date) => setForm({ ...form, endDate: date })}
-            minDate={placement.startDate}
-            maxDate={placement.endDate}
+        </StyledTd>
+        <StyledTd>
+          <Checkbox
+            label={t.shiftCare}
+            hiddenLabel
+            checked={form.shiftCare}
+            onChange={(checked) => setForm({ ...form, shiftCare: checked })}
           />
-        </FixedSpaceRow>
-      </StyledTd>
-      <StyledTd>
-        <SimpleSelect
-          options={options}
-          value={form.optionId}
-          onChange={(e) => setForm({ ...form, optionId: e.target.value })}
-          placeholder={t.optionPlaceholder}
+        </StyledTd>
+        <StyledTd>
+          <FixedSpaceRow justifyContent="flex-end" spacing="m">
+            <InlineButton
+              onClick={onCancel}
+              text={i18n.common.cancel}
+              disabled={submitting}
+            />
+            <InlineButton
+              onClick={onSubmit}
+              text={i18n.common.save}
+              disabled={submitting || !formIsValid}
+            />
+          </FixedSpaceRow>
+        </StyledTd>
+      </Tr>
+
+      {overlapWarning && (
+        <InfoModal
+          title={t.overlapWarning.title}
+          text={t.overlapWarning.message}
+          iconColour={'orange'}
+          icon={faExclamation}
+          resolve={{
+            action: onConfirmSave,
+            label: i18n.common.confirm
+          }}
+          reject={{
+            action: () => setOverlapWarning(false),
+            label: i18n.common.cancel
+          }}
         />
-      </StyledTd>
-      <StyledTd>
-        <Checkbox
-          label={t.shiftCare}
-          hiddenLabel
-          checked={form.shiftCare}
-          onChange={(checked) => setForm({ ...form, shiftCare: checked })}
-        />
-      </StyledTd>
-      <StyledTd>
-        <FixedSpaceRow justifyContent="flex-end" spacing="m">
-          <InlineButton
-            onClick={onCancel}
-            text={i18n.common.cancel}
-            disabled={submitting}
-          />
-          <InlineButton
-            onClick={onSubmit}
-            text={i18n.common.save}
-            disabled={submitting || !formIsValid}
-          />
-        </FixedSpaceRow>
-      </StyledTd>
-    </Tr>
+      )}
+    </>
   )
 }
 

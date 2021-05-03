@@ -765,7 +765,16 @@ export const fi = {
         description: 'Kuvaus',
         shiftCare: 'Ilta/Vuoro',
         createNewBtn: 'Luo uusi palveluntarve',
-        optionPlaceholder: 'Valitse...'
+        optionPlaceholder: 'Valitse...',
+        deleteServiceNeed: {
+          btn: 'Poista palveluntarve',
+          confirmTitle: 'Haluatko varmasti poistaa tämän palveluntarpeen?'
+        },
+        overlapWarning: {
+          title: 'Palveluntarve menee päällekkäin aiemman kanssa',
+          message:
+            'Aiemmat palveluntarpeet katkaistaan automaattisesti. Haluatko jatkaa?'
+        }
       }
     },
     fridgeParents: {
