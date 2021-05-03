@@ -149,7 +149,7 @@ export default React.memo(function DaycareDailyNoteModal({
             </div>
             <TextArea
               value={form.note || ''}
-              placeholder={i18n.unit.groups.daycareDailyNote.notesHint}
+              placeholder={i18n.unit.groups.daycareDailyNote.groupNoteHint}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 updateForm({ note: e.target.value })
               }

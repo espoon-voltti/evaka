@@ -136,7 +136,7 @@ export const fi = {
       },
       placeholders: {
         note: 'Mitä tänään opin, leikin, oivalsin.',
-        groupNote: 'Kirjoita muistiinpano',
+        groupNote: 'Kirjoita muistiinpano ja ajankohta',
         reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
         sleepingTime: 'Esim 1,5'
       },
