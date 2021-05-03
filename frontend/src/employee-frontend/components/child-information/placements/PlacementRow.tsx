@@ -191,7 +191,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             warning={
               missingServiceNeedDays > 0
                 ? {
-                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
+                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
                     tooltipId: `tooltip_missing-service-need_${placement.id}`
                   }
                 : undefined

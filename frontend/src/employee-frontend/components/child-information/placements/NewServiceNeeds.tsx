@@ -4,7 +4,7 @@
 
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { H4 } from 'lib-components/typography'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { NewServiceNeed, Placement } from '../../../types/child'
 import _ from 'lodash'
 import { useTranslation } from '../../../state/i18n'
@@ -26,9 +26,12 @@ import {
 } from '../../../api/child/new-service-needs'
 import { UIContext } from '../../../state/ui'
 import InfoModal from '../../../../lib-components/molecules/modals/InfoModal'
-import { formatDate } from '../../../utils/date'
+import { DateRange, formatDate, getGaps } from '../../../utils/date'
 import { DATE_FORMAT_DATE_TIME } from '../../../constants'
 import Tooltip from '../../../../lib-components/atoms/Tooltip'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import colors from '../../../../lib-components/colors'
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 
 interface DropdownOption {
   label: string
@@ -46,11 +49,17 @@ function NewServiceNeeds({ placement, reload }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
-  const [creatingNew, setCreatingNew] = useState(false)
+  const [creatingNew, setCreatingNew] = useState<boolean | LocalDate>(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { serviceNeedOptions } = useContext(ChildContext)
+
+  const gaps = useMemo(() => getGaps(placement.serviceNeeds, placement), [
+    placement
+  ])
+
+  const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
 
   if (
     serviceNeedOptions.isSuccess &&
@@ -78,46 +87,46 @@ function NewServiceNeeds({ placement, reload }: Props) {
           onClick={() => setCreatingNew(true)}
           text={t.createNewBtn}
           icon={faPlus}
-          disabled={creatingNew || editingId !== null}
+          disabled={creatingNew !== false || editingId !== null}
         />
       </HeaderRow>
-      {serviceNeeds.length === 0 && !creatingNew ? (
-        <div>{t.noServiceNeeds}</div>
-      ) : (
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>{t.period}</Th>
-              <Th>{t.description}</Th>
-              <Th>{t.shiftCare}</Th>
-              <Th>{t.confirmed}</Th>
-              <Th />
-            </Tr>
-          </Thead>
-          <Tbody>
-            {creatingNew && (
-              <NewServiceNeedEditorRow
-                placement={placement}
-                options={options}
-                initialForm={{
-                  startDate: serviceNeeds.length
-                    ? undefined
-                    : placement.startDate,
-                  endDate: serviceNeeds.length ? undefined : placement.endDate,
-                  optionId: undefined,
-                  shiftCare: false
-                }}
-                onSuccess={() => {
-                  setCreatingNew(false)
-                  reload()
-                }}
-                onCancel={() => setCreatingNew(false)}
-              />
-            )}
 
-            {_.orderBy(serviceNeeds, ['startDate'], ['desc']).map((sn) =>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{t.period}</Th>
+            <Th>{t.description}</Th>
+            <Th>{t.shiftCare}</Th>
+            <Th>{t.confirmed}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {creatingNew === true && (
+            <NewServiceNeedEditorRow
+              placement={placement}
+              options={options}
+              initialForm={{
+                startDate: serviceNeeds.length
+                  ? undefined
+                  : placement.startDate,
+                endDate: placement.endDate,
+                optionId: undefined,
+                shiftCare: false
+              }}
+              onSuccess={() => {
+                setCreatingNew(false)
+                reload()
+              }}
+              onCancel={() => setCreatingNew(false)}
+            />
+          )}
+
+          {_.orderBy(rows, ['startDate'], ['desc']).map((sn) =>
+            'id' in sn ? (
               editingId === sn.id ? (
                 <NewServiceNeedEditorRow
+                  key={sn.id}
                   placement={placement}
                   options={options}
                   initialForm={{
@@ -139,13 +148,39 @@ function NewServiceNeeds({ placement, reload }: Props) {
                   serviceNeed={sn}
                   onEdit={() => setEditingId(sn.id)}
                   onDelete={() => setDeletingId(sn.id)}
-                  disabled={creatingNew || editingId !== null}
+                  disabled={creatingNew !== false || editingId !== null}
                 />
               )
-            )}
-          </Tbody>
-        </Table>
-      )}
+            ) : creatingNew instanceof LocalDate &&
+              sn.startDate.isEqual(creatingNew) ? (
+              <NewServiceNeedEditorRow
+                key={sn.startDate.toJSON()}
+                placement={placement}
+                options={options}
+                initialForm={{
+                  startDate: sn.startDate,
+                  endDate: sn.endDate,
+                  optionId: undefined,
+                  shiftCare: false
+                }}
+                onSuccess={() => {
+                  setCreatingNew(false)
+                  reload()
+                }}
+                onCancel={() => setCreatingNew(false)}
+              />
+            ) : (
+              <MissingServiceNeedRow
+                key={sn.startDate.toJSON()}
+                startDate={sn.startDate}
+                endDate={sn.endDate}
+                onEdit={() => setCreatingNew(sn.startDate)}
+                disabled={creatingNew !== false || editingId !== null}
+              />
+            )
+          )}
+        </Tbody>
+      </Table>
 
       {deletingId && (
         <InfoModal
@@ -205,6 +240,46 @@ function NewServiceNeedReadRow({
           onDelete={onDelete}
           deletableFor={['ADMIN', 'UNIT_SUPERVISOR']}
           disableAll={disabled}
+        />
+      </Td>
+    </Tr>
+  )
+}
+
+interface MissingServiceNeedRowProps {
+  startDate: LocalDate
+  endDate: LocalDate
+  onEdit: () => void
+  disabled?: boolean
+}
+function MissingServiceNeedRow({
+  startDate,
+  endDate,
+  onEdit,
+  disabled
+}: MissingServiceNeedRowProps) {
+  const { i18n } = useTranslation()
+  const t = i18n.childInformation.placements.serviceNeeds
+  return (
+    <Tr>
+      <InfoTd>
+        {startDate.format()} - {endDate.format()}
+      </InfoTd>
+      <InfoTd>
+        {t.missing}{' '}
+        <FontAwesomeIcon
+          icon={faExclamationTriangle}
+          color={colors.accents.orange}
+        />
+      </InfoTd>
+      <Td />
+      <Td />
+      <Td style={{ textAlign: 'right' }}>
+        <InlineButton
+          onClick={onEdit}
+          text={t.addNewBtn}
+          icon={faPlus}
+          disabled={disabled}
         />
       </Td>
     </Tr>
@@ -315,6 +390,7 @@ function NewServiceNeedEditorRow({
               onChange={(date) => setForm({ ...form, startDate: date })}
               minDate={placement.startDate}
               maxDate={placement.endDate}
+              type="short"
             />
             <span>-</span>
             <DatePickerDeprecated
@@ -322,6 +398,7 @@ function NewServiceNeedEditorRow({
               onChange={(date) => setForm({ ...form, endDate: date })}
               minDate={placement.startDate}
               maxDate={placement.endDate}
+              type="short"
             />
           </FixedSpaceRow>
         </StyledTd>
@@ -378,8 +455,15 @@ function NewServiceNeedEditorRow({
   )
 }
 
+type ServiceNeedOrGap = NewServiceNeed | DateRange
+
 const StyledTd = styled(Td)`
   vertical-align: middle;
+`
+
+const InfoTd = styled(StyledTd)`
+  color: ${colors.greyscale.dark};
+  font-style: italic;
 `
 
 const HeaderRow = styled.div`

@@ -760,13 +760,14 @@ export const fi = {
       },
       serviceNeeds: {
         title: 'Sijoituksen palveluntarpeet (alpha-testaus)',
-        noServiceNeeds: 'Ei palveluntarpeita',
         period: 'Aikaväli',
         description: 'Kuvaus',
         shiftCare: 'Ilta/Vuoro',
         confirmed: 'Vahvistettu',
         createNewBtn: 'Luo uusi palveluntarve',
+        addNewBtn: 'Lisää palveluntarve',
         optionPlaceholder: 'Valitse...',
+        missing: 'Puuttuva palveluntarve',
         deleteServiceNeed: {
           btn: 'Poista palveluntarve',
           confirmTitle: 'Haluatko varmasti poistaa tämän palveluntarpeen?'

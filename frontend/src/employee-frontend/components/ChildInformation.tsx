@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, Fragment } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from '../state/i18n'
@@ -244,10 +244,10 @@ const ChildInformation = React.memo(function ChildInformation({
         {layout.map(({ component, open }) => {
           const Component = components[component]
           return (
-            <>
-              <Component id={id} startOpen={open} key={component} />
+            <Fragment key={component}>
+              <Component id={id} startOpen={open} />
               <Gap size={'m'} />
-            </>
+            </Fragment>
           )
         })}
       </div>
