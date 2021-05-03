@@ -5,6 +5,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,7 +40,16 @@ class NewServiceNeedController(
         acl.getRolesForPlacement(user, body.placementId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
-            createNewServiceNeed(tx, body.placementId, body.startDate, body.endDate, body.optionId, body.shiftCare)
+            createNewServiceNeed(
+                tx = tx,
+                user = user,
+                placementId = body.placementId,
+                startDate = body.startDate,
+                endDate = body.endDate,
+                optionId = body.optionId,
+                shiftCare = body.shiftCare,
+                confirmedAt = HelsinkiDateTime.now()
+            )
         }
 
         return ResponseEntity.noContent().build()
@@ -63,7 +73,16 @@ class NewServiceNeedController(
         acl.getRolesForNewServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
-            updateNewServiceNeed(tx, id, body.startDate, body.endDate, body.optionId, body.shiftCare)
+            updateNewServiceNeed(
+                tx = tx,
+                user = user,
+                id = id,
+                startDate = body.startDate,
+                endDate = body.endDate,
+                optionId = body.optionId,
+                shiftCare = body.shiftCare,
+                confirmedAt = HelsinkiDateTime.now()
+            )
         }
 
         return ResponseEntity.noContent().build()

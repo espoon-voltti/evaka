@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -17,10 +18,14 @@ fun Database.Read.getServiceNeedsByChild(
     // language=SQL
     val sql =
         """
-        SELECT sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sno.id as option_id, sno.name as option_name
+        SELECT 
+            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, 
+            sno.id as option_id, sno.name as option_name,
+            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM new_service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
+        JOIN employee e on e.id = sn.confirmed_by
         WHERE pl.child_id = :childId
         """.trimIndent()
 
@@ -38,10 +43,14 @@ fun Database.Read.getServiceNeedsByUnit(
     // language=SQL
     val sql =
         """
-        SELECT sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sno.id as option_id, sno.name as option_name
+        SELECT 
+            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, 
+            sno.id as option_id, sno.name as option_name,
+            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM new_service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
+        JOIN employee e on e.id = sn.confirmed_by
         WHERE pl.unit_id = :unitId AND daterange(:start, :end, '[]') && daterange(sn.start_date, sn.end_date, '[]')
         """.trimIndent()
 
@@ -57,15 +66,12 @@ fun Database.Read.getNewServiceNeed(id: UUID): NewServiceNeed {
     // language=sql
     val sql = """
         SELECT 
-            sn.id,
-            sn.placement_id,
-            sn.start_date,
-            sn.end_date,
-            sn.option_id,
-            sno.name as option_name,
-            sn.shift_care
+            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, 
+            sno.id as option_id, sno.name as option_name,
+            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM new_service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
+        JOIN employee e on e.id = sn.confirmed_by
         WHERE sn.id = :id
     """.trimIndent()
 
@@ -141,12 +147,14 @@ fun Database.Transaction.insertNewServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID,
-    shiftCare: Boolean
+    shiftCare: Boolean,
+    confirmedBy: UUID,
+    confirmedAt: HelsinkiDateTime
 ) {
     // language=sql
     val sql = """
-        INSERT INTO new_service_need (placement_id, start_date, end_date, option_id, shift_care) 
-        VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare);
+        INSERT INTO new_service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
+        VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt);
     """.trimIndent()
     createUpdate(sql)
         .bind("placementId", placementId)
@@ -154,6 +162,8 @@ fun Database.Transaction.insertNewServiceNeed(
         .bind("endDate", endDate)
         .bind("optionId", optionId)
         .bind("shiftCare", shiftCare)
+        .bind("confirmedBy", confirmedBy)
+        .bind("confirmedAt", confirmedAt)
         .execute()
 }
 
@@ -162,12 +172,14 @@ fun Database.Transaction.updateNewServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID,
-    shiftCare: Boolean
+    shiftCare: Boolean,
+    confirmedBy: UUID,
+    confirmedAt: HelsinkiDateTime
 ) {
     // language=sql
     val sql = """
         UPDATE new_service_need
-        SET start_date = :startDate, end_date = :endDate, option_id = :optionId, shift_care = :shiftCare
+        SET start_date = :startDate, end_date = :endDate, option_id = :optionId, shift_care = :shiftCare, confirmed_by = :confirmedBy, confirmed_at = :confirmedAt
         WHERE id = :id
     """.trimIndent()
 
@@ -177,6 +189,8 @@ fun Database.Transaction.updateNewServiceNeed(
         .bind("endDate", endDate)
         .bind("optionId", optionId)
         .bind("shiftCare", shiftCare)
+        .bind("confirmedBy", confirmedBy)
+        .bind("confirmedAt", confirmedAt)
         .execute()
 }
 
@@ -197,15 +211,12 @@ fun Database.Read.getOverlappingServiceNeeds(
     // language=sql
     val sql = """
         SELECT 
-            sn.id,
-            sn.placement_id,
-            sn.start_date,
-            sn.end_date,
-            sn.option_id,
-            sno.name as option_name,
-            sn.shift_care
+            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, 
+            sno.id as option_id, sno.name as option_name,
+            sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM new_service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
+        JOIN employee e on e.id = sn.confirmed_by
         WHERE placement_id = :placementId AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:startDate, :endDate, '[]')
     """.trimIndent()
 

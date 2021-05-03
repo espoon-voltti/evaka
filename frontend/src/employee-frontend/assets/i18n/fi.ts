@@ -764,6 +764,7 @@ export const fi = {
         period: 'Aikaväli',
         description: 'Kuvaus',
         shiftCare: 'Ilta/Vuoro',
+        confirmed: 'Vahvistettu',
         createNewBtn: 'Luo uusi palveluntarve',
         optionPlaceholder: 'Valitse...',
         deleteServiceNeed: {

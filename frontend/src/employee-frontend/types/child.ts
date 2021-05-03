@@ -121,6 +121,12 @@ export interface NewServiceNeed {
   endDate: LocalDate
   option: ServiceNeedOptionSummary
   shiftCare: boolean
+  confirmed: {
+    employeeId: UUID
+    firstName: string
+    lastName: string
+    at: Date
+  }
 }
 
 export interface Placement {

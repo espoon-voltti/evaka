@@ -26,6 +26,9 @@ import {
 } from '../../../api/child/new-service-needs'
 import { UIContext } from '../../../state/ui'
 import InfoModal from '../../../../lib-components/molecules/modals/InfoModal'
+import { formatDate } from '../../../utils/date'
+import { DATE_FORMAT_DATE_TIME } from '../../../constants'
+import Tooltip from '../../../../lib-components/atoms/Tooltip'
 
 interface DropdownOption {
   label: string
@@ -87,6 +90,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
               <Th>{t.period}</Th>
               <Th>{t.description}</Th>
               <Th>{t.shiftCare}</Th>
+              <Th>{t.confirmed}</Th>
               <Th />
             </Tr>
           </Thead>
@@ -182,6 +186,17 @@ function NewServiceNeedReadRow({
       </Td>
       <Td>{serviceNeed.option.name}</Td>
       <Td>{serviceNeed.shiftCare ? i18n.common.yes : i18n.common.no}</Td>
+      <Td>
+        <Tooltip
+          tooltip={
+            <span>
+              {serviceNeed.confirmed.lastName} {serviceNeed.confirmed.firstName}
+            </span>
+          }
+        >
+          {formatDate(serviceNeed.confirmed.at, DATE_FORMAT_DATE_TIME)}
+        </Tooltip>
+      </Td>
       <Td>
         <Toolbar
           dateRange={serviceNeed}
@@ -326,6 +341,7 @@ function NewServiceNeedEditorRow({
             onChange={(checked) => setForm({ ...form, shiftCare: checked })}
           />
         </StyledTd>
+        <StyledTd />
         <StyledTd>
           <FixedSpaceRow justifyContent="flex-end" spacing="m">
             <InlineButton
