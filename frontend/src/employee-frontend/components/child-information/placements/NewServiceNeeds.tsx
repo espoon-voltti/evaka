@@ -48,6 +48,16 @@ function NewServiceNeeds({ placement, reload }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { serviceNeedOptions } = useContext(ChildContext)
+
+  if (
+    serviceNeedOptions.isSuccess &&
+    serviceNeedOptions.value.find(
+      (opt) => opt.validPlacementType === placementType && !opt.defaultOption
+    ) === undefined
+  ) {
+    return null
+  }
+
   const options = serviceNeedOptions.isSuccess
     ? serviceNeedOptions.value
         .filter((opt) => opt.validPlacementType === placementType)
