@@ -16,8 +16,8 @@ class AssistanceNeedService {
     fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction {
-                shortenOverlappingAssistanceNeed(it.handle, user, childId, data.startDate, data.endDate)
-                insertAssistanceNeed(it.handle, user, childId, data)
+                it.shortenOverlappingAssistanceNeed(user, childId, data.startDate, data.endDate)
+                it.insertAssistanceNeed(user, childId, data)
             }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -25,18 +25,18 @@ class AssistanceNeedService {
     }
 
     fun getAssistanceNeedsByChildId(db: Database.Connection, childId: UUID): List<AssistanceNeed> {
-        return db.transaction { getAssistanceNeedsByChild(it.handle, childId) }
+        return db.transaction { it.getAssistanceNeedsByChild(childId) }
     }
 
     fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
-            return db.transaction { updateAssistanceNeed(it.handle, user, id, data) }
+            return db.transaction { it.updateAssistanceNeed(user, id, data) }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
     }
 
     fun deleteAssistanceNeed(db: Database.Connection, id: UUID) {
-        db.transaction { deleteAssistanceNeed(it.handle, id) }
+        db.transaction { it.deleteAssistanceNeed(id) }
     }
 }

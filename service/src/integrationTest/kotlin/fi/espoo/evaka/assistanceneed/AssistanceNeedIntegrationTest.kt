@@ -12,7 +12,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.testChild_1
@@ -114,7 +113,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceNeeds = db.transaction { tx -> getAssistanceNeedsByChild(tx.handle, testChild_1.id) }
+        val assistanceNeeds = db.read { it.getAssistanceNeedsByChild(testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
         assertTrue(assistanceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
         assertTrue(assistanceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
@@ -170,7 +169,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceNeeds = db.transaction { tx -> getAssistanceNeedsByChild(tx.handle, testChild_1.id) }
+        val assistanceNeeds = db.read { it.getAssistanceNeedsByChild(testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
         assertTrue(assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(assistanceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -187,7 +186,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceNeeds = db.transaction { tx -> getAssistanceNeedsByChild(tx.handle, testChild_1.id) }
+        val assistanceNeeds = db.read { it.getAssistanceNeedsByChild(testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
         assertTrue(assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(assistanceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
