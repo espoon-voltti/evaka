@@ -99,8 +99,8 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
     }
 
     private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): UUID = db.transaction { tx ->
-        val id = tx.handle.createDaycare(location.care_area_id, location.name)
-        tx.handle.updateDaycare(
+        val id = tx.createDaycare(location.care_area_id, location.name)
+        tx.updateDaycare(
             id,
             DaycareFields(
                 name = location.name,

@@ -53,7 +53,7 @@ class DaycareController(
     fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
         Audit.UnitSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return ResponseEntity.ok(db.read { it.handle.getDaycares(acl.getAuthorizedDaycares(user)) })
+        return ResponseEntity.ok(db.read { it.getDaycares(acl.getAuthorizedDaycares(user)) })
     }
 
     @GetMapping("/{daycareId}")
@@ -65,7 +65,7 @@ class DaycareController(
         Audit.UnitRead.log(targetId = daycareId)
         val currentUserRoles = acl.getRolesForUnit(user, daycareId)
         currentUserRoles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return db.read { it.handle.getDaycare(daycareId) }
+        return db.read { it.getDaycare(daycareId) }
             ?.let { ResponseEntity.ok(DaycareResponse(it, currentUserRoles.roles)) } ?: ResponseEntity.notFound()
             .build()
     }
@@ -155,7 +155,7 @@ class DaycareController(
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.read {
-            val daycareStub = it.handle.getDaycareStub(daycareId)
+            val daycareStub = it.getDaycareStub(daycareId)
             ok(
                 CaretakersResponse(
                     caretakers = caretakerService.getCaretakers(it, groupId),
@@ -268,9 +268,9 @@ class DaycareController(
         fields.validate()
         return ResponseEntity.ok(
             db.transaction {
-                it.handle.updateDaycareManager(daycareId, fields.unitManager)
-                it.handle.updateDaycare(daycareId, fields)
-                it.handle.getDaycare(daycareId)!!
+                it.updateDaycareManager(daycareId, fields.unitManager)
+                it.updateDaycare(daycareId, fields)
+                it.getDaycare(daycareId)!!
             }
         )
     }
@@ -287,9 +287,9 @@ class DaycareController(
         return ResponseEntity.ok(
             CreateDaycareResponse(
                 db.transaction {
-                    val id = it.handle.createDaycare(fields.areaId, fields.name)
-                    it.handle.updateDaycareManager(id, fields.unitManager)
-                    it.handle.updateDaycare(id, fields)
+                    val id = it.createDaycare(fields.areaId, fields.name)
+                    it.updateDaycareManager(id, fields.unitManager)
+                    it.updateDaycare(id, fields)
                     id
                 }
             )

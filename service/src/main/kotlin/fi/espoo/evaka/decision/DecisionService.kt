@@ -74,7 +74,7 @@ class DecisionService(
             ?: error("Guardian not found with id: ${application.guardianId}")
         val child = personService.getUpToDatePerson(tx, user, application.childId)
             ?: error("Child not found with id: ${application.childId}")
-        val unitManager = tx.handle.getUnitManager(decision.unit.id)
+        val unitManager = tx.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
         val guardianDecisionURI = createAndUploadDecision(
             decision, application, guardian, child, decisionLanguage, unitManager

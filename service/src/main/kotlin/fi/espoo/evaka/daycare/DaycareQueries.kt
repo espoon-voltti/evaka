@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.utils.europeHelsinki
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -63,7 +62,7 @@ data class DaycareFields(
     }
 }
 
-private fun Handle.getDaycaresQuery() = createQuery(
+private fun Database.Read.getDaycaresQuery() = createQuery(
     // language=SQL
     """
 SELECT
@@ -82,7 +81,7 @@ WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
 """
 )
 
-fun Handle.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDaycaresQuery()
+fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDaycaresQuery()
     .bindNullable("idFilter", authorizedUnits.ids)
     .mapTo<Daycare>()
     .toList()
@@ -94,7 +93,7 @@ data class UnitApplyPeriods(
     val clubApplyPeriod: DateRange?
 )
 
-fun Handle.getUnitApplyPeriods(ids: Collection<UUID>): List<UnitApplyPeriods> = createQuery(
+fun Database.Read.getUnitApplyPeriods(ids: Collection<UUID>): List<UnitApplyPeriods> = createQuery(
     // language=SQL
     """
 SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
@@ -105,20 +104,20 @@ WHERE id = ANY(:ids)
     .mapTo<UnitApplyPeriods>()
     .toList()
 
-fun Handle.getDaycare(id: UUID): Daycare? = getDaycaresQuery()
+fun Database.Read.getDaycare(id: UUID): Daycare? = getDaycaresQuery()
     .bindNullable("idFilter", listOf(id))
     .mapTo<Daycare>()
     .asSequence()
     .firstOrNull()
 
-fun Handle.isValidDaycareId(id: UUID): Boolean = createQuery(
+fun Database.Read.isValidDaycareId(id: UUID): Boolean = createQuery(
     // language=SQL
     """
 SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
     """.trimIndent()
 ).bind("id", id).mapTo<Boolean>().asSequence().single()
 
-fun Handle.getDaycareStub(daycareId: UUID): UnitStub? = createQuery(
+fun Database.Read.getDaycareStub(daycareId: UUID): UnitStub? = createQuery(
     // language=SQL
     """
 SELECT id, name
@@ -131,7 +130,7 @@ WHERE id = :daycareId
     .asSequence()
     .firstOrNull()
 
-fun Handle.createDaycare(areaId: UUID, name: String): UUID = createUpdate(
+fun Database.Transaction.createDaycare(areaId: UUID, name: String): UUID = createUpdate(
     // language=SQL
     """
 WITH insert_manager AS (
@@ -149,7 +148,7 @@ FROM insert_manager
     .mapTo<UUID>()
     .one()
 
-fun Handle.updateDaycareManager(daycareId: UUID, manager: UnitManager) = createUpdate(
+fun Database.Transaction.updateDaycareManager(daycareId: UUID, manager: UnitManager) = createUpdate(
     // language=SQL
     """
 UPDATE unit_manager
@@ -164,7 +163,7 @@ WHERE id = (SELECT unit_manager_id FROM daycare WHERE id = :daycareId)
     .bindKotlin(manager)
     .execute()
 
-fun Handle.updateDaycare(id: UUID, fields: DaycareFields) = createUpdate(
+fun Database.Transaction.updateDaycare(id: UUID, fields: DaycareFields) = createUpdate(
     // language=SQL
     """
 UPDATE daycare
@@ -213,7 +212,7 @@ WHERE id = :id
     .bindKotlin(fields)
     .execute()
 
-fun Handle.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, shiftCare: Boolean?, onlyApplicable: Boolean): List<PublicUnit> {
+fun Database.Read.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, shiftCare: Boolean?, onlyApplicable: Boolean): List<PublicUnit> {
     // language=sql
     val sql = """
 SELECT
@@ -296,7 +295,7 @@ ORDER BY name ASC
         .toList()
 }
 
-fun Handle.getUnitManager(unitId: UUID): DaycareManager? = createQuery(
+fun Database.Read.getUnitManager(unitId: UUID): DaycareManager? = createQuery(
     // language=SQL
     """
     SELECT coalesce(m.name, '') AS name, coalesce(m.email, '') AS email, coalesce(m.phone, '') AS phone

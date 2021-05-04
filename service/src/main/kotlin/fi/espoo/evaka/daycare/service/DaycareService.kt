@@ -65,7 +65,7 @@ class DaycareService {
     }
 
     fun getDaycareGroups(tx: Database.Read, daycareId: UUID, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> {
-        if (!tx.handle.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
+        if (!tx.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
 
         return tx.getDaycareGroups(daycareId, startDate, endDate)
     }

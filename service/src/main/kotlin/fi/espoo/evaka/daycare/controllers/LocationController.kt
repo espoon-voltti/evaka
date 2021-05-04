@@ -40,7 +40,7 @@ class LocationController {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
     ): ResponseEntity<List<PublicUnit>> {
-        val units = db.read { it.handle.getApplicationUnits(type, date, shiftCare, onlyApplicable = user.isEndUser) }
+        val units = db.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = user.isEndUser) }
         return ResponseEntity.ok(units)
     }
 

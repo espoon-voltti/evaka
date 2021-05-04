@@ -129,7 +129,7 @@ class ApplicationStateService(
 
         if (!application.hideFromGuardian && application.type == ApplicationType.DAYCARE) {
             val preferredUnit =
-                tx.handle.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
+                tx.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
             if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
                 asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
@@ -557,7 +557,7 @@ class ApplicationStateService(
         if (unitIds.isEmpty()) {
             throw BadRequest("Must have at least one preferred unit")
         } else {
-            val daycares = tx.handle.getUnitApplyPeriods(unitIds.toSet())
+            val daycares = tx.getUnitApplyPeriods(unitIds.toSet())
             if (daycares.size < unitIds.toSet().size) {
                 throw BadRequest("Some unit was not found")
             }
