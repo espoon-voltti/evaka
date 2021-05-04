@@ -70,8 +70,8 @@ class UnitsView(private val acl: AccessControlList) {
             val backupCares = it.getBackupCaresForDaycare(unitId, period)
             val missingGroupPlacements = it.handle.getMissingGroupPlacements(unitId)
             val caretakers = Caretakers(
-                unitCaretakers = it.handle.getUnitStats(unitId, from, to),
-                groupCaretakers = it.handle.getGroupStats(unitId, from, to)
+                unitCaretakers = it.getUnitStats(unitId, from, to),
+                groupCaretakers = it.getGroupStats(unitId, from, to)
             )
 
             val basicData = UnitDataResponse(

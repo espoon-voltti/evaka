@@ -5,14 +5,14 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
 import java.util.UUID
 
-fun Handle.initCaretakers(groupId: UUID, startDate: LocalDate, amount: Double) {
+fun Database.Transaction.initCaretakers(groupId: UUID, startDate: LocalDate, amount: Double) {
     // language=SQL
     val sql = "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (:groupId, :startDate, :amount)"
 
@@ -23,7 +23,7 @@ fun Handle.initCaretakers(groupId: UUID, startDate: LocalDate, amount: Double) {
         .execute()
 }
 
-fun Handle.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Stats {
+fun Database.Read.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Stats {
     if (startDate.isBefore(endDate.minusYears(5))) {
         throw BadRequest("Too long time range")
     }
@@ -53,7 +53,7 @@ fun Handle.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate):
         .first()
 }
 
-fun Handle.getGroupStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Map<UUID, Stats> {
+fun Database.Read.getGroupStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Map<UUID, Stats> {
     // language=SQL
     val sql =
         """

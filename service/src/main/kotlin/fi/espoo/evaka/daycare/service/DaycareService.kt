@@ -30,10 +30,10 @@ class DaycareService {
         startDate: LocalDate,
         endDate: LocalDate
     ): DaycareCapacityStats {
-        val unitStats = tx.handle.getUnitStats(daycareId, startDate, endDate)
+        val unitStats = tx.getUnitStats(daycareId, startDate, endDate)
         return DaycareCapacityStats(
             unitTotalCaretakers = unitStats,
-            groupCaretakers = tx.handle.getGroupStats(daycareId, startDate, endDate)
+            groupCaretakers = tx.getGroupStats(daycareId, startDate, endDate)
         )
     }
 
@@ -44,7 +44,7 @@ class DaycareService {
         startDate: LocalDate,
         initialCaretakers: Double
     ): DaycareGroup = tx.handle.createDaycareGroup(daycareId, name, startDate).also {
-        tx.handle.initCaretakers(it.id, it.startDate, initialCaretakers)
+        tx.initCaretakers(it.id, it.startDate, initialCaretakers)
     }
 
     fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {

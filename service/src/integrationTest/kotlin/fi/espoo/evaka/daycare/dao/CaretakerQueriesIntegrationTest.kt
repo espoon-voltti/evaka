@@ -70,7 +70,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `test getGroupStats`() = db.transaction { tx ->
-        val groupStats = tx.handle.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+        val groupStats = tx.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(4, groupStats.keys.size)
         assertEquals(Stats(3.0, 5.0), groupStats.get(groupId1))
         assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
@@ -80,7 +80,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `test getGroupStats with limited range`() = db.transaction { tx ->
-        val groupStats = tx.handle.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
+        val groupStats = tx.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
         assertEquals(4, groupStats.keys.size)
         assertEquals(Stats(4.0, 5.0), groupStats.get(groupId1))
         assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
@@ -91,54 +91,54 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `test getGroupStats with limited range 2`() = db.transaction { tx ->
         val singleDate = LocalDate.of(2000, 2, 1)
-        val groupStats = tx.handle.getGroupStats(daycareId, singleDate, singleDate)
+        val groupStats = tx.getGroupStats(daycareId, singleDate, singleDate)
         assertEquals(Stats(3.0, 3.0), groupStats.get(groupId1))
     }
 
     @Test
     fun `test getGroupStats with limited range 3`() = db.transaction { tx ->
         val singleDate = LocalDate.of(2000, 2, 2)
-        val groupStats = tx.handle.getGroupStats(daycareId, singleDate, singleDate)
+        val groupStats = tx.getGroupStats(daycareId, singleDate, singleDate)
         assertEquals(Stats(5.0, 5.0), groupStats.get(groupId1))
     }
 
     @Test
     fun `test getUnitStats`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(Stats(9.0, 13.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with no groups`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+        val unitStats = tx.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(Stats(0.0, 0.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with limited range 1`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
         assertEquals(Stats(9.0, 10.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with limited range 2`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
         assertEquals(Stats(10.0, 10.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with limited range 3`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
         assertEquals(Stats(9.0, 9.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with long time range`() = db.transaction { tx ->
-        assertDoesNotThrow { tx.handle.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
+        assertDoesNotThrow { tx.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
     }
 
     @Test
     fun `test getUnitStats with too long time range`() = db.transaction { tx ->
-        assertThrows<BadRequest> { tx.handle.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 2)) }
+        assertThrows<BadRequest> { tx.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 2)) }
     }
 }
