@@ -23,7 +23,6 @@ import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
-  status,
   originalPreferredStartDate,
   type,
   formData,
@@ -123,12 +122,7 @@ export default React.memo(function PreferredStartSubSection({
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
           isValidDate={(date: LocalDate) =>
-            isValidPreferredStartDate(
-              date,
-              originalPreferredStartDate,
-              status,
-              type
-            )
+            isValidPreferredStartDate(date, originalPreferredStartDate, type)
           }
           data-qa={'preferredStartDate-input'}
           id={labelId}

@@ -19,10 +19,7 @@ import {
 } from '../../form-validation'
 import { ApplicationFormData } from '../../applications/editor/ApplicationFormData'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
-import {
-  ApplicationStatus,
-  ApplicationType
-} from 'lib-common/api-types/application/enums'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 import LocalDate from 'lib-common/local-date'
 import { DecisionType } from '../../decisions/types'
 
@@ -38,19 +35,9 @@ export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
 }
 
 const minPreferredStartDate = (
-  status: ApplicationStatus,
-  type: ApplicationType,
   originalPreferredStartDate: LocalDate | null
 ): LocalDate => {
-  if (status !== 'CREATED') {
-    return originalPreferredStartDate
-      ? originalPreferredStartDate
-      : LocalDate.today()
-  } else {
-    return type === 'DAYCARE'
-      ? LocalDate.today().addDays(14)
-      : LocalDate.today()
-  }
+  return originalPreferredStartDate ?? LocalDate.today()
 }
 
 const maxPreferredStartDate = (): LocalDate => {
@@ -69,14 +56,9 @@ const maxDecisionStartDate = (
 export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
-  status: ApplicationStatus,
   type: ApplicationType
 ): boolean => {
-  if (
-    date.isBefore(
-      minPreferredStartDate(status, type, originalPreferredStartDate)
-    )
-  )
+  if (date.isBefore(minPreferredStartDate(originalPreferredStartDate)))
     return false
 
   if (date.isAfter(maxPreferredStartDate())) return false
@@ -113,7 +95,6 @@ export const isValidDecisionStartDate = (
 
 const preferredStartDateValidator = (
   originalPreferredStartDate: LocalDate | null,
-  status: ApplicationStatus,
   type: ApplicationType
 ) => (
   val: string,
@@ -121,7 +102,7 @@ const preferredStartDateValidator = (
 ): ErrorKey | undefined => {
   const date = LocalDate.parseFiOrNull(val)
   return date &&
-    isValidPreferredStartDate(date, originalPreferredStartDate, status, type)
+    isValidPreferredStartDate(date, originalPreferredStartDate, type)
     ? undefined
     : err
 }
@@ -145,7 +126,6 @@ export const validateApplication = (
         validDate,
         preferredStartDateValidator(
           apiData.form.preferences.preferredStartDate,
-          apiData.status,
           apiData.type
         )
       ),

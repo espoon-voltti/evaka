@@ -36,6 +36,7 @@ import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
 import path from 'path'
 import { RequestLogger } from 'testcafe'
+import LocalDate from 'lib-common/local-date'
 
 const logger = RequestLogger(
   { url: /\/attachments\/[a-fA-F0-9-]+\/download$/, method: 'GET' },
@@ -213,7 +214,7 @@ test('Notification on transfer application is visible', async (t) => {
     .ok()
 })
 
-test('A validation warning is shown if preferred start date is not valid', async (t) => {
+test('A warning is shown if preferred start date is very soon', async (t) => {
   await t.useRole(enduserRole)
   await t.click(citizenHomePage.nav.applications)
   await citizenApplicationsPage.createApplication(
@@ -229,6 +230,31 @@ test('A validation warning is shown if preferred start date is not valid', async
   await citizenApplicationEditor.assertPreferredStartDateProcessingWarningIsShown(
     true
   )
+
+  await citizenApplicationEditor.setPreferredStartDate(
+    parse(
+      fullDaycareForm.form.serviceNeed.preferredStartDate,
+      'dd.MM.yyyy',
+      new Date()
+    )
+  )
+
+  await citizenApplicationEditor.assertPreferredStartDateInputInfo(false)
+})
+
+test('A validation error message is shown if preferred start date is not valid', async (t) => {
+  await t.useRole(enduserRole)
+  await t.click(citizenHomePage.nav.applications)
+  await citizenApplicationsPage.createApplication(
+    fixtures.enduserChildFixtureJari.id
+  )
+  await citizenNewApplicationPage.createApplication('DAYCARE')
+  applicationId = await citizenApplicationEditor.getApplicationId()
+
+  await citizenApplicationEditor.setPreferredStartDate(
+    LocalDate.today().addYears(2).toSystemTzDate()
+  )
+
   await citizenApplicationEditor.assertPreferredStartDateInputInfo(
     true,
     'Aloituspäivä ei ole sallittu'
@@ -243,6 +269,10 @@ test('A validation warning is shown if preferred start date is not valid', async
   )
 
   await citizenApplicationEditor.assertPreferredStartDateInputInfo(false)
+
+  await citizenApplicationEditor.assertPreferredStartDateProcessingWarningIsShown(
+    true
+  )
 })
 
 test('Citizen cannot move preferred start date before a previously selected date', async (t) => {
