@@ -33,7 +33,7 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     internal fun setUp() {
         db.transaction { tx ->
             tx.handle.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-            child = tx.handle.createChild(
+            child = tx.createChild(
                 Child(
                     id = childId,
                     additionalInformation = AdditionalInformation(

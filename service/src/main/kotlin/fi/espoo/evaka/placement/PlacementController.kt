@@ -108,8 +108,8 @@ class PlacementController(
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
         db.transaction { tx ->
-            if (tx.handle.getChild(body.childId) == null) {
-                tx.handle.createChild(
+            if (tx.getChild(body.childId) == null) {
+                tx.createChild(
                     Child(
                         id = body.childId,
                         additionalInformation = AdditionalInformation()

@@ -169,7 +169,7 @@ class ApplicationStateService(
             )
         }
 
-        tx.handle.upsertChild(
+        tx.upsertChild(
             Child(
                 id = application.childId,
                 additionalInformation = AdditionalInformation(

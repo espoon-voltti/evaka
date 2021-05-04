@@ -370,7 +370,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val childDetails = tx.handle.getChild(testChild_6.id)!!.additionalInformation
+            val childDetails = tx.getChild(testChild_6.id)!!.additionalInformation
             assertEquals("diet", childDetails.diet)
             assertEquals("allergies", childDetails.allergies)
         }

@@ -47,7 +47,7 @@ class ChildController(private val acl: AccessControlList) {
 }
 
 fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation {
-    val child = handle.getChild(childId)
+    val child = getChild(childId)
     return if (child != null) {
         AdditionalInformation(
             allergies = child.additionalInformation.allergies,
@@ -60,11 +60,11 @@ fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation
 }
 
 fun Database.Transaction.upsertAdditionalInformation(childId: UUID, data: AdditionalInformation) {
-    val child = handle.getChild(childId)
+    val child = getChild(childId)
     if (child != null) {
-        handle.updateChild(child.copy(additionalInformation = data))
+        updateChild(child.copy(additionalInformation = data))
     } else {
-        handle.createChild(
+        createChild(
             Child(
                 id = childId,
                 additionalInformation = data

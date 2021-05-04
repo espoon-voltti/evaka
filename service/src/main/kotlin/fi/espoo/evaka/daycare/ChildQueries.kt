@@ -5,11 +5,11 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.controllers.Child
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Handle.getChild(id: UUID): Child? {
+fun Database.Read.getChild(id: UUID): Child? {
     // language=SQL
     val sql = "SELECT * FROM child WHERE id = :id"
 
@@ -19,7 +19,7 @@ fun Handle.getChild(id: UUID): Child? {
         .firstOrNull()
 }
 
-fun Handle.createChild(child: Child): Child {
+fun Database.Transaction.createChild(child: Child): Child {
     // language=SQL
     val sql =
         "INSERT INTO child (id, allergies, diet, additionalinfo, medication) VALUES (:id, :allergies, :diet, :additionalInfo, :medication) RETURNING *"
@@ -34,7 +34,7 @@ fun Handle.createChild(child: Child): Child {
         .first()
 }
 
-fun Handle.upsertChild(child: Child) {
+fun Database.Transaction.upsertChild(child: Child) {
     // language=SQL
     val sql =
         """
@@ -49,7 +49,7 @@ fun Handle.upsertChild(child: Child) {
         .execute()
 }
 
-fun Handle.updateChild(child: Child) {
+fun Database.Transaction.updateChild(child: Child) {
     // language=SQL
     val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, preferred_name = :preferredName, medication = :medication WHERE id = :id"
 

@@ -26,7 +26,7 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
     internal fun setUp() {
         db.transaction { tx ->
             tx.handle.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-            child = tx.handle.createChild(
+            child = tx.createChild(
                 Child(
                     id = childId,
                     additionalInformation = AdditionalInformation(
@@ -46,7 +46,7 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `add and fetch child data`() {
-        val fetchedChild = db.transaction { it.handle.getChild(childId) }
+        val fetchedChild = db.transaction { it.getChild(childId) }
 
         assertEquals(child, fetchedChild)
     }
@@ -61,9 +61,9 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        db.transaction { it.handle.updateChild(updated) }
+        db.transaction { it.updateChild(updated) }
 
-        val actual = db.transaction { it.handle.getChild(childId) }
+        val actual = db.transaction { it.getChild(childId) }
         assertEquals(actual, updated)
     }
 }
