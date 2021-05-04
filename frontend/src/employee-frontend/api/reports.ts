@@ -52,13 +52,15 @@ export async function getApplicationsReport(
 }
 
 export async function getRawReport(
-  filters: PeriodFilters
+  filters: PeriodFilters,
+  useNewServiceNeeds: boolean
 ): Promise<Result<RawReportRow[]>> {
   return client
     .get<JsonOf<RawReportRow[]>>('/reports/raw', {
       params: {
         from: filters.from.formatIso(),
-        to: filters.to.formatIso()
+        to: filters.to.formatIso(),
+        useNewServiceNeeds
       }
     })
     .then((res) =>
@@ -266,7 +268,8 @@ export interface OccupancyReportFilters {
 }
 
 export async function getOccupanciesReport(
-  filters: OccupancyReportFilters
+  filters: OccupancyReportFilters,
+  useNewServiceNeeds: boolean
 ): Promise<Result<OccupancyReportRow[]>> {
   return client
     .get<JsonOf<OccupancyReportRow[]>>(
@@ -274,7 +277,8 @@ export async function getOccupanciesReport(
       {
         params: {
           ...filters,
-          type: filters.type.split('_')[1]
+          type: filters.type.split('_')[1],
+          useNewServiceNeeds
         }
       }
     )

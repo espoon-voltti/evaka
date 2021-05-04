@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { RawReportRow } from '../../types/reports'
@@ -16,6 +17,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { RequireRole } from '../../utils/roles'
 
 function Raw() {
   const { i18n } = useTranslation()
@@ -26,13 +28,14 @@ function Raw() {
   })
   const invertedRange = filters.to.isBefore(filters.from)
   const tooLongRange = filters.to.isAfter(filters.from.addDays(7))
+  const [useNewServiceNeeds, setUseNewServiceNeeds] = useState(false)
 
   useEffect(() => {
     setRows(Loading.of())
     if (!invertedRange && !tooLongRange) {
-      void getRawReport(filters).then(setRows)
+      void getRawReport(filters, useNewServiceNeeds).then(setRows)
     }
-  }, [filters])
+  }, [filters, invertedRange, tooLongRange, useNewServiceNeeds])
 
   const mapYesNo = (value: boolean | null | undefined) => {
     if (value === true) {
@@ -74,6 +77,16 @@ function Raw() {
             />
           </FlexRow>
         </FilterRow>
+
+        <RequireRole oneOf={['ADMIN']}>
+          <FilterRow>
+            <Checkbox
+              label="Käytä uusia palveluntarpeita"
+              checked={useNewServiceNeeds}
+              onChange={setUseNewServiceNeeds}
+            />
+          </FilterRow>
+        </RequireRole>
 
         {invertedRange ? (
           <span>Virheellinen aikaväli</span>
@@ -144,7 +157,6 @@ function Raw() {
                     { label: 'Osapäiväinen', key: 'partDay' },
                     { label: 'Osaviikkoinen', key: 'partWeek' },
                     { label: 'Vuorohoito', key: 'shiftCare' },
-                    { label: 'Valmistava', key: 'preparatory' },
                     { label: 'Tunteja viikossa', key: 'hoursPerWeek' },
                     { label: 'Tuentarve', key: 'hasAssistanceNeed' },
                     { label: 'Tuentarpeen kerroin', key: 'capacityFactor' },

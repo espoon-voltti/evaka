@@ -8,6 +8,8 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.util.UUID
 
+const val youngChildOccupancyCoefficient = "1.75"
+
 enum class OccupancyType {
     PLANNED,
     CONFIRMED,
@@ -152,8 +154,8 @@ private fun coefficients(excludeAbsent: Boolean, includeGroups: Boolean) =
             WHEN age IS NULL THEN 0.0
             WHEN placement_type IS NULL THEN 0.0
             ${if (excludeAbsent) "WHEN absent THEN 0.0" else ""}
-            WHEN is_family_unit THEN 1.75
-            WHEN age < 3 THEN 1.75
+            WHEN is_family_unit THEN $youngChildOccupancyCoefficient
+            WHEN age < 3 THEN $youngChildOccupancyCoefficient
             WHEN placement_type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND COALESCE(hours, 0.0) <= 20.0 THEN 0.5
             WHEN placement_type IN ('DAYCARE_FIVE_YEAR_OLDS', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS') AND hours <= 20 THEN 0.5
             WHEN placement_type IN ('DAYCARE_PART_TIME', 'TEMPORARY_DAYCARE_PART_DAY') THEN 0.54
@@ -208,8 +210,8 @@ private val plannedCoefficients =
         updated,
         coalesce(assistance_coefficient, 1.0) * (CASE
             WHEN age IS NULL THEN 0.0
-            WHEN is_family_unit THEN 1.75
-            WHEN age < 3 THEN 1.75
+            WHEN is_family_unit THEN $youngChildOccupancyCoefficient
+            WHEN age < 3 THEN $youngChildOccupancyCoefficient
             WHEN placement_type = 'DAYCARE_PART_TIME' AND (term_start_year - birth_year) = 5 THEN 0.5
             WHEN placement_type = 'DAYCARE_PART_TIME' THEN 0.54
             WHEN placement_type = 'PRESCHOOL' THEN 0.5
