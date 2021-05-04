@@ -97,6 +97,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(feeDecision.familySize, it.perheen_koko)
             assertEquals(testPeriod.start, it.alkamis_pvm)
             assertEquals(testPeriod.end, it.paattymis_pvm)
+            assertEquals("TestSystemCode", it.lahdejarjestelma)
         }
     }
 

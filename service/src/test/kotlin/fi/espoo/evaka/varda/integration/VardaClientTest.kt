@@ -41,6 +41,8 @@ class VardaClientTest {
     fun beforeAll() {
         `when`(env.getRequiredProperty("fi.espoo.integration.varda.url"))
             .thenReturn("https://example.com/mock-integration/varda/api")
+        `when`(env.getRequiredProperty("fi.espoo.integration.koski.source_system"))
+            .thenReturn("TestSystemCode")
 
         mockTokenProvider = MockVardaTokenProvider()
     }

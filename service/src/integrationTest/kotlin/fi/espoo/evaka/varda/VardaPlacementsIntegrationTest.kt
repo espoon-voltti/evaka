@@ -57,6 +57,9 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
 
         updatePlacements(db, vardaClient)
 
+        val payload = mockEndpoint.placements.values.first()
+        assertEquals("TestSystemCode", payload.sourceSystem)
+
         val result = getVardaPlacements(db)
         assertEquals(1, result.size)
         assertEquals(placementId, result.first().evakaPlacementId)

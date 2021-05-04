@@ -37,7 +37,7 @@ fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient)
 }
 
 fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
-    val newDecisions = db.read { getNewDecisions(it, client.getChildUrl) }
+    val newDecisions = db.read { getNewDecisions(it, client.getChildUrl, client.sourceSystem) }
     logger.info { "Varda: Creating ${newDecisions.size} new decisions" }
     newDecisions.forEach { (decisionId, newDecision) ->
         if (validateDecision(decisionId, newDecision)) {
@@ -59,7 +59,7 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
         }
     }
 
-    val newDerivedDecisions = db.read { getNewDerivedDecisions(it, client.getChildUrl) }
+    val newDerivedDecisions = db.read { getNewDerivedDecisions(it, client.getChildUrl, client.sourceSystem) }
     logger.info { "Varda: Creating ${newDerivedDecisions.size} new derived decisions" }
     newDerivedDecisions.forEach { (placementId, newDecision) ->
         if (validateDecision(placementId, newDecision)) {
@@ -81,7 +81,7 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
         }
     }
 
-    val newTemporaryDecisions = db.read { getNewTemporaryDecisions(it, client.getChildUrl) }
+    val newTemporaryDecisions = db.read { getNewTemporaryDecisions(it, client.getChildUrl, client.sourceSystem) }
     logger.info { "Varda: Creating ${newTemporaryDecisions.size} new temporary decisions" }
     newTemporaryDecisions.forEach { (placementId, newDecision) ->
         if (validateDecision(placementId, newDecision)) {
@@ -105,9 +105,9 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
 }
 
 fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
-    val updatedDecisions = db.read { getUpdatedDecisions(it, client.getChildUrl) }
-    val updatedDerivedDecisions = db.read { getUpdatedDerivedDecisions(it, client.getChildUrl) }
-    val updatedTemporaryDecisions = db.read { getUpdatedTemporaryDecisions(it, client.getChildUrl) }
+    val updatedDecisions = db.read { getUpdatedDecisions(it, client.getChildUrl, client.sourceSystem) }
+    val updatedDerivedDecisions = db.read { getUpdatedDerivedDecisions(it, client.getChildUrl, client.sourceSystem) }
+    val updatedTemporaryDecisions = db.read { getUpdatedTemporaryDecisions(it, client.getChildUrl, client.sourceSystem) }
     val decisionIds =
         updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first } + updatedTemporaryDecisions.map { it.first }
     cleanUpDecisionRelatedData(db, client, decisionIds)
@@ -254,7 +254,7 @@ JOIN LATERAL (
 ) latest_sn ON TRUE
     """.trimIndent()
 
-private fun getNewDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
+private fun getNewDecisions(tx: Database.Read, getChildUrl: (Long) -> String, sourceSystem: String): List<Pair<UUID, VardaDecision>> {
     val sql =
         """
 $decisionQueryBase
@@ -263,7 +263,7 @@ WHERE vd.id IS NULL
 
     return tx.createQuery(sql)
         .bind("decisionTypes", vardaDecisionTypes)
-        .map(toVardaDecisionWithDecisionId(getChildUrl))
+        .map(toVardaDecisionWithDecisionId(getChildUrl, sourceSystem))
         .toList()
 }
 
@@ -299,7 +299,8 @@ INSERT INTO varda_decision (
 
 private fun getUpdatedDecisions(
     tx: Database.Read,
-    getChildUrl: (Long) -> String
+    getChildUrl: (Long) -> String,
+    sourceSystem: String
 ): List<Triple<UUID, Long, VardaDecision>> {
     val sql =
         """
@@ -309,7 +310,7 @@ WHERE vd.uploaded_at < greatest(latest_sn.updated, d.updated, first_placement.up
 
     return tx.createQuery(sql)
         .bind("decisionTypes", vardaDecisionTypes)
-        .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
+        .map(toVardaDecisionWithIdAndVardaId(getChildUrl, sourceSystem))
         .toList()
 }
 
@@ -397,7 +398,7 @@ JOIN LATERAL (
 ) sn ON true
     """.trimIndent()
 
-private fun getNewDerivedDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
+private fun getNewDerivedDecisions(tx: Database.Read, getChildUrl: (Long) -> String, sourceSystem: String): List<Pair<UUID, VardaDecision>> {
     val sql =
         """
 $derivedDecisionQueryBase
@@ -406,13 +407,14 @@ WHERE vd.id IS NULL
 
     return tx.createQuery(sql)
         .bind("placementTypes", vardaPlacementTypes)
-        .map(toVardaDecisionWithDecisionId(getChildUrl))
+        .map(toVardaDecisionWithDecisionId(getChildUrl, sourceSystem))
         .toList()
 }
 
 private fun getUpdatedDerivedDecisions(
     tx: Database.Read,
-    getChildUrl: (Long) -> String
+    getChildUrl: (Long) -> String,
+    sourceSystem: String
 ): List<Triple<UUID, Long, VardaDecision>> {
     val sql =
         """
@@ -422,7 +424,7 @@ WHERE vd.uploaded_at < greatest(latest_sn.updated, p.updated)
 
     return tx.createQuery(sql)
         .bind("placementTypes", vardaPlacementTypes)
-        .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
+        .map(toVardaDecisionWithIdAndVardaId(getChildUrl, sourceSystem))
         .toList()
 }
 
@@ -467,7 +469,8 @@ AND d.evaka_id IS NULL
 
 private fun getNewTemporaryDecisions(
     tx: Database.Read,
-    getChildUrl: (Long) -> String
+    getChildUrl: (Long) -> String,
+    sourceSystem: String
 ): List<Pair<UUID, VardaDecision>> {
     val sql =
         """
@@ -477,13 +480,14 @@ WHERE vd.id IS NULL
 
     return tx.createQuery(sql)
         .bind("temporaryPlacementTypes", vardaTemporaryPlacementTypes)
-        .map(toVardaDecisionWithDecisionId(getChildUrl))
+        .map(toVardaDecisionWithDecisionId(getChildUrl, sourceSystem))
         .toList()
 }
 
 private fun getUpdatedTemporaryDecisions(
     tx: Database.Read,
-    getChildUrl: (Long) -> String
+    getChildUrl: (Long) -> String,
+    sourceSystem: String
 ): List<Triple<UUID, Long, VardaDecision>> {
     val sql =
         """
@@ -493,7 +497,7 @@ WHERE vd.uploaded_at < greatest(sn.updated, p.updated)
 
     return tx.createQuery(sql)
         .bind("temporaryPlacementTypes", vardaTemporaryPlacementTypes)
-        .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
+        .map(toVardaDecisionWithIdAndVardaId(getChildUrl, sourceSystem))
         .toList()
 }
 
@@ -552,7 +556,9 @@ data class VardaDecision(
     @JsonProperty("vuorohoito_kytkin")
     val shiftCare: Boolean,
     @JsonProperty("jarjestamismuoto_koodi")
-    val providerTypeCode: String
+    val providerTypeCode: String,
+    @JsonProperty("lahdejarjestelma")
+    val sourceSystem: String
 ) {
     @JsonProperty("kokopaivainen_vaka_kytkin")
     val fullDay: Boolean = hoursPerWeek >= 25
@@ -572,19 +578,19 @@ data class VardaDecisionTableRow(
     val uploadedAt: Instant
 )
 
-private fun toVardaDecisionWithDecisionId(getChildUrl: (Long) -> String): (ResultSet, StatementContext) -> Pair<UUID, VardaDecision> =
-    { rs, _ -> rs.getUUID("evaka_id") to toVardaDecision(rs, getChildUrl) }
+private fun toVardaDecisionWithDecisionId(getChildUrl: (Long) -> String, sourceSystem: String): (ResultSet, StatementContext) -> Pair<UUID, VardaDecision> =
+    { rs, _ -> rs.getUUID("evaka_id") to toVardaDecision(rs, getChildUrl, sourceSystem) }
 
-private fun toVardaDecisionWithIdAndVardaId(getChildUrl: (Long) -> String): (ResultSet, StatementContext) -> Triple<UUID, Long, VardaDecision> =
+private fun toVardaDecisionWithIdAndVardaId(getChildUrl: (Long) -> String, sourceSystem: String): (ResultSet, StatementContext) -> Triple<UUID, Long, VardaDecision> =
     { rs, _ ->
         Triple(
             rs.getUUID("id"),
             rs.getLong("varda_decision_id"),
-            toVardaDecision(rs, getChildUrl)
+            toVardaDecision(rs, getChildUrl, sourceSystem)
         )
     }
 
-private fun toVardaDecision(rs: ResultSet, getChildUrl: (Long) -> String) = VardaDecision(
+private fun toVardaDecision(rs: ResultSet, getChildUrl: (Long) -> String, sourceSystem: String) = VardaDecision(
     childUrl = getChildUrl(rs.getLong("varda_child_id")),
     applicationDate = rs.getDate("application_date").toLocalDate(),
     startDate = rs.getDate("start_date").toLocalDate(),
@@ -594,7 +600,8 @@ private fun toVardaDecision(rs: ResultSet, getChildUrl: (Long) -> String) = Vard
     temporary = rs.getBoolean("temporary"),
     daily = rs.getBoolean("daily"),
     shiftCare = rs.getBoolean("shift_care"),
-    providerTypeCode = rs.getEnum<VardaUnitProviderType>("provider_type").vardaCode
+    providerTypeCode = rs.getEnum<VardaUnitProviderType>("provider_type").vardaCode,
+    sourceSystem = sourceSystem
 )
 
 val toVardaDecisionRow: (ResultSet, StatementContext) -> VardaDecisionTableRow = { rs, _ ->
