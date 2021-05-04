@@ -559,7 +559,7 @@ private fun Database.Read.getPaidPlacements(
         val placements = getActivePaidPlacements(child.id, from)
         if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PermanentPlacementWithHours>>()
 
-        val serviceNeeds = getServiceNeedsByChildDuringPeriod(handle, child.id, from, null)
+        val serviceNeeds = getServiceNeedsByChildDuringPeriod(child.id, from, null)
         val placementsWithServiceNeeds = addServiceNeedsToPlacements(placements, serviceNeeds)
 
         child to placementsWithServiceNeeds

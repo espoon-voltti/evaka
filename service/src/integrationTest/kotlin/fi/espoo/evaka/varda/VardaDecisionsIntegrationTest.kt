@@ -408,7 +408,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val beforeDelete = getVardaDecisions()
         assertEquals(1, beforeDelete.size)
 
-        db.transaction { deleteServiceNeed(it.handle, serviceNeedId) }
+        db.transaction { it.deleteServiceNeed(serviceNeedId) }
         updateDecisions(db, vardaClient)
         val result = getVardaDecisions()
         assertEquals(0, result.size)
