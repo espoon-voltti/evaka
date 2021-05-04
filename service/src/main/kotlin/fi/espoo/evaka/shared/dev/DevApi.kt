@@ -354,7 +354,7 @@ class DevApi(
 
     @PostMapping("/invoices")
     fun createInvoices(db: Database, @RequestBody invoices: List<Invoice>): ResponseEntity<Unit> {
-        db.transaction { tx -> insertInvoices(invoices)(tx.handle) }
+        db.transaction { tx -> tx.upsertInvoices(invoices) }
         return ResponseEntity.noContent().build()
     }
 
@@ -1047,10 +1047,6 @@ fun Handle.deleteChild(id: UUID) {
     execute("DELETE FROM backup_care WHERE child_id = ?", id)
     execute("DELETE FROM placement WHERE child_id = ?", id)
     execute("DELETE FROM child WHERE id = ?", id)
-}
-
-fun insertInvoices(invoices: List<Invoice>) = { h: Handle ->
-    upsertInvoices(h, invoices)
 }
 
 fun Handle.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)

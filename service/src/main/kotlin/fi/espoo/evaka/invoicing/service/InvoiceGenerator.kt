@@ -75,8 +75,8 @@ fun Database.Transaction.createAllDraftInvoices(objectMapper: ObjectMapper, peri
             freeChildren
         )
 
-    deleteDraftInvoicesByPeriod(handle, period)
-    upsertInvoices(handle, invoices)
+    deleteDraftInvoicesByPeriod(period)
+    upsertInvoices(invoices)
 }
 
 internal fun generateDraftInvoices(
