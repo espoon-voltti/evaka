@@ -26,6 +26,7 @@ import { useTranslation } from '../localization'
 import { mapViewBreakpoint, MobileMode } from '../map/const'
 import SearchInput from '../map/SearchInput'
 import { CareTypeOption, MapAddress, ProviderTypeOption } from '../map/MapView'
+import { featureFlags } from 'lib-customizations/citizen'
 
 type Props = {
   allUnits: Result<PublicUnit[]>
@@ -90,12 +91,14 @@ export default React.memo(function SearchSection({
             label={t.map.careTypes.DAYCARE}
             onChange={() => setCareType('DAYCARE')}
           />
-          <Radio
-            data-qa="map-filter-preschool"
-            checked={careType === 'PRESCHOOL'}
-            label={t.map.careTypes.PRESCHOOL}
-            onChange={() => setCareType('PRESCHOOL')}
+          {featureFlags.preschoolEnabled === true && (
+            <Radio
+              data-qa="map-filter-preschool"
+              checked={careType === 'PRESCHOOL'}
+              label={t.map.careTypes.PRESCHOOL}
+              onChange={() => setCareType('PRESCHOOL')}
           />
+          )}
           <Radio
             data-qa="map-filter-club"
             checked={careType === 'CLUB'}

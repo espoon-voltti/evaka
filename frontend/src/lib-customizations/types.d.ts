@@ -46,6 +46,7 @@ interface MapConfig {
 
 interface FeatureFlags {
   urgencyAttachmentsEnabled: boolean
+  preschoolEnabled: boolean
 }
 
 export interface EmployeeCustomizations {

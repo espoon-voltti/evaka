@@ -25,6 +25,7 @@ import { ApplicationType } from 'lib-common/api-types/application/enums'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import Footer from '../Footer'
 import useTitle from '../useTitle'
+import { featureFlags } from 'lib-customizations/citizen'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()
@@ -88,21 +89,25 @@ export default React.memo(function ApplicationCreation() {
             />
           </ExpandingInfo>
           <Gap size="s" />
-          <ExpandingInfo
-            info={t.applications.creation.preschoolInfo}
-            ariaLabel={t.common.openExpandingInfo}
-          >
-            <Radio
-              checked={selectedType === 'PRESCHOOL'}
-              onChange={() => setSelectedType('PRESCHOOL')}
-              label={t.applications.creation.preschoolLabel}
-              data-qa="type-radio-PRESCHOOL"
-            />
-          </ExpandingInfo>
-          <PreschoolDaycareInfo>
-            {t.applications.creation.preschoolDaycareInfo}
-          </PreschoolDaycareInfo>
-          <Gap size="s" />
+          {featureFlags.preschoolEnabled === true && (
+            <>
+            <ExpandingInfo
+              info={t.applications.creation.preschoolInfo}
+              ariaLabel={t.common.openExpandingInfo}
+            >
+              <Radio
+                checked={selectedType === 'PRESCHOOL'}
+                onChange={() => setSelectedType('PRESCHOOL')}
+                label={t.applications.creation.preschoolLabel}
+                data-qa="type-radio-PRESCHOOL"
+              />
+            </ExpandingInfo>
+            <PreschoolDaycareInfo>
+              {t.applications.creation.preschoolDaycareInfo}
+            </PreschoolDaycareInfo>
+            <Gap size="s" />
+            </>
+          )}
           <ExpandingInfo
             info={t.applications.creation.clubInfo}
             ariaLabel={t.common.openExpandingInfo}
