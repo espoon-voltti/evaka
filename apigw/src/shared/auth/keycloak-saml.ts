@@ -11,8 +11,12 @@ import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
 import { evakaSamlConfig } from '../config'
 import fs from 'fs'
+import { RedisClient } from 'redis'
+import redisCacheProvider from './passport-saml-cache-redis'
 
-export default function createKeycloakSamlStrategy(): SamlStrategy {
+export default function createKeycloakSamlStrategy(
+  redisClient?: RedisClient
+): SamlStrategy {
   if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
   const publicCert = fs.readFileSync(evakaSamlConfig.publicCert, {
     encoding: 'utf8'
@@ -24,15 +28,19 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
     {
       acceptedClockSkewMs: 0,
       audience: evakaSamlConfig.issuer,
+      cacheProvider: redisClient
+        ? redisCacheProvider(redisClient, { keyPrefix: 'keycloak-saml-resp:' })
+        : undefined,
       callbackUrl: evakaSamlConfig.callbackUrl,
       cert: publicCert,
       decryptionPvk: privateCert,
       entryPoint: evakaSamlConfig.entryPoint,
       identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-      issuer: 'evaka',
+      issuer: evakaSamlConfig.issuer,
       logoutUrl: evakaSamlConfig.entryPoint,
       privateCert: privateCert,
-      signatureAlgorithm: 'sha256'
+      signatureAlgorithm: 'sha256',
+      validateInResponseTo: true
     },
     (profile: Profile, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -9,6 +9,8 @@ import { sfiConfig, sfiMock } from '../config'
 import certificates from '../certificates'
 import fs from 'fs'
 import { getOrCreatePerson } from '../service-client'
+import redisCacheProvider from './passport-saml-cache-redis'
+import { RedisClient } from 'redis'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -52,7 +54,9 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
     sessionIndex: profile.sessionIndex
   }
 }
-export default function createSuomiFiStrategy(): Strategy | DummyStrategy {
+export default function createSuomiFiStrategy(
+  redisClient?: RedisClient
+): Strategy | DummyStrategy {
   if (sfiMock) {
     return new DummyStrategy((done) => {
       verifyProfile(dummySuomiFiProfile)
@@ -68,6 +72,11 @@ export default function createSuomiFiStrategy(): Strategy | DummyStrategy {
       {
         acceptedClockSkewMs: 0,
         audience: sfiConfig.issuer,
+        cacheProvider: redisClient
+          ? redisCacheProvider(redisClient, {
+              keyPrefix: 'suomifi-saml-resp:'
+            })
+          : undefined,
         callbackUrl: sfiConfig.callbackUrl,
         cert: sfiConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
@@ -79,7 +88,8 @@ export default function createSuomiFiStrategy(): Strategy | DummyStrategy {
         issuer: sfiConfig.issuer,
         logoutUrl: sfiConfig.logoutUrl,
         privateCert: privateCert,
-        signatureAlgorithm: 'sha256'
+        signatureAlgorithm: 'sha256',
+        validateInResponseTo: true
       },
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

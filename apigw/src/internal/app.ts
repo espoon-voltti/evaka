@@ -6,8 +6,18 @@ import express from 'express'
 import { Router } from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import setupLoggingMiddleware from '../shared/logging'
-import { cookieSecret, enableDevApi } from '../shared/config'
+import redis from 'redis'
+import setupLoggingMiddleware, { logError } from '../shared/logging'
+import {
+  cookieSecret,
+  enableDevApi,
+  nodeEnv,
+  redisDisableSecurity,
+  redisHost,
+  redisPassword,
+  redisPort,
+  redisTlsServerName
+} from '../shared/config'
 import { errorHandler } from '../shared/middleware/error-handler'
 import csp from '../shared/routes/csp'
 import { requireAuthentication } from '../shared/auth'
@@ -59,6 +69,27 @@ function scheduledApiRouter() {
 }
 
 function internalApiRouter() {
+  const redisClient =
+    nodeEnv !== 'test'
+      ? redis.createClient({
+          host: redisHost,
+          port: redisPort,
+          ...(!redisDisableSecurity && {
+            tls: { servername: redisTlsServerName },
+            password: redisPassword
+          })
+        })
+      : undefined
+
+  if (redisClient) {
+    redisClient.on('error', (err) =>
+      logError('Redis error', undefined, undefined, err)
+    )
+
+    // don't prevent the app from exiting if a redis connection is alive
+    redisClient.unref()
+  }
+
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
   router.all('/system/*', (req, res) => res.sendStatus(404))
@@ -73,7 +104,7 @@ function internalApiRouter() {
   router.use(
     createSamlRouter({
       strategyName: 'ead',
-      strategy: createAdSamlStrategy(),
+      strategy: createAdSamlStrategy(redisClient),
       sessionType: 'employee',
       pathIdentifier: 'saml'
     })
@@ -82,7 +113,7 @@ function internalApiRouter() {
   router.use(
     createSamlRouter({
       strategyName: 'evaka',
-      strategy: createEvakaSamlStrategy(),
+      strategy: createEvakaSamlStrategy(redisClient),
       sessionType: 'employee',
       pathIdentifier: 'evaka'
     })
