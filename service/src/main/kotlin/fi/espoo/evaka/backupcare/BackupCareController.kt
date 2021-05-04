@@ -32,7 +32,7 @@ class BackupCareController(private val acl: AccessControlList) {
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        val backupCares = db.read { it.handle.getBackupCaresForChild(childId) }
+        val backupCares = db.read { it.getBackupCaresForChild(childId) }
         return ResponseEntity.ok(ChildBackupCaresResponse(backupCares))
     }
 
@@ -45,7 +45,7 @@ class BackupCareController(private val acl: AccessControlList) {
     ): ResponseEntity<BackupCareCreateResponse> {
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         try {
-            val id = db.transaction { it.handle.createBackupCare(childId, body) }
+            val id = db.transaction { it.createBackupCare(childId, body) }
             return ResponseEntity.ok(BackupCareCreateResponse(id))
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -61,7 +61,7 @@ class BackupCareController(private val acl: AccessControlList) {
     ): ResponseEntity<Unit> {
         acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         try {
-            db.transaction { it.handle.updateBackupCare(backupCareId, body.period, body.groupId) }
+            db.transaction { it.updateBackupCare(backupCareId, body.period, body.groupId) }
             return ResponseEntity.noContent().build()
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -75,7 +75,7 @@ class BackupCareController(private val acl: AccessControlList) {
         @PathVariable("id") backupCareId: UUID
     ): ResponseEntity<Unit> {
         acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        db.transaction { it.handle.deleteBackupCare(backupCareId) }
+        db.transaction { it.deleteBackupCare(backupCareId) }
         return ResponseEntity.noContent().build()
     }
 
@@ -89,7 +89,7 @@ class BackupCareController(private val acl: AccessControlList) {
     ): ResponseEntity<UnitBackupCaresResponse> {
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-        val backupCares = db.read { it.handle.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) }
+        val backupCares = db.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) }
         return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
     }
 }
