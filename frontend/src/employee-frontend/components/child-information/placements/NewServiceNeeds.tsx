@@ -49,6 +49,8 @@ function NewServiceNeeds({ placement, reload }: Props) {
       (opt) => opt.validPlacementType === placementType && !opt.defaultOption
     ) === undefined
   ) {
+    // only default option exists so service needs are not relevant
+    // and do not need to be rendered
     return null
   }
 

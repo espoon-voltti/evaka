@@ -41,7 +41,7 @@ function MissingServiceNeedRow({
       </InfoTd>
       <Td />
       <Td />
-      <Td style={{ textAlign: 'right' }}>
+      <Td align="right">
         <InlineButton
           onClick={onEdit}
           text={t.addNewBtn}
