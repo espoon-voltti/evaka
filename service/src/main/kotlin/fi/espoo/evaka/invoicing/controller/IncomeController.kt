@@ -48,7 +48,7 @@ class IncomeController(
         val parsedId = personId?.let { parseUUID(personId) }
             ?: throw BadRequest("Query parameter personId is mandatory")
 
-        val incomes = db.read { getIncomesForPerson(it.handle, mapper, parsedId) }
+        val incomes = db.read { it.getIncomesForPerson(mapper, parsedId) }
         return ResponseEntity.ok(Wrapper(incomes))
     }
 
@@ -67,8 +67,8 @@ class IncomeController(
         val id = db.transaction { tx ->
             val id = UUID.randomUUID()
             val validIncome = income.copy(id = id).let(::validateIncome)
-            splitEarlierIncome(tx.handle, validIncome.personId, period)
-            upsertIncome(tx.handle, mapper, validIncome, user.id)
+            tx.splitEarlierIncome(validIncome.personId, period)
+            tx.upsertIncome(mapper, validIncome, user.id)
             asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
             id
         }
@@ -88,9 +88,9 @@ class IncomeController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
-            val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))
+            val existing = tx.getIncome(mapper, parseUUID(incomeId))
             val validIncome = income.copy(id = parseUUID(incomeId)).let(::validateIncome)
-            upsertIncome(tx.handle, mapper, validIncome, user.id)
+            tx.upsertIncome(mapper, validIncome, user.id)
 
             val expandedPeriod = existing?.let {
                 DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
@@ -112,11 +112,11 @@ class IncomeController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
-            val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))
+            val existing = tx.getIncome(mapper, parseUUID(incomeId))
                 ?: throw BadRequest("Income not found")
             val period = DateRange(existing.validFrom, existing.validTo)
 
-            deleteIncome(tx.handle, parseUUID(incomeId))
+            tx.deleteIncome(parseUUID(incomeId))
 
             asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(existing.personId, period.start, period.end)))
         }

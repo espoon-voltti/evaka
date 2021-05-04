@@ -8,16 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUID) {
+fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, updatedBy: UUID) {
     val sql =
         """
         INSERT INTO income (
@@ -58,7 +58,7 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
             updated_by = :updated_by
     """
 
-    val update = h.createUpdate(sql)
+    val update = createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to income.id,
@@ -81,8 +81,8 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
     handlingExceptions { update.execute() }
 }
 
-fun getIncome(h: Handle, mapper: ObjectMapper, id: UUID): Income? {
-    return h.createQuery(
+fun Database.Read.getIncome(mapper: ObjectMapper, id: UUID): Income? {
+    return createQuery(
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
         FROM income
@@ -95,7 +95,7 @@ fun getIncome(h: Handle, mapper: ObjectMapper, id: UUID): Income? {
         .firstOrNull()
 }
 
-fun getIncomesForPerson(h: Handle, mapper: ObjectMapper, personId: UUID, validAt: LocalDate? = null): List<Income> {
+fun Database.Read.getIncomesForPerson(mapper: ObjectMapper, personId: UUID, validAt: LocalDate? = null): List<Income> {
     val sql =
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -106,14 +106,14 @@ fun getIncomesForPerson(h: Handle, mapper: ObjectMapper, personId: UUID, validAt
         ORDER BY valid_from DESC
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("personId", personId)
         .bindNullable("validAt", validAt)
         .map(toIncome(mapper))
         .toList()
 }
 
-fun getIncomesFrom(h: Handle, mapper: ObjectMapper, personIds: List<UUID>, from: LocalDate): List<Income> {
+fun Database.Read.getIncomesFrom(mapper: ObjectMapper, personIds: List<UUID>, from: LocalDate): List<Income> {
     val sql =
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -124,21 +124,21 @@ fun getIncomesFrom(h: Handle, mapper: ObjectMapper, personIds: List<UUID>, from:
             AND (valid_to IS NULL OR valid_to >= :from)
         """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("personIds", personIds.toTypedArray())
         .bind("from", from)
         .map(toIncome(mapper))
         .toList()
 }
 
-fun deleteIncome(h: Handle, incomeId: UUID) {
-    val update = h.createUpdate("DELETE FROM income WHERE id = :id")
+fun Database.Transaction.deleteIncome(incomeId: UUID) {
+    val update = createUpdate("DELETE FROM income WHERE id = :id")
         .bind("id", incomeId)
 
     handlingExceptions { update.execute() }
 }
 
-fun splitEarlierIncome(h: Handle, personId: UUID, period: DateRange) {
+fun Database.Transaction.splitEarlierIncome(personId: UUID, period: DateRange) {
     val sql =
         """
         UPDATE income
@@ -149,7 +149,7 @@ fun splitEarlierIncome(h: Handle, personId: UUID, period: DateRange) {
             AND valid_to IS NULL
         """
 
-    val update = h.createUpdate(sql)
+    val update = createUpdate(sql)
         .bind("personId", personId)
         .bind("newValidTo", period.start.minusDays(1))
         .bind("from", period.start)

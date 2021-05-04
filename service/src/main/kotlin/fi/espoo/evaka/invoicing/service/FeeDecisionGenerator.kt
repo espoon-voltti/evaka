@@ -50,7 +50,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges2(
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
     val prices = getPricing(handle, from)
-    val incomes = getIncomesFrom(handle, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 

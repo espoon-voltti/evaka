@@ -625,7 +625,7 @@
          !residenceCode1.isNullOrBlank() && !residenceCode2.isNullOrBlank() && residenceCode1 == residenceCode2
 
      private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails, validFrom: LocalDate) {
-         val incomes = getIncomesForPerson(tx.handle, mapper, application.guardianId)
+         val incomes = tx.getIncomesForPerson(mapper, application.guardianId)
 
          val hasOverlappingDefiniteIncome = incomes.any { income ->
              income.validTo != null &&
@@ -650,8 +650,8 @@
                  validTo = null,
                  applicationId = application.id
              ).let(::validateIncome)
-             splitEarlierIncome(tx.handle, validIncome.personId, period)
-             upsertIncome(tx.handle, mapper, validIncome, application.guardianId)
+             tx.splitEarlierIncome(validIncome.personId, period)
+             tx.upsertIncome(mapper, validIncome, application.guardianId)
              asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
          }
      }

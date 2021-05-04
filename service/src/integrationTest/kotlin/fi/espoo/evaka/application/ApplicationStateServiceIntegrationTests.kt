@@ -1246,7 +1246,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertEquals(applicationId, incomes.first().applicationId)
@@ -1267,7 +1267,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, earlierIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1285,7 +1285,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(2, incomes.size)
             assertEquals(applicationId, incomes.first().applicationId)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
@@ -1307,7 +1307,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1325,7 +1325,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1347,7 +1347,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
+            tx.upsertIncome(mapper, laterIndefiniteIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1365,7 +1365,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1387,7 +1387,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(7),
                 validTo = mainPeriod.start.minusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1405,7 +1405,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             val incomeByApplication = incomes.first()
@@ -1429,7 +1429,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = mainPeriod.start.plusMonths(6)
             )
-            upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
+            tx.upsertIncome(mapper, laterIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1447,7 +1447,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1469,7 +1469,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, earlierIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions(preferredStartDate = null)
 
@@ -1487,7 +1487,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
         }
@@ -1507,7 +1507,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start,
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, sameDayIncomeIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1525,7 +1525,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
@@ -1546,7 +1546,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start,
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
+            tx.upsertIncome(mapper, sameDayIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1564,7 +1564,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1586,7 +1586,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, dayBeforeIncomeIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1604,7 +1604,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             assertEquals(application.id, incomes.first().applicationId)
@@ -1627,7 +1627,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusDays(1),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, nextDayIncomeIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1645,7 +1645,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1667,7 +1667,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
+            tx.upsertIncome(mapper, incomeDayBefore, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1685,7 +1685,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1707,7 +1707,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start
             )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnSameDay, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1725,7 +1725,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1747,7 +1747,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.plusDays(1)
             )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnNextDay, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1765,7 +1765,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1787,7 +1787,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.minusDays(1)
             )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1805,7 +1805,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
