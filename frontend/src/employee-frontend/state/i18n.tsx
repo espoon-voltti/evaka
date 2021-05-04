@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext, useContext } from 'react'
-import { translations } from '../assets/i18n'
-import type { Lang, Translations } from '../assets/i18n'
+import { translations } from 'lib-customizations/employee'
+import type { Lang, Translations } from 'lib-customizations/employee'
 
 interface I18nState {
   lang: Lang

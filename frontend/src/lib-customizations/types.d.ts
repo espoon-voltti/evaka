@@ -3,6 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
+import {
+  Lang as LangEmployee,
+  Translations as TranslationsEmployee
+} from './employee'
+
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? DeepPartial<U>[]
+    : T[P] extends Readonly<infer U>[]
+    ? Readonly<DeepPartial<U>>[]
+    : DeepPartial<T[P]>
+}
 
 export interface CitizenCustomizations {
   fiCustomizations: CitizenLocalizations
@@ -45,6 +57,7 @@ interface FeatureFlags {
 }
 
 export interface EmployeeCustomizations {
+  translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
   cityLogo: {
     src: string
     alt: string

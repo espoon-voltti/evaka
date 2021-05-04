@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { translations } from '../../assets/i18n'
+import { translations } from 'lib-customizations/employee'
 import { DayOfWeek } from '../../types'
 
 export function getRange(num: number) {

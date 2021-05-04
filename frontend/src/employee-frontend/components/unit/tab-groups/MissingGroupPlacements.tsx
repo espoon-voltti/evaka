@@ -13,7 +13,7 @@ import { useTranslation } from '../../../state/i18n'
 import { DaycareGroup } from '../../../types/unit'
 import GroupPlacementModal from '../../../components/unit/tab-groups/missing-group-placements/GroupPlacementModal'
 import { UIContext } from '../../../state/ui'
-import { Translations } from '../../../assets/i18n'
+import { Translations } from 'lib-customizations/employee'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
   careTypesFromPlacementType

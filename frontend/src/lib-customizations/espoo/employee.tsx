@@ -7,6 +7,9 @@ import EspooLogo from './EspooLogo.png'
 import featureFlags from './featureFlags'
 
 const customizations: EmployeeCustomizations = {
+  translations: {
+    fi: {}
+  },
   cityLogo: {
     src: EspooLogo,
     alt: 'Espoo Logo'
