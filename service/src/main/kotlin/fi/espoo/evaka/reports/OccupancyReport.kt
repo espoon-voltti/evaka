@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.getSql
+import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -456,8 +457,8 @@ WHERE sn.placement_id = ANY(:placementIds)
             ?: error("No date of birth found for child ${placement.childId}")
 
         val serviceNeedCoefficient = when {
-            placement.familyUnitPlacement -> BigDecimal("1.75")
-            date < dateOfBirth.plusYears(3) -> BigDecimal("1.75")
+            placement.familyUnitPlacement -> BigDecimal(youngChildOccupancyCoefficient)
+            date < dateOfBirth.plusYears(3) -> BigDecimal(youngChildOccupancyCoefficient)
             else -> serviceNeedCoefficients[placement.id]
                 ?.let { placementServiceNeeds ->
                     placementServiceNeeds.find { it.period.includes(date) }?.occupancyCoefficient

@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -144,8 +145,8 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
                 coalesce(capacity_factor, 1.0) * (CASE
                     WHEN age IS NULL THEN 0.0
                     WHEN placement_type IS NULL THEN 0.0
-                    WHEN is_family_unit THEN 1.75
-                    WHEN age < 3 THEN 1.75
+                    WHEN is_family_unit THEN $youngChildOccupancyCoefficient
+                    WHEN age < 3 THEN $youngChildOccupancyCoefficient
                     WHEN placement_type = 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS' AND COALESCE(hours_per_week, 0.0) <= 20.0 THEN 0.5
                     WHEN placement_type = 'DAYCARE_PART_TIME' AND (term_start_year - birth_year) = 5 AND COALESCE(hours_per_week, 0.0) <= 20.0 THEN 0.5
                     WHEN placement_type IN ('DAYCARE_FIVE_YEAR_OLDS', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS') AND hours_per_week <= 20 THEN 0.5
@@ -241,8 +242,8 @@ SELECT
     an IS NOT NULL as has_assistance_need,
     coalesce(an.capacity_factor, 1.0) as capacity_factor,
     coalesce(capacity_factor, 1.0) * (CASE
-        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN 1.75
-        WHEN date_part('year', age(t::date, p.date_of_birth)) < 3 THEN 1.75
+        WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $youngChildOccupancyCoefficient
+        WHEN date_part('year', age(t::date, p.date_of_birth)) < 3 THEN $youngChildOccupancyCoefficient
         ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient)
     END) AS capacity,
 
