@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.domain
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.testAreaId
@@ -38,7 +37,7 @@ class TimeIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `operational days with no holidays or round the clock units in database`() {
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare.id))
@@ -52,7 +51,7 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare2.id))
@@ -71,7 +70,7 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare.id))
@@ -88,7 +87,7 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         val weekdaysWithoutHolidays = january2020Weekdays.filter { it != newYear }
         assertEquals(weekdaysWithoutHolidays, result.generalCase)
@@ -106,7 +105,7 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         val weekdaysWithoutHolidays = january2020Weekdays.filter { it != newYear && it != epiphany }
         assertEquals(weekdaysWithoutHolidays, result.generalCase)
@@ -122,7 +121,7 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         assertEquals(january2020Weekdays, result.generalCase)
         assertEquals(january2020Weekdays, result.forUnit(testDaycare.id))
@@ -143,7 +142,7 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = db.transaction { operationalDays(it.handle, 2020, Month.JANUARY) }
+        val result = db.transaction { it.operationalDays(2020, Month.JANUARY) }
 
         val weekdaysWithoutHolidays = january2020Weekdays.filter { it != newYear && it != epiphany }
         assertEquals(weekdaysWithoutHolidays, result.generalCase)

@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -167,19 +167,18 @@ data class OperationalDays(
     fun forUnit(id: UUID): List<LocalDate> = specialCases[id] ?: generalCase
 }
 
-fun operationalDays(h: Handle, year: Int, month: Month): OperationalDays {
+fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
     val firstDayOfMonth = LocalDate.of(year, month, 1)
     val daysOfMonth = generateSequence(firstDayOfMonth) { it.plusDays(1) }
         .takeWhile { date -> date.month == month }
 
     // Only includes units that don't have regular monday to friday operational days
-    val specialUnitOperationalDays = h
-        .createQuery("SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')")
+    val specialUnitOperationalDays = createQuery("SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')")
         .map { rs, _ -> rs.getUUID("id") to rs.getArray("operation_days").array as Array<*> }
         .map { (id, days) -> id to days.map { it as Int }.map { DayOfWeek.of(it) } }
         .toList()
 
-    val holidays = h.createQuery("SELECT date FROM holiday WHERE daterange(:start, :end, '[]') @> date")
+    val holidays = createQuery("SELECT date FROM holiday WHERE daterange(:start, :end, '[]') @> date")
         .bind("start", firstDayOfMonth)
         .bind("end", firstDayOfMonth.plusMonths(1))
         .mapTo<LocalDate>()

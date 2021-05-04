@@ -144,8 +144,7 @@ fun Database.Transaction.deleteServiceNeed(id: UUID): ServiceNeed {
             (SELECT concat_ws(' ', first_name, last_name) FROM employee WHERE id = service_need.updated_by) AS updated_by_name
     """.trimMargin()
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("id", id)
         .mapTo(ServiceNeed::class.java)
         .firstOrNull() ?: throw NotFound("Service need $id not found")

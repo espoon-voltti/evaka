@@ -55,7 +55,7 @@ fun Database.Transaction.createAllDraftInvoices(objectMapper: ObjectMapper, peri
     val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val daycareCodes = getDaycareCodes()
-    val operationalDays = operationalDays(handle, period.start.year, period.start.month)
+    val operationalDays = operationalDays(period.start.year, period.start.month)
 
     val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(CareType.DAYCARE, CareType.PRESCHOOL_DAYCARE))
 
