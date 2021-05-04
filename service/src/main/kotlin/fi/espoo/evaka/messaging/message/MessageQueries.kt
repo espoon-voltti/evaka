@@ -148,12 +148,11 @@ fun Database.Transaction.createMessageThread(
 
     val batch = this.prepareBatch(insertParticipantsSql)
 
-    val participants = listOf(Pair(sender.id, true)) + recipientAccountIds.map { Pair(it, false) }
-    for (p in participants) {
+    (listOf(Pair(sender.id, true)) + recipientAccountIds.map { Pair(it, false) }).forEach { (accountId, isSender) ->
         batch
             .bind("messageId", messageId)
-            .bind("accountId", p.first)
-            .bind("sender", p.second)
+            .bind("accountId", accountId)
+            .bind("sender", isSender)
             .add()
     }
 
