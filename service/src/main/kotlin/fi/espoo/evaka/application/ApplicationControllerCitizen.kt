@@ -55,12 +55,12 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
         return ResponseEntity.ok(
             db.read { tx ->
-                val existingApplicationsByChild = fetchApplicationSummariesForCitizen(tx.handle, user.id)
+                val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
                     .groupBy { it.childId }
                     .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
 
                 // Some children might not have applications, so add 0 application children
-                getCitizenChildren(tx.handle, user.id).map { citizenChild ->
+                tx.getCitizenChildren(user.id).map { citizenChild ->
                     val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
                         ?: emptyList()
                     ApplicationsOfChild(
@@ -104,7 +104,7 @@ class ApplicationControllerCitizen(
         return db.transaction { tx ->
             if (
                 body.type != ApplicationType.CLUB &&
-                duplicateApplicationExists(tx.handle, guardianId = user.id, childId = body.childId, type = body.type)
+                tx.duplicateApplicationExists(guardianId = user.id, childId = body.childId, type = body.type)
             ) {
                 throw BadRequest("Duplicate application")
             }
@@ -119,8 +119,7 @@ class ApplicationControllerCitizen(
             val child = personService.getUpToDatePerson(tx, user, body.childId)
                 ?: throw IllegalStateException("Child not found")
 
-            val applicationId = insertApplication(
-                h = tx.handle,
+            val applicationId = tx.insertApplication(
                 guardianId = user.id,
                 childId = body.childId,
                 origin = ApplicationOrigin.ELECTRONIC
@@ -138,8 +137,7 @@ class ApplicationControllerCitizen(
                     )
                 } else it
             }
-            updateForm(
-                tx.handle,
+            tx.updateForm(
                 applicationId,
                 form,
                 body.type,
@@ -165,7 +163,7 @@ class ApplicationControllerCitizen(
                 .map { type ->
                     type to (
                         type != ApplicationType.CLUB &&
-                            duplicateApplicationExists(tx.handle, guardianId = user.id, childId = childId, type = type)
+                            tx.duplicateApplicationExists(guardianId = user.id, childId = childId, type = type)
                         )
                 }
                 .toMap()
@@ -185,7 +183,7 @@ class ApplicationControllerCitizen(
         return db.read { tx ->
             ApplicationType.values()
                 .map { type ->
-                    type to activePlacementExists(tx, childId = childId, type = type)
+                    type to tx.activePlacementExists(childId = childId, type = type)
                 }
                 .toMap()
                 .let { ResponseEntity.ok(it) }
@@ -230,14 +228,14 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         db.transaction { tx ->
-            val application = fetchApplicationDetails(tx.handle, applicationId)
+            val application = tx.fetchApplicationDetails(applicationId)
                 ?.takeIf { it.guardianId == user.id }
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
             if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
                 throw BadRequest("Only applications which are not yet being processed can be deleted")
 
-            deleteApplication(tx.handle, applicationId)
+            tx.deleteApplication(applicationId)
         }
         return ResponseEntity.noContent().build()
     }
@@ -256,7 +254,7 @@ class ApplicationControllerCitizen(
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
-        return ResponseEntity.ok(db.read { getOwnDecisions(it, user.id) })
+        return ResponseEntity.ok(db.read { it.getOwnDecisions(user.id) })
     }
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -269,11 +267,11 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.read { tx ->
-            fetchApplicationDetails(tx.handle, applicationId)
+            tx.fetchApplicationDetails(applicationId)
                 ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
                 ?: throw NotFound("Application not found")
 
-            getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -322,7 +320,7 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.transaction { tx ->
-            if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == id }) {
+            if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
                 logger.warn { "Citizen ${user.id} tried to download decision $id" }
                 throw NotFound("Decision not found")
             }

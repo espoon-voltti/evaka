@@ -11,7 +11,6 @@ import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -66,9 +65,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `search without params`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = searchInvoices(tx.handle)
+            val result = tx.searchInvoices()
             assertEquals(3, result.size)
         }
     }
@@ -76,9 +75,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `search drafts`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = searchInvoices(tx.handle, listOf(InvoiceStatus.DRAFT))
+            val result = tx.searchInvoices(listOf(InvoiceStatus.DRAFT))
             assertEquals(2, result.size)
         }
     }
@@ -86,9 +85,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `search canceled`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = searchInvoices(tx.handle, listOf(InvoiceStatus.CANCELED))
+            val result = tx.searchInvoices(listOf(InvoiceStatus.CANCELED))
             assertEquals(0, result.size)
         }
     }
@@ -96,9 +95,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `search sent`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = searchInvoices(tx.handle, listOf(InvoiceStatus.SENT))
+            val result = tx.searchInvoices(listOf(InvoiceStatus.SENT))
             assertEquals(1, result.size)
         }
     }
@@ -106,9 +105,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `get by id`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = getInvoice(tx.handle, testInvoices[0].id)
+            val result = tx.getInvoice(testInvoices[0].id)
             assertEquals(testInvoices[0], result)
         }
     }
@@ -116,9 +115,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `invoice row has child and fee`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = searchInvoices(tx.handle, listOf(InvoiceStatus.SENT))
+            val result = tx.searchInvoices(listOf(InvoiceStatus.SENT))
             val invoice = result.get(0)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { row ->
@@ -131,8 +130,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `getMaxInvoiceNumber works with one invoice`() {
         db.transaction { tx ->
-            upsertInvoices(
-                tx.handle,
+            tx.upsertInvoices(
                 listOf(
                     createInvoiceFixture(
                         status = InvoiceStatus.SENT,
@@ -144,7 +142,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
                 )
             )
 
-            val maxNumber = getMaxInvoiceNumber(tx.handle)
+            val maxNumber = tx.getMaxInvoiceNumber()
 
             assertEquals(5000000123L, maxNumber)
         }
@@ -163,9 +161,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
                         rows = listOf(createInvoiceRowFixture(testChild_1.id))
                     )
                 }
-                .let { invoices -> upsertInvoices(tx.handle, invoices) }
+                .let { invoices -> tx.upsertInvoices(invoices) }
 
-            val maxNumber = getMaxInvoiceNumber(tx.handle)
+            val maxNumber = tx.getMaxInvoiceNumber()
 
             assertEquals(5000000300L, maxNumber)
         }
@@ -174,9 +172,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `get invoiced heads of family`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = getInvoicedHeadsOfFamily(tx.handle, DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
+            val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
             assertEquals(1, result.size)
             assertEquals(listOf(testInvoices[0].headOfFamily.id), result)
         }
@@ -185,9 +183,9 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `get invoiced heads of family period with no invoices`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
 
-            val result = getInvoicedHeadsOfFamily(tx.handle, DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
+            val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
             assertEquals(0, result.size)
         }
     }
@@ -195,11 +193,11 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `delete drafts basic case`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
             val draft = testInvoices[0]
-            deleteDraftInvoices(tx.handle, listOf(draft.id))
+            tx.deleteDraftInvoices(listOf(draft.id))
 
-            val result = getInvoice(tx.handle, draft.id)
+            val result = tx.getInvoice(draft.id)
             assertNull(result)
         }
     }
@@ -207,11 +205,11 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `delete drafts does not delete sent invoices`() {
         db.transaction { tx ->
-            upsertInvoices(tx.handle, testInvoices)
+            tx.upsertInvoices(testInvoices)
             val sent = testInvoices[1]
-            deleteDraftInvoices(tx.handle, listOf(sent.id))
+            tx.deleteDraftInvoices(listOf(sent.id))
 
-            val result = getInvoice(tx.handle, sent.id)
+            val result = tx.getInvoice(sent.id)
             assertEquals(sent, result)
         }
     }
@@ -219,8 +217,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
     @Test
     fun `get head of family's invoices`() {
         db.transaction { tx ->
-            upsertInvoices(
-                tx.handle,
+            tx.upsertInvoices(
                 testInvoices.plus(
                     createInvoiceFixture(
                         status = InvoiceStatus.DRAFT,
@@ -231,8 +228,8 @@ class InvoiceQueriesTest : PureJdbiTest() {
                 )
             )
 
-            assertEquals(testInvoices.size, getHeadOfFamilyInvoices(tx.handle, testAdult_1.id).size)
-            assertEquals(1, getHeadOfFamilyInvoices(tx.handle, testAdult_2.id).size)
+            assertEquals(testInvoices.size, tx.getHeadOfFamilyInvoices(testAdult_1.id).size)
+            assertEquals(1, tx.getHeadOfFamilyInvoices(testAdult_2.id).size)
         }
     }
 }

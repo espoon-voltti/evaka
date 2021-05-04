@@ -12,7 +12,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.testChild_1
@@ -115,7 +114,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceActions = db.transaction { tx -> getAssistanceActionsByChild(tx.handle, testChild_1.id) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(testChild_1.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(assistanceActions.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
         assertTrue(assistanceActions.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
@@ -167,7 +166,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceActions = db.transaction { tx -> getAssistanceActionsByChild(tx.handle, testChild_1.id) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(testChild_1.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(assistanceActions.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -183,7 +182,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val assistanceActions = db.transaction { tx -> getAssistanceActionsByChild(tx.handle, testChild_1.id) }
+        val assistanceActions = db.read { it.getAssistanceActionsByChild(testChild_1.id) }
         assertEquals(2, assistanceActions.size)
         assertTrue(assistanceActions.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(assistanceActions.any { it.startDate == testDate(11) && it.endDate == testDate(15) })

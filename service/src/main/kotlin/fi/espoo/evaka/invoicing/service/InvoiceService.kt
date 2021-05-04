@@ -36,7 +36,7 @@ data class InvoiceCodes(
 @Component
 class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
     fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<UUID>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
-        val invoices = getInvoicesByIds(tx.handle, invoiceIds)
+        val invoices = tx.getInvoicesByIds(invoiceIds)
         if (invoices.isEmpty()) return
 
         val notDrafts = invoices.filterNot { it.status == InvoiceStatus.DRAFT }
@@ -47,7 +47,7 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
         val (withSSNs, withoutSSNs) = invoices
             .partition { invoice -> invoice.headOfFamily.ssn != null }
 
-        val maxInvoiceNumber = getMaxInvoiceNumber(tx.handle).let { if (it >= 5000000000) it + 1 else 5000000000 }
+        val maxInvoiceNumber = tx.getMaxInvoiceNumber().let { if (it >= 5000000000) it + 1 else 5000000000 }
         val updatedInvoices = withSSNs.mapIndexed { index, invoice ->
             invoice.copy(
                 number = maxInvoiceNumber + index,
@@ -68,14 +68,14 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
             .partition { (succeeded, _) -> succeeded }
 
         if (invoiceDate != null && dueDate != null) {
-            updateInvoiceDates(tx.handle, invoices.map { it.id }, invoiceDate, dueDate)
+            tx.updateInvoiceDates(invoices.map { it.id }, invoiceDate, dueDate)
         }
-        setDraftsSent(tx.handle, succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
-        updateToWaitingForSending(tx.handle, withoutSSNs.map { it.id })
+        tx.setDraftsSent(succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
+        tx.updateToWaitingForSending(withoutSSNs.map { it.id })
     }
 
     fun updateInvoice(tx: Database.Transaction, uuid: UUID, invoice: Invoice) {
-        val original = getInvoice(tx.handle, uuid)
+        val original = tx.getInvoice(uuid)
             ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
 
         val updated = when (original.status) {
@@ -85,11 +85,11 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
             else -> throw BadRequest("Only draft invoices can be updated")
         }
 
-        upsertInvoices(tx.handle, listOf(updated))
+        tx.upsertInvoices(listOf(updated))
     }
 
     fun getInvoiceIds(tx: Database.Read, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
-        return getInvoiceIdsByDates(tx.handle, from, to, areas)
+        return tx.getInvoiceIdsByDates(from, to, areas)
     }
 }
 
@@ -114,7 +114,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
 }
 
 fun Database.Read.getInvoiceCodes(): InvoiceCodes {
-    val daycareCodes = getDaycareCodes(handle)
+    val daycareCodes = getDaycareCodes()
 
     val specialAreaCode = 255
     val specialSubCostCenter = "06"

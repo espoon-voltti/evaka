@@ -26,7 +26,7 @@ class PlacementPlanService(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     fun getPlacementPlanDraft(tx: Database.Read, applicationId: UUID): PlacementPlanDraft {
-        val application = fetchApplicationDetails(tx.handle, applicationId)
+        val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
 
         val type = derivePlacementType(application)

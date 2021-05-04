@@ -48,7 +48,6 @@ class InvoiceReportController {
 
 private fun Database.Read.getInvoiceReportWithRows(period: DateRange): InvoiceReport {
     val invoices = searchInvoices(
-        handle,
         statuses = listOf(InvoiceStatus.SENT),
         sentAt = period
     )

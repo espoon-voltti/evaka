@@ -8,8 +8,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision2
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
@@ -33,12 +33,12 @@ val feeDecisionQueryBase2 =
     LEFT JOIN new_fee_decision_child child ON decision.id = child.fee_decision_id
     """.trimIndent()
 
-fun upsertFeeDecisions2(h: Handle, decisions: List<FeeDecision2>) {
-    upsertDecisions2(h, decisions)
-    replaceChildren2(h, decisions)
+fun Database.Transaction.upsertFeeDecisions2(decisions: List<FeeDecision2>) {
+    upsertDecisions2(decisions)
+    replaceChildren2(decisions)
 }
 
-private fun upsertDecisions2(h: Handle, decisions: List<FeeDecision2>) {
+private fun Database.Transaction.upsertDecisions2(decisions: List<FeeDecision2>) {
     val sql =
         """
         INSERT INTO new_fee_decision (
@@ -78,7 +78,7 @@ private fun upsertDecisions2(h: Handle, decisions: List<FeeDecision2>) {
             pricing = :pricing
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     decisions.forEach { decision ->
         batch
             .bindKotlin(decision)
@@ -89,13 +89,13 @@ private fun upsertDecisions2(h: Handle, decisions: List<FeeDecision2>) {
     batch.execute()
 }
 
-private fun replaceChildren2(h: Handle, decisions: List<FeeDecision2>) {
+private fun Database.Transaction.replaceChildren2(decisions: List<FeeDecision2>) {
     val partsWithDecisionIds = decisions.map { it.id to it.children }
-    deleteChildren2(h, partsWithDecisionIds.map { it.first })
-    insertChildren2(h, partsWithDecisionIds)
+    deleteChildren2(partsWithDecisionIds.map { it.first })
+    insertChildren2(partsWithDecisionIds)
 }
 
-private fun insertChildren2(h: Handle, decisions: List<Pair<UUID, List<FeeDecisionChild>>>) {
+private fun Database.Transaction.insertChildren2(decisions: List<Pair<UUID, List<FeeDecisionChild>>>) {
     val sql =
         """
         INSERT INTO new_fee_decision_child (
@@ -129,7 +129,7 @@ private fun insertChildren2(h: Handle, decisions: List<Pair<UUID, List<FeeDecisi
         )
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     decisions.forEach { (decisionId, children) ->
         children.forEach { child ->
             batch
@@ -148,24 +148,23 @@ private fun insertChildren2(h: Handle, decisions: List<Pair<UUID, List<FeeDecisi
     batch.execute()
 }
 
-private fun deleteChildren2(h: Handle, decisionIds: List<UUID>) {
+private fun Database.Transaction.deleteChildren2(decisionIds: List<UUID>) {
     if (decisionIds.isEmpty()) return
 
-    h.createUpdate("DELETE FROM new_fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
+    createUpdate("DELETE FROM new_fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
         .bind("decisionIds", decisionIds.toTypedArray())
         .execute()
 }
 
-fun deleteFeeDecisions2(h: Handle, ids: List<UUID>) {
+fun Database.Transaction.deleteFeeDecisions2(ids: List<UUID>) {
     if (ids.isEmpty()) return
 
-    h.createUpdate("DELETE FROM new_fee_decision WHERE id = ANY(:ids)")
+    createUpdate("DELETE FROM new_fee_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .execute()
 }
 
-fun findFeeDecisionsForHeadOfFamily2(
-    h: Handle,
+fun Database.Read.findFeeDecisionsForHeadOfFamily2(
     headOfFamilyId: UUID,
     period: DateRange?,
     status: List<FeeDecisionStatus>?
@@ -179,7 +178,7 @@ fun findFeeDecisionsForHeadOfFamily2(
             ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyId)
         .let { query ->
             if (period != null) query.bind("period", period)
@@ -190,7 +189,7 @@ fun findFeeDecisionsForHeadOfFamily2(
         .merge()
 }
 
-fun Handle.lockFeeDecisionsForHeadOfFamily2(headOfFamily: UUID) {
+fun Database.Transaction.lockFeeDecisionsForHeadOfFamily2(headOfFamily: UUID) {
     createUpdate("SELECT id FROM new_fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()

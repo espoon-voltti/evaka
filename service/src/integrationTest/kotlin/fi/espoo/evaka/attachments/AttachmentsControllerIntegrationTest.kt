@@ -35,7 +35,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
     @AfterEach
     protected fun tearDown() {
         db.transaction {
-            deleteApplication(it.handle, applicationId)
+            it.deleteApplication(applicationId)
         }
     }
 

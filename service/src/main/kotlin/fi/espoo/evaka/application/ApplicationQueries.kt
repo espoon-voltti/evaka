@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.mapToPaged
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
@@ -64,8 +63,7 @@ enum class ApplicationSortDirection {
     DESC
 }
 
-fun insertApplication(
-    h: Handle,
+fun Database.Transaction.insertApplication(
     guardianId: UUID,
     childId: UUID,
     origin: ApplicationOrigin,
@@ -80,7 +78,7 @@ fun insertApplication(
         RETURNING id
         """.trimIndent()
 
-    return h.createUpdate(sql)
+    return createUpdate(sql)
         .bind("guardianId", guardianId)
         .bind("childId", childId)
         .bind("origin", origin)
@@ -91,8 +89,7 @@ fun insertApplication(
         .first()
 }
 
-fun duplicateApplicationExists(
-    h: Handle,
+fun Database.Read.duplicateApplicationExists(
     childId: UUID,
     guardianId: UUID,
     type: ApplicationType
@@ -109,7 +106,7 @@ fun duplicateApplicationExists(
                 hidefromguardian = false AND
                 status = ANY ('{CREATED,SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("guardianId", guardianId)
         .bind("type", type)
@@ -118,8 +115,7 @@ fun duplicateApplicationExists(
         .isNotEmpty()
 }
 
-fun activePlacementExists(
-    tx: Database.Read,
+fun Database.Read.activePlacementExists(
     childId: UUID,
     type: ApplicationType
 ): Boolean {
@@ -139,7 +135,7 @@ fun activePlacementExists(
                 type = ANY(:types::placement_type[]) AND 
                 current_date <= end_date
         """.trimIndent()
-    return tx.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("types", placementTypes.toTypedArray())
         .mapTo<Int>()
@@ -147,8 +143,7 @@ fun activePlacementExists(
         .isNotEmpty()
 }
 
-fun fetchApplicationSummaries(
-    tx: Database.Read,
+fun Database.Read.fetchApplicationSummaries(
     user: AuthenticatedUser,
     page: Int,
     pageSize: Int,
@@ -170,7 +165,6 @@ fun fetchApplicationSummaries(
     authorizedUnits: AclAuthorization,
     onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
 ): Paged<ApplicationSummary> {
-
     val params = mapOf(
         "page" to page,
         "pageSize" to pageSize,
@@ -339,7 +333,7 @@ fun fetchApplicationSummaries(
 
     val paginatedSql = "$orderedSql LIMIT $pageSize OFFSET ${(page - 1) * pageSize}"
 
-    val applicationSummaries = tx.createQuery(paginatedSql)
+    val applicationSummaries = createQuery(paginatedSql)
         .bindMap(params + freeTextParams)
         .map { row ->
             WithCount(
@@ -399,7 +393,7 @@ fun fetchApplicationSummaries(
         WHERE id = ANY(:unitIds)
         """.trimIndent()
     val unitIds = applicationSummaries.data.flatMap { summary -> summary.preferredUnits.map { unit -> unit.id } }
-    val unitMap = tx.createQuery(unitSql)
+    val unitMap = createQuery(unitSql)
         .bind("unitIds", unitIds.toTypedArray())
         .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
         .toMap()
@@ -418,7 +412,7 @@ fun fetchApplicationSummaries(
     )
 }
 
-fun fetchApplicationSummariesForGuardian(h: Handle, guardianId: UUID): List<PersonApplicationSummary> {
+fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: UUID): List<PersonApplicationSummary> {
     // language=SQL
     val sql =
         """
@@ -438,13 +432,13 @@ fun fetchApplicationSummariesForGuardian(h: Handle, guardianId: UUID): List<Pers
         ORDER BY sentDate DESC
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("guardianId", guardianId)
         .map(toPersonApplicationSummary)
         .toList()
 }
 
-fun fetchApplicationSummariesForChild(h: Handle, childId: UUID): List<PersonApplicationSummary> {
+fun Database.Read.fetchApplicationSummariesForChild(childId: UUID): List<PersonApplicationSummary> {
     // language=SQL
     val sql =
         """
@@ -464,13 +458,13 @@ fun fetchApplicationSummariesForChild(h: Handle, childId: UUID): List<PersonAppl
         ORDER BY sentDate DESC
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .map(toPersonApplicationSummary)
         .toList()
 }
 
-fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<CitizenApplicationSummary> {
+fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: UUID): List<CitizenApplicationSummary> {
     // language=SQL
     val sql =
         """
@@ -493,7 +487,7 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
         ORDER BY sentDate DESC
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("guardianId", citizenId)
         .mapTo<CitizenApplicationSummary>()
         .toList()
@@ -501,7 +495,7 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
 
 data class CitizenChildren(val childId: UUID, val childName: String)
 
-fun getCitizenChildren(h: Handle, citizenId: UUID): List<CitizenChildren> {
+fun Database.Read.getCitizenChildren(citizenId: UUID): List<CitizenChildren> {
     //language=sql
     val sql =
         """
@@ -510,7 +504,7 @@ fun getCitizenChildren(h: Handle, citizenId: UUID): List<CitizenChildren> {
         WHERE guardian_id = :guardianId
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("guardianId", citizenId)
         .mapTo<CitizenChildren>()
         .list()
@@ -535,7 +529,7 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
     )
 }
 
-fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
+fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
     val attachmentWhereClause = if (includeCitizenAttachmentsOnly) "WHERE uploaded_by_person IS NOT NULL" else ""
     //language=sql
     val sql =
@@ -575,7 +569,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
         AND f.latest IS TRUE
         """.trimIndent()
 
-    val application = h.createQuery(sql)
+    val application = createQuery(sql)
         .bind("id", applicationId)
         .map { row ->
             val childRestricted = row.mapColumn("child_restricted") ?: false
@@ -621,7 +615,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
             WHERE id = ANY(:unitIds)
             """.trimIndent()
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
-        val unitMap = h.createQuery(unitSql)
+        val unitMap = createQuery(unitSql)
             .bind("unitIds", unitIds.toTypedArray())
             .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
             .toMap()
@@ -641,7 +635,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID, includeCitizenAttach
     } else return null
 }
 
-fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummary> {
+fun Database.Read.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummary> {
     //language=sql
     val sql =
         """
@@ -674,7 +668,7 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
         ORDER BY c.last_name, c.first_name
         """.trimIndent()
 
-    return this.createQuery(sql)
+    return createQuery(sql)
         .bind("unitId", unitId)
         .map { row ->
             ApplicationUnitSummary(
@@ -728,8 +722,7 @@ fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
         else -> throw Error("unknown form type")
     }
 
-fun updateForm(
-    h: Handle,
+fun Database.Transaction.updateForm(
     id: UUID,
     form: ApplicationForm,
     formType: ApplicationType,
@@ -752,7 +745,7 @@ INSERT INTO application_form (application_id, document, revision, latest)
 VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM old_revisions), TRUE)
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("applicationId", id)
         .bind(
             "document",
@@ -764,7 +757,7 @@ VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM o
         .execute()
 }
 
-fun setCheckedByAdminToDefault(h: Handle, id: UUID, form: ApplicationForm) {
+fun Database.Transaction.setCheckedByAdminToDefault(id: UUID, form: ApplicationForm) {
     // language=SQL
     val sql = "UPDATE application SET checkedbyadmin = :checked WHERE id = :applicationId"
 
@@ -773,66 +766,66 @@ fun setCheckedByAdminToDefault(h: Handle, id: UUID, form: ApplicationForm) {
         form.child.diet.isBlank() &&
         form.otherInfo.isBlank()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("applicationId", id)
         .bind("checked", default)
         .execute()
 }
 
-fun updateApplicationStatus(h: Handle, id: UUID, status: ApplicationStatus) {
+fun Database.Transaction.updateApplicationStatus(id: UUID, status: ApplicationStatus) {
     // language=SQL
     val sql = "UPDATE application SET status = :status WHERE id = :id"
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("status", status)
         .execute()
 }
 
-fun updateApplicationDates(h: Handle, id: UUID, sentDate: LocalDate, dueDate: LocalDate?) {
+fun Database.Transaction.updateApplicationDates(id: UUID, sentDate: LocalDate, dueDate: LocalDate?) {
     // language=SQL
     val sql = "UPDATE application SET sentdate = :sentDate, duedate = :dueDate WHERE id = :id"
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("sentDate", sentDate)
         .bind("dueDate", dueDate)
         .execute()
 }
 
-fun updateApplicationFlags(h: Handle, id: UUID, applicationFlags: ApplicationFlags) {
+fun Database.Transaction.updateApplicationFlags(id: UUID, applicationFlags: ApplicationFlags) {
     // language=SQL
     val sql =
         "UPDATE application SET transferapplication = :transferApplication, additionaldaycareapplication = :additionalDaycareApplication WHERE id = :id"
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("transferApplication", applicationFlags.isTransferApplication)
         .bind("additionalDaycareApplication", applicationFlags.isAdditionalDaycareApplication)
         .execute()
 }
 
-fun updateApplicationOtherGuardian(h: Handle, applicationId: UUID, otherGuardianId: UUID?) {
+fun Database.Transaction.updateApplicationOtherGuardian(applicationId: UUID, otherGuardianId: UUID?) {
     // language=SQL
     val sql = "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("applicationId", applicationId)
         .bind("otherGuardianId", otherGuardianId)
         .execute()
 }
 
-fun setApplicationVerified(h: Handle, id: UUID, verified: Boolean) {
+fun Database.Transaction.setApplicationVerified(id: UUID, verified: Boolean) {
     // language=SQL
     val sql = "UPDATE application SET checkedByAdmin = :verified WHERE id = :id"
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("verified", verified)
         .bind("id", id)
         .execute()
 }
 
-fun deleteApplication(h: Handle, id: UUID) {
+fun Database.Transaction.deleteApplication(id: UUID) {
     // language=SQL
     val sql =
         """
@@ -841,15 +834,15 @@ fun deleteApplication(h: Handle, id: UUID) {
         DELETE FROM application WHERE id = :id;
         """.trimIndent()
 
-    h.createUpdate(sql).bind("id", id).execute()
+    createUpdate(sql).bind("id", id).execute()
 }
 
-fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Transaction, id: UUID) -> Unit) {
+fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transaction, id: UUID) -> Unit) {
     val thresholdDays = 31
 
     // language=SQL
     val applicationIds =
-        db.handle.createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
+        createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
             .bind("thresholdDays", thresholdDays)
             .mapTo<UUID>()
             .toList()
@@ -858,30 +851,30 @@ fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Tr
         logger.info("Cleaning up ${applicationIds.size} draft applications older than $thresholdDays days")
 
         // language=SQL
-        db.handle.createUpdate("""DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])""")
+        createUpdate("""DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])""")
             .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
 
         // language=SQL
-        db.handle.createUpdate("""DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])""")
+        createUpdate("""DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])""")
             .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
 
         applicationIds.forEach { applicationId ->
             val attachmentIds =
-                db.handle.createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
+                createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
                     .bind("id", applicationId)
                     .executeAndReturnGeneratedKeys()
                     .mapTo<UUID>()
                     .toList()
 
             attachmentIds.forEach { attachmentId ->
-                deleteAttachment(db, attachmentId)
+                deleteAttachment(this, attachmentId)
             }
         }
 
         // language=SQL
-        db.handle.createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
+        createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
             .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
     }

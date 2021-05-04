@@ -718,7 +718,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 )
             }
         )
-        upsertFeeDecisions(it.handle, objectMapper, listOf(feeDecision))
+        it.upsertFeeDecisions(objectMapper, listOf(feeDecision))
         feeDecision
     }
 
@@ -755,7 +755,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             .response()
         assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
-        return db.read { getFeeDecisionsByIds(it.handle, objectMapper, listOf(this.id)) }.first()
+        return db.read { it.getFeeDecisionsByIds(objectMapper, listOf(this.id)) }.first()
     }
 
     private fun VoucherValueDecision.send(): VoucherValueDecision {

@@ -28,6 +28,7 @@ import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -37,7 +38,6 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.domain.orMax
-import org.jdbi.v3.core.Handle
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -47,21 +47,21 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
-fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: DateRange = getPreviousMonthRange()) {
-    val effectiveDecisions = getInvoiceableFeeDecisions(h, objectMapper, period).groupBy { it.headOfFamily.id }
-    val placements = getInvoiceablePlacements(h, period).groupBy { it.headOfFamily.id }
-    val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(h, period)
+fun Database.Transaction.createAllDraftInvoices(objectMapper: ObjectMapper, period: DateRange = getPreviousMonthRange()) {
+    val effectiveDecisions = getInvoiceableFeeDecisions(objectMapper, period).groupBy { it.headOfFamily.id }
+    val placements = getInvoiceablePlacements(period).groupBy { it.headOfFamily.id }
+    val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(period)
 
     val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
-    val daycareCodes = getDaycareCodes(h)
-    val operationalDays = operationalDays(h, period.start.year, period.start.month)
+    val daycareCodes = getDaycareCodes()
+    val operationalDays = operationalDays(handle, period.start.year, period.start.month)
 
-    val absences: List<AbsenceStub> = getAbsenceStubs(h, period, listOf(CareType.DAYCARE, CareType.PRESCHOOL_DAYCARE))
+    val absences: List<AbsenceStub> = getAbsenceStubs(period, listOf(CareType.DAYCARE, CareType.PRESCHOOL_DAYCARE))
 
     val freeChildren: List<UUID> =
         if (period.start.month == Month.JULY && (period.end != null && period.end.month == Month.JULY && period.start.year == period.end.year)) {
-            getFreeJulyChildren(h, period.start.year)
+            getFreeJulyChildren(period.start.year)
         } else emptyList()
 
     val invoices =
@@ -75,8 +75,8 @@ fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: DateRa
             freeChildren
         )
 
-    deleteDraftInvoicesByPeriod(h, period)
-    upsertInvoices(h, invoices)
+    deleteDraftInvoicesByPeriod(period)
+    upsertInvoices(invoices)
 }
 
 internal fun generateDraftInvoices(
@@ -487,7 +487,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
         }
 }
 
-fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: DateRange): List<FeeDecision> {
+fun Database.Read.getInvoiceableFeeDecisions(objectMapper: ObjectMapper, period: DateRange): List<FeeDecision> {
     val sql =
         """
             $feeDecisionQueryBase
@@ -501,7 +501,7 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Da
         }
         """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
         .bind("effective", FeeDecisionStatus.effective)
@@ -509,11 +509,11 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Da
         .let { it.merge() }
 }
 
-fun getInvoicedHeadsOfFamily(h: Handle, period: DateRange): List<UUID> {
+fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<UUID> {
     val sql =
         "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status = :sent::invoice_status"
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("period_start", period.start)
         .bind("period_end", period.end)
         .bind("sent", InvoiceStatus.SENT)
@@ -532,7 +532,7 @@ data class AbsenceStub(
 // PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
 private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PRESENCE, AbsenceType.PLANNED_ABSENCE)
 
-fun getAbsenceStubs(h: Handle, spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
+fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, care_type, absence_type
@@ -542,7 +542,7 @@ fun getAbsenceStubs(h: Handle, spanningPeriod: DateRange, careTypes: List<CareTy
         AND care_type = ANY(:careTypes)
         """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("period", spanningPeriod)
         .bind("absenceTypes", absenceTypesWithNoEffectOnInvoices)
         .bind("careTypes", careTypes.toTypedArray())
@@ -568,19 +568,17 @@ data class Placements(
     val placements: List<Pair<PersonData.WithDateOfBirth, PlacementStub>>
 )
 
-internal fun getInvoiceablePlacements(
-    h: Handle,
+internal fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: DateRange
 ): List<Placements> {
-    val placements = h
-        .createQuery(
-            // language=sql
-            """
+    val placements = createQuery(
+        // language=sql
+        """
             SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
-            """.trimIndent()
-        )
+        """.trimIndent()
+    )
         .bind("period", spanningPeriod)
         .map { rs, _ ->
             Pair(
@@ -599,7 +597,7 @@ internal fun getInvoiceablePlacements(
         .mapValues { it.value.map { (_, triple) -> triple } }
 
     val familyCompositions = toFamilyCompositions(
-        getChildrenWithHeadOfFamilies(h, placements.keys.toList(), spanningPeriod),
+        getChildrenWithHeadOfFamilies(placements.keys.toList(), spanningPeriod),
         spanningPeriod
     )
 
@@ -668,8 +666,7 @@ internal fun toFamilyCompositions(
         }
 }
 
-fun getChildrenWithHeadOfFamilies(
-    h: Handle,
+fun Database.Read.getChildrenWithHeadOfFamilies(
     childIds: List<UUID>,
     period: DateRange
 ): List<Triple<DateRange, PersonData.JustId, PersonData.WithDateOfBirth>> {
@@ -690,7 +687,7 @@ fun getChildrenWithHeadOfFamilies(
             AND conflict = false
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("start", period.start)
         .bind("end", period.end)
         .bindList("childIds", childIds)
@@ -710,13 +707,13 @@ fun getChildrenWithHeadOfFamilies(
         .list()
 }
 
-fun getDaycareCodes(h: Handle): Map<UUID, DaycareCodes> {
+fun Database.Read.getDaycareCodes(): Map<UUID, DaycareCodes> {
     val sql =
         """
         SELECT daycare.id, daycare.cost_center, area.area_code, area.sub_cost_center
         FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
     """
-    return h.createQuery(sql)
+    return createQuery(sql)
         .map { rs, _ ->
             UUID.fromString(rs.getString("id")) to DaycareCodes(
                 areaCode = rs.getObject("area_code") as Int?,
@@ -727,7 +724,7 @@ fun getDaycareCodes(h: Handle): Map<UUID, DaycareCodes> {
         .toMap()
 }
 
-fun getFreeJulyChildren(h: Handle, year: Int): List<UUID> {
+fun Database.Read.getFreeJulyChildren(year: Int): List<UUID> {
     val sql =
         //language=sql
         """
@@ -763,7 +760,7 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .mapTo(UUID::class.java)
         .list()
 }

@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,7 +29,7 @@ class ChildController(private val acl: AccessControlList) {
     fun getAdditionalInfo(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return db.read { getAdditionalInformation(it.handle, childId) }.let(::ok)
+        return db.read { it.getAdditionalInformation(childId) }.let(::ok)
     }
 
     @PutMapping("/children/{childId}/additional-information")
@@ -42,13 +41,13 @@ class ChildController(private val acl: AccessControlList) {
     ): ResponseEntity<Unit> {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        db.transaction { upsertAdditionalInformation(it.handle, childId, data) }
+        db.transaction { it.upsertAdditionalInformation(childId, data) }
         return noContent()
     }
 }
 
-fun getAdditionalInformation(h: Handle, childId: UUID): AdditionalInformation {
-    val child = h.getChild(childId)
+fun Database.Read.getAdditionalInformation(childId: UUID): AdditionalInformation {
+    val child = handle.getChild(childId)
     return if (child != null) {
         AdditionalInformation(
             allergies = child.additionalInformation.allergies,
@@ -60,12 +59,12 @@ fun getAdditionalInformation(h: Handle, childId: UUID): AdditionalInformation {
     } else AdditionalInformation()
 }
 
-fun upsertAdditionalInformation(h: Handle, childId: UUID, data: AdditionalInformation) {
-    val child = h.getChild(childId)
+fun Database.Transaction.upsertAdditionalInformation(childId: UUID, data: AdditionalInformation) {
+    val child = handle.getChild(childId)
     if (child != null) {
-        h.updateChild(child.copy(additionalInformation = data))
+        handle.updateChild(child.copy(additionalInformation = data))
     } else {
-        h.createChild(
+        handle.createChild(
             Child(
                 id = childId,
                 additionalInformation = data

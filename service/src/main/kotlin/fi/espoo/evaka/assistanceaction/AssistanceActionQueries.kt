@@ -5,12 +5,12 @@
 package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import java.time.LocalDate
 import java.util.UUID
 
-fun insertAssistanceAction(h: Handle, user: AuthenticatedUser, childId: UUID, data: AssistanceActionRequest): AssistanceAction {
+fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId: UUID, data: AssistanceActionRequest): AssistanceAction {
     //language=sql
     val sql =
         """
@@ -35,8 +35,7 @@ fun insertAssistanceAction(h: Handle, user: AuthenticatedUser, childId: UUID, da
         RETURNING *
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
@@ -48,16 +47,16 @@ fun insertAssistanceAction(h: Handle, user: AuthenticatedUser, childId: UUID, da
         .first()
 }
 
-fun getAssistanceActionsByChild(h: Handle, childId: UUID): List<AssistanceAction> {
+fun Database.Read.getAssistanceActionsByChild(childId: UUID): List<AssistanceAction> {
     //language=sql
     val sql = "SELECT * FROM assistance_action WHERE child_id = :childId ORDER BY start_date DESC "
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .mapTo(AssistanceAction::class.java)
         .list()
 }
 
-fun updateAssistanceAction(h: Handle, user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {
+fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {
     //language=sql
     val sql =
         """
@@ -72,7 +71,7 @@ fun updateAssistanceAction(h: Handle, user: AuthenticatedUser, id: UUID, data: A
         RETURNING *
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", id)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
@@ -84,7 +83,7 @@ fun updateAssistanceAction(h: Handle, user: AuthenticatedUser, id: UUID, data: A
         .firstOrNull() ?: throw NotFound("Assistance action $id not found")
 }
 
-fun shortenOverlappingAssistanceAction(h: Handle, user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate) {
     //language=sql
     val sql =
         """
@@ -94,7 +93,7 @@ fun shortenOverlappingAssistanceAction(h: Handle, user: AuthenticatedUser, child
         RETURNING *
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("childId", childId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
@@ -102,9 +101,9 @@ fun shortenOverlappingAssistanceAction(h: Handle, user: AuthenticatedUser, child
         .execute()
 }
 
-fun deleteAssistanceAction(h: Handle, id: UUID) {
+fun Database.Transaction.deleteAssistanceAction(id: UUID) {
     //language=sql
     val sql = "DELETE FROM assistance_action WHERE id = :id"
-    val deleted = h.createUpdate(sql).bind("id", id).execute()
+    val deleted = createUpdate(sql).bind("id", id).execute()
     if (deleted == 0) throw NotFound("Assistance action $id not found")
 }

@@ -54,8 +54,8 @@ class FeeDecisionService(
     private val evakaMessageClient: IEvakaMessageClient
 ) {
     fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: Instant): List<UUID> {
-        tx.handle.lockFeeDecisions(ids)
-        val decisions = getFeeDecisionsByIds(tx.handle, objectMapper, ids)
+        tx.lockFeeDecisions(ids)
+        val decisions = tx.getFeeDecisionsByIds(objectMapper, ids)
         if (decisions.isEmpty()) return listOf()
 
         val notDrafts = decisions.filterNot { it.status == FeeDecisionStatus.DRAFT }
@@ -71,9 +71,8 @@ class FeeDecisionService(
 
         val conflicts = decisions
             .flatMap {
-                tx.handle.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
-                findFeeDecisionsForHeadOfFamily(
-                    tx.handle,
+                tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
+                tx.findFeeDecisionsForHeadOfFamily(
                     objectMapper,
                     it.headOfFamily.id,
                     DateRange(it.validFrom, it.validTo),
@@ -89,14 +88,14 @@ class FeeDecisionService(
         val (emptyDecisions, validDecisions) = decisions
             .partition { it.parts.isEmpty() }
 
-        deleteFeeDecisions(tx.handle, emptyDecisions.map { it.id })
+        tx.deleteFeeDecisions(emptyDecisions.map { it.id })
 
         val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition {
             isRetroactive(it.validFrom, nowDate)
         }
 
-        approveFeeDecisionDraftsForSending(tx.handle, retroactiveDecisions.map { it.id }, approvedBy = user.id, isRetroactive = true, approvedAt = now)
-        approveFeeDecisionDraftsForSending(tx.handle, otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = now)
+        tx.approveFeeDecisionDraftsForSending(retroactiveDecisions.map { it.id }, approvedBy = user.id, isRetroactive = true, approvedAt = now)
+        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = now)
 
         return validDecisions.map { it.id }
     }
@@ -111,7 +110,7 @@ class FeeDecisionService(
     }
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: UUID) {
-        val decision = getFeeDecision(tx.handle, objectMapper, id)
+        val decision = tx.getFeeDecision(objectMapper, id)
             ?: throw NotFound("No fee decision found with ID ($id)")
         if (!decision.documentKey.isNullOrBlank()) {
             throw Conflict("Fee decision $id has document key already!")
@@ -121,11 +120,11 @@ class FeeDecisionService(
 
         val pdfByteArray = pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, lang))
         val key = s3Client.uploadFeeDecisionPdf(decision.id, pdfByteArray, lang)
-        updateFeeDecisionDocumentKey(tx.handle, decision.id, key)
+        tx.updateFeeDecisionDocumentKey(decision.id, key)
     }
 
     fun sendDecision(tx: Database.Transaction, id: UUID) {
-        val decision = getFeeDecision(tx.handle, objectMapper, id)
+        val decision = tx.getFeeDecision(objectMapper, id)
             ?: throw NotFound("No fee decision found with given ID ($id)")
 
         if (decision.status != FeeDecisionStatus.WAITING_FOR_SENDING) {
@@ -137,7 +136,7 @@ class FeeDecisionService(
         }
 
         if (decision.requiresManualSending()) {
-            setFeeDecisionWaitingForManualSending(tx.handle, decision.id)
+            tx.setFeeDecisionWaitingForManualSending(decision.id)
             return
         }
 
@@ -169,15 +168,15 @@ class FeeDecisionService(
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
 
         evakaMessageClient.send(message)
-        setFeeDecisionSent(tx.handle, listOf(decision.id))
+        tx.setFeeDecisionSent(listOf(decision.id))
     }
 
     fun setSent(tx: Database.Transaction, ids: List<UUID>) {
-        val decisions = getDetailedFeeDecisionsByIds(tx.handle, objectMapper, ids)
+        val decisions = tx.getDetailedFeeDecisionsByIds(objectMapper, ids)
         if (decisions.any { it.status != FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
-        setFeeDecisionSent(tx.handle, ids)
+        tx.setFeeDecisionSent(ids)
     }
 
     data class PdfResult(
@@ -186,18 +185,18 @@ class FeeDecisionService(
     )
 
     fun getFeeDecisionPdf(tx: Database.Read, decisionId: UUID): PdfResult {
-        val documentKey = getFeeDecisionDocumentKey(tx.handle, decisionId)
+        val documentKey = tx.getFeeDecisionDocumentKey(decisionId)
             ?: throw NotFound("Document key not found for decision $decisionId")
         return PdfResult(documentKey, s3Client.getFeeDecisionPdf(documentKey))
     }
 
     fun setType(tx: Database.Transaction, decisionId: UUID, type: FeeDecisionType) {
-        val decision = getFeeDecision(tx.handle, objectMapper, decisionId)
+        val decision = tx.getFeeDecision(objectMapper, decisionId)
             ?: throw BadRequest("Decision not found with id $decisionId")
         if (decision.status != FeeDecisionStatus.DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }
 
-        setFeeDecisionType(tx.handle, decisionId, type)
+        tx.setFeeDecisionType(decisionId, type)
     }
 }

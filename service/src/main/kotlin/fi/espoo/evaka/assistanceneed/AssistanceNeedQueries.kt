@@ -5,12 +5,12 @@
 package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import java.time.LocalDate
 import java.util.UUID
 
-fun insertAssistanceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+fun Database.Transaction.insertAssistanceNeed(user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
     //language=sql
     val sql =
         """
@@ -37,8 +37,7 @@ fun insertAssistanceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data
         RETURNING *
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
@@ -51,16 +50,16 @@ fun insertAssistanceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data
         .first()
 }
 
-fun getAssistanceNeedsByChild(h: Handle, childId: UUID): List<AssistanceNeed> {
+fun Database.Read.getAssistanceNeedsByChild(childId: UUID): List<AssistanceNeed> {
     //language=sql
     val sql = "SELECT * FROM assistance_need WHERE child_id = :childId ORDER BY start_date DESC "
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .mapTo(AssistanceNeed::class.java)
         .list()
 }
 
-fun updateAssistanceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
     //language=sql
     val sql =
         """
@@ -76,7 +75,7 @@ fun updateAssistanceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: Ass
         RETURNING *
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", id)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
@@ -89,7 +88,7 @@ fun updateAssistanceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: Ass
         .firstOrNull() ?: throw NotFound("Assistance need $id not found")
 }
 
-fun shortenOverlappingAssistanceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.shortenOverlappingAssistanceNeed(user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate) {
     //language=sql
     val sql =
         """
@@ -99,7 +98,7 @@ fun shortenOverlappingAssistanceNeed(h: Handle, user: AuthenticatedUser, childId
         RETURNING *
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("childId", childId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
@@ -107,9 +106,9 @@ fun shortenOverlappingAssistanceNeed(h: Handle, user: AuthenticatedUser, childId
         .execute()
 }
 
-fun deleteAssistanceNeed(h: Handle, id: UUID) {
+fun Database.Transaction.deleteAssistanceNeed(id: UUID) {
     //language=sql
     val sql = "DELETE FROM assistance_need WHERE id = :id"
-    val deleted = h.createUpdate(sql).bind("id", id).execute()
+    val deleted = createUpdate(sql).bind("id", id).execute()
     if (deleted == 0) throw NotFound("Assistance need $id not found")
 }

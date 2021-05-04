@@ -12,7 +12,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -55,7 +54,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val result = db.transaction { fetchApplicationDetails(it.handle, application.id) }
+        val result = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(sentDate.plusMonths(4), result?.dueDate)
     }
 
@@ -76,14 +75,14 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val beforeSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
+        val beforeSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertNull(beforeSendingAttachment?.dueDate)
 
         // when
         uploadAttachment(applicationId = application.id, serviceWorker)
 
         // then
-        val afterSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
+        val afterSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(LocalDate.now().plusWeeks(2), afterSendingAttachment?.dueDate)
     }
 
@@ -108,7 +107,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val result = db.transaction { fetchApplicationDetails(it.handle, application.id) }
+        val result = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(originalDueDate, result?.dueDate)
     }
 
@@ -128,7 +127,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         // then
         assertEquals(204, res.statusCode)
-        val beforeSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
+        val beforeSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
         assertTrue(HelsinkiDateTime.now().durationSince(beforeSendingAttachment.dueDateSetManuallyAt ?: throw Error("dueDateSetManuallyAt should have been set")).seconds <= 5, "dueDateSetManuallyAt should have been about now")
 
@@ -136,7 +135,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         uploadAttachment(applicationId = application.id, serviceWorker)
 
         // then
-        val afterSendingAttachment = db.transaction { fetchApplicationDetails(it.handle, application.id) }
+        val afterSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(manuallySetDueDate, afterSendingAttachment?.dueDate)
     }
 
@@ -148,6 +147,6 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val applicationId = tx.insertTestApplication(status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
         val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
         tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
-        fetchApplicationDetails(tx.handle, applicationId)!!
+        tx.fetchApplicationDetails(applicationId)!!
     }
 }

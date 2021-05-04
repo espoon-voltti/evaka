@@ -35,28 +35,28 @@ class FeeDecisionGenerationJobProcessor(
 
     fun runJob(db: Database, msg: NotifyFamilyUpdated) = db.transaction { tx ->
         logger.info { "Handling family updated event for person (id: ${msg.adultId})" }
-        generator.handleFamilyUpdate(tx.handle, msg.adultId, DateRange(msg.startDate, msg.endDate))
+        generator.handleFamilyUpdate(tx, msg.adultId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyFeeAlterationUpdated) = db.transaction { tx ->
         logger.info { "Handling fee alteration updated event ($msg)" }
-        generator.handleFeeAlterationChange(tx.handle, msg.personId, DateRange(msg.startDate, msg.endDate))
+        generator.handleFeeAlterationChange(tx, msg.personId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyIncomeUpdated) = db.transaction { tx ->
         logger.info { "Handling income updated event ($msg)" }
-        generator.handleIncomeChange(tx.handle, msg.personId, DateRange(msg.startDate, msg.endDate))
+        generator.handleIncomeChange(tx, msg.personId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyPlacementPlanApplied) = db.transaction { tx ->
         logger.info { "Handling placement plan accepted event ($msg)" }
-        generator.handlePlacement(tx.handle, msg.childId, DateRange(msg.startDate, msg.endDate))
+        generator.handlePlacement(tx, msg.childId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyServiceNeedUpdated) {
         logger.info { "Handling service need updated event for child (id: ${msg.childId})" }
         db.transaction { syncNewServiceNeed(it, msg.childId) }
-        db.transaction { generator.handleServiceNeed(it.handle, msg.childId, DateRange(msg.startDate, msg.endDate)) }
+        db.transaction { generator.handleServiceNeed(it, msg.childId, DateRange(msg.startDate, msg.endDate)) }
     }
 }
 

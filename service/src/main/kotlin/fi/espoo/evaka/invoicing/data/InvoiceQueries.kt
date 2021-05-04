@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -95,7 +94,7 @@ val invoiceDetailedQueryBase =
         LEFT JOIN person as child ON row.child = child.id
     """.trimIndent()
 
-fun getInvoicesByIds(h: Handle, ids: List<UUID>): List<InvoiceDetailed> {
+fun Database.Read.getInvoicesByIds(ids: List<UUID>): List<InvoiceDetailed> {
     if (ids.isEmpty()) return listOf()
 
     val sql =
@@ -104,52 +103,52 @@ fun getInvoicesByIds(h: Handle, ids: List<UUID>): List<InvoiceDetailed> {
         WHERE invoice.id = ANY(:ids)
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .map(toDetailedInvoice)
         .let(::flattenDetailed)
 }
 
-fun getInvoice(h: Handle, uuid: UUID): Invoice? {
+fun Database.Read.getInvoice(uuid: UUID): Invoice? {
     val sql =
         """
         $invoiceQueryBase
         WHERE invoice.id = :id
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", uuid)
         .map(toInvoice)
         .let(::flatten)
         .firstOrNull()
 }
 
-fun getDetailedInvoice(h: Handle, id: UUID): InvoiceDetailed? {
+fun Database.Read.getDetailedInvoice(id: UUID): InvoiceDetailed? {
     val sql =
         """
         $invoiceDetailedQueryBase
         WHERE invoice.id = :id
     """
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", id)
         .map(toDetailedInvoice)
         .let(::flattenDetailed)
         .firstOrNull()
 }
 
-fun getHeadOfFamilyInvoices(h: Handle, headOfFamilyUuid: UUID): List<Invoice> {
+fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: UUID): List<Invoice> {
     val sql =
         """
         $invoiceQueryBase
         WHERE invoice.head_of_family = :headOfFamilyId
     """
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyUuid)
         .map(toInvoice)
         .let(::flatten)
 }
 
-fun getInvoiceIdsByDates(h: Handle, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
+fun Database.Read.getInvoiceIdsByDates(from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
     val sql =
         """
         SELECT id FROM invoice
@@ -158,7 +157,7 @@ fun getInvoiceIdsByDates(h: Handle, from: LocalDate, to: LocalDate, areas: List<
         AND status = :draft::invoice_status
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
         .bind("areas", areas.toTypedArray())
@@ -167,8 +166,7 @@ fun getInvoiceIdsByDates(h: Handle, from: LocalDate, to: LocalDate, areas: List<
         .toList()
 }
 
-fun paginatedSearch(
-    tx: Database.Read,
+fun Database.Read.paginatedSearch(
     page: Int = 1,
     pageSize: Int = 200,
     sortBy: InvoiceSortParam = InvoiceSortParam.STATUS,
@@ -263,7 +261,7 @@ fun paginatedSearch(
         ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id
         """.trimIndent()
 
-    return tx.createQuery(sql)
+    return createQuery(sql)
         .bindMap(params + freeTextParams)
         .map { rs, ctx ->
             WithCount(rs.getInt("count"), toInvoiceSummary(rs, ctx))
@@ -272,8 +270,7 @@ fun paginatedSearch(
         .let { it.copy(data = flattenSummary(it.data)) }
 }
 
-fun searchInvoices(
-    h: Handle,
+fun Database.Read.searchInvoices(
     statuses: List<InvoiceStatus> = listOf(),
     areas: List<String> = listOf(),
     unit: UUID? = null,
@@ -316,28 +313,28 @@ fun searchInvoices(
         ORDER BY status DESC, due_date
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bindMap(params)
         .map(toDetailedInvoice)
         .let(::flattenDetailed)
 }
 
-fun getMaxInvoiceNumber(h: Handle): Long {
-    return h.createQuery("SELECT max(number) FROM invoice")
+fun Database.Read.getMaxInvoiceNumber(): Long {
+    return createQuery("SELECT max(number) FROM invoice")
         .mapTo(Long::class.java)
         .first()
 }
 
-fun deleteDraftInvoices(h: Handle, draftIds: List<UUID>) {
+fun Database.Transaction.deleteDraftInvoices(draftIds: List<UUID>) {
     if (draftIds.isEmpty()) return
 
-    h.createUpdate("DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)")
+    createUpdate("DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)")
         .bind("status", InvoiceStatus.DRAFT.toString())
         .bind("draftIds", draftIds.toTypedArray())
         .execute()
 }
 
-fun setDraftsSent(h: Handle, idNumberPairs: List<Pair<UUID, Long>>, sentBy: UUID) {
+fun Database.Transaction.setDraftsSent(idNumberPairs: List<Pair<UUID, Long>>, sentBy: UUID) {
     val sql =
         """
         UPDATE invoice
@@ -349,7 +346,7 @@ fun setDraftsSent(h: Handle, idNumberPairs: List<Pair<UUID, Long>>, sentBy: UUID
         WHERE id = :id
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     idNumberPairs.forEach { (id, number) ->
         batch
             .bind("id", id)
@@ -361,27 +358,27 @@ fun setDraftsSent(h: Handle, idNumberPairs: List<Pair<UUID, Long>>, sentBy: UUID
     batch.execute()
 }
 
-fun updateToWaitingForSending(h: Handle, invoiceIds: List<UUID>) {
+fun Database.Transaction.updateToWaitingForSending(invoiceIds: List<UUID>) {
     if (invoiceIds.isEmpty()) return
 
-    h.createUpdate("UPDATE invoice SET status = :status::invoice_status WHERE id = ANY(:ids)")
+    createUpdate("UPDATE invoice SET status = :status::invoice_status WHERE id = ANY(:ids)")
         .bind("ids", invoiceIds.toTypedArray())
         .bind("status", InvoiceStatus.WAITING_FOR_SENDING.toString())
         .execute()
 }
 
-fun updateInvoiceDates(h: Handle, invoiceIds: List<UUID>, invoiceDate: LocalDate, dueDate: LocalDate) {
+fun Database.Transaction.updateInvoiceDates(invoiceIds: List<UUID>, invoiceDate: LocalDate, dueDate: LocalDate) {
     if (invoiceIds.isEmpty()) return
 
     val sql = "UPDATE invoice SET invoice_date = :invoiceDate, due_date = :dueDate WHERE id = ANY(:ids)"
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("ids", invoiceIds.toTypedArray())
         .bind("invoiceDate", invoiceDate)
         .bind("dueDate", dueDate)
         .execute()
 }
 
-fun deleteDraftInvoicesByPeriod(h: Handle, period: DateRange) {
+fun Database.Transaction.deleteDraftInvoicesByPeriod(period: DateRange) {
     val sql =
         """
             DELETE FROM invoice
@@ -389,21 +386,21 @@ fun deleteDraftInvoicesByPeriod(h: Handle, period: DateRange) {
             AND daterange(:periodStart, :periodEnd, '[]') && daterange(period_start, period_end, '[]')
         """
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("periodStart", period.start)
         .bind("periodEnd", period.end)
         .bind("status", InvoiceStatus.DRAFT.toString())
         .execute()
 }
 
-fun upsertInvoices(h: Handle, invoices: List<Invoice>) {
-    upsertInvoicesWithoutRows(h, invoices)
+fun Database.Transaction.upsertInvoices(invoices: List<Invoice>) {
+    upsertInvoicesWithoutRows(invoices)
     val rowsWithInvoiceIds = invoices.map { it.id to it.rows }
-    deleteInvoiceRows(h, rowsWithInvoiceIds.map { it.first })
-    insertInvoiceRows(h, rowsWithInvoiceIds)
+    deleteInvoiceRows(rowsWithInvoiceIds.map { it.first })
+    insertInvoiceRows(rowsWithInvoiceIds)
 }
 
-private fun upsertInvoicesWithoutRows(h: Handle, invoices: List<Invoice>) {
+private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
     val sql =
         """
         INSERT INTO invoice (
@@ -429,7 +426,7 @@ private fun upsertInvoicesWithoutRows(h: Handle, invoices: List<Invoice>) {
         ) ON CONFLICT (id) DO NOTHING
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
         .also { batch ->
             invoices.forEach { invoice ->
                 batch
@@ -449,15 +446,15 @@ private fun upsertInvoicesWithoutRows(h: Handle, invoices: List<Invoice>) {
     batch.execute()
 }
 
-private fun deleteInvoiceRows(h: Handle, invoiceIds: List<UUID>) {
+private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<UUID>) {
     if (invoiceIds.isEmpty()) return
 
-    h.createUpdate("DELETE FROM invoice_row WHERE invoice_id in (<invoiceIds>)")
+    createUpdate("DELETE FROM invoice_row WHERE invoice_id in (<invoiceIds>)")
         .bindList("invoiceIds", invoiceIds)
         .execute()
 }
 
-private fun insertInvoiceRows(h: Handle, invoiceRows: List<Pair<UUID, List<InvoiceRow>>>) {
+private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<UUID, List<InvoiceRow>>>) {
     val sql =
         """
             INSERT INTO invoice_row (
@@ -489,7 +486,7 @@ private fun insertInvoiceRows(h: Handle, invoiceRows: List<Pair<UUID, List<Invoi
             )
         """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
         .also { batch ->
             invoiceRows.forEach { (invoiceId, rows) ->
                 rows.map { row ->

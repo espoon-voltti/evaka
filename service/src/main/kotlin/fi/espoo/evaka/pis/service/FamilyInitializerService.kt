@@ -40,7 +40,7 @@ class FamilyInitializerService(
 
     fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: InitializeFamilyFromApplication) {
         val user = msg.user
-        val application = db.read { fetchApplicationDetails(it.handle, msg.applicationId) }
+        val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
         if (application != null) {
             val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
             db.transaction { tryInitFamilyFromApplication(it, members) }

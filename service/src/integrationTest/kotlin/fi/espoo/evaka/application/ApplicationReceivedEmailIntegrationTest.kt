@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestClubApplicationForm
@@ -379,7 +378,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
         asyncJobRunner.runPendingJobsSync()
 
-        val result = db.read { r -> fetchApplicationDetails(r.handle, applicationId) }
+        val result = db.read { r -> r.fetchApplicationDetails(applicationId) }
         assertEquals(manuallySetSentDate, result?.sentDate)
     }
 
@@ -425,7 +424,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     private fun assertApplicationIsSent(applicationId: UUID) {
         db.read {
-            assertEquals(ApplicationStatus.SENT, fetchApplicationDetails(it.handle, applicationId)!!.status)
+            assertEquals(ApplicationStatus.SENT, it.fetchApplicationDetails(applicationId)!!.status)
         }
     }
 }

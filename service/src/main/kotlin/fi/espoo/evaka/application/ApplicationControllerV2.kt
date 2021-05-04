@@ -140,8 +140,7 @@ class ApplicationControllerV2(
             val guardian = personService.getUpToDatePerson(tx, user, guardianId)
                 ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
-            val id = insertApplication(
-                h = tx.handle,
+            val id = tx.insertApplication(
                 guardianId = guardianId,
                 childId = body.childId,
                 origin = ApplicationOrigin.PAPER,
@@ -153,7 +152,7 @@ class ApplicationControllerV2(
                 guardian = guardian,
                 child = child
             )
-            updateForm(tx.handle, id, form, body.type, child.restrictedDetailsEnabled, guardian.restrictedDetailsEnabled)
+            tx.updateForm(id, form, body.type, child.restrictedDetailsEnabled, guardian.restrictedDetailsEnabled)
             id
         }
 
@@ -194,8 +193,7 @@ class ApplicationControllerV2(
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
         return db.read { tx ->
-            fetchApplicationSummaries(
-                tx = tx,
+            tx.fetchApplicationSummaries(
                 user = user,
                 page = page ?: 1,
                 pageSize = pageSize ?: 100,
@@ -230,7 +228,7 @@ class ApplicationControllerV2(
         Audit.ApplicationRead.log(targetId = guardianId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
-        return db.read { fetchApplicationSummariesForGuardian(it.handle, guardianId) }
+        return db.read { it.fetchApplicationSummariesForGuardian(guardianId) }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -244,7 +242,7 @@ class ApplicationControllerV2(
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
-        return db.read { fetchApplicationSummariesForChild(it.handle, childId) }
+        return db.read { it.fetchApplicationSummariesForChild(childId) }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -260,9 +258,9 @@ class ApplicationControllerV2(
         roles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
-            val application = fetchApplicationDetails(tx.handle, applicationId)
+            val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, acl.getAuthorizedUnits(user))
+            val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
             val guardians =
                 personService.getGuardians(tx, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
@@ -331,12 +329,12 @@ class ApplicationControllerV2(
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
 
         return db.transaction { tx ->
-            val application = fetchApplicationDetails(tx.handle, applicationId)
+            val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
 
             val placementUnitName = getPlacementPlanUnitName(tx.handle, applicationId)
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
             val applicationGuardian = personService.getUpToDatePerson(tx, user, application.guardianId)

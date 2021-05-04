@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
@@ -118,12 +117,12 @@ val feeDecisionDetailedQueryBase =
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
 
-fun upsertFeeDecisions(h: Handle, mapper: ObjectMapper, decisions: List<FeeDecision>) {
-    upsertDecisions(h, mapper, decisions)
-    replaceParts(h, mapper, decisions)
+fun Database.Transaction.upsertFeeDecisions(mapper: ObjectMapper, decisions: List<FeeDecision>) {
+    upsertDecisions(mapper, decisions)
+    replaceParts(mapper, decisions)
 }
 
-private fun upsertDecisions(h: Handle, mapper: ObjectMapper, decisions: List<FeeDecision>) {
+private fun Database.Transaction.upsertDecisions(mapper: ObjectMapper, decisions: List<FeeDecision>) {
     val sql =
         """
         INSERT INTO fee_decision (
@@ -168,7 +167,7 @@ private fun upsertDecisions(h: Handle, mapper: ObjectMapper, decisions: List<Fee
             pricing = :pricing
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     decisions.forEach { decision ->
         batch
             .bindMap(
@@ -208,13 +207,13 @@ private fun upsertDecisions(h: Handle, mapper: ObjectMapper, decisions: List<Fee
     batch.execute()
 }
 
-private fun replaceParts(h: Handle, mapper: ObjectMapper, decisions: List<FeeDecision>) {
+private fun Database.Transaction.replaceParts(mapper: ObjectMapper, decisions: List<FeeDecision>) {
     val partsWithDecisionIds = decisions.map { it.id to it.parts }
-    deleteParts(h, partsWithDecisionIds.map { it.first })
-    insertParts(h, mapper, partsWithDecisionIds)
+    deleteParts(partsWithDecisionIds.map { it.first })
+    insertParts(mapper, partsWithDecisionIds)
 }
 
-private fun insertParts(h: Handle, mapper: ObjectMapper, decisions: List<Pair<UUID, List<FeeDecisionPart>>>) {
+private fun Database.Transaction.insertParts(mapper: ObjectMapper, decisions: List<Pair<UUID, List<FeeDecisionPart>>>) {
     val sql =
         """
         INSERT INTO fee_decision_part (
@@ -244,7 +243,7 @@ private fun insertParts(h: Handle, mapper: ObjectMapper, decisions: List<Pair<UU
         )
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     decisions.forEach { (decisionId, parts) ->
         parts.forEach { part ->
             batch
@@ -272,24 +271,23 @@ private fun insertParts(h: Handle, mapper: ObjectMapper, decisions: List<Pair<UU
     batch.execute()
 }
 
-private fun deleteParts(h: Handle, decisionIds: List<UUID>) {
+private fun Database.Transaction.deleteParts(decisionIds: List<UUID>) {
     if (decisionIds.isEmpty()) return
 
-    h.createUpdate("DELETE FROM fee_decision_part WHERE fee_decision_id = ANY(:decisionIds)")
+    createUpdate("DELETE FROM fee_decision_part WHERE fee_decision_id = ANY(:decisionIds)")
         .bind("decisionIds", decisionIds.toTypedArray())
         .execute()
 }
 
-fun deleteFeeDecisions(h: Handle, ids: List<UUID>) {
+fun Database.Transaction.deleteFeeDecisions(ids: List<UUID>) {
     if (ids.isEmpty()) return
 
-    h.createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
+    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .execute()
 }
 
-fun searchFeeDecisions(
-    tx: Database.Read,
+fun Database.Read.searchFeeDecisions(
     page: Int,
     pageSize: Int,
     sortBy: FeeDecisionSortParam,
@@ -428,7 +426,7 @@ fun searchFeeDecisions(
         ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.date_of_birth DESC
         """.trimIndent()
 
-    return tx.createQuery(sql)
+    return createQuery(sql)
         .bindMap(params + freeTextParams + numberParams)
         .map { rs, ctx ->
             WithCount(rs.getInt("count"), toFeeDecisionSummary(rs, ctx))
@@ -437,7 +435,7 @@ fun searchFeeDecisions(
         .let { it.copy(data = it.data.merge()) }
 }
 
-fun getFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List<FeeDecision> {
+fun Database.Read.getFeeDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
@@ -446,13 +444,13 @@ fun getFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List
         WHERE decision.id = ANY(:ids)
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .map(toFeeDecision(mapper))
         .let { it.merge() }
 }
 
-fun getDetailedFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List<FeeDecisionDetailed> {
+fun Database.Read.getDetailedFeeDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
@@ -462,13 +460,13 @@ fun getDetailedFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID
         ORDER BY part.date_of_birth DESC
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .map(toFeeDecisionDetailed(mapper))
         .let { it.merge() }
 }
 
-fun getFeeDecision(h: Handle, mapper: ObjectMapper, uuid: UUID): FeeDecisionDetailed? {
+fun Database.Read.getFeeDecision(mapper: ObjectMapper, uuid: UUID): FeeDecisionDetailed? {
     val sql =
         """
         $feeDecisionDetailedQueryBase
@@ -476,15 +474,14 @@ fun getFeeDecision(h: Handle, mapper: ObjectMapper, uuid: UUID): FeeDecisionDeta
         ORDER BY part.date_of_birth DESC
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", uuid)
         .map(toFeeDecisionDetailed(mapper))
         .let { it.merge() }
         .firstOrNull()
 }
 
-fun findFeeDecisionsForHeadOfFamily(
-    h: Handle,
+fun Database.Read.findFeeDecisionsForHeadOfFamily(
     mapper: ObjectMapper,
     headOfFamilyId: UUID,
     period: DateRange?,
@@ -499,7 +496,7 @@ fun findFeeDecisionsForHeadOfFamily(
             ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyId)
         .let { query ->
             if (period != null) query.bind("periodStart", period.start).bind("periodEnd", period.end)
@@ -510,7 +507,7 @@ fun findFeeDecisionsForHeadOfFamily(
         .let { it.merge() }
 }
 
-fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
+fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
     val sql =
         """
         WITH youngest_child AS (
@@ -538,7 +535,7 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
         WHERE fd.id = :id AND fee_decision.id = fd.id
         """.trimIndent()
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     ids.map { id ->
         batch
             .bind("id", id)
@@ -551,7 +548,7 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
     batch.execute()
 }
 
-fun setFeeDecisionWaitingForManualSending(h: Handle, id: UUID) {
+fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
     val sql =
         """
         UPDATE fee_decision
@@ -561,14 +558,14 @@ fun setFeeDecisionWaitingForManualSending(h: Handle, id: UUID) {
         AND status = :requiredStatus::fee_decision_status
     """
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("status", FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING.toString())
         .bind("requiredStatus", FeeDecisionStatus.WAITING_FOR_SENDING.toString())
         .execute()
 }
 
-fun setFeeDecisionSent(h: Handle, ids: List<UUID>) {
+fun Database.Transaction.setFeeDecisionSent(ids: List<UUID>) {
     val sql =
         """
         UPDATE fee_decision
@@ -578,7 +575,7 @@ fun setFeeDecisionSent(h: Handle, ids: List<UUID>) {
         WHERE id = :id
     """
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     ids.forEach { id ->
         batch
             .bind("id", id)
@@ -603,7 +600,7 @@ fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<
         .execute()
 }
 
-fun updateFeeDecisionDocumentKey(h: Handle, id: UUID, key: String) {
+fun Database.Transaction.updateFeeDecisionDocumentKey(id: UUID, key: String) {
     val sql =
         """
         UPDATE fee_decision
@@ -611,13 +608,13 @@ fun updateFeeDecisionDocumentKey(h: Handle, id: UUID, key: String) {
         WHERE id = :id
     """
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("key", key)
         .execute()
 }
 
-fun getFeeDecisionDocumentKey(h: Handle, decisionId: UUID): String? {
+fun Database.Read.getFeeDecisionDocumentKey(decisionId: UUID): String? {
     val sql =
         """
         SELECT document_key 
@@ -625,13 +622,13 @@ fun getFeeDecisionDocumentKey(h: Handle, decisionId: UUID): String? {
         WHERE id = :id
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", decisionId)
         .mapTo(String::class.java)
         .firstOrNull()
 }
 
-fun setFeeDecisionType(h: Handle, id: UUID, type: FeeDecisionType) {
+fun Database.Transaction.setFeeDecisionType(id: UUID, type: FeeDecisionType) {
     //language=SQL
     val sql =
         """
@@ -641,20 +638,20 @@ fun setFeeDecisionType(h: Handle, id: UUID, type: FeeDecisionType) {
             AND status = :requiredStatus::fee_decision_status
     """
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("id", id)
         .bind("type", type.toString())
         .bind("requiredStatus", FeeDecisionStatus.DRAFT.toString())
         .execute()
 }
 
-fun Handle.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
+fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
     createUpdate("SELECT id FROM fee_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()
 }
 
-fun Handle.lockFeeDecisions(ids: List<UUID>) {
+fun Database.Transaction.lockFeeDecisions(ids: List<UUID>) {
     createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()

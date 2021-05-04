@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.net.URI
@@ -70,33 +69,33 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
     childName = "${rs.getString("child_first_name")} ${rs.getString("child_last_name")}"
 )
 
-fun getDecision(h: Handle, decisionId: UUID): Decision? {
-    return h.createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL").bind("id", decisionId)
+fun Database.Read.getDecision(decisionId: UUID): Decision? {
+    return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL").bind("id", decisionId)
         .map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.first()
 }
 
-fun getDecisionsByChild(h: Handle, childId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
-    val query = h.createQuery(sql).bind("id", childId)
+    val query = createQuery(sql).bind("id", childId)
     units?.let { query.bindList("units", units) }
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
-fun getDecisionsByApplication(h: Handle, applicationId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
         "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
-    val query = h.createQuery(sql).bind("id", applicationId)
+    val query = createQuery(sql).bind("id", applicationId)
     units?.let { query.bindList("units", units) }
 
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
-fun getDecisionsByGuardian(h: Handle, guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql = "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
-    val query = h.createQuery(sql).bind("id", guardianId)
+    val query = createQuery(sql).bind("id", guardianId)
     units?.let { query.bindList("units", units) }
 
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
@@ -112,7 +111,7 @@ data class ApplicationDecisionRow(
     val resolved: LocalDate?
 )
 
-fun getOwnDecisions(h: Database.Read, guardianId: UUID): List<ApplicationDecisions> {
+fun Database.Read.getOwnDecisions(guardianId: UUID): List<ApplicationDecisions> {
     // language=sql
     val sql =
         """
@@ -123,7 +122,7 @@ fun getOwnDecisions(h: Database.Read, guardianId: UUID): List<ApplicationDecisio
         WHERE a.guardian_id = :guardianId AND d.sent_date IS NOT NULL
         """.trimIndent()
 
-    val rows = h.createQuery(sql)
+    val rows = createQuery(sql)
         .bind("guardianId", guardianId)
         .mapTo<ApplicationDecisionRow>()
 
@@ -138,7 +137,7 @@ fun getOwnDecisions(h: Database.Read, guardianId: UUID): List<ApplicationDecisio
         }
 }
 
-fun fetchDecisionDrafts(h: Handle, applicationId: UUID): List<DecisionDraft> {
+fun Database.Read.fetchDecisionDrafts(applicationId: UUID): List<DecisionDraft> {
     // language=sql
     val sql =
         """
@@ -147,19 +146,17 @@ fun fetchDecisionDrafts(h: Handle, applicationId: UUID): List<DecisionDraft> {
             WHERE application_id = :applicationId AND sent_date IS NULL
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("applicationId", applicationId)
         .mapTo<DecisionDraft>()
         .list()
 }
 
-fun finalizeDecisions(
-    h: Handle,
+fun Database.Transaction.finalizeDecisions(
     applicationId: UUID
 ): List<UUID> {
     // discard unplanned drafts
-    h.createUpdate(
+    createUpdate(
         //language=SQL
         """
             DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false
@@ -169,7 +166,7 @@ fun finalizeDecisions(
         .execute()
 
     // confirm planned drafts
-    return h.createQuery(
+    return createQuery(
         //language=SQL
         """
             UPDATE decision SET sent_date = :sentDate 
@@ -183,8 +180,7 @@ fun finalizeDecisions(
         .list()
 }
 
-fun insertDecision(
-    h: Handle,
+fun Database.Transaction.insertDecision(
     decisionId: UUID,
     userId: UUID,
     sentDate: LocalDate,
@@ -194,7 +190,7 @@ fun insertDecision(
     startDate: LocalDate,
     endDate: LocalDate
 ) {
-    h.createUpdate(
+    createUpdate(
         //language=SQL
         """
             INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date) 
@@ -212,24 +208,24 @@ fun insertDecision(
         .execute()
 }
 
-fun updateDecisionGuardianDocumentUri(h: Handle, decisionId: UUID, pdfUri: URI) {
+fun Database.Transaction.updateDecisionGuardianDocumentUri(decisionId: UUID, pdfUri: URI) {
     // language=SQL
-    h.createUpdate("UPDATE decision SET document_uri = :uri WHERE id = :id")
+    createUpdate("UPDATE decision SET document_uri = :uri WHERE id = :id")
         .bind("id", decisionId)
         .bind("uri", pdfUri.toString())
         .execute()
 }
 
-fun updateDecisionOtherGuardianDocumentUri(h: Handle, decisionId: UUID, pdfUri: URI) {
+fun Database.Transaction.updateDecisionOtherGuardianDocumentUri(decisionId: UUID, pdfUri: URI) {
     // language=SQL
-    h.createUpdate("UPDATE decision SET other_guardian_document_uri = :uri WHERE id = :id")
+    createUpdate("UPDATE decision SET other_guardian_document_uri = :uri WHERE id = :id")
         .bind("id", decisionId)
         .bind("uri", pdfUri.toString())
         .execute()
 }
 
-fun isDecisionBlocked(h: Handle, decisionId: UUID): Boolean {
-    return h.createQuery(
+fun Database.Read.isDecisionBlocked(decisionId: UUID): Boolean {
+    return createQuery(
         // language=SQL
         """
 SELECT count(*) > 0 AS blocked
@@ -241,8 +237,8 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         .map { rs: ResultSet, _: StatementContext -> rs.getBoolean("blocked") }.first() ?: false
 }
 
-fun getDecisionLanguage(h: Handle, decisionId: UUID): String {
-    return h.createQuery(
+fun Database.Read.getDecisionLanguage(decisionId: UUID): String {
+    return createQuery(
         //language=SQL
         """
             SELECT daycare.language
@@ -255,11 +251,11 @@ fun getDecisionLanguage(h: Handle, decisionId: UUID): String {
         .map { rs -> rs.getColumn("language", String::class.java) }.first()
 }
 
-fun markDecisionAccepted(h: Handle, user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) {
-    if (isDecisionBlocked(h, decisionId)) {
+fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) {
+    if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
     }
-    h.createUpdate(
+    createUpdate(
         // language=SQL
         """
 UPDATE decision
@@ -278,11 +274,11 @@ AND status = 'PENDING'
         .execute()
 }
 
-fun markDecisionRejected(h: Handle, user: AuthenticatedUser, decisionId: UUID) {
-    if (isDecisionBlocked(h, decisionId)) {
+fun Database.Transaction.markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) {
+    if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")
     }
-    h.createUpdate(
+    createUpdate(
         // language=SQL
         """
 UPDATE decision

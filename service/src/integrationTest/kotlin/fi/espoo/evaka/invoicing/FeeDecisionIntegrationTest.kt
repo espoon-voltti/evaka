@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -213,7 +212,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with test data in DB`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50"))
             .asUser(user)
@@ -227,7 +226,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with draft status parameter`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val drafts = testDecisions.filter { it.status === FeeDecisionStatus.DRAFT }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "status" to "DRAFT"))
@@ -242,7 +241,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with sent status parameter`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val sent = testDecisions.filter { it.status === FeeDecisionStatus.SENT }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "status" to "SENT"))
@@ -257,7 +256,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works with multiple status parameters`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "status" to "DRAFT,SENT"))
             .asUser(user)
@@ -279,7 +278,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             }
         )
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(testDecision, testDecisionMissingServiceNeed)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(testDecision, testDecisionMissingServiceNeed)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "distinctions" to "UNCONFIRMED_HOURS"))
             .asUser(user)
@@ -296,7 +295,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val testDecisionWithExtChild = testDecisions[4]
 
         db.transaction { tx ->
-            upsertFeeDecisions(tx.handle, objectMapper, listOf(testDecisions[0], testDecisions[3], testDecisionWithExtChild))
+            tx.upsertFeeDecisions(objectMapper, listOf(testDecisions[0], testDecisions[3], testDecisionWithExtChild))
         }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "distinctions" to "EXTERNAL_CHILD"))
@@ -315,7 +314,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "distinctions" to "RETROACTIVE"))
             .asUser(user)
@@ -329,7 +328,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with existing area param`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "area" to "test_area"))
             .asUser(user)
@@ -343,7 +342,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with area and status params`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "area" to "test_area", "status" to "DRAFT"))
             .asUser(user)
@@ -357,7 +356,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with non existant area param`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "area" to "non_existent"))
             .asUser(user)
@@ -370,7 +369,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with a unit param`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "unit" to testDaycare.id.toString()))
             .asUser(user)
@@ -385,7 +384,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with a non-existant unit id param`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "unit" to UUID.randomUUID().toString()))
             .asUser(user)
@@ -399,7 +398,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with multiple partial search terms`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"))
             .asUser(user)
@@ -415,7 +414,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with multiple more specific search terms`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"))
             .asUser(user)
@@ -429,7 +428,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with multiple search terms where one does not match anything`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"))
             .asUser(user)
@@ -443,7 +442,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with child name as search term`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to testChild_2.firstName))
             .asUser(user)
@@ -460,7 +459,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val sentDecision =
             testDecisions.find { it.status == FeeDecisionStatus.SENT }!!.copy(decisionNumber = 123123123L)
         val otherDecision = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(sentDecision, otherDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(sentDecision, otherDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to "123123123"))
             .asUser(user)
@@ -474,7 +473,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with ssn as search term`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to testAdult_1.ssn))
             .asUser(user)
@@ -488,7 +487,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `search works as expected with date of birth as search term`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "searchTerms" to testAdult_1.ssn!!.substring(0, 6)))
             .asUser(user)
@@ -502,7 +501,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getDecision works with existing decision`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val decision = testDecisions[0]
 
         val (_, _, result) = http.get("/decisions/${decision.id}")
@@ -517,7 +516,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `fee percent and minimum threshold works when getting one decision`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val decision = testDecisions[0]
 
         val (_, _, result) = http.get("/decisions/${decision.id}")
@@ -532,7 +531,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getDecision returns not found with non-existant decision`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, response, _) = http.get("/decisions/00000000-0000-0000-0000-000000000000")
             .asUser(user)
@@ -542,7 +541,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `getting head of family's fee decisions works`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, result) = http.get("/decisions/head-of-family/${testAdult_1.id}")
             .asUser(user)
@@ -562,7 +561,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts works with draft decision`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
         val (_, response, _) = http.post("/decisions/confirm")
@@ -574,7 +573,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts updates status, decision number, approver on draft`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
         http.post("/decisions/confirm")
@@ -604,7 +603,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts updates status, decision number, approver on relief decision`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
 
         http.post("/decisions/confirm")
@@ -634,7 +633,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts updates status, decision number, approver on relief partly accepted`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_PARTLY_ACCEPTED }!!
 
         http.post("/decisions/confirm")
@@ -664,7 +663,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts updates status, decision number, approver on relief rejected`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_REJECTED }!!
 
         http.post("/decisions/confirm")
@@ -696,7 +695,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     fun `confirmDrafts picks decision handler from unit when decision is not a relief decision nor retroactive`() {
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
             .copy(validFrom = LocalDate.now().withDayOfMonth(1), validTo = LocalDate.now().plusMonths(1))
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(draft)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(draft)) }
         db.transaction {
             it.execute(
                 "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
@@ -732,7 +731,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts uses approver as decision handler when decision is a relief decision`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
         db.transaction {
             it.execute(
@@ -772,7 +771,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val now = LocalDate.now()
         val oldDecision = testDecisions.first().copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision)) }
 
         db.transaction {
             it.execute(
@@ -812,7 +811,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val draft =
             testDecisions.find { it.status === FeeDecisionStatus.DRAFT && it.headOfFamily.id === testAdult_3.id }!!
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -841,7 +840,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `confirmDrafts returns bad request when some decisions are not drafts`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
@@ -857,7 +856,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
                 validFrom = LocalDate.now().plusDays(1),
                 validTo = LocalDate.now().plusYears(1)
             )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(draftWithFutureDates)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(draftWithFutureDates)) }
 
         val (_, response, _) = http.post("/decisions/confirm")
             .asUser(user)
@@ -874,7 +873,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.SENT,
             validFrom = draft.validFrom.minusDays(30)
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(draft, conflict)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(draft, conflict)) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -899,7 +898,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             id = UUID.randomUUID(),
             status = FeeDecisionStatus.SENT
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(draft, conflict)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(draft, conflict)) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -932,7 +931,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             validFrom = draft.validFrom.plusDays(11),
             validTo = draft.validFrom.plusDays(20)
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(draft, conflict_1, conflict_2)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(draft, conflict_1, conflict_2)) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -968,7 +967,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.SENT,
             validTo = draft.validTo!!.plusDays(10)
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(draft, conflict)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(draft, conflict)) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -997,7 +996,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             id = UUID.randomUUID(),
             status = FeeDecisionStatus.SENT
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, splitDrafts + conflict) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, splitDrafts + conflict) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -1034,7 +1033,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             id = UUID.randomUUID(),
             status = FeeDecisionStatus.SENT
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, splitDrafts + conflict) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, splitDrafts + conflict) }
 
         http.post("/decisions/confirm")
             .asUser(user)
@@ -1058,7 +1057,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "startDate" to "1900-01-01", "endDate" to "1901-01-01"))
             .asUser(user)
@@ -1076,7 +1075,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "startDate" to now.minusMonths(3).toString(), "endDate" to now.minusDays(1).toString()))
             .asUser(user)
@@ -1094,7 +1093,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "startDate" to now.plusDays(1).toString(), "endDate" to now.plusMonths(8).toString()))
             .asUser(user)
@@ -1112,7 +1111,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, resultPast) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "startDate" to now.minusMonths(6).toString(), "endDate" to now.minusMonths(1).toString()))
             .asUser(user)
@@ -1139,7 +1138,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "endDate" to now.plusYears(8).toString()))
             .asUser(user)
@@ -1157,7 +1156,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val oldDecision = testDecisions[0].copy(validFrom = now.minusMonths(2), validTo = now.minusMonths(1))
         val futureDecision = testDecisions[1].copy(validFrom = now.plusMonths(1), validTo = now.plusMonths(2))
 
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDecision, futureDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDecision, futureDecision)) }
 
         val (_, _, result) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "startDate" to now.minusYears(8).toString()))
             .asUser(user)
@@ -1171,7 +1170,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `set type updates decision type`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
         val draft = testDecisions.find { it.decisionType == FeeDecisionType.NORMAL }!!
         val requestBody = FeeDecisionTypeRequest(type = FeeDecisionType.RELIEF_ACCEPTED)
 
@@ -1196,7 +1195,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `sorting works with different params`() {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, testDecisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, testDecisions) }
 
         val (_, _, statusAsc) = http.get("/decisions/search", listOf("page" to "0", "pageSize" to "50", "sortBy" to "STATUS", "sortDirection" to "ASC"))
             .asUser(user)
@@ -1258,7 +1257,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         val decision = testDecisions.first()
 
         db.transaction { tx ->
-            upsertFeeDecisions(tx.handle, objectMapper, listOf(decision))
+            tx.upsertFeeDecisions(objectMapper, listOf(decision))
         }
 
         val (_, _, result0) = http.get("/decisions/${decision.id}")

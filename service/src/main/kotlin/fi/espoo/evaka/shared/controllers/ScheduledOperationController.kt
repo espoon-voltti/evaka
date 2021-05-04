@@ -76,7 +76,7 @@ class ScheduledOperationController(
     @PostMapping("/application/clear-old-drafts")
     fun removeOldDraftApplications(db: Database.Connection): ResponseEntity<Unit> {
         Audit.ApplicationsDeleteDrafts.log()
-        db.transaction { removeOldDrafts(it, attachmentsController::deleteAttachment) }
+        db.transaction { it.removeOldDrafts(attachmentsController::deleteAttachment) }
         return ResponseEntity.noContent().build()
     }
 

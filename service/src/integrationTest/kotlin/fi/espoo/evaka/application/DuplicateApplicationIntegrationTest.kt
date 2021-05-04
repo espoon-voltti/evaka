@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.test.validDaycareApplication
@@ -37,25 +36,25 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `no applications means no duplicates`() {
-        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE)) }
     }
 
     @Test
     fun `duplicate is found`() {
         addDaycareApplication()
-        db.transaction { tx -> assertTrue(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertTrue(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE)) }
     }
 
     @Test
     fun `application for a different child is not a duplicate`() {
         addDaycareApplication()
-        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId2, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId2, guardianId, ApplicationType.DAYCARE)) }
     }
 
     @Test
     fun `application for a different type is not a duplicate`() {
         addDaycareApplication()
-        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.PRESCHOOL)) }
+        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.PRESCHOOL)) }
     }
 
     @Test
@@ -63,7 +62,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest() {
         addDaycareApplication(ApplicationStatus.ACTIVE)
         addDaycareApplication(ApplicationStatus.REJECTED)
         addDaycareApplication(ApplicationStatus.CANCELLED)
-        db.transaction { tx -> assertFalse(duplicateApplicationExists(tx.handle, childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE)) }
     }
 
     private fun addDaycareApplication(status: ApplicationStatus = ApplicationStatus.SENT) {

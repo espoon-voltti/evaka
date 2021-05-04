@@ -15,7 +15,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea2Code
@@ -112,7 +111,7 @@ class InvoicingReportTest : FullApplicationTest() {
 
     private fun insertInvoices(date: LocalDate) {
         db.transaction {
-            upsertInvoices(it.handle, testInvoices)
+            it.upsertInvoices(testInvoices)
             it.createUpdate(
                 """
                 UPDATE invoice SET sent_at = :sentAt

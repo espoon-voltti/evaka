@@ -117,7 +117,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
             assertEquals(LocalDate.now(), application.sentDate)
             assertEquals(LocalDate.now(), application.dueDate)
@@ -141,14 +141,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(LocalDate.now().plusMonths(4), application.dueDate)
         }
     }
 
     private fun assertDueDate(applicationId: UUID, expected: Instant?) {
         db.read {
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             if (expected != null) {
                 assertEquals(LocalDate.ofInstant(expected, europeHelsinki), application.dueDate)
             } else {
@@ -254,7 +254,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.transferApplication)
             assertEquals(null, application.dueDate)
         }
@@ -277,7 +277,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
         }
@@ -300,7 +300,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(false, application.checkedByAdmin)
         }
     }
@@ -394,7 +394,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
         }
@@ -404,7 +404,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(false, application.checkedByAdmin)
         }
@@ -423,7 +423,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.CANCELLED, application.status)
         }
     }
@@ -442,7 +442,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.CANCELLED, application.status)
         }
     }
@@ -461,7 +461,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
         }
     }
@@ -492,7 +492,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -508,7 +508,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(1, decisionDrafts.size)
             assertEquals(
                 DecisionDraft(
@@ -550,7 +550,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -566,7 +566,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(1, decisionDrafts.size)
             assertEquals(
                 DecisionDraft(
@@ -608,7 +608,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -624,7 +624,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
             decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
@@ -683,7 +683,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
@@ -699,7 +699,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 placementPlan
             )
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
             decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
@@ -759,13 +759,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)
             assertEquals(null, placementPlan)
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(0, decisionDrafts.size)
         }
     }
@@ -855,14 +855,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         // then
         db.read {
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             if (manualMailing) {
                 assertEquals(ApplicationStatus.WAITING_MAILING, application.status)
             } else {
                 assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
             }
 
-            val decisionsByApplication = getDecisionsByApplication(it.handle, applicationId, AclAuthorization.All)
+            val decisionsByApplication = it.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(1, decisionsByApplication.size)
             val decision = decisionsByApplication.first()
             assertNotNull(decision.sentDate)
@@ -915,10 +915,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
     }
@@ -952,10 +952,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
     }
@@ -999,10 +999,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
-            val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(2, decisionsByApplication.size)
             decisionsByApplication.forEach { decision ->
                 assertNotNull(decision.sentDate)
@@ -1037,7 +1037,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            fetchDecisionDrafts(tx.handle, applicationId).map { draft ->
+            tx.fetchDecisionDrafts(applicationId).map { draft ->
                 DecisionDraftService.DecisionDraftUpdate(
                     id = draft.id,
                     unitId = draft.unitId,
@@ -1062,13 +1062,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         asyncJobRunner.runPendingJobsSync()
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
-            val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisionsByApplication.size)
 
             val messages = MockEvakaMessageClient.getMessages()
@@ -1163,7 +1163,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.REJECTED, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
@@ -1204,7 +1204,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
@@ -1244,9 +1244,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertEquals(applicationId, incomes.first().applicationId)
@@ -1267,7 +1267,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, earlierIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1283,9 +1283,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(2, incomes.size)
             assertEquals(applicationId, incomes.first().applicationId)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
@@ -1307,7 +1307,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1323,9 +1323,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1347,7 +1347,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
+            tx.upsertIncome(mapper, laterIndefiniteIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1363,9 +1363,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1387,7 +1387,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(7),
                 validTo = mainPeriod.start.minusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1403,9 +1403,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             val incomeByApplication = incomes.first()
@@ -1429,7 +1429,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusMonths(5),
                 validTo = mainPeriod.start.plusMonths(6)
             )
-            upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
+            tx.upsertIncome(mapper, laterIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1445,9 +1445,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1469,7 +1469,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, earlierIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions(preferredStartDate = null)
 
@@ -1485,9 +1485,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read {
             // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            val incomes = it.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
         }
@@ -1507,7 +1507,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start,
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, sameDayIncomeIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1523,9 +1523,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
@@ -1546,7 +1546,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start,
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
+            tx.upsertIncome(mapper, sameDayIncome, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1562,9 +1562,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1586,7 +1586,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, dayBeforeIncomeIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1602,9 +1602,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             assertEquals(application.id, incomes.first().applicationId)
@@ -1627,7 +1627,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.plusDays(1),
                 validTo = null
             )
-            upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
+            tx.upsertIncome(mapper, nextDayIncomeIndefinite, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1643,9 +1643,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1667,7 +1667,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusDays(1),
                 validTo = mainPeriod.start.plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
+            tx.upsertIncome(mapper, incomeDayBefore, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1683,9 +1683,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1707,7 +1707,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start
             )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnSameDay, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1723,9 +1723,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1747,7 +1747,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.plusDays(1)
             )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnNextDay, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1763,9 +1763,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
             assertNull(incomes.first().applicationId)
@@ -1787,7 +1787,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = mainPeriod.start.minusMonths(2),
                 validTo = mainPeriod.start.minusDays(1)
             )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
+            tx.upsertIncome(mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
         }
         workflowForPreschoolDaycareDecisions()
 
@@ -1803,9 +1803,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            val incomes = tx.getIncomesForPerson(mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
@@ -1838,7 +1838,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
 
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
         }
     }
@@ -1908,7 +1908,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.ACTIVE, application.status)
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
@@ -2058,7 +2058,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     private fun getDecision(r: Database.Read, type: DecisionType): Decision =
-        getDecisionsByApplication(r.handle, applicationId, AclAuthorization.All).first { it.type == type }
+        r.getDecisionsByApplication(applicationId, AclAuthorization.All).first { it.type == type }
 
     private fun workflowForPreschoolDaycareDecisions(preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1)) {
         db.transaction { tx ->

@@ -26,30 +26,30 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     private fun beforeEach() {
         db.transaction { tx ->
             tx.resetDatabase()
-            storeDvvModificationToken(tx.handle, "100", "101", 0, 0)
+            tx.storeDvvModificationToken("100", "101", 0, 0)
         }
     }
 
     @AfterEach
     private fun afterEach() {
         db.transaction { tx ->
-            deleteDvvModificationToken(tx.handle, "100")
+            tx.deleteDvvModificationToken("100")
         }
     }
 
     @Test
     fun `get modification token for today`() = db.transaction { tx ->
-        assertEquals("101", getNextDvvModificationToken(tx.handle))
+        assertEquals("101", tx.getNextDvvModificationToken())
         val response = dvvModificationsService.getDvvModifications(tx, listOf("nimenmuutos"))
         assertEquals(1, response.size)
-        assertEquals("102", getNextDvvModificationToken(tx.handle))
-        val createdDvvModificationToken = getDvvModificationToken(tx.handle, "101")!!
+        assertEquals("102", tx.getNextDvvModificationToken())
+        val createdDvvModificationToken = tx.getDvvModificationToken("101")!!
         assertEquals("101", createdDvvModificationToken.token)
         assertEquals("102", createdDvvModificationToken.nextToken)
         assertEquals(1, createdDvvModificationToken.ssnsSent)
         assertEquals(1, createdDvvModificationToken.modificationsReceived)
 
-        deleteDvvModificationToken(tx.handle, "101")
+        tx.deleteDvvModificationToken("101")
     }
 
     @Test
@@ -155,18 +155,18 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         // So if the paging works correctly there should Math.abs(original_token) + 1 identical records
         db.transaction {
             it.resetDatabase()
-            storeDvvModificationToken(it.handle, "10000", "-2", 0, 0)
+            it.storeDvvModificationToken("10000", "-2", 0, 0)
         }
         try {
             createTestPerson(testPerson.copy(ssn = "010180-999A"))
             assertEquals(3, dvvModificationsService.updatePersonsFromDvv(dbInstance(), listOf("010180-999A")))
             db.read {
-                assertEquals("1", getNextDvvModificationToken(it.handle))
+                assertEquals("1", it.getNextDvvModificationToken())
                 assertEquals(LocalDate.parse("2019-07-30"), it.handle.getPersonBySSN("010180-999A")?.dateOfDeath)
             }
         } finally {
             db.transaction {
-                deleteDvvModificationToken(it.handle, "0")
+                it.deleteDvvModificationToken("0")
             }
         }
     }

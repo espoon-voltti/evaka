@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import org.jdbi.v3.core.Handle
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -41,7 +40,7 @@ class NoteController(private val acl: AccessControlList) {
         }
 
         val notes = db.read {
-            getApplicationNotes(it.handle, search.applicationIds.first())
+            it.getApplicationNotes(search.applicationIds.first())
         }
         return ResponseEntity.ok(notes.map(NoteJSON.DomainMapping::toJSON))
     }
@@ -57,7 +56,7 @@ class NoteController(private val acl: AccessControlList) {
         acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         val newNote = db.transaction {
-            createApplicationNote(it.handle, applicationId, note.text, user.id)
+            it.createApplicationNote(applicationId, note.text, user.id)
         }
         return ResponseEntity.ok(NoteJSON.toJSON(newNote))
     }
@@ -74,8 +73,8 @@ class NoteController(private val acl: AccessControlList) {
         // This endpoint is never used with multiple notes in reality
         val note = notes.first()
         val updatedNote = db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx.handle, user, note.id)) {
-                updateApplicationNote(tx.handle, note.id, note.text, user.id)
+            if (userIsAllowedToEditNote(tx, user, note.id)) {
+                tx.updateApplicationNote(note.id, note.text, user.id)
             } else {
                 throw Forbidden("User is not allowed to edit the note")
             }
@@ -94,8 +93,8 @@ class NoteController(private val acl: AccessControlList) {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx.handle, user, noteId)) {
-                updateApplicationNote(tx.handle, noteId, note.text, user.id)
+            if (userIsAllowedToEditNote(tx, user, noteId)) {
+                tx.updateApplicationNote(noteId, note.text, user.id)
             } else {
                 throw Forbidden("User is not allowed to edit the note")
             }
@@ -111,19 +110,19 @@ class NoteController(private val acl: AccessControlList) {
     ): ResponseEntity<Unit> {
         Audit.NoteDelete.log(targetId = noteId)
         db.transaction { tx ->
-            if (userIsAllowedToEditNote(tx.handle, user, noteId)) {
-                deleteApplicationNote(tx.handle, noteId)
+            if (userIsAllowedToEditNote(tx, user, noteId)) {
+                tx.deleteApplicationNote(noteId)
             }
         }
         return ResponseEntity.noContent().build()
     }
 }
 
-private fun userIsAllowedToEditNote(h: Handle, user: AuthenticatedUser, noteId: UUID): Boolean {
+private fun userIsAllowedToEditNote(tx: Database.Read, user: AuthenticatedUser, noteId: UUID): Boolean {
     return if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)) {
         true
     } else {
-        val createdBy = getApplicationNoteCreatedBy(h, noteId)
+        val createdBy = tx.getApplicationNoteCreatedBy(noteId)
         if (user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR)) {
             createdBy == user.id
         } else {

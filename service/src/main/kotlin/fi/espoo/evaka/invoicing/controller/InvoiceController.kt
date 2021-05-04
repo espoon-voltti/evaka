@@ -81,8 +81,7 @@ class InvoiceController(
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db
             .read { tx ->
-                paginatedSearch(
-                    tx,
+                tx.paginatedSearch(
                     page,
                     pageSize,
                     sortBy ?: InvoiceSortParam.STATUS,
@@ -103,7 +102,7 @@ class InvoiceController(
     fun createDraftInvoices(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { createAllDraftInvoices(it.handle, objectMapper) }
+        db.transaction { it.createAllDraftInvoices(objectMapper) }
         return ResponseEntity.noContent().build()
     }
 
@@ -111,7 +110,7 @@ class InvoiceController(
     fun deleteDraftInvoices(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { deleteDraftInvoices(it.handle, invoiceIds) }
+        db.transaction { it.deleteDraftInvoices(invoiceIds) }
         return ResponseEntity.noContent().build()
     }
 
@@ -161,7 +160,7 @@ class InvoiceController(
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = db.read { getDetailedInvoice(it.handle, parsedUuid) }
+        val res = db.read { it.getDetailedInvoice(parsedUuid) }
             ?: throw NotFound("No invoice found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -175,7 +174,7 @@ class InvoiceController(
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = db.read { getHeadOfFamilyInvoices(it.handle, parsedUuid) }
+        val res = db.read { it.getHeadOfFamilyInvoices(parsedUuid) }
         return ResponseEntity.ok(Wrapper(res))
     }
 

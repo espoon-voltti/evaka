@@ -37,7 +37,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val decisions = db.read { getDecisionsByGuardian(it.handle, guardianId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -50,7 +50,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val decisions = db.read { getDecisionsByChild(it.handle, childId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -63,7 +63,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        val decisions = db.read { getDecisionsByApplication(it.handle, applicationId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -88,8 +88,8 @@ class DecisionController(
         roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { tx ->
-            val decision = getDecision(tx.handle, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-            val application = fetchApplicationDetails(tx.handle, decision.applicationId)
+            val decision = tx.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
+            val application = tx.fetchApplicationDetails(decision.applicationId)
                 ?: error("Cannot find application for decision id '$decisionId'")
 
             val child = personService.getUpToDatePerson(

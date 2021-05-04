@@ -101,7 +101,7 @@ class ApplicationStateService(
         validateApplication(tx, application.type, application.form, strict = isEnduser)
 
         val applicationFlags = tx.applicationFlags(application)
-        updateApplicationFlags(tx.handle, application.id, applicationFlags)
+        tx.updateApplicationFlags(application.id, applicationFlags)
 
         val sentDate = application.sentDate ?: LocalDate.now()
         val dueDate = calculateDueDate(
@@ -111,7 +111,7 @@ class ApplicationStateService(
             applicationFlags.isTransferApplication,
             application.attachments,
         )
-        updateApplicationDates(tx.handle, application.id, sentDate, dueDate)
+        tx.updateApplicationDates(application.id, sentDate, dueDate)
 
         tx.handle.getPersonById(application.guardianId)?.let {
             val email = if (!application.form.guardian.email.isNullOrBlank()) {
@@ -145,7 +145,7 @@ class ApplicationStateService(
             asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, Language.fi, ApplicationType.PRESCHOOL, sentWithinPreschoolApplicationPeriod)))
         }
 
-        updateApplicationStatus(tx.handle, application.id, SENT)
+        tx.updateApplicationStatus(application.id, SENT)
     }
 
     fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -179,10 +179,10 @@ class ApplicationStateService(
             )
         )
 
-        setCheckedByAdminToDefault(tx.handle, applicationId, application.form)
+        tx.setCheckedByAdminToDefault(applicationId, application.form)
 
         asyncJobRunner.plan(tx, listOf(InitializeFamilyFromApplication(application.id, user)))
-        updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
+        tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
     fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -191,7 +191,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
-        updateApplicationStatus(tx.handle, application.id, SENT)
+        tx.updateApplicationStatus(application.id, SENT)
     }
 
     fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -200,7 +200,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
-        updateApplicationStatus(tx.handle, application.id, CANCELLED)
+        tx.updateApplicationStatus(application.id, CANCELLED)
     }
 
     fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -209,7 +209,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
-        setApplicationVerified(tx.handle, applicationId, true)
+        tx.setApplicationVerified(applicationId, true)
     }
 
     fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -218,7 +218,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
-        setApplicationVerified(tx.handle, applicationId, false)
+        tx.setApplicationVerified(applicationId, false)
     }
 
     fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, placementPlan: DaycarePlacementPlan) {
@@ -233,11 +233,11 @@ class ApplicationStateService(
                 it.id != guardian.id && !livesInSameAddress(guardian.residenceCode, it.residenceCode)
             }?.id
 
-        updateApplicationOtherGuardian(tx.handle, applicationId, secondDecisionTo)
+        tx.updateApplicationOtherGuardian(applicationId, secondDecisionTo)
         placementPlanService.createPlacementPlan(tx, application, placementPlan)
         decisionDraftService.createDecisionDrafts(tx, user, application)
 
-        updateApplicationStatus(tx.handle, application.id, WAITING_DECISION)
+        tx.updateApplicationStatus(application.id, WAITING_DECISION)
     }
 
     fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -248,7 +248,7 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_DECISION)
         tx.deletePlacementPlans(listOf(application.id))
         tx.clearDecisionDrafts(listOf(application.id))
-        updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
+        tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
     fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -266,7 +266,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        updateApplicationStatus(tx.handle, application.id, WAITING_UNIT_CONFIRMATION)
+        tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
     }
 
     fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
@@ -275,7 +275,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
-        updateApplicationStatus(tx.handle, application.id, WAITING_DECISION)
+        tx.updateApplicationStatus(application.id, WAITING_DECISION)
     }
 
     fun respondToPlacementProposal(
@@ -341,7 +341,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
-        updateApplicationStatus(tx.handle, application.id, WAITING_CONFIRMATION)
+        tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
     }
 
     fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
@@ -357,7 +357,7 @@ class ApplicationStateService(
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
 
-        val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+        val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
 
         val decision = decisions.find { it.id == decisionId }
             ?: throw NotFound("Decision $decisionId not found on application $applicationId")
@@ -382,7 +382,7 @@ class ApplicationStateService(
 
         // everything validated now!
 
-        markDecisionAccepted(tx.handle, user, decision.id, requestedStartDate)
+        tx.markDecisionAccepted(user, decision.id, requestedStartDate)
 
         placementPlanService.applyPlacementPlan(
             tx,
@@ -397,7 +397,7 @@ class ApplicationStateService(
 
         if (application.status == WAITING_CONFIRMATION) {
             if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, application, requestedStartDate)
-            updateApplicationStatus(tx.handle, application.id, ACTIVE)
+            tx.updateApplicationStatus(application.id, ACTIVE)
         }
     }
 
@@ -414,7 +414,7 @@ class ApplicationStateService(
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))
 
-        val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+        val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
         val decision = decisions.find { it.id == decisionId }
             ?: throw NotFound("Decision $decisionId not found on application $applicationId")
 
@@ -422,24 +422,24 @@ class ApplicationStateService(
             throw BadRequest("Decision is not pending")
         }
 
-        markDecisionRejected(tx.handle, user, decisionId)
+        tx.markDecisionRejected(user, decisionId)
 
         val alsoReject = if (decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)) {
             decisions.find { it.type === DecisionType.PRESCHOOL_DAYCARE && it.status == DecisionStatus.PENDING }
         } else null
-        alsoReject?.let { markDecisionRejected(tx.handle, user, it.id) }
+        alsoReject?.let { tx.markDecisionRejected(user, it.id) }
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
-            updateApplicationStatus(tx.handle, application.id, REJECTED)
+            tx.updateApplicationStatus(application.id, REJECTED)
         }
     }
 
     // CONTENT UPDATE
 
     fun updateOwnApplicationContentsCitizen(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate, asDraft: Boolean = false): ApplicationDetails {
-        val original = fetchApplicationDetails(tx.handle, applicationId)
+        val original = tx.fetchApplicationDetails(applicationId)
             ?.takeIf { it.guardianId == user.id }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
@@ -465,7 +465,7 @@ class ApplicationStateService(
     }
 
     fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate) {
-        val original = fetchApplicationDetails(tx.handle, applicationId)
+        val original = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
         val updatedForm = original.form.update(update.form)
@@ -486,8 +486,8 @@ class ApplicationStateService(
         if (!listOf(CREATED, SENT).contains(original.status))
             throw BadRequest("Cannot update application with status ${original.status}")
 
-        updateForm(handle, original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
-        setCheckedByAdminToDefault(handle, original.id, updatedForm)
+        updateForm(original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
+        setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
             null -> calculateAndUpdateDueDate(original, updatedForm.preferences.urgent)
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
@@ -519,7 +519,7 @@ class ApplicationStateService(
     }
 
     fun reCalculateDueDate(tx: Database.Transaction, applicationId: UUID) {
-        val application = fetchApplicationDetails(tx.handle, applicationId)
+        val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
         tx.calculateAndUpdateDueDate(application, application.form.preferences.urgent)
     }
@@ -527,7 +527,7 @@ class ApplicationStateService(
     // HELPERS
 
     private fun getApplication(tx: Database.Read, applicationId: UUID): ApplicationDetails {
-        return fetchApplicationDetails(tx.handle, applicationId)
+        return tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
     }
 
@@ -602,10 +602,10 @@ class ApplicationStateService(
 
     private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
         val sendBySfi = canSendDecisionsBySfi(tx, user, application)
-        val decisionDrafts = fetchDecisionDrafts(tx.handle, application.id)
+        val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         if (decisionDrafts.any { it.planned }) {
             decisionService.finalizeDecisions(tx, user, application.id, sendBySfi)
-            updateApplicationStatus(tx.handle, application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
+            tx.updateApplicationStatus(application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
         }
     }
 
@@ -625,7 +625,7 @@ class ApplicationStateService(
         !residenceCode1.isNullOrBlank() && !residenceCode2.isNullOrBlank() && residenceCode1 == residenceCode2
 
     private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails, validFrom: LocalDate) {
-        val incomes = getIncomesForPerson(tx.handle, mapper, application.guardianId)
+        val incomes = tx.getIncomesForPerson(mapper, application.guardianId)
 
         val hasOverlappingDefiniteIncome = incomes.any { income ->
             income.validTo != null &&
@@ -650,8 +650,8 @@ class ApplicationStateService(
                 validTo = null,
                 applicationId = application.id
             ).let(::validateIncome)
-            splitEarlierIncome(tx.handle, validIncome.personId, period)
-            upsertIncome(tx.handle, mapper, validIncome, application.guardianId)
+            tx.splitEarlierIncome(validIncome.personId, period)
+            tx.upsertIncome(mapper, validIncome, application.guardianId)
             asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
         }
     }

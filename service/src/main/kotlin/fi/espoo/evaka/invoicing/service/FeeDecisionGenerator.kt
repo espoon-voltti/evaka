@@ -31,18 +31,17 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
-internal fun handleFeeDecisionChanges2(
-    h: Handle,
+internal fun Database.Transaction.handleFeeDecisionChanges2(
     objectMapper: ObjectMapper,
     from: LocalDate,
     headOfFamily: PersonData.JustId,
@@ -50,13 +49,13 @@ internal fun handleFeeDecisionChanges2(
     children: List<PersonData.WithDateOfBirth>
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
-    val prices = getPricing(h, from)
-    val incomes = getIncomesFrom(h, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val prices = getPricing(from)
+    val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
-        getFeeAlterationsFrom(h, children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+        getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 
-    val placements = getPaidPlacements2(h, from, children)
-    val invoicedUnits = getUnitsThatAreInvoiced(h)
+    val placements = getPaidPlacements2(from, children)
+    val invoicedUnits = getUnitsThatAreInvoiced()
 
     val newDrafts =
         generateNewFeeDecisions2(
@@ -71,12 +70,11 @@ internal fun handleFeeDecisionChanges2(
             invoicedUnits
         )
 
-    h.lockFeeDecisionsForHeadOfFamily2(headOfFamily.id)
+    lockFeeDecisionsForHeadOfFamily2(headOfFamily.id)
 
     val existingDrafts =
-        findFeeDecisionsForHeadOfFamily2(h, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
+        findFeeDecisionsForHeadOfFamily2(headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
     val activeDecisions = findFeeDecisionsForHeadOfFamily2(
-        h,
         headOfFamily.id,
         null,
         listOf(
@@ -87,8 +85,8 @@ internal fun handleFeeDecisionChanges2(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    deleteFeeDecisions2(h, existingDrafts.map { it.id })
-    upsertFeeDecisions2(h, updatedDecisions)
+    deleteFeeDecisions2(existingDrafts.map { it.id })
+    upsertFeeDecisions2(updatedDecisions)
 }
 
 private fun generateNewFeeDecisions2(
@@ -194,16 +192,15 @@ private fun generateNewFeeDecisions2(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun getPaidPlacements2(
-    h: Handle,
+private fun Database.Read.getPaidPlacements2(
     from: LocalDate,
     children: List<PersonData.WithDateOfBirth>
 ): List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>> {
     return children.map { child ->
-        val placements = getActivePaidPlacements(h, child.id, from)
+        val placements = getActivePaidPlacements(child.id, from)
         if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PlacementWithServiceNeed>>()
 
-        val serviceNeeds = h.createQuery(
+        val serviceNeeds = createQuery(
             // language=sql
             """
 SELECT daterange(sn.start_date, sn.end_date, '[]') AS range, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient
@@ -218,7 +215,7 @@ WHERE sn.placement_id = ANY(:placementIds)
             }
             .toList()
 
-        val defaultServiceNeeds = h.createQuery(
+        val defaultServiceNeeds = createQuery(
             // language=sql
             "SELECT valid_placement_type, id, fee_coefficient, voucher_value_coefficient FROM service_need_option WHERE default_option"
         )
@@ -258,12 +255,12 @@ private val excludedPlacementTypes = arrayOf(
 /**
  * Leaves out club and temporary placements since they shouldn't have an effect on fee or value decisions
  */
-private fun getActivePaidPlacements(h: Handle, childId: UUID, from: LocalDate): List<Placement> {
+private fun Database.Read.getActivePaidPlacements(childId: UUID, from: LocalDate): List<Placement> {
     // language=sql
     val sql =
         "SELECT * FROM placement WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedTypes::placement_type[])"
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("from", from)
         .bind("excludedTypes", excludedPlacementTypes)

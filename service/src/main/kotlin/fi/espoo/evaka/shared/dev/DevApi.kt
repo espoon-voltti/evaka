@@ -290,8 +290,7 @@ class DevApi(
     fun createDecisions(db: Database, @RequestBody decisions: List<DecisionRequest>): ResponseEntity<Unit> {
         db.transaction { tx ->
             decisions.forEach { decision ->
-                insertDecision(
-                    tx.handle,
+                tx.insertDecision(
                     decision.id,
                     decision.employeeId,
                     LocalDate.now(ZoneId.of("Europe/Helsinki")),
@@ -324,7 +323,7 @@ class DevApi(
         @PathVariable applicationId: UUID
     ): ResponseEntity<ApplicationDetails> {
         return db.read { tx ->
-            fetchApplicationDetails(tx.handle, applicationId)
+            tx.fetchApplicationDetails(applicationId)
         }?.let { ResponseEntity.ok(it) } ?: throw NotFound("application not found")
     }
 
@@ -334,13 +333,13 @@ class DevApi(
         @PathVariable applicationId: UUID
     ): ResponseEntity<List<Decision>> {
         return db.read { tx ->
-            getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
         }.let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/fee-decisions")
     fun createFeeDecisions(db: Database, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, decisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, decisions) }
         return ResponseEntity.noContent().build()
     }
 
@@ -355,7 +354,7 @@ class DevApi(
 
     @PostMapping("/invoices")
     fun createInvoices(db: Database, @RequestBody invoices: List<Invoice>): ResponseEntity<Unit> {
-        db.transaction { tx -> insertInvoices(invoices)(tx.handle) }
+        db.transaction { tx -> tx.upsertInvoices(invoices) }
         return ResponseEntity.noContent().build()
     }
 
@@ -583,7 +582,7 @@ RETURNING id
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            val application = fetchApplicationDetails(tx.handle, applicationId)
+            val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("application $applicationId not found")
             val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) FiniteDateRange(
                 placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!
@@ -1048,10 +1047,6 @@ fun Handle.deleteChild(id: UUID) {
     execute("DELETE FROM backup_care WHERE child_id = ?", id)
     execute("DELETE FROM placement WHERE child_id = ?", id)
     execute("DELETE FROM child WHERE id = ?", id)
-}
-
-fun insertInvoices(invoices: List<Invoice>) = { h: Handle ->
-    upsertInvoices(h, invoices)
 }
 
 fun Handle.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)
