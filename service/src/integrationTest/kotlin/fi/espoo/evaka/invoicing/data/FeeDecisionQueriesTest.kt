@@ -19,7 +19,6 @@ import fi.espoo.evaka.invoicing.service.getInvoiceableFeeDecisions
 import fi.espoo.evaka.invoicing.toDetailed
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.defaultObjectMapper
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -381,8 +380,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             tx.upsertFeeDecisions(objectMapper, testDecisions)
 
-            val result =
-                getInvoiceableFeeDecisions(tx.handle, objectMapper, DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)))
+            val result = tx.getInvoiceableFeeDecisions(objectMapper, DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)))
             assertEquals(2, result.size)
         }
     }

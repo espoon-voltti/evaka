@@ -176,7 +176,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             upsertInvoices(tx.handle, testInvoices)
 
-            val result = getInvoicedHeadsOfFamily(tx.handle, DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
+            val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
             assertEquals(1, result.size)
             assertEquals(listOf(testInvoices[0].headOfFamily.id), result)
         }
@@ -187,7 +187,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             upsertInvoices(tx.handle, testInvoices)
 
-            val result = getInvoicedHeadsOfFamily(tx.handle, DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
+            val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
             assertEquals(0, result.size)
         }
     }

@@ -103,7 +103,7 @@ class InvoiceController(
     fun createDraftInvoices(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction { createAllDraftInvoices(it.handle, objectMapper) }
+        db.transaction { it.createAllDraftInvoices(objectMapper) }
         return ResponseEntity.noContent().build()
     }
 

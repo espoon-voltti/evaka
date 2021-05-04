@@ -114,7 +114,7 @@ fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: L
 }
 
 fun Database.Read.getInvoiceCodes(): InvoiceCodes {
-    val daycareCodes = getDaycareCodes(handle)
+    val daycareCodes = getDaycareCodes()
 
     val specialAreaCode = 255
     val specialSubCostCenter = "06"

@@ -71,7 +71,7 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
 
     fun createRetroactive(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val period = DateRange(from, null)
-        findFamiliesByHeadOfFamily(tx.handle, headOfFamily, period)
+        tx.findFamiliesByHeadOfFamily(headOfFamily, period)
             .filter { it.period.overlaps(period) }
             .forEach {
                 // intentionally does not care about feeDecisionMinDate
@@ -95,35 +95,35 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
     fun handlePlacement(tx: Database.Transaction, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from new placement (childId: $childId, period: $period)" }
 
-        val families = findFamiliesByChild(tx.handle, childId, period)
+        val families = tx.findFamiliesByChild(childId, period)
         handleDecisionChangesForFamilies(tx, period, families)
     }
 
     fun handleServiceNeed(tx: Database.Transaction, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed service need (childId: $childId, period: $period)" }
 
-        val families = findFamiliesByChild(tx.handle, childId, period)
+        val families = tx.findFamiliesByChild(childId, period)
         handleDecisionChangesForFamilies(tx, period, families)
     }
 
     fun handleFamilyUpdate(tx: Database.Transaction, adultId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed family (adultId: $adultId, period: $period)" }
 
-        val families = findFamiliesByHeadOfFamily(tx.handle, adultId, period) + findFamiliesByPartner(tx.handle, adultId, period)
+        val families = tx.findFamiliesByHeadOfFamily(adultId, period) + tx.findFamiliesByPartner(adultId, period)
         handleDecisionChangesForFamilies(tx, period, families)
     }
 
     fun handleIncomeChange(tx: Database.Transaction, personId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed income (personId: $personId, period: $period)" }
 
-        val families = findFamiliesByHeadOfFamily(tx.handle, personId, period) + findFamiliesByPartner(tx.handle, personId, period)
+        val families = tx.findFamiliesByHeadOfFamily(personId, period) + tx.findFamiliesByPartner(personId, period)
         handleDecisionChangesForFamilies(tx, period, families)
     }
 
     fun handleFeeAlterationChange(tx: Database.Transaction, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed fee alteration (childId: $childId, period: $period)" }
 
-        val families = findFamiliesByChild(tx.handle, childId, period)
+        val families = tx.findFamiliesByChild(childId, period)
         handleDecisionChangesForFamilies(tx, period, families)
     }
 
@@ -171,8 +171,8 @@ private fun Database.Transaction.handleFeeDecisionChanges(
     val feeAlterations =
         getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 
-    val placements = getPaidPlacements(handle, from, children)
-    val invoicedUnits = getUnitsThatAreInvoiced(handle)
+    val placements = getPaidPlacements(from, children)
+    val invoicedUnits = getUnitsThatAreInvoiced()
 
     val newDrafts =
         generateNewFeeDecisions(
@@ -222,8 +222,8 @@ private fun Database.Transaction.handleValueDecisionChanges(
     val feeAlterations =
         getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
-    val placements = getPaidPlacements(handle, from, allChildren)
-    val serviceVoucherUnits = getServiceVoucherUnits(handle)
+    val placements = getPaidPlacements(from, allChildren)
+    val serviceVoucherUnits = getServiceVoucherUnits()
 
     val newDrafts =
         generateNewValueDecisions(
@@ -472,26 +472,26 @@ private fun generateNewValueDecisions(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-internal fun getUnitsThatAreInvoiced(h: Handle): List<UUID> {
+internal fun Database.Read.getUnitsThatAreInvoiced(): List<UUID> {
     // language=sql
-    return h.createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
+    return createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
         .map { rs, _ -> rs.getUUID("id") }
         .toList()
 }
 
-private fun getServiceVoucherUnits(h: Handle): List<UUID> {
+private fun Database.Read.getServiceVoucherUnits(): List<UUID> {
     // language=sql
-    return h.createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")
+    return createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")
         .map { rs, _ -> rs.getUUID("id") }
         .toList()
 }
 
-private fun findFamiliesByChild(h: Handle, childId: UUID, period: DateRange): List<FridgeFamily> {
-    val parentRelations = h.getParentships(null, childId, includeConflicts = false, period = period)
+private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange): List<FridgeFamily> {
+    val parentRelations = handle.getParentships(null, childId, includeConflicts = false, period = period)
 
     return parentRelations.flatMap {
-        val fridgePartners = h.getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
-        val fridgeChildren = h.getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
+        val fridgePartners = handle.getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
+        val fridgeChildren = handle.getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
         generateFamilyCompositions(
             it.headOfChild.id,
             fridgePartners,
@@ -501,15 +501,15 @@ private fun findFamiliesByChild(h: Handle, childId: UUID, period: DateRange): Li
     }
 }
 
-private fun findFamiliesByHeadOfFamily(h: Handle, headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
-    val childRelations = h.getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
-    val partners = h.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
+private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
+    val childRelations = handle.getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
+    val partners = handle.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
 }
 
-private fun findFamiliesByPartner(h: Handle, personId: UUID, period: DateRange): List<FridgeFamily> {
-    val possibleHeadsOfFamily = h.getPartnersForPerson(personId, includeConflicts = false, period = period)
-    return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(h, it.person.id, period) }
+private fun Database.Read.findFamiliesByPartner(personId: UUID, period: DateRange): List<FridgeFamily> {
+    val possibleHeadsOfFamily = handle.getPartnersForPerson(personId, includeConflicts = false, period = period)
+    return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it.person.id, period) }
 }
 
 private fun generateFamilyCompositions(
@@ -551,16 +551,15 @@ private fun generateFamilyCompositions(
     }
 }
 
-private fun getPaidPlacements(
-    h: Handle,
+private fun Database.Read.getPaidPlacements(
     from: LocalDate,
     children: List<PersonData.WithDateOfBirth>
 ): List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PermanentPlacementWithHours>>>> {
     return children.map { child ->
-        val placements = getActivePaidPlacements(h, child.id, from)
+        val placements = getActivePaidPlacements(child.id, from)
         if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PermanentPlacementWithHours>>()
 
-        val serviceNeeds = getServiceNeedsByChildDuringPeriod(h, child.id, from, null)
+        val serviceNeeds = getServiceNeedsByChildDuringPeriod(handle, child.id, from, null)
         val placementsWithServiceNeeds = addServiceNeedsToPlacements(placements, serviceNeeds)
 
         child to placementsWithServiceNeeds
@@ -575,12 +574,12 @@ private val excludedPlacementTypes = arrayOf(
 /**
  * Leaves out club and temporary placements since they shouldn't have an effect on fee or value decisions
  */
-private fun getActivePaidPlacements(h: Handle, childId: UUID, from: LocalDate): List<Placement> {
+private fun Database.Read.getActivePaidPlacements(childId: UUID, from: LocalDate): List<Placement> {
     // language=sql
     val sql =
         "SELECT * FROM placement WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedTypes::placement_type[])"
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("from", from)
         .bind("excludedTypes", excludedPlacementTypes)
