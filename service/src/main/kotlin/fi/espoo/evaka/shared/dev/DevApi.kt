@@ -73,7 +73,6 @@ import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.context.annotation.Profile
@@ -124,7 +123,7 @@ class DevApi(
 
     @PostMapping("/clean-up")
     fun cleanUpDatabase(db: Database): ResponseEntity<Unit> {
-        db.transaction { it.handle.clearDatabase() }
+        db.transaction { it.clearDatabase() }
         return ResponseEntity.noContent().build()
     }
 
@@ -137,7 +136,7 @@ class DevApi(
 
     @DeleteMapping("/applications/{id}")
     fun deleteApplicationByApplicationId(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteApplication(id) }
+        db.transaction { it.deleteApplication(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -149,7 +148,7 @@ class DevApi(
 
     @DeleteMapping("/care-areas/{id}")
     fun deleteArea(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteCareArea(id) }
+        db.transaction { it.deleteCareArea(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -161,7 +160,7 @@ class DevApi(
 
     @DeleteMapping("/daycares/{id}")
     fun deleteDaycare(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteDaycare(id) }
+        db.transaction { it.deleteDaycare(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -266,7 +265,7 @@ class DevApi(
     // also cascades delete to daycare_placement and group_placement
     @DeleteMapping("/children/{id}")
     fun deleteChild(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteChild(id) }
+        db.transaction { it.deleteChild(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -307,7 +306,7 @@ class DevApi(
 
     @DeleteMapping("/decisions/{id}")
     fun deleteDecisions(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteDecision(id) }
+        db.transaction { it.deleteDecision(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -379,13 +378,13 @@ RETURNING id
 
     @DeleteMapping("/pricing/{id}")
     fun deletePricing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deletePricing(id) }
+        db.transaction { it.deletePricing(id) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/incomes/person/{id}")
     fun deleteIncomesByPerson(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteIncome(id) }
+        db.transaction { it.deleteIncome(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -483,7 +482,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @DeleteMapping("/employee/{id}")
     fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteAndCascadeEmployee(id) }
+        db.transaction { it.deleteAndCascadeEmployee(id) }
         return ResponseEntity.ok().build()
     }
 
@@ -672,7 +671,7 @@ RETURNING id
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
         db.transaction { tx ->
-            ensureFakeAdminExists(tx.handle)
+            tx.ensureFakeAdminExists()
             actionFn.invoke(tx, fakeAdmin, applicationId)
         }
         return ResponseEntity.noContent().build()
@@ -685,7 +684,7 @@ RETURNING id
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            ensureFakeAdminExists(tx.handle)
+            tx.ensureFakeAdminExists()
             applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, body)
         }
         return ResponseEntity.noContent().build()
@@ -697,7 +696,7 @@ RETURNING id
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            ensureFakeAdminExists(tx.handle)
+            tx.ensureFakeAdminExists()
             placementPlanService.getPlacementPlanDraft(tx, applicationId)
                 .let {
                     DaycarePlacementPlan(
@@ -902,7 +901,7 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     }
 }
 
-fun ensureFakeAdminExists(h: Handle) {
+fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql
     val sql =
         """
@@ -911,10 +910,10 @@ fun ensureFakeAdminExists(h: Handle) {
         ON CONFLICT DO NOTHING
         """.trimIndent()
 
-    h.createUpdate(sql).bind("id", fakeAdmin.id).execute()
+    createUpdate(sql).bind("id", fakeAdmin.id).execute()
 }
 
-fun Handle.clearDatabase() = listOf(
+fun Database.Transaction.clearDatabase() = listOf(
     "employee_pin",
     "family_contact",
     "backup_pickup",
@@ -946,7 +945,7 @@ fun Database.Transaction.deleteMobileDevice(id: UUID) {
     execute("DELETE FROM mobile_device WHERE id = ?", id)
 }
 
-fun Handle.deleteApplication(id: UUID) {
+fun Database.Transaction.deleteApplication(id: UUID) {
     execute("DELETE FROM attachment WHERE application_id = ?", id)
     execute("DELETE FROM decision WHERE application_id = ?", id)
     execute("DELETE FROM placement_plan WHERE application_id = ?", id)
@@ -954,13 +953,13 @@ fun Handle.deleteApplication(id: UUID) {
     execute("DELETE FROM application WHERE id = ?", id)
 }
 
-fun Handle.deleteAndCascadeEmployee(id: UUID) {
+fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {
     execute("DELETE FROM mobile_device WHERE id = ?", id)
     execute("DELETE FROM employee_pin WHERE user_id = ?", id)
     execute("DELETE FROM employee WHERE id = ?", id)
 }
 
-fun Handle.deleteCareArea(id: UUID) {
+fun Database.Transaction.deleteCareArea(id: UUID) {
     execute(
         """
 WITH deleted_ids AS (
@@ -1024,7 +1023,7 @@ WITH deleted_ids AS (
     execute("DELETE FROM care_area WHERE id = ?", id)
 }
 
-fun Handle.deleteDaycare(id: UUID) {
+fun Database.Transaction.deleteDaycare(id: UUID) {
     execute("DELETE FROM daycare_daily_note WHERE group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ?)", id)
     execute("DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE unit_id = ?)", id)
     execute("DELETE FROM placement WHERE unit_id = ?", id)
@@ -1035,7 +1034,7 @@ fun Handle.deleteDaycare(id: UUID) {
     )
 }
 
-fun Handle.deleteChild(id: UUID) {
+fun Database.Transaction.deleteChild(id: UUID) {
     execute(
         "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE child_id = ?)",
         id
@@ -1049,10 +1048,10 @@ fun Handle.deleteChild(id: UUID) {
     execute("DELETE FROM child WHERE id = ?", id)
 }
 
-fun Handle.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)
-fun Handle.deletePricing(id: UUID) = execute("DELETE FROM pricing WHERE id = ?", id)
+fun Database.Transaction.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)
+fun Database.Transaction.deletePricing(id: UUID) = execute("DELETE FROM pricing WHERE id = ?", id)
 
-fun Handle.deleteDecision(id: UUID) = execute("DELETE FROM decision WHERE id = ?", id)
+fun Database.Transaction.deleteDecision(id: UUID) = execute("DELETE FROM decision WHERE id = ?", id)
 
 data class DevCareArea(
     val id: UUID = UUID.randomUUID(),
