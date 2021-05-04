@@ -38,7 +38,6 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -350,7 +349,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `get pricing works when from is same as validFrom`() {
         val from = LocalDate.of(2000, 1, 1)
-        val result = db.transaction { getPricing(it.handle, from) }
+        val result = db.read { it.getPricing(from) }
 
         assertEquals(1, result.size)
         result[0].let { (period, pricing) ->
@@ -363,7 +362,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `get pricing works as expected when from is before any pricing configuration`() {
         val from = LocalDate.of(1990, 1, 1)
-        val result = db.transaction { getPricing(it.handle, from) }
+        val result = db.read { it.getPricing(from) }
 
         assertEquals(1, result.size)
         result[0].let { (period, pricing) ->
