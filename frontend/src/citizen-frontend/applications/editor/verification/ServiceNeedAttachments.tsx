@@ -45,50 +45,46 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
               .withoutUrgency}
       </span>
 
-      {formData.serviceNeed.urgent &&
-        featureFlags.urgencyAttachmentsEnabled === true && (
+      {formData.serviceNeed.urgent && featureFlags.urgencyAttachmentsEnabled && (
+        <>
+          {errorModalVisible && (
+            <InfoModal
+              title={t.fileDownload.modalHeader}
+              text={t.fileDownload.modalMessage}
+              close={() => setErrorModalVisible(false)}
+              icon={faInfo}
+            />
+          )}
           <>
-            {errorModalVisible && (
-              <InfoModal
-                title={t.fileDownload.modalHeader}
-                text={t.fileDownload.modalMessage}
-                close={() => setErrorModalVisible(false)}
-                icon={faInfo}
-              />
-            )}
-            <>
-              <Label>
-                {
-                  t.applications.editor.verification.serviceNeed.attachments
-                    .label
-                }
-              </Label>
-              <span>
-                {formData.serviceNeed.urgencyAttachments.length > 0 ? (
-                  <AttachmentList>
-                    {formData.serviceNeed.urgencyAttachments.map((file) => (
-                      <li key={file.id}>
-                        <span className="attachment-icon">
-                          <FontAwesomeIcon icon={faFile} />
-                        </span>
-                        <Gap horizontal size={'xs'} />
-                        <FileDownloadButton
-                          file={file}
-                          fileFetchFn={getAttachmentBlob}
-                          onFileUnavailable={() => setErrorModalVisible(true)}
-                          data-qa={'service-need-urgency-attachment-download'}
-                        />
-                      </li>
-                    ))}
-                  </AttachmentList>
-                ) : (
-                  t.applications.editor.verification.serviceNeed.attachments
-                    .withoutAttachments
-                )}
-              </span>
-            </>
+            <Label>
+              {t.applications.editor.verification.serviceNeed.attachments.label}
+            </Label>
+            <span>
+              {formData.serviceNeed.urgencyAttachments.length > 0 ? (
+                <AttachmentList>
+                  {formData.serviceNeed.urgencyAttachments.map((file) => (
+                    <li key={file.id}>
+                      <span className="attachment-icon">
+                        <FontAwesomeIcon icon={faFile} />
+                      </span>
+                      <Gap horizontal size={'xs'} />
+                      <FileDownloadButton
+                        file={file}
+                        fileFetchFn={getAttachmentBlob}
+                        onFileUnavailable={() => setErrorModalVisible(true)}
+                        data-qa={'service-need-urgency-attachment-download'}
+                      />
+                    </li>
+                  ))}
+                </AttachmentList>
+              ) : (
+                t.applications.editor.verification.serviceNeed.attachments
+                  .withoutAttachments
+              )}
+            </span>
           </>
-        )}
+        </>
+      )}
     </>
   )
 })

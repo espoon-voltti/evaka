@@ -91,13 +91,13 @@ export default React.memo(function SearchSection({
             label={t.map.careTypes.DAYCARE}
             onChange={() => setCareType('DAYCARE')}
           />
-          {featureFlags.preschoolEnabled === true && (
+          {featureFlags.preschoolEnabled && (
             <Radio
               data-qa="map-filter-preschool"
               checked={careType === 'PRESCHOOL'}
               label={t.map.careTypes.PRESCHOOL}
               onChange={() => setCareType('PRESCHOOL')}
-          />
+            />
           )}
           <Radio
             data-qa="map-filter-club"

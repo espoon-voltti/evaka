@@ -89,23 +89,23 @@ export default React.memo(function ApplicationCreation() {
             />
           </ExpandingInfo>
           <Gap size="s" />
-          {featureFlags.preschoolEnabled === true && (
+          {featureFlags.preschoolEnabled && (
             <>
-            <ExpandingInfo
-              info={t.applications.creation.preschoolInfo}
-              ariaLabel={t.common.openExpandingInfo}
-            >
-              <Radio
-                checked={selectedType === 'PRESCHOOL'}
-                onChange={() => setSelectedType('PRESCHOOL')}
-                label={t.applications.creation.preschoolLabel}
-                data-qa="type-radio-PRESCHOOL"
-              />
-            </ExpandingInfo>
-            <PreschoolDaycareInfo>
-              {t.applications.creation.preschoolDaycareInfo}
-            </PreschoolDaycareInfo>
-            <Gap size="s" />
+              <ExpandingInfo
+                info={t.applications.creation.preschoolInfo}
+                ariaLabel={t.common.openExpandingInfo}
+              >
+                <Radio
+                  checked={selectedType === 'PRESCHOOL'}
+                  onChange={() => setSelectedType('PRESCHOOL')}
+                  label={t.applications.creation.preschoolLabel}
+                  data-qa="type-radio-PRESCHOOL"
+                />
+              </ExpandingInfo>
+              <PreschoolDaycareInfo>
+                {t.applications.creation.preschoolDaycareInfo}
+              </PreschoolDaycareInfo>
+              <Gap size="s" />
             </>
           )}
           <ExpandingInfo
