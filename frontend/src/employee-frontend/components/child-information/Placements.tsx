@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, Fragment } from 'react'
 import { UUID } from '../../types'
 import { useTranslation } from '../../state/i18n'
 import { ChildContext } from '../../state'
@@ -66,9 +66,8 @@ const Placements = React.memo(function Placements({ id, startOpen }: Props) {
     return (
       <div>
         {_.orderBy(placements.value, ['startDate'], ['desc']).map((p, i) => (
-          <>
+          <Fragment key={p.id}>
             <PlacementRow
-              key={p.id}
               placement={p}
               onRefreshNeeded={() => loadPlacements(id)}
               checkOverlaps={checkOverlaps}
@@ -76,7 +75,7 @@ const Placements = React.memo(function Placements({ id, startOpen }: Props) {
             {i < placements.value.length - 1 && (
               <div className="separator large" />
             )}
-          </>
+          </Fragment>
         ))}
       </div>
     )

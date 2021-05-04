@@ -54,7 +54,11 @@ export async function getPlacements(
         serviceNeeds: p.serviceNeeds.map((sn) => ({
           ...sn,
           startDate: LocalDate.parseIso(sn.startDate),
-          endDate: LocalDate.parseIso(sn.endDate)
+          endDate: LocalDate.parseIso(sn.endDate),
+          confirmed: {
+            ...sn.confirmed,
+            at: new Date(sn.confirmed.at)
+          }
         }))
       }))
     )

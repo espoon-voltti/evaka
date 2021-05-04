@@ -5,9 +5,11 @@
 package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import java.math.BigDecimal
@@ -21,12 +23,21 @@ data class NewServiceNeed(
     val endDate: LocalDate,
     @Nested("option")
     val option: ServiceNeedOptionSummary,
-    val shiftCare: Boolean
+    val shiftCare: Boolean,
+    @Nested("confirmed")
+    val confirmed: ServiceNeedConfirmation
 )
 
 data class ServiceNeedOptionSummary(
     val id: UUID,
     val name: String
+)
+
+data class ServiceNeedConfirmation(
+    val employeeId: UUID,
+    val firstName: String,
+    val lastName: String,
+    val at: HelsinkiDateTime
 )
 
 data class ServiceNeedOption(
@@ -84,24 +95,36 @@ fun validateServiceNeed(
 
 fun createNewServiceNeed(
     tx: Database.Transaction,
+    user: AuthenticatedUser,
     placementId: UUID,
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID,
-    shiftCare: Boolean
+    shiftCare: Boolean,
+    confirmedAt: HelsinkiDateTime
 ) {
     validateServiceNeed(tx, placementId, startDate, endDate, optionId)
     clearNewServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
-    tx.insertNewServiceNeed(placementId, startDate, endDate, optionId, shiftCare)
+    tx.insertNewServiceNeed(
+        placementId = placementId,
+        startDate = startDate,
+        endDate = endDate,
+        optionId = optionId,
+        shiftCare = shiftCare,
+        confirmedBy = user.id,
+        confirmedAt = confirmedAt
+    )
 }
 
 fun updateNewServiceNeed(
     tx: Database.Transaction,
+    user: AuthenticatedUser,
     id: UUID,
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID,
-    shiftCare: Boolean
+    shiftCare: Boolean,
+    confirmedAt: HelsinkiDateTime
 ) {
     val old = tx.getNewServiceNeed(id)
     validateServiceNeed(tx, old.placementId, startDate, endDate, optionId)
@@ -112,7 +135,15 @@ fun updateNewServiceNeed(
         clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(old.endDate.plusDays(1), endDate), excluding = id)
     }
 
-    tx.updateNewServiceNeed(id, startDate, endDate, optionId, shiftCare)
+    tx.updateNewServiceNeed(
+        id = id,
+        startDate = startDate,
+        endDate = endDate,
+        optionId = optionId,
+        shiftCare = shiftCare,
+        confirmedBy = user.id,
+        confirmedAt = confirmedAt
+    )
 }
 
 private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
@@ -128,7 +159,9 @@ private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId
                     startDate = periodToClear.end.plusDays(1),
                     endDate = old.endDate,
                     optionId = old.option.id,
-                    shiftCare = old.shiftCare
+                    shiftCare = old.shiftCare,
+                    confirmedBy = old.confirmed.employeeId,
+                    confirmedAt = old.confirmed.at
                 )
             }
             periodToClear.includes(oldPeriod.end) -> {
@@ -137,7 +170,9 @@ private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId
                     startDate = old.startDate,
                     endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
-                    shiftCare = old.shiftCare
+                    shiftCare = old.shiftCare,
+                    confirmedBy = old.confirmed.employeeId,
+                    confirmedAt = old.confirmed.at
                 )
             }
             else -> {
@@ -146,14 +181,18 @@ private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId
                     startDate = old.startDate,
                     endDate = periodToClear.start.minusDays(1),
                     optionId = old.option.id,
-                    shiftCare = old.shiftCare
+                    shiftCare = old.shiftCare,
+                    confirmedBy = old.confirmed.employeeId,
+                    confirmedAt = old.confirmed.at
                 )
                 tx.insertNewServiceNeed(
                     placementId = placementId,
                     startDate = periodToClear.end.plusDays(1),
                     endDate = old.endDate,
                     optionId = old.option.id,
-                    shiftCare = old.shiftCare
+                    shiftCare = old.shiftCare,
+                    confirmedBy = old.confirmed.employeeId,
+                    confirmedAt = old.confirmed.at
                 )
             }
         }

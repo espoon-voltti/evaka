@@ -2,34 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { H4 } from 'lib-components/typography'
-import React, { useContext, useState } from 'react'
-import { NewServiceNeed, Placement } from '../../../types/child'
-import _ from 'lodash'
-import { useTranslation } from '../../../state/i18n'
-import Toolbar from '../../common/Toolbar'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
-import { faPlus } from 'lib-icons'
-import LocalDate from '../../../../lib-common/local-date'
-import { UUID } from '../../../types'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { DatePickerDeprecated } from '../../../../lib-components/molecules/DatePickerDeprecated'
-import Checkbox from '../../../../lib-components/atoms/form/Checkbox'
-import SimpleSelect from '../../../../lib-components/atoms/form/SimpleSelect'
+import _ from 'lodash'
+import { faPlus, faQuestion } from 'lib-icons'
+import LocalDate from 'lib-common/local-date'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H4 } from 'lib-components/typography'
+import { useTranslation } from '../../../state/i18n'
+import { NewServiceNeed, Placement } from '../../../types/child'
 import { ChildContext } from '../../../state'
-import {
-  createNewServiceNeed,
-  deleteNewServiceNeed,
-  updateNewServiceNeed
-} from '../../../api/child/new-service-needs'
-import { UIContext } from '../../../state/ui'
-
-interface DropdownOption {
-  label: string
-  value: string
-}
+import { deleteNewServiceNeed } from '../../../api/child/new-service-needs'
+import { DateRange, getGaps } from '../../../utils/date'
+import NewServiceNeedEditorRow from './new-service-needs/NewServiceNeedEditorRow'
+import NewServiceNeedReadRow from './new-service-needs/NewServiceNeedReadRow'
+import MissingServiceNeedRow from './new-service-needs/MissingServiceNeedRow'
 
 interface Props {
   placement: Placement
@@ -42,10 +31,29 @@ function NewServiceNeeds({ placement, reload }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
-  const [creatingNew, setCreatingNew] = useState(false)
+  const [creatingNew, setCreatingNew] = useState<boolean | LocalDate>(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { serviceNeedOptions } = useContext(ChildContext)
+
+  const gaps = useMemo(() => getGaps(placement.serviceNeeds, placement), [
+    placement
+  ])
+
+  const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
+
+  if (
+    serviceNeedOptions.isSuccess &&
+    serviceNeedOptions.value.find(
+      (opt) => opt.validPlacementType === placementType && !opt.defaultOption
+    ) === undefined
+  ) {
+    // only default option exists so service needs are not relevant
+    // and do not need to be rendered
+    return null
+  }
+
   const options = serviceNeedOptions.isSuccess
     ? serviceNeedOptions.value
         .filter((opt) => opt.validPlacementType === placementType)
@@ -55,10 +63,6 @@ function NewServiceNeeds({ placement, reload }: Props) {
         }))
     : []
 
-  const onDelete = (id: UUID) => {
-    void deleteNewServiceNeed(id).then(reload)
-  }
-
   return (
     <div>
       <HeaderRow>
@@ -67,45 +71,46 @@ function NewServiceNeeds({ placement, reload }: Props) {
           onClick={() => setCreatingNew(true)}
           text={t.createNewBtn}
           icon={faPlus}
-          disabled={creatingNew || editingId !== null}
+          disabled={creatingNew !== false || editingId !== null}
         />
       </HeaderRow>
-      {serviceNeeds.length === 0 && !creatingNew ? (
-        <div>{t.noServiceNeeds}</div>
-      ) : (
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>{t.period}</Th>
-              <Th>{t.description}</Th>
-              <Th>{t.shiftCare}</Th>
-              <Th />
-            </Tr>
-          </Thead>
-          <Tbody>
-            {creatingNew && (
-              <NewServiceNeedEditorRow
-                placement={placement}
-                options={options}
-                initialForm={{
-                  startDate: serviceNeeds.length
-                    ? undefined
-                    : placement.startDate,
-                  endDate: serviceNeeds.length ? undefined : placement.endDate,
-                  optionId: undefined,
-                  shiftCare: false
-                }}
-                onSuccess={() => {
-                  setCreatingNew(false)
-                  reload()
-                }}
-                onCancel={() => setCreatingNew(false)}
-              />
-            )}
 
-            {_.orderBy(serviceNeeds, ['startDate'], ['desc']).map((sn) =>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{t.period}</Th>
+            <Th>{t.description}</Th>
+            <Th>{t.shiftCare}</Th>
+            <Th>{t.confirmed}</Th>
+            <Th />
+          </Tr>
+        </Thead>
+        <Tbody>
+          {creatingNew === true && (
+            <NewServiceNeedEditorRow
+              placement={placement}
+              options={options}
+              initialForm={{
+                startDate: serviceNeeds.length
+                  ? undefined
+                  : placement.startDate,
+                endDate: placement.endDate,
+                optionId: undefined,
+                shiftCare: false
+              }}
+              onSuccess={() => {
+                setCreatingNew(false)
+                reload()
+              }}
+              onCancel={() => setCreatingNew(false)}
+            />
+          )}
+
+          {_.orderBy(rows, ['startDate'], ['desc']).map((sn) =>
+            'id' in sn ? (
               editingId === sn.id ? (
                 <NewServiceNeedEditorRow
+                  key={sn.id}
                   placement={placement}
                   options={options}
                   initialForm={{
@@ -126,180 +131,61 @@ function NewServiceNeeds({ placement, reload }: Props) {
                   key={sn.id}
                   serviceNeed={sn}
                   onEdit={() => setEditingId(sn.id)}
-                  onDelete={() => onDelete(sn.id)}
-                  disabled={creatingNew || editingId !== null}
+                  onDelete={() => setDeletingId(sn.id)}
+                  disabled={creatingNew !== false || editingId !== null}
                 />
               )
-            )}
-          </Tbody>
-        </Table>
+            ) : creatingNew instanceof LocalDate &&
+              sn.startDate.isEqual(creatingNew) ? (
+              <NewServiceNeedEditorRow
+                key={sn.startDate.toJSON()}
+                placement={placement}
+                options={options}
+                initialForm={{
+                  startDate: sn.startDate,
+                  endDate: sn.endDate,
+                  optionId: undefined,
+                  shiftCare: false
+                }}
+                onSuccess={() => {
+                  setCreatingNew(false)
+                  reload()
+                }}
+                onCancel={() => setCreatingNew(false)}
+              />
+            ) : (
+              <MissingServiceNeedRow
+                key={sn.startDate.toJSON()}
+                startDate={sn.startDate}
+                endDate={sn.endDate}
+                onEdit={() => setCreatingNew(sn.startDate)}
+                disabled={creatingNew !== false || editingId !== null}
+              />
+            )
+          )}
+        </Tbody>
+      </Table>
+
+      {deletingId && (
+        <InfoModal
+          title={t.deleteServiceNeed.confirmTitle}
+          iconColour={'orange'}
+          icon={faQuestion}
+          resolve={{
+            action: () => deleteNewServiceNeed(deletingId).then(reload),
+            label: t.deleteServiceNeed.btn
+          }}
+          reject={{
+            action: () => setDeletingId(null),
+            label: i18n.common.cancel
+          }}
+        />
       )}
     </div>
   )
 }
 
-interface NewServiceNeedReadRowProps {
-  serviceNeed: NewServiceNeed
-  onEdit: () => void
-  onDelete: () => void
-  disabled?: boolean
-}
-function NewServiceNeedReadRow({
-  serviceNeed,
-  onEdit,
-  onDelete,
-  disabled
-}: NewServiceNeedReadRowProps) {
-  const { i18n } = useTranslation()
-  return (
-    <Tr>
-      <Td>
-        {serviceNeed.startDate.format()} - {serviceNeed.endDate.format()}
-      </Td>
-      <Td>{serviceNeed.option.name}</Td>
-      <Td>{serviceNeed.shiftCare ? i18n.common.yes : i18n.common.no}</Td>
-      <Td>
-        <Toolbar
-          dateRange={serviceNeed}
-          onEdit={onEdit}
-          editableFor={['ADMIN', 'UNIT_SUPERVISOR']}
-          onDelete={onDelete}
-          deletableFor={['ADMIN', 'UNIT_SUPERVISOR']}
-          disableAll={disabled}
-        />
-      </Td>
-    </Tr>
-  )
-}
-
-interface FormData {
-  startDate: LocalDate | undefined
-  endDate: LocalDate | undefined
-  optionId: UUID | undefined
-  shiftCare: boolean
-}
-
-interface NewServiceNeedCreateRowProps {
-  placement: Placement
-  options: DropdownOption[]
-  initialForm: FormData
-  onSuccess: () => void
-  onCancel: () => void
-  editingId?: string
-}
-function NewServiceNeedEditorRow({
-  placement,
-  options,
-  initialForm,
-  onSuccess,
-  onCancel,
-  editingId
-}: NewServiceNeedCreateRowProps) {
-  const { i18n } = useTranslation()
-  const t = i18n.childInformation.placements.serviceNeeds
-
-  const { setErrorMessage } = useContext(UIContext)
-  const [form, setForm] = useState<FormData>(initialForm)
-  const [submitting, setSubmitting] = useState(false)
-
-  const formIsValid =
-    form.startDate &&
-    form.endDate &&
-    form.optionId &&
-    !form.endDate.isBefore(form.startDate)
-
-  const onSubmit = () => {
-    if (form.startDate && form.endDate && form.optionId) {
-      setSubmitting(true)
-
-      const request = editingId
-        ? updateNewServiceNeed(editingId, {
-            startDate: form.startDate,
-            endDate: form.endDate,
-            optionId: form.optionId,
-            shiftCare: form.shiftCare
-          })
-        : createNewServiceNeed({
-            placementId: placement.id,
-            startDate: form.startDate,
-            endDate: form.endDate,
-            optionId: form.optionId,
-            shiftCare: form.shiftCare
-          })
-
-      void request
-        .then((res) => {
-          if (res.isSuccess) {
-            onSuccess()
-          } else {
-            setErrorMessage({
-              type: 'error',
-              title: i18n.common.error.unknown,
-              text: i18n.common.error.saveFailed,
-              resolveLabel: i18n.common.ok
-            })
-          }
-        })
-        .finally(() => setSubmitting(false))
-    }
-  }
-
-  return (
-    <Tr>
-      <StyledTd>
-        <FixedSpaceRow spacing="xs" alignItems="center">
-          <DatePickerDeprecated
-            date={form.startDate}
-            onChange={(date) => setForm({ ...form, startDate: date })}
-            minDate={placement.startDate}
-            maxDate={placement.endDate}
-          />
-          <span>-</span>
-          <DatePickerDeprecated
-            date={form.endDate}
-            onChange={(date) => setForm({ ...form, endDate: date })}
-            minDate={placement.startDate}
-            maxDate={placement.endDate}
-          />
-        </FixedSpaceRow>
-      </StyledTd>
-      <StyledTd>
-        <SimpleSelect
-          options={options}
-          value={form.optionId}
-          onChange={(e) => setForm({ ...form, optionId: e.target.value })}
-          placeholder={t.optionPlaceholder}
-        />
-      </StyledTd>
-      <StyledTd>
-        <Checkbox
-          label={t.shiftCare}
-          hiddenLabel
-          checked={form.shiftCare}
-          onChange={(checked) => setForm({ ...form, shiftCare: checked })}
-        />
-      </StyledTd>
-      <StyledTd>
-        <FixedSpaceRow justifyContent="flex-end" spacing="m">
-          <InlineButton
-            onClick={onCancel}
-            text={i18n.common.cancel}
-            disabled={submitting}
-          />
-          <InlineButton
-            onClick={onSubmit}
-            text={i18n.common.save}
-            disabled={submitting || !formIsValid}
-          />
-        </FixedSpaceRow>
-      </StyledTd>
-    </Tr>
-  )
-}
-
-const StyledTd = styled(Td)`
-  vertical-align: middle;
-`
+type ServiceNeedOrGap = NewServiceNeed | DateRange
 
 const HeaderRow = styled.div`
   display: flex;

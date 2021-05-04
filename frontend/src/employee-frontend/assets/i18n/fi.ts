@@ -760,12 +760,23 @@ export const fi = {
       },
       serviceNeeds: {
         title: 'Sijoituksen palveluntarpeet (alpha-testaus)',
-        noServiceNeeds: 'Ei palveluntarpeita',
         period: 'Aikaväli',
         description: 'Kuvaus',
         shiftCare: 'Ilta/Vuoro',
+        confirmed: 'Vahvistettu',
         createNewBtn: 'Luo uusi palveluntarve',
-        optionPlaceholder: 'Valitse...'
+        addNewBtn: 'Lisää palveluntarve',
+        optionPlaceholder: 'Valitse...',
+        missing: 'Puuttuva palveluntarve',
+        deleteServiceNeed: {
+          btn: 'Poista palveluntarve',
+          confirmTitle: 'Haluatko varmasti poistaa tämän palveluntarpeen?'
+        },
+        overlapWarning: {
+          title: 'Palveluntarpeet meneevät päällekkäin',
+          message:
+            'Merkitsemäsi palveluntarve menee päällekkäin aiemmin ilmoitetun kanssa. Mikäli vahvistat nyt merkitsemäsi palveluntarpeen, aiemmin merkitty palveluntarve katkaistaan automaattisesti päällekkäin menevältä ajalta.'
+        }
       }
     },
     fridgeParents: {

@@ -71,3 +71,4 @@ V70__employee_pin.sql
 V71__club_term_table.sql
 V72__staff_attendance_other.sql
 V73__deferrable_service_need_overlap.sql
+V74__service_need_confirmed_by.sql

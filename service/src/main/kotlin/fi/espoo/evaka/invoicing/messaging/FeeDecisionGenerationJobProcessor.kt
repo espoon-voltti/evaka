@@ -75,12 +75,14 @@ WITH data AS (
         p.id AS placement_id,
         greatest(p.start_date, sn.start_date) AS start_date,
         least(p.end_date, sn.end_date) AS end_date,
-        sn.shift_care
+        sn.shift_care,
+        sn.updated_by,
+        sn.updated
     FROM placement p
     JOIN service_need sn ON p.child_id = sn.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(sn.start_date, sn.end_date, '[]')
     WHERE p.child_id = :childId
 )
-INSERT INTO new_service_need (option_id, placement_id, start_date, end_date, shift_care)
+INSERT INTO new_service_need (option_id, placement_id, start_date, end_date, shift_care, confirmed_by, confirmed_at)
 SELECT (SELECT id FROM service_need_option WHERE name = option_name), placement_id, start_date, end_date, shift_care
 FROM data
 WHERE option_name != 'undefined'
