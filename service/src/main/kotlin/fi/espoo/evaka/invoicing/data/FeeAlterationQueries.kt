@@ -5,13 +5,13 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun upsertFeeAlteration(h: Handle, feeAlteration: FeeAlteration) {
+fun Database.Transaction.upsertFeeAlteration(feeAlteration: FeeAlteration) {
     val sql =
         """
             INSERT INTO fee_alteration (
@@ -47,7 +47,7 @@ fun upsertFeeAlteration(h: Handle, feeAlteration: FeeAlteration) {
                 updated_at = now()
         """
 
-    val update = h.createUpdate(sql)
+    val update = createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to feeAlteration.id,
@@ -66,23 +66,23 @@ fun upsertFeeAlteration(h: Handle, feeAlteration: FeeAlteration) {
     handlingExceptions { update.execute() }
 }
 
-fun getFeeAlteration(h: Handle, id: UUID): FeeAlteration? {
-    return h.createQuery("SELECT * FROM fee_alteration WHERE id = :id")
+fun Database.Read.getFeeAlteration(id: UUID): FeeAlteration? {
+    return createQuery("SELECT * FROM fee_alteration WHERE id = :id")
         .bind("id", id)
         .map(toFeeAlteration)
         .firstOrNull()
 }
 
-fun getFeeAlterationsForPerson(h: Handle, personId: UUID): List<FeeAlteration> {
+fun Database.Read.getFeeAlterationsForPerson(personId: UUID): List<FeeAlteration> {
     val sql = "SELECT * FROM fee_alteration WHERE person_id = :personId ORDER BY valid_from DESC, valid_to DESC"
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("personId", personId)
         .map(toFeeAlteration)
         .toList()
 }
 
-fun getFeeAlterationsFrom(h: Handle, personIds: List<UUID>, from: LocalDate): List<FeeAlteration> {
+fun Database.Read.getFeeAlterationsFrom(personIds: List<UUID>, from: LocalDate): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 
     val sql =
@@ -93,15 +93,15 @@ fun getFeeAlterationsFrom(h: Handle, personIds: List<UUID>, from: LocalDate): Li
                 AND (valid_to IS NULL OR valid_to >= :from)
             """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("personIds", personIds.toTypedArray())
         .bind("from", from)
         .map(toFeeAlteration)
         .toList()
 }
 
-fun deleteFeeAlteration(h: Handle, id: UUID) {
-    val update = h.createUpdate("DELETE FROM fee_alteration WHERE id = :id")
+fun Database.Transaction.deleteFeeAlteration(id: UUID) {
+    val update = createUpdate("DELETE FROM fee_alteration WHERE id = :id")
         .bind("id", id)
 
     handlingExceptions { update.execute() }

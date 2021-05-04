@@ -48,6 +48,7 @@ import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChildDuringPeriod
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -68,22 +69,20 @@ private val logger = KotlinLogging.logger {}
 class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Environment) {
     private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
 
-    fun createRetroactive(h: Handle, headOfFamily: UUID, from: LocalDate) {
+    fun createRetroactive(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val period = DateRange(from, null)
-        findFamiliesByHeadOfFamily(h, headOfFamily, period)
+        findFamiliesByHeadOfFamily(tx.handle, headOfFamily, period)
             .filter { it.period.overlaps(period) }
             .forEach {
                 // intentionally does not care about feeDecisionMinDate
-                handleFeeDecisionChanges(
-                    h,
+                tx.handleFeeDecisionChanges(
                     objectMapper,
                     maxOf(period.start, it.period.start),
                     it.headOfFamily,
                     it.partner,
                     it.children
                 )
-                handleFeeDecisionChanges2(
-                    h,
+                tx.handleFeeDecisionChanges2(
                     objectMapper,
                     maxOf(period.start, it.period.start),
                     it.headOfFamily,
@@ -93,54 +92,52 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
             }
     }
 
-    fun handlePlacement(h: Handle, childId: UUID, period: DateRange) {
+    fun handlePlacement(tx: Database.Transaction, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from new placement (childId: $childId, period: $period)" }
 
-        val families = findFamiliesByChild(h, childId, period)
-        handleDecisionChangesForFamilies(h, period, families)
+        val families = findFamiliesByChild(tx.handle, childId, period)
+        handleDecisionChangesForFamilies(tx, period, families)
     }
 
-    fun handleServiceNeed(h: Handle, childId: UUID, period: DateRange) {
+    fun handleServiceNeed(tx: Database.Transaction, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed service need (childId: $childId, period: $period)" }
 
-        val families = findFamiliesByChild(h, childId, period)
-        handleDecisionChangesForFamilies(h, period, families)
+        val families = findFamiliesByChild(tx.handle, childId, period)
+        handleDecisionChangesForFamilies(tx, period, families)
     }
 
-    fun handleFamilyUpdate(h: Handle, adultId: UUID, period: DateRange) {
+    fun handleFamilyUpdate(tx: Database.Transaction, adultId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed family (adultId: $adultId, period: $period)" }
 
-        val families = findFamiliesByHeadOfFamily(h, adultId, period) + findFamiliesByPartner(h, adultId, period)
-        handleDecisionChangesForFamilies(h, period, families)
+        val families = findFamiliesByHeadOfFamily(tx.handle, adultId, period) + findFamiliesByPartner(tx.handle, adultId, period)
+        handleDecisionChangesForFamilies(tx, period, families)
     }
 
-    fun handleIncomeChange(h: Handle, personId: UUID, period: DateRange) {
+    fun handleIncomeChange(tx: Database.Transaction, personId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed income (personId: $personId, period: $period)" }
 
-        val families = findFamiliesByHeadOfFamily(h, personId, period) + findFamiliesByPartner(h, personId, period)
-        handleDecisionChangesForFamilies(h, period, families)
+        val families = findFamiliesByHeadOfFamily(tx.handle, personId, period) + findFamiliesByPartner(tx.handle, personId, period)
+        handleDecisionChangesForFamilies(tx, period, families)
     }
 
-    fun handleFeeAlterationChange(h: Handle, childId: UUID, period: DateRange) {
+    fun handleFeeAlterationChange(tx: Database.Transaction, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed fee alteration (childId: $childId, period: $period)" }
 
-        val families = findFamiliesByChild(h, childId, period)
-        handleDecisionChangesForFamilies(h, period, families)
+        val families = findFamiliesByChild(tx.handle, childId, period)
+        handleDecisionChangesForFamilies(tx, period, families)
     }
 
-    private fun handleDecisionChangesForFamilies(h: Handle, period: DateRange, families: List<FridgeFamily>) {
+    private fun handleDecisionChangesForFamilies(tx: Database.Transaction, period: DateRange, families: List<FridgeFamily>) {
         families.filter { it.period.overlaps(period) }
             .forEach { family ->
-                handleFeeDecisionChanges(
-                    h,
+                tx.handleFeeDecisionChanges(
                     objectMapper,
                     maxOf(feeDecisionMinDate, period.start, family.period.start),
                     family.headOfFamily,
                     family.partner,
                     family.children
                 )
-                handleFeeDecisionChanges2(
-                    h,
+                tx.handleFeeDecisionChanges2(
                     objectMapper,
                     maxOf(feeDecisionMinDate, period.start, family.period.start),
                     family.headOfFamily,
@@ -148,8 +145,7 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
                     family.children
                 )
                 family.children.forEach { child ->
-                    handleValueDecisionChanges(
-                        h,
+                    tx.handleValueDecisionChanges(
                         objectMapper,
                         maxOf(period.start, family.period.start),
                         child,
@@ -162,8 +158,7 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
     }
 }
 
-private fun handleFeeDecisionChanges(
-    h: Handle,
+private fun Database.Transaction.handleFeeDecisionChanges(
     objectMapper: ObjectMapper,
     from: LocalDate,
     headOfFamily: PersonData.JustId,
@@ -171,13 +166,13 @@ private fun handleFeeDecisionChanges(
     children: List<PersonData.WithDateOfBirth>
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
-    val prices = getPricing(h, from)
-    val incomes = getIncomesFrom(h, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val prices = getPricing(handle, from)
+    val incomes = getIncomesFrom(handle, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
-        getFeeAlterationsFrom(h, children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+        getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 
-    val placements = getPaidPlacements(h, from, children)
-    val invoicedUnits = getUnitsThatAreInvoiced(h)
+    val placements = getPaidPlacements(handle, from, children)
+    val invoicedUnits = getUnitsThatAreInvoiced(handle)
 
     val newDrafts =
         generateNewFeeDecisions(
@@ -192,12 +187,12 @@ private fun handleFeeDecisionChanges(
             invoicedUnits
         )
 
-    h.lockFeeDecisionsForHeadOfFamily(headOfFamily.id)
+    handle.lockFeeDecisionsForHeadOfFamily(headOfFamily.id)
 
     val existingDrafts =
-        findFeeDecisionsForHeadOfFamily(h, objectMapper, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
+        findFeeDecisionsForHeadOfFamily(handle, objectMapper, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
     val activeDecisions = findFeeDecisionsForHeadOfFamily(
-        h,
+        handle,
         objectMapper,
         headOfFamily.id,
         null,
@@ -209,12 +204,11 @@ private fun handleFeeDecisionChanges(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    deleteFeeDecisions(h, existingDrafts.map { it.id })
-    upsertFeeDecisions(h, objectMapper, updatedDecisions)
+    deleteFeeDecisions(handle, existingDrafts.map { it.id })
+    upsertFeeDecisions(handle, objectMapper, updatedDecisions)
 }
 
-private fun handleValueDecisionChanges(
-    h: Handle,
+private fun Database.Transaction.handleValueDecisionChanges(
     objectMapper: ObjectMapper,
     from: LocalDate,
     child: PersonData.WithDateOfBirth,
@@ -223,14 +217,14 @@ private fun handleValueDecisionChanges(
     allChildren: List<PersonData.WithDateOfBirth>
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
-    val prices = getPricing(h, from)
-    val voucherValues = h.getVoucherValues(from)
-    val incomes = getIncomesFrom(h, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val prices = getPricing(handle, from)
+    val voucherValues = handle.getVoucherValues(from)
+    val incomes = getIncomesFrom(handle, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
-        getFeeAlterationsFrom(h, listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
+        getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
-    val placements = getPaidPlacements(h, from, allChildren)
-    val serviceVoucherUnits = getServiceVoucherUnits(h)
+    val placements = getPaidPlacements(handle, from, allChildren)
+    val serviceVoucherUnits = getServiceVoucherUnits(handle)
 
     val newDrafts =
         generateNewValueDecisions(
@@ -247,11 +241,11 @@ private fun handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    h.lockValueDecisionsForChild(child.id)
+    handle.lockValueDecisionsForChild(child.id)
 
     val existingDrafts =
-        h.findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
-    val activeDecisions = h.findValueDecisionsForChild(
+        handle.findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
+    val activeDecisions = handle.findValueDecisionsForChild(
         objectMapper,
         child.id,
         null,
@@ -263,8 +257,8 @@ private fun handleValueDecisionChanges(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    h.deleteValueDecisions(existingDrafts.map { it.id })
-    h.upsertValueDecisions(objectMapper, updatedDecisions)
+    handle.deleteValueDecisions(existingDrafts.map { it.id })
+    handle.upsertValueDecisions(objectMapper, updatedDecisions)
 }
 
 internal fun addECHAFeeAlterations(

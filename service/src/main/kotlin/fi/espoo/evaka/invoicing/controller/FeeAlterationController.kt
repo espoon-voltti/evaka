@@ -40,7 +40,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
         val parsedId = personId?.let { parseUUID(personId) }
             ?: throw BadRequest("Query parameter personId is mandatory")
 
-        val feeAlterations = db.read { getFeeAlterationsForPerson(it.handle, parsedId) }
+        val feeAlterations = db.read { it.getFeeAlterationsForPerson(parsedId) }
         return ResponseEntity.ok(Wrapper(feeAlterations))
     }
 
@@ -49,7 +49,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
-            upsertFeeAlteration(tx.handle, feeAlteration.copy(id = UUID.randomUUID(), updatedBy = user.id))
+            tx.upsertFeeAlteration(feeAlteration.copy(id = UUID.randomUUID(), updatedBy = user.id))
             asyncJobRunner.plan(
                 tx,
                 listOf(
@@ -72,8 +72,8 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
         db.transaction { tx ->
-            val existing = getFeeAlteration(tx.handle, parsedId)
-            upsertFeeAlteration(tx.handle, feeAlteration.copy(id = parsedId, updatedBy = user.id))
+            val existing = tx.getFeeAlteration(parsedId)
+            tx.upsertFeeAlteration(feeAlteration.copy(id = parsedId, updatedBy = user.id))
 
             val expandedPeriod = existing?.let {
                 DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
@@ -95,8 +95,8 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
         db.transaction { tx ->
-            val existing = getFeeAlteration(tx.handle, parsedId)
-            deleteFeeAlteration(tx.handle, parsedId)
+            val existing = tx.getFeeAlteration(parsedId)
+            tx.deleteFeeAlteration(parsedId)
 
             existing?.let {
                 asyncJobRunner.plan(

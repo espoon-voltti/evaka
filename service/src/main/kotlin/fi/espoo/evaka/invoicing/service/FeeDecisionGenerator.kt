@@ -31,6 +31,7 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -41,8 +42,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
-internal fun handleFeeDecisionChanges2(
-    h: Handle,
+internal fun Database.Read.handleFeeDecisionChanges2(
     objectMapper: ObjectMapper,
     from: LocalDate,
     headOfFamily: PersonData.JustId,
@@ -50,13 +50,13 @@ internal fun handleFeeDecisionChanges2(
     children: List<PersonData.WithDateOfBirth>
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
-    val prices = getPricing(h, from)
-    val incomes = getIncomesFrom(h, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
+    val prices = getPricing(handle, from)
+    val incomes = getIncomesFrom(handle, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
-        getFeeAlterationsFrom(h, children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
+        getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
 
-    val placements = getPaidPlacements2(h, from, children)
-    val invoicedUnits = getUnitsThatAreInvoiced(h)
+    val placements = getPaidPlacements2(handle, from, children)
+    val invoicedUnits = getUnitsThatAreInvoiced(handle)
 
     val newDrafts =
         generateNewFeeDecisions2(
@@ -71,12 +71,12 @@ internal fun handleFeeDecisionChanges2(
             invoicedUnits
         )
 
-    h.lockFeeDecisionsForHeadOfFamily2(headOfFamily.id)
+    handle.lockFeeDecisionsForHeadOfFamily2(headOfFamily.id)
 
     val existingDrafts =
-        findFeeDecisionsForHeadOfFamily2(h, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
+        findFeeDecisionsForHeadOfFamily2(handle, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
     val activeDecisions = findFeeDecisionsForHeadOfFamily2(
-        h,
+        handle,
         headOfFamily.id,
         null,
         listOf(
@@ -87,8 +87,8 @@ internal fun handleFeeDecisionChanges2(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    deleteFeeDecisions2(h, existingDrafts.map { it.id })
-    upsertFeeDecisions2(h, updatedDecisions)
+    deleteFeeDecisions2(handle, existingDrafts.map { it.id })
+    upsertFeeDecisions2(handle, updatedDecisions)
 }
 
 private fun generateNewFeeDecisions2(
