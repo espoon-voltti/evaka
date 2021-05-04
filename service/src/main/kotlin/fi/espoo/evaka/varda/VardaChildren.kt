@@ -37,7 +37,7 @@ private fun createPersons(db: Database.Connection, client: VardaClient) {
 
 private fun createChildren(db: Database.Connection, client: VardaClient, organizerName: String) {
     db.transaction { initNewChildRows(it) }
-    val vardaChildren = db.read { getChildrenToUpload(it, client.getPersonUrl, organizerName) }
+    val vardaChildren = db.read { getChildrenToUpload(it, client.getPersonUrl, organizerName, client.sourceSystem) }
     logger.info { "Varda: Creating ${vardaChildren.size} new children" }
     vardaChildren.forEach { vardaChild ->
         client.createChild(vardaChild)
@@ -134,7 +134,8 @@ private fun initNewChildRows(tx: Database.Transaction) {
 private fun getChildrenToUpload(
     tx: Database.Read,
     getPersonUrl: (Long) -> String,
-    organizerName: String
+    organizerName: String,
+    sourceSystem: String
 ): List<VardaChildRequest> {
     //language=SQL
     val sql =
@@ -152,12 +153,13 @@ private fun getChildrenToUpload(
 
     return tx.createQuery(sql)
         .bind("organizer", organizerName)
-        .map(toVardaChildRequest(getPersonUrl))
+        .map(toVardaChildRequest(getPersonUrl, sourceSystem))
         .list()
 }
 
 private fun toVardaChildRequest(
-    getPersonUrl: (Long) -> String
+    getPersonUrl: (Long) -> String,
+    sourceSystem: String
 ): (ResultSet, StatementContext) -> VardaChildRequest =
     { rs, _ ->
         val isPaos = rs.getBoolean("is_paos")
@@ -166,7 +168,8 @@ private fun toVardaChildRequest(
             personUrl = getPersonUrl(rs.getLong("varda_person_id")),
             organizerOid = if (isPaos) null else rs.getString("varda_organizer_oid"),
             ownOrganizationOid = if (isPaos) rs.getString("varda_organizer_oid") else null,
-            paosOrganizationOid = if (isPaos) rs.getString("oph_organizer_oid") else null
+            paosOrganizationOid = if (isPaos) rs.getString("oph_organizer_oid") else null,
+            sourceSystem = sourceSystem
         )
     }
 
@@ -225,7 +228,9 @@ data class VardaChildRequest(
     @JsonProperty("oma_organisaatio_oid")
     val ownOrganizationOid: String?,
     @JsonProperty("paos_organisaatio_oid")
-    val paosOrganizationOid: String?
+    val paosOrganizationOid: String?,
+    @JsonProperty("lahdejarjestelma")
+    val sourceSystem: String
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

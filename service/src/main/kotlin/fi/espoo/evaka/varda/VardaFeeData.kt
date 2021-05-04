@@ -82,7 +82,7 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
 
         logger.info { "Varda: Updating ${updatedFeeData.size} updated fee data" }
         updatedFeeData.forEach { (_, data) ->
-            val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId))
+            val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId), client.sourceSystem)
             client.updateFeeData(data.vardaId!!, richData).let { success ->
                 if (success) db.transaction { updateFeeDataUploadedAt(it, data.vardaId, Instant.now()) }
             }
@@ -90,7 +90,7 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
 
         logger.info { "Varda: Sending ${newFeeData.size} new fee data" }
         newFeeData.forEach { (vardaDecisionId, data) ->
-            val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId))
+            val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId), client.sourceSystem)
             client.createFeeData(richData)?.let { (vardaId) ->
                 db.transaction {
                     insertFeeDataUpload(it, vardaId, data.feeDecisionId, data.voucherValueDecisionId, vardaDecisionId, childVardaId)
@@ -308,7 +308,8 @@ fun deleteVardaFeeData(tx: Database.Transaction, vardaId: Long) {
 private fun baseToFeeData(
     feeDataBase: VardaFeeDataBase,
     guardians: List<PersonDTO>,
-    childUrl: String
+    childUrl: String,
+    sourceSystem: String
 ): VardaFeeData {
     val vardaGuardians = guardians
         .map { guardian ->
@@ -331,7 +332,8 @@ private fun baseToFeeData(
         palveluseteli_arvo = feeDataBase.voucherValue,
         perheen_koko = feeDataBase.familySize,
         alkamis_pvm = feeDataBase.startDate,
-        paattymis_pvm = feeDataBase.endDate
+        paattymis_pvm = feeDataBase.endDate,
+        lahdejarjestelma = sourceSystem
     )
 }
 
@@ -367,7 +369,8 @@ data class VardaFeeData(
     val asiakasmaksu: Double,
     val perheen_koko: Int,
     val alkamis_pvm: LocalDate,
-    val paattymis_pvm: LocalDate?
+    val paattymis_pvm: LocalDate?,
+    val lahdejarjestelma: String
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

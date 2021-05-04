@@ -61,6 +61,7 @@ fi:
       varda:
         basic_auth: ""
         url: ""
+        source_system: SourceSystemVarda
     varda:
       force:
         sync: true
