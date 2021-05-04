@@ -243,7 +243,7 @@ val modifications = mapOf<String, String>(
     {
       "tietoryhma": "HUOLLETTAVA_SUPPEA",
       "huollettava": {
-        "henkilotunnus": "010118-9999",
+        "henkilotunnus": "010118-999A",
         "etunimet": "Etu",
         "sukunimi": "Suku"
       },
@@ -275,7 +275,7 @@ val modifications = mapOf<String, String>(
     {
       "tietoryhma": "HUOLLETTAVA_SUPPEA",
       "huollettava": {
-        "henkilotunnus": "010118-9999",
+        "henkilotunnus": "010118-999A",
         "etunimet": "Etu",
         "sukunimi": "Suku"
       },

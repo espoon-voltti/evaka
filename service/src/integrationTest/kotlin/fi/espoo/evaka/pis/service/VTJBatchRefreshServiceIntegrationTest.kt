@@ -29,7 +29,7 @@ import java.util.UUID
 
 class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
 
-    @MockBean
+    @MockBean(name = "personService")
     lateinit var personService: PersonService
 
     @MockBean
