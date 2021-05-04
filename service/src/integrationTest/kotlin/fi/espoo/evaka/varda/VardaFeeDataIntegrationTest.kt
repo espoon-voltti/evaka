@@ -744,7 +744,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             )
         }
 
-        it.handle.upsertValueDecisions(objectMapper, voucherValueDecisions)
+        it.upsertValueDecisions(objectMapper, voucherValueDecisions)
         voucherValueDecisions
     }
 
@@ -765,6 +765,6 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             .response()
         assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
-        return db.read { it.handle.getValueDecisionsByIds(objectMapper, listOf(this.id)) }.first()
+        return db.read { it.getValueDecisionsByIds(objectMapper, listOf(this.id)) }.first()
     }
 }

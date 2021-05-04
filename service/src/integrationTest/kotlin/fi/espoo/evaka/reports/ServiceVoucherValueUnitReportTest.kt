@@ -310,7 +310,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
                 value = value,
                 coPayment = coPayment
             )
-            it.handle.upsertValueDecisions(objectMapper, listOf(decision))
+            it.upsertValueDecisions(objectMapper, listOf(decision))
 
             sendVoucherValueDecisions(
                 tx = it,

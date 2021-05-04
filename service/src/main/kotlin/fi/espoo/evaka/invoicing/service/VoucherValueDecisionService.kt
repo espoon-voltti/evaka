@@ -51,11 +51,11 @@ class VoucherValueDecisionService(
 
         val pdf = generatePdf(decision)
         val key = uploadPdf(decision.id, pdf)
-        tx.handle.updateVoucherValueDecisionDocumentKey(decision.id, key)
+        tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
 
     fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Pair<String, ByteArray> {
-        val key = tx.handle.getVoucherValueDecisionDocumentKey(decisionId)
+        val key = tx.getVoucherValueDecisionDocumentKey(decisionId)
             ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
         return key to s3Client.getPdf(bucket, key)
     }
@@ -121,9 +121,9 @@ AND placements.combined_range << daterange(:now, null)
 """
         ).bind("now", now).mapTo<UUID>().toList()
 
-        tx.handle.lockValueDecisions(decisionIds)
+        tx.lockValueDecisions(decisionIds)
 
-        tx.handle
+        tx
             .getValueDecisionsByIds(objectMapper, decisionIds)
             .forEach { decision ->
                 val mergedPlacementPeriods = tx
@@ -162,7 +162,7 @@ ORDER BY start_date ASC
     }
 
     private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =
-        tx.handle.getVoucherValueDecision(objectMapper, decisionId)
+        tx.getVoucherValueDecision(objectMapper, decisionId)
             ?: error("No voucher value decision found with ID ($decisionId)")
 
     private val key = { id: UUID -> "value_decision_$id.pdf" }

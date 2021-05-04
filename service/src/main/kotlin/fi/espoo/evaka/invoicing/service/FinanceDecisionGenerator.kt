@@ -240,11 +240,11 @@ private fun Database.Transaction.handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    handle.lockValueDecisionsForChild(child.id)
+    lockValueDecisionsForChild(child.id)
 
     val existingDrafts =
-        handle.findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
-    val activeDecisions = handle.findValueDecisionsForChild(
+        findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
+    val activeDecisions = findValueDecisionsForChild(
         objectMapper,
         child.id,
         null,
@@ -256,8 +256,8 @@ private fun Database.Transaction.handleValueDecisionChanges(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    handle.deleteValueDecisions(existingDrafts.map { it.id })
-    handle.upsertValueDecisions(objectMapper, updatedDecisions)
+    deleteValueDecisions(existingDrafts.map { it.id })
+    upsertValueDecisions(objectMapper, updatedDecisions)
 }
 
 internal fun addECHAFeeAlterations(

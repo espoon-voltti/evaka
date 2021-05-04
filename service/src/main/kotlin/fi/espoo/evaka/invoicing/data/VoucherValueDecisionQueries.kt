@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
@@ -36,7 +35,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
 
-fun Handle.upsertValueDecisions(mapper: ObjectMapper, decisions: List<VoucherValueDecision>) {
+fun Database.Transaction.upsertValueDecisions(mapper: ObjectMapper, decisions: List<VoucherValueDecision>) {
     val sql =
         // language=sql
         """
@@ -177,14 +176,14 @@ INSERT INTO voucher_value_decision (
     batch.execute()
 }
 
-fun Handle.getValueDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<VoucherValueDecision> {
+fun Database.Read.getValueDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<VoucherValueDecision> {
     return createQuery("SELECT * FROM voucher_value_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .map(toVoucherValueDecision(mapper))
         .toList()
 }
 
-fun Handle.findValueDecisionsForChild(
+fun Database.Read.findValueDecisionsForChild(
     mapper: ObjectMapper,
     child: UUID,
     period: DateRange?,
@@ -207,7 +206,7 @@ AND (:statuses::text[] IS NULL OR status = ANY(:statuses::voucher_value_decision
         .toList()
 }
 
-fun Handle.deleteValueDecisions(ids: List<UUID>) {
+fun Database.Transaction.deleteValueDecisions(ids: List<UUID>) {
     if (ids.isEmpty()) return
 
     createUpdate("DELETE FROM voucher_value_decision WHERE id = ANY(:ids)")
@@ -300,7 +299,7 @@ LIMIT :pageSize OFFSET :pageSize * :page
         .let(mapToPaged(pageSize))
 }
 
-fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValueDecisionDetailed? {
+fun Database.Read.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValueDecisionDetailed? {
     // language=sql
     val sql =
         """
@@ -357,7 +356,7 @@ WHERE decision.id = :id
         .singleOrNull()
 }
 
-fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, approvedAt: Instant) {
+fun Database.Transaction.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, approvedAt: Instant) {
     // language=sql
     val sql =
         """
@@ -387,7 +386,7 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
     batch.execute()
 }
 
-fun Handle.getVoucherValueDecisionDocumentKey(id: UUID): String? {
+fun Database.Read.getVoucherValueDecisionDocumentKey(id: UUID): String? {
     // language=sql
     val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
 
@@ -397,7 +396,7 @@ fun Handle.getVoucherValueDecisionDocumentKey(id: UUID): String? {
         .singleOrNull()
 }
 
-fun Handle.updateVoucherValueDecisionDocumentKey(id: UUID, documentKey: String) {
+fun Database.Transaction.updateVoucherValueDecisionDocumentKey(id: UUID, documentKey: String) {
     // language=sql
     val sql = "UPDATE voucher_value_decision SET document_key = :documentKey WHERE id = :id"
 
@@ -440,13 +439,13 @@ fun Database.Transaction.updateVoucherValueDecisionStatusAndDates(updatedDecisio
         .execute()
 }
 
-fun Handle.lockValueDecisionsForChild(child: UUID) {
+fun Database.Transaction.lockValueDecisionsForChild(child: UUID) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE child = :child FOR UPDATE")
         .bind("child", child)
         .execute()
 }
 
-fun Handle.lockValueDecisions(ids: List<UUID>) {
+fun Database.Transaction.lockValueDecisions(ids: List<UUID>) {
     createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()

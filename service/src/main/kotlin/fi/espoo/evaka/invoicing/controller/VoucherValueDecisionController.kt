@@ -97,7 +97,7 @@ class VoucherValueDecisionController(
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { it.handle.getVoucherValueDecision(objectMapper, id) }
+        val res = db.read { it.getVoucherValueDecision(objectMapper, id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -125,7 +125,7 @@ class VoucherValueDecisionController(
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
-            val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
+            val decisions = tx.getValueDecisionsByIds(objectMapper, ids)
             if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
                 throw BadRequest("Voucher value decision cannot be marked sent")
             tx.markVoucherValueDecisionsSent(ids, Instant.now())
@@ -154,8 +154,8 @@ fun sendVoucherValueDecisions(
     now: Instant,
     ids: List<UUID>
 ) {
-    tx.handle.lockValueDecisions(ids)
-    val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
+    tx.lockValueDecisions(ids)
+    val decisions = tx.getValueDecisionsByIds(objectMapper, ids)
     if (decisions.isEmpty()) return
 
     if (decisions.any { it.status != VoucherValueDecisionStatus.DRAFT }) {
@@ -168,8 +168,8 @@ fun sendVoucherValueDecisions(
 
     val conflicts = decisions
         .flatMap {
-            tx.handle.lockValueDecisionsForChild(it.child.id)
-            tx.handle.findValueDecisionsForChild(
+            tx.lockValueDecisionsForChild(it.child.id)
+            tx.findValueDecisionsForChild(
                 objectMapper,
                 it.child.id,
                 DateRange(it.validFrom, it.validTo),
@@ -183,7 +183,7 @@ fun sendVoucherValueDecisions(
     tx.updateVoucherValueDecisionStatusAndDates(updatedConflicts)
 
     val validIds = decisions.map { it.id }
-    tx.handle.approveValueDecisionDraftsForSending(validIds, user.id, now)
+    tx.approveValueDecisionDraftsForSending(validIds, user.id, now)
     asyncJobRunner.plan(tx, validIds.map { NotifyVoucherValueDecisionApproved(it) })
 }
 
