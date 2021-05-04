@@ -22,15 +22,16 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
   })
   return new SamlStrategy(
     {
-      issuer: 'evaka',
+      acceptedClockSkewMs: 0,
+      audience: evakaSamlConfig.issuer,
       callbackUrl: evakaSamlConfig.callbackUrl,
-      entryPoint: evakaSamlConfig.entryPoint,
-      logoutUrl: evakaSamlConfig.entryPoint,
-      acceptedClockSkewMs: -1,
       cert: publicCert,
-      privateCert: privateCert,
       decryptionPvk: privateCert,
+      entryPoint: evakaSamlConfig.entryPoint,
       identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+      issuer: 'evaka',
+      logoutUrl: evakaSamlConfig.entryPoint,
+      privateCert: privateCert,
       signatureAlgorithm: 'sha256'
     },
     (profile: Profile, done: VerifiedCallback) => {
