@@ -187,12 +187,11 @@ private fun Database.Transaction.handleFeeDecisionChanges(
             invoicedUnits
         )
 
-    handle.lockFeeDecisionsForHeadOfFamily(headOfFamily.id)
+    lockFeeDecisionsForHeadOfFamily(headOfFamily.id)
 
     val existingDrafts =
-        findFeeDecisionsForHeadOfFamily(handle, objectMapper, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
+        findFeeDecisionsForHeadOfFamily(objectMapper, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
     val activeDecisions = findFeeDecisionsForHeadOfFamily(
-        handle,
         objectMapper,
         headOfFamily.id,
         null,
@@ -204,8 +203,8 @@ private fun Database.Transaction.handleFeeDecisionChanges(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    deleteFeeDecisions(handle, existingDrafts.map { it.id })
-    upsertFeeDecisions(handle, objectMapper, updatedDecisions)
+    deleteFeeDecisions(existingDrafts.map { it.id })
+    upsertFeeDecisions(objectMapper, updatedDecisions)
 }
 
 private fun Database.Transaction.handleValueDecisionChanges(

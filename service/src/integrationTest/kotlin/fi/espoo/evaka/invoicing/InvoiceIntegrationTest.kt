@@ -1025,7 +1025,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->
-        upsertFeeDecisions(tx.handle, objectMapper, decisions)
+        tx.upsertFeeDecisions(objectMapper, decisions)
         decisions.forEach { decision ->
             decision.parts.forEach { part ->
                 tx.insertTestPlacement(

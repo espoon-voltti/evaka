@@ -1034,8 +1034,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 startDate = period.start,
                 endDate = period.end!!
             )
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
@@ -1088,8 +1087,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 startDate = placementPeriod.start,
                 endDate = placementPeriod.end!!
             )
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
             )
@@ -2174,8 +2172,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, invoicingPeriod))
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     decision.copy(validTo = invoicingPeriod.start.plusDays(7))
@@ -2218,7 +2215,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
 
             db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
-            db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(decision)) }
+            db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(decision)) }
 
             val placementId = db.transaction(insertPlacement(child.id, period))
             val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
@@ -2247,7 +2244,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         }
 
     private fun insertDecisionsAndPlacements(feeDecisions: List<FeeDecision>) = db.transaction { tx ->
-        upsertFeeDecisions(tx.handle, objectMapper, feeDecisions)
+        tx.upsertFeeDecisions(objectMapper, feeDecisions)
         feeDecisions.forEach { decision ->
             decision.parts.forEach { part ->
                 tx.insertTestPlacement(

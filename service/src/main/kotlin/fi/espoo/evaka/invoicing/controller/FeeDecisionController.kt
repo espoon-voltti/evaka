@@ -95,8 +95,7 @@ class FeeDecisionController(
             throw BadRequest("End date cannot be before start date")
         return db
             .read { tx ->
-                searchFeeDecisions(
-                    tx,
+                tx.searchFeeDecisions(
                     page,
                     pageSize,
                     sortBy ?: FeeDecisionSortParam.STATUS,
@@ -150,7 +149,7 @@ class FeeDecisionController(
     fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { getFeeDecision(it.handle, objectMapper, uuid) }
+        val res = db.read { it.getFeeDecision(objectMapper, uuid) }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -164,8 +163,7 @@ class FeeDecisionController(
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read {
-            findFeeDecisionsForHeadOfFamily(
-                it.handle,
+            it.findFeeDecisionsForHeadOfFamily(
                 objectMapper,
                 uuid,
                 null,

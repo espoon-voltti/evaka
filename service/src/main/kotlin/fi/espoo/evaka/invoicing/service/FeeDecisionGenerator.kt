@@ -42,7 +42,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
-internal fun Database.Read.handleFeeDecisionChanges2(
+internal fun Database.Transaction.handleFeeDecisionChanges2(
     objectMapper: ObjectMapper,
     from: LocalDate,
     headOfFamily: PersonData.JustId,
@@ -71,12 +71,11 @@ internal fun Database.Read.handleFeeDecisionChanges2(
             invoicedUnits
         )
 
-    handle.lockFeeDecisionsForHeadOfFamily2(headOfFamily.id)
+    lockFeeDecisionsForHeadOfFamily2(headOfFamily.id)
 
     val existingDrafts =
-        findFeeDecisionsForHeadOfFamily2(handle, headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
+        findFeeDecisionsForHeadOfFamily2(headOfFamily.id, null, listOf(FeeDecisionStatus.DRAFT))
     val activeDecisions = findFeeDecisionsForHeadOfFamily2(
-        handle,
         headOfFamily.id,
         null,
         listOf(
@@ -87,8 +86,8 @@ internal fun Database.Read.handleFeeDecisionChanges2(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    deleteFeeDecisions2(handle, existingDrafts.map { it.id })
-    upsertFeeDecisions2(handle, updatedDecisions)
+    deleteFeeDecisions2(existingDrafts.map { it.id })
+    upsertFeeDecisions2(updatedDecisions)
 }
 
 private fun generateNewFeeDecisions2(

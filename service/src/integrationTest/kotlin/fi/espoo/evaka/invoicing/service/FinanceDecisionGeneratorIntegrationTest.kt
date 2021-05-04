@@ -179,7 +179,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             testAdult_1.id,
             listOf(createFeeDecisionPartFixture(testChild_2.id, LocalDate.of(2010, 1, 1), testDaycare.id))
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(oldDraft)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(oldDraft)) }
 
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
@@ -389,8 +389,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -422,8 +421,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     fun `new empty fee decision is generated if head of family has no children but there exists an sent decision for same head of family`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -830,8 +828,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -865,8 +862,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -916,8 +912,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val shorterPeriod = period.copy(end = period.start.plusDays(30))
         insertServiceNeed(testChild_1.id, listOf(shorterPeriod to 20.0))
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -984,8 +979,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertServiceNeed(testChild_1.id, listOf(olderPeriod to 20.0))
         val newerPeriod = period.copy(start = olderPeriod.end!!.plusDays(1))
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -1576,7 +1570,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(sentDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
         val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
@@ -1605,7 +1599,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, listOf(sentDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
         val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
@@ -1652,8 +1646,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             testDaycare.id
         )
         db.transaction { tx ->
-            upsertFeeDecisions(
-                tx.handle,
+            tx.upsertFeeDecisions(
                 objectMapper,
                 listOf(
                     createFeeDecisionFixture(
@@ -1724,8 +1717,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             )
         ).let { fixture ->
             db.transaction { tx ->
-                upsertFeeDecisions(
-                    tx.handle,
+                tx.upsertFeeDecisions(
                     objectMapper,
                     listOf(fixture)
                 )

@@ -33,7 +33,6 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneednew.ServiceNeedOption
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -194,7 +193,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> upsertFeeDecisions2(tx.handle, listOf(oldDraft)) }
+        db.transaction { tx -> tx.upsertFeeDecisions2(listOf(oldDraft)) }
 
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
@@ -402,8 +401,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -436,8 +434,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     fun `new empty fee decision is generated if head of family has no children but there exists an sent decision for same head of family`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -776,8 +773,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -811,8 +807,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -864,8 +859,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val shorterPeriod = FiniteDateRange(period.start, period.start.plusDays(30))
         insertServiceNeed(placementId, shorterPeriod, serviceNeed.id)
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -933,8 +927,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertServiceNeed(placementId, olderPeriod.asFiniteDateRange()!!, serviceNeed.id)
         val newerPeriod = period.copy(start = olderPeriod.end!!.plusDays(1))
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -1529,7 +1522,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> upsertFeeDecisions2(tx.handle, listOf(sentDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions2(listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
         val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
@@ -1560,7 +1553,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        db.transaction { tx -> upsertFeeDecisions2(tx.handle, listOf(sentDecision)) }
+        db.transaction { tx -> tx.upsertFeeDecisions2(listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
         val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
@@ -1607,8 +1600,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             testDaycare.id
         )
         db.transaction { tx ->
-            upsertFeeDecisions2(
-                tx.handle,
+            tx.upsertFeeDecisions2(
                 listOf(
                     createFeeDecision2Fixture(
                         status = FeeDecisionStatus.SENT,
@@ -1678,10 +1670,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             )
         ).let { fixture ->
             db.transaction { tx ->
-                upsertFeeDecisions2(
-                    tx.handle,
-                    listOf(fixture)
-                )
+                tx.upsertFeeDecisions2(listOf(fixture))
                 generator.handleFamilyUpdate(tx, testAdult_1.id, period)
             }
         }
