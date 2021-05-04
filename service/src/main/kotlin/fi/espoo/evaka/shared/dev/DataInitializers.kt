@@ -23,6 +23,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -425,16 +426,18 @@ fun Database.Transaction.insertTestServiceNeed(
 }
 
 fun Database.Transaction.insertTestNewServiceNeed(
+    confirmedBy: UUID,
     placementId: UUID,
     period: FiniteDateRange,
     optionId: UUID,
     shiftCare: Boolean = false,
+    confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: UUID = UUID.randomUUID()
 ): UUID {
     createUpdate(
         """
-INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care)
-VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare)
+INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at)
+VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt)
 """
     )
         .bind("id", id)
@@ -443,6 +446,8 @@ VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare)
         .bind("endDate", period.end)
         .bind("optionId", optionId)
         .bind("shiftCare", shiftCare)
+        .bind("confirmedBy", confirmedBy)
+        .bind("confirmedAt", confirmedAt)
         .execute()
     return id
 }

@@ -1784,6 +1784,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     ) {
         db.transaction { tx ->
             tx.insertTestNewServiceNeed(
+                testDecisionMaker_1.id,
                 placementId,
                 period,
                 optionId
