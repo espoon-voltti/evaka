@@ -332,7 +332,7 @@ class ApplicationControllerV2(
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
 
-            val placementUnitName = getPlacementPlanUnitName(tx.handle, applicationId)
+            val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)

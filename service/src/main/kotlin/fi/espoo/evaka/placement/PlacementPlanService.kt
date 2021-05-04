@@ -31,9 +31,9 @@ class PlacementPlanService(
 
         val type = derivePlacementType(application)
         val form = application.form
-        val child = getPlacementDraftChild(tx.handle, application.childId)
+        val child = tx.getPlacementDraftChild(application.childId)
             ?: throw NotFound("Cannot find child with id ${application.childId} to application ${application.id}")
-        val guardianHasRestrictedDetails = getGuardiansRestrictedStatus(tx.handle, application.guardianId)
+        val guardianHasRestrictedDetails = tx.getGuardiansRestrictedStatus(application.guardianId)
             ?: throw NotFound("Cannot find guardian with id ${application.guardianId} to application ${application.id}")
         val preferredUnits = form.preferences.preferredUnits.map {
             PlacementDraftUnit(
@@ -102,10 +102,10 @@ class PlacementPlanService(
     }
 
     fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: UUID) =
-        softDeletePlacementPlanIfUnused(tx.handle, applicationId)
+        tx.softDeletePlacementPlanIfUnused(applicationId)
 
     fun createPlacementPlan(tx: Database.Transaction, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
-        createPlacementPlan(tx.handle, application.id, derivePlacementType(application), placementPlan)
+        tx.createPlacementPlan(application.id, derivePlacementType(application), placementPlan)
 
     fun applyPlacementPlan(
         tx: Database.Transaction,

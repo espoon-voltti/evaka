@@ -92,7 +92,7 @@ class PlacementController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        return db.read { getPlacementPlans(it.handle, daycareId, startDate, endDate) }.let(::ok)
+        return db.read { it.getPlacementPlans(daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping

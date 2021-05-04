@@ -298,9 +298,9 @@ class ApplicationStateService(
             if (rejectReason == PlacementPlanRejectReason.OTHER && rejectOtherReason.isNullOrBlank())
                 throw BadRequest("Must describe other reason for rejecting")
 
-            updatePlacementPlanUnitConfirmation(tx.handle, applicationId, status, rejectReason, rejectOtherReason)
+            tx.updatePlacementPlanUnitConfirmation(applicationId, status, rejectReason, rejectOtherReason)
         } else {
-            updatePlacementPlanUnitConfirmation(tx.handle, applicationId, status, null, null)
+            tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
     }
 
@@ -377,7 +377,7 @@ class ApplicationStateService(
             )
         }
 
-        val plan = getPlacementPlan(tx.handle, applicationId)
+        val plan = tx.getPlacementPlan(applicationId)
             ?: throw IllegalStateException("Application $applicationId has no placement plan")
 
         // everything validated now!

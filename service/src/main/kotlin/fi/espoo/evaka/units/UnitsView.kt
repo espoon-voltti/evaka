@@ -85,8 +85,8 @@ class UnitsView(private val acl: AccessControlList) {
             if (currentUserRoles.hasOneOfRoles(*detailedDataRoles)) {
                 val unitOccupancies = getUnitOccupancies(it, unitId, period)
                 val groupOccupancies = getGroupOccupancies(it, unitId, period)
-                val placementProposals = getPlacementPlans(it.handle, unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
-                val placementPlans = getPlacementPlans(it.handle, unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
+                val placementProposals = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
+                val placementPlans = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
                 val applications = it.getApplicationUnitSummaries(unitId)
 
                 basicData.copy(

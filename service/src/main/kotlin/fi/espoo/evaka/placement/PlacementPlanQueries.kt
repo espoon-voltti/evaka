@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
@@ -21,8 +20,8 @@ fun Database.Transaction.deletePlacementPlans(applicationIds: List<UUID>) {
     )
 }
 
-fun softDeletePlacementPlanIfUnused(h: Handle, applicationId: UUID) {
-    h.createUpdate(
+fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: UUID) {
+    createUpdate(
         // language=SQL
         """
 UPDATE placement_plan
@@ -37,13 +36,12 @@ AND NOT EXISTS (
     ).bind("applicationId", applicationId).execute()
 }
 
-fun createPlacementPlan(
-    h: Handle,
+fun Database.Transaction.createPlacementPlan(
     applicationId: UUID,
     type: PlacementType,
     plan: DaycarePlacementPlan
 ) {
-    h.createUpdate(
+    createUpdate(
         // language=SQL
         """
 INSERT INTO placement_plan (type, unit_id, application_id, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date)
@@ -67,7 +65,7 @@ VALUES (
         .execute()
 }
 
-fun getPlacementPlan(h: Handle, applicationId: UUID): PlacementPlan? {
+fun Database.Read.getPlacementPlan(applicationId: UUID): PlacementPlan? {
     data class QueryResult(
         val id: UUID,
         val unitId: UUID,
@@ -78,7 +76,7 @@ fun getPlacementPlan(h: Handle, applicationId: UUID): PlacementPlan? {
         val preschoolDaycareStartDate: LocalDate?,
         val preschoolDaycareEndDate: LocalDate?
     )
-    return h.createQuery(
+    return createQuery(
         // language=SQL
         """
 SELECT id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date
@@ -103,8 +101,8 @@ WHERE application_id = :applicationId AND deleted = false
         }
 }
 
-fun getPlacementPlanUnitName(h: Handle, applicationId: UUID): String {
-    return h.createQuery(
+fun Database.Read.getPlacementPlanUnitName(applicationId: UUID): String {
+    return createQuery(
         // language=SQL
         """
 SELECT d.name
@@ -118,7 +116,7 @@ WHERE application_id = :applicationId AND deleted = false
         .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
 }
 
-fun getPlacementPlans(h: Handle, unitId: UUID, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
+fun Database.Read.getPlacementPlans(unitId: UUID, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
     data class QueryResult(
         val id: UUID,
         val unitId: UUID,
@@ -137,7 +135,7 @@ fun getPlacementPlans(h: Handle, unitId: UUID, from: LocalDate?, to: LocalDate?,
         val unitRejectOtherReason: String?
     )
 
-    return h.createQuery(
+    return createQuery(
         // language=SQL
         """
 SELECT 
@@ -180,8 +178,7 @@ WHERE unit_id = :unitId AND a.status = ANY(:statuses::application_status_type[])
         }
 }
 
-fun updatePlacementPlanUnitConfirmation(
-    h: Handle,
+fun Database.Transaction.updatePlacementPlanUnitConfirmation(
     applicationId: UUID,
     status: PlacementPlanConfirmationStatus,
     rejectReason: PlacementPlanRejectReason?,
@@ -194,7 +191,7 @@ fun updatePlacementPlanUnitConfirmation(
         SET unit_confirmation_status = :status, unit_reject_reason = :rejectReason, unit_reject_other_reason = :rejectOtherReason
         WHERE application_id = :applicationId AND deleted = false
     """
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("applicationId", applicationId)
         .bind("status", status)
         .bind("rejectReason", rejectReason)
@@ -202,8 +199,8 @@ fun updatePlacementPlanUnitConfirmation(
         .execute()
 }
 
-fun getPlacementDraftChild(h: Handle, childId: UUID): PlacementDraftChild? {
-    return h.createQuery(
+fun Database.Read.getPlacementDraftChild(childId: UUID): PlacementDraftChild? {
+    return createQuery(
         // language=SQL
         """
             SELECT id, first_name, last_name, date_of_birth AS dob
@@ -217,8 +214,8 @@ fun getPlacementDraftChild(h: Handle, childId: UUID): PlacementDraftChild? {
         .singleOrNull()
 }
 
-fun getGuardiansRestrictedStatus(h: Handle, guardianId: UUID): Boolean? {
-    return h.createQuery(
+fun Database.Read.getGuardiansRestrictedStatus(guardianId: UUID): Boolean? {
+    return createQuery(
         // language=SQL
         """
             SELECT restricted_details_enabled

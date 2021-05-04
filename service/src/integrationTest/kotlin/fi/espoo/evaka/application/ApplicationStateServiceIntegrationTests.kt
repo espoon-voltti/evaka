@@ -495,7 +495,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -553,7 +553,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -611,7 +611,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -686,7 +686,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -762,7 +762,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertEquals(null, placementPlan)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -1074,7 +1074,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val messages = MockEvakaMessageClient.getMessages()
             assertEquals(0, messages.size)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNotNull(placementPlan)
 
             val placements = tx.handle.getPlacementsForChild(testChild_2.id)
@@ -1173,7 +1173,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
             val placements = tx.handle.getPlacementsForChild(testChild_6.id)
@@ -1214,7 +1214,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
             val placements = tx.handle.getPlacementsForChild(testChild_6.id)
@@ -1918,7 +1918,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(DecisionStatus.ACCEPTED, status)
             }
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
             val placements = tx.handle.getPlacementsForChild(testChild_6.id)

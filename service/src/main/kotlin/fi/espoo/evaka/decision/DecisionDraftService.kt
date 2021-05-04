@@ -20,7 +20,7 @@ import java.util.UUID
 @Service
 class DecisionDraftService {
     fun createDecisionDrafts(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
-        val placementPlan = getPlacementPlan(tx.handle, application.id)
+        val placementPlan = tx.getPlacementPlan(application.id)
             ?: throw NotFound("Application ${application.id} has no placement")
 
         val drafts: List<DecisionDraft> = when (placementPlan.type) {
