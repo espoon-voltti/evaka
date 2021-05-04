@@ -94,7 +94,7 @@ fun Database.Transaction.createGroupPlacement(
     if (startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate))
         throw BadRequest("Group placement must be within the daycare placement")
 
-    val group = handle.getDaycareGroup(groupId)
+    val group = getDaycareGroup(groupId)
         ?: throw NotFound("Group $groupId does not exist")
     if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate)))
         throw BadRequest("Group is not active for the full duration")

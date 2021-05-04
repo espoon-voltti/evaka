@@ -123,7 +123,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { it.handle.updateGroup(groupId, body.name, body.startDate, body.endDate) }
+        db.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) }
 
         return noContent()
     }
@@ -160,7 +160,7 @@ class DaycareController(
                 CaretakersResponse(
                     caretakers = caretakerService.getCaretakers(it, groupId),
                     unitName = daycareStub?.name ?: "",
-                    groupName = it.handle.getDaycareGroup(groupId)?.name ?: ""
+                    groupName = it.getDaycareGroup(groupId)?.name ?: ""
                 )
             )
         }

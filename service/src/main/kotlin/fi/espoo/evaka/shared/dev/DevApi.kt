@@ -199,7 +199,7 @@ class DevApi(
     @DeleteMapping("/daycare-groups/{id}")
     fun removeDaycareGroup(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { tx ->
-            tx.handle.deleteDaycareGroup(id)
+            tx.deleteDaycareGroup(id)
         }
         return ResponseEntity.ok().build()
     }
