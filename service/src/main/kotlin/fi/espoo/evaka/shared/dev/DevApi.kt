@@ -472,7 +472,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @GetMapping("/employee")
     fun getEmployees(db: Database): ResponseEntity<List<Employee>> {
-        return ResponseEntity.ok(db.read { it.handle.getEmployees() })
+        return ResponseEntity.ok(db.read { it.getEmployees() })
     }
 
     @PostMapping("/employee")
@@ -488,7 +488,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @DeleteMapping("/employee/external-id/{externalId}")
     fun deleteEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployeeByExternalId(externalId) }
+        db.transaction { it.deleteEmployeeByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }
 
@@ -516,7 +516,7 @@ RETURNING id
 
     @DeleteMapping("/employee/roles/external-id/{externalId}")
     fun deleteEmployeeRolesByExternalId(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployeeRolesByExternalId(externalId) }
+        db.transaction { it.deleteEmployeeRolesByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }
 

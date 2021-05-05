@@ -54,7 +54,7 @@ class SystemIdentityController {
         return db.transaction {
             it.getEmployeeUserByExternalId(employee.externalId)
                 ?: EmployeeUser(
-                    id = it.handle.createEmployee(employee.toNewEmployee()).id,
+                    id = it.createEmployee(employee.toNewEmployee()).id,
                     firstName = employee.firstName,
                     lastName = employee.lastName,
                     globalRoles = emptySet(),

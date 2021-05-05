@@ -90,8 +90,8 @@ class ChildAttendanceController(
         }
 
         val result = db.transaction {
-            if (it.handle.employeePinIsCorrect(staffId, pin)) {
-                it.handle.resetEmployeePinFailureCount(staffId)
+            if (it.employeePinIsCorrect(staffId, pin)) {
+                it.resetEmployeePinFailureCount(staffId)
                 it.getChildSensitiveInfo(childId)?.let {
                     ChildResult(
                         status = ChildResultStatus.SUCCESS,
@@ -99,7 +99,7 @@ class ChildAttendanceController(
                     )
                 } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
             } else {
-                if (it.handle.updateEmployeePinFailureCountAndCheckIfLocked(staffId)) {
+                if (it.updateEmployeePinFailureCountAndCheckIfLocked(staffId)) {
                     ChildResult(status = ChildResultStatus.PIN_LOCKED, child = null)
                 } else {
                     ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
