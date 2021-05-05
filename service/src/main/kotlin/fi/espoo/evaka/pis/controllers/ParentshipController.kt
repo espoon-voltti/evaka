@@ -73,7 +73,7 @@ class ParentshipController(
         )
 
         return db.read {
-            it.handle.getParentships(
+            it.getParentships(
                 headOfChildId = headOfChildId,
                 childId = childId,
                 includeConflicts = true
@@ -92,7 +92,7 @@ class ParentshipController(
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         return db.read {
-            it.handle.getParentship(id)
+            it.getParentship(id)
         }
             ?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
@@ -149,7 +149,7 @@ class ParentshipController(
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
-            if (it.handle.getParentship(id)?.conflict == false) {
+            if (it.getParentship(id)?.conflict == false) {
                 user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
             }
 

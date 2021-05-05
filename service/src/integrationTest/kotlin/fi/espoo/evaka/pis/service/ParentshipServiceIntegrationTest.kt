@@ -35,11 +35,11 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
 
             parentshipService.createParentship(tx, child.id, parent2.id, startDate2, endDate2)
 
-            val headsByChild = tx.handle.getParentships(headOfChildId = null, childId = child.id)
+            val headsByChild = tx.getParentships(headOfChildId = null, childId = child.id)
 
             assertEquals(2, headsByChild.size)
 
-            val childByHeads = headsByChild.map { tx.handle.getParentships(headOfChildId = it.headOfChildId, childId = null) }
+            val childByHeads = headsByChild.map { tx.getParentships(headOfChildId = it.headOfChildId, childId = null) }
 
             assertEquals(2, childByHeads.size)
         }

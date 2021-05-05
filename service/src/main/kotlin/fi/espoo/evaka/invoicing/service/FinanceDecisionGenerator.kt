@@ -487,11 +487,11 @@ private fun Database.Read.getServiceVoucherUnits(): List<UUID> {
 }
 
 private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange): List<FridgeFamily> {
-    val parentRelations = handle.getParentships(null, childId, includeConflicts = false, period = period)
+    val parentRelations = getParentships(null, childId, includeConflicts = false, period = period)
 
     return parentRelations.flatMap {
         val fridgePartners = handle.getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
-        val fridgeChildren = handle.getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
+        val fridgeChildren = getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
         generateFamilyCompositions(
             it.headOfChild.id,
             fridgePartners,
@@ -502,7 +502,7 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange):
 }
 
 private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
-    val childRelations = handle.getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
+    val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
     val partners = handle.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
 }

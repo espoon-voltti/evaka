@@ -253,7 +253,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createParentshipRecord(childId: UUID, parentId: UUID, startDate: LocalDate, endDate: LocalDate) =
-        db.transaction { it.handle.createParentship(childId, parentId, startDate, endDate) }
+        db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction {

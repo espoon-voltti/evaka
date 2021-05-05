@@ -113,7 +113,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
             insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, secondUnitId)
             insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
 
-            tx.handle.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
+            tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
             tx.insertTestEmployee(
                 DevEmployee(
