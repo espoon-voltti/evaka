@@ -13,7 +13,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -214,7 +213,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             val data =
-                tx.handle.createQuery("""select id from application""")
+                tx.createQuery("""select id from application""")
                     .mapTo<UUID>()
                     .toList()
 
@@ -229,7 +228,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             val data =
-                tx.handle.createQuery("""select id from application""")
+                tx.createQuery("""select id from application""")
                     .mapTo<UUID>()
                     .toSet()
 

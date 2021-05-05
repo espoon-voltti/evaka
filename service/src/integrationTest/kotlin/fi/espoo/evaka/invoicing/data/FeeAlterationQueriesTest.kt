@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
@@ -54,7 +53,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             tx.upsertFeeAlteration(testFeeAlteration)
 
-            val result = tx.handle.createQuery("SELECT * FROM fee_alteration")
+            val result = tx.createQuery("SELECT * FROM fee_alteration")
                 .map(toFeeAlteration)
                 .list()
 
@@ -67,7 +66,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             tx.upsertFeeAlteration(testFeeAlteration)
 
-            val result = tx.handle.createQuery("SELECT * FROM fee_alteration")
+            val result = tx.createQuery("SELECT * FROM fee_alteration")
                 .map(toFeeAlteration)
                 .list()
 

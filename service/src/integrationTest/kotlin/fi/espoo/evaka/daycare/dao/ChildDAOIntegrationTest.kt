@@ -10,7 +10,6 @@ import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
-import fi.espoo.evaka.shared.db.handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -25,7 +24,7 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.handle.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+            tx.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
             child = tx.createChild(
                 Child(
                     id = childId,
