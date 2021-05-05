@@ -66,10 +66,9 @@ export default {
   },
   map: {
     title: 'Yksiköt kartalla',
-    mainInfo:
-      'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
+    mainInfo: fiCustomizations.map.mainInfo,
     searchLabel: 'Hae omalla osoitteellasi tai yksikön nimellä',
-    searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
+    searchPlaceholder: fiCustomizations.map.searchPlaceholder,
     address: 'Osoite',
     noResults: 'Ei hakutuloksia',
     distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',

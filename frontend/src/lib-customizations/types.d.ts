@@ -38,6 +38,10 @@ interface CitizenLocalizations {
     privacyPolicyLink: string
     sendFeedbackLink: string
   }
+  map: {
+    mainInfo: string
+    searchPlaceholder: string
+  }
 }
 
 interface MapConfig {
@@ -54,6 +58,7 @@ interface MapConfig {
 
 interface FeatureFlags {
   urgencyAttachmentsEnabled: boolean
+  preschoolEnabled: boolean
 }
 
 export interface EmployeeCustomizations {

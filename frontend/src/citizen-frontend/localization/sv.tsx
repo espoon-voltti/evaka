@@ -67,10 +67,9 @@ const sv: Translations = {
   },
   map: {
     title: 'Enheter på kartan',
-    mainInfo:
-      'I den här vyn kan du på kartan söka enheter med småbarnspedagogik och förskola.',
+    mainInfo: svCustomizations.map.mainInfo,
     searchLabel: 'Sök med adress eller enhetens namn',
-    searchPlaceholder: 'T.ex. Kilovägen eller Purola daghem',
+    searchPlaceholder: svCustomizations.map.searchPlaceholder,
     address: 'Adress',
     noResults: 'Inga sökresultat',
     distanceWalking: 'Avstånd från vald enhet gående',

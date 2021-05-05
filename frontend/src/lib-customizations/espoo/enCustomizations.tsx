@@ -14,5 +14,9 @@ export default {
       'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  map: {
+    mainInfo: `In this view, you can search the map for Espoo's early childhood education, pre-primary education and club places.`,
+    searchPlaceholder: 'For example Kilontie 3 or Purolan päiväkoti'
   }
 }
