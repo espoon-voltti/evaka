@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -128,7 +127,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        db.transaction { it.handle.createParentship(testChild_1.id, testAdult_1.id, from, to) }
+        db.transaction { it.createParentship(testChild_1.id, testAdult_1.id, from, to) }
     }
 
     private fun createTestFixture1plus2() {
@@ -136,8 +135,8 @@ class FamilyOverviewTest : FullApplicationTest() {
             listOf(it.minusYears(1), it.plusYears(1))
         }
         db.transaction {
-            it.handle.createParentship(testChild_1.id, testAdult_1.id, from, to)
-            it.handle.createParentship(testChild_2.id, testAdult_1.id, from, to)
+            it.createParentship(testChild_1.id, testAdult_1.id, from, to)
+            it.createParentship(testChild_2.id, testAdult_1.id, from, to)
         }
     }
 
@@ -146,9 +145,9 @@ class FamilyOverviewTest : FullApplicationTest() {
             listOf(it.minusYears(1), it.plusYears(1))
         }
         db.transaction {
-            it.handle.createParentship(testChild_1.id, testAdult_1.id, from, to)
-            it.handle.createParentship(testChild_2.id, testAdult_1.id, from, to)
-            it.handle.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
+            it.createParentship(testChild_1.id, testAdult_1.id, from, to)
+            it.createParentship(testChild_2.id, testAdult_1.id, from, to)
+            it.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
         }
     }
 }

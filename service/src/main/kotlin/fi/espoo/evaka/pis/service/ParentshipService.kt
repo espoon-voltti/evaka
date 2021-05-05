@@ -32,9 +32,9 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         startDate: LocalDate,
         endDate: LocalDate
     ): Parentship {
-        tx.handle.getPersonById(childId)?.let { child -> validateDates(child.dateOfBirth, startDate, endDate) }
+        tx.getPersonById(childId)?.let { child -> validateDates(child.dateOfBirth, startDate, endDate) }
         return try {
-            tx.handle.createParentship(childId, headOfChildId, startDate, endDate, false)
+            tx.createParentship(childId, headOfChildId, startDate, endDate, false)
                 .also { tx.sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -42,10 +42,10 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     fun updateParentshipDuration(tx: Database.Transaction, id: UUID, startDate: LocalDate, endDate: LocalDate): Parentship {
-        val oldParentship = tx.handle.getParentship(id) ?: throw NotFound("No parentship found with id $id")
+        val oldParentship = tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
-            val success = tx.handle.updateParentshipDuration(id, startDate, endDate)
+            val success = tx.updateParentshipDuration(id, startDate, endDate)
             if (!success) throw NotFound("No parentship found with id $id")
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -62,10 +62,10 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
 
     fun retryParentship(tx: Database.Transaction, id: UUID) {
         try {
-            tx.handle.getParentship(id)
+            tx.getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
-                    tx.handle.retryParentship(it.id)
+                    tx.retryParentship(it.id)
                     tx.sendFamilyUpdatedMessage(
                         adultId = it.headOfChildId,
                         startDate = it.startDate,
@@ -78,8 +78,8 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     fun deleteParentship(tx: Database.Transaction, id: UUID) {
-        val parentship = tx.handle.getParentship(id)
-        val success = tx.handle.deleteParentship(id)
+        val parentship = tx.getParentship(id)
+        val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
         with(parentship) {

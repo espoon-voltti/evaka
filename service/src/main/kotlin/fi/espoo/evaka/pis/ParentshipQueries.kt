@@ -6,18 +6,18 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun Handle.getParentship(id: UUID): Parentship? {
+fun Database.Read.getParentship(id: UUID): Parentship? {
     // language=SQL
     val sql =
         """
@@ -37,7 +37,7 @@ fun Handle.getParentship(id: UUID): Parentship? {
         .firstOrNull()
 }
 
-fun Handle.getParentships(
+fun Database.Read.getParentships(
     headOfChildId: UUID?,
     childId: UUID?,
     includeConflicts: Boolean = false,
@@ -71,7 +71,7 @@ fun Handle.getParentships(
         .toList()
 }
 
-fun Handle.createParentship(
+fun Database.Transaction.createParentship(
     childId: UUID,
     headOfChildId: UUID,
     startDate: LocalDate,
@@ -105,7 +105,7 @@ fun Handle.createParentship(
         .first()
 }
 
-fun Handle.updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate): Boolean {
+fun Database.Transaction.updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate): Boolean {
     // language=sql
     val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
 
@@ -116,7 +116,7 @@ fun Handle.updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: Loc
         .execute() > 0
 }
 
-fun Handle.retryParentship(id: UUID) {
+fun Database.Transaction.retryParentship(id: UUID) {
     // language=SQL
     val sql = "UPDATE fridge_child SET conflict = false WHERE id = :id"
     createUpdate(sql)
@@ -124,7 +124,7 @@ fun Handle.retryParentship(id: UUID) {
         .execute()
 }
 
-fun Handle.deleteParentship(id: UUID): Boolean {
+fun Database.Transaction.deleteParentship(id: UUID): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
 

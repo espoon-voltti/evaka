@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.shared.config
 
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.kotlin.mapTo
@@ -28,7 +28,7 @@ class ActuatorConfig {
 class DatabaseHealthIndicator(private val jdbi: Jdbi) : AbstractHealthIndicator() {
     override fun doHealthCheck(builder: Health.Builder) {
         try {
-            jdbi.handle { h -> h.createQuery("SELECT 1").mapTo<Int>().first() }
+            Database(jdbi).read { tx -> tx.createQuery("SELECT 1").mapTo<Int>().first() }
             builder.up()
         } catch (e: JdbiException) {
             builder.down(e)

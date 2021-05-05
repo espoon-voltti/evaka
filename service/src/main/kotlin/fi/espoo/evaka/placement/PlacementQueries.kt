@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -24,7 +23,7 @@ private val placementSelector =
         FROM placement p
     """.trimIndent()
 
-fun Handle.getPlacement(id: UUID): Placement? {
+fun Database.Read.getPlacement(id: UUID): Placement? {
     // language=SQL
     return createQuery("$placementSelector WHERE p.id = :id")
         .bind("id", id)
@@ -32,7 +31,7 @@ fun Handle.getPlacement(id: UUID): Placement? {
         .first()
 }
 
-fun Handle.getPlacementDraftPlacements(childId: UUID): List<PlacementDraftPlacement> {
+fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraftPlacement> {
     data class QueryResult(
         val id: UUID,
         val type: PlacementType,
@@ -68,14 +67,14 @@ fun Handle.getPlacementDraftPlacements(childId: UUID): List<PlacementDraftPlacem
         }
 }
 
-fun Handle.getPlacementsForChild(childId: UUID): List<Placement> {
+fun Database.Read.getPlacementsForChild(childId: UUID): List<Placement> {
     return createQuery("$placementSelector WHERE p.child_id = :childId")
         .bind("childId", childId)
         .mapTo<Placement>()
         .list()
 }
 
-fun Handle.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
+fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: LocalDate?): List<Placement> {
     return createQuery("$placementSelector WHERE p.child_id = :childId AND daterange(p.start_date, p.end_date, '[]') && daterange(:start, :end, '[]')")
         .bind("childId", childId)
         .bind("start", start)
@@ -84,7 +83,7 @@ fun Handle.getPlacementsForChildDuring(childId: UUID, start: LocalDate, end: Loc
         .list()
 }
 
-fun Handle.insertPlacement(
+fun Database.Transaction.insertPlacement(
     type: PlacementType,
     childId: UUID,
     unitId: UUID,
@@ -108,7 +107,7 @@ fun Handle.insertPlacement(
         .first()
 }
 
-fun Handle.updatePlacementStartDate(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.updatePlacementStartDate(placementId: UUID, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -120,7 +119,7 @@ fun Handle.updatePlacementStartDate(placementId: UUID, date: LocalDate) {
         .execute()
 }
 
-fun Handle.updatePlacementEndDate(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.updatePlacementEndDate(placementId: UUID, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -132,7 +131,7 @@ fun Handle.updatePlacementEndDate(placementId: UUID, date: LocalDate) {
         .execute()
 }
 
-fun Handle.updatePlacementStartAndEndDate(placementId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.updatePlacementStartAndEndDate(placementId: UUID, startDate: LocalDate, endDate: LocalDate) {
     createUpdate("UPDATE placement SET start_date = :start, end_date = :end WHERE id = :id")
         .bind("id", placementId)
         .bind("start", startDate)
@@ -140,7 +139,7 @@ fun Handle.updatePlacementStartAndEndDate(placementId: UUID, startDate: LocalDat
         .execute()
 }
 
-fun Handle.cancelPlacement(id: UUID): Triple<UUID, LocalDate, LocalDate> {
+fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, LocalDate> {
     data class QueryResult(
         val childId: UUID,
         val startDate: LocalDate,
@@ -172,7 +171,7 @@ fun Handle.cancelPlacement(id: UUID): Triple<UUID, LocalDate, LocalDate> {
         }
 }
 
-fun Handle.clearGroupPlacementsAfter(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.clearGroupPlacementsAfter(placementId: UUID, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -196,7 +195,7 @@ fun Handle.clearGroupPlacementsAfter(placementId: UUID, date: LocalDate) {
         .execute()
 }
 
-fun Handle.clearGroupPlacementsBefore(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.clearGroupPlacementsBefore(placementId: UUID, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -267,7 +266,7 @@ fun Database.Read.getDaycarePlacements(
         .toList()
 }
 
-fun Handle.getDaycarePlacement(id: UUID): DaycarePlacement? {
+fun Database.Read.getDaycarePlacement(id: UUID): DaycarePlacement? {
     // language=SQL
     val sql =
         """
@@ -298,7 +297,7 @@ fun Handle.getDaycarePlacement(id: UUID): DaycarePlacement? {
         .firstOrNull()
 }
 
-fun Handle.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
+fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
     // language=SQL
     val sql =
         """
@@ -313,7 +312,7 @@ fun Handle.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
         .firstOrNull()
 }
 
-fun Handle.getIdenticalPrecedingGroupPlacement(
+fun Database.Read.getIdenticalPrecedingGroupPlacement(
     daycarePlacementId: UUID,
     groupId: UUID,
     startDate: LocalDate
@@ -334,7 +333,7 @@ fun Handle.getIdenticalPrecedingGroupPlacement(
         .firstOrNull()
 }
 
-fun Handle.getIdenticalPostcedingGroupPlacement(
+fun Database.Read.getIdenticalPostcedingGroupPlacement(
     daycarePlacementId: UUID,
     groupId: UUID,
     endDate: LocalDate
@@ -402,7 +401,7 @@ fun Database.Read.getChildGroupPlacements(
         .toList()
 }
 
-fun Handle.getMissingGroupPlacements(
+fun Database.Read.getMissingGroupPlacements(
     unitId: UUID
 ): List<MissingGroupPlacement> {
     // language=SQL
@@ -473,7 +472,7 @@ fun Handle.getMissingGroupPlacements(
         .toList()
 }
 
-fun Handle.createGroupPlacement(
+fun Database.Transaction.createGroupPlacement(
     placementId: UUID,
     groupId: UUID,
     startDate: LocalDate,
@@ -496,7 +495,7 @@ fun Handle.createGroupPlacement(
         .first()
 }
 
-fun Handle.updateGroupPlacementStartDate(id: UUID, startDate: LocalDate): Boolean {
+fun Database.Transaction.updateGroupPlacementStartDate(id: UUID, startDate: LocalDate): Boolean {
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET start_date = :startDate WHERE id = :id RETURNING id"
 
@@ -507,7 +506,7 @@ fun Handle.updateGroupPlacementStartDate(id: UUID, startDate: LocalDate): Boolea
         .firstOrNull() != null
 }
 
-fun Handle.updateGroupPlacementEndDate(id: UUID, endDate: LocalDate): Boolean {
+fun Database.Transaction.updateGroupPlacementEndDate(id: UUID, endDate: LocalDate): Boolean {
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET end_date = :endDate WHERE id = :id RETURNING id"
 
@@ -518,7 +517,7 @@ fun Handle.updateGroupPlacementEndDate(id: UUID, endDate: LocalDate): Boolean {
         .firstOrNull() != null
 }
 
-fun Handle.deleteGroupPlacement(id: UUID): Boolean {
+fun Database.Transaction.deleteGroupPlacement(id: UUID): Boolean {
     // language=SQL
     val sql = "DELETE FROM daycare_group_placement WHERE id = :id RETURNING id"
 

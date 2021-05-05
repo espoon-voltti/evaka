@@ -30,10 +30,10 @@ class DaycareService {
         startDate: LocalDate,
         endDate: LocalDate
     ): DaycareCapacityStats {
-        val unitStats = tx.handle.getUnitStats(daycareId, startDate, endDate)
+        val unitStats = tx.getUnitStats(daycareId, startDate, endDate)
         return DaycareCapacityStats(
             unitTotalCaretakers = unitStats,
-            groupCaretakers = tx.handle.getGroupStats(daycareId, startDate, endDate)
+            groupCaretakers = tx.getGroupStats(daycareId, startDate, endDate)
         )
     }
 
@@ -43,8 +43,8 @@ class DaycareService {
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double
-    ): DaycareGroup = tx.handle.createDaycareGroup(daycareId, name, startDate).also {
-        tx.handle.initCaretakers(it.id, it.startDate, initialCaretakers)
+    ): DaycareGroup = tx.createDaycareGroup(daycareId, name, startDate).also {
+        tx.initCaretakers(it.id, it.startDate, initialCaretakers)
     }
 
     fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {
@@ -57,7 +57,7 @@ class DaycareService {
 
         if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
 
-        tx.handle.deleteDaycareGroup(groupId)
+        tx.deleteDaycareGroup(groupId)
     } catch (e: UnableToExecuteStatementException) {
         throw e.psqlCause()?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
             ?.let { Conflict("Cannot delete group which is still referred to from other data") }
@@ -65,9 +65,9 @@ class DaycareService {
     }
 
     fun getDaycareGroups(tx: Database.Read, daycareId: UUID, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> {
-        if (!tx.handle.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
+        if (!tx.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
 
-        return tx.handle.getDaycareGroups(daycareId, startDate, endDate)
+        return tx.getDaycareGroups(daycareId, startDate, endDate)
     }
 }
 

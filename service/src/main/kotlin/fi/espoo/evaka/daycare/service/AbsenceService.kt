@@ -28,7 +28,7 @@ class AbsenceService {
         val endDate = startDate.with(lastDayOfMonth())
         val period = FiniteDateRange(startDate, endDate)
 
-        val daycare = tx.handle.getDaycare(tx.getDaycareIdByGroup(groupId)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
+        val daycare = tx.getDaycare(tx.getDaycareIdByGroup(groupId)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
         val groupName = tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
         val placementList = tx.getPlacementsByRange(groupId, period)
         val absenceList = tx.getAbsencesByRange(groupId, period)
@@ -100,7 +100,7 @@ class AbsenceService {
         val absenceList = tx.getAbsencesByChildByRange(childId, period)
         val backupCareList = tx.getBackupCaresAffectingChild(childId, period)
         val child =
-            tx.handle.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
+            tx.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
         return AbsenceChildMinimal(
             id = child.id,
             firstName = child.firstName ?: "",

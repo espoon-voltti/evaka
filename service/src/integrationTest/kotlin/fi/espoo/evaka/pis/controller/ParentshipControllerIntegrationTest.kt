@@ -14,8 +14,6 @@ import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -95,8 +93,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson1()
         val child = testPerson2()
         val parentship = db.transaction { tx ->
-            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(500), child.dateOfBirth.plusDays(700))
-            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            tx.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(500), child.dateOfBirth.plusDays(700))
+            tx.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
@@ -134,16 +132,16 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson1()
         val child = testPerson2()
         val parentship = db.transaction { tx ->
-            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
-                tx.handle.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
-                assertEquals(2, tx.handle.getParentships(headOfChildId = adult.id, childId = null).size)
+            tx.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
+                tx.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
+                assertEquals(2, tx.getParentships(headOfChildId = adult.id, childId = null).size)
             }
         }
 
         val delResponse = controller.deleteParentship(db, user, parentship.id)
         assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
         db.read { r ->
-            assertEquals(1, r.handle.getParentships(headOfChildId = adult.id, childId = null).size)
+            assertEquals(1, r.getParentships(headOfChildId = adult.id, childId = null).size)
         }
     }
 
@@ -151,9 +149,9 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson1()
         val child = testPerson2()
         val parentship = db.transaction { tx ->
-            tx.handle.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
-                tx.handle.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
-                assertEquals(2, tx.handle.getParentships(headOfChildId = adult.id, childId = null).size)
+            tx.createParentship(child.id, adult.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
+                tx.createParentship(child.id, adult.id, child.dateOfBirth.plusDays(200), child.dateOfBirth.plusDays(300))
+                assertEquals(2, tx.getParentships(headOfChildId = adult.id, childId = null).size)
             }
         }
         assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
@@ -165,7 +163,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
         db.transaction { tx ->
-            tx.handle.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         assertThrows<Forbidden> { controller.getParentships(db, user, headOfChildId = parent.id) }
     }
@@ -176,7 +174,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
         val parentship = db.transaction { tx ->
-            tx.handle.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
@@ -190,7 +188,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson1()
         val child = testPerson2()
         val parentship = db.transaction { tx ->
-            tx.handle.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
         }
         assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
     }
@@ -214,7 +212,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction { tx ->
-        tx.handle.createPerson(
+        tx.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

@@ -117,7 +117,7 @@ class FamilyInitializerService(
             otherGuardianId != null &&
             personService.personsLiveInTheSameAddress(tx, headOfFamilyId, otherGuardianId)
         ) {
-            (tx.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
+            (tx.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
         } else {
             application.form.otherPartner?.socialSecurityNumber
         }
@@ -147,7 +147,7 @@ class FamilyInitializerService(
 
     private fun createParentship(tx: Database.Transaction, childId: UUID, headOfChildId: UUID) {
         val startDate = LocalDate.now()
-        val alreadyExists = tx.handle.getParentships(
+        val alreadyExists = tx.getParentships(
             headOfChildId = headOfChildId,
             childId = childId,
             includeConflicts = true
@@ -159,7 +159,7 @@ class FamilyInitializerService(
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
-            val child = tx.handle.getPersonById(childId)
+            val child = tx.getPersonById(childId)
                 ?: error("Couldn't find child ($childId) to create parentship")
             val endDate = child.dateOfBirth.plusYears(18).minusDays(1)
             if (startDate > endDate) {
@@ -168,7 +168,7 @@ class FamilyInitializerService(
             }
             try {
                 tx.subTransaction {
-                    tx.handle.createParentship(
+                    tx.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
@@ -181,7 +181,7 @@ class FamilyInitializerService(
                     PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
                         logger.warn("Creating conflict parentship between $headOfChildId and $childId (conflicting constraint is $constraint)")
-                        tx.handle.createParentship(
+                        tx.createParentship(
                             childId = childId,
                             headOfChildId = headOfChildId,
                             startDate = startDate,
@@ -198,7 +198,7 @@ class FamilyInitializerService(
     private fun createPartnership(tx: Database.Transaction, personId1: UUID, personId2: UUID) {
         val startDate = LocalDate.now()
         val alreadyExists =
-            tx.handle.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
+            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
                 .any { partnership ->
                     partnership.partners.any { partner -> partner.id == personId2 } &&
                         (partnership.startDate.isBefore(startDate) || partnership.startDate.isEqual(startDate)) &&
@@ -209,7 +209,7 @@ class FamilyInitializerService(
         } else {
             try {
                 tx.subTransaction {
-                    tx.handle.createPartnership(
+                    tx.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,
                         startDate = startDate,
@@ -222,7 +222,7 @@ class FamilyInitializerService(
                     PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
                         logger.warn("Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)")
-                        tx.handle.createPartnership(
+                        tx.createPartnership(
                             personId1 = personId1,
                             personId2 = personId2,
                             startDate = startDate,

@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
@@ -54,7 +53,7 @@ data class EmployeeWithDaycareRoles(
     val daycareRoles: List<DaycareRole> = listOf()
 )
 
-fun Handle.createEmployee(employee: NewEmployee): Employee = createUpdate(
+fun Database.Transaction.createEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
 INSERT INTO employee (first_name, last_name, email, external_id, roles)
@@ -66,7 +65,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
     .mapTo<Employee>()
     .asSequence().first()
 
-private fun Handle.searchEmployees(id: UUID? = null) = createQuery(
+private fun Database.Read.searchEmployees(id: UUID? = null) = createQuery(
     // language=SQL
     """
 SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
@@ -78,7 +77,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
     .mapTo<Employee>()
     .asSequence()
 
-private fun Handle.searchFinanceDecisionHandlers(id: UUID? = null) = createQuery(
+private fun Database.Read.searchFinanceDecisionHandlers(id: UUID? = null) = createQuery(
     // language=SQL
     """
 SELECT DISTINCT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
@@ -90,9 +89,9 @@ WHERE (:id::uuid IS NULL OR e.id = :id)
     .mapTo<Employee>()
     .asSequence()
 
-fun Handle.getEmployees(): List<Employee> = searchEmployees().toList()
-fun Handle.getFinanceDecisionHandlers(): List<Employee> = searchFinanceDecisionHandlers().toList()
-fun Handle.getEmployee(id: UUID): Employee? = searchEmployees(id = id).firstOrNull()
+fun Database.Read.getEmployees(): List<Employee> = searchEmployees().toList()
+fun Database.Read.getFinanceDecisionHandlers(): List<Employee> = searchFinanceDecisionHandlers().toList()
+fun Database.Read.getEmployee(id: UUID): Employee? = searchEmployees(id = id).firstOrNull()
 
 private fun Database.Read.createEmployeeUserQuery(where: String) = createQuery(
     """
@@ -164,7 +163,7 @@ LIMIT :pageSize OFFSET :offset
         .let(mapToPaged(pageSize))
 }
 
-fun Handle.deleteEmployee(employeeId: UUID) = createUpdate(
+fun Database.Transaction.deleteEmployee(employeeId: UUID) = createUpdate(
     // language=SQL
     """
 DELETE FROM employee
@@ -173,7 +172,7 @@ WHERE id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
-fun Handle.deleteEmployeeByExternalId(externalId: ExternalId) = createUpdate(
+fun Database.Transaction.deleteEmployeeByExternalId(externalId: ExternalId) = createUpdate(
     // language=SQL
     """
 DELETE FROM employee
@@ -182,7 +181,7 @@ WHERE external_id = :externalId
 ).bind("externalId", externalId)
     .execute()
 
-fun Handle.deleteEmployeeRolesByExternalId(externalId: ExternalId) = createUpdate(
+fun Database.Transaction.deleteEmployeeRolesByExternalId(externalId: ExternalId) = createUpdate(
     // language=SQL
     """
 UPDATE employee
@@ -215,7 +214,7 @@ ON CONFLICT (user_id) DO UPDATE SET
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }
 
-fun Handle.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
+fun Database.Read.employeePinIsCorrect(employeeId: UUID, pin: String): Boolean = createQuery(
 """
 SELECT EXISTS (
     SELECT 1
@@ -230,7 +229,7 @@ SELECT EXISTS (
     .mapTo<Boolean>()
     .first()
 
-fun Handle.resetEmployeePinFailureCount(employeeId: UUID) = createUpdate(
+fun Database.Transaction.resetEmployeePinFailureCount(employeeId: UUID) = createUpdate(
     """
 UPDATE employee_pin
 SET failure_count = 0
@@ -239,7 +238,7 @@ WHERE user_id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
-fun Handle.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: UUID): Boolean = createQuery(
+fun Database.Transaction.updateEmployeePinFailureCountAndCheckIfLocked(employeeId: UUID): Boolean = createQuery(
 """
 UPDATE employee_pin
 SET 
@@ -257,7 +256,7 @@ RETURNING locked
     .mapTo<Boolean>()
     .first()
 
-fun Handle.isPinLocked(employeeId: UUID): Boolean =
+fun Database.Read.isPinLocked(employeeId: UUID): Boolean =
     createQuery("SELECT locked FROM employee_pin WHERE user_id = :id")
         .bind("id", employeeId)
         .mapTo<Boolean>()

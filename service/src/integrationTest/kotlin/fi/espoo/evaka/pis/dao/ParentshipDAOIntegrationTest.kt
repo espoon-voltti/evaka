@@ -13,8 +13,6 @@ import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -28,7 +26,7 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
         val parentship = db.transaction { tx ->
-            tx.handle.createParentship(child.id, parent.id, startDate, endDate)
+            tx.createParentship(child.id, parent.id, startDate, endDate)
         }
         assertNotNull(parentship.id)
         assertEquals(child, parentship.child)
@@ -45,12 +43,12 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
 
         listOf(testPerson4(), testPerson5(), testPerson6()).map {
             db.transaction { tx ->
-                tx.handle.createParentship(it.id, parent.id, startDate, endDate)
+                tx.createParentship(it.id, parent.id, startDate, endDate)
             }
         }
 
         val fetchedRelations = db.read { r ->
-            r.handle.getParentships(headOfChildId = parent.id, childId = null)
+            r.getParentships(headOfChildId = parent.id, childId = null)
         }
         assertEquals(3, fetchedRelations.size)
     }
@@ -66,18 +64,18 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
             val startDate = now.plusDays(index * 51.toLong())
             val endDate = startDate.plusDays((index + 1) * 50.toLong())
             db.transaction { tx ->
-                tx.handle.createParentship(child.id, parent.id, startDate, endDate)
+                tx.createParentship(child.id, parent.id, startDate, endDate)
             }
         }
 
         db.read { r ->
-            val fetchedRelationsByChild = r.handle.getParentships(headOfChildId = null, childId = child.id)
+            val fetchedRelationsByChild = r.getParentships(headOfChildId = null, childId = child.id)
             assertEquals(2, fetchedRelationsByChild.size)
 
-            val fetchedRelationsByParent1 = r.handle.getParentships(headOfChildId = adult1.id, childId = child.id)
+            val fetchedRelationsByParent1 = r.getParentships(headOfChildId = adult1.id, childId = child.id)
             assertEquals(1, fetchedRelationsByParent1.size)
 
-            val fetchedRelationsByParent2 = r.handle.getParentships(headOfChildId = adult2.id, childId = child.id)
+            val fetchedRelationsByParent2 = r.getParentships(headOfChildId = adult2.id, childId = child.id)
             assertEquals(1, fetchedRelationsByParent2.size)
         }
     }
@@ -89,20 +87,20 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
         db.transaction { tx ->
-            val parentship = tx.handle.createParentship(child.id, adult.id, startDate, endDate)
+            val parentship = tx.createParentship(child.id, adult.id, startDate, endDate)
 
-            assertEquals(setOf(parentship), tx.handle.getParentships(headOfChildId = adult.id, childId = child.id).toHashSet())
-            assertEquals(setOf(parentship), tx.handle.getParentships(headOfChildId = adult.id, childId = null).toHashSet())
-            assertEquals(setOf(parentship), tx.handle.getParentships(headOfChildId = null, childId = child.id).toHashSet())
+            assertEquals(setOf(parentship), tx.getParentships(headOfChildId = adult.id, childId = child.id).toHashSet())
+            assertEquals(setOf(parentship), tx.getParentships(headOfChildId = adult.id, childId = null).toHashSet())
+            assertEquals(setOf(parentship), tx.getParentships(headOfChildId = null, childId = child.id).toHashSet())
 
-            assertEquals(emptySet<Parentship>(), tx.handle.getParentships(headOfChildId = child.id, childId = adult.id).toHashSet())
-            assertEquals(emptySet<Parentship>(), tx.handle.getParentships(headOfChildId = child.id, childId = null).toHashSet())
-            assertEquals(emptySet<Parentship>(), tx.handle.getParentships(headOfChildId = null, childId = adult.id).toHashSet())
+            assertEquals(emptySet<Parentship>(), tx.getParentships(headOfChildId = child.id, childId = adult.id).toHashSet())
+            assertEquals(emptySet<Parentship>(), tx.getParentships(headOfChildId = child.id, childId = null).toHashSet())
+            assertEquals(emptySet<Parentship>(), tx.getParentships(headOfChildId = null, childId = adult.id).toHashSet())
         }
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction {
-        it.handle.getPersonBySSN(ssn) ?: it.handle.createPerson(
+        it.getPersonBySSN(ssn) ?: it.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

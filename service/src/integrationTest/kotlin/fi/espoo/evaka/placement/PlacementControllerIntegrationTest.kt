@@ -13,7 +13,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -368,7 +367,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `deleting group placement works`() {
         val groupPlacementId = db.transaction { tx ->
-            tx.handle.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
+            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
         }
 
         val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
@@ -450,7 +449,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         org.junit.jupiter.api.Assertions.assertEquals(204, allowed.statusCode)
 
         db.read { r ->
-            val updated = r.handle.getPlacementsForChild(childId).find { it.id == allowedId }!!
+            val updated = r.getPlacementsForChild(childId).find { it.id == allowedId }!!
             org.junit.jupiter.api.Assertions.assertEquals(newStart, updated.startDate)
             org.junit.jupiter.api.Assertions.assertEquals(newEnd, updated.endDate)
         }
@@ -507,7 +506,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         org.junit.jupiter.api.Assertions.assertEquals(204, res.statusCode)
 
         val placements = db.read { r ->
-            r.handle.getPlacementsForChild(childId)
+            r.getPlacementsForChild(childId)
         }
         val first = placements.find { it.id == testPlacement.id }!!
         val second = placements.find { it.id == secondPlacement }!!
@@ -536,7 +535,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `service worker cannot remove placements`() {
         val groupPlacementId = db.transaction { tx ->
-            tx.handle.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
+            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
         }
 
         val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")

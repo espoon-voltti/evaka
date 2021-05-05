@@ -50,7 +50,7 @@ class PersonController(
     fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.transaction { it.handle.createEmptyPerson() }
+        return db.transaction { it.createEmptyPerson() }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
@@ -115,7 +115,7 @@ class PersonController(
         return ResponseEntity.ok()
             .body(
                 db.read {
-                    it.handle.searchPeople(
+                    it.searchPeople(
                         searchTerm,
                         orderBy,
                         sortDirection
@@ -133,7 +133,7 @@ class PersonController(
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        return if (db.transaction { it.handle.updatePersonContactInfo(personId, contactInfo) }) {
+        return if (db.transaction { it.updatePersonContactInfo(personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
             ResponseEntity.notFound().build()
@@ -225,7 +225,7 @@ class PersonController(
 
         return ResponseEntity.ok()
             .body(
-                db.read { it.handle.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
+                db.read { it.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
             )
     }
 
@@ -252,7 +252,7 @@ class PersonController(
     ): ResponseEntity<UUID> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-        return db.transaction { it.handle.createPerson(body) }
+        return db.transaction { it.createPerson(body) }
             .let { ResponseEntity.ok(it) }
     }
 

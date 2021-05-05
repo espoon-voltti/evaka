@@ -354,7 +354,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
                     sleepingNote = null
                 )
             )
-            it.handle.insertPlacement(
+            it.insertPlacement(
                 type = PlacementType.DAYCARE,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,

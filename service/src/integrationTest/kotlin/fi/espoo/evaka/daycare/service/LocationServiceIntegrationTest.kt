@@ -23,7 +23,6 @@ import fi.espoo.evaka.daycare.domain.ProviderType.MUNICIPAL
 import fi.espoo.evaka.daycare.domain.ProviderType.MUNICIPAL_SCHOOL
 import fi.espoo.evaka.daycare.domain.ProviderType.PRIVATE
 import fi.espoo.evaka.daycare.updateDaycare
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import org.assertj.core.api.Assertions.assertThat
@@ -65,7 +64,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         )
         val prepPreschoolId = createDaycare(prepPreschool)
 
-        val areas = db.transaction { it.handle.getAreas().filter { area -> area.id == areaId } }
+        val areas = db.transaction { it.getAreas().filter { area -> area.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -88,7 +87,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         val preschool1 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
         val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
 
-        val areas = db.transaction { it.handle.getAreas().filter { area -> area.id == areaId } }
+        val areas = db.transaction { it.getAreas().filter { area -> area.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -99,8 +98,8 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
     }
 
     private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): UUID = db.transaction { tx ->
-        val id = tx.handle.createDaycare(location.care_area_id, location.name)
-        tx.handle.updateDaycare(
+        val id = tx.createDaycare(location.care_area_id, location.name)
+        tx.updateDaycare(
             id,
             DaycareFields(
                 name = location.name,

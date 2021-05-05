@@ -133,7 +133,7 @@ class ApplicationControllerV2(
                             ExternalIdentifier.SSN.getInstance(body.guardianSsn)
                         )?.id ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
                     else if (body.guardianToBeCreated != null)
-                        tx.handle.createPerson(body.guardianToBeCreated)
+                        tx.createPerson(body.guardianToBeCreated)
                     else
                         throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
 
@@ -332,7 +332,7 @@ class ApplicationControllerV2(
             val application = tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
 
-            val placementUnitName = getPlacementPlanUnitName(tx.handle, applicationId)
+            val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)

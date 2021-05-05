@@ -105,7 +105,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
             it.updatePlacement(oldPlacement.id, originalStartDate, newEndDate)
         }
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }.sortedBy { it.startDate }
+        val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
         assertEquals(2, placements.size)
         placements.first().let { placement ->
             assertEquals(PlacementType.DAYCARE, placement.type)
@@ -140,7 +140,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
             it.updatePlacement(oldPlacement.id, originalStartDate, newEndDate)
         }
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }.sortedBy { it.startDate }
+        val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
         assertEquals(2, placements.size)
         placements.first().let { placement ->
             assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, placement.type)
@@ -175,7 +175,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
             it.updatePlacement(oldPlacement.id, newStartDate, originalEndDate)
         }
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }.sortedBy { it.startDate }
+        val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
         assertEquals(2, placements.size)
         placements.first().let { placement ->
             assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, placement.type)
@@ -210,7 +210,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
             it.updatePlacement(oldPlacement.id, newStartDate, originalEndDate)
         }
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }.sortedBy { it.startDate }
+        val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
         assertEquals(2, placements.size)
         placements.first().let { placement ->
             assertEquals(PlacementType.DAYCARE, placement.type)
@@ -246,7 +246,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest() {
             it.updatePlacement(oldPlacement.id, newStartDate, newEndDate)
         }
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }.sortedBy { it.startDate }
+        val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
         assertEquals(1, placements.size)
         placements.first().let { placement ->
             assertEquals(PlacementType.DAYCARE_FIVE_YEAR_OLDS, placement.type)

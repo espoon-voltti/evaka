@@ -19,7 +19,6 @@ import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -39,14 +38,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `creating an empty person sets their date of birth to current date`() = db.transaction { tx ->
-        val identity: PersonDTO = tx.handle.createEmptyPerson()
+        val identity: PersonDTO = tx.createEmptyPerson()
         Assertions.assertEquals(identity.dateOfBirth, LocalDate.now())
     }
 
     @Test
     fun `create person`() = db.transaction { tx ->
         val validSSN = "080512A918W"
-        val fetchedPerson = tx.handle.createPerson(
+        val fetchedPerson = tx.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(validSSN),
                 firstName = "Matti",
@@ -152,9 +151,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             invoicingPostOffice = "Espoo"
         )
 
-        assertTrue(db.transaction { it.handle.updatePersonContactInfo(originalPerson.id, contactInfo) })
+        assertTrue(db.transaction { it.updatePersonContactInfo(originalPerson.id, contactInfo) })
 
-        val actual = db.read { it.handle.getPersonById(originalPerson.id) }
+        val actual = db.read { it.getPersonById(originalPerson.id) }
         Assertions.assertEquals(contactInfo.email, actual?.email)
         Assertions.assertEquals(contactInfo.phone, actual?.phone)
         Assertions.assertEquals(contactInfo.invoicingStreetAddress, actual?.invoicingStreetAddress)
@@ -165,7 +164,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found by ssn`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("010199-8137", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("010199-8137", "last_name", "ASC") }
         Assertions.assertEquals(1, persons.size)
         Assertions.assertEquals(persons[0].identity, created.identity)
     }
@@ -173,14 +172,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found by first part of address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("Jokutie", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("Jokutie", "last_name", "ASC") }
         Assertions.assertEquals(persons[0].streetAddress, created.streetAddress)
     }
 
     @Test
     fun `person can be found by last name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("O'Brien", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("O'Brien", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].lastName, created.lastName)
     }
@@ -188,7 +187,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found by first name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("Matti", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("Matti", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].firstName, created.firstName)
     }
@@ -196,7 +195,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person with multiple first names can be found`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("Matti Jari-Ville", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("Matti Jari-Ville", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].firstName, created.firstName)
     }
@@ -204,7 +203,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found with the full address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("Jokutie 66", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("Jokutie 66", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].streetAddress, created.streetAddress)
     }
@@ -212,7 +211,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found by partial last name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("O'Br", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("O'Br", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].lastName, created.lastName)
     }
@@ -220,7 +219,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found by partial first name`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("Matt", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("Matt", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].firstName, created.firstName)
     }
@@ -228,7 +227,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can be found by partial address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("Jokut", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("Jokut", "last_name", "ASC") }
 
         Assertions.assertEquals(persons[0].streetAddress, created.streetAddress)
     }
@@ -236,7 +235,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can not be found with just a substring match on first name`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("atti", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("atti", "last_name", "ASC") }
 
         Assertions.assertEquals(persons, emptyList<PersonDTO>())
     }
@@ -244,7 +243,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can not be found with just a substring match on last name`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("eikäläine", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("eikäläine", "last_name", "ASC") }
 
         Assertions.assertEquals(persons, emptyList<PersonDTO>())
     }
@@ -252,7 +251,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `person can not be found with just a substring match on address`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("okuti", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("okuti", "last_name", "ASC") }
 
         Assertions.assertEquals(persons, emptyList<PersonDTO>())
     }
@@ -260,7 +259,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `PostgreSQL text search operator characters are ignored in search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("'&Jokut!|&", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("'&Jokut!|&", "last_name", "ASC") }
 
         Assertions.assertEquals(1, persons.size)
         Assertions.assertEquals(persons[0].identity, created.identity)
@@ -269,7 +268,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `angle brackets are ignored in search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("<Jokut>", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("<Jokut>", "last_name", "ASC") }
 
         Assertions.assertEquals(1, persons.size)
         Assertions.assertEquals(persons[0].identity, created.identity)
@@ -278,7 +277,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `single quote is ignored at the start of search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.handle.searchPeople("'O'Brien", "last_name", "ASC") }
+        val persons = db.read { it.searchPeople("'O'Brien", "last_name", "ASC") }
 
         Assertions.assertEquals(1, persons.size)
         Assertions.assertEquals(persons[0].identity, created.identity)

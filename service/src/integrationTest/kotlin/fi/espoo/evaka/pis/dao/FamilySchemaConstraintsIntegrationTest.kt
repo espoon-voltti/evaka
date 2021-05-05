@@ -10,8 +10,6 @@ import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -253,11 +251,11 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createParentshipRecord(childId: UUID, parentId: UUID, startDate: LocalDate, endDate: LocalDate) =
-        db.transaction { it.handle.createParentship(childId, parentId, startDate, endDate) }
+        db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction {
-            it.handle.createPerson(
+            it.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,

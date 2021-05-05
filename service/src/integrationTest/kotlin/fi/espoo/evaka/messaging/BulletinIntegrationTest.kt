@@ -113,7 +113,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
             insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, secondUnitId)
             insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
 
-            tx.handle.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
+            tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
             tx.insertTestEmployee(
                 DevEmployee(
@@ -127,9 +127,9 @@ class BulletinIntegrationTest : FullApplicationTest() {
                     id = staffId
                 )
             )
-            tx.handle.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.handle.insertDaycareAclRow(unitId, staffId, UserRole.STAFF)
-            tx.handle.insertDaycareAclRow(secondUnitId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(unitId, staffId, UserRole.STAFF)
+            tx.insertDaycareAclRow(secondUnitId, supervisorId, UserRole.UNIT_SUPERVISOR)
         }
         MockEmailClient.emails.clear()
     }

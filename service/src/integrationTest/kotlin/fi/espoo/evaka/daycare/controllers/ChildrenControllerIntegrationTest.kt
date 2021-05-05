@@ -8,7 +8,6 @@ import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,8 +31,8 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.handle.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-            child = tx.handle.createChild(
+            tx.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+            child = tx.createChild(
                 Child(
                     id = childId,
                     additionalInformation = AdditionalInformation(
@@ -49,9 +48,9 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     @AfterEach
     internal fun tearDown() {
         db.transaction {
-            it.handle.execute("DELETE FROM assistance_need")
-            it.handle.execute("DELETE FROM service_need")
-            it.handle.execute("DELETE FROM person WHERE id = '$childId'")
+            it.execute("DELETE FROM assistance_need")
+            it.execute("DELETE FROM service_need")
+            it.execute("DELETE FROM person WHERE id = '$childId'")
         }
     }
 

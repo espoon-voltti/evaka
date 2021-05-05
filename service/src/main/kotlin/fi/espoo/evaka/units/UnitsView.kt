@@ -65,13 +65,13 @@ class UnitsView(private val acl: AccessControlList) {
 
         val period = FiniteDateRange(from, to)
         val unitData = db.read {
-            val groups = it.handle.getDaycareGroups(unitId, from, to)
+            val groups = it.getDaycareGroups(unitId, from, to)
             val placements = it.getDetailedDaycarePlacements(unitId, null, from, to).toList()
-            val backupCares = it.handle.getBackupCaresForDaycare(unitId, period)
-            val missingGroupPlacements = it.handle.getMissingGroupPlacements(unitId)
+            val backupCares = it.getBackupCaresForDaycare(unitId, period)
+            val missingGroupPlacements = it.getMissingGroupPlacements(unitId)
             val caretakers = Caretakers(
-                unitCaretakers = it.handle.getUnitStats(unitId, from, to),
-                groupCaretakers = it.handle.getGroupStats(unitId, from, to)
+                unitCaretakers = it.getUnitStats(unitId, from, to),
+                groupCaretakers = it.getGroupStats(unitId, from, to)
             )
 
             val basicData = UnitDataResponse(
@@ -85,8 +85,8 @@ class UnitsView(private val acl: AccessControlList) {
             if (currentUserRoles.hasOneOfRoles(*detailedDataRoles)) {
                 val unitOccupancies = getUnitOccupancies(it, unitId, period)
                 val groupOccupancies = getGroupOccupancies(it, unitId, period)
-                val placementProposals = getPlacementPlans(it.handle, unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
-                val placementPlans = getPlacementPlans(it.handle, unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
+                val placementProposals = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
+                val placementPlans = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
                 val applications = it.getApplicationUnitSummaries(unitId)
 
                 basicData.copy(

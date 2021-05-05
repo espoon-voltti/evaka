@@ -113,14 +113,14 @@ class ApplicationStateService(
         )
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
-        tx.handle.getPersonById(application.guardianId)?.let {
+        tx.getPersonById(application.guardianId)?.let {
             val email = if (!application.form.guardian.email.isNullOrBlank()) {
                 application.form.guardian.email
             } else {
                 it.email
             }
 
-            tx.handle.updatePersonBasicContactInfo(
+            tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
                 email = email ?: "",
                 phone = application.form.guardian.phoneNumber
@@ -129,7 +129,7 @@ class ApplicationStateService(
 
         if (!application.hideFromGuardian && application.type == ApplicationType.DAYCARE) {
             val preferredUnit =
-                tx.handle.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
+                tx.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
 
             if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
                 asyncJobRunner.plan(tx, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language, ApplicationType.DAYCARE)))
@@ -155,21 +155,21 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
 
-        tx.handle.getPersonById(application.guardianId)?.let {
+        tx.getPersonById(application.guardianId)?.let {
             val email = if (!application.form.guardian.email.isNullOrBlank()) {
                 application.form.guardian.email
             } else {
                 it.email
             }
 
-            tx.handle.updatePersonBasicContactInfo(
+            tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
                 email = email ?: "",
                 phone = application.form.guardian.phoneNumber
             )
         }
 
-        tx.handle.upsertChild(
+        tx.upsertChild(
             Child(
                 id = application.childId,
                 additionalInformation = AdditionalInformation(
@@ -298,9 +298,9 @@ class ApplicationStateService(
             if (rejectReason == PlacementPlanRejectReason.OTHER && rejectOtherReason.isNullOrBlank())
                 throw BadRequest("Must describe other reason for rejecting")
 
-            updatePlacementPlanUnitConfirmation(tx.handle, applicationId, status, rejectReason, rejectOtherReason)
+            tx.updatePlacementPlanUnitConfirmation(applicationId, status, rejectReason, rejectOtherReason)
         } else {
-            updatePlacementPlanUnitConfirmation(tx.handle, applicationId, status, null, null)
+            tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
     }
 
@@ -377,7 +377,7 @@ class ApplicationStateService(
             )
         }
 
-        val plan = getPlacementPlan(tx.handle, applicationId)
+        val plan = tx.getPlacementPlan(applicationId)
             ?: throw IllegalStateException("Application $applicationId has no placement plan")
 
         // everything validated now!
@@ -557,7 +557,7 @@ class ApplicationStateService(
         if (unitIds.isEmpty()) {
             throw BadRequest("Must have at least one preferred unit")
         } else {
-            val daycares = tx.handle.getUnitApplyPeriods(unitIds.toSet())
+            val daycares = tx.getUnitApplyPeriods(unitIds.toSet())
             if (daycares.size < unitIds.toSet().size) {
                 throw BadRequest("Some unit was not found")
             }

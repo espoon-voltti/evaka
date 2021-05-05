@@ -98,7 +98,7 @@ class Database(private val jdbi: Jdbi) {
         fun <T> transaction(f: (db: Transaction) -> T): T {
             threadId.assertCurrentThread()
             check(!handle.isInTransaction) { "Already in a transaction" }
-            return handle.transaction { f(Transaction(it)) }
+            return handle.inTransaction<T, Exception> { f(Transaction(it)) }
         }
 
         fun isConnected(): Boolean = connected.get()

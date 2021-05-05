@@ -96,7 +96,7 @@ class DvvModificationsService(
     }
 
     private fun handleDeath(db: Database, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) = db.transaction { tx ->
-        tx.handle.getPersonBySSN(ssn)?.let {
+        tx.getPersonBySSN(ssn)?.let {
             val dateOfDeath = deathDvvInfoGroup.kuolinpv?.asLocalDate() ?: LocalDate.now()
             logger.info("Dvv modification for ${it.id}: marking dead since $dateOfDeath")
             tx.updatePersonFromVtj(it.copy(dateOfDeath = dateOfDeath))
@@ -108,7 +108,7 @@ class DvvModificationsService(
         ssn: String,
         restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup
     ) = db.transaction { tx ->
-        tx.handle.getPersonBySSN(ssn)?.let {
+        tx.getPersonBySSN(ssn)?.let {
             logger.info("Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}")
             tx.updatePersonFromVtj(
                 it.copy(
@@ -124,9 +124,9 @@ class DvvModificationsService(
 
     private fun handleSsnDvvInfoGroup(db: Database, ssn: String, ssnDvvInfoGroup: SsnDvvInfoGroup) =
         db.transaction { tx ->
-            tx.handle.getPersonBySSN(ssn)?.let {
+            tx.getPersonBySSN(ssn)?.let {
                 logger.info("Dvv modification for ${it.id}: ssn change")
-                tx.handle.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
+                tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
             }
         }
 
@@ -134,7 +134,7 @@ class DvvModificationsService(
     // TURVAKIELTO=false and MUUTETTU if restrictions are lifted (MUUTETTU is the "new" address)
     private fun handleAddressDvvInfoGroup(db: Database, ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) =
         db.transaction { tx ->
-            tx.handle.getPersonBySSN(ssn)?.let {
+            tx.getPersonBySSN(ssn)?.let {
                 if (addressDvvInfoGroup.muutosattribuutti.equals("LISATTY") || (
                     addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
                     )
@@ -157,7 +157,7 @@ class DvvModificationsService(
         residenceCodeDvvInfoGroup: ResidenceCodeDvvInfoGroup
     ) = db.transaction { tx ->
         if (residenceCodeDvvInfoGroup.muutosattribuutti.equals("LISATTY")) {
-            tx.handle.getPersonBySSN(ssn)?.let {
+            tx.getPersonBySSN(ssn)?.let {
                 logger.info("Dvv modification for ${it.id}: residence code change")
                 tx.updatePersonFromVtj(
                     it.copy(

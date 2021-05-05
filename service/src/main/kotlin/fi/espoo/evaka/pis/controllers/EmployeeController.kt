@@ -39,14 +39,14 @@ class EmployeeController {
     fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        return ResponseEntity.ok(db.read { it.handle.getEmployees() }.sortedBy { it.email })
+        return ResponseEntity.ok(db.read { it.getEmployees() }.sortedBy { it.email })
     }
 
     @GetMapping("/finance-decision-handler")
     fun getFinanceDecisionHandlers(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        return ResponseEntity.ok(db.read { it.handle.getFinanceDecisionHandlers() }.sortedBy { it.email })
+        return ResponseEntity.ok(db.read { it.getFinanceDecisionHandlers() }.sortedBy { it.email })
     }
 
     @GetMapping("/{id}")
@@ -62,7 +62,7 @@ class EmployeeController {
                 UserRole.DIRECTOR
             )
         }
-        return db.read { it.handle.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
+        return db.read { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
     }
 
@@ -70,14 +70,14 @@ class EmployeeController {
     fun createEmployee(db: Database.Connection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
         user.requireOneOfRoles(UserRole.ADMIN)
-        return ResponseEntity.ok().body(db.transaction { it.handle.createEmployee(employee) })
+        return ResponseEntity.ok().body(db.transaction { it.createEmployee(employee) })
     }
 
     @DeleteMapping("/{id}")
     fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.handle.deleteEmployee(id) }
+        db.transaction { it.deleteEmployee(id) }
         return ResponseEntity.ok().build()
     }
 
@@ -104,7 +104,7 @@ class EmployeeController {
     ): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
         return db.read { tx ->
-            tx.handle.isPinLocked(user.id)
+            tx.isPinLocked(user.id)
         }
     }
 

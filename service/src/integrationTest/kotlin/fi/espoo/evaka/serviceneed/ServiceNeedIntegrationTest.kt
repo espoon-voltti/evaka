@@ -12,7 +12,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.testChild_1
@@ -118,7 +117,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> tx.getServiceNeedsByChild(testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
@@ -187,7 +186,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> tx.getServiceNeedsByChild(testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -204,7 +203,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> tx.getServiceNeedsByChild(testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
@@ -221,7 +220,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> tx.getServiceNeedsByChild(testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
@@ -238,7 +237,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             )
         )
 
-        val serviceNeeds = db.transaction { tx -> getServiceNeedsByChild(tx.handle, testChild_1.id) }
+        val serviceNeeds = db.transaction { tx -> tx.getServiceNeedsByChild(testChild_1.id) }
         assertEquals(2, serviceNeeds.size)
         assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
         assertTrue(serviceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
@@ -345,7 +344,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(startDate, null, testChild_1.id)
 
         val results = db.transaction { tx ->
-            getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(startDate), testDate(startDate + 5))
+            tx.getServiceNeedsByChildDuringPeriod(testChild_1.id, testDate(startDate), testDate(startDate + 5))
         }
         assertEquals(1, results.size)
 
@@ -361,7 +360,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(startDate, endDate, testChild_1.id)
 
         val results = db.transaction { tx ->
-            getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(startDate), null)
+            tx.getServiceNeedsByChildDuringPeriod(testChild_1.id, testDate(startDate), null)
         }
         assertEquals(1, results.size)
 
@@ -375,7 +374,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         val startDate = 5
         givenServiceNeed(startDate, null, testChild_1.id)
 
-        val results = db.transaction { tx -> getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(startDate), null) }
+        val results = db.transaction { tx -> tx.getServiceNeedsByChildDuringPeriod(testChild_1.id, testDate(startDate), null) }
         assertEquals(1, results.size)
 
         val serviceNeed = results[0]
@@ -389,7 +388,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(startDate, null, testChild_1.id)
 
         val results = db.transaction { tx ->
-            getServiceNeedsByChildDuringPeriod(tx.handle, testChild_1.id, testDate(1), testDate(4))
+            tx.getServiceNeedsByChildDuringPeriod(testChild_1.id, testDate(1), testDate(4))
         }
         assertEquals(0, results.size)
     }

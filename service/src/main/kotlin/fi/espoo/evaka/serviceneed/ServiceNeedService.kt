@@ -18,8 +18,8 @@ class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
     fun createServiceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
         try {
             return db.transaction { tx ->
-                shortenOverlappingServiceNeed(tx.handle, user, childId, data.startDate, data.endDate)
-                insertServiceNeed(tx.handle, user, childId, data).also {
+                tx.shortenOverlappingServiceNeed(user, childId, data.startDate, data.endDate)
+                tx.insertServiceNeed(user, childId, data).also {
                     tx.notifyServiceNeedUpdated(it)
                 }
             }.also {
@@ -31,13 +31,13 @@ class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     fun getServiceNeedsByChildId(db: Database.Connection, childId: UUID): List<ServiceNeed> {
-        return db.read { tx -> getServiceNeedsByChild(tx.handle, childId) }
+        return db.read { tx -> tx.getServiceNeedsByChild(childId) }
     }
 
     fun updateServiceNeed(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
         try {
             return db.transaction { tx ->
-                updateServiceNeed(tx.handle, user, id, data).also {
+                tx.updateServiceNeed(user, id, data).also {
                     tx.notifyServiceNeedUpdated(it)
                 }
             }.also {
@@ -50,7 +50,7 @@ class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
 
     fun deleteServiceNeed(db: Database.Connection, id: UUID) {
         db.transaction { tx ->
-            deleteServiceNeed(tx.handle, id).also {
+            tx.deleteServiceNeed(id).also {
                 tx.notifyServiceNeedUpdated(it)
             }
         }

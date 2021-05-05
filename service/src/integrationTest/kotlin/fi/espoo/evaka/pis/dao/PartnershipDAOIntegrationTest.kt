@@ -11,8 +11,6 @@ import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -26,7 +24,7 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
         val partnership = db.transaction { tx ->
-            tx.handle.createPartnership(person1.id, person2.id, startDate, endDate)
+            tx.createPartnership(person1.id, person2.id, startDate, endDate)
         }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
@@ -40,16 +38,16 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val person3 = testPerson3()
 
-        val partnership1 = db.transaction { it.handle.createPartnership(person1.id, person2.id, LocalDate.now(), LocalDate.now().plusDays(200)) }
-        val partnership2 = db.transaction { it.handle.createPartnership(person2.id, person3.id, LocalDate.now().plusDays(300), LocalDate.now().plusDays(400)) }
+        val partnership1 = db.transaction { it.createPartnership(person1.id, person2.id, LocalDate.now(), LocalDate.now().plusDays(200)) }
+        val partnership2 = db.transaction { it.createPartnership(person2.id, person3.id, LocalDate.now().plusDays(300), LocalDate.now().plusDays(400)) }
 
-        val person1Partnerships = db.read { it.handle.getPartnershipsForPerson(person1.id) }
+        val person1Partnerships = db.read { it.getPartnershipsForPerson(person1.id) }
         assertEquals(listOf(partnership1), person1Partnerships)
 
-        val person2Partnerships = db.read { it.handle.getPartnershipsForPerson(person2.id) }
+        val person2Partnerships = db.read { it.getPartnershipsForPerson(person2.id) }
         assertEquals(listOf(partnership1, partnership2), person2Partnerships)
 
-        val person3Partnerships = db.read { it.handle.getPartnershipsForPerson(person3.id) }
+        val person3Partnerships = db.read { it.getPartnershipsForPerson(person3.id) }
         assertEquals(listOf(partnership2), person3Partnerships)
     }
 
@@ -58,13 +56,13 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
         val person1 = testPerson1()
         val person2 = testPerson2()
         val startDate = LocalDate.now()
-        val partnership = db.transaction { it.handle.createPartnership(person1.id, person2.id, startDate, endDate = null) }
+        val partnership = db.transaction { it.createPartnership(person1.id, person2.id, startDate, endDate = null) }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
         assertEquals(null, partnership.endDate)
 
-        val fetched = db.read { it.handle.getPartnershipsForPerson(person1.id).first() }
+        val fetched = db.read { it.getPartnershipsForPerson(person1.id).first() }
         assertEquals(partnership.id, fetched.id)
         assertEquals(2, fetched.partners.size)
         assertEquals(startDate, fetched.startDate)
@@ -73,7 +71,7 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO =
         db.transaction {
-            it.handle.createPerson(
+            it.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,

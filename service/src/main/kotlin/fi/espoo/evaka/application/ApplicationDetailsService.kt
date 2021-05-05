@@ -30,15 +30,15 @@ fun Database.Read.applicationFlags(
 ): ApplicationFlags {
     return when (formType) {
         ApplicationType.CLUB -> ApplicationFlags(
-            isTransferApplication = handle.getPlacementsForChildDuring(childId, startDate, null)
+            isTransferApplication = getPlacementsForChildDuring(childId, startDate, null)
                 .any { it.type == PlacementType.CLUB }
         )
         ApplicationType.DAYCARE -> ApplicationFlags(
-            isTransferApplication = handle.getPlacementsForChildDuring(childId, startDate, null)
+            isTransferApplication = getPlacementsForChildDuring(childId, startDate, null)
                 .any { listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME).contains(it.type) }
         )
         ApplicationType.PRESCHOOL -> {
-            val existingPlacements = handle.getPlacementsForChildDuring(childId, startDate, null)
+            val existingPlacements = getPlacementsForChildDuring(childId, startDate, null)
                 .filter {
                     listOf(
                         PlacementType.PRESCHOOL,

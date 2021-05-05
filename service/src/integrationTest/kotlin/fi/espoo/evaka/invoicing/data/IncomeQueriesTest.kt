@@ -12,7 +12,6 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.defaultObjectMapper
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import org.jdbi.v3.core.kotlin.mapTo
@@ -55,7 +54,7 @@ class IncomeQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             tx.upsertIncome(mapper, testIncome, userId)
 
-            val result = tx.handle.createQuery("SELECT id FROM income")
+            val result = tx.createQuery("SELECT id FROM income")
                 .mapTo<UUID>()
                 .toList()
 
@@ -68,7 +67,7 @@ class IncomeQueriesTest : PureJdbiTest() {
         db.transaction { tx ->
             tx.upsertIncome(mapper, testIncome, userId)
 
-            val result = tx.handle.createQuery("SELECT updated_at FROM income")
+            val result = tx.createQuery("SELECT updated_at FROM income")
                 .mapTo<Instant>()
                 .toList()
 

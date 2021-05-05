@@ -56,7 +56,6 @@ import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -217,7 +216,7 @@ private fun Database.Transaction.handleValueDecisionChanges(
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
     val prices = getPricing(from)
-    val voucherValues = handle.getVoucherValues(from)
+    val voucherValues = getVoucherValues(from)
     val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
@@ -240,11 +239,11 @@ private fun Database.Transaction.handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    handle.lockValueDecisionsForChild(child.id)
+    lockValueDecisionsForChild(child.id)
 
     val existingDrafts =
-        handle.findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
-    val activeDecisions = handle.findValueDecisionsForChild(
+        findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
+    val activeDecisions = findValueDecisionsForChild(
         objectMapper,
         child.id,
         null,
@@ -256,8 +255,8 @@ private fun Database.Transaction.handleValueDecisionChanges(
     )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    handle.deleteValueDecisions(existingDrafts.map { it.id })
-    handle.upsertValueDecisions(objectMapper, updatedDecisions)
+    deleteValueDecisions(existingDrafts.map { it.id })
+    upsertValueDecisions(objectMapper, updatedDecisions)
 }
 
 internal fun addECHAFeeAlterations(
@@ -487,11 +486,11 @@ private fun Database.Read.getServiceVoucherUnits(): List<UUID> {
 }
 
 private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange): List<FridgeFamily> {
-    val parentRelations = handle.getParentships(null, childId, includeConflicts = false, period = period)
+    val parentRelations = getParentships(null, childId, includeConflicts = false, period = period)
 
     return parentRelations.flatMap {
-        val fridgePartners = handle.getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
-        val fridgeChildren = handle.getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
+        val fridgePartners = getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
+        val fridgeChildren = getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
         generateFamilyCompositions(
             it.headOfChild.id,
             fridgePartners,
@@ -502,13 +501,13 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange):
 }
 
 private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
-    val childRelations = handle.getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
-    val partners = handle.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
+    val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
+    val partners = getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
 }
 
 private fun Database.Read.findFamiliesByPartner(personId: UUID, period: DateRange): List<FridgeFamily> {
-    val possibleHeadsOfFamily = handle.getPartnersForPerson(personId, includeConflicts = false, period = period)
+    val possibleHeadsOfFamily = getPartnersForPerson(personId, includeConflicts = false, period = period)
     return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it.person.id, period) }
 }
 
@@ -559,7 +558,7 @@ private fun Database.Read.getPaidPlacements(
         val placements = getActivePaidPlacements(child.id, from)
         if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PermanentPlacementWithHours>>()
 
-        val serviceNeeds = getServiceNeedsByChildDuringPeriod(handle, child.id, from, null)
+        val serviceNeeds = getServiceNeedsByChildDuringPeriod(child.id, from, null)
         val placementsWithServiceNeeds = addServiceNeedsToPlacements(placements, serviceNeeds)
 
         child to placementsWithServiceNeeds
@@ -760,7 +759,7 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
     return Pair(updatedActives, filteredDrafts)
 }
 
-private fun Handle.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
+private fun Database.Read.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
     // language=sql
     val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
 

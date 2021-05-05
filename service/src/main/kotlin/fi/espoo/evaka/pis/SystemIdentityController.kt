@@ -30,7 +30,7 @@ class SystemIdentityController {
         Audit.PersonCreate.log()
         user.assertSystemInternalUser()
         return db.transaction { tx ->
-            tx.handle.getPersonBySSN(person.socialSecurityNumber) ?: tx.handle.createPerson(
+            tx.getPersonBySSN(person.socialSecurityNumber) ?: tx.createPerson(
                 fi.espoo.evaka.pis.service.PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
                     firstName = person.firstName,
@@ -54,7 +54,7 @@ class SystemIdentityController {
         return db.transaction {
             it.getEmployeeUserByExternalId(employee.externalId)
                 ?: EmployeeUser(
-                    id = it.handle.createEmployee(employee.toNewEmployee()).id,
+                    id = it.createEmployee(employee.toNewEmployee()).id,
                     firstName = employee.firstName,
                     lastName = employee.lastName,
                     globalRoles = emptySet(),

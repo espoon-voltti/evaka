@@ -41,7 +41,7 @@ class VtjController(
             throw Forbidden("Query not allowed")
         }
 
-        return db.read { it.handle.getPersonById(personId) }?.let { person ->
+        return db.read { it.getPersonById(personId) }?.let { person ->
             when (person.identity) {
                 is ExternalIdentifier.NoID -> CitizenUserDetails.from(person)
                 is ExternalIdentifier.SSN -> personService.getPersonWithDependants(user, person.identity)

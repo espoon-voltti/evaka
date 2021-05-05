@@ -32,7 +32,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclRead.log()
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-        val acls = db.read { it.handle.getDaycareAclRows(daycareId) }
+        val acls = db.read { it.getDaycareAclRows(daycareId) }
         return ResponseEntity.ok(DaycareAclResponse(acls))
     }
 
@@ -46,7 +46,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
+        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
         return ResponseEntity.noContent().build()
     }
 
@@ -61,7 +61,7 @@ class UnitAclController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
 
-        db.transaction { it.handle.deleteDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
+        db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
         return ResponseEntity.noContent().build()
     }
 
@@ -75,7 +75,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
         return ResponseEntity.noContent().build()
     }
 
@@ -89,7 +89,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.handle.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+        db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
         return ResponseEntity.noContent().build()
     }
 
@@ -103,7 +103,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
+        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
         return ResponseEntity.noContent().build()
     }
 
@@ -118,7 +118,7 @@ class UnitAclController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { it.handle.deleteDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
+        db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
         return ResponseEntity.noContent().build()
     }
 }

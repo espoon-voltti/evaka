@@ -27,7 +27,7 @@ class PartnershipService {
         endDate: LocalDate?
     ): Partnership {
         return try {
-            tx.handle.createPartnership(personId1, personId2, startDate, endDate)
+            tx.createPartnership(personId1, personId2, startDate, endDate)
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
         }
@@ -39,10 +39,10 @@ class PartnershipService {
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
-        val partnership = tx.handle.getPartnership(partnershipId)
+        val partnership = tx.getPartnership(partnershipId)
             ?: throw NotFound("No partnership found with id $partnershipId")
         try {
-            val success = tx.handle.updatePartnershipDuration(partnershipId, startDate, endDate)
+            val success = tx.updatePartnershipDuration(partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -53,17 +53,17 @@ class PartnershipService {
 
     fun retryPartnership(tx: Database.Transaction, partnershipId: UUID): Partnership? {
         return try {
-            tx.handle.getPartnership(partnershipId)
+            tx.getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
-                ?.also { tx.handle.retryPartnership(partnershipId) }
+                ?.also { tx.retryPartnership(partnershipId) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
     fun deletePartnership(tx: Database.Transaction, partnershipId: UUID): Partnership? {
-        return tx.handle.getPartnership(partnershipId)?.also {
-            tx.handle.deletePartnership(partnershipId)
+        return tx.getPartnership(partnershipId)?.also {
+            tx.deletePartnership(partnershipId)
         }
     }
 }

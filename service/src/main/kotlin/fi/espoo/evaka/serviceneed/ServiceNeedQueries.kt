@@ -5,13 +5,13 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import java.time.LocalDate
 import java.util.UUID
 
-fun insertServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
+fun Database.Transaction.insertServiceNeed(user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
     //language=sql
     val sql =
         """
@@ -40,8 +40,7 @@ fun insertServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: S
             (SELECT concat_ws(' ', first_name, last_name) FROM employee WHERE id = :updatedBy) AS updated_by_name
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
@@ -54,7 +53,7 @@ fun insertServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: S
         .first()
 }
 
-fun getServiceNeedsByChild(h: Handle, childId: UUID): List<ServiceNeed> {
+fun Database.Read.getServiceNeedsByChild(childId: UUID): List<ServiceNeed> {
     //language=sql
     val sql =
         """
@@ -64,13 +63,13 @@ fun getServiceNeedsByChild(h: Handle, childId: UUID): List<ServiceNeed> {
         WHERE child_id = :childId 
         ORDER BY start_date DESC
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .mapTo(ServiceNeed::class.java)
         .list()
 }
 
-fun getServiceNeedsByChildDuringPeriod(h: Handle, childId: UUID, startDate: LocalDate, endDate: LocalDate?): List<ServiceNeed> {
+fun Database.Read.getServiceNeedsByChildDuringPeriod(childId: UUID, startDate: LocalDate, endDate: LocalDate?): List<ServiceNeed> {
     //language=sql
     val sql =
         """
@@ -80,14 +79,14 @@ fun getServiceNeedsByChildDuringPeriod(h: Handle, childId: UUID, startDate: Loca
         WHERE child_id = :childId AND daterange(start_date, end_date, '[]') && :period
         ORDER BY start_date DESC 
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("period", DateRange(startDate, endDate))
         .mapTo(ServiceNeed::class.java)
         .list()
 }
 
-fun updateServiceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
+fun Database.Transaction.updateServiceNeed(user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
     //language=sql
     val sql =
         """
@@ -105,7 +104,7 @@ fun updateServiceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: Servic
             (SELECT concat_ws(' ', first_name, last_name) FROM employee WHERE id = :updatedBy) AS updated_by_name
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", id)
         .bind("startDate", data.startDate)
         .bind("endDate", data.endDate)
@@ -118,7 +117,7 @@ fun updateServiceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: Servic
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
-fun shortenOverlappingServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate?) {
+fun Database.Transaction.shortenOverlappingServiceNeed(user: AuthenticatedUser, childId: UUID, startDate: LocalDate, endDate: LocalDate?) {
     //language=sql
     val sql =
         """
@@ -128,7 +127,7 @@ fun shortenOverlappingServiceNeed(h: Handle, user: AuthenticatedUser, childId: U
         RETURNING *
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("childId", childId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
@@ -136,7 +135,7 @@ fun shortenOverlappingServiceNeed(h: Handle, user: AuthenticatedUser, childId: U
         .execute()
 }
 
-fun deleteServiceNeed(h: Handle, id: UUID): ServiceNeed {
+fun Database.Transaction.deleteServiceNeed(id: UUID): ServiceNeed {
     //language=sql
     val sql =
         """DELETE FROM service_need WHERE id = :id
@@ -145,8 +144,7 @@ fun deleteServiceNeed(h: Handle, id: UUID): ServiceNeed {
             (SELECT concat_ws(' ', first_name, last_name) FROM employee WHERE id = service_need.updated_by) AS updated_by_name
     """.trimMargin()
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("id", id)
         .mapTo(ServiceNeed::class.java)
         .firstOrNull() ?: throw NotFound("Service need $id not found")

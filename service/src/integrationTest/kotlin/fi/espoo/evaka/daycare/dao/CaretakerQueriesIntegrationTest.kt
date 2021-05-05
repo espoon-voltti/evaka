@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Stats
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -31,14 +30,14 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.handle.execute("INSERT INTO care_area (id, name, short_name) VALUES ('$careAreaId', 'foo', 'foo')")
-            tx.handle.execute("INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId', 'foo', '$careAreaId')")
-            tx.handle.execute("INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId2', 'empty daycare', '$careAreaId')")
+            tx.execute("INSERT INTO care_area (id, name, short_name) VALUES ('$careAreaId', 'foo', 'foo')")
+            tx.execute("INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId', 'foo', '$careAreaId')")
+            tx.execute("INSERT INTO daycare (id, name, care_area_id) VALUES ('$daycareId2', 'empty daycare', '$careAreaId')")
 
-            tx.handle.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId1', 'foo', '$daycareId', '2000-01-01', '9999-01-01')")
-            tx.handle.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId2', 'bar', '$daycareId', '2000-01-01', '9999-01-01')")
-            tx.handle.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId3', 'baz', '$daycareId', '2000-01-01', '9999-01-01')")
-            tx.handle.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId4', 'empty', '$daycareId', '2000-01-01', '9999-01-01')")
+            tx.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId1', 'foo', '$daycareId', '2000-01-01', '9999-01-01')")
+            tx.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId2', 'bar', '$daycareId', '2000-01-01', '9999-01-01')")
+            tx.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId3', 'baz', '$daycareId', '2000-01-01', '9999-01-01')")
+            tx.execute("INSERT INTO daycare_group (id, name, daycare_id, start_date, end_date) VALUES ('$groupId4', 'empty', '$daycareId', '2000-01-01', '9999-01-01')")
 
             // date             01-01   02-02   02-06   03-02   03-04   05-06   09-04
             // g1               3       5       5       4       4       4       4
@@ -47,30 +46,30 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
             // g4               0       0       0       0       0       0       0
             // total            10      12      10      9       11      13      7
 
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 3, '2000-01-01', '2000-02-01')")
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 5, '2000-02-02', '2000-03-01')")
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 4, '2000-03-02', '9999-01-01')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 3, '2000-01-01', '2000-02-01')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 5, '2000-02-02', '2000-03-01')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId1', 4, '2000-03-02', '9999-01-01')")
 
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-01-01', '2000-02-05')")
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 1, '2000-02-06', '2000-03-03')")
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-03-04', '9999-01-01')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-01-01', '2000-02-05')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 1, '2000-02-06', '2000-03-03')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId2', 3, '2000-03-04', '9999-01-01')")
 
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 4, '2000-01-01', '2000-05-05')")
-            tx.handle.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 6, '2000-05-06', '2000-09-03')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 4, '2000-01-01', '2000-05-05')")
+            tx.execute("INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES ('$groupId3', 6, '2000-05-06', '2000-09-03')")
         }
     }
 
     @AfterEach
     fun tearDown() {
         db.transaction { tx ->
-            tx.handle.execute("DELETE FROM daycare WHERE id IN ('$daycareId', '$daycareId2')")
-            tx.handle.execute("DELETE FROM care_area WHERE id = '$careAreaId'")
+            tx.execute("DELETE FROM daycare WHERE id IN ('$daycareId', '$daycareId2')")
+            tx.execute("DELETE FROM care_area WHERE id = '$careAreaId'")
         }
     }
 
     @Test
     fun `test getGroupStats`() = db.transaction { tx ->
-        val groupStats = tx.handle.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+        val groupStats = tx.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(4, groupStats.keys.size)
         assertEquals(Stats(3.0, 5.0), groupStats.get(groupId1))
         assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
@@ -80,7 +79,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `test getGroupStats with limited range`() = db.transaction { tx ->
-        val groupStats = tx.handle.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
+        val groupStats = tx.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
         assertEquals(4, groupStats.keys.size)
         assertEquals(Stats(4.0, 5.0), groupStats.get(groupId1))
         assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
@@ -91,54 +90,54 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `test getGroupStats with limited range 2`() = db.transaction { tx ->
         val singleDate = LocalDate.of(2000, 2, 1)
-        val groupStats = tx.handle.getGroupStats(daycareId, singleDate, singleDate)
+        val groupStats = tx.getGroupStats(daycareId, singleDate, singleDate)
         assertEquals(Stats(3.0, 3.0), groupStats.get(groupId1))
     }
 
     @Test
     fun `test getGroupStats with limited range 3`() = db.transaction { tx ->
         val singleDate = LocalDate.of(2000, 2, 2)
-        val groupStats = tx.handle.getGroupStats(daycareId, singleDate, singleDate)
+        val groupStats = tx.getGroupStats(daycareId, singleDate, singleDate)
         assertEquals(Stats(5.0, 5.0), groupStats.get(groupId1))
     }
 
     @Test
     fun `test getUnitStats`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(Stats(9.0, 13.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with no groups`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+        val unitStats = tx.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(Stats(0.0, 0.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with limited range 1`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
         assertEquals(Stats(9.0, 10.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with limited range 2`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
         assertEquals(Stats(10.0, 10.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with limited range 3`() = db.transaction { tx ->
-        val unitStats = tx.handle.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
+        val unitStats = tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
         assertEquals(Stats(9.0, 9.0), unitStats)
     }
 
     @Test
     fun `test getUnitStats with long time range`() = db.transaction { tx ->
-        assertDoesNotThrow { tx.handle.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
+        assertDoesNotThrow { tx.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
     }
 
     @Test
     fun `test getUnitStats with too long time range`() = db.transaction { tx ->
-        assertThrows<BadRequest> { tx.handle.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 2)) }
+        assertThrows<BadRequest> { tx.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 2)) }
     }
 }

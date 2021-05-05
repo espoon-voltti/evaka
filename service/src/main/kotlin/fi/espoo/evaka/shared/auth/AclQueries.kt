@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.shared.auth
 
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import java.util.UUID
@@ -17,7 +17,7 @@ data class DaycareAclRow(
 
 data class DaycareAclRowEmployee(val id: UUID, val firstName: String, val lastName: String, val email: String?)
 
-fun Handle.getDaycareAclRows(daycareId: UUID): List<DaycareAclRow> = createQuery(
+fun Database.Read.getDaycareAclRows(daycareId: UUID): List<DaycareAclRow> = createQuery(
     // language=SQL
     """
 SELECT id, first_name, last_name, email, role
@@ -30,7 +30,7 @@ WHERE daycare_id = :daycareId
     .mapTo<DaycareAclRow>()
     .toList()
 
-fun Handle.insertDaycareAclRow(
+fun Database.Transaction.insertDaycareAclRow(
     daycareId: UUID,
     employeeId: UUID,
     role: UserRole
@@ -47,7 +47,7 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role
     .bind("role", role)
     .execute()
 
-fun Handle.deleteDaycareAclRow(
+fun Database.Transaction.deleteDaycareAclRow(
     daycareId: UUID,
     employeeId: UUID,
     role: UserRole

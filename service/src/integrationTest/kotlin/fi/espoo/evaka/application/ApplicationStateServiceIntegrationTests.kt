@@ -322,7 +322,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val guardian = tx.handle.getPersonById(testAdult_5.id)!!
+            val guardian = tx.getPersonById(testAdult_5.id)!!
             assertEquals("abc@espoo.fi", guardian.email)
             assertEquals("0501234567", guardian.phone)
         }
@@ -347,7 +347,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val guardian = tx.handle.getPersonById(testAdult_6.id)!!
+            val guardian = tx.getPersonById(testAdult_6.id)!!
             assertEquals(testAdult_6.email, guardian.email)
             assertEquals("0501234567", guardian.phone)
         }
@@ -370,7 +370,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val childDetails = tx.handle.getChild(testChild_6.id)!!.additionalInformation
+            val childDetails = tx.getChild(testChild_6.id)!!.additionalInformation
             assertEquals("diet", childDetails.diet)
             assertEquals("allergies", childDetails.allergies)
         }
@@ -495,7 +495,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -553,7 +553,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -611,7 +611,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -686,7 +686,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
             assertEquals(
                 PlacementPlan(
                     id = placementPlan.id,
@@ -762,7 +762,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertEquals(null, placementPlan)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -1074,10 +1074,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val messages = MockEvakaMessageClient.getMessages()
             assertEquals(0, messages.size)
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNotNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_2.id)
+            val placements = tx.getPlacementsForChild(testChild_2.id)
             assertEquals(0, placements.size)
         }
     }
@@ -1173,10 +1173,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            val placements = tx.getPlacementsForChild(testChild_6.id)
             assertEquals(0, placements.size)
         }
     }
@@ -1214,10 +1214,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(DecisionStatus.REJECTED, status)
             }
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            val placements = tx.getPlacementsForChild(testChild_6.id)
             assertEquals(1, placements.size)
             with(placements.first()) {
                 assertEquals(mainPeriod.start, startDate)
@@ -1918,10 +1918,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(DecisionStatus.ACCEPTED, status)
             }
 
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            val placements = tx.getPlacementsForChild(testChild_6.id)
             assertEquals(2, placements.size)
             with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
                 assertEquals(connectedPeriod.start, startDate)
