@@ -17,7 +17,6 @@ import java.util.UUID
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
 @JsonDeserialize(using = AuthenticatedUserJsonDeserializer::class)
 sealed class AuthenticatedUser : RoleContainer {
-    open val isEndUser = false
     open val isAdmin = false
 
     abstract val id: UUID
@@ -36,7 +35,6 @@ sealed class AuthenticatedUser : RoleContainer {
             CitizenAuthLevel.STRONG -> setOf(UserRole.END_USER)
             CitizenAuthLevel.WEAK -> setOf(UserRole.CITIZEN_WEAK)
         }
-        override val isEndUser = true
         override val type = when (authLevel) {
             CitizenAuthLevel.STRONG -> AuthenticatedUserType.citizen
             CitizenAuthLevel.WEAK -> AuthenticatedUserType.citizen_weak

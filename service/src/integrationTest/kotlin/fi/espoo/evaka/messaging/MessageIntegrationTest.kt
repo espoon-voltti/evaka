@@ -771,20 +771,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         threadId: MessageThreadId
     ) =
         http.put(
-            if (user.isEndUser) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
+            if (user is AuthenticatedUser.Citizen) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
         )
             .asUser(user)
             .response()
 
     private fun getMessageThreads(accountId: MessageAccountId, user: AuthenticatedUser): List<MessageThread> = http.get(
-        if (user.isEndUser) "/citizen/messages/received" else "/messages/$accountId/received",
+        if (user is AuthenticatedUser.Citizen) "/citizen/messages/received" else "/messages/$accountId/received",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
         .responseObject<Paged<MessageThread>>(jsonMapper).third.get().data
 
     private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser): List<SentMessage> = http.get(
-        if (user.isEndUser) "/citizen/messages/sent" else "/messages/$accountId/sent",
+        if (user is AuthenticatedUser.Citizen) "/citizen/messages/sent" else "/messages/$accountId/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)

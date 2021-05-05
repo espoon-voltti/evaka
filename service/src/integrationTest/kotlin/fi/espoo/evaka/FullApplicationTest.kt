@@ -87,7 +87,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     }
 
     fun uploadAttachment(applicationId: ApplicationId, user: AuthenticatedUser, type: AttachmentType = AttachmentType.URGENCY): Boolean {
-        val path = if (user.isEndUser) "/attachments/citizen/applications/$applicationId" else "/attachments/applications/$applicationId"
+        val path = if (user is AuthenticatedUser.Citizen) "/attachments/citizen/applications/$applicationId" else "/attachments/applications/$applicationId"
         val (_, res, _) = http.upload(path, parameters = listOf("type" to type))
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
