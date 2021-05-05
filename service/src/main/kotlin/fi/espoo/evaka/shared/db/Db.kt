@@ -10,7 +10,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import fi.espoo.evaka.invoicing.domain.FeeDecision2
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.generic.GenericType
 import org.jdbi.v3.core.kotlin.KotlinPlugin
@@ -26,41 +25,6 @@ import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
 import java.sql.ResultSet
 import java.util.UUID
-
-/**
- * Starts a transaction, runs the given function, and commits or rolls back the transaction depending on whether
- * the function threw an exception or not.
- *
- * Same as Handle.inTransaction, but works better with Kotlin.
- *
- * @see org.jdbi.v3.core.Handle.inTransaction
- */
-inline fun <T> Handle.transaction(crossinline f: (Handle) -> T): T {
-    return this.inTransaction<T, Exception> { f(it) }
-}
-
-/**
- * Opens a database connection, runs the given function, and closes the connection.
- *
- * Same as Jdbi.withHandle, but works better with Kotlin.
- *
- * @see org.jdbi.v3.core.Jdbi.withHandle
- */
-inline fun <T> Jdbi.handle(crossinline f: (Handle) -> T): T {
-    return this.open().use { f(it) }
-}
-
-/**
- * Starts a transaction, runs the given function, and commits or rolls back the transaction depending on whether
- * the function threw an exception or not.
- *
- * Same as Jdbi.inTransaction, but works better with Kotlin.
- *
- * @see org.jdbi.v3.core.Jdbi.inTransaction
- */
-inline fun <T> Jdbi.transaction(crossinline f: (Handle) -> T): T {
-    return this.open().use { h -> h.inTransaction<T, Exception> { f(it) } }
-}
 
 private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) {
     registerColumnMapper(T::class.java, columnMapper)
