@@ -47,7 +47,7 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction {
-            it.handle.createPerson(
+            it.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,

@@ -117,7 +117,7 @@ class FamilyInitializerService(
             otherGuardianId != null &&
             personService.personsLiveInTheSameAddress(tx, headOfFamilyId, otherGuardianId)
         ) {
-            (tx.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
+            (tx.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
         } else {
             application.form.otherPartner?.socialSecurityNumber
         }
@@ -159,7 +159,7 @@ class FamilyInitializerService(
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
-            val child = tx.handle.getPersonById(childId)
+            val child = tx.getPersonById(childId)
                 ?: error("Couldn't find child ($childId) to create parentship")
             val endDate = child.dateOfBirth.plusYears(18).minusDays(1)
             if (startDate > endDate) {

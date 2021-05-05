@@ -392,7 +392,7 @@ RETURNING id
     fun upsertPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
         return db.transaction { tx ->
-            val person = tx.handle.getPersonBySSN(body.ssn)
+            val person = tx.getPersonBySSN(body.ssn)
             val personDTO = body.toPersonDTO()
 
             if (person != null) {

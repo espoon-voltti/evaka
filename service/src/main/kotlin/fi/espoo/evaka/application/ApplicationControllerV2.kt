@@ -133,7 +133,7 @@ class ApplicationControllerV2(
                             ExternalIdentifier.SSN.getInstance(body.guardianSsn)
                         )?.id ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
                     else if (body.guardianToBeCreated != null)
-                        tx.handle.createPerson(body.guardianToBeCreated)
+                        tx.createPerson(body.guardianToBeCreated)
                     else
                         throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
 

@@ -13,7 +13,6 @@ import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -102,7 +101,7 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction {
-        it.handle.getPersonBySSN(ssn) ?: it.handle.createPerson(
+        it.getPersonBySSN(ssn) ?: it.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

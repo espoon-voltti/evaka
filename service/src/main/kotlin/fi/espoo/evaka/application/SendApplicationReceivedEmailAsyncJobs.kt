@@ -24,7 +24,7 @@ class SendApplicationReceivedEmailAsyncJobs(
     }
 
     private fun runSendApplicationEmail(db: Database, msg: SendApplicationEmail) {
-        val guardian = db.read { it.handle.getPersonById(msg.guardianId) }
+        val guardian = db.read { it.getPersonById(msg.guardianId) }
             ?: throw Exception("Didn't find guardian when sending application email (guardianId: ${msg.guardianId})")
 
         if (!guardian.email.isNullOrBlank()) {

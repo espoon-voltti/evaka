@@ -113,14 +113,14 @@ class ApplicationStateService(
         )
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
-        tx.handle.getPersonById(application.guardianId)?.let {
+        tx.getPersonById(application.guardianId)?.let {
             val email = if (!application.form.guardian.email.isNullOrBlank()) {
                 application.form.guardian.email
             } else {
                 it.email
             }
 
-            tx.handle.updatePersonBasicContactInfo(
+            tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
                 email = email ?: "",
                 phone = application.form.guardian.phoneNumber
@@ -155,14 +155,14 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
 
-        tx.handle.getPersonById(application.guardianId)?.let {
+        tx.getPersonById(application.guardianId)?.let {
             val email = if (!application.form.guardian.email.isNullOrBlank()) {
                 application.form.guardian.email
             } else {
                 it.email
             }
 
-            tx.handle.updatePersonBasicContactInfo(
+            tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
                 email = email ?: "",
                 phone = application.form.guardian.phoneNumber

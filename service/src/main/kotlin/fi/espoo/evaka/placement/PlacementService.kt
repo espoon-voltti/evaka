@@ -308,7 +308,7 @@ private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, ty
         else -> return listOf(FiniteDateRange(startDate, endDate) to type)
     }
 
-    val child = tx.handle.getPersonById(childId) ?: error("Child not found ($childId)")
+    val child = tx.getPersonById(childId) ?: error("Child not found ($childId)")
     val fiveYearOldTermStart = LocalDate.of(child.dateOfBirth.plusYears(5).year, 8, 1)
     val fiveYearOldTermEnd = fiveYearOldTermStart.plusYears(1).minusDays(1)
 

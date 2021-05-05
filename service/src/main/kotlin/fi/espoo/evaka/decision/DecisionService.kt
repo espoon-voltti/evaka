@@ -175,7 +175,7 @@ class DecisionService(
 
         val currentVtjGuardianIds = personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, decision.childId).map { person -> person.id }
 
-        val applicationGuardian = tx.handle.getPersonById(application.guardianId)
+        val applicationGuardian = tx.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
 
         if (currentVtjGuardianIds.contains(applicationGuardian.id)) {
@@ -188,7 +188,7 @@ class DecisionService(
             !decision.otherGuardianDocumentUri.isNullOrBlank() &&
             !applicationGuardian.restrictedDetailsEnabled
         ) {
-            val otherGuardian = tx.handle.getPersonById(application.otherGuardianId)
+            val otherGuardian = tx.getPersonById(application.otherGuardianId)
                 ?: error("Other guardian not found with id: ${application.otherGuardianId}")
 
             if (currentVtjGuardianIds.contains(application.otherGuardianId)) {
@@ -255,7 +255,7 @@ class DecisionService(
     }
 
     private fun calculateDecisionFileName(tx: Database.Read, decision: Decision, lang: String): String {
-        val child = tx.handle.getPersonById(decision.childId)
+        val child = tx.getPersonById(decision.childId)
         val childName = "${child?.firstName}_${child?.lastName}"
         val prefix = getLocalizedFilename(decision.type, lang)
         return "${prefix}_$childName.pdf".replace(" ", "_")

@@ -32,7 +32,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         startDate: LocalDate,
         endDate: LocalDate
     ): Parentship {
-        tx.handle.getPersonById(childId)?.let { child -> validateDates(child.dateOfBirth, startDate, endDate) }
+        tx.getPersonById(childId)?.let { child -> validateDates(child.dateOfBirth, startDate, endDate) }
         return try {
             tx.createParentship(childId, headOfChildId, startDate, endDate, false)
                 .also { tx.sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }

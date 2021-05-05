@@ -74,7 +74,7 @@ GROUP BY application.guardian_id
 
             var createdJobCount = 0
             pendingGuardianDecisions.forEach { pendingDecision ->
-                tx.handle.getPersonById(pendingDecision.guardianId)?.let { guardian ->
+                tx.getPersonById(pendingDecision.guardianId)?.let { guardian ->
                     if (!guardian.email.isNullOrBlank()) {
                         asyncJobRunner.plan(
                             tx,

@@ -322,7 +322,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val guardian = tx.handle.getPersonById(testAdult_5.id)!!
+            val guardian = tx.getPersonById(testAdult_5.id)!!
             assertEquals("abc@espoo.fi", guardian.email)
             assertEquals("0501234567", guardian.phone)
         }
@@ -347,7 +347,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.read { tx ->
             // then
-            val guardian = tx.handle.getPersonById(testAdult_6.id)!!
+            val guardian = tx.getPersonById(testAdult_6.id)!!
             assertEquals(testAdult_6.email, guardian.email)
             assertEquals("0501234567", guardian.phone)
         }

@@ -37,7 +37,7 @@ class PersonService(
 
     // Does a request to VTJ if data is stale
     fun getUpToDatePerson(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): PersonDTO? {
-        val person = tx.handle.getPersonById(id) ?: return null
+        val person = tx.getPersonById(id) ?: return null
         return if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
             val personDetails =
                 personDetailsService.getBasicDetailsFor(
@@ -45,7 +45,7 @@ class PersonService(
                 )
             if (personDetails is PersonDetails.Result) {
                 personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
-                tx.handle.getPersonById(id)
+                tx.getPersonById(id)
             } else {
                 hideNonDisclosureInfo(person)
             }
@@ -55,8 +55,8 @@ class PersonService(
     }
 
     fun personsLiveInTheSameAddress(db: Database.Read, person1Id: UUID, person2Id: UUID): Boolean {
-        val person1 = db.handle.getPersonById(person1Id)
-        val person2 = db.handle.getPersonById(person2Id)
+        val person1 = db.getPersonById(person1Id)
+        val person2 = db.getPersonById(person2Id)
 
         return personsHaveSameResidenceCode(person1, person2) || personsHaveSameAddress(person1, person2)
     }
@@ -83,7 +83,7 @@ class PersonService(
         user: AuthenticatedUser,
         id: UUID
     ): PersonWithChildrenDTO? {
-        val guardian = tx.handle.getPersonById(id) ?: return null
+        val guardian = tx.getPersonById(id) ?: return null
 
         return when (guardian.identity) {
             is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
@@ -104,7 +104,7 @@ class PersonService(
 
     // Does a request to VTJ if SSN is present
     fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
-        val child = tx.handle.getPersonById(id) ?: return emptyList()
+        val child = tx.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
             is ExternalIdentifier.NoID -> emptyList()
@@ -119,12 +119,12 @@ class PersonService(
 
     // If 1 or more evaka guardians is found, return those, otherwise get from VTJ
     fun getEvakaOrVtjGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
-        val child = tx.handle.getPersonById(id) ?: return emptyList()
+        val child = tx.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
             is ExternalIdentifier.NoID -> emptyList()
             is ExternalIdentifier.SSN -> {
-                val evakaGuardians = tx.getChildGuardians(id).mapNotNull { guardianId -> tx.handle.getPersonById(guardianId) }
+                val evakaGuardians = tx.getChildGuardians(id).mapNotNull { guardianId -> tx.getPersonById(guardianId) }
 
                 if (evakaGuardians.size > 1 && evakaGuardians.all { guardian ->
                     if (guardian.updatedFromVtj != null) guardian.updatedFromVtj.isAfter(Instant.now().minusSeconds(SECONDS_IN_30_DAYS)) else false
@@ -147,14 +147,14 @@ class PersonService(
         ssn: ExternalIdentifier.SSN,
         updateStale: Boolean = true
     ): PersonDTO? {
-        val person = tx.handle.getPersonBySSN(ssn.ssn)
+        val person = tx.getPersonBySSN(ssn.ssn)
         return if (person == null || (updateStale && vtjDataIsStale(person))) {
             val personDetails = personDetailsService.getBasicDetailsFor(
                 IPersonDetailsService.DetailsQuery(user, ssn)
             )
             if (personDetails is PersonDetails.Result) {
                 personStorageService.upsertVtjPerson(tx, personDetails.vtjPerson.mapToDto())
-                tx.handle.getPersonBySSN(ssn.ssn)
+                tx.getPersonBySSN(ssn.ssn)
             } else {
                 hideNonDisclosureInfo(person)
             }
@@ -174,10 +174,10 @@ class PersonService(
     }
 
     fun patchUserDetails(tx: Database.Transaction, id: UUID, data: PersonPatch): PersonDTO {
-        val person = tx.handle.getPersonById(id) ?: throw NotFound("Person $id not found")
+        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         when (person.identity) {
-            is ExternalIdentifier.SSN -> tx.handle.updatePersonContactInfo(
+            is ExternalIdentifier.SSN -> tx.updatePersonContactInfo(
                 id,
                 ContactInfo(
                     email = data.email ?: person.email ?: "",
@@ -190,22 +190,22 @@ class PersonService(
                     forceManualFeeDecisions = data.forceManualFeeDecisions ?: person.forceManualFeeDecisions
                 )
             )
-            is ExternalIdentifier.NoID -> tx.handle.updatePersonDetails(id, data)
+            is ExternalIdentifier.NoID -> tx.updatePersonDetails(id, data)
         }.exhaust()
 
-        return tx.handle.getPersonById(id)!!
+        return tx.getPersonById(id)!!
     }
 
     fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: UUID, ssn: ExternalIdentifier.SSN) {
-        val person = tx.handle.getPersonById(id) ?: throw NotFound("Person $id not found")
+        val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         when (person.identity) {
             is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
             is ExternalIdentifier.NoID -> {
-                if (tx.handle.getPersonBySSN(ssn.ssn) != null) {
+                if (tx.getPersonBySSN(ssn.ssn) != null) {
                     throw Conflict("User with same ssn already exists")
                 }
-                tx.handle.addSSNToPerson(id, ssn.toString())
+                tx.addSSNToPerson(id, ssn.toString())
             }
         }.exhaust()
     }

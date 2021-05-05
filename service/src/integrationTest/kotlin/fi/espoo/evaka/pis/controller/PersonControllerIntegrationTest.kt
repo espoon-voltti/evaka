@@ -14,7 +14,6 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -150,7 +149,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
         assertEquals(HttpStatus.OK, actual.statusCode)
 
-        val updated = db.read { it.handle.getPersonById(person.id) }
+        val updated = db.read { it.getPersonById(person.id) }
         assertEquals(contactInfo.email, updated?.email)
         assertEquals(contactInfo.invoicingStreetAddress, updated?.invoicingStreetAddress)
         assertEquals(contactInfo.invoicingPostalCode, updated?.invoicingPostalCode)
@@ -161,7 +160,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     private fun createPerson(): PersonDTO {
         val ssn = "140881-172X"
         return db.transaction {
-            it.handle.createPerson(
+            it.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = "Matti",

@@ -11,7 +11,6 @@ import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -73,7 +72,7 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO =
         db.transaction {
-            it.handle.createPerson(
+            it.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,

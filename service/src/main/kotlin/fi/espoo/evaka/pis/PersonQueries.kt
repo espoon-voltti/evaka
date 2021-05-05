@@ -14,7 +14,6 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getUUID
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -23,7 +22,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-fun Handle.getPersonById(id: UUID): PersonDTO? {
+fun Database.Read.getPersonById(id: UUID): PersonDTO? {
     // language=SQL
     val sql = "SELECT * FROM person WHERE id = :id"
 
@@ -37,7 +36,7 @@ fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? = createQuery(
     "SELECT * FROM person WHERE social_security_number = :ssn FOR UPDATE"
 ).bind("ssn", ssn).map(toPersonDTO).firstOrNull()
 
-fun Handle.getPersonBySSN(ssn: String): PersonDTO? {
+fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     // language=SQL
     val sql = "SELECT * FROM person WHERE social_security_number = :ssn"
 
@@ -50,7 +49,7 @@ fun Handle.getPersonBySSN(ssn: String): PersonDTO? {
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
 
-fun Handle.searchPeople(searchTerms: String, sortColumns: String, sortDirection: String): List<PersonDTO> {
+fun Database.Read.searchPeople(searchTerms: String, sortColumns: String, sortDirection: String): List<PersonDTO> {
     if (searchTerms.isBlank()) return listOf()
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
@@ -73,7 +72,7 @@ fun Handle.searchPeople(searchTerms: String, sortColumns: String, sortDirection:
         .toList()
 }
 
-fun Handle.createPerson(person: PersonIdentityRequest): PersonDTO {
+fun Database.Transaction.createPerson(person: PersonIdentityRequest): PersonDTO {
     // language=SQL
     val sql =
         """
@@ -93,7 +92,7 @@ fun Handle.createPerson(person: PersonIdentityRequest): PersonDTO {
         .first()
 }
 
-fun Handle.createPerson(person: CreatePersonBody): UUID {
+fun Database.Transaction.createPerson(person: CreatePersonBody): UUID {
     // language=SQL
     val sql =
         """
@@ -108,7 +107,7 @@ fun Handle.createPerson(person: CreatePersonBody): UUID {
         .first()
 }
 
-fun Handle.createEmptyPerson(): PersonDTO {
+fun Database.Transaction.createEmptyPerson(): PersonDTO {
     // language=SQL
     val sql =
         """
@@ -198,7 +197,7 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         .first()
 }
 
-fun Handle.updatePersonBasicContactInfo(id: UUID, email: String, phone: String): Boolean {
+fun Database.Transaction.updatePersonBasicContactInfo(id: UUID, email: String, phone: String): Boolean {
     // language=SQL
     val sql =
         """
@@ -217,7 +216,7 @@ fun Handle.updatePersonBasicContactInfo(id: UUID, email: String, phone: String):
         .firstOrNull() != null
 }
 
-fun Handle.updatePersonContactInfo(id: UUID, contactInfo: ContactInfo): Boolean {
+fun Database.Transaction.updatePersonContactInfo(id: UUID, contactInfo: ContactInfo): Boolean {
     // language=SQL
     val sql =
         """
@@ -241,7 +240,7 @@ fun Handle.updatePersonContactInfo(id: UUID, contactInfo: ContactInfo): Boolean 
         .firstOrNull() != null
 }
 
-fun Handle.updatePersonDetails(id: UUID, patch: PersonPatch): Boolean {
+fun Database.Transaction.updatePersonDetails(id: UUID, patch: PersonPatch): Boolean {
     // language=SQL
     val sql =
         """
@@ -270,7 +269,7 @@ fun Handle.updatePersonDetails(id: UUID, patch: PersonPatch): Boolean {
         .firstOrNull() != null
 }
 
-fun Handle.addSSNToPerson(id: UUID, ssn: String) {
+fun Database.Transaction.addSSNToPerson(id: UUID, ssn: String) {
     // language=SQL
     val sql = "UPDATE person SET social_security_number = :ssn WHERE id = :id"
 
@@ -280,7 +279,7 @@ fun Handle.addSSNToPerson(id: UUID, ssn: String) {
         .execute()
 }
 
-fun Handle.getDeceasedPeople(since: LocalDate): List<PersonDTO> {
+fun Database.Read.getDeceasedPeople(since: LocalDate): List<PersonDTO> {
     // language=SQL
     val sql = "SELECT * FROM person WHERE date_of_death >= :since"
 
