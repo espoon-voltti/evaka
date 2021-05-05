@@ -4,7 +4,6 @@
 
 import React from 'react'
 import { P } from 'lib-components/typography'
-import { fiCustomizations } from 'lib-customizations/citizen'
 
 export default {
   common: {
@@ -58,17 +57,20 @@ export default {
     logout: 'Kirjaudu ulos'
   },
   footer: {
-    cityLabel: fiCustomizations.footer.cityLabel,
+    cityLabel: '© Espoon kaupunki',
     privacyPolicy: 'Tietosuojaselosteet',
-    privacyPolicyLink: fiCustomizations.footer.privacyPolicyLink,
+    privacyPolicyLink:
+      'https://www.espoo.fi/fi-FI/Asioi_verkossa/Tietosuoja/Tietosuojaselosteet',
     sendFeedback: 'Lähetä palautetta',
-    sendFeedbackLink: fiCustomizations.footer.sendFeedbackLink
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   map: {
     title: 'Yksiköt kartalla',
-    mainInfo: fiCustomizations.map.mainInfo,
+    mainInfo:
+      'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
     searchLabel: 'Hae omalla osoitteellasi tai yksikön nimellä',
-    searchPlaceholder: fiCustomizations.map.searchPlaceholder,
+    searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
     address: 'Osoite',
     noResults: 'Ei hakutuloksia',
     distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
@@ -1048,9 +1050,15 @@ export default {
     }
   },
   applicationsList: {
-    title: fiCustomizations.applicationsList.title,
+    title: 'Hakeminen varhaiskasvatukseen ja ilmoittautuminen esiopetukseen',
     summary: function ApplicationListSummaryText() {
-      return <P width="800px">{fiCustomizations.applicationsList.summary}</P>
+      return (
+        <P width="800px">
+          Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja
+          kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot
+          haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.
+        </P>
+      )
     },
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Ei hakemuksia',

@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useContext, useMemo, useState } from 'react'
-import fi from './fi'
-import sv from './sv'
-import en from './en'
-
-export const langs = ['fi', 'sv', 'en'] as const
-
-export type Lang = typeof langs[number]
+import { Lang, translations as localizations } from 'lib-customizations/citizen'
 
 const getDefaultLanguage: () => Lang = () => {
   const params = new URLSearchParams(window.location.search)
@@ -59,12 +53,6 @@ export const LocalizationContextProvider = React.memo(
     )
   }
 )
-
-const localizations = {
-  fi,
-  sv,
-  en
-}
 
 export const useTranslation = () => {
   const { lang } = useContext(LocalizationContext)

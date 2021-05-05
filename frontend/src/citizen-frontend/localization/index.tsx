@@ -3,11 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { LocalizationContextProvider } from './state'
-import fi from './fi'
 
-export { langs, useLang, useTranslation } from './state'
-export type { Lang } from './state'
-
-export type Translations = typeof fi
+export { useLang, useTranslation } from './state'
+export { langs } from 'lib-customizations/citizen'
+export type { Lang } from 'lib-customizations/citizen'
 
 export const Localization = LocalizationContextProvider

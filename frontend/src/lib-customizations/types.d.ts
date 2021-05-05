@@ -4,6 +4,10 @@
 
 import type { LatLngExpression } from 'leaflet'
 import {
+  Lang as LangCitizen,
+  Translations as TranslationsCitizen
+} from './citizen'
+import {
   Lang as LangEmployee,
   Translations as TranslationsEmployee
 } from './employee'
@@ -17,31 +21,13 @@ type DeepPartial<T> = {
 }
 
 export interface CitizenCustomizations {
-  fiCustomizations: CitizenLocalizations
-  enCustomizations: CitizenLocalizations
-  svCustomizations: CitizenLocalizations
+  translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: {
     src: string
     alt: string
   }
   mapConfig: MapConfig
   featureFlags: FeatureFlags
-}
-
-interface CitizenLocalizations {
-  applicationsList: {
-    title: string
-    summary: string
-  }
-  footer: {
-    cityLabel: string
-    privacyPolicyLink: string
-    sendFeedbackLink: string
-  }
-  map: {
-    mainInfo: string
-    searchPlaceholder: string
-  }
 }
 
 interface MapConfig {
