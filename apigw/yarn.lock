@@ -935,17 +935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport-saml@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@types/passport-saml@npm:1.1.2"
-  dependencies:
-    "@types/express": "*"
-    "@types/passport": "*"
-  checksum: ef7897f4c31b3fbd2fc40eff8451849f91d9ad4d55359743a5222d3cb27a208f1dc622e7cf4dd9cf3685adf1024d0b0efc4b76dc8d6bb4117e1d54a0ba121a32
-  languageName: node
-  linkType: hard
-
-"@types/passport@npm:*, @types/passport@npm:^1.0.4":
+"@types/passport@npm:^1.0.4":
   version: 1.0.5
   resolution: "@types/passport@npm:1.0.5"
   dependencies:
@@ -2862,7 +2852,6 @@ __metadata:
     "@types/node": ^14.14.6
     "@types/node-forge": ^0.9.5
     "@types/passport": ^1.0.4
-    "@types/passport-saml": ^1.1.2
     "@types/pino": ^6.3.3
     "@types/pino-http": ^5.0.5
     "@types/pino-std-serializers": ^2.4.1

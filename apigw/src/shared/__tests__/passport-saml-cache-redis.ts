@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CacheItem, CacheProvider } from 'passport-saml'
+import type { CacheProvider, CacheItem } from 'passport-saml'
 import type { RedisClient } from 'redis'
 import redis from 'redis-mock'
 import redisCacheProvider from '../auth/passport-saml-cache-redis'
@@ -99,10 +99,7 @@ describe('passport-saml-cache-redis', () => {
       const result = await fromCallback<CacheItem | null>((cb) =>
         cache.save('key', 'val', cb)
       )
-      // TODO: Enable once upstream typings are fixed
-      // expect(result?.createdAt).toBeGreaterThan(0)
-      // TODO: and remove this one
-      expect(result?.createdAt).toBeInstanceOf(Date)
+      expect(result?.createdAt).toBeGreaterThan(0)
       expect(result?.value).toBe('val')
     })
 
@@ -113,10 +110,7 @@ describe('passport-saml-cache-redis', () => {
       const result = await fromCallback<CacheItem | null>((cb) =>
         cache.save('key', 'val2', cb)
       )
-      // TODO: Enable once upstream typings are fixed
-      // expect(result).toBeNull()
-      // TODO: and remove this one
-      expect(result?.value).toBeNull()
+      expect(result).toBeNull()
     })
   })
 
@@ -125,10 +119,7 @@ describe('passport-saml-cache-redis', () => {
       const result = await fromCallback<string | null>((cb) =>
         cache.remove('key', cb)
       )
-      // TODO: Enable once upstream typings are fixed
-      // expect(result).toBeNull()
-      // TODO: and remove this one
-      expect(result).toBe('')
+      expect(result).toBeNull()
     })
 
     it('returns the key if it existed', async () => {
@@ -136,14 +127,9 @@ describe('passport-saml-cache-redis', () => {
       expect(
         await fromCallback<string | null>((cb) => cache.remove('key', cb))
       ).toBe('key')
-      // TODO: Enable once upstream typings are fixed
-      // expect(
-      //   await fromCallback<string | null>((cb) => cache.remove('key', cb))
-      // ).toBeNull()
-      // TODO: and remove this one
       expect(
         await fromCallback<string | null>((cb) => cache.remove('key', cb))
-      ).toBe('')
+      ).toBeNull()
     })
   })
 

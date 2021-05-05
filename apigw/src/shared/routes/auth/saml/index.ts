@@ -14,7 +14,7 @@ import { logoutExpress, saveLogoutToken } from '../../../session'
 import { fromCallback } from '../../../promise-utils'
 import { getEmployees } from '../../../dev-api'
 import _ from 'lodash'
-import { AuthenticateOptions } from 'passport-saml'
+import type { AuthenticateOptions } from 'passport-saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 

@@ -44,16 +44,10 @@ export default function redisCacheProvider(
     },
     save(key, value, callback) {
       client.get(`${keyPrefix}${key}`, (err, reply) => {
-        // TODO: The value should actually be null but due to incorrect types in
-        // @types/passport-saml, it has to be a CacheItem. Fix when fixed upstream.
-        if (err) return callback(err, { createdAt: new Date(), value: null })
-        if (reply !== null)
-          return callback(null, { createdAt: new Date(), value: null })
+        if (err) return callback(err, null)
+        if (reply !== null) return callback(null, null)
 
-        // NOTE: createdAt shouldn't actually be a Date but a Number
-        // but the types in @types/passport-saml are incorrect. Fortunately,
-        // the whole field is irrelevant for us.
-        const cacheItem = { createdAt: new Date(), value }
+        const cacheItem = { createdAt: new Date().getTime(), value }
         return client.set(
           `${keyPrefix}${key}`,
           value,
@@ -65,10 +59,8 @@ export default function redisCacheProvider(
     },
     remove(key, callback) {
       return client.del(`${keyPrefix}${key}`, (err, count) => {
-        // TODO: The value should actually be null but due to incorrect types in
-        // @types/passport-saml, it has to be a string. Fix when fixed upstream.
-        if (err) return callback(err, '')
-        if (count === 0) return callback(null, '')
+        if (err) return callback(err, null)
+        if (count === 0) return callback(null, null)
         return callback(null, key)
       })
     }

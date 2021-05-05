@@ -59,7 +59,6 @@
     "@types/node": "^14.14.6",
     "@types/node-forge": "^0.9.5",
     "@types/passport": "^1.0.4",
-    "@types/passport-saml": "^1.1.2",
     "@types/pino": "^6.3.3",
     "@types/pino-http": "^5.0.5",
     "@types/pino-std-serializers": "^2.4.1",
