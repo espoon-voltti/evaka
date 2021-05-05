@@ -127,9 +127,9 @@ class BulletinIntegrationTest : FullApplicationTest() {
                     id = staffId
                 )
             )
-            tx.handle.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.handle.insertDaycareAclRow(unitId, staffId, UserRole.STAFF)
-            tx.handle.insertDaycareAclRow(secondUnitId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(unitId, staffId, UserRole.STAFF)
+            tx.insertDaycareAclRow(secondUnitId, supervisorId, UserRole.UNIT_SUPERVISOR)
         }
         MockEmailClient.emails.clear()
     }

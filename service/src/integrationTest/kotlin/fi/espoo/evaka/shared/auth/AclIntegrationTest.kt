@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -131,7 +130,7 @@ class AclIntegrationTest : PureJdbiTest() {
         assertEquals(negativeAclRoles, acl.getRolesForUnitGroup(user, groupId))
         assertEquals(negativeAclRoles, acl.getRolesForDailyNote(user, noteId))
 
-        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, role) }
+        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, role) }
 
         assertEquals(positiveAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
