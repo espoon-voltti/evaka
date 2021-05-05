@@ -40,7 +40,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
     ): List<HolidayPeriod> {
         Audit.HolidayPeriodsList.log()
         accessControl.requirePermissionFor(user, Action.Global.READ_HOLIDAY_PERIODS)
@@ -50,7 +50,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/questionnaire")
     fun getActiveQuestionnaires(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
     ): List<ActiveQuestionnaire> {
         Audit.HolidayPeriodsList.log()
@@ -86,7 +86,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     @PostMapping("/questionnaire/fixed-period/{id}")
     fun answerFixedPeriodQuestionnaire(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodsBody

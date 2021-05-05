@@ -135,7 +135,7 @@ class AttachmentsController(
     @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentCitizen(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,

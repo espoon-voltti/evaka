@@ -53,7 +53,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/by-guardian")
     fun getGuardianApplications(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): List<ApplicationsOfChild> {
         Audit.ApplicationRead.log(targetId = user.id)
         @Suppress("DEPRECATION")
@@ -82,7 +82,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable applicationId: ApplicationId
     ): ApplicationDetails {
         Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
@@ -104,7 +104,7 @@ class ApplicationControllerCitizen(
     @PostMapping("/applications")
     fun createApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @RequestBody body: CreateApplicationBody
     ): ApplicationId {
@@ -146,7 +146,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/duplicates/{childId}")
     fun getChildDuplicateApplications(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
         Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
@@ -170,7 +170,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/active-placements/{childId}")
     fun getChildPlacementStatusByApplicationType(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
@@ -192,7 +192,7 @@ class ApplicationControllerCitizen(
     @PutMapping("/applications/{applicationId}")
     fun updateApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
@@ -217,7 +217,7 @@ class ApplicationControllerCitizen(
     @PutMapping("/applications/{applicationId}/draft")
     fun saveApplicationAsDraft(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
@@ -243,7 +243,7 @@ class ApplicationControllerCitizen(
     @DeleteMapping("/applications/{applicationId}")
     fun deleteUnprocessedApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable applicationId: ApplicationId
     ) {
         Audit.ApplicationDelete.log(targetId = applicationId)
@@ -267,7 +267,7 @@ class ApplicationControllerCitizen(
     @PostMapping("/applications/{applicationId}/actions/send-application")
     fun sendApplication(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
@@ -275,7 +275,7 @@ class ApplicationControllerCitizen(
     }
 
     @GetMapping("/decisions")
-    fun getDecisions(db: Database, user: AuthenticatedUser): List<ApplicationDecisions> {
+    fun getDecisions(db: Database, user: AuthenticatedUser.Citizen): List<ApplicationDecisions> {
         Audit.DecisionRead.log(targetId = user.id)
         @Suppress("DEPRECATION")
         user.requireOneOfRoles(UserRole.END_USER)
@@ -285,7 +285,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable applicationId: ApplicationId
     ): List<Decision> {
         Audit.DecisionReadByApplication.log(targetId = applicationId)
@@ -306,7 +306,7 @@ class ApplicationControllerCitizen(
     @PostMapping("/applications/{applicationId}/actions/accept-decision")
     fun acceptDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ) {
@@ -328,7 +328,7 @@ class ApplicationControllerCitizen(
     @PostMapping("/applications/{applicationId}/actions/reject-decision")
     fun rejectDecision(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ) {
@@ -343,7 +343,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/decisions/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable id: DecisionId
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = id)

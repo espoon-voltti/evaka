@@ -39,7 +39,7 @@ class MessageControllerCitizen(
     @GetMapping("/my-account")
     fun getMyAccount(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): MessageAccountId {
         Audit.MessagingMyAccountsRead.log()
         return db.connect { dbc -> requireMessageAccountAccess(dbc, user) }
@@ -48,7 +48,7 @@ class MessageControllerCitizen(
     @GetMapping("/unread-count")
     fun getUnreadMessages(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Citizen
     ): Set<UnreadCountByAccount> {
         Audit.MessagingUnreadMessagesRead.log()
         return db.connect { dbc ->
@@ -60,7 +60,7 @@ class MessageControllerCitizen(
     @PutMapping("/threads/{threadId}/read")
     fun markThreadRead(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable("threadId") threadId: MessageThreadId
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
@@ -73,7 +73,7 @@ class MessageControllerCitizen(
     @GetMapping("/received")
     fun getReceivedMessages(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
@@ -87,7 +87,7 @@ class MessageControllerCitizen(
     @GetMapping("/sent")
     fun getSentMessages(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
@@ -101,7 +101,7 @@ class MessageControllerCitizen(
     @GetMapping("/receivers")
     fun getReceivers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
     ): List<MessageAccount> {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
         return db.connect { dbc ->
@@ -113,7 +113,7 @@ class MessageControllerCitizen(
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
@@ -134,7 +134,7 @@ class MessageControllerCitizen(
     @PostMapping
     fun newMessage(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
         Audit.MessagingCitizenSendMessage.log()
