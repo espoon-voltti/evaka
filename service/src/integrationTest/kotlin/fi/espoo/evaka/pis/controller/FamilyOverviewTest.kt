@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -148,7 +147,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         db.transaction {
             it.createParentship(testChild_1.id, testAdult_1.id, from, to)
             it.createParentship(testChild_2.id, testAdult_1.id, from, to)
-            it.handle.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
+            it.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
         }
     }
 }

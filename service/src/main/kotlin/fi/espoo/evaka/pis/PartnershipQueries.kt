@@ -6,18 +6,18 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun Handle.getPartnership(id: UUID): Partnership? {
+fun Database.Read.getPartnership(id: UUID): Partnership? {
     // language=SQL
     val sql =
         """
@@ -41,7 +41,7 @@ fun Handle.getPartnership(id: UUID): Partnership? {
         .firstOrNull()
 }
 
-fun Handle.getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = false): List<Partnership> {
+fun Database.Read.getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = false): List<Partnership> {
     // language=SQL
     val sql =
         """
@@ -67,7 +67,7 @@ fun Handle.getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = 
         .toList()
 }
 
-fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, period: DateRange? = null): List<Partner> {
+fun Database.Read.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, period: DateRange? = null): List<Partner> {
     // language=SQL
     val sql =
         """
@@ -91,7 +91,7 @@ fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, perio
         .toList()
 }
 
-fun Handle.createPartnership(
+fun Database.Transaction.createPartnership(
     personId1: UUID,
     personId2: UUID,
     startDate: LocalDate,
@@ -132,7 +132,7 @@ fun Handle.createPartnership(
         .first()
 }
 
-fun Handle.updatePartnershipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate?): Boolean {
+fun Database.Transaction.updatePartnershipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate?): Boolean {
     // language=SQL
     val sql =
         """
@@ -149,7 +149,7 @@ fun Handle.updatePartnershipDuration(id: UUID, startDate: LocalDate, endDate: Lo
         .firstOrNull() != null
 }
 
-fun Handle.retryPartnership(id: UUID) {
+fun Database.Transaction.retryPartnership(id: UUID) {
     // language=SQL
     val sql = "UPDATE fridge_partner SET conflict = false WHERE partnership_id = :id"
 
@@ -158,7 +158,7 @@ fun Handle.retryPartnership(id: UUID) {
         .execute()
 }
 
-fun Handle.deletePartnership(id: UUID): Boolean {
+fun Database.Transaction.deletePartnership(id: UUID): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_partner WHERE partnership_id = :id RETURNING partnership_id"
 

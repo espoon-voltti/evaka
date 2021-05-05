@@ -92,16 +92,16 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
         val partnership1 = db.transaction { tx ->
-            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100)).also {
-                tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
-                assertEquals(2, tx.handle.getPartnershipsForPerson(adult1.id).size)
+            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100)).also {
+                tx.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
+                assertEquals(2, tx.getPartnershipsForPerson(adult1.id).size)
             }
         }
 
         val delResponse = controller.deletePartnership(db, user, partnership1.id)
         assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
         db.read { r ->
-            assertEquals(1, r.handle.getPartnershipsForPerson(adult1.id).size)
+            assertEquals(1, r.getPartnershipsForPerson(adult1.id).size)
         }
     }
 
@@ -124,8 +124,8 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
         val partnership1 = db.transaction { tx ->
-            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
-                tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
+                tx.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
             }
         }
 
@@ -153,8 +153,8 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
         val partnership1 = db.transaction { tx ->
-            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
-                tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200)).also {
+                tx.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
             }
         }
 
@@ -172,7 +172,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
         db.transaction { tx ->
-            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
 
         assertThrows<Forbidden> {
@@ -200,7 +200,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
         val partnership = db.transaction { tx ->
-            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
 
         val requestBody = PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
@@ -215,7 +215,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val adult1 = testPerson1()
         val adult2 = testPerson2()
         val partnership = db.transaction { tx ->
-            tx.handle.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+            tx.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
 
         assertThrows<Forbidden> {

@@ -65,7 +65,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         Audit.PartnerShipsRead.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
-        return db.read { it.handle.getPartnershipsForPerson(personId, includeConflicts = true) }
+        return db.read { it.getPartnershipsForPerson(personId, includeConflicts = true) }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -78,7 +78,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         Audit.PartnerShipsRead.log(targetId = partnershipId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
-        return db.read { it.handle.getPartnership(partnershipId) }
+        return db.read { it.getPartnership(partnershipId) }
             ?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
     }

@@ -490,7 +490,7 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange):
     val parentRelations = getParentships(null, childId, includeConflicts = false, period = period)
 
     return parentRelations.flatMap {
-        val fridgePartners = handle.getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
+        val fridgePartners = getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
         val fridgeChildren = getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
         generateFamilyCompositions(
             it.headOfChild.id,
@@ -503,12 +503,12 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange):
 
 private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
     val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
-    val partners = handle.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
+    val partners = getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
 }
 
 private fun Database.Read.findFamiliesByPartner(personId: UUID, period: DateRange): List<FridgeFamily> {
-    val possibleHeadsOfFamily = handle.getPartnersForPerson(personId, includeConflicts = false, period = period)
+    val possibleHeadsOfFamily = getPartnersForPerson(personId, includeConflicts = false, period = period)
     return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it.person.id, period) }
 }
 
