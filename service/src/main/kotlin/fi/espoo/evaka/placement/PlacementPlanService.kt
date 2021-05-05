@@ -41,7 +41,7 @@ class PlacementPlanService(
                 name = it.name
             )
         }
-        val placements = tx.handle.getPlacementDraftPlacements(application.childId)
+        val placements = tx.getPlacementDraftPlacements(application.childId)
 
         val startDate = form.preferences.preferredStartDate!!
 

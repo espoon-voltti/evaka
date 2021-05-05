@@ -35,7 +35,7 @@ class PlacementService {
         tx.clearOldPlacements(childId, startDate, endDate)
         val placementTypePeriods = handleFiveYearOldDaycare(tx, childId, type, startDate, endDate)
         return placementTypePeriods.map { (period, type) ->
-            tx.handle.insertPlacement(type, childId, unitId, period.start, period.end)
+            tx.insertPlacement(type, childId, unitId, period.start, period.end)
         }
     }
 }
@@ -48,9 +48,9 @@ fun Database.Transaction.updatePlacement(
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
-    val old = handle.getPlacement(id) ?: throw NotFound("Placement $id not found")
-    if (startDate.isAfter(old.startDate)) handle.clearGroupPlacementsBefore(id, startDate)
-    if (endDate.isBefore(old.endDate)) handle.clearGroupPlacementsAfter(id, endDate)
+    val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
+    if (startDate.isAfter(old.startDate)) clearGroupPlacementsBefore(id, startDate)
+    if (endDate.isBefore(old.endDate)) clearGroupPlacementsAfter(id, endDate)
     clearOldPlacements(old.childId, startDate, endDate, id, aclAuth)
 
     try {
@@ -60,14 +60,14 @@ fun Database.Transaction.updatePlacement(
         }
 
         updatedPeriods.firstOrNull()?.let { (period, _) ->
-            handle.updatePlacementStartAndEndDate(id, period.start, period.end)
+            updatePlacementStartAndEndDate(id, period.start, period.end)
         } ?: run {
             checkAclAuth(aclAuth, old)
-            handle.cancelPlacement(old.id)
+            cancelPlacement(old.id)
         }
 
         newPeriods.forEach { (period, type) ->
-            handle.insertPlacement(type, old.childId, old.unitId, period.start, period.end)
+            insertPlacement(type, old.childId, old.unitId, period.start, period.end)
         }
     } catch (e: Exception) {
         throw mapPSQLException(e)
@@ -76,7 +76,7 @@ fun Database.Transaction.updatePlacement(
     return old
 }
 
-fun Database.Transaction.createGroupPlacement(
+fun Database.Transaction.checkAndCreateGroupPlacement(
     daycarePlacementId: UUID,
     groupId: UUID,
     startDate: LocalDate,
@@ -88,7 +88,7 @@ fun Database.Transaction.createGroupPlacement(
     if (getDaycareGroupPlacements(daycarePlacementId, startDate, endDate, groupId).isNotEmpty())
         throw BadRequest("Group placement must not overlap with existing group placement")
 
-    val daycarePlacement = handle.getDaycarePlacement(daycarePlacementId)
+    val daycarePlacement = getDaycarePlacement(daycarePlacementId)
         ?: throw NotFound("Placement $daycarePlacementId does not exist")
 
     if (startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate))
@@ -99,26 +99,26 @@ fun Database.Transaction.createGroupPlacement(
     if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate)))
         throw BadRequest("Group is not active for the full duration")
 
-    val identicalBefore = handle.getIdenticalPrecedingGroupPlacement(daycarePlacementId, groupId, startDate)
-    val identicalAfter = handle.getIdenticalPostcedingGroupPlacement(daycarePlacementId, groupId, endDate)
+    val identicalBefore = getIdenticalPrecedingGroupPlacement(daycarePlacementId, groupId, startDate)
+    val identicalAfter = getIdenticalPostcedingGroupPlacement(daycarePlacementId, groupId, endDate)
 
     try {
         return if (identicalBefore != null && identicalAfter != null) {
             // fills the gap between two existing ones -> merge them
-            handle.deleteGroupPlacement(identicalAfter.id!!)
-            handle.updateGroupPlacementEndDate(identicalBefore.id!!, identicalAfter.endDate)
+            deleteGroupPlacement(identicalAfter.id!!)
+            updateGroupPlacementEndDate(identicalBefore.id!!, identicalAfter.endDate)
             identicalBefore.id
         } else if (identicalBefore != null) {
             // merge with preceding placement
-            handle.updateGroupPlacementEndDate(identicalBefore.id!!, endDate)
+            updateGroupPlacementEndDate(identicalBefore.id!!, endDate)
             identicalBefore.id
         } else if (identicalAfter != null) {
             // merge with postceding placement
-            handle.updateGroupPlacementStartDate(identicalAfter.id!!, startDate)
+            updateGroupPlacementStartDate(identicalAfter.id!!, startDate)
             identicalAfter.id
         } else {
             // no merging needed, create new
-            handle.createGroupPlacement(daycarePlacementId, groupId, startDate, endDate).id!!
+            createGroupPlacement(daycarePlacementId, groupId, startDate, endDate).id!!
         }
     } catch (e: Exception) {
         throw mapPSQLException(e)
@@ -126,7 +126,7 @@ fun Database.Transaction.createGroupPlacement(
 }
 
 fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementId: UUID, groupId: UUID, startDate: LocalDate) {
-    val groupPlacement = handle.getDaycareGroupPlacement(groupPlacementId)
+    val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
 
     when {
@@ -139,7 +139,7 @@ fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementI
                 return // no changes requested
             }
 
-            handle.deleteGroupPlacement(groupPlacementId)
+            deleteGroupPlacement(groupPlacementId)
         }
 
         startDate.isAfter(groupPlacement.startDate) -> {
@@ -147,7 +147,7 @@ fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementI
                 throw BadRequest("Cannot transfer to another group after the original placement has already ended.")
             }
 
-            handle.updateGroupPlacementEndDate(groupPlacementId, startDate.minusDays(1))
+            updateGroupPlacementEndDate(groupPlacementId, startDate.minusDays(1))
         }
     }
 
@@ -157,7 +157,7 @@ fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementI
 private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, modifiedId: UUID? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
-    handle.getPlacementsForChildDuring(childId, from, to)
+    getPlacementsForChildDuring(childId, from, to)
         .filter { placement -> if (modifiedId != null) placement.id != modifiedId else true }
         .forEach { old ->
             if (old.endDate.isBefore(from) || old.startDate.isAfter(to)) {
@@ -167,7 +167,7 @@ private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDa
                 // old placement is within new placement (or identical)
                 !old.startDate.isBefore(from) && !old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    val (_, _, _) = handle.cancelPlacement(old.id)
+                    val (_, _, _) = cancelPlacement(old.id)
                 }
 
                 // old placement encloses new placement
@@ -196,15 +196,15 @@ private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDa
 private fun Database.Transaction.movePlacementStartDateLater(placement: Placement, newStartDate: LocalDate) {
     if (newStartDate.isBefore(placement.startDate)) throw IllegalArgumentException("Use this method only for shortening placement")
 
-    handle.clearGroupPlacementsBefore(placement.id, newStartDate)
-    handle.updatePlacementStartDate(placement.id, newStartDate)
+    clearGroupPlacementsBefore(placement.id, newStartDate)
+    updatePlacementStartDate(placement.id, newStartDate)
 }
 
 private fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEndDate: LocalDate) {
     if (newEndDate.isAfter(placement.endDate)) throw IllegalArgumentException("Use this method only for shortening placement")
 
-    handle.clearGroupPlacementsAfter(placement.id, newEndDate)
-    handle.updatePlacementEndDate(placement.id, newEndDate)
+    clearGroupPlacementsAfter(placement.id, newEndDate)
+    updatePlacementEndDate(placement.id, newEndDate)
 }
 
 private fun Database.Transaction.splitPlacementWithGap(
@@ -213,7 +213,7 @@ private fun Database.Transaction.splitPlacementWithGap(
     gapEndInclusive: LocalDate
 ) {
     movePlacementEndDateEarlier(placement, gapStartInclusive.minusDays(1))
-    handle.insertPlacement(
+    insertPlacement(
         type = placement.type,
         childId = placement.childId,
         unitId = placement.unitId,

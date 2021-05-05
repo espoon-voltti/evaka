@@ -1077,7 +1077,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val placementPlan = tx.getPlacementPlan(applicationId)
             assertNotNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_2.id)
+            val placements = tx.getPlacementsForChild(testChild_2.id)
             assertEquals(0, placements.size)
         }
     }
@@ -1176,7 +1176,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            val placements = tx.getPlacementsForChild(testChild_6.id)
             assertEquals(0, placements.size)
         }
     }
@@ -1217,7 +1217,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            val placements = tx.getPlacementsForChild(testChild_6.id)
             assertEquals(1, placements.size)
             with(placements.first()) {
                 assertEquals(mainPeriod.start, startDate)
@@ -1921,7 +1921,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val placementPlan = tx.getPlacementPlan(applicationId)
             assertNull(placementPlan)
 
-            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            val placements = tx.getPlacementsForChild(testChild_6.id)
             assertEquals(2, placements.size)
             with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
                 assertEquals(connectedPeriod.start, startDate)

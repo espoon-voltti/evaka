@@ -360,7 +360,7 @@ fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
 
 fun Database.Read.getChildSensitiveInfo(childId: UUID): ChildSensitiveInformation? {
     val person = getPersonById(childId)
-    val placementTypes = handle.getPlacementsForChild(childId).map { it.type }
+    val placementTypes = getPlacementsForChild(childId).map { it.type }
     val child = getChild(childId)
     val backupPickups = getBackupPickupsForChild(childId)
     val familyContacts = fetchFamilyContacts(childId)

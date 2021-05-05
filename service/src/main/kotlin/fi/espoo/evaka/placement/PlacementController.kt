@@ -173,7 +173,7 @@ class PlacementController(
             .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
-            val (childId, startDate, endDate) = tx.handle.cancelPlacement(placementId)
+            val (childId, startDate, endDate) = tx.cancelPlacement(placementId)
             asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
         }
 
@@ -193,7 +193,7 @@ class PlacementController(
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { tx ->
-            tx.createGroupPlacement(
+            tx.checkAndCreateGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = body.groupId,
                 startDate = body.startDate,
@@ -215,7 +215,7 @@ class PlacementController(
         acl.getRolesForPlacement(user, daycarePlacementId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        val success = db.transaction { it.handle.deleteGroupPlacement(groupPlacementId) }
+        val success = db.transaction { it.deleteGroupPlacement(groupPlacementId) }
         if (!success) throw NotFound("Group placement not found")
         return noContent()
     }

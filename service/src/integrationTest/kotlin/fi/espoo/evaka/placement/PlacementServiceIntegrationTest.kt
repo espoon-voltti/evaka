@@ -64,7 +64,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            oldPlacement = it.handle.insertPlacement(
+            oldPlacement = it.insertPlacement(
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
@@ -100,7 +100,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.containsAll(listOf(oldPlacement, newPlacement)))
@@ -124,7 +124,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(newPlacements, placements)
     }
@@ -147,7 +147,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -173,7 +173,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val originalPlacements = db.read { it.handle.getPlacementsForChild(childId) }
+        val originalPlacements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(2, originalPlacements.size)
         assertTrue(originalPlacements.containsAll(listOf(oldPlacement, newPlacement)))
@@ -181,7 +181,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val newStart = oldPlacement.endDate.minusDays(5)
         db.transaction { it.updatePlacement(newPlacement.id, newStart, newPlacement.endDate) }
 
-        val newPlacements = db.read { it.handle.getPlacementsForChild(childId) }
+        val newPlacements = db.read { it.getPlacementsForChild(childId) }
         val old = newPlacements.find { it.id == oldPlacement.id }!!
         val updated = newPlacements.find { it.id == newPlacement.id }!!
 
@@ -210,7 +210,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -241,7 +241,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(3, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -279,7 +279,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(1, placements.size)
         assertEquals(listOf(newPlacement), placements)
@@ -303,7 +303,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -334,7 +334,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(1, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -358,7 +358,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(1, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -382,7 +382,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -423,7 +423,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }.first()
 
-        val placements = db.read { it.handle.getPlacementsForChild(childId) }
+        val placements = db.read { it.getPlacementsForChild(childId) }
 
         assertEquals(3, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -458,7 +458,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
         db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 19)) }
 
-        val updated = db.read { it.handle.getPlacement(oldPlacement.id) }
+        val updated = db.read { it.getPlacement(oldPlacement.id) }
         val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 19))
         assertEquals(expected, updated)
     }
@@ -615,7 +615,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 21))
         }
 
-        val updated = db.read { it.handle.getPlacement(oldPlacement.id) }
+        val updated = db.read { it.getPlacement(oldPlacement.id) }
         val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 21))
         assertEquals(expected, updated)
     }

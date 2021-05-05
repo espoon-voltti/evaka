@@ -68,7 +68,7 @@ class UnitsView(private val acl: AccessControlList) {
             val groups = it.getDaycareGroups(unitId, from, to)
             val placements = it.getDetailedDaycarePlacements(unitId, null, from, to).toList()
             val backupCares = it.getBackupCaresForDaycare(unitId, period)
-            val missingGroupPlacements = it.handle.getMissingGroupPlacements(unitId)
+            val missingGroupPlacements = it.getMissingGroupPlacements(unitId)
             val caretakers = Caretakers(
                 unitCaretakers = it.getUnitStats(unitId, from, to),
                 groupCaretakers = it.getGroupStats(unitId, from, to)

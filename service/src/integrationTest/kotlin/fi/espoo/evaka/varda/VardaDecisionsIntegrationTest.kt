@@ -726,7 +726,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         val newStart = period.start.minusMonths(1)
         val newEnd = period.end.plusMonths(1)
-        db.transaction { it.handle.updatePlacementStartAndEndDate(placementId, newStart, newEnd) }
+        db.transaction { it.updatePlacementStartAndEndDate(placementId, newStart, newEnd) }
         updateDecisions(db, vardaClient)
 
         val vardaDecisions = mockEndpoint.decisions
@@ -752,7 +752,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         assertEquals(1, placements.size)
 
         db.transaction {
-            it.handle.updatePlacementStartAndEndDate(placementId, period.start.plusMonths(1), period.end.minusMonths(1))
+            it.updatePlacementStartAndEndDate(placementId, period.start.plusMonths(1), period.end.minusMonths(1))
         }
         updateDecisions(db, vardaClient)
         assertEquals(0, getVardaPlacements(db).size)
