@@ -56,7 +56,6 @@ import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -217,7 +216,7 @@ private fun Database.Transaction.handleValueDecisionChanges(
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
     val prices = getPricing(from)
-    val voucherValues = handle.getVoucherValues(from)
+    val voucherValues = getVoucherValues(from)
     val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
@@ -760,7 +759,7 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
     return Pair(updatedActives, filteredDrafts)
 }
 
-private fun Handle.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
+private fun Database.Read.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
     // language=sql
     val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
 

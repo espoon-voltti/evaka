@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -68,7 +67,7 @@ class LocationController {
     @GetMapping("/filters/units")
     fun getUnits(db: Database.Connection, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
-        val units = db.read { it.handle.getUnits(areas, type) }
+        val units = db.read { it.getUnits(areas, type) }
         return ResponseEntity.ok(units)
     }
 }
@@ -103,7 +102,7 @@ data class AreaJSON(
     val shortName: String
 )
 
-fun Handle.getAreas(): List<CareArea> = createQuery(
+fun Database.Read.getAreas(): List<CareArea> = createQuery(
     // language=sql
     """
 SELECT
@@ -148,7 +147,7 @@ enum class UnitTypeFilter {
     ALL, CLUB, DAYCARE, PRESCHOOL
 }
 
-fun Handle.getUnits(areaShortNames: Collection<String>, type: UnitTypeFilter): List<UnitStub> = createQuery(
+fun Database.Read.getUnits(areaShortNames: Collection<String>, type: UnitTypeFilter): List<UnitStub> = createQuery(
     // language=SQL
     """
 SELECT unit.id, unit.name
