@@ -18,7 +18,6 @@ import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevDaycare
