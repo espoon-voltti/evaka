@@ -68,6 +68,7 @@ fi:
       varda:
         basic_auth: ""
         url: http://localhost:8888/mock-integration/varda/api
+        source_system: 31
     varda:
       force:
         sync: true

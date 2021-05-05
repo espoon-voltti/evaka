@@ -75,6 +75,9 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         updateDecisions(db, vardaClient)
 
+        val payload = mockEndpoint.decisions.values.first()
+        assertEquals("SourceSystemVarda", payload.sourceSystem)
+
         val result = getVardaDecisions()
         assertEquals(1, result.size)
         assertEquals(decisionId, result.first().evakaDecisionId)

@@ -63,6 +63,9 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
 
         uploadChildren()
 
+        val payload = mockEndpoint.children.values.first()
+        assertEquals("SourceSystemVarda", payload.sourceSystem)
+
         val uploads = getUploadedChildren(db)
         assertEquals(1, uploads.size)
 

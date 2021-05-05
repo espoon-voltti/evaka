@@ -56,6 +56,7 @@ class VardaClient(
     val getChildUrl = { childId: Long -> "$childUrl$childId/" }
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
+    val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.varda.source_system")
 
     fun createUnit(unit: VardaUnit): VardaUnitResponse? {
         logger.info { "Creating a new unit ${unit.name} to Varda" }

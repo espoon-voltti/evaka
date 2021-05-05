@@ -34,7 +34,7 @@ fun removeMarkedPlacementsFromVarda(db: Database.Connection, client: VardaClient
 }
 
 fun sendNewPlacements(db: Database.Connection, client: VardaClient) {
-    val newPlacements = db.read { getNewPlacements(it, client.getDecisionUrl) }
+    val newPlacements = db.read { getNewPlacements(it, client.getDecisionUrl, client.sourceSystem) }
     logger.info { "Varda: Creating ${newPlacements.size} new placements" }
     newPlacements.forEach { (decisionId, placementId, newPlacement) ->
         client.createPlacement(newPlacement)?.let { (vardaPlacementId) ->
@@ -56,7 +56,7 @@ fun sendNewPlacements(db: Database.Connection, client: VardaClient) {
 }
 
 fun sendUpdatedPlacements(db: Database.Connection, client: VardaClient) {
-    val updatedPlacements = db.read { getUpdatedPlacements(it, client.getDecisionUrl) }
+    val updatedPlacements = db.read { getUpdatedPlacements(it, client.getDecisionUrl, client.sourceSystem) }
     logger.info { "Varda: Updating ${updatedPlacements.size} updated placements" }
     updatedPlacements.forEach { (id, vardaPlacementId, updatedPlacement) ->
         client.updatePlacement(vardaPlacementId, updatedPlacement)?.let {
@@ -115,7 +115,7 @@ JOIN sent_decision d
     AND daterange(p.start_date, p.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     """.trimIndent()
 
-fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String): List<Triple<UUID, UUID, VardaPlacement>> {
+fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String, sourceSystem: String): List<Triple<UUID, UUID, VardaPlacement>> {
     val sql =
         """
 $placementBaseQuery
@@ -125,7 +125,7 @@ WHERE vp.id IS NULL
     return tx.createQuery(sql)
         .bind("decisionTypes", vardaDecisionTypes)
         .bind("placementTypes", vardaPlacementTypes)
-        .map(toVardaPlacementWithDecisionAndPlacementId(getDecisionUrl))
+        .map(toVardaPlacementWithDecisionAndPlacementId(getDecisionUrl, sourceSystem))
         .toList()
 }
 
@@ -161,7 +161,8 @@ INSERT INTO varda_placement (
 
 private fun getUpdatedPlacements(
     tx: Database.Read,
-    getDecisionUrl: (Long) -> String
+    getDecisionUrl: (Long) -> String,
+    sourceSystem: String
 ): List<Triple<UUID, Long, VardaPlacement>> {
     val sql =
         """
@@ -172,7 +173,7 @@ WHERE vp.uploaded_at < GREATEST(p.updated, u.updated)
     return tx.createQuery(sql)
         .bind("decisionTypes", vardaDecisionTypes)
         .bind("placementTypes", vardaPlacementTypes)
-        .map(toVardaPlacementWithIdAndVardaId(getDecisionUrl))
+        .map(toVardaPlacementWithIdAndVardaId(getDecisionUrl, sourceSystem))
         .toList()
 }
 
@@ -216,7 +217,9 @@ data class VardaPlacement(
     @JsonProperty("alkamis_pvm")
     val startDate: LocalDate,
     @JsonProperty("paattymis_pvm")
-    val endDate: LocalDate?
+    val endDate: LocalDate?,
+    @JsonProperty("lahdejarjestelma")
+    val sourceSystem: String
 )
 
 data class VardaPlacementResponse(
@@ -234,35 +237,39 @@ data class VardaPlacementTableRow(
 )
 
 private fun toVardaPlacementWithDecisionAndPlacementId(
-    getDecisionUrl: (Long) -> String
+    getDecisionUrl: (Long) -> String,
+    sourceSystem: String
 ): (ResultSet, StatementContext) -> Triple<UUID, UUID, VardaPlacement> =
     { rs, _ ->
         Triple(
             rs.getUUID("decision_id"),
             rs.getUUID("placement_id"),
-            toVardaPlacement(rs, getDecisionUrl)
+            toVardaPlacement(rs, getDecisionUrl, sourceSystem)
         )
     }
 
 private fun toVardaPlacementWithIdAndVardaId(
-    getDecisionUrl: (Long) -> String
+    getDecisionUrl: (Long) -> String,
+    sourceSystem: String
 ): (ResultSet, StatementContext) -> Triple<UUID, Long, VardaPlacement> =
     { rs, _ ->
         Triple(
             rs.getUUID("id"),
             rs.getLong("varda_placement_id"),
-            toVardaPlacement(rs, getDecisionUrl)
+            toVardaPlacement(rs, getDecisionUrl, sourceSystem)
         )
     }
 
 private fun toVardaPlacement(
     rs: ResultSet,
-    getDecisionUrl: (Long) -> String
+    getDecisionUrl: (Long) -> String,
+    sourceSystem: String
 ): VardaPlacement = VardaPlacement(
     getDecisionUrl(rs.getLong("varda_decision_id")),
     rs.getString("oph_unit_oid"),
     rs.getDate("start_date").toLocalDate(),
-    rs.getDate("end_date")?.toLocalDate()
+    rs.getDate("end_date")?.toLocalDate(),
+    sourceSystem
 )
 
 val toVardaPlacementRow: (ResultSet, StatementContext) -> VardaPlacementTableRow = { rs, _ ->
