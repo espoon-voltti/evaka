@@ -48,7 +48,9 @@ export default React.memo(function AssistanceNeedSubSection({
       )}
 
       <ExpandingInfo
-        info={t.applications.editor.serviceNeed.assistanceNeedInstructions}
+        info={
+          t.applications.editor.serviceNeed.assistanceNeedInstructions[type]
+        }
         ariaLabel={t.common.openExpandingInfo}
       >
         {' '}

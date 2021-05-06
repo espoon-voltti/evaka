@@ -491,8 +491,16 @@ const sv: Translations = {
             CLUB: 'Önskat inledningsdatum'
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
-          instructions:
-            'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta servicehandledningen inom småbarnspedagogik (tfn 09 816 27600)..',
+          instructions: function ServiceNeedInstructionsText() {
+            return (
+              <>
+                Det är möjligt att senarelägga det önskade startdatumet så länge
+                ansökan inte har tagits upp till behandling. Därefter kan du
+                ändra det önskade startdatumet genom att kontakta
+                servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).
+              </>
+            )
+          },
           placeholder: 'Välj inledningsdatum',
           validationText: 'Önskat inledningsdatum: '
         },
@@ -509,7 +517,7 @@ const sv: Translations = {
         urgent: {
           label: 'Ansökningen är brådskande',
           attachmentsMessage: {
-            text: function UrgentApplicatiionAttachmentMessageText() {
+            text: function UrgentApplicationAttachmentMessageText() {
               return (
                 <P fitted={true}>
                   Om behovet av en plats inom småbarnspedagogiken beror på att
@@ -605,8 +613,14 @@ const sv: Translations = {
         assistanceNeeded: 'Barnet har behov av stöd för utveckling och lärande',
         assistanceNeedPlaceholder:
           'Berätta om barnets behov av stöd för utveckling och lärande',
-        assistanceNeedInstructions:
-          'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
+        assistanceNeedInstructions: {
+          DAYCARE:
+            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
+          CLUB:
+            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.',
+          PRESCHOOL:
+            'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.'
+        },
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen.',
         preparatoryInfo:
@@ -862,8 +876,9 @@ const sv: Translations = {
           'Du kan ge noggrannare uppgifter till din ansökan i det här fältet',
         dietLabel: 'Specialdiet',
         dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
-        dietInfo:
-          'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker eller vegetarisk kost (lakto-ovo).',
+        dietInfo: function DietInfoText() {
+          return 'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker eller vegetarisk kost (lakto-ovo).'
+        },
         allergiesLabel: 'Allergier',
         allergiesPlaceholder:
           'Du kan meddela barnets allergier i det här fältet',
