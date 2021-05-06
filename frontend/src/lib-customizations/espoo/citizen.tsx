@@ -17,6 +17,7 @@ const customizations: CitizenCustomizations = {
     src: EspooLogo,
     alt: 'Espoo Logo'
   },
+  routeLinkRootUrl: 'https://reittiopas.hsl.fi/reitti/',
   mapConfig,
   featureFlags
 }

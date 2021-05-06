@@ -20,6 +20,7 @@ import { useLang, useTranslation } from '../localization'
 import { MapAddress } from '../map/MapView'
 import { queryDistance } from '../map/api'
 import { formatDistance } from '../map/distances'
+import { routeLinkRootUrl } from 'lib-customizations/citizen'
 
 type Props = {
   unit: PublicUnit
@@ -75,7 +76,6 @@ export default React.memo(function UnitDetailsPanel({
   const getRouteLink = useCallback(() => {
     if (!unit.location || !selectedAddress) return null
 
-    const root = 'https://reittiopas.hsl.fi/reitti/'
     const start = encodeURIComponent(
       `${selectedAddress.streetAddress}, ${selectedAddress.postOffice}::${selectedAddress.coordinates.lat},${selectedAddress.coordinates.lon}`
     )
@@ -93,7 +93,7 @@ export default React.memo(function UnitDetailsPanel({
     const params = `?arriveBy=true&time=${
       arrival.getTime() / 1000
     }&locale=${lang}`
-    return root + start + '/' + end + params
+    return routeLinkRootUrl + start + '/' + end + params
   }, [selectedAddress, unit, lang])
 
   const routeLink = getRouteLink()
