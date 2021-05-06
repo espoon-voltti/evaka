@@ -64,7 +64,7 @@ class PlacementController(
             childId != null -> acl.getRolesForChild(user, childId)
             else -> throw BadRequest("daycareId or childId is required")
         }
-        roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        roles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         val auth = acl.getAuthorizedDaycares(user)
         val authorizedDaycares = auth.ids ?: emptySet()
 
@@ -90,7 +90,7 @@ class PlacementController(
     ): ResponseEntity<List<PlacementPlanDetails>> {
         Audit.PlacementPlanSearch.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.read { it.getPlacementPlans(daycareId, startDate, endDate) }.let(::ok)
     }
@@ -103,7 +103,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
         acl.getRolesForUnit(user, body.unitId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
@@ -141,7 +141,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.PlacementUpdate.log(targetId = placementId)
         acl.getRolesForPlacement(user, placementId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         val aclAuth = acl.getAuthorizedDaycares(user)
         db.transaction { tx ->
@@ -170,7 +170,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.PlacementCancel.log(targetId = placementId)
         acl.getRolesForPlacement(user, placementId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
             val (childId, startDate, endDate) = tx.cancelPlacement(placementId)

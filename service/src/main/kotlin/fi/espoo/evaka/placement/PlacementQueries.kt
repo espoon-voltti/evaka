@@ -151,13 +151,22 @@ fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, Loca
     createUpdate(
         //language=SQL
         """DELETE FROM daycare_group_placement WHERE daycare_placement_id = :id""".trimIndent()
-    ).bind("id", id)
+    )
+        .bind("id", id)
+        .execute()
+
+    createUpdate(
+        //language=SQL
+        """DELETE FROM new_service_need WHERE placement_id = :id""".trimIndent()
+    )
+        .bind("id", id)
         .execute()
 
     return createUpdate(
         //language=SQL
         """DELETE FROM placement WHERE id = :id RETURNING child_id, start_date, end_date""".trimIndent()
-    ).bind("id", id)
+    )
+        .bind("id", id)
         .executeAndReturnGeneratedKeys()
         .mapTo<QueryResult>()
         .findFirst()

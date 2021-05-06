@@ -11,12 +11,16 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -401,7 +405,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
    result      XZZZZY
     */
     @Test
-    fun `preparatory overlaps with two earlier placements`() {
+    fun `placement overlaps with two earlier placements`() {
         val old2 = db.transaction {
             placementService.createPlacement(
                 it,
@@ -464,7 +468,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updating placement endDate to be earlier cuts group placements`() {
+    fun `updating placement endDate to be earlier cuts group placements and service needs`() {
         val oldPlacement = db.transaction {
             placementService.createPlacement(
                 it,
@@ -483,23 +487,37 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 startDate = oldPlacement.startDate,
                 endDate = oldPlacement.endDate
             )
+            it.insertTestNewServiceNeed(
+                confirmedBy = testDecisionMaker_1.id,
+                placementId = oldPlacement.id,
+                period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
+                optionId = snDefaultDaycare.id
+            )
         }
 
         db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 15)) }
 
-        val endDates = db.read {
+        val groupPlacementEndDates = db.read {
             it.createQuery("SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
                 .bind("id", groupId)
                 .mapTo<LocalDate>()
                 .list()
         }
+        assertEquals(1, groupPlacementEndDates.size)
+        assertEquals(LocalDate.of(year, month, 15), groupPlacementEndDates.first())
 
-        assertEquals(1, endDates.size)
-        assertEquals(LocalDate.of(year, month, 15), endDates.first())
+        val serviceNeedEndDates = db.read {
+            it.createQuery("SELECT end_date FROM new_service_need WHERE placement_id = :id")
+                .bind("id", oldPlacement.id)
+                .mapTo<LocalDate>()
+                .list()
+        }
+        assertEquals(1, serviceNeedEndDates.size)
+        assertEquals(LocalDate.of(year, month, 15), serviceNeedEndDates.first())
     }
 
     @Test
-    fun `changing placement type by creating new placement preserves group placement history`() {
+    fun `changing placement type by creating new placement ends the group placements and service needs also`() {
         val oldPlacement = db.transaction {
             placementService.createPlacement(
                 it,
@@ -517,6 +535,12 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 daycarePlacementId = oldPlacement.id,
                 startDate = oldPlacement.startDate,
                 endDate = oldPlacement.endDate
+            )
+            it.insertTestNewServiceNeed(
+                confirmedBy = testDecisionMaker_1.id,
+                placementId = oldPlacement.id,
+                period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
+                optionId = snDefaultDaycare.id
             )
         }
 
@@ -546,56 +570,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         assertEquals(1, groupPlacements.size)
         assertEquals(LocalDate.of(year, month, 1), groupPlacements.first().startDate)
         assertEquals(LocalDate.of(year, month, 14), groupPlacements.first().endDate)
-    }
 
-    @Test
-    fun `changing placement type to preparatory by creating new placement preserves group placement history`() {
-        val oldPlacement = db.transaction {
-            placementService.createPlacement(
-                it,
-                PlacementType.PRESCHOOL,
-                childId,
-                unitId,
-                LocalDate.of(year, month, 1),
-                LocalDate.of(year, month, 30)
-            )
-        }.first()
-        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
-        db.transaction {
-            it.insertTestDaycareGroupPlacement(
-                groupId = groupId,
-                daycarePlacementId = oldPlacement.id,
-                startDate = oldPlacement.startDate,
-                endDate = oldPlacement.endDate
-            )
-        }
-
-        db.transaction {
-            placementService.createPlacement(
-                it,
-                PlacementType.PREPARATORY,
-                childId,
-                unitId,
-                LocalDate.of(year, month, 15),
-                LocalDate.of(year, month, 30)
-            )
-        }
-
-        data class QueryResult(
-            val startDate: LocalDate,
-            val endDate: LocalDate
-        )
-
-        val groupPlacements = db.read {
-            it.createQuery("SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
-                .bind("id", groupId)
+        val serviceNeeds = db.read {
+            it.createQuery("SELECT start_date, end_date FROM new_service_need WHERE placement_id = :id")
+                .bind("id", oldPlacement.id)
                 .mapTo<QueryResult>()
                 .list()
         }
 
-        assertEquals(1, groupPlacements.size)
-        assertEquals(LocalDate.of(year, month, 1), groupPlacements.first().startDate)
-        assertEquals(LocalDate.of(year, month, 14), groupPlacements.first().endDate)
+        assertEquals(1, serviceNeeds.size)
+        assertEquals(LocalDate.of(year, month, 1), serviceNeeds.first().startDate)
+        assertEquals(LocalDate.of(year, month, 14), serviceNeeds.first().endDate)
     }
 
     @Test
