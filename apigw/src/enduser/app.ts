@@ -2,28 +2,31 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { Router } from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
+import express, { Router } from 'express'
+import helmet from 'helmet'
+import nocache from 'nocache'
 import passport from 'passport'
-import publicRoutes from './publicRoutes'
-import routes from './routes'
-import {
-  createSuomiFiAuthEndpoints,
-  createKeycloakAuthEndpoints
-} from '../shared/routes/auth/suomi-fi'
-import { errorHandler } from '../shared/middleware/error-handler'
 import { requireAuthentication } from '../shared/auth'
-import session, { refreshLogoutToken } from '../shared/session'
+import createEvakaCustomerSamlStrategy from '../shared/auth/customer-saml'
+import createSuomiFiStrategy from '../shared/auth/suomi-fi-saml'
+import { nodeEnv } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
-import { trustReverseProxy } from '../shared/reverse-proxy'
-import nocache from 'nocache'
-import helmet from 'helmet'
+import { errorHandler } from '../shared/middleware/error-handler'
 import tracing from '../shared/middleware/tracing'
+import { createRedisClient } from '../shared/redis-client'
+import { trustReverseProxy } from '../shared/reverse-proxy'
+import createSamlRouter from '../shared/routes/auth/saml'
+import session, { refreshLogoutToken } from '../shared/session'
+import publicRoutes from './publicRoutes'
+import routes from './routes'
 import authStatus from './routes/auth-status'
 
 const app = express()
+// TODO: How to make this more easily injectable/overridable in tests?
+const redisClient = nodeEnv !== 'test' ? createRedisClient() : undefined
 trustReverseProxy(app)
 app.set('etag', false)
 app.use(nocache())
@@ -37,7 +40,7 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
 app.use(bodyParser.json())
 app.use(cookieParser())
-app.use(session('enduser'))
+app.use(session('enduser', redisClient))
 app.use(passport.initialize())
 app.use(passport.session())
 passport.serializeUser<Express.User>((user, done) => done(null, user))
@@ -49,9 +52,22 @@ function apiRouter() {
   const router = Router()
 
   router.use(publicRoutes)
-  router.use(createSuomiFiAuthEndpoints('enduser'))
-  router.use(createKeycloakAuthEndpoints('enduser'))
-
+  router.use(
+    createSamlRouter({
+      strategyName: 'suomifi',
+      strategy: createSuomiFiStrategy(redisClient),
+      sessionType: 'enduser',
+      pathIdentifier: 'saml'
+    })
+  )
+  router.use(
+    createSamlRouter({
+      strategyName: 'evaka-customer',
+      strategy: createEvakaCustomerSamlStrategy(redisClient),
+      sessionType: 'enduser',
+      pathIdentifier: 'evaka-customer'
+    })
+  )
   router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
   router.use(requireAuthentication)
   router.use(csrf)

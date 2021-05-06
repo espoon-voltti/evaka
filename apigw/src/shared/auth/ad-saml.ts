@@ -14,6 +14,8 @@ import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { upsertEmployee } from '../dev-api'
 import { getOrCreateEmployee, UserRole } from '../service-client'
+import { RedisClient } from 'redis'
+import redisCacheProvider from './passport-saml-cache-redis'
 
 const AD_USER_ID_KEY =
   'http://schemas.microsoft.com/identity/claims/objectidentifier'
@@ -61,7 +63,9 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
   }
 }
 
-export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
+export default function createAdStrategy(
+  redisClient?: RedisClient
+): SamlStrategy | DevPassportStrategy {
   if (devLoginEnabled) {
     const getter = async (userId: string) =>
       verifyProfile({
@@ -103,6 +107,11 @@ export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
       {
         acceptedClockSkewMs: 0,
         audience: adConfig.issuer,
+        cacheProvider: redisClient
+          ? redisCacheProvider(redisClient, {
+              keyPrefix: 'ad-saml-resp:'
+            })
+          : undefined,
         callbackUrl: adConfig.callbackUrl,
         cert: adConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
@@ -113,7 +122,8 @@ export default function createAdStrategy(): SamlStrategy | DevPassportStrategy {
         issuer: adConfig.issuer,
         logoutUrl: adConfig.logoutUrl,
         privateCert: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
-        signatureAlgorithm: 'sha256'
+        signatureAlgorithm: 'sha256',
+        validateInResponseTo: true
       },
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

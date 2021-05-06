@@ -935,17 +935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport-saml@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@types/passport-saml@npm:1.1.2"
-  dependencies:
-    "@types/express": "*"
-    "@types/passport": "*"
-  checksum: ef7897f4c31b3fbd2fc40eff8451849f91d9ad4d55359743a5222d3cb27a208f1dc622e7cf4dd9cf3685adf1024d0b0efc4b76dc8d6bb4117e1d54a0ba121a32
-  languageName: node
-  linkType: hard
-
-"@types/passport@npm:*, @types/passport@npm:^1.0.4":
+"@types/passport@npm:^1.0.4":
   version: 1.0.5
   resolution: "@types/passport@npm:1.0.5"
   dependencies:
@@ -1010,6 +1000,15 @@ __metadata:
   version: 1.2.3
   resolution: "@types/range-parser@npm:1.2.3"
   checksum: 092fabae0ecbd728d3e4debc938cd043e97cb9f210cfec1c56ff6065c6e91666f376eb586591825d6757a058fd1a1dc4831d34e04ecfbb0800f35b8d86d38635
+  languageName: node
+  linkType: hard
+
+"@types/redis-mock@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "@types/redis-mock@npm:0.17.0"
+  dependencies:
+    "@types/redis": "*"
+  checksum: 91ae1597c1ea6622d72338841b8e69be02142ddc22ca0c844a2bf4c13e7dfda2064b83db42dbe6c8a75f87a5461097dd74c7b47528d6d8fce9b50a8c515087f5
   languageName: node
   linkType: hard
 
@@ -2853,12 +2852,12 @@ __metadata:
     "@types/node": ^14.14.6
     "@types/node-forge": ^0.9.5
     "@types/passport": ^1.0.4
-    "@types/passport-saml": ^1.1.2
     "@types/pino": ^6.3.3
     "@types/pino-http": ^5.0.5
     "@types/pino-std-serializers": ^2.4.1
     "@types/pump": ^1.1.0
     "@types/redis": ^2.8.28
+    "@types/redis-mock": ^0.17.0
     "@types/source-map-support": ^0.5.3
     "@types/split2": ^2.1.6
     "@types/through2": ^2.0.34
@@ -2900,6 +2899,7 @@ __metadata:
     pump: ^3.0.0
     query-string: ^6.13.6
     redis: ^3.1.2
+    redis-mock: ^0.56.3
     source-map-support: ^0.5.16
     split2: ^3.2.2
     through2: ^4.0.2
@@ -6347,6 +6347,13 @@ __metadata:
   version: 1.2.0
   resolution: "redis-errors@npm:1.2.0"
   checksum: b260bb64a1c8523d32a56701681ac3e5cc6bb0a4eb09f1d30729ebba397021d274216ff189909c08fe3c6b706ec8b74948e20ea410b6f69d31b35bda3fb82a59
+  languageName: node
+  linkType: hard
+
+"redis-mock@npm:^0.56.3":
+  version: 0.56.3
+  resolution: "redis-mock@npm:0.56.3"
+  checksum: 5ab0cc0738f517b0d3db3e4279fae4f545b3f089c2b770c6c132a044249392150cc3773bb725e3906fd150eeec116cb57e3096521495a3794a665f35356a37b7
   languageName: node
   linkType: hard
 
