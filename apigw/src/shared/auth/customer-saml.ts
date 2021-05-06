@@ -35,7 +35,9 @@ function createKeycloakSamlStrategy(
     {
       acceptedClockSkewMs: -1,
       cacheProvider: redisClient
-        ? redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+        ? redisCacheProvider(redisClient, {
+            keyPrefix: 'customer-saml-resp:'
+          })
         : undefined,
       callbackUrl: samlConfig.callbackUrl,
       cert: publicCert,
