@@ -27,19 +27,20 @@ class MessageQueriesTest : PureJdbiTest() {
 
     private val person1Id: UUID = UUID.randomUUID()
     private val person2Id: UUID = UUID.randomUUID()
-    private val employeeId: UUID = UUID.randomUUID()
+    private val employee1Id: UUID = UUID.randomUUID()
+    private val employee2Id: UUID = UUID.randomUUID()
 
     @BeforeEach
     internal fun setUp() {
         db.transaction {
             it.insertTestPerson(DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person"))
-            it.execute("INSERT INTO message_account (person_id) VALUES ('$person1Id')")
 
             it.insertTestPerson(DevPerson(id = person2Id, firstName = "Firstname", lastName = "Person Two"))
-            it.execute("INSERT INTO message_account (person_id) VALUES ('$person2Id')")
+            it.execute("INSERT INTO message_account (person_id) VALUES ('$person1Id'), ('$person2Id')")
 
-            it.insertTestEmployee(DevEmployee(id = employeeId, firstName = "Firstname", lastName = "Employee"))
-            it.execute("INSERT INTO message_account (employee_id) VALUES ('$employeeId')")
+            it.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
+            it.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
+            it.execute("INSERT INTO message_account (employee_id) VALUES ('$employee1Id'), ('$employee2Id')")
         }
     }
 
@@ -52,7 +53,7 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `a thread can be created`() {
         val (employeeAccount, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employeeId, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
                 it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
                 it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
             )
@@ -82,28 +83,32 @@ class MessageQueriesTest : PureJdbiTest() {
 
     @Test
     fun `messages received by account are grouped properly`() {
-        val (employeeAccount, person1Account, person2Account) = db.read {
+        val (employee1Account, employee2Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employeeId, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee2Id, roles = setOf())).first(),
                 it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
                 it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
             )
         }
 
         val thread1Id = db.transaction {
-            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employeeAccount, listOf(person1Account.id, person2Account.id))
+            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employee1Account, listOf(person1Account.id, person2Account.id))
         }
         val thread2Id = db.transaction {
-            it.createMessageThread("Newest thread", "Content 2", MessageType.MESSAGE, employeeAccount, listOf(person1Account.id))
+            it.createMessageThread("Newest thread", "Content 2", MessageType.MESSAGE, employee1Account, listOf(person1Account.id))
+        }
+        db.transaction {
+            it.createMessageThread("Lone thread", "Alone", MessageType.MESSAGE, employee2Account, listOf(employee2Account.id))
         }
 
         // employee is not a recipient in any threads
-        assertEquals(0, db.read { it.getMessagesReceivedByAccount(employeeAccount.id, 10, 1) }.data.size)
+        assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }.data.size)
 
-        db.transaction { it.replyToThread(thread2Id, "Just replying here", person1Account, listOf(employeeAccount.id)) }
+        db.transaction { it.replyToThread(thread2Id, "Just replying here", person1Account, listOf(employee1Account.id)) }
 
         // employee is now recipient in a reply to thread two
-        val employeeResult = db.read { it.getMessagesReceivedByAccount(employeeAccount.id, 10, 1) }
+        val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
         assertEquals(2, employeeResult.data[0].messages.size)
@@ -116,7 +121,7 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(thread2Id, newestThread.id)
         assertEquals("Newest thread", newestThread.title)
         assertEquals(
-            listOf(Pair(employeeAccount.id, "Content 2"), Pair(person1Account.id, "Just replying here")),
+            listOf(Pair(employee1Account.id, "Content 2"), Pair(person1Account.id, "Just replying here")),
             newestThread.messages.map { Pair(it.senderId, it.content) }
         )
         assertEquals(employeeResult.data[0], newestThread)
@@ -128,5 +133,12 @@ class MessageQueriesTest : PureJdbiTest() {
         val person2Result = db.read { it.getMessagesReceivedByAccount(person2Account.id, 10, 1) }
         assertEquals(1, person2Result.data.size)
         assertEquals(oldestThread, person2Result.data[0])
+
+        // employee 2 is participating with himself
+        val employee2Result = db.read { it.getMessagesReceivedByAccount(employee2Account.id, 10, 1) }
+        assertEquals(1, employee2Result.data.size)
+        assertEquals(1, employee2Result.data[0].messages.size)
+        assertEquals(employee2Account.id, employee2Result.data[0].messages[0].senderId)
+        assertEquals("Alone", employee2Result.data[0].messages[0].content)
     }
 }
