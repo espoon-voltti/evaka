@@ -8,7 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
-import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import org.springframework.core.io.ClassPathResource
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -54,19 +53,18 @@ class MockPersonDetailsService : IPersonDetailsService {
     }
 
     override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): PersonDetails {
-        return getMockPerson(query.targetIdentifier.ssn, IVtjClientService.RequestType.HUOLTAJA_HUOLLETTAVA)
+        return getMockPerson(query.targetIdentifier.ssn)
     }
 
     override fun getPersonWithGuardians(query: IPersonDetailsService.DetailsQuery): PersonDetails {
-        return getMockPerson(query.targetIdentifier.ssn, IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT)
+        return getMockPerson(query.targetIdentifier.ssn)
     }
 
     override fun getBasicDetailsFor(query: IPersonDetailsService.DetailsQuery): PersonDetails {
-        return getMockPerson(query.targetIdentifier.ssn, IVtjClientService.RequestType.PERUSSANOMA3)
+        return getMockPerson(query.targetIdentifier.ssn)
     }
 
-    private fun getMockPerson(ssn: String, requestType: IVtjClientService.RequestType): PersonDetails {
-        println("MockPersonDetailsService: $ssn-$requestType requested")
+    private fun getMockPerson(ssn: String): PersonDetails {
         return when (val result = allPersons[ssn]) {
             null -> PersonDetails.PersonNotFound()
             else -> PersonDetails.Result(result)
