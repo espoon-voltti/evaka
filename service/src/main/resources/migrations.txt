@@ -73,3 +73,4 @@ V72__staff_attendance_other.sql
 V73__deferrable_service_need_overlap.sql
 V74__service_need_confirmed_by.sql
 V75__messages.sql
+V76__messages_v2.sql

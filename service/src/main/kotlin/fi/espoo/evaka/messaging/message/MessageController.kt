@@ -39,7 +39,8 @@ class MessageController {
     ): Paged<MessageThread> {
         if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
-        return db.read { it.getMessagesByAccount(accountId, pageSize, page) }
+        // TODO implement
+        return Paged(listOf(), 0, 1)
     }
 
     @GetMapping("/unread")

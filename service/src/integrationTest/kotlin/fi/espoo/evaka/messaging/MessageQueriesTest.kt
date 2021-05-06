@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
-import fi.espoo.evaka.messaging.message.getMessagesByAccount
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -48,7 +47,7 @@ class MessageQueriesTest : PureJdbiTest() {
     }
 
     @Test
-    fun `a thread can be created, it can be accessed by all participating accounts`() {
+    fun `a thread can be created`() {
         val (employeeAccount) = db.transaction { it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employeeId, roles = setOf())) }
 
         val personAccountId = getMessageAccountId(personId = personId)
@@ -56,20 +55,22 @@ class MessageQueriesTest : PureJdbiTest() {
 
         db.transaction { it.createMessageThread(title = "Hello", content = "Content", type = MessageType.MESSAGE, sender = employeeAccount, recipientAccountIds = listOf(personAccountId, person2AccountId)) }
 
-        val result = db.read { it.getMessagesByAccount(accountId = employeeAccount.id, pageSize = 10, page = 1) }
-
-        assertEquals(1, result.total)
-        assertEquals(1, result.data.size)
-        val thread = result.data[0]
-
-        assertEquals(1, thread.messages.size)
-        assertEquals(employeeAccount.id, thread.messages[0].senderId)
-        assertEquals("Employee Firstname", thread.messages[0].senderName)
-        assertEquals("Content", thread.messages[0].content)
-        assertEquals("Hello", thread.messages[0].title)
-
-        val resultEmployee = db.read { it.getMessagesByAccount(accountId = personAccountId, pageSize = 10, page = 1) }
-        assertEquals(resultEmployee, result, "Employee and person results did not match")
+        assertEquals(
+            setOf(personAccountId, person2AccountId),
+            db.read { it.createQuery("SELECT recipient_id FROM message_recipients").mapTo<UUID>().toSet() }
+        )
+        assertEquals(
+            "Content",
+            db.read { it.createQuery("SELECT content FROM message_content").mapTo<String>().one() }
+        )
+        assertEquals(
+            "Hello",
+            db.read { it.createQuery("SELECT title FROM message_thread").mapTo<String>().one() }
+        )
+        assertEquals(
+            "Employee Firstname",
+            db.read { it.createQuery("SELECT sender_name FROM message").mapTo<String>().one() }
+        )
     }
 
     private fun getMessageAccountId(personId: UUID? = null, employeeId: UUID? = null): UUID {
