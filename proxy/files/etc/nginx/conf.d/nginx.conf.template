@@ -266,7 +266,11 @@ server {
     proxy_pass  $internalUrl/api/csp/csp-report;
   }
 
-  <% if ENV.key?("KEYCLOAK_URL") && ENV["KEYCLOAK_URL"] != "" %>
+  <% if ENV.key?("KEYCLOAK_CONFIGURATION") && ENV["KEYCLOAK_CONFIGURATION"] != "" %>
+  <%= ENV["KEYCLOAK_CONFIGURATION"] %>
+  <% elsif ENV.key?("KEYCLOAK_URL") && ENV["KEYCLOAK_URL"] != "" %>
+  # KeyCloak configuration with separate environment variables.
+  # Used as backwards combability and can be removed in future.
   set $authUrl "<%= ENV["KEYCLOAK_URL"] %>";
   set $formActionUrl "<%= ENV["FORM_ACTION_URL"] %>";
 
