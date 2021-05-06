@@ -19,12 +19,14 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { Result } from '../../../lib-common/api'
 import { AlertBox } from '../../../lib-components/molecules/MessageBoxes'
+import { Prompt } from 'react-router-dom'
 
 export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
   const [pin, setPin] = useState<string>('')
   const [error, setError] = useState<boolean>(false)
   const [pinLocked, setPinLocked] = useState<Result<boolean>>()
+  const [dirty, setDirty] = useState<boolean>(false)
 
   useEffect(() => {
     void isPinCodeLocked().then(setPinLocked)
@@ -54,10 +56,14 @@ export default React.memo(function EmployeePinCodePage() {
       setError(false)
     }
     setPin(pin)
+    setDirty(pin.length > 0)
   }
 
   function savePinCode() {
-    return updatePinCode(pin).then(isPinCodeLocked).then(setPinLocked)
+    return updatePinCode(pin)
+      .then(() => setDirty(false))
+      .then(isPinCodeLocked)
+      .then(setPinLocked)
   }
 
   function getInputInfo(): InputInfo | undefined {
@@ -74,8 +80,27 @@ export default React.memo(function EmployeePinCodePage() {
       : undefined
   }
 
+  const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+    if (dirty) {
+      // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
+      e.preventDefault()
+      e.returnValue = i18n.pinCode.unsavedDataWarning
+      return i18n.pinCode.unsavedDataWarning
+    }
+    return
+  }
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', beforeUnloadHandler)
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnloadHandler)
+    }
+  }, [beforeUnloadHandler])
+
   return (
     <Container>
+      <Prompt when={dirty} message={i18n.pinCode.unsavedDataWarning} />
+
       <Gap size={'L'} />
       <ContentArea opaque>
         <Title>{i18n.pinCode.title}</Title>
