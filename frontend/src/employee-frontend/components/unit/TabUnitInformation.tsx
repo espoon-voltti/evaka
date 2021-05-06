@@ -6,7 +6,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import { sortBy } from 'lodash'
 import React, { useContext, useMemo } from 'react'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -34,8 +33,12 @@ function TabUnitInformation() {
   const groups = useMemo(
     () =>
       unitInformation.isSuccess
-        ? sortBy(unitInformation.value.groups, (x) => x.name)
-        : [],
+        ? Object.fromEntries(
+            unitInformation.value.groups.map(
+              (group) => [group.id, group] as const
+            )
+          )
+        : {},
     [unitInformation]
   )
 

@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { sortBy } from 'lodash'
 import React, {
   Fragment,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -12,13 +14,12 @@ import React, {
 import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
-
 import { ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Table, Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
@@ -56,10 +57,11 @@ import InputField from 'lib-components/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '../../../constants'
 import { AdRole } from '../../../types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 
 type Props = {
   unitId: string
-  groups: DaycareGroupSummary[]
+  groups: Record<UUID, DaycareGroupSummary>
 }
 
 interface FormattedRow {
@@ -75,6 +77,93 @@ const Flex = styled.div`
   justify-content: center;
 `
 
+const RowButtons = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  & > * {
+    margin-left: 10px;
+  }
+`
+
+function GroupListing({
+  unitGroups,
+  groupIds
+}: {
+  unitGroups: Record<UUID, DaycareGroupSummary>
+  groupIds: UUID[]
+}) {
+  const { i18n } = useTranslation()
+  const [expanded, setExpanded] = useState(false)
+  const sortedIds = useMemo(
+    () => sortBy(groupIds, (id) => unitGroups[id]?.name),
+    [unitGroups, groupIds]
+  )
+  const shownIds = expanded ? sortedIds : sortedIds.slice(0, 3)
+  const hiddenCount = sortedIds.length - shownIds.length
+  return (
+    <div>
+      {shownIds.map((id) => (
+        <div key={id}>{unitGroups[id]?.name}</div>
+      ))}
+      {hiddenCount > 0 && (
+        <InlineButton
+          onClick={() => setExpanded(true)}
+          text={`+${hiddenCount} ${i18n.common.expandableList.others}`}
+        />
+      )}
+    </div>
+  )
+}
+
+function AclRowEditor({
+  row,
+  onSave,
+  onCancel,
+  unitGroups
+}: {
+  row: FormattedRow
+  onSave: (groupIds: UUID[]) => void
+  onCancel: () => void
+  unitGroups: Record<UUID, DaycareGroupSummary>
+}) {
+  const { i18n } = useTranslation()
+  const options = useMemo(
+    () => sortBy(Object.values(unitGroups), ({ name }) => name),
+    [unitGroups]
+  )
+  const [groups, setGroups] = useState<DaycareGroupSummary[]>(
+    options.filter(({ id }) => row.groupIds.includes(id))
+  )
+
+  return (
+    <Tr data-qa="acl-row">
+      <Td data-qa="name">{row.name}</Td>
+      <Td data-qa="email">{row.email}</Td>
+      <GroupMultiSelectTd>
+        <MultiSelect
+          data-qa="groups"
+          value={groups}
+          options={options}
+          getOptionId={(x) => x.id}
+          getOptionLabel={(x) => x.name}
+          onChange={(values) => setGroups(values)}
+          placeholder={`${i18n.common.select}...`}
+        />
+      </GroupMultiSelectTd>
+      <Td>
+        <RowButtons>
+          <InlineButton onClick={onCancel} text={i18n.common.cancel} />
+          <InlineButton
+            onClick={() => onSave(groups.map(({ id }) => id))}
+            text={i18n.common.save}
+          />
+        </RowButtons>
+      </Td>
+    </Tr>
+  )
+}
+
 function AclRow({
   row,
   isDeletable,
@@ -86,49 +175,59 @@ function AclRow({
   row: FormattedRow
   isDeletable: boolean
   onClickDelete: () => void
-  onChangeGroups: (ids: UUID[]) => Promise<Result<void>>
+  onChangeGroups: (ids: UUID[]) => void
   rolesAllowedToEdit?: AdRole[]
-  unitGroups: DaycareGroupSummary[] | undefined
+  unitGroups: Record<UUID, DaycareGroupSummary> | undefined
 }) {
-  const [saved, setSaved] = useState(true)
-  const saveGroups = useRestApi(onChangeGroups, (result) => {
-    setSaved(!result.isLoading)
-  })
+  const isEditable = !!unitGroups
+  const [editing, setEditing] = useState(false)
+
+  const onClickEdit = useCallback(() => setEditing(true), [setEditing])
+  const onCancelEditing = useCallback(() => setEditing(false), [setEditing])
+  const onSave = useCallback(
+    (groupIds) => {
+      setEditing(false)
+      onChangeGroups(groupIds)
+    },
+    [setEditing, onChangeGroups]
+  )
+
+  if (editing) {
+    return (
+      <AclRowEditor
+        row={row}
+        unitGroups={unitGroups ?? {}}
+        onCancel={onCancelEditing}
+        onSave={onSave}
+      />
+    )
+  }
+
+  const buttons = (
+    <RowButtons>
+      {isEditable && (
+        <IconButton icon={faPen} onClick={onClickEdit} data-qa="edit" />
+      )}
+      {isDeletable && (
+        <IconButton icon={faTrash} onClick={onClickDelete} data-qa="delete" />
+      )}
+    </RowButtons>
+  )
 
   return (
-    <Tr data-qa="acl-row" data-saved={saved ? true : undefined}>
+    <Tr data-qa="acl-row">
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
       {unitGroups && (
-        <GroupMultiSelectTd>
-          <GroupMultiSelect
-            unitGroups={unitGroups}
-            value={row.groupIds}
-            onChange={saveGroups}
-          />
-        </GroupMultiSelectTd>
+        <Td>
+          <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
+        </Td>
       )}
       <Td>
         {rolesAllowedToEdit ? (
-          <RequireRole oneOf={rolesAllowedToEdit}>
-            {isDeletable && (
-              <IconButton
-                icon={faTrash}
-                onClick={onClickDelete}
-                data-qa="delete"
-              />
-            )}
-          </RequireRole>
+          <RequireRole oneOf={rolesAllowedToEdit}>{buttons}</RequireRole>
         ) : (
-          <>
-            {isDeletable && (
-              <IconButton
-                icon={faTrash}
-                onClick={onClickDelete}
-                data-qa="delete"
-              />
-            )}
-          </>
+          buttons
         )}
       </Td>
     </Tr>
@@ -139,36 +238,6 @@ const GroupMultiSelectTd = styled(Td)`
   padding: 0;
   vertical-align: middle;
 `
-
-function GroupMultiSelect({
-  unitGroups,
-  value: initialValue,
-  onChange
-}: {
-  unitGroups: DaycareGroupSummary[]
-  value: UUID[]
-  onChange: (groupIds: UUID[]) => void
-}) {
-  const { i18n } = useTranslation()
-  const [value, setValue] = useState(
-    unitGroups.filter(({ id }) => initialValue.includes(id))
-  )
-
-  return (
-    <MultiSelect
-      data-qa="groups"
-      value={value}
-      options={unitGroups}
-      getOptionId={(x) => x.id}
-      getOptionLabel={(x) => x.name}
-      onChange={(values) => {
-        setValue(values)
-        onChange(values.map(({ id }) => id))
-      }}
-      placeholder={`${i18n.common.select}...`}
-    />
-  )
-}
 
 const AddAclTitleContainer = styled.div`
   display: flex;
@@ -194,6 +263,10 @@ const AddAclSelectContainer = styled.div`
   }
 `
 
+const GroupsTh = styled(Td)`
+  width: 40%;
+`
+
 function AclTable({
   unitGroups,
   rows,
@@ -201,13 +274,10 @@ function AclTable({
   onChangeAclGroups,
   rolesAllowedToEdit
 }: {
-  unitGroups?: DaycareGroupSummary[]
+  unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
-  onChangeAclGroups?: (
-    employeeId: UUID,
-    groupIds: UUID[]
-  ) => Promise<Result<void>>
+  onChangeAclGroups?: (employeeId: UUID, groupIds: UUID[]) => void
   rolesAllowedToEdit?: AdRole[]
 }) {
   const { i18n } = useTranslation()
@@ -219,7 +289,7 @@ function AclTable({
         <Tr>
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.email}</Th>
-          {unitGroups && <Th>{i18n.unit.accessControl.groups}</Th>}
+          {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
           <Th />
         </Tr>
       </Thead>
@@ -234,7 +304,7 @@ function AclTable({
             onChangeGroups={
               onChangeAclGroups
                 ? (ids) => onChangeAclGroups(row.id, ids)
-                : () => Promise.resolve(Success.of(undefined))
+                : () => undefined
             }
             rolesAllowedToEdit={rolesAllowedToEdit}
           />
@@ -498,8 +568,11 @@ function UnitAccessControl({ unitId, groups }: Props) {
       reloadDaycareAclRows(unitId)
     )
 
-  const updateStaffGroupAcls = (employeeId: UUID, groupIds: UUID[]) =>
-    updateDaycareGroupAcl(unitId, employeeId, groupIds)
+  const updateStaffGroupAcls = (employeeId: UUID, groupIds: UUID[]) => {
+    void updateDaycareGroupAcl(unitId, employeeId, groupIds).then(() =>
+      reloadDaycareAclRows(unitId)
+    )
+  }
 
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
     undefined
