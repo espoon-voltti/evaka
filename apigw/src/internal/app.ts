@@ -2,43 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
-import { Router } from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import redis from 'redis'
-import setupLoggingMiddleware, { logError } from '../shared/logging'
-import {
-  cookieSecret,
-  enableDevApi,
-  nodeEnv,
-  redisDisableSecurity,
-  redisHost,
-  redisPassword,
-  redisPort,
-  redisTlsServerName
-} from '../shared/config'
-import { errorHandler } from '../shared/middleware/error-handler'
-import csp from '../shared/routes/csp'
-import { requireAuthentication } from '../shared/auth'
-import session, { refreshLogoutToken } from '../shared/session'
-import passport from 'passport'
-import { csrf, csrfCookie } from '../shared/middleware/csrf'
-import { trustReverseProxy } from '../shared/reverse-proxy'
-import { createProxy } from '../shared/proxy-utils'
-import nocache from 'nocache'
+import express, { Router } from 'express'
 import helmet from 'helmet'
-import tracing from '../shared/middleware/tracing'
-import mobileDeviceSession, {
-  refreshMobileSession,
-  devApiE2ESignup
-} from './mobile-device-session'
-import authStatus from './routes/auth-status'
-import createSamlRouter from '../shared/routes/auth/saml'
+import nocache from 'nocache'
+import passport from 'passport'
+import { requireAuthentication } from '../shared/auth'
 import createAdSamlStrategy from '../shared/auth/ad-saml'
 import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
+import { cookieSecret, enableDevApi, nodeEnv } from '../shared/config'
+import setupLoggingMiddleware from '../shared/logging'
+import { csrf, csrfCookie } from '../shared/middleware/csrf'
+import { errorHandler } from '../shared/middleware/error-handler'
+import tracing from '../shared/middleware/tracing'
+import { createProxy } from '../shared/proxy-utils'
+import { createRedisClient } from '../shared/redis-client'
+import { trustReverseProxy } from '../shared/reverse-proxy'
+import createSamlRouter from '../shared/routes/auth/saml'
+import csp from '../shared/routes/csp'
+import session, { refreshLogoutToken } from '../shared/session'
+import mobileDeviceSession, {
+  devApiE2ESignup,
+  refreshMobileSession
+} from './mobile-device-session'
+import authStatus from './routes/auth-status'
 
 const app = express()
+// TODO: How to make this more easily injectable/overridable in tests?
+const redisClient = nodeEnv !== 'test' ? createRedisClient() : undefined
 trustReverseProxy(app)
 app.set('etag', false)
 app.use(nocache())
@@ -51,7 +43,7 @@ app.use(
 app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
 app.use(bodyParser.json({ limit: '8mb' }))
-app.use(session('employee'))
+app.use(session('employee', redisClient))
 app.use(cookieParser(cookieSecret))
 app.use(passport.initialize())
 app.use(passport.session())
@@ -69,27 +61,6 @@ function scheduledApiRouter() {
 }
 
 function internalApiRouter() {
-  const redisClient =
-    nodeEnv !== 'test'
-      ? redis.createClient({
-          host: redisHost,
-          port: redisPort,
-          ...(!redisDisableSecurity && {
-            tls: { servername: redisTlsServerName },
-            password: redisPassword
-          })
-        })
-      : undefined
-
-  if (redisClient) {
-    redisClient.on('error', (err) =>
-      logError('Redis error', undefined, undefined, err)
-    )
-
-    // don't prevent the app from exiting if a redis connection is alive
-    redisClient.unref()
-  }
-
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
   router.all('/system/*', (req, res) => res.sendStatus(404))

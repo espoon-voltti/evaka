@@ -2,59 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { CookieOptions } from 'express'
-import session from 'express-session'
 import connectRedis from 'connect-redis'
-import {
-  cookieSecret,
-  nodeEnv,
-  redisDisableSecurity,
-  redisHost,
-  redisPassword,
-  redisPort,
-  redisTlsServerName,
-  sessionTimeoutMinutes,
-  useSecureCookies
-} from './config'
-import redis from 'redis'
-import { v4 as uuidv4 } from 'uuid'
-import { logError } from './logging'
 import {
   addMinutes,
   differenceInMinutes,
   differenceInSeconds,
   isDate
 } from 'date-fns'
-import { toMiddleware } from './express'
+import express, { CookieOptions } from 'express'
+import session from 'express-session'
+import { RedisClient } from 'redis'
+import { v4 as uuidv4 } from 'uuid'
 import AsyncRedisClient from './async-redis-client'
+import { cookieSecret, sessionTimeoutMinutes, useSecureCookies } from './config'
+import { toMiddleware } from './express'
 import { fromCallback } from './promise-utils'
 
 export type SessionType = 'enduser' | 'employee'
 
 const RedisStore = connectRedis(session)
 
-const redisClient =
-  nodeEnv !== 'test'
-    ? redis.createClient({
-        host: redisHost,
-        port: redisPort,
-        ...(!redisDisableSecurity && {
-          tls: { servername: redisTlsServerName },
-          password: redisPassword
-        })
-      })
-    : undefined
-
-if (redisClient) {
-  redisClient.on('error', (err) =>
-    logError('Redis error', undefined, undefined, err)
-  )
-
-  // don't prevent the app from exiting if a redis connection is alive
-  redisClient.unref()
-}
-
-const asyncRedisClient = redisClient && new AsyncRedisClient(redisClient)
+let asyncRedisClient: AsyncRedisClient | undefined
 
 const sessionCookieOptions: CookieOptions = {
   path: '/',
@@ -169,8 +137,9 @@ export async function logoutExpress(
   await consumeLogoutToken(req, res, sessionType)
 }
 
-export default (sessionType: SessionType) =>
-  session({
+export default (sessionType: SessionType, redisClient?: RedisClient) => {
+  asyncRedisClient = redisClient && new AsyncRedisClient(redisClient)
+  return session({
     cookie: {
       ...sessionCookieOptions,
       maxAge: sessionTimeoutMinutes * 60000
@@ -186,3 +155,4 @@ export default (sessionType: SessionType) =>
         })
       : new session.MemoryStore()
   })
+}
