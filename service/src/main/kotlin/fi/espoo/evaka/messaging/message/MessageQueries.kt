@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -24,21 +27,12 @@ fun Database.Read.getUnreadMessages(
         .first()
 }
 
-fun Database.Transaction.createMessageThread(
-    title: String,
+private fun Database.Transaction.insertMessage(
+    threadId: UUID,
     content: String,
-    type: MessageType,
     sender: MessageAccount,
     recipientAccountIds: List<UUID>
-): UUID {
-    // language=SQL
-    val insertThreadSql = "INSERT INTO message_thread (message_type, title) VALUES (:messageType, :title) RETURNING id"
-    val threadId = this.createQuery(insertThreadSql)
-        .bind("messageType", type)
-        .bind("title", title)
-        .mapTo<UUID>()
-        .first()
-
+) {
     // language=SQL
     val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
     val contentId = this.createQuery(messageContentSql)
@@ -62,11 +56,99 @@ fun Database.Transaction.createMessageThread(
         .first()
 
     // language=SQL
-    val insertRecipientsSql = "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
+    val insertRecipientsSql =
+        "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
 
     val batch = this.prepareBatch(insertRecipientsSql)
     recipientAccountIds.forEach { batch.bind("messageId", messageId).bind("accountId", it).add() }
     batch.execute()
+}
+
+fun Database.Transaction.createMessageThread(
+    title: String,
+    content: String,
+    type: MessageType,
+    sender: MessageAccount,
+    recipientAccountIds: List<UUID>
+): UUID {
+    // language=SQL
+    val insertThreadSql = "INSERT INTO message_thread (message_type, title) VALUES (:messageType, :title) RETURNING id"
+    val threadId = this.createQuery(insertThreadSql)
+        .bind("messageType", type)
+        .bind("title", title)
+        .mapTo<UUID>()
+        .first()
+
+    insertMessage(threadId, content, sender, recipientAccountIds)
 
     return threadId
+}
+
+fun Database.Transaction.replyToThread(threadId: UUID, content: String, sender: MessageAccount, recipients: List<UUID>) {
+    insertMessage(threadId, content, sender, recipients)
+}
+
+fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<MessageThread> {
+    val params = mapOf(
+        "accountId" to accountId,
+        "offset" to (page - 1) * pageSize,
+        "pageSize" to pageSize
+    )
+
+    // language=SQL
+    val sql = """
+WITH
+threads AS (
+    SELECT
+        t.id,
+        t.created,
+        t.message_type AS type,
+        t.title AS title,
+        count(*) OVER ()    AS count
+    FROM message_thread t
+    WHERE EXISTS(
+            SELECT 1
+            FROM message_recipients rec
+            JOIN message m ON rec.message_id = m.id
+            WHERE rec.recipient_id = :accountId AND m.thread_id = t.id)
+    ORDER BY t.created DESC
+    LIMIT :pageSize OFFSET :offset
+),
+messages AS (
+    SELECT
+        m.thread_id,
+        m.id,
+        c.content,
+        m.sent_at,
+        m.sender_id,
+        m.sender_name
+    FROM threads t
+    JOIN message m ON m.thread_id = t.id
+    JOIN message_content c ON m.content_id = c.id
+    ORDER BY m.sent_at
+)
+
+SELECT
+    t.count,
+    t.id,
+    t.created,
+    t.title,
+    t.type,
+    (SELECT jsonb_agg(json_build_object(
+        'id', msg.id,
+        'sentAt', msg.sent_at,
+        'content', msg.content,
+        'senderName', msg.sender_name,
+        'senderId', msg.sender_id
+    ))) AS messages
+    FROM threads t
+          JOIN messages msg ON msg.thread_id = t.id
+    GROUP BY t.count, t.id, t.type, t.title, t.created
+    ORDER BY t.created DESC
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bindMap(params)
+        .map(withCountMapper<MessageThread>())
+        .let(mapToPaged(pageSize))
 }

@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,18 +30,17 @@ class MessageController {
         return db.read { it.getMessageAccountsForUser(user) }
     }
 
-    @GetMapping("/threads")
-    fun getThreads(
+    @GetMapping("/{accountId}/received")
+    fun getReceivedMessages(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam accountId: UUID,
+        @PathVariable accountId: UUID,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
-        // TODO implement
-        return Paged(listOf(), 0, 1)
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
     @GetMapping("/unread")
@@ -72,6 +72,8 @@ class MessageController {
             ?: throw Forbidden("User is not authorized to access the account")
 
         // TODO recipient account authorization
+
+        // TODO split messages to threads by "household"
 
         return db.transaction {
             it.createMessageThread(
