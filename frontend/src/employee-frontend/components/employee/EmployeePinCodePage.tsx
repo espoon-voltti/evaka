@@ -25,6 +25,7 @@ export default React.memo(function EmployeePinCodePage() {
   const [pin, setPin] = useState<string>('')
   const [error, setError] = useState<boolean>(false)
   const [pinLocked, setPinLocked] = useState<Result<boolean>>()
+  const [dirty, setDirty] = useState<boolean>(false)
 
   useEffect(() => {
     void isPinCodeLocked().then(setPinLocked)
@@ -54,10 +55,14 @@ export default React.memo(function EmployeePinCodePage() {
       setError(false)
     }
     setPin(pin)
+    setDirty(true)
   }
 
   function savePinCode() {
-    return updatePinCode(pin).then(isPinCodeLocked).then(setPinLocked)
+    return updatePinCode(pin)
+      .then(() => setDirty(false))
+      .then(isPinCodeLocked)
+      .then(setPinLocked)
   }
 
   function getInputInfo(): InputInfo | undefined {
@@ -73,6 +78,22 @@ export default React.memo(function EmployeePinCodePage() {
         }
       : undefined
   }
+
+  const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+    if (dirty) {
+      e.preventDefault()
+      e.returnValue = i18n.pinCode.unsavedDataWarning
+      return i18n.pinCode.unsavedDataWarning
+    }
+    return
+  }
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', beforeUnloadHandler)
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnloadHandler)
+    }
+  }, [beforeUnloadHandler])
 
   return (
     <Container>
