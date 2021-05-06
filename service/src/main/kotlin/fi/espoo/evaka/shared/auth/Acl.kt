@@ -45,22 +45,6 @@ class AccessControlList(private val jdbi: Jdbi) {
         }
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun getRolesForUnit(user: AuthenticatedUser, daycareId: DaycareId): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
-            db.read {
-                it.createQuery(
-                    // language=SQL
-                    """
-SELECT role
-FROM daycare_acl_view
-WHERE employee_id = :userId AND daycare_id = :daycareId
-                    """.trimIndent()
-                ).bind("userId", user.rawId()).bind("daycareId", daycareId).mapTo<UserRole>().toSet()
-            }
-        }
-    )
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun getRolesForPilotFeature(user: AuthenticatedUser, feature: PilotFeature): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).connect { db ->
             db.read {

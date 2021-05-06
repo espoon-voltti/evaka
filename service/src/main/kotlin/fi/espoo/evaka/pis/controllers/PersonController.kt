@@ -25,7 +25,6 @@ import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -53,8 +52,7 @@ class PersonController(
     @PostMapping
     fun createEmpty(db: Database, user: AuthenticatedUser): PersonIdentityResponseJSON {
         Audit.PersonCreate.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON)
         return db.connect { dbc -> dbc.transaction { createEmptyPerson(it) } }
             .let { PersonIdentityResponseJSON.from(it) }
     }
@@ -107,8 +105,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: PersonId
     ): List<PersonWithChildrenDTO> {
         Audit.PersonDependantRead.log(targetId = personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.READ_DEPENDANTS, personId)
         return db.connect { dbc -> dbc.transaction { personService.getPersonWithChildren(it, user, personId) } }?.children
             ?: throw NotFound()
     }
@@ -153,8 +150,7 @@ class PersonController(
         @RequestBody contactInfo: ContactInfo
     ): ContactInfo {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
+        accessControl.requirePermissionFor(user, Action.Person.UPDATE_CONTACT_INFO, personId)
         return if (db.connect { dbc -> dbc.transaction { it.updatePersonContactInfo(personId, contactInfo) } }) {
             contactInfo
         } else {
@@ -170,8 +166,7 @@ class PersonController(
         @RequestBody data: PersonPatch
     ): PersonJSON {
         Audit.PersonUpdate.log(targetId = personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
+        accessControl.requirePermissionFor(user, Action.Person.UPDATE, personId)
 
         val userEditablePersonData = data
             .let {
@@ -200,8 +195,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: PersonId
     ) {
         Audit.PersonDelete.log(targetId = personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.DELETE, personId)
         db.connect { dbc -> dbc.transaction { mergeService.deleteEmptyPerson(it, personId) } }
     }
 
@@ -256,8 +250,7 @@ class PersonController(
         @RequestBody body: GetOrCreatePersonBySsnRequest
     ): PersonJSON {
         Audit.PersonDetailsRead.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON_FROM_VTJ)
 
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
@@ -282,8 +275,8 @@ class PersonController(
         @RequestBody body: MergeRequest
     ) {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN)
+        accessControl.requirePermissionFor(user, Action.Person.MERGE, body.master)
+        accessControl.requirePermissionFor(user, Action.Person.MERGE, body.duplicate)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
@@ -298,8 +291,7 @@ class PersonController(
         @RequestBody body: CreatePersonBody
     ): PersonId {
         Audit.PersonCreate.log()
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+        accessControl.requirePermissionFor(user, Action.Global.CREATE_PERSON)
         return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }
     }
 

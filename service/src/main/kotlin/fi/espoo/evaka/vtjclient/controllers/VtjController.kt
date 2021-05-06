@@ -13,10 +13,11 @@ import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlCitizen
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.CitizenFeatures
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,7 +28,11 @@ import org.springframework.web.bind.annotation.RestController
 @Deprecated("Use PersonController instead")
 @RestController
 @RequestMapping("/persondetails")
-class VtjController(private val personService: PersonService, private val accessControlCitizen: AccessControlCitizen) {
+class VtjController(
+    private val personService: PersonService,
+    private val accessControl: AccessControl,
+    private val accessControlCitizen: AccessControlCitizen
+) {
     @GetMapping("/uuid/{personId}")
     internal fun getDetails(
         db: Database,
@@ -35,8 +40,7 @@ class VtjController(private val personService: PersonService, private val access
         @PathVariable(value = "personId") personId: PersonId
     ): CitizenUserDetails {
         Audit.VtjRequest.log(targetId = personId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()

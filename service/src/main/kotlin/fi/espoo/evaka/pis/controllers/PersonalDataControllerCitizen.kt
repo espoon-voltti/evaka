@@ -7,9 +7,10 @@ package fi.espoo.evaka.pis.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.utils.EMAIL_PATTERN
 import fi.espoo.evaka.shared.utils.PHONE_PATTERN
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -20,12 +21,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen/personal-data")
-class PersonalDataControllerCitizen {
+class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
     @PutMapping
     fun updatePersonalData(db: Database, user: AuthenticatedUser.Citizen, @RequestBody body: PersonalDataUpdate) {
         Audit.PersonalDataUpdate.log(targetId = user.id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.UPDATE_PERSONAL_DATA, user.id)
 
         db.connect { dbc ->
             dbc.transaction {

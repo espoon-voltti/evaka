@@ -108,12 +108,10 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testGlobalRoleAuthorization(role: UserRole) {
         val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val aclAuth = AclAuthorization.All
-        val aclRoles = AclAppliedRoles(setOf(role))
 
         assertEquals(aclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(aclAuth, acl.getAuthorizedUnits(user))
 
-        assertEquals(aclRoles, acl.getRolesForUnit(user, daycareId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
     }
@@ -124,13 +122,10 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testAclRoleAuthorization(role: UserRole) {
         val user = AuthenticatedUser.Employee(employeeId, setOf(role))
         val negativeAclAuth = AclAuthorization.Subset(emptySet())
-        val negativeAclRoles = AclAppliedRoles(emptySet())
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
-        val positiveAclRoles = AclAppliedRoles(setOf(role))
 
         assertEquals(negativeAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(negativeAclAuth, acl.getAuthorizedUnits(user))
-        assertEquals(negativeAclRoles, acl.getRolesForUnit(user, daycareId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertFalse(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
 
@@ -138,7 +133,6 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         assertEquals(positiveAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
-        assertEquals(positiveAclRoles, acl.getRolesForUnit(user, daycareId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, fridgeParentId))
         assertTrue(accessControl.hasPermissionFor(user, Action.Person.READ, guardianId))
     }
@@ -149,10 +143,8 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
         val user = AuthenticatedUser.MobileDevice(mobileId)
 
         val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
-        val expectedAclRoles = AclAppliedRoles(setOf(UserRole.MOBILE))
 
         assertEquals(expectedAclAuth, acl.getAuthorizedDaycares(user))
         assertEquals(expectedAclAuth, acl.getAuthorizedUnits(user))
-        assertEquals(expectedAclRoles, acl.getRolesForUnit(user, daycareId))
     }
 }

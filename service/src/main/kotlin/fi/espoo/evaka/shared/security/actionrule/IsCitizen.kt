@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
@@ -199,6 +200,25 @@ SELECT id
 FROM application
 WHERE guardian_id = :userId
 AND id = ANY(:ids)
+                """.trimIndent()
+            )
+                .bind("ids", ids.toTypedArray())
+                .bind("userId", citizenId)
+                .mapTo()
+        }
+    )
+
+    fun ownerOfApplicationOfSentDecision() = DatabaseActionRule(
+        this,
+        Query<DecisionId> { tx, citizenId, ids ->
+            tx.createQuery(
+                """
+SELECT decision.id
+FROM decision
+JOIN application ON decision.application_id = application.id
+WHERE guardian_id = :userId
+AND decision.id = ANY(:ids)
+AND decision.sent_date IS NOT NULL
                 """.trimIndent()
             )
                 .bind("ids", ids.toTypedArray())

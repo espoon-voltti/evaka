@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.shared.auth
 
-import fi.espoo.evaka.shared.domain.Forbidden
-
 enum class UserRole {
     END_USER,
     CITIZEN_WEAK,
@@ -52,10 +50,4 @@ interface RoleContainer {
 
     @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
     fun hasOneOfRoles(vararg requiredRoles: UserRole) = requiredRoles.any { roles.contains(it) }
-
-    @Deprecated("use Action model instead", replaceWith = ReplaceWith(""))
-    fun requireOneOfRoles(vararg roles: UserRole) {
-        @Suppress("DEPRECATION")
-        if (!hasOneOfRoles(*roles)) throw Forbidden()
-    }
 }

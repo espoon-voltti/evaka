@@ -9,6 +9,7 @@ import fi.espoo.evaka.messaging.filterPermittedAttachmentsThroughMessageDrafts
 import fi.espoo.evaka.messaging.filterPermittedMessageDrafts
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
@@ -38,6 +39,15 @@ object IsEmployee : ActionRuleParams<IsEmployee> {
     }
     private object Deferred : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)
+    }
+
+    fun self() = object : TargetActionRule<EmployeeId> {
+        override fun evaluate(user: AuthenticatedUser, target: EmployeeId): AccessControlDecision = when (user) {
+            is AuthenticatedUser.Employee -> if (user.id == target) {
+                AccessControlDecision.Permitted(this@IsEmployee)
+            } else AccessControlDecision.None
+            else -> AccessControlDecision.None
+        }
     }
 
     fun ownerOfMobileDevice() = DatabaseActionRule(

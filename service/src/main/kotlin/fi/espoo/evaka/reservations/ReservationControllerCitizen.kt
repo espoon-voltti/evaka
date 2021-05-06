@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -46,8 +45,7 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.CITIZEN_WEAK, UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_RESERVATIONS, user.id)
 
         val range = try {
             FiniteDateRange(from, to)

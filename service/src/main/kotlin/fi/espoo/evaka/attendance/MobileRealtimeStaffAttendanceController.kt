@@ -10,9 +10,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -32,10 +30,7 @@ import java.time.LocalTime
 
 @RestController
 @RequestMapping("/mobile/realtime-staff-attendances")
-class MobileRealtimeStaffAttendanceController(
-    private val acl: AccessControlList,
-    private val ac: AccessControl
-) {
+class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @GetMapping
     fun getAttendancesByUnit(
         db: Database,
@@ -44,10 +39,7 @@ class MobileRealtimeStaffAttendanceController(
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
-
-        // todo: convert to action auth
-        @Suppress("DEPRECATION")
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        ac.requirePermissionFor(user, Action.Unit.READ_REALTIME_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
             dbc.read {

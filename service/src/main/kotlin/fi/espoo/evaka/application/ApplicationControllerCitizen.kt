@@ -10,22 +10,20 @@ import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecisionsByApplication
-import fi.espoo.evaka.decision.getDecisionsByGuardian
 import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import mu.KotlinLogging
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -44,6 +42,7 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/citizen")
 class ApplicationControllerCitizen(
+    private val accessControl: AccessControl,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val personService: PersonService
@@ -55,8 +54,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen
     ): List<ApplicationsOfChild> {
         Audit.ApplicationRead.log(targetId = user.id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_APPLICATIONS, user.id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
@@ -85,8 +83,7 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId
     ): ApplicationDetails {
         Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.READ, applicationId)
 
         val application = db.connect { dbc ->
             dbc.transaction { tx ->
@@ -108,8 +105,7 @@ class ApplicationControllerCitizen(
         @RequestBody body: CreateApplicationBody
     ): ApplicationId {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.CREATE_APPLICATION, body.childId)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -122,10 +118,6 @@ class ApplicationControllerCitizen(
 
                 val guardian = tx.getPersonById(user.id)
                     ?: throw IllegalStateException("Guardian not found")
-
-                if (tx.getGuardianChildIds(user.id).none { it == body.childId }) {
-                    throw IllegalStateException("User is not child's guardian")
-                }
 
                 val child = tx.getPersonById(body.childId)
                     ?: throw IllegalStateException("Child not found")
@@ -149,8 +141,7 @@ class ApplicationControllerCitizen(
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
         Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS, childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -174,8 +165,7 @@ class ApplicationControllerCitizen(
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
         Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE, childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -197,8 +187,7 @@ class ApplicationControllerCitizen(
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -222,8 +211,7 @@ class ApplicationControllerCitizen(
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
         Audit.ApplicationUpdate.log(targetId = applicationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction {
@@ -246,13 +234,11 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId
     ) {
         Audit.ApplicationDelete.log(targetId = applicationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.DELETE, applicationId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val application = tx.fetchApplicationDetails(applicationId)
-                    ?.takeIf { it.guardianId == user.id }
                     ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
                 if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
@@ -276,8 +262,7 @@ class ApplicationControllerCitizen(
     @GetMapping("/decisions")
     fun getDecisions(db: Database, user: AuthenticatedUser.Citizen): List<ApplicationDecisions> {
         Audit.DecisionRead.log(targetId = user.id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Person.READ_DECISIONS, user.id)
         return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }
     }
 
@@ -288,15 +273,11 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId
     ): List<Decision> {
         Audit.DecisionReadByApplication.log(targetId = applicationId)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Application.READ_DECISIONS, applicationId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.fetchApplicationDetails(applicationId)
-                    ?.let { if (it.guardianId != user.id) throw Forbidden("Application not owned") }
-                    ?: throw NotFound("Application not found")
-
+                tx.fetchApplicationDetails(applicationId) ?: throw NotFound("Application not found")
                 tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             }
         }
@@ -345,16 +326,10 @@ class ApplicationControllerCitizen(
         @PathVariable id: DecisionId
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = id)
-        @Suppress("DEPRECATION")
-        user.requireOneOfRoles(UserRole.END_USER)
+        accessControl.requirePermissionFor(user, Action.Citizen.Decision.DOWNLOAD_PDF, id)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                if (!tx.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == id }) {
-                    logger.warn { "Citizen ${user.id} tried to download decision $id" }
-                    throw NotFound("Decision not found")
-                }
-
                 decisionService.getDecisionPdf(tx, id)
                     .let { document ->
                         ResponseEntity.ok()
