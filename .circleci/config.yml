@@ -755,6 +755,16 @@ jobs:
     steps:
       - *restore_repo
       - setup_authenticated_remote_docker
+      - run:
+          name: Test proxy image configuration
+          working_directory: *workspace_proxy
+          command: |
+            docker build \
+              -t smoketest-evaka-proxy \
+              -f smoketest.Dockerfile \
+              --build-arg "build=${CIRCLE_BUILD_NUM}" \
+              --build-arg "commit=${CIRCLE_SHA1}" \
+              .
       - build_docker_image:
           image: evaka/proxy
           dir: *workspace_proxy
