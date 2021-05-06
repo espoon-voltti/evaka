@@ -13,13 +13,13 @@ data class Message(
     val senderId: UUID,
     val senderName: String,
     val sentAt: HelsinkiDateTime,
-    val title: String? = null,
     val content: String,
 )
 
 data class MessageThread(
     val id: UUID,
     val type: MessageType,
+    val title: String,
     @Json
     val messages: List<Message>
 )

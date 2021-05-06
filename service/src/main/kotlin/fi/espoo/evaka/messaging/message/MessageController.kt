@@ -94,7 +94,6 @@ class MessageController {
             id = UUID.randomUUID(),
             senderId = supervisorAccount.id,
             senderName = supervisorAccount.name,
-            title = "Aatun siirtyminen Meritähtiin",
             content = "Hei Aatun äiti ja isä! Aatu on kasvanut kovaa vauhtia ja nyt on tullut aika siirtyä seuraavaan ikäryhmään. Aatu aloittaa Meritähdissä kesäkuussa.",
             sentAt = HelsinkiDateTime.now().minusDays(3)
         )
@@ -116,7 +115,6 @@ class MessageController {
             id = UUID.randomUUID(),
             senderId = supervisorAccount.id,
             senderName = supervisorAccount.name,
-            title = "Kevät",
             content = """Hei vanhemmat!
 
 Kevät lähestyy jo kovaa vauhtia. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas dapibus blandit porta. Aliquam pellentesque ex sed magna efficitur convallis. Sed elementum felis quis placerat rutrum.
@@ -137,6 +135,7 @@ T. Ella Esimies""",
                 MessageThread(
                     id = UUID.randomUUID(),
                     type = MessageType.MESSAGE,
+                    title = "Aatun siirtyminen Meritähtiin",
                     messages = listOf(
                         aatuMeritahtiMessage,
                         aatusDadsResponse,
@@ -146,6 +145,7 @@ T. Ella Esimies""",
                 MessageThread(
                     id = UUID.randomUUID(),
                     type = MessageType.BULLETIN,
+                    title = "Kevät",
                     messages = listOf(bulletin)
                 )
             )
