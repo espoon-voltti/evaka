@@ -60,7 +60,7 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         db.transaction {
-            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employeeAccount, listOf(person1Account.id, person2Account.id))
+            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employeeAccount, setOf(person1Account.id, person2Account.id))
         }
 
         assertEquals(
@@ -93,19 +93,19 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         val thread1Id = db.transaction {
-            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employee1Account, listOf(person1Account.id, person2Account.id))
+            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employee1Account, setOf(person1Account.id, person2Account.id))
         }
         val thread2Id = db.transaction {
-            it.createMessageThread("Newest thread", "Content 2", MessageType.MESSAGE, employee1Account, listOf(person1Account.id))
+            it.createMessageThread("Newest thread", "Content 2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
         }
         db.transaction {
-            it.createMessageThread("Lone thread", "Alone", MessageType.MESSAGE, employee2Account, listOf(employee2Account.id))
+            it.createMessageThread("Lone thread", "Alone", MessageType.MESSAGE, employee2Account, setOf(employee2Account.id))
         }
 
         // employee is not a recipient in any threads
         assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }.data.size)
 
-        db.transaction { it.replyToThread(thread2Id, "Just replying here", person1Account, listOf(employee1Account.id)) }
+        db.transaction { it.replyToThread(thread2Id, "Just replying here", person1Account, setOf(employee1Account.id)) }
 
         // employee is now recipient in a reply to thread two
         val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }

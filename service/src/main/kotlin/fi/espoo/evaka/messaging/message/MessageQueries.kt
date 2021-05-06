@@ -12,7 +12,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Read.getUnreadMessages(
-    accountIds: List<UUID>
+    accountIds: Set<UUID>
 ): Int {
     // language=SQL
     val sql = """
@@ -31,7 +31,7 @@ private fun Database.Transaction.insertMessage(
     threadId: UUID,
     content: String,
     sender: MessageAccount,
-    recipientAccountIds: List<UUID>
+    recipientAccountIds: Set<UUID>
 ) {
     // language=SQL
     val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
@@ -69,7 +69,7 @@ fun Database.Transaction.createMessageThread(
     content: String,
     type: MessageType,
     sender: MessageAccount,
-    recipientAccountIds: List<UUID>
+    recipientAccountIds: Set<UUID>
 ): UUID {
     // language=SQL
     val insertThreadSql = "INSERT INTO message_thread (message_type, title) VALUES (:messageType, :title) RETURNING id"
@@ -84,7 +84,7 @@ fun Database.Transaction.createMessageThread(
     return threadId
 }
 
-fun Database.Transaction.replyToThread(threadId: UUID, content: String, sender: MessageAccount, recipients: List<UUID>) {
+fun Database.Transaction.replyToThread(threadId: UUID, content: String, sender: MessageAccount, recipients: Set<UUID>) {
     insertMessage(threadId, content, sender, recipients)
 }
 

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 class MessageControllerCitizen {
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): List<MessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
         user.requireOneOfRoles(UserRole.END_USER)
         return db.read { it.getMessageAccountsForUser(user) }
     }
@@ -28,7 +28,7 @@ class MessageControllerCitizen {
     ): UnreadMessagesResponse {
         user.requireOneOfRoles(UserRole.END_USER)
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds) }
+        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
     }
 }

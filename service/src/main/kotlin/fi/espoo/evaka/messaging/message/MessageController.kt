@@ -26,7 +26,7 @@ data class UnreadMessagesResponse(val count: Int)
 class MessageController {
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): List<MessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
         return db.read { it.getMessageAccountsForUser(user) }
     }
 
@@ -49,7 +49,7 @@ class MessageController {
         user: AuthenticatedUser
     ): UnreadMessagesResponse {
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds) }
+        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
     }
 
@@ -58,7 +58,7 @@ class MessageController {
         val content: String,
         val type: MessageType,
         val senderAccountId: UUID,
-        val recipientAccountIds: List<UUID>
+        val recipientAccountIds: Set<UUID>
     )
 
     @PostMapping
