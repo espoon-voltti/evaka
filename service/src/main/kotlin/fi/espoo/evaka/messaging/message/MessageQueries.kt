@@ -99,19 +99,14 @@ fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, p
     val sql = """
 WITH
 threads AS (
-    SELECT
-        t.id,
-        t.created,
-        t.message_type AS type,
-        t.title AS title,
-        count(*) OVER ()    AS count
+    SELECT id, created, message_type AS type, title, COUNT(*) OVER () AS count
     FROM message_thread t
     WHERE EXISTS(
             SELECT 1
             FROM message_recipients rec
             JOIN message m ON rec.message_id = m.id
             WHERE rec.recipient_id = :accountId AND m.thread_id = t.id)
-    ORDER BY t.created DESC
+    ORDER BY created DESC
     LIMIT :pageSize OFFSET :offset
 ),
 messages AS (
