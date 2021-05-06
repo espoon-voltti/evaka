@@ -102,7 +102,7 @@ function GroupListing({
   const shownIds = expanded ? sortedIds : sortedIds.slice(0, 3)
   const hiddenCount = sortedIds.length - shownIds.length
   return (
-    <div>
+    <>
       {shownIds.map((id) => (
         <div key={id}>{unitGroups[id]?.name}</div>
       ))}
@@ -112,7 +112,7 @@ function GroupListing({
           text={`+${hiddenCount} ${i18n.common.expandableList.others}`}
         />
       )}
-    </div>
+    </>
   )
 }
 
@@ -155,6 +155,7 @@ function AclRowEditor({
         <RowButtons>
           <InlineButton onClick={onCancel} text={i18n.common.cancel} />
           <InlineButton
+            data-qa="save"
             onClick={() => onSave(groups.map(({ id }) => id))}
             text={i18n.common.save}
           />
@@ -219,7 +220,7 @@ function AclRow({
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
       {unitGroups && (
-        <Td>
+        <Td data-qa="groups">
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}

@@ -68,6 +68,14 @@ beforeEach(async () => {
 
 describe('Employee - unit ACL', () => {
   test('Staff can be assigned/removed to/from groups', async () => {
+    async function toggleGroups() {
+      const row = await (
+        await unitInfo.staffAcl.getRow('Tauno Testimies')
+      ).edit()
+      await row.toggleStaffGroups([groupId])
+      await row.save()
+    }
+
     const expectedRow = {
       name: `${tauno.firstName} ${tauno.lastName}`,
       email: tauno.email!,
@@ -77,15 +85,11 @@ describe('Employee - unit ACL', () => {
     const unitInfo = await unitPage.openUnitInformation()
     await unitInfo.staffAcl.addEmployeeAcl(staffId)
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [expectedRow])
-    await unitInfo.staffAcl.toggleStaffGroups('Tauno Testimies', [groupId])
-    await page.reload()
-
+    await toggleGroups()
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [
       { ...expectedRow, groups: ['Testailijat'] }
     ])
-    await unitInfo.staffAcl.toggleStaffGroups('Tauno Testimies', [groupId])
-    await page.reload()
-
+    await toggleGroups()
     await waitUntilEqual(() => unitInfo.staffAcl.rows, [expectedRow])
   })
 })

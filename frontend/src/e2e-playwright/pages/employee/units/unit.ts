@@ -5,7 +5,6 @@
 import { Page } from 'playwright'
 import { RawElement } from 'e2e-playwright/utils/element'
 import { UUID } from 'e2e-test-common/dev-api/types'
-import { waitUntilTrue } from 'e2e-playwright/utils'
 
 export default class UnitPage {
   constructor(private readonly page: Page) {}
@@ -56,39 +55,50 @@ class StaffAclSection extends RawElement {
             name: row.querySelector('[data-qa="name"]')?.textContent ?? '',
             email: row.querySelector('[data-qa="email"]')?.textContent ?? '',
             groups: Array.from(
-              row.querySelectorAll('[data-qa="groups"] [data-qa="multivalue"]')
+              row.querySelectorAll('[data-qa="groups"] > div')
             ).map((element) => element.textContent ?? '')
           }))
     )
   }
-  async toggleStaffGroups(name: string, groupIds: UUID[]) {
-    await this.waitUntilLoaded()
+  async getRow(name: string): Promise<StaffAclRow> {
     const rowIndex = (await this.rows).findIndex((row) => row.name === name)
     if (rowIndex < 0) {
       throw new Error(`Row with name ${name} not found`)
     }
-    const row = new StaffAclRow(
+    return new StaffAclRow(
       this.page,
       `${this.#table.selector} tbody tr:nth-child(${
         rowIndex + 1
       })[data-qa="acl-row"]`
     )
-    await row.groupEditor.waitUntilVisible()
-    await row.groupEditor.find('> div').click()
-    for (const groupId of groupIds) {
-      await row.groupEditor
-        .find(`[data-qa="option"][data-id="${groupId}"]`)
-        .click()
-    }
-    await row.groupEditor.find('> div').click()
-    await waitUntilTrue(() => row.isSaved)
   }
 }
 
 class StaffAclRow extends RawElement {
-  readonly groupEditor = this.find('[data-qa="groups"]')
+  readonly #editButton = this.find('[data-qa="edit"]')
 
-  get isSaved(): Promise<boolean> {
-    return this.getAttribute('data-saved').then((value) => value === 'true')
+  async edit(): Promise<StaffAclRowEditor> {
+    await this.#editButton.click()
+    return new StaffAclRowEditor(this.page, this.selector)
+  }
+}
+
+class StaffAclRowEditor extends RawElement {
+  readonly #groupEditor = this.find('[data-qa="groups"]')
+  readonly #save = this.find('[data-qa="save"]')
+
+  async toggleStaffGroups(groupIds: UUID[]) {
+    await this.#groupEditor.find('> div').click()
+    for (const groupId of groupIds) {
+      await this.#groupEditor
+        .find(`[data-qa="option"][data-id="${groupId}"]`)
+        .click()
+    }
+    await this.#groupEditor.find('> div').click()
+  }
+
+  async save(): Promise<StaffAclRow> {
+    await this.#save.click()
+    return new StaffAclRow(this.page, this.selector)
   }
 }
