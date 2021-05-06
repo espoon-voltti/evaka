@@ -291,7 +291,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <div class="decision-details">
             <div class="strong" th:text="#{decision.placement.unit}">Varhaiskasvatusyksikkö</div>
             <div style="text-indent: 6em">
-                <div th:text="${decision.type.toString() == 'PRESCHOOL_DAYCARE'}? ${decision.unit.preschoolDecisionName} : ${decision.unit.daycareDecisionName}"></div>
+                <div th:text="${decision.type.toString() == 'PRESCHOOL_DAYCARE'}? ${decision.unit.preschoolDecisionName} : (
+                    ${decision.type.toString() == 'CLUB'}? ${decision.unit.name} : ${decision.unit.daycareDecisionName}
+                )"></div>
                 <div th:if="${not #strings.isEmpty(decision.unit.streetAddress)}"
                      th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></div>
             </div>
