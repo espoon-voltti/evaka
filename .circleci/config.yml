@@ -844,6 +844,13 @@ jobs:
           path: /home/circleci/repo/service/build/reports/
       - store_artifacts:
           path: /home/circleci/repo/service-lib/build/reports/
+      - run:
+          working_directory: *workspace_service
+          command: |
+            cd custom-ktlint-rules
+            ./gradlew test
+      - store_test_results:
+          path: /home/circleci/repo/service/custom-ktlint-rules/build/test-results/test/
       - notify_slack
 
   service_push_image:
