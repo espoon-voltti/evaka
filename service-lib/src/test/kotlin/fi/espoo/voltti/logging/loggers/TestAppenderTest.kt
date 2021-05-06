@@ -36,7 +36,6 @@ class TestAppenderTest {
         logger.info { line1 }
         logger.info { line2 }
 
-        println(logger.getTestMessages())
         assertEquals(2, logger.getTestMessages().size)
         assertEquals(line1, logger.getTestMessages()[0])
         assertEquals(line2, logger.getTestMessages()[1])
