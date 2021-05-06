@@ -19,6 +19,7 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { Result } from '../../../lib-common/api'
 import { AlertBox } from '../../../lib-components/molecules/MessageBoxes'
+import { Prompt } from 'react-router-dom'
 
 export default React.memo(function EmployeePinCodePage() {
   const { i18n } = useTranslation()
@@ -55,7 +56,7 @@ export default React.memo(function EmployeePinCodePage() {
       setError(false)
     }
     setPin(pin)
-    setDirty(true)
+    setDirty(pin.length > 0)
   }
 
   function savePinCode() {
@@ -81,6 +82,7 @@ export default React.memo(function EmployeePinCodePage() {
 
   const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
     if (dirty) {
+      // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
       e.preventDefault()
       e.returnValue = i18n.pinCode.unsavedDataWarning
       return i18n.pinCode.unsavedDataWarning
@@ -97,6 +99,8 @@ export default React.memo(function EmployeePinCodePage() {
 
   return (
     <Container>
+      <Prompt when={dirty} message={i18n.pinCode.unsavedDataWarning} />
+
       <Gap size={'L'} />
       <ContentArea opaque>
         <Title>{i18n.pinCode.title}</Title>

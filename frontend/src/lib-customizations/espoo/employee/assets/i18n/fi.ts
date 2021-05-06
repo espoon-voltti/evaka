@@ -2367,7 +2367,7 @@ export const fi = {
     lockedLong:
       'PIN-koodi on syötetty eVaka-mobiilissa 5 kertaa väärin, ja koodi on lukittu. Ole hyvä ja vaihda tilalle uusi PIN-koodi.',
     link: 'eVaka-mobiilin PIN-koodi',
-    unsavedDataWarning: 'Et ole tallettanut PIN koodia'
+    unsavedDataWarning: 'Et ole tallentanut PIN-koodia'
   },
   employees: {
     title: 'Käyttäjät',
