@@ -65,7 +65,7 @@ class MessageControllerCitizen {
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
     ) {
-        Audit.MessagingReplyToMessageWrite.log()
+        Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         user.requireOneOfRoles(UserRole.END_USER)
         val account = db.read { it.getMessageAccountsForUser(user) }.firstOrNull()
             ?: throw Forbidden("Message account not found for user")

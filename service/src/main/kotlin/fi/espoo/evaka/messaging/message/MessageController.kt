@@ -107,7 +107,7 @@ class MessageController {
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
     ) {
-        Audit.MessagingReplyToMessageWrite.log()
+        Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         authorizeAllowedMessagingRoles(user)
         val account = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("Message account not found for user")
