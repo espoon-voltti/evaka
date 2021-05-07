@@ -221,8 +221,8 @@ private fun Database.Transaction.splitPlacementWithGap(
     gapStartInclusive: LocalDate,
     gapEndInclusive: LocalDate
 ) {
-    clearNewServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(gapStartInclusive, gapEndInclusive))
-    movePlacementEndDateEarlier(placement, gapStartInclusive.minusDays(1))
+    movePlacementEndDateEarlier(placement, newEndDate = gapStartInclusive.minusDays(1))
+
     insertPlacement(
         type = placement.type,
         childId = placement.childId,
