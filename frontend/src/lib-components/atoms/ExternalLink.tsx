@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExternalLink } from 'lib-icons'
 import styled from 'styled-components'
 import colors from '../colors'
-import { Gap } from '../white-space'
+import { defaultMargins } from '../white-space'
 
 type ExternalLinkProps = {
   text: string
@@ -27,8 +27,7 @@ export default React.memo(function ExternalLink({
       rel={newTab ? 'noreferrer' : undefined}
     >
       <FontAwesomeIcon icon={faExternalLink} />
-      <Gap horizontal size="xs" />
-      <span>{text}</span>
+      <Text>{text}</Text>
     </StyledLink>
   )
 })
@@ -39,4 +38,8 @@ const StyledLink = styled.a`
   font-size: 14px;
   line-height: 21px;
   color: ${colors.primary};
+`
+
+const Text = styled.span`
+  margin-left: ${defaultMargins.xs};
 `
