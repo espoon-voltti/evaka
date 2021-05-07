@@ -70,22 +70,14 @@ class MessageIntegrationTest : FullApplicationTest() {
         }
 
         // when a message thread is created
-        val (_, res, _) = http.post("/messages")
-            .jsonBody(
-                objectMapper.writeValueAsString(
-                    MessageController.PostMessageBody(
-                        "Juhannus",
-                        "Juhannus tulee pian",
-                        MessageType.MESSAGE,
-                        employee1Account.id,
-                        recipientAccountIds = setOf(person1Account.id, person2Account.id)
-                    )
-                )
-            )
-            .asUser(employee1)
-            .response()
-
-        assertEquals(200, res.statusCode)
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account.id,
+            recipients = setOf(person1Account.id, person2Account.id),
+            user = employee1,
+        )
 
         // then sender does not see it in received messages
         assertEquals(
@@ -165,6 +157,70 @@ class MessageIntegrationTest : FullApplicationTest() {
             getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
         )
     }
+
+    @Test
+    fun `a bulletin cannot be replied to by the recipients`() {
+        // given
+        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+        val person1 = AuthenticatedUser.Citizen(id = person1Id)
+        val (employee1Account, person1Account) = db.read {
+            listOf(
+                it.getMessageAccountsForUser(employee1).first(),
+                it.getMessageAccountsForUser(person1).first(),
+            )
+        }
+
+        // when a bulletin thread is created
+        postNewThread(
+            title = "Tiedote",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.BULLETIN,
+            sender = employee1Account.id,
+            recipients = setOf(person1Account.id),
+            user = employee1,
+        )
+
+        // then the recipient can see it
+        val thread = getMessageThreads(person1Account, person1).first()
+        assertEquals("Tiedote", thread.title)
+        assertEquals(MessageType.BULLETIN, thread.type)
+        assertEquals(listOf(Pair(employee1Account.id, "Juhannus tulee pian")), thread.toSenderContentPairs())
+
+        // when the recipient tries to reply to the bulletin, it is denied
+        assertEquals(
+            403,
+            replyAsCitizen(
+                user = person1,
+                messageId = thread.messages.first().id,
+                recipientAccountIds = setOf(thread.messages.first().senderId),
+                content = "Kiitos tiedosta"
+            ).second.statusCode
+        )
+
+        // TODO assert that the author can reply to bulletin once employee reply functionality is implemented
+    }
+
+    private fun postNewThread(
+        title: String,
+        message: String,
+        messageType: MessageType,
+        sender: UUID,
+        recipients: Set<UUID>,
+        user: AuthenticatedUser.Employee
+    ) = http.post("/messages")
+        .jsonBody(
+            objectMapper.writeValueAsString(
+                MessageController.PostMessageBody(
+                    title,
+                    message,
+                    messageType,
+                    sender,
+                    recipientAccountIds = recipients
+                )
+            )
+        )
+        .asUser(user)
+        .response()
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,

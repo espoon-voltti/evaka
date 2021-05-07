@@ -65,8 +65,10 @@ class MessageControllerCitizen {
         val account = db.read { it.getMessageAccountsForUser(user) }.firstOrNull()
             ?: throw Forbidden("Message account not found for user")
 
-        val (threadId, sender, recipients) = db.read { it.getMessageParticipants(messageId) }
+        val (threadId, type, sender, recipients) = db.read { it.getThreadByMessageId(messageId) }
             ?: throw NotFound("Message not found")
+
+        if (type !== MessageType.MESSAGE) throw Forbidden("Only messages can be replied to")
 
         val previousParticipants = recipients + sender
         if (!previousParticipants.contains(account.id)) throw Forbidden("Not authorized to post to message")

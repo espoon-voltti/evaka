@@ -8,8 +8,8 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
-import fi.espoo.evaka.messaging.message.getMessageParticipants
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
+import fi.espoo.evaka.messaging.message.getThreadByMessageId
 import fi.espoo.evaka.messaging.message.replyToThread
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -246,7 +246,7 @@ class MessageQueriesTest : PureJdbiTest() {
                 it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
                     .bind("threadId", threadId)
                     .mapTo<UUID>().one()
-            it.getMessageParticipants(messageId)
+            it.getThreadByMessageId(messageId)
         }
         assertEquals(threadId, participants?.threadId)
         assertEquals(employee1Account.id, participants?.sender)

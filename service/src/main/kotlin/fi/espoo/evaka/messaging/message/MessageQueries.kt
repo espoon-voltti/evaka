@@ -170,22 +170,23 @@ SELECT
         .let(mapToPaged(pageSize))
 }
 
-data class MessageParticipants(val threadId: UUID, val sender: UUID, val recipients: Set<UUID>)
+data class ThreadWithParticipants(val threadId: UUID, val type: MessageType, val sender: UUID, val recipients: Set<UUID>)
 
-fun Database.Read.getMessageParticipants(messageId: UUID): MessageParticipants? {
+fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants? {
     val sql = """
         SELECT
             t.id AS threadId,
+            t.message_type AS type,
             m.sender_id AS sender,
             (SELECT array_agg(recipient_id)) as recipients
             FROM message m
             JOIN message_thread t ON m.thread_id = t.id
             JOIN message_recipients rec ON rec.message_id = m.id
             WHERE m.id = :messageId
-            GROUP BY t.id, m.sender_id
+            GROUP BY t.id, t.message_type, m.sender_id
     """.trimIndent()
     return this.createQuery(sql)
         .bind("messageId", messageId)
-        .mapTo<MessageParticipants>()
+        .mapTo<ThreadWithParticipants>()
         .firstOrNull()
 }
