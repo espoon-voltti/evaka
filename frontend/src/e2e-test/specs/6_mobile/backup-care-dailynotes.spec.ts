@@ -263,7 +263,7 @@ test('User can delete a daily note for a backup care child', async (t) => {
 test('User can see group daily note for a backup care child in the group', async (t) => {
   const daycareDailyNote: DaycareDailyNote = {
     id: uuidv4(),
-    groupId: daycareGroup.data.id,
+    groupId: backupCareDaycareGroup.data.id,
     childId: null,
     date: LocalDate.today(),
     note: 'Testi ryhmäviesti',
