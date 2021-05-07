@@ -53,9 +53,7 @@ export default class CitizenMapPage {
   }
 
   async testMapPopup(daycare: Daycare) {
-    await delay(500)
     await this.listItemFor(daycare).click()
-    await delay(500)
     await this.map.markerFor(daycare).click()
     await waitUntilEqual(() => this.map.popupFor(daycare).name, daycare.name)
   }
