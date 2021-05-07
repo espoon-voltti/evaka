@@ -18,7 +18,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.result.RowView
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -45,16 +45,16 @@ class OccupancyReportController {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = db.read {
+        val occupancies = db.read { tx ->
             if (useNewServiceNeeds == true)
-                it.calculateOccupancyUnitReportV2(
+                tx.calculateUnitOccupancyReportV2(
                     LocalDate.now(),
                     careAreaId,
                     FiniteDateRange(from, to),
                     type
                 )
             else
-                it.calculateOccupancyUnitReport(
+                tx.calculateOccupancyUnitReport(
                     careAreaId,
                     FiniteDateRange(from, to),
                     type
@@ -101,56 +101,63 @@ class OccupancyReportController {
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: UUID,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
+        @RequestParam(required = false) useNewServiceNeeds: Boolean? = false
     ): ResponseEntity<List<OccupancyGroupReportResultRow>> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = db.read {
-            it.calculateOccupancyGroupReport(
-                careAreaId,
-                FiniteDateRange(from, to),
-                type
-            )
-        }
-
-        val result = occupancies
-            .groupBy(
-                { UnitGroupKey(it.unitId, it.unitName, it.groupId, it.groupName) },
-                {
-                    OccupancyReportRowGroupedValuesDaily(
-                        date = it.date,
-                        sum = it.sum,
-                        headcount = it.headcount,
-                        caretakers = it.caretakers,
-                        percentage = it.percentage
-                    )
-                }
-            )
-            .entries
-            .map { entry ->
-                OccupancyGroupReportResultRow(
-                    unitId = entry.key.unitId,
-                    unitName = entry.key.unitName,
-                    groupId = entry.key.groupId,
-                    groupName = entry.key.groupName,
-                    occupancies = entry.value.associateBy(
-                        { it.date },
+        val occupancies = db.read { tx ->
+            if (useNewServiceNeeds == true)
+                tx.calculateGroupOccupancyReportV2(
+                    LocalDate.now(),
+                    careAreaId,
+                    FiniteDateRange(from, to),
+                    type
+                )
+            else
+                tx.calculateOccupancyGroupReport(
+                    careAreaId,
+                    FiniteDateRange(from, to),
+                    type
+                )
+                    .groupBy(
+                        { UnitGroupKey(it.unitId, it.unitName, it.groupId, it.groupName) },
                         {
-                            OccupancyReportRowGroupedValues(
+                            OccupancyReportRowGroupedValuesDaily(
+                                date = it.date,
                                 sum = it.sum,
                                 headcount = it.headcount,
                                 caretakers = it.caretakers,
                                 percentage = it.percentage
                             )
                         }
-                    ).toSortedMap()
-                )
-            }.sortedBy { it.unitName }
+                    )
+                    .entries
+                    .map { entry ->
+                        OccupancyGroupReportResultRow(
+                            unitId = entry.key.unitId,
+                            unitName = entry.key.unitName,
+                            groupId = entry.key.groupId,
+                            groupName = entry.key.groupName,
+                            occupancies = entry.value.associateBy(
+                                { it.date },
+                                {
+                                    OccupancyReportRowGroupedValues(
+                                        sum = it.sum,
+                                        headcount = it.headcount,
+                                        caretakers = it.caretakers,
+                                        percentage = it.percentage
+                                    )
+                                }
+                            ).toSortedMap()
+                        )
+                    }.sortedBy { it.unitName }
+        }
 
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok(occupancies)
     }
 }
 
@@ -184,15 +191,24 @@ private data class OccupancyReportRowGroupedValuesDaily(
 )
 
 private data class UnitKey(
-    val unitId: UUID,
+    override val unitId: UUID,
     val unitName: String
-)
+) : Key {
+    override val groupingId = unitId
+}
 
 private data class UnitGroupKey(
-    val unitId: UUID,
+    override val unitId: UUID,
     val unitName: String,
     val groupId: UUID,
     val groupName: String
+) : Key {
+    override val groupingId = groupId
+}
+
+private data class OccupancyReportResultRow<K : Key>(
+    val key: K,
+    val occupancies: Map<LocalDate, OccupancyReportRowGroupedValues>
 )
 
 private data class OccupancyUnitReportRowRaw(
@@ -289,15 +305,20 @@ private fun Database.Read.calculateOccupancyGroupReport(
         .map { (_, reportRow) -> reportRow }
 }
 
-private data class Caretakers(
-    @Nested
-    val unit: UnitKey,
+private interface Key {
+    val groupingId: UUID
+    val unitId: UUID
+}
+
+private data class Caretakers<K : Key>(
+    val key: K,
     val date: LocalDate,
     val caretakerCount: BigDecimal
 )
 
 private data class Placement(
-    val id: UUID,
+    val groupingId: UUID,
+    val placementId: UUID,
     val childId: UUID,
     val unitId: UUID,
     val type: PlacementType,
@@ -327,12 +348,71 @@ private data class Absence(
     val date: LocalDate
 )
 
-private fun Database.Read.calculateOccupancyUnitReportV2(
+private fun Database.Read.calculateUnitOccupancyReportV2(
     today: LocalDate,
     areaId: UUID,
     queryPeriod: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyUnitReportResultRow> {
+    val period = getAndValidatePeriod(today, type, queryPeriod)
+    val caretakerCounts = getCaretakers(type, period, areaId) { row ->
+        Caretakers(
+            UnitKey(
+                unitId = row.mapColumn("unit_id"),
+                unitName = row.mapColumn("unit_name")
+            ),
+            date = row.mapColumn("date"),
+            caretakerCount = row.mapColumn("caretaker_count")
+        )
+    }
+    val placements = getPlacements(caretakerCounts.keys, period)
+    return calculateDailyOccupancies(caretakerCounts, placements, period, type)
+        .map { (key, occupancies) ->
+            OccupancyUnitReportResultRow(
+                unitId = key.unitId,
+                unitName = key.unitName,
+                occupancies = occupancies
+            )
+        }
+        .sortedBy { it.unitName }
+}
+
+private fun Database.Read.calculateGroupOccupancyReportV2(
+    today: LocalDate,
+    areaId: UUID,
+    queryPeriod: FiniteDateRange,
+    type: OccupancyType
+): List<OccupancyGroupReportResultRow> {
+    if (type == OccupancyType.PLANNED) throw BadRequest("Unable to calculate planned occupancy at group level")
+
+    val period = getAndValidatePeriod(today, type, queryPeriod)
+    val caretakerCounts = getCaretakers(type, period, areaId) { row ->
+        Caretakers(
+            UnitGroupKey(
+                unitId = row.mapColumn("unit_id"),
+                unitName = row.mapColumn("unit_name"),
+                groupId = row.mapColumn("group_id"),
+                groupName = row.mapColumn("group_name")
+            ),
+            date = row.mapColumn("date"),
+            caretakerCount = row.mapColumn("caretaker_count")
+        )
+    }
+    val placements = getPlacements(caretakerCounts.keys, period)
+    return calculateDailyOccupancies(caretakerCounts, placements, period, type)
+        .map { (key, occupancies) ->
+            OccupancyGroupReportResultRow(
+                unitId = key.unitId,
+                unitName = key.unitName,
+                groupId = key.groupId,
+                groupName = key.groupName,
+                occupancies = occupancies
+            )
+        }
+        .sortedBy { it.unitName }
+}
+
+private fun getAndValidatePeriod(today: LocalDate, type: OccupancyType, queryPeriod: FiniteDateRange): FiniteDateRange {
     val period =
         if (type == OccupancyType.REALIZED) queryPeriod.copy(end = minOf(queryPeriod.end, today))
         else queryPeriod
@@ -341,81 +421,121 @@ private fun Database.Read.calculateOccupancyUnitReportV2(
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is 50 days.")
     }
 
-    val caretakers =
+    return period
+}
+
+private inline fun <reified K : Key> Database.Read.getCaretakers(
+    type: OccupancyType,
+    period: FiniteDateRange,
+    areaId: UUID,
+    noinline mapper: (RowView) -> Caretakers<K>
+): Map<K, List<Caretakers<K>>> {
+    // language=sql
+    val (caretakersSum, caretakersJoin) =
         if (type == OccupancyType.REALIZED)
-            this.createQuery(
-                """
-SELECT u.id AS unit_id, u.name AS unit_name, t::date AS date, coalesce(sum(s.count), 0.0) AS caretaker_count
-FROM generate_series(:start, :end, '1 day') t
-CROSS JOIN daycare_group g
-JOIN daycare u ON g.daycare_id = u.id AND u.care_area_id = :areaId AND t BETWEEN g.start_date AND g.end_date AND NOT 'CLUB'::care_types = ANY(u.type)
-LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
-LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
-WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
-GROUP BY u.id, t
-"""
-            )
-                .bind("areaId", areaId)
-                .bind("start", period.start)
-                .bind("end", period.end)
-                .mapTo<Caretakers>()
-                .groupBy { it.unit }
+            "sum(s.count)" to "staff_attendance s ON g.id = s.group_id AND t = s.date"
         else
-            this.createQuery(
-                """
-SELECT u.id AS unit_id, u.name AS unit_name, t::date AS date, coalesce(sum(c.amount), 0.0) AS caretaker_count
+            "sum(c.amount)" to "daycare_caretaker c ON g.id = c.group_id AND t BETWEEN c.start_date AND c.end_date"
+
+    // language=sql
+    val (keyColumns, groupBy) = when (K::class) {
+        UnitKey::class -> "u.id AS unit_id, u.name AS unit_name" to "u.id"
+        UnitGroupKey::class -> "g.id AS group_id, g.name AS group_name, u.id AS unit_id, u.name AS unit_name" to "g.id, u.id"
+        else -> error("Unsupported caretakers query class parameter (${K::class})")
+    }
+
+    // language=sql
+    val query = """
+SELECT $keyColumns, t::date AS date, coalesce($caretakersSum, 0.0) AS caretaker_count
 FROM generate_series(:start, :end, '1 day') t
 CROSS JOIN daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND u.care_area_id = :areaId AND t BETWEEN g.start_date AND g.end_date AND NOT 'CLUB'::care_types = ANY(u.type)
-LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND t BETWEEN c.start_date AND c.end_date
+LEFT JOIN $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
-GROUP BY u.id, t
+GROUP BY $groupBy, t
 """
-            )
-                .bind("areaId", areaId)
-                .bind("start", period.start)
-                .bind("end", period.end)
-                .mapTo<Caretakers>()
-                .groupBy { it.unit }
 
-    val placements = this.createQuery(
-        """
-SELECT p.id, p.child_id, p.unit_id, p.type, u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement, daterange(p.start_date, p.end_date, '[]') AS period
-FROM placement p
-JOIN daycare u ON p.unit_id = u.id AND u.care_area_id = :areaId
-WHERE daterange(p.start_date, p.end_date, '[]') && :period
-"""
-    )
+    return createQuery(query)
         .bind("areaId", areaId)
-        .bind("period", period)
-        .mapTo<Placement>()
+        .bind("start", period.start)
+        .bind("end", period.end)
+        .map(mapper)
+        .groupBy { it.key }
+}
 
+private inline fun <reified K : Key> Database.Read.getPlacements(
+    keys: Set<K>,
+    period: FiniteDateRange
+): Iterable<Placement> {
+    // language=sql
+    val (groupingId, daterange, additionalJoin) = when (K::class) {
+        UnitKey::class -> Triple(
+            "u.id",
+            "daterange(p.start_date, p.end_date, '[]')",
+            ""
+        )
+        UnitGroupKey::class -> Triple(
+            "gp.daycare_group_id",
+            "daterange(greatest(p.start_date, gp.start_date), least(p.end_date, gp.end_date), '[]')",
+            "JOIN daycare_group_placement gp ON gp.daycare_placement_id = p.id"
+        )
+        else -> error("Unsupported placement query class parameter (${K::class})")
+    }
+
+    // language=sql
+    val query = """
+SELECT
+    $groupingId AS grouping_id,
+    p.id AS placement_id,
+    p.child_id,
+    p.unit_id,
+    p.type,
+    u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement,
+    $daterange AS period
+FROM placement p
+JOIN daycare u ON p.unit_id = u.id
+$additionalJoin
+WHERE $daterange && :period AND $groupingId = ANY(:keys)
+"""
+
+    return this.createQuery(query)
+        .bind("keys", keys.map { it.groupingId }.toTypedArray())
+        .bind("period", period)
+        .mapTo()
+}
+
+private fun <K : Key> Database.Read.calculateDailyOccupancies(
+    caretakerCounts: Map<K, List<Caretakers<K>>>,
+    placements: Iterable<Placement>,
+    period: FiniteDateRange,
+    type: OccupancyType
+): List<OccupancyReportResultRow<K>> {
     val placementPlans =
         if (type == OccupancyType.PLANNED)
             this.createQuery(
                 """
-SELECT p.id, a.child_id, p.unit_id, p.type, u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement, daterange(p.start_date, p.end_date, '[]') AS period
+SELECT u.id AS grouping_id, p.id AS placement_id, a.child_id, p.unit_id, p.type, u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement, daterange(p.start_date, p.end_date, '[]') AS period
 FROM placement_plan p
 JOIN application a ON p.application_id = a.id
-JOIN daycare u ON p.unit_id = u.id AND u.care_area_id = :areaId
+JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(:unitIds)
 WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
 """
             )
-                .bind("areaId", areaId)
+                .bind("unitIds", caretakerCounts.keys.map { it.unitId }.toTypedArray())
                 .bind("period", period)
                 .mapTo<Placement>()
         else
             listOf()
 
-    val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toTypedArray()
+    val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet().toTypedArray()
     val childBirthdays = this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
         .bind("childIds", childIds)
         .mapTo<Child>()
         .map { it.id to it.dateOfBirth }
         .toMap()
 
-    val serviceNeedCoefficients = this.createQuery(
+    val serviceNeeds = this.createQuery(
         """
 SELECT sn.placement_id, sno.occupancy_coefficient, daterange(sn.start_date, sn.end_date, '[]') AS period
 FROM new_service_need sn
@@ -423,7 +543,7 @@ JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
 """
     )
-        .bind("placementIds", placements.map { it.id }.toList().toTypedArray())
+        .bind("placementIds", placements.map { it.placementId }.toList().toTypedArray())
         .mapTo<ServiceNeed>()
         .groupBy { it.placementId }
 
@@ -431,7 +551,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         .map { row -> row.mapColumn<PlacementType>("valid_placement_type") to row.mapColumn<BigDecimal>("occupancy_coefficient") }
         .toMap()
 
-    val assistanceNeedCoefficients = this.createQuery("SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(:childIds)")
+    val assistanceNeeds = this.createQuery("SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(:childIds)")
         .bind("childIds", childIds)
         .mapTo<AssistanceNeed>()
         .groupBy { it.childId }
@@ -448,7 +568,7 @@ WHERE sn.placement_id = ANY(:placementIds)
             mapOf()
 
     fun getCoefficient(date: LocalDate, placement: Placement): BigDecimal {
-        val assistanceCoefficient = assistanceNeedCoefficients[placement.childId]
+        val assistanceCoefficient = assistanceNeeds[placement.childId]
             ?.find { it.period.includes(date) }
             ?.capacityFactor
             ?: BigDecimal.ONE
@@ -459,7 +579,7 @@ WHERE sn.placement_id = ANY(:placementIds)
         val serviceNeedCoefficient = when {
             placement.familyUnitPlacement -> BigDecimal(youngChildOccupancyCoefficient)
             date < dateOfBirth.plusYears(3) -> BigDecimal(youngChildOccupancyCoefficient)
-            else -> serviceNeedCoefficients[placement.id]
+            else -> serviceNeeds[placement.placementId]
                 ?.let { placementServiceNeeds ->
                     placementServiceNeeds.find { it.period.includes(date) }?.occupancyCoefficient
                 }
@@ -470,41 +590,41 @@ WHERE sn.placement_id = ANY(:placementIds)
         return assistanceCoefficient * serviceNeedCoefficient
     }
 
-    val placementsAndPlans = (placements + placementPlans).groupBy { it.unitId }
+    val placementsAndPlans = (placements + placementPlans).groupBy { it.groupingId }
 
-    return caretakers
-        .map { (unit, values) ->
+    return caretakerCounts
+        .map { (key, values) ->
             val occupancies = values
-                .associate { (_, date, caretakers) ->
-                    val unitPlacementsOnDate = (placementsAndPlans[unit.unitId] ?: listOf())
-                        .filter { it.period.includes(date) }
-                        .filterNot { absences[it.childId]?.any { absence -> absence.date == date } ?: false }
+                .associate { caretakers ->
+                    val placementsOnDate = (placementsAndPlans[key.groupingId] ?: listOf())
+                        .filter { it.period.includes(caretakers.date) }
+                        .filterNot { absences[it.childId]?.any { absence -> absence.date == caretakers.date } ?: false }
 
-                    val sum = unitPlacementsOnDate
+                    val coefficientSum = placementsOnDate
                         .groupBy { it.childId }
-                        .mapNotNull { (_, placements) -> placements.map { getCoefficient(date, it) }.maxOrNull() }
-                        .fold(BigDecimal.ZERO) { sum, value -> sum + value }
+                        .mapNotNull { (_, childPlacements) ->
+                            childPlacements.map { getCoefficient(caretakers.date, it) }.maxOrNull()
+                        }
+                        .fold(BigDecimal.ZERO) { sum, coefficient -> sum + coefficient }
 
                     val percentage =
-                        if (caretakers.compareTo(BigDecimal.ZERO) == 0) null
-                        else sum
-                            .divide(caretakers * BigDecimal(7), 10, RoundingMode.HALF_UP)
+                        if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) null
+                        else coefficientSum
+                            .divide(caretakers.caretakerCount * BigDecimal(7), 4, RoundingMode.HALF_UP)
                             .times(BigDecimal(100))
                             .setScale(1, RoundingMode.HALF_UP)
 
-                    date to OccupancyReportRowGroupedValues(
-                        sum = sum.toDouble(),
-                        headcount = unitPlacementsOnDate.size,
+                    caretakers.date to OccupancyReportRowGroupedValues(
+                        sum = coefficientSum.toDouble(),
+                        headcount = placementsOnDate.size,
                         percentage = percentage?.toDouble(),
-                        caretakers = caretakers.toDouble().takeUnless { it == 0.0 }
+                        caretakers = caretakers.caretakerCount.toDouble().takeUnless { it == 0.0 }
                     )
                 }
 
-            OccupancyUnitReportResultRow(
-                unitId = unit.unitId,
-                unitName = unit.unitName,
+            OccupancyReportResultRow(
+                key = key,
                 occupancies = occupancies
             )
         }
-        .sortedBy { it.unitName }
 }
