@@ -80,3 +80,11 @@ fun Database.Transaction.deleteAttachment(id: UUID) {
         .bind("id", id)
         .execute()
 }
+
+fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: UUID, type: AttachmentType): List<UUID> {
+    return this.createQuery("DELETE FROM attachment WHERE application_id = :applicationId AND type = :type RETURNING id")
+        .bind("applicationId", applicationId)
+        .bind("type", type)
+        .mapTo<UUID>()
+        .toList()
+}
