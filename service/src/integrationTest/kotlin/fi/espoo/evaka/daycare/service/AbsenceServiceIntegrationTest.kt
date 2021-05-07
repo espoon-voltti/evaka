@@ -174,8 +174,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
         val careTypes = placements.getValue(placementDate)
 
         assertEquals(daysInMonth, placements.size)
-        assertEquals(2, careTypes.size)
-        assertTrue(careTypes.contains(CareType.DAYCARE))
+        assertEquals(1, careTypes.size)
+        assertFalse(careTypes.contains(CareType.DAYCARE))
         assertTrue(careTypes.contains(CareType.DAYCARE_5YO_FREE))
     }
 

@@ -156,8 +156,8 @@ class AbsenceService {
             PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
             PlacementType.DAYCARE -> listOf(CareType.DAYCARE)
             PlacementType.DAYCARE_PART_TIME -> listOf(CareType.DAYCARE)
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE)
             PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
                 listOf(CareType.DAYCARE)
         }
