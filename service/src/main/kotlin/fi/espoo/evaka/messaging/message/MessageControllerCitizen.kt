@@ -75,6 +75,7 @@ class MessageControllerCitizen {
         db.transaction {
             it.replyToThread(
                 threadId = threadId,
+                repliesToMessageId = messageId,
                 content = body.content,
                 sender = account,
                 recipients = body.recipientAccountIds

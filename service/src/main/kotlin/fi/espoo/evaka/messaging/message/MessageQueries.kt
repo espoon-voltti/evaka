@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
@@ -29,6 +30,7 @@ fun Database.Read.getUnreadMessages(
 
 private fun Database.Transaction.insertMessage(
     threadId: UUID,
+    repliesToMessageId: UUID? = null,
     content: String,
     sender: MessageAccount,
     recipientAccountIds: Set<UUID>
@@ -43,13 +45,14 @@ private fun Database.Transaction.insertMessage(
 
     // language=SQL
     val insertMessageSql = """
-        INSERT INTO message (content_id, thread_id, sender_id, sender_name)
-        VALUES (:contentId, :threadId, :senderId, :senderName)        
+        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to)
+        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId)        
         RETURNING id
     """.trimIndent()
     val messageId = this.createQuery(insertMessageSql)
         .bind("contentId", contentId)
         .bind("threadId", threadId)
+        .bindNullable("repliesToId", repliesToMessageId)
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
         .mapTo<UUID>()
@@ -81,18 +84,25 @@ fun Database.Transaction.createMessageThread(
         .mapTo<UUID>()
         .first()
 
-    insertMessage(threadId, content, sender, recipientAccountIds)
+    insertMessage(threadId = threadId, content = content, sender = sender, recipientAccountIds = recipientAccountIds)
 
     return threadId
 }
 
 fun Database.Transaction.replyToThread(
     threadId: UUID,
+    repliesToMessageId: UUID,
     content: String,
     sender: MessageAccount,
     recipients: Set<UUID>
 ): UUID {
-    return insertMessage(threadId, content, sender, recipients)
+    return insertMessage(
+        threadId = threadId,
+        repliesToMessageId = repliesToMessageId,
+        content = content,
+        sender = sender,
+        recipientAccountIds = recipients
+    )
 }
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<MessageThread> {

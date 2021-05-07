@@ -129,10 +129,25 @@ class MessageQueriesTest : PureJdbiTest() {
 
         // employee is not a recipient in any threads
         assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }.data.size)
+        val personResult = db.read { it.getMessagesReceivedByAccount(person1Account.id, 10, 1) }
+        assertEquals(2, personResult.data.size)
 
-        db.transaction { it.replyToThread(thread2Id, "Just replying here", person1Account, setOf(employee1Account.id)) }
+        val thread = personResult.data.first()
+        assertEquals(thread2Id, thread.id)
+        assertEquals("Newest thread", thread.title)
 
-        // employee is now recipient in a reply to thread two
+        // when employee gets a reply
+        db.transaction {
+            it.replyToThread(
+                threadId = thread2Id,
+                repliesToMessageId = thread.messages.last().id,
+                content = "Just replying here",
+                sender = person1Account,
+                recipients = setOf(employee1Account.id)
+            )
+        }
+
+        // then employee sees the thread
         val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
