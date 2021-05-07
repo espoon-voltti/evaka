@@ -134,7 +134,7 @@ export const daycare2Fixture: Daycare = {
   roundTheClock: true,
   location: {
     lat: 60.20350901607783,
-    lon: 24.65379611887424
+    lon: 24.669
   }
 }
 
