@@ -421,9 +421,8 @@ private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> 
             listOf(CareType.PRESCHOOL)
         PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
             listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
-        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-            listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+        PlacementType.DAYCARE_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE)
         PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME,
         PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
             listOf(CareType.DAYCARE)
