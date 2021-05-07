@@ -53,7 +53,9 @@ export default class CitizenMapPage {
   }
 
   async testMapPopup(daycare: Daycare) {
+    await delay(500)
     await this.listItemFor(daycare).click()
+    await delay(500)
     await this.map.markerFor(daycare).click()
     await waitUntilEqual(() => this.map.popupFor(daycare).name, daycare.name)
   }
@@ -62,6 +64,7 @@ export default class CitizenMapPage {
 class Map extends RawElement {
   static readonly MAX_ZOOM_ATTEMPTS = 30
   readonly #zoomIn = `${this.selector} .leaflet-control-zoom-in`
+  readonly #zoomOut = `${this.selector} .leaflet-control-zoom-out`
   readonly #container = new RawElement(
     this.page,
     `${this.selector} .leaflet-container`
@@ -70,6 +73,7 @@ class Map extends RawElement {
     this.page,
     `${this.selector} [data-qa="map-marker-address"]`
   )
+  readonly markerCluster = new RawElement(this.page, '.marker-cluster')
 
   get zoomInDisabled(): Promise<boolean> {
     return this.page.$eval(this.#zoomIn, (el) =>
@@ -77,21 +81,46 @@ class Map extends RawElement {
     )
   }
 
-  async zoomInFully() {
-    let attempts = 0
-    while (attempts < Map.MAX_ZOOM_ATTEMPTS) {
+  get zoomOutDisabled(): Promise<boolean> {
+    return this.page.$eval(this.#zoomOut, (el) =>
+      el.classList.contains('leaflet-disabled')
+    )
+  }
+
+  async zoomOut(times: number | null = null) {
+    let attempts = times ?? Map.MAX_ZOOM_ATTEMPTS
+    while (attempts > 0) {
+      if (await this.zoomOutDisabled) {
+        return
+      }
+      await this.page.click(this.#zoomOut)
+      attempts--
+      if (attempts === 0) return
+      await delay(100)
+    }
+    throw new Error(`Failed to zoom out after ${attempts} attempts`)
+  }
+
+  async zoomIn(times: number | null = null) {
+    let attempts = times ?? Map.MAX_ZOOM_ATTEMPTS
+    while (attempts > 0) {
       if (await this.zoomInDisabled) {
         return
       }
       await this.page.click(this.#zoomIn)
-      attempts++
+      attempts--
+      if (attempts === 0) return
       await delay(100)
     }
     throw new Error(`Failed to zoom in after ${attempts} attempts`)
   }
 
+  async zoomInFully() {
+    return this.zoomIn()
+  }
+
   markerFor(daycare: Daycare) {
-    return new RawElement(this.page, `[data-qa="map-marker-${daycare.id}"]`)
+    return new RawElement(this.page, `[title="${daycare.name}"]`)
   }
   popupFor(daycare: Daycare): MapPopup {
     return new MapPopup(this.page, `[data-qa="map-popup-${daycare.id}"]`)

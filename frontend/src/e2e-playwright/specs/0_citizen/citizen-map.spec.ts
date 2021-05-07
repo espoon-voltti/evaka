@@ -19,7 +19,12 @@ import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
 import { Page } from 'playwright'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import {
+  delay,
+  waitUntilEqual,
+  waitUntilFalse,
+  waitUntilTrue
+} from '../../utils'
 
 const swedishDaycare: Daycare = {
   ...daycare2Fixture,
@@ -57,16 +62,16 @@ const privateDaycareWithoutPeriods: Daycare = {
 let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
-  await resetDatabase()
-  const careArea = await Fixture.careArea().with(careAreaFixture).save()
-  await Fixture.daycare().with(clubFixture).careArea(careArea).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  await Fixture.daycare().with(preschoolFixture).careArea(careArea).save()
-  await Fixture.daycare().with(swedishDaycare).careArea(careArea).save()
-  await Fixture.daycare()
-    .with(privateDaycareWithoutPeriods)
-    .careArea(careArea)
-    .save()
+  // await resetDatabase()
+  // const careArea = await Fixture.careArea().with(careAreaFixture).save()
+  // await Fixture.daycare().with(clubFixture).careArea(careArea).save()
+  // await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+  // await Fixture.daycare().with(preschoolFixture).careArea(careArea).save()
+  // await Fixture.daycare().with(swedishDaycare).careArea(careArea).save()
+  // await Fixture.daycare()
+  //   .with(privateDaycareWithoutPeriods)
+  //   .careArea(careArea)
+  //   .save()
 })
 beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
@@ -130,18 +135,23 @@ describe('Citizen map page', () => {
   test('Viewing unit details automatically pans the map to the right marker', async () => {
     const daycare2Marker = mapPage.map.markerFor(daycare2Fixture)
     const swedishMarker = mapPage.map.markerFor(swedishDaycare)
+    await waitUntilTrue(() => daycare2Marker.visible)
+    await waitUntilTrue(() => swedishMarker.visible)
 
     // Zoom in fully to make sure we start without either marker visible.
     await mapPage.map.zoomInFully()
-    await waitUntilFalse(() => mapPage.map.isMarkerInView(daycare2Marker))
-    await waitUntilFalse(() => mapPage.map.isMarkerInView(swedishMarker))
+    await waitUntilFalse(() => daycare2Marker.visible)
+    await waitUntilFalse(() => swedishMarker.visible)
 
+    await delay(500)
     await mapPage.listItemFor(daycare2Fixture).click()
-    await waitUntilTrue(() => mapPage.map.isMarkerInView(daycare2Marker))
+    await delay(500)
+    await waitUntilTrue(() => daycare2Marker.visible)
 
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.listItemFor(swedishDaycare).click()
-    await waitUntilTrue(() => mapPage.map.isMarkerInView(swedishMarker))
+    await delay(500)
+    await waitUntilTrue(() => swedishMarker.visible)
   })
   test('Units can be searched', async () => {
     await mapPage.searchInput.type('Svart')
@@ -175,5 +185,15 @@ describe('Citizen map page', () => {
       () => mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying,
       'Ei hakua eVakan kautta, ota yhteys yksikköön'
     )
+  })
+  test('Nearby units will be clustered', async () => {
+    const daycare2Marker = mapPage.map.markerFor(daycare2Fixture)
+    await waitUntilTrue(() => daycare2Marker.visible)
+    await waitUntilFalse(() => mapPage.map.markerCluster.visible)
+
+    await mapPage.map.zoomOut(1)
+    await delay(500)
+    await waitUntilFalse(() => daycare2Marker.visible)
+    await waitUntilTrue(() => mapPage.map.markerCluster.visible)
   })
 })
