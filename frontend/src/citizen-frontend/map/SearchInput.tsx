@@ -4,7 +4,12 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
+import ReactSelect, {
+  components,
+  InputActionMeta,
+  InputProps
+} from 'react-select'
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { Result, Success } from 'lib-common/api'
@@ -29,6 +34,10 @@ type Props = {
   setSelectedUnit: (u: PublicUnit | null) => void
 }
 
+const Input = (props: InputProps) => (
+  <components.Input {...props} isHidden={false} />
+)
+
 export default React.memo(function SearchInput({
   allUnits,
   selectedAddress,
@@ -49,7 +58,7 @@ export default React.memo(function SearchInput({
     } else {
       setAddressOptions(Success.of([]))
     }
-  }, [debouncedInputString])
+  }, [debouncedInputString, loadOptions])
 
   const getUnitOptions = useCallback(() => {
     if (debouncedInputString.length < 3 || !allUnits.isSuccess) return []
@@ -82,12 +91,32 @@ export default React.memo(function SearchInput({
     } else {
       setSelectedUnit(null)
       setSelectedAddress(option)
+      setInputString(`${option.streetAddress}, ${option.postOffice}`)
     }
   }
 
   const clearSelection = () => {
     setSelectedAddress(null)
     setSelectedUnit(null)
+  }
+
+  const onFocus = (e: React.FocusEvent<HTMLElement>) => {
+    ;(e as React.FocusEvent<HTMLInputElement>).target.select()
+  }
+
+  const onInputChange = (inputValue: string, { action }: InputActionMeta) => {
+    if (action === 'input-blur') {
+      setInputString(
+        selectedAddress
+          ? `${selectedAddress.streetAddress}, ${selectedAddress.postOffice}`
+          : ''
+      )
+    } else if (action === 'input-change') {
+      if (inputValue.length === 0) {
+        setSelectedAddress(null)
+      }
+      setInputString(inputValue)
+    }
   }
 
   return (
@@ -98,7 +127,7 @@ export default React.memo(function SearchInput({
         closeMenuOnSelect
         isLoading={addressOptions.isLoading}
         inputValue={inputString}
-        onInputChange={(val: string) => setInputString(val)}
+        onInputChange={onInputChange}
         options={[
           {
             options: getUnitOptions()
@@ -127,6 +156,7 @@ export default React.memo(function SearchInput({
         placeholder={t.map.searchPlaceholder}
         noOptionsMessage={() => t.map.noResults}
         components={{
+          Input,
           Option: function Option({ innerRef, innerProps, ...props }) {
             const option = props.data as MapAddress
             const addressLabel = [option.streetAddress, option.postOffice].join(
@@ -155,6 +185,7 @@ export default React.memo(function SearchInput({
             )
           }
         }}
+        onFocus={onFocus}
       />
     </div>
   )
