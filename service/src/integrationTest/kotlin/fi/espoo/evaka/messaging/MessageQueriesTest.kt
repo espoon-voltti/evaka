@@ -60,7 +60,13 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         db.transaction {
-            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employeeAccount, setOf(person1Account.id, person2Account.id))
+            it.createMessageThread(
+                "Hello",
+                "Content",
+                MessageType.MESSAGE,
+                employeeAccount,
+                setOf(person1Account.id, person2Account.id)
+            )
         }
 
         assertEquals(
@@ -93,13 +99,31 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         val thread1Id = db.transaction {
-            it.createMessageThread("Hello", "Content", MessageType.MESSAGE, employee1Account, setOf(person1Account.id, person2Account.id))
+            it.createMessageThread(
+                "Hello",
+                "Content",
+                MessageType.MESSAGE,
+                employee1Account,
+                setOf(person1Account.id, person2Account.id)
+            )
         }
         val thread2Id = db.transaction {
-            it.createMessageThread("Newest thread", "Content 2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
+            it.createMessageThread(
+                "Newest thread",
+                "Content 2",
+                MessageType.MESSAGE,
+                employee1Account,
+                setOf(person1Account.id)
+            )
         }
         db.transaction {
-            it.createMessageThread("Lone thread", "Alone", MessageType.MESSAGE, employee2Account, setOf(employee2Account.id))
+            it.createMessageThread(
+                "Lone thread",
+                "Alone",
+                MessageType.MESSAGE,
+                employee2Account,
+                setOf(employee2Account.id)
+            )
         }
 
         // employee is not a recipient in any threads
@@ -140,5 +164,44 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(1, employee2Result.data[0].messages.size)
         assertEquals(employee2Account.id, employee2Result.data[0].messages[0].senderId)
         assertEquals("Alone", employee2Result.data[0].messages[0].content)
+    }
+
+    @Test
+    fun `received messages can be paged`() {
+        val (employee1Account, person1Account) = db.read {
+            listOf(
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first()
+            )
+        }
+
+        db.transaction {
+            it.createMessageThread("t1", "c1", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
+        }
+        db.transaction {
+            it.createMessageThread("t2", "c2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
+        }
+
+        val messages = db.read { it.getMessagesReceivedByAccount(person1Account.id, 10, 1) }
+        assertEquals(2, messages.total)
+        assertEquals(2, messages.data.size)
+        assertEquals("t2", messages.data[0].title)
+        assertEquals("t1", messages.data[1].title)
+
+        val (page1, page2) = db.read {
+            listOf(
+                it.getMessagesReceivedByAccount(person1Account.id, 1, 1),
+                it.getMessagesReceivedByAccount(person1Account.id, 1, 2)
+            )
+        }
+        assertEquals(2, page1.total)
+        assertEquals(2, page1.pages)
+        assertEquals(1, page1.data.size)
+        assertEquals(messages.data[0], page1.data[0])
+
+        assertEquals(2, page2.total)
+        assertEquals(2, page2.pages)
+        assertEquals(1, page2.data.size)
+        assertEquals(messages.data[1], page2.data[0])
     }
 }
