@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.serviceneednew.NewServiceNeed
+import fi.espoo.evaka.serviceneednew.clearNewServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneednew.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneednew.getServiceNeedsByUnit
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -49,9 +50,15 @@ fun Database.Transaction.updatePlacement(
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
     val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
-    if (startDate.isAfter(old.startDate)) clearGroupPlacementsBefore(id, startDate)
-    if (endDate.isBefore(old.endDate)) clearGroupPlacementsAfter(id, endDate)
-    clearOldPlacements(old.childId, startDate, endDate, id, aclAuth)
+    if (startDate.isAfter(old.startDate)) {
+        clearGroupPlacementsBefore(id, startDate)
+        clearNewServiceNeedsFromPeriod(this, old.id, FiniteDateRange(old.startDate, startDate.minusDays(1)))
+    }
+    if (endDate.isBefore(old.endDate)) {
+        clearGroupPlacementsAfter(id, endDate)
+        clearNewServiceNeedsFromPeriod(this, old.id, FiniteDateRange(endDate.plusDays(1), old.endDate))
+    }
+    clearOldPlacements(childId = old.childId, from = startDate, to = endDate, excludePlacement = id, aclAuth = aclAuth)
 
     try {
         val placementTypePeriods = handleFiveYearOldDaycare(this, old.childId, old.type, startDate, endDate)
@@ -154,11 +161,11 @@ fun Database.Transaction.transferGroup(daycarePlacementId: UUID, groupPlacementI
     createGroupPlacement(daycarePlacementId, groupId, startDate, groupPlacement.endDate)
 }
 
-private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, modifiedId: UUID? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
+private fun Database.Transaction.clearOldPlacements(childId: UUID, from: LocalDate, to: LocalDate, excludePlacement: UUID? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
     getPlacementsForChildDuring(childId, from, to)
-        .filter { placement -> if (modifiedId != null) placement.id != modifiedId else true }
+        .filter { placement -> if (excludePlacement != null) placement.id != excludePlacement else true }
         .forEach { old ->
             if (old.endDate.isBefore(from) || old.startDate.isAfter(to)) {
                 throw Error("bug discovered: query returned non-overlapping placement")
@@ -197,6 +204,7 @@ private fun Database.Transaction.movePlacementStartDateLater(placement: Placemen
     if (newStartDate.isBefore(placement.startDate)) throw IllegalArgumentException("Use this method only for shortening placement")
 
     clearGroupPlacementsBefore(placement.id, newStartDate)
+    clearNewServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(placement.startDate, newStartDate.minusDays(1)))
     updatePlacementStartDate(placement.id, newStartDate)
 }
 
@@ -204,6 +212,7 @@ private fun Database.Transaction.movePlacementEndDateEarlier(placement: Placemen
     if (newEndDate.isAfter(placement.endDate)) throw IllegalArgumentException("Use this method only for shortening placement")
 
     clearGroupPlacementsAfter(placement.id, newEndDate)
+    clearNewServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(newEndDate.plusDays(1), placement.endDate))
     updatePlacementEndDate(placement.id, newEndDate)
 }
 
@@ -212,7 +221,8 @@ private fun Database.Transaction.splitPlacementWithGap(
     gapStartInclusive: LocalDate,
     gapEndInclusive: LocalDate
 ) {
-    movePlacementEndDateEarlier(placement, gapStartInclusive.minusDays(1))
+    movePlacementEndDateEarlier(placement, newEndDate = gapStartInclusive.minusDays(1))
+
     insertPlacement(
         type = placement.type,
         childId = placement.childId,

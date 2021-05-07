@@ -186,7 +186,16 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
               'UNIT_SUPERVISOR'
             ]}
             onDelete={() => setConfirmingDelete(true)}
-            deletableFor={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']}
+            deletableFor={
+              placement.startDate.isAfter(LocalDate.today())
+                ? [
+                    'ADMIN',
+                    'SERVICE_WORKER',
+                    'FINANCE_ADMIN',
+                    'UNIT_SUPERVISOR'
+                  ]
+                : ['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']
+            }
             dataQaDelete="btn-remove-placement"
             warning={
               missingServiceNeedDays > 0

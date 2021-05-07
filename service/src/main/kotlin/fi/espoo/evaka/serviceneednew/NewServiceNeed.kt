@@ -146,7 +146,7 @@ fun updateNewServiceNeed(
     )
 }
 
-private fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
+fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
     tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding).forEach { old ->
         val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
         when {
