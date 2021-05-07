@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
+import fi.espoo.evaka.messaging.message.getMessageParticipants
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.replyToThread
 import fi.espoo.evaka.resetDatabase
@@ -203,5 +204,37 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(2, page2.pages)
         assertEquals(1, page2.data.size)
         assertEquals(messages.data[1], page2.data[0])
+    }
+
+    @Test
+    fun `message participants by messageId`() {
+        val (employee1Account, person1Account, person2Account) = db.read {
+            listOf(
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+            )
+        }
+
+        val threadId = db.transaction {
+            it.createMessageThread(
+                "Hello",
+                "Content",
+                MessageType.MESSAGE,
+                employee1Account,
+                setOf(person1Account.id, person2Account.id)
+            )
+        }
+
+        val participants = db.read {
+            val messageId =
+                it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
+                    .bind("threadId", threadId)
+                    .mapTo<UUID>().one()
+            it.getMessageParticipants(messageId)
+        }
+        assertEquals(threadId, participants?.threadId)
+        assertEquals(employee1Account.id, participants?.sender)
+        assertEquals(setOf(person1Account.id, person2Account.id), participants?.recipients)
     }
 }

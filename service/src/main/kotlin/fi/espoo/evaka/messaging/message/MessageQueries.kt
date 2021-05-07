@@ -32,7 +32,7 @@ private fun Database.Transaction.insertMessage(
     content: String,
     sender: MessageAccount,
     recipientAccountIds: Set<UUID>
-) {
+): UUID {
     // language=SQL
     val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
     val contentId = this.createQuery(messageContentSql)
@@ -62,6 +62,8 @@ private fun Database.Transaction.insertMessage(
     val batch = this.prepareBatch(insertRecipientsSql)
     recipientAccountIds.forEach { batch.bind("messageId", messageId).bind("accountId", it).add() }
     batch.execute()
+
+    return messageId
 }
 
 fun Database.Transaction.createMessageThread(
@@ -84,8 +86,13 @@ fun Database.Transaction.createMessageThread(
     return threadId
 }
 
-fun Database.Transaction.replyToThread(threadId: UUID, content: String, sender: MessageAccount, recipients: Set<UUID>) {
-    insertMessage(threadId, content, sender, recipients)
+fun Database.Transaction.replyToThread(
+    threadId: UUID,
+    content: String,
+    sender: MessageAccount,
+    recipients: Set<UUID>
+): UUID {
+    return insertMessage(threadId, content, sender, recipients)
 }
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<MessageThread> {
@@ -146,4 +153,24 @@ SELECT
         .bindMap(params)
         .map(withCountMapper<MessageThread>())
         .let(mapToPaged(pageSize))
+}
+
+data class MessageParticipants(val threadId: UUID, val sender: UUID, val recipients: Set<UUID>)
+
+fun Database.Read.getMessageParticipants(messageId: UUID): MessageParticipants? {
+    val sql = """
+        SELECT
+            t.id AS threadId,
+            m.sender_id AS sender,
+            (SELECT array_agg(recipient_id)) as recipients
+            FROM message m
+            JOIN message_thread t ON m.thread_id = t.id
+            JOIN message_recipients rec ON rec.message_id = m.id
+            WHERE m.id = :messageId
+            GROUP BY t.id, m.sender_id
+    """.trimIndent()
+    return this.createQuery(sql)
+        .bind("messageId", messageId)
+        .mapTo<MessageParticipants>()
+        .firstOrNull()
 }
