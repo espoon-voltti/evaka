@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
@@ -28,38 +29,38 @@ fun Database.Read.getUnreadMessagesCount(
 }
 
 fun Database.Transaction.insertMessage(
-    contentId: UUID?,
+    contentId: UUID,
     threadId: UUID,
     sender: MessageAccount,
+    repliesToMessageId: UUID? = null,
 ): UUID {
     // language=SQL
     val insertMessageSql = """
-        INSERT INTO message (content_id, thread_id, sender_id, sender_name)
-        VALUES (:contentId, :threadId, :senderId, :senderName)        
+        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to)
+        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId)        
         RETURNING id
     """.trimIndent()
-    val messageId = this.createQuery(insertMessageSql)
+    return createQuery(insertMessageSql)
         .bind("contentId", contentId)
         .bind("threadId", threadId)
+        .bindNullable("repliesToId", repliesToMessageId)
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
         .mapTo<UUID>()
         .one()
-    return messageId
 }
 
 fun Database.Transaction.insertMessageContent(
     content: String,
     sender: MessageAccount,
-): UUID? {
+): UUID {
     // language=SQL
     val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
-    val contentId = this.createQuery(messageContentSql)
+    return createQuery(messageContentSql)
         .bind("content", content)
         .bind("authorId", sender.id)
         .mapTo<UUID>()
         .one()
-    return contentId
 }
 
 fun Database.Transaction.insertRecipients(
@@ -120,6 +121,11 @@ messages AS (
     FROM threads t
     JOIN message m ON m.thread_id = t.id
     JOIN message_content c ON m.content_id = c.id
+    WHERE
+        m.sender_id = :accountId OR
+        EXISTS(SELECT 1
+            FROM message_recipients rec
+            WHERE rec.message_id = m.id AND rec.recipient_id = :accountId)
     ORDER BY m.sent_at
 )
 
@@ -146,4 +152,25 @@ SELECT
         .bindMap(params)
         .map(withCountMapper<MessageThread>())
         .let(mapToPaged(pageSize))
+}
+
+data class ThreadWithParticipants(val threadId: UUID, val type: MessageType, val sender: UUID, val recipients: Set<UUID>)
+
+fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants? {
+    val sql = """
+        SELECT
+            t.id AS threadId,
+            t.message_type AS type,
+            m.sender_id AS sender,
+            (SELECT array_agg(recipient_id)) as recipients
+            FROM message m
+            JOIN message_thread t ON m.thread_id = t.id
+            JOIN message_recipients rec ON rec.message_id = m.id
+            WHERE m.id = :messageId
+            GROUP BY t.id, t.message_type, m.sender_id
+    """.trimIndent()
+    return this.createQuery(sql)
+        .bind("messageId", messageId)
+        .mapTo<ThreadWithParticipants>()
+        .firstOrNull()
 }

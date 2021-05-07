@@ -22,7 +22,7 @@ data class MessageThread(
     val type: MessageType,
     val title: String,
     @Json
-    val messages: List<Message>
+    val messages: List<Message>,
 )
 
 enum class MessageType {
@@ -32,7 +32,7 @@ enum class MessageType {
 
 data class MessageAccount(
     val id: UUID,
-    val name: String
+    val name: String,
 )
 
 private fun insertMessage(
@@ -40,10 +40,11 @@ private fun insertMessage(
     threadId: UUID,
     content: String,
     sender: MessageAccount,
-    recipientAccountIds: Set<UUID>
+    recipientAccountIds: Set<UUID>,
+    repliesToMessageId: UUID? = null,
 ): UUID {
     val contentId = tx.insertMessageContent(content, sender)
-    val messageId = tx.insertMessage(contentId, threadId, sender)
+    val messageId = tx.insertMessage(contentId, threadId, sender, repliesToMessageId)
     tx.insertRecipients(recipientAccountIds, messageId)
     return messageId
 }
@@ -54,13 +55,20 @@ fun createMessageThread(
     content: String,
     type: MessageType,
     sender: MessageAccount,
-    recipientAccountIds: Set<UUID>
+    recipientAccountIds: Set<UUID>,
 ): UUID {
     val threadId = tx.insertThread(type, title)
     insertMessage(tx, threadId, content, sender, recipientAccountIds)
     return threadId
 }
 
-fun replyToThread(tx: Database.Transaction, threadId: UUID, content: String, sender: MessageAccount, recipients: Set<UUID>): UUID {
-    return insertMessage(tx, threadId, content, sender, recipients)
+fun replyToThread(
+    tx: Database.Transaction,
+    threadId: UUID,
+    content: String,
+    sender: MessageAccount,
+    recipients: Set<UUID>,
+    repliesToMessageId: UUID
+): UUID {
+    return insertMessage(tx, threadId, content, sender, recipients, repliesToMessageId)
 }

@@ -137,6 +137,7 @@ enum class Audit(
     MessagingUnreadMessagesRead("messaging.messages.unread.read"),
     MessagingReceivedMessagesRead("messaging.messages.received-messages.read"),
     MessagingNewMessageWrite("messaging.messages.new-message.write"),
+    MessagingReplyToMessageWrite("messaging.messages.reply-to-message.write"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
     MissingServiceNeedReportRead("evaka.missing-service-need-report.read"),
     MobileDevicesList("evaka.mobile-devices.list"),

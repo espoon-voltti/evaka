@@ -9,6 +9,7 @@ import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
+import fi.espoo.evaka.messaging.message.getThreadByMessageId
 import fi.espoo.evaka.messaging.message.replyToThread
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -132,10 +133,26 @@ class MessageQueriesTest : PureJdbiTest() {
 
         // employee is not a recipient in any threads
         assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }.data.size)
+        val personResult = db.read { it.getMessagesReceivedByAccount(person1Account.id, 10, 1) }
+        assertEquals(2, personResult.data.size)
 
-        db.transaction { replyToThread(it, thread2Id, "Just replying here", person1Account, setOf(employee1Account.id)) }
+        val thread = personResult.data.first()
+        assertEquals(thread2Id, thread.id)
+        assertEquals("Newest thread", thread.title)
 
-        // employee is now recipient in a reply to thread two
+        // when employee gets a reply
+        db.transaction {
+            replyToThread(
+                it,
+                threadId = thread2Id,
+                repliesToMessageId = thread.messages.last().id,
+                content = "Just replying here",
+                sender = person1Account,
+                recipients = setOf(employee1Account.id)
+            )
+        }
+
+        // then employee sees the thread
         val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
@@ -207,5 +224,38 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(2, page2.pages)
         assertEquals(1, page2.data.size)
         assertEquals(messages.data[1], page2.data[0])
+    }
+
+    @Test
+    fun `message participants by messageId`() {
+        val (employee1Account, person1Account, person2Account) = db.read {
+            listOf(
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+            )
+        }
+
+        val threadId = db.transaction {
+            createMessageThread(
+                tx = it,
+                title = "Hello",
+                content = "Content",
+                type = MessageType.MESSAGE,
+                sender = employee1Account,
+                recipientAccountIds = setOf(person1Account.id, person2Account.id)
+            )
+        }
+
+        val participants = db.read {
+            val messageId =
+                it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
+                    .bind("threadId", threadId).mapTo<UUID>().one()
+            it.getThreadByMessageId(messageId)
+        }
+        assertEquals(threadId, participants?.threadId)
+        assertEquals(MessageType.MESSAGE, participants?.type)
+        assertEquals(employee1Account.id, participants?.sender)
+        assertEquals(setOf(person1Account.id, person2Account.id), participants?.recipients)
     }
 }
