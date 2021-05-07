@@ -18,7 +18,8 @@ import {
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
   postDaycareDailyNote,
-  postMobileDevice
+  postMobileDevice,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import { mobileAutoSignInRole } from '../../config/users'
 import { t } from 'testcafe'
@@ -60,6 +61,7 @@ fixture('Mobile daily notes for backup care')
   .meta({ type: 'regression', subType: 'mobile' })
   .page(config.adminUrl)
   .before(async () => {
+    await resetDatabase()
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
 
     await Promise.all([
