@@ -104,7 +104,7 @@ export default React.memo(function UnitDetailsPanel({
         <Gap size="s" />
         <InlineButton
           data-qa="map-unit-details-back"
-          text={'Takaisin hakuun'}
+          text={t.map.backToSearch}
           icon={faArrowLeft}
           onClick={onClose}
         />
