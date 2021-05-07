@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 
-fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): List<MessageAccount> {
+fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<MessageAccount> {
     // language=SQL
     val employeeSql = """
         WITH accounts AS (
@@ -40,5 +40,5 @@ fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): List<Messa
     return this.createQuery(if (user.isEndUser) citizenSql else employeeSql)
         .bind("userId", user.id)
         .mapTo<MessageAccount>()
-        .list()
+        .toSet()
 }

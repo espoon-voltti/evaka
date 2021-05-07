@@ -43,13 +43,13 @@ class MessageAccountQueriesTest : PureJdbiTest() {
     fun `person gets access to his own account`() {
         val accounts = db.transaction { it.getMessageAccountsForUser(AuthenticatedUser.Citizen(personId)) }
         assertEquals(1, accounts.size)
-        assertEquals("Person Firstname", accounts[0].name)
+        assertEquals("Person Firstname", accounts.first().name)
     }
 
     @Test
     fun `employee gets access to his own account`() {
         val accounts = db.transaction { it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employeeId, roles = setOf())) }
         assertEquals(1, accounts.size)
-        assertEquals("Employee Firstname", accounts[0].name)
+        assertEquals("Employee Firstname", accounts.first().name)
     }
 }

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -11,6 +12,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,22 +27,23 @@ data class UnreadMessagesResponse(val count: Int)
 class MessageController {
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): List<MessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
+        Audit.MessagingMyAccountsRead.log()
         return db.read { it.getMessageAccountsForUser(user) }
     }
 
-    @GetMapping("/threads")
-    fun getThreads(
+    @GetMapping("/{accountId}/received")
+    fun getReceivedMessages(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam accountId: UUID,
+        @PathVariable accountId: UUID,
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
+        Audit.MessagingReceivedMessagesRead.log(targetId = accountId)
         if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
-        // TODO implement
-        return Paged(listOf(), 0, 1)
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
     @GetMapping("/unread")
@@ -48,8 +51,9 @@ class MessageController {
         db: Database.Connection,
         user: AuthenticatedUser
     ): UnreadMessagesResponse {
+        Audit.MessagingUnreadMessagesRead.log()
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds) }
+        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
     }
 
@@ -58,7 +62,7 @@ class MessageController {
         val content: String,
         val type: MessageType,
         val senderAccountId: UUID,
-        val recipientAccountIds: List<UUID>
+        val recipientAccountIds: Set<UUID>
     )
 
     @PostMapping
@@ -67,14 +71,18 @@ class MessageController {
         user: AuthenticatedUser,
         @RequestBody body: PostMessageBody
     ): UUID {
+        Audit.MessagingNewMessageWrite.log(targetId = body.senderAccountId)
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         val sender = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("User is not authorized to access the account")
 
         // TODO recipient account authorization
 
+        // TODO split messages to threads by "household"
+
         return db.transaction {
-            it.createMessageThread(
+            createMessageThread(
+                it,
                 title = body.title,
                 content = body.content,
                 sender = sender,
@@ -94,7 +102,6 @@ class MessageController {
             id = UUID.randomUUID(),
             senderId = supervisorAccount.id,
             senderName = supervisorAccount.name,
-            title = "Aatun siirtyminen Meritähtiin",
             content = "Hei Aatun äiti ja isä! Aatu on kasvanut kovaa vauhtia ja nyt on tullut aika siirtyä seuraavaan ikäryhmään. Aatu aloittaa Meritähdissä kesäkuussa.",
             sentAt = HelsinkiDateTime.now().minusDays(3)
         )
@@ -116,7 +123,6 @@ class MessageController {
             id = UUID.randomUUID(),
             senderId = supervisorAccount.id,
             senderName = supervisorAccount.name,
-            title = "Kevät",
             content = """Hei vanhemmat!
 
 Kevät lähestyy jo kovaa vauhtia. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas dapibus blandit porta. Aliquam pellentesque ex sed magna efficitur convallis. Sed elementum felis quis placerat rutrum.
@@ -137,6 +143,7 @@ T. Ella Esimies""",
                 MessageThread(
                     id = UUID.randomUUID(),
                     type = MessageType.MESSAGE,
+                    title = "Aatun siirtyminen Meritähtiin",
                     messages = listOf(
                         aatuMeritahtiMessage,
                         aatusDadsResponse,
@@ -146,6 +153,7 @@ T. Ella Esimies""",
                 MessageThread(
                     id = UUID.randomUUID(),
                     type = MessageType.BULLETIN,
+                    title = "Kevät",
                     messages = listOf(bulletin)
                 )
             )
