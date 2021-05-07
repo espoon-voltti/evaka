@@ -13,6 +13,7 @@ import UnitList from '../map/UnitList'
 import { mapViewBreakpoint, MobileMode } from '../map/const'
 import { CareTypeOption, MapAddress, ProviderTypeOption } from '../map/MapView'
 import { UnitWithDistance } from '../map/distances'
+import { desktopMin } from 'lib-components/breakpoints'
 
 type Props = {
   allUnits: Result<PublicUnit[]>
@@ -85,6 +86,10 @@ const Wrapper = styled.div`
   min-width: 300px;
   flex-grow: 1;
   flex-shrink: 1;
+
+  @media (min-width: ${desktopMin}) {
+    overflow-y: auto;
+  }
 
   display: flex;
   flex-direction: column;
