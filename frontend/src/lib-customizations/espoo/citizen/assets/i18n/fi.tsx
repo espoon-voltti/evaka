@@ -109,7 +109,8 @@ export default {
     },
     serviceVoucherLink:
       'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille',
-    noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön'
+    noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
+    backToSearch: 'Takaisin hakuun'
   },
   messages: {
     inboxTitle: 'Saapuneet viestit',
