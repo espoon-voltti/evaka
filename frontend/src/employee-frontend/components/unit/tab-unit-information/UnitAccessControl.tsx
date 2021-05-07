@@ -264,7 +264,7 @@ const AddAclSelectContainer = styled.div`
   }
 `
 
-const GroupsTh = styled(Td)`
+const GroupsTh = styled(Th)`
   width: 40%;
 `
 
