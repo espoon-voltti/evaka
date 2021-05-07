@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -27,6 +28,7 @@ class MessageController {
 
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
+        Audit.MessagingMyAccountsRead.log()
         return db.read { it.getMessageAccountsForUser(user) }
     }
 
@@ -38,6 +40,7 @@ class MessageController {
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
+        Audit.MessagingReceivedMessagesRead.log(targetId = accountId)
         if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
@@ -48,6 +51,7 @@ class MessageController {
         db: Database.Connection,
         user: AuthenticatedUser
     ): UnreadMessagesResponse {
+        Audit.MessagingUnreadMessagesRead.log()
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
         val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
@@ -67,6 +71,7 @@ class MessageController {
         user: AuthenticatedUser,
         @RequestBody body: PostMessageBody
     ): UUID {
+        Audit.MessagingNewMessageWrite.log(targetId = body.senderAccountId)
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         val sender = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("User is not authorized to access the account")
