@@ -28,7 +28,7 @@ class MessageControllerCitizen {
     ): UnreadMessagesResponse {
         user.requireOneOfRoles(UserRole.END_USER)
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds.toSet()) }
+        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
     }
 }

@@ -49,7 +49,7 @@ class MessageController {
         user: AuthenticatedUser
     ): UnreadMessagesResponse {
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessages(accountIds.toSet()) }
+        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
     }
 

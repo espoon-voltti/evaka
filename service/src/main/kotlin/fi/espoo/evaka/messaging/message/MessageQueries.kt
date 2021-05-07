@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getUnreadMessages(
+fun Database.Read.getUnreadMessagesCount(
     accountIds: Set<UUID>
 ): Int {
     // language=SQL
