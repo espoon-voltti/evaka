@@ -60,7 +60,8 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         db.transaction {
-            it.createMessageThread(
+            createMessageThread(
+                it,
                 "Hello",
                 "Content",
                 MessageType.MESSAGE,
@@ -99,7 +100,8 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         val thread1Id = db.transaction {
-            it.createMessageThread(
+            createMessageThread(
+                it,
                 "Hello",
                 "Content",
                 MessageType.MESSAGE,
@@ -108,7 +110,8 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
         val thread2Id = db.transaction {
-            it.createMessageThread(
+            createMessageThread(
+                it,
                 "Newest thread",
                 "Content 2",
                 MessageType.MESSAGE,
@@ -117,7 +120,8 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
         db.transaction {
-            it.createMessageThread(
+            createMessageThread(
+                it,
                 "Lone thread",
                 "Alone",
                 MessageType.MESSAGE,
@@ -129,7 +133,7 @@ class MessageQueriesTest : PureJdbiTest() {
         // employee is not a recipient in any threads
         assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }.data.size)
 
-        db.transaction { it.replyToThread(thread2Id, "Just replying here", person1Account, setOf(employee1Account.id)) }
+        db.transaction { replyToThread(it, thread2Id, "Just replying here", person1Account, setOf(employee1Account.id)) }
 
         // employee is now recipient in a reply to thread two
         val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }
@@ -176,10 +180,10 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         db.transaction {
-            it.createMessageThread("t1", "c1", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
+            createMessageThread(it, "t1", "c1", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
         }
         db.transaction {
-            it.createMessageThread("t2", "c2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
+            createMessageThread(it, "t2", "c2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
         }
 
         val messages = db.read { it.getMessagesReceivedByAccount(person1Account.id, 10, 1) }

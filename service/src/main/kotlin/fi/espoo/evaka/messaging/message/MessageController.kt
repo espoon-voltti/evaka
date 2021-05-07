@@ -81,7 +81,8 @@ class MessageController {
         // TODO split messages to threads by "household"
 
         return db.transaction {
-            it.createMessageThread(
+            createMessageThread(
+                it,
                 title = body.title,
                 content = body.content,
                 sender = sender,

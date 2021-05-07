@@ -24,23 +24,14 @@ fun Database.Read.getUnreadMessagesCount(
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
         .mapTo<Int>()
-        .first()
+        .one()
 }
 
-private fun Database.Transaction.insertMessage(
+fun Database.Transaction.insertMessage(
+    contentId: UUID?,
     threadId: UUID,
-    content: String,
     sender: MessageAccount,
-    recipientAccountIds: Set<UUID>
-) {
-    // language=SQL
-    val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
-    val contentId = this.createQuery(messageContentSql)
-        .bind("content", content)
-        .bind("authorId", sender.id)
-        .mapTo<UUID>()
-        .first()
-
+): UUID {
     // language=SQL
     val insertMessageSql = """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name)
@@ -53,8 +44,28 @@ private fun Database.Transaction.insertMessage(
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
         .mapTo<UUID>()
-        .first()
+        .one()
+    return messageId
+}
 
+fun Database.Transaction.insertMessageContent(
+    content: String,
+    sender: MessageAccount,
+): UUID? {
+    // language=SQL
+    val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
+    val contentId = this.createQuery(messageContentSql)
+        .bind("content", content)
+        .bind("authorId", sender.id)
+        .mapTo<UUID>()
+        .one()
+    return contentId
+}
+
+fun Database.Transaction.insertRecipients(
+    recipientAccountIds: Set<UUID>,
+    messageId: UUID,
+) {
     // language=SQL
     val insertRecipientsSql =
         "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
@@ -64,28 +75,17 @@ private fun Database.Transaction.insertMessage(
     batch.execute()
 }
 
-fun Database.Transaction.createMessageThread(
-    title: String,
-    content: String,
+fun Database.Transaction.insertThread(
     type: MessageType,
-    sender: MessageAccount,
-    recipientAccountIds: Set<UUID>
+    title: String,
 ): UUID {
     // language=SQL
     val insertThreadSql = "INSERT INTO message_thread (message_type, title) VALUES (:messageType, :title) RETURNING id"
-    val threadId = this.createQuery(insertThreadSql)
+    return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
         .mapTo<UUID>()
-        .first()
-
-    insertMessage(threadId, content, sender, recipientAccountIds)
-
-    return threadId
-}
-
-fun Database.Transaction.replyToThread(threadId: UUID, content: String, sender: MessageAccount, recipients: Set<UUID>) {
-    insertMessage(threadId, content, sender, recipients)
+        .one()
 }
 
 fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<MessageThread> {
