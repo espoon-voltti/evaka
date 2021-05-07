@@ -4,7 +4,6 @@
 
 import React from 'react'
 import { P } from 'lib-components/typography'
-import { fiCustomizations } from 'lib-customizations/citizen'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 
 export default {

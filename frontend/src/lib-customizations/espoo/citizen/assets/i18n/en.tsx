@@ -5,7 +5,6 @@
 import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from 'lib-customizations/citizen'
-import { enCustomizations } from 'lib-customizations/citizen'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 
 const en: Translations = {
