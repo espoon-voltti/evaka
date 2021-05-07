@@ -8,7 +8,14 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-components/colors'
 import leaflet from 'leaflet'
 import { FooterContent } from '../Footer'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  ZoomControl
+} from 'react-leaflet'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import markerUnit from './marker-unit.svg'
 import markerUnitHighlight from './marker-unit-highlight.svg'
@@ -22,17 +29,27 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { mapConfig } from 'lib-customizations/citizen'
 
+import MarkerClusterGroup from 'react-leaflet-markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
   selectedUnit: PublicUnit | null
   selectedAddress: MapAddress | null
+  setSelectedUnit: (u: PublicUnit | null) => void
 }
 
 export default React.memo(function MapBox(props: Props) {
   return (
     <Wrapper className="map-box">
-      <Map center={mapConfig.center} zoom={mapConfig.initialZoom}>
+      <Map
+        center={mapConfig.center}
+        zoom={mapConfig.initialZoom}
+        zoomControl={false}
+      >
         <MapContents {...props} />
+        <ZoomControl position="bottomright" />
       </Map>
       <FooterWrapper>
         <FooterContent />
@@ -60,7 +77,12 @@ const unitHighlightIcon = new leaflet.Icon({
   popupAnchor: [0, -18]
 })
 
-function MapContents({ units, selectedUnit, selectedAddress }: Props) {
+function MapContents({
+  units,
+  selectedUnit,
+  selectedAddress,
+  setSelectedUnit
+}: Props) {
   const map = useMap()
 
   useEffect(() => {
@@ -89,13 +111,17 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
         detectRetina={true}
       />
       {selectedAddress && <AddressMarker address={selectedAddress} />}
-      {units.map((unit) => (
-        <UnitMarker
-          key={unit.id}
-          unit={unit}
-          isSelected={selectedUnit?.id === unit.id}
-        />
-      ))}
+      <MarkerClusterGroup maxClusterRadius={25}>
+        {units.map((unit) => (
+          <UnitMarker
+            key={unit.id}
+            unit={unit}
+            isSelected={selectedUnit?.id === unit.id}
+            selectedUnit={selectedUnit}
+            setSelectedUnit={setSelectedUnit}
+          />
+        ))}
+      </MarkerClusterGroup>
     </>
   )
 }
@@ -124,20 +150,37 @@ function AddressMarker({ address }: { address: MapAddress }) {
 
 function UnitMarker({
   unit,
-  isSelected
+  isSelected,
+  selectedUnit,
+  setSelectedUnit
 }: {
   unit: UnitWithDistance | PublicUnit
   isSelected: boolean
+  selectedUnit: PublicUnit | null
+  setSelectedUnit: (u: PublicUnit | null) => void
 }) {
   const t = useTranslation()
   const markerRef = useRef<leaflet.Marker>(null)
 
-  useEffect(() => {
-    const element = markerRef.current?.getElement()
-    if (element) {
-      element.setAttribute('data-qa', `map-marker-${unit.id}`)
-    }
-  }, [markerRef, unit])
+  // console.log('render!1', markerRef)
+
+  // useEffect(() => {
+  //   const element = markerRef.current?.getElement()
+  //   console.log('yritettään lisätä data-qa')
+  //   if (element) {
+  //     console.log('asetettaan data-qa unitille: ', unit.name)
+  //     element.setAttribute('data-qa', `map-marker-${unit.id}`)
+  //   }
+  // }, [markerRef, unit])
+
+  // if (markerRef) {
+  //   const element = markerRef.current?.getElement()
+  //   console.log('jep, ', element)
+  //   if (element) {
+  //     console.log('asetettaan data-qa unitille: ', unit.name)
+  //     element.setAttribute('data-qa', `map-marker-${unit.id}`)
+  //   }
+  // }
 
   if (unit.location?.lat == null || unit.location?.lon == null) return null
   const { lat, lon } = unit.location
@@ -149,6 +192,13 @@ function UnitMarker({
       icon={isSelected ? unitHighlightIcon : unitIcon}
       zIndexOffset={isSelected ? 10 : 0}
       ref={markerRef}
+      eventHandlers={{
+        click: () => {
+          if (selectedUnit) {
+            setSelectedUnit(unit)
+          }
+        }
+      }}
     >
       <UnitPopup>
         <div data-qa={`map-popup-${unit.id}`}>
@@ -181,6 +231,12 @@ function UnitMarker({
               />
             </>
           )}
+          {unit.url && (
+            <>
+              <Gap size="xs" />
+              <ExternalLink text={t.map.homepage} href={unit.url} newTab />
+            </>
+          )}
         </div>
       </UnitPopup>
     </Marker>
@@ -204,6 +260,10 @@ const Wrapper = styled.div`
   @media (max-width: ${mapViewBreakpoint}) {
     height: calc(100vh - 120px);
     min-height: unset;
+  }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 2px;
   }
 `
 
