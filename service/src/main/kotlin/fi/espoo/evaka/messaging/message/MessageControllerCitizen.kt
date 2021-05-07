@@ -21,9 +21,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/citizen/messages")
-class MessageControllerCitizen(
-    private val messageService: MessageService
-) {
+class MessageControllerCitizen {
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
         Audit.MessagingMyAccountsRead.log()
@@ -72,7 +70,7 @@ class MessageControllerCitizen(
         val account = db.read { it.getMessageAccountsForUser(user) }.firstOrNull()
             ?: throw Forbidden("Message account not found for user")
 
-        messageService.replyToThread(
+        replyToThread(
             db = db,
             messageId = messageId,
             senderAccount = account,

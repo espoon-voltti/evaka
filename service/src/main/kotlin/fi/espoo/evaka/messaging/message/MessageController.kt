@@ -24,9 +24,7 @@ data class UnreadMessagesResponse(val count: Int)
 
 @RestController
 @RequestMapping("/messages")
-class MessageController(
-    private val messageService: MessageService,
-) {
+class MessageController {
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
         Audit.MessagingMyAccountsRead.log()
@@ -114,7 +112,7 @@ class MessageController(
         val account = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("Message account not found for user")
 
-        messageService.replyToThread(
+        replyToThread(
             db = db,
             messageId = messageId,
             senderAccount = account,

@@ -10,7 +10,9 @@ import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getThreadByMessageId
-import fi.espoo.evaka.messaging.message.replyToThread
+import fi.espoo.evaka.messaging.message.insertMessage
+import fi.espoo.evaka.messaging.message.insertMessageContent
+import fi.espoo.evaka.messaging.message.insertRecipients
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -142,14 +144,14 @@ class MessageQueriesTest : PureJdbiTest() {
 
         // when employee gets a reply
         db.transaction {
-            replyToThread(
-                it,
+            val contentId = it.insertMessageContent(content = "Just replying here", sender = person1Account)
+            val messageId = it.insertMessage(
+                contentId = contentId,
                 threadId = thread2Id,
-                repliesToMessageId = thread.messages.last().id,
-                content = "Just replying here",
                 sender = person1Account,
-                recipients = setOf(employee1Account.id)
+                repliesToMessageId = thread.messages.last().id
             )
+            it.insertRecipients(recipientAccountIds = setOf(employee1Account.id), messageId = messageId)
         }
 
         // then employee sees the thread
