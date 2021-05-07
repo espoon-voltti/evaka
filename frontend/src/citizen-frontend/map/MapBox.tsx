@@ -162,26 +162,6 @@ function UnitMarker({
   const t = useTranslation()
   const markerRef = useRef<leaflet.Marker>(null)
 
-  // console.log('render!1', markerRef)
-
-  // useEffect(() => {
-  //   const element = markerRef.current?.getElement()
-  //   console.log('yritettään lisätä data-qa')
-  //   if (element) {
-  //     console.log('asetettaan data-qa unitille: ', unit.name)
-  //     element.setAttribute('data-qa', `map-marker-${unit.id}`)
-  //   }
-  // }, [markerRef, unit])
-
-  // if (markerRef) {
-  //   const element = markerRef.current?.getElement()
-  //   console.log('jep, ', element)
-  //   if (element) {
-  //     console.log('asetettaan data-qa unitille: ', unit.name)
-  //     element.setAttribute('data-qa', `map-marker-${unit.id}`)
-  //   }
-  // }
-
   if (unit.location?.lat == null || unit.location?.lon == null) return null
   const { lat, lon } = unit.location
 
