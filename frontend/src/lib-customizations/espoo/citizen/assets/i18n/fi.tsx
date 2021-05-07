@@ -4,6 +4,8 @@
 
 import React from 'react'
 import { P } from 'lib-components/typography'
+import { fiCustomizations } from 'lib-customizations/citizen'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 
 export default {
   common: {
@@ -69,8 +71,20 @@ export default {
     title: 'Yksiköt kartalla',
     mainInfo:
       'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
-    searchLabel: 'Hae omalla osoitteellasi tai yksikön nimellä',
-    searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
+    privateUnitInfo: function PrivateUnitInfo() {
+      return (
+        <span>
+          Tietoa yksityisistä päiväkodeista löydät{' '}
+          <ExternalLink
+            text="täältä."
+            href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus"
+            newTab
+          />
+        </span>
+      )
+    },
+    searchLabel: 'Hae osoitteella tai yksikön nimellä',
+    searchPlaceholder: 'Esim. Purolan päiväkoti',
     address: 'Osoite',
     noResults: 'Ei hakutuloksia',
     distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',

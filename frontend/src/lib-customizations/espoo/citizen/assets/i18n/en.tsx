@@ -5,6 +5,8 @@
 import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from 'lib-customizations/citizen'
+import { enCustomizations } from 'lib-customizations/citizen'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 
 const en: Translations = {
   common: {
@@ -70,8 +72,20 @@ const en: Translations = {
     title: 'Units on the map',
     mainInfo:
       "In this view, you can search the map for Espoo's early childhood education, pre-primary education and club places.",
-    searchLabel: 'Search by your own address or by a unit name',
-    searchPlaceholder: 'For example Kilontie 3 or Purolan päiväkoti',
+    privateUnitInfo: function PrivateUnitInfo() {
+      return (
+        <span>
+          For information on private units,{' '}
+          <ExternalLink
+            text="click here."
+            href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Private_early_childhood_education"
+            newTab
+          />
+        </span>
+      )
+    },
+    searchLabel: 'Search by address or by a unit name',
+    searchPlaceholder: 'For example Purolan päiväkoti',
     address: 'Address',
     noResults: 'No results',
     distanceWalking: 'Walking distance from selected address',
