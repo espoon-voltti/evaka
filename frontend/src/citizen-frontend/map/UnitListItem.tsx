@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins as dM } from 'lib-components/white-space'
 import colors from 'lib-components/colors'
 import { useTranslation } from '../localization'
 import { formatCareTypes } from '../map/format'
@@ -42,15 +42,28 @@ export default React.memo(function UnitListItem({
 })
 
 const Wrapper = styled.div`
-  margin-bottom: ${defaultMargins.s};
+  margin-bottom: ${dM.s};
   cursor: pointer;
 
-  padding: ${defaultMargins.xs} ${defaultMargins.s} ${defaultMargins.xs}
-    ${defaultMargins.L};
-  margin: -${defaultMargins.xs} -${defaultMargins.s} -${defaultMargins.xs} -${defaultMargins.L};
+  padding: ${dM.xs} ${dM.s} ${dM.xs} ${dM.L};
+  margin: ${dM.xs} -${dM.s} -${dM.xs} -${dM.L};
 
   &:hover {
-    background-color: ${colors.blues.lighter};
+    background-color: ${colors.brandEspoo.espooTurquoiseLight};
+  }
+
+  &:after {
+    content: '';
+    width: calc(100% - ${dM.XXL});
+    background: ${colors.greyscale.lighter};
+    height: 1px;
+    display: block;
+    position: absolute;
+    margin-top: ${dM.xs};
+  }
+
+  :first-child {
+    margin-top: 0px;
   }
 `
 
@@ -61,11 +74,10 @@ const MainRow = styled.div`
 
 const UnitName = styled.div`
   font-weight: 600;
-  text-wrap: normal;
 `
 
 const Distance = styled.div`
-  margin-left: ${defaultMargins.m};
+  margin-left: ${dM.m};
   white-space: nowrap;
 `
 
