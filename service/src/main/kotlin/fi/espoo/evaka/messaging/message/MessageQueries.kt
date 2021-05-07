@@ -127,6 +127,11 @@ messages AS (
     FROM threads t
     JOIN message m ON m.thread_id = t.id
     JOIN message_content c ON m.content_id = c.id
+    WHERE
+        m.sender_id = :accountId OR
+        EXISTS(SELECT 1
+            FROM message_recipients rec
+            WHERE rec.message_id = m.id AND rec.recipient_id = :accountId)
     ORDER BY m.sent_at
 )
 

@@ -90,18 +90,16 @@ class MessageIntegrationTest : FullApplicationTest() {
         // then sender does not see it in received messages
         assertEquals(
             listOf<MessageThread>(),
-            getMessages(employee1Account, employee1).third.get().data
+            getMessageThreads(employee1Account, employee1)
         )
 
         // then recipient can see it in received messages
-        val (_, _, person1Data) = getMessages(person1Account, person1)
-
-        val person1Thread = person1Data.get().data.first()
+        val person1Thread = getMessageThreads(person1Account, person1)[0]
         assertEquals("Juhannus", person1Thread.title)
         assertEquals(MessageType.MESSAGE, person1Thread.type)
         assertEquals(
             listOf(Pair(employee1Account.id, "Juhannus tulee pian")),
-            person1Thread.messages.map { Pair(it.senderId, it.content) }
+            person1Thread.toSenderContentPairs()
         )
 
         // when
@@ -112,29 +110,60 @@ class MessageIntegrationTest : FullApplicationTest() {
             "No niinpä näyttää tulevan"
         )
 
-        val (_, _, personTwoData) = getMessages(person2Account, person2)
 
         // then recipients see the same data
-        val person2Data = personTwoData.get().data
+        val person2Threads = getMessageThreads(person2Account, person2)
         assertEquals(
-            getMessages(person1Account, person1).third.get().data,
-            person2Data
+            getMessageThreads(person1Account, person1),
+            person2Threads
         )
         assertEquals(
-            getMessages(employee1Account, employee1).third.get().data,
-            person2Data
+            getMessageThreads(employee1Account, employee1),
+            person2Threads
         )
 
         // then thread has both messages in correct order
-        assertEquals(1, person2Data.size)
-        val person2Thread = person2Data[0]
+        assertEquals(1, person2Threads.size)
+        val person2Thread = person2Threads[0]
         assertEquals("Juhannus", person2Thread.title)
         assertEquals(
             listOf(
                 Pair(employee1Account.id, "Juhannus tulee pian"),
                 Pair(person1Account.id, "No niinpä näyttää tulevan")
             ),
-            person2Thread.messages.map { Pair(it.senderId, it.content) }
+            person2Thread.toSenderContentPairs()
+        )
+
+        // when person one replies to the employee only
+        replyAsCitizen(
+            person1,
+            person2Thread.messages.last().id,
+            setOf(employee1Account.id),
+            "person 2 does not see this"
+        )
+
+        // then person one and employee see the new message
+        val threadContentWithTwoReplies = listOf(
+            Pair(employee1Account.id, "Juhannus tulee pian"),
+            Pair(person1Account.id, "No niinpä näyttää tulevan"),
+            Pair(person1Account.id, "person 2 does not see this"),
+        )
+        assertEquals(
+            threadContentWithTwoReplies,
+            getMessageThreads(person1Account, person1)[0].toSenderContentPairs()
+        )
+        assertEquals(
+            threadContentWithTwoReplies,
+            getMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
+        )
+
+        // then person two does not see the message
+        assertEquals(
+            listOf(
+                Pair(employee1Account.id, "Juhannus tulee pian"),
+                Pair(person1Account.id, "No niinpä näyttää tulevan")
+            ),
+            getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
         )
     }
 
@@ -143,7 +172,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         messageId: UUID,
         recipientAccountIds: Set<UUID>,
         content: String,
-    ) {
+    ) =
         http.post(
             "/citizen/messages/$messageId/reply",
         )
@@ -157,12 +186,13 @@ class MessageIntegrationTest : FullApplicationTest() {
             )
             .asUser(user)
             .response()
-    }
 
-    private fun getMessages(account: MessageAccount, user: AuthenticatedUser) = http.get(
+    private fun getMessageThreads(account: MessageAccount, user: AuthenticatedUser): List<MessageThread> = http.get(
         "${if (user.isEndUser) "/citizen" else ""}/messages/${account.id}/received",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
-        .responseObject<Paged<MessageThread>>(objectMapper)
+        .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
 }
+
+fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map {  Pair(it.senderId, it.content) }
