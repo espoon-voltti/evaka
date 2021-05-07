@@ -24,7 +24,7 @@ fun Database.Read.getUnreadMessages(
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
         .mapTo<Int>()
-        .first()
+        .one()
 }
 
 private fun Database.Transaction.insertMessage(
@@ -39,7 +39,7 @@ private fun Database.Transaction.insertMessage(
         .bind("content", content)
         .bind("authorId", sender.id)
         .mapTo<UUID>()
-        .first()
+        .one()
 
     // language=SQL
     val insertMessageSql = """
@@ -53,7 +53,7 @@ private fun Database.Transaction.insertMessage(
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
         .mapTo<UUID>()
-        .first()
+        .one()
 
     // language=SQL
     val insertRecipientsSql =

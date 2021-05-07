@@ -110,7 +110,6 @@ class MessageIntegrationTest : FullApplicationTest() {
             "No niinpä näyttää tulevan"
         )
 
-
         // then recipients see the same data
         val person2Threads = getMessageThreads(person2Account, person2)
         assertEquals(
@@ -195,4 +194,4 @@ class MessageIntegrationTest : FullApplicationTest() {
         .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
 }
 
-fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map {  Pair(it.senderId, it.content) }
+fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map { Pair(it.senderId, it.content) }
