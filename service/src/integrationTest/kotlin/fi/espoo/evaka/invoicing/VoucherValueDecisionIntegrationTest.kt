@@ -8,7 +8,6 @@ import com.github.kittinunf.fuel.jackson.objectBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.data.toVoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
@@ -31,6 +30,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -293,7 +293,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
         return db.read {
             it.createQuery("SELECT * FROM voucher_value_decision")
-                .map(toVoucherValueDecision(objectMapper))
+                .mapTo<VoucherValueDecision>()
                 .toList()
         }
     }

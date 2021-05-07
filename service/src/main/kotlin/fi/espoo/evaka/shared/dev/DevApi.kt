@@ -347,7 +347,7 @@ class DevApi(
         db: Database,
         @RequestBody decisions: List<VoucherValueDecision>
     ): ResponseEntity<Unit> {
-        db.transaction { tx -> tx.upsertValueDecisions(objectMapper, decisions) }
+        db.transaction { tx -> tx.upsertValueDecisions(decisions) }
         return ResponseEntity.noContent().build()
     }
 

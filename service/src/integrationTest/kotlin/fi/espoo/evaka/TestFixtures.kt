@@ -593,8 +593,8 @@ fun Database.Transaction.insertServiceNeedOptions() {
     val batch = prepareBatch(
         // language=sql
         """
-INSERT INTO service_need_option (id, name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week)
-VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :daycareHoursPerWeek, :partDay, :partWeek)
+INSERT INTO service_need_option (id, name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv)
+VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv)
 """
     )
     serviceNeedTestFixtures.forEach { fixture ->

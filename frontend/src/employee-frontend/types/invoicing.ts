@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from '../types'
 import { FeeAlterationType } from '../types/fee-alteration'
 import { Income, IncomeEffect } from '../types/income'
+import { PlacementType } from '../types/child'
 
 // Enums
 
@@ -35,7 +36,7 @@ export type InvoiceStatus =
   | 'SENT'
   | 'CANCELED'
 
-export type PlacementType =
+export type FeeDecisionPlacementType =
   | 'DAYCARE'
   | 'FIVE_YEARS_OLD_DAYCARE'
   | 'PRESCHOOL_WITH_DAYCARE'
@@ -137,12 +138,8 @@ export const deserializePersonDetailed = (
 
 export interface Placement {
   unit: UUID
-  type: PlacementType
+  type: FeeDecisionPlacementType
   serviceNeed: ServiceNeed
-}
-
-export interface PlacementWithHours extends Placement {
-  hours: number | null
 }
 
 export interface InvoiceCodes {
@@ -296,23 +293,21 @@ export interface VoucherValueDecisionDetailed {
   partnerIncome: Income | null
   familySize: number
   child: PersonDetailed
-  placement: PlacementWithHours
-  placementUnit: UnitDetailed
+  placement: VoucherValueDecisionPlacement
+  serviceNeed: VoucherValueDecisionServiceNeed
   baseCoPayment: number
   siblingDiscount: number
   coPayment: number
   feeAlterations: FeeDecisionAlteration[]
   finalCoPayment: number
-  serviceNeedMultiplier: number
   baseValue: number
   childAge: number
   ageCoefficient: number
-  serviceCoefficient: number
-  value: number
+  voucherValue: number
   documentKey: string | null
   approvedAt: Date | null
-  createdAt: Date
   sentAt: Date | null
+  created: Date
   financeDecisionHandlerName: string | null
   minThreshold: number
   feePercent: number
@@ -320,6 +315,20 @@ export interface VoucherValueDecisionDetailed {
   totalIncome: number | null
   requiresManualSending: boolean
   isRetroactive: boolean
+}
+
+export interface VoucherValueDecisionPlacement {
+  unit: UnitDetailed
+  type: PlacementType
+}
+
+export interface VoucherValueDecisionServiceNeed {
+  feeCoefficient: number
+  voucherValueCoefficient: number
+  feeDescriptionFi: string
+  feeDescriptionSv: string
+  voucherValueDescriptionFi: string
+  voucherValueDescriptionSv: string
 }
 
 export interface VoucherValueDecisionSummary {
@@ -330,9 +339,9 @@ export interface VoucherValueDecisionSummary {
   decisionNumber: number | null
   headOfFamily: PersonBasic
   child: PersonBasic
-  approvedAt: Date | null
-  createdAt: Date
-  sentAt: Date | null
   finalCoPayment: number
-  value: number
+  voucherValue: number
+  approvedAt: Date | null
+  sentAt: Date | null
+  created: Date
 }

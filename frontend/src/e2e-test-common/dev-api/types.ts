@@ -102,21 +102,16 @@ export interface VoucherValueDecision {
     dateOfBirth: string
   }
   placement: {
-    unit: UUID
-    type:
-      | 'DAYCARE'
-      | 'PRESCHOOL_WITH_DAYCARE'
-      | 'PREPARATORY_WITH_DAYCARE'
-      | 'FIVE_YEARS_OLD_DAYCARE'
-    serviceNeed:
-      | 'MISSING'
-      | 'GTE_35'
-      | 'GT_25_LT_35'
-      | 'LTE_25'
-      | 'GTE_25'
-      | 'GT_15_LT_25'
-      | 'LTE_15'
-      | 'LTE_0'
+    unit: { id: UUID }
+    type: PlacementType
+  }
+  serviceNeed: {
+    feeCoefficient: number
+    voucherValueCoefficient: number
+    feeDescriptionFi: string
+    feeDescriptionSv: string
+    voucherValueDescriptionFi: string
+    voucherValueDescriptionSv: string
   }
   baseCoPayment: number
   siblingDiscount: number
@@ -127,10 +122,10 @@ export interface VoucherValueDecision {
     isAbsolute: boolean
     effect: number
   }>
+  finalCoPayment: number
   baseValue: number
   ageCoefficient: number
-  serviceCoefficient: number
-  value: number
+  voucherValue: number
 }
 
 export interface DevPricing {

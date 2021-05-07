@@ -12,7 +12,9 @@ import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
@@ -22,6 +24,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -308,13 +311,21 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
                 dateOfBirth = testChild_1.dateOfBirth,
                 unitId = unitId,
                 value = value,
-                coPayment = coPayment
+                coPayment = coPayment,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = VoucherValueDecisionServiceNeed(
+                    snDefaultDaycare.feeCoefficient,
+                    snDefaultDaycare.voucherValueCoefficient,
+                    snDefaultDaycare.feeDescriptionFi,
+                    snDefaultDaycare.feeDescriptionSv,
+                    snDefaultDaycare.voucherValueDescriptionFi,
+                    snDefaultDaycare.voucherValueDescriptionSv
+                )
             )
-            it.upsertValueDecisions(objectMapper, listOf(decision))
+            it.upsertValueDecisions(listOf(decision))
 
             sendVoucherValueDecisions(
                 tx = it,
-                objectMapper = objectMapper,
                 asyncJobRunner = asyncJobRunner,
                 user = financeUser,
                 now = approvedAt,

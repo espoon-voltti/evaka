@@ -36,8 +36,12 @@ data class FeeDecisionPdfData(
 
 data class VoucherValueDecisionPdfData(
     val decision: VoucherValueDecisionDetailed,
-    val lang: String
+    val lang: DocumentLang
 )
+
+enum class DocumentLang {
+    fi, sv
+}
 
 fun BigDecimal.toDecimalString(): String = this.toString().replace('.', ',')
 
@@ -96,7 +100,7 @@ class PDFService(
 
     private fun createVoucherValueDecisionPdfContext(data: VoucherValueDecisionPdfData): Context {
         return Context().apply {
-            locale = Locale.Builder().setLanguage(data.lang).build()
+            locale = Locale.Builder().setLanguage(data.lang.name).build()
             setVariables(getVoucherValueDecisionPdfVariables(data))
         }
     }
@@ -109,16 +113,19 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, lang)
+        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, lang.name)
         return mapOf(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
             "validFrom" to decision.validFrom,
-            "placementUnit" to decision.placementUnit,
-            "placement" to decision.placement,
+            "placementUnit" to decision.placement.unit,
+            "placementType" to decision.placement.type,
             "familySize" to decision.familySize,
-            "value" to formatCents(decision.value),
-            "serviceNeed" to decision.placement.serviceNeed,
+            "value" to formatCents(decision.voucherValue),
+            "voucherValueDescription" to when (lang) {
+                DocumentLang.fi -> decision.serviceNeed.voucherValueDescriptionFi
+                DocumentLang.sv -> decision.serviceNeed.voucherValueDescriptionSv
+            },
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
             "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "hasPartner" to (decision.partner != null),
@@ -128,11 +135,11 @@ class PDFService(
             "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
-            "coPayment" to formatCents(decision.coPayment),
+            "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
-            "serviceProviderValue" to formatCents(decision.value - (decision.coPayment + decision.feeAlterations.sumBy { it.effect })),
+            "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
 
             "approverFirstName" to (
                 decision.financeDecisionHandlerName?.split(" ")?.get(0)

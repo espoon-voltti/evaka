@@ -6,16 +6,12 @@ package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
-import fi.espoo.evaka.invoicing.data.deleteValueDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
-import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
-import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
-import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
@@ -29,17 +25,11 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
-import fi.espoo.evaka.invoicing.domain.VoucherValue
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateServiceNeed
-import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
-import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
-import fi.espoo.evaka.invoicing.domain.getServiceCoefficient
 import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.pis.getParentships
@@ -206,59 +196,6 @@ private fun Database.Transaction.handleFeeDecisionChanges(
     upsertFeeDecisions(objectMapper, updatedDecisions)
 }
 
-private fun Database.Transaction.handleValueDecisionChanges(
-    objectMapper: ObjectMapper,
-    from: LocalDate,
-    child: PersonData.WithDateOfBirth,
-    headOfFamily: PersonData.JustId,
-    partner: PersonData.JustId?,
-    allChildren: List<PersonData.WithDateOfBirth>
-) {
-    val familySize = 1 + (partner?.let { 1 } ?: 0) + allChildren.size
-    val prices = getPricing(from)
-    val voucherValues = getVoucherValues(from)
-    val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
-    val feeAlterations =
-        getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
-
-    val placements = getPaidPlacements(from, allChildren)
-    val serviceVoucherUnits = getServiceVoucherUnits()
-
-    val newDrafts =
-        generateNewValueDecisions(
-            from,
-            child,
-            headOfFamily,
-            partner,
-            familySize,
-            placements,
-            prices,
-            voucherValues,
-            incomes,
-            feeAlterations,
-            serviceVoucherUnits
-        )
-
-    lockValueDecisionsForChild(child.id)
-
-    val existingDrafts =
-        findValueDecisionsForChild(objectMapper, child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
-    val activeDecisions = findValueDecisionsForChild(
-        objectMapper,
-        child.id,
-        null,
-        listOf(
-            VoucherValueDecisionStatus.WAITING_FOR_SENDING,
-            VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            VoucherValueDecisionStatus.SENT
-        )
-    )
-
-    val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
-    deleteValueDecisions(existingDrafts.map { it.id })
-    upsertValueDecisions(objectMapper, updatedDecisions)
-}
-
 internal fun addECHAFeeAlterations(
     children: List<PersonData.WithDateOfBirth>,
     incomes: List<Income>
@@ -367,120 +304,9 @@ private fun generateNewFeeDecisions(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun generateNewValueDecisions(
-    from: LocalDate,
-    voucherChild: PersonData.WithDateOfBirth,
-    headOfFamily: PersonData.JustId,
-    partner: PersonData.JustId?,
-    familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PermanentPlacementWithHours>>>>,
-    prices: List<Pair<DateRange, Pricing>>,
-    voucherValues: List<Pair<DateRange, Int>>,
-    incomes: List<Income>,
-    feeAlterations: List<FeeAlteration>,
-    serviceVoucherUnits: List<UUID>
-): List<VoucherValueDecision> {
-    val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
-        prices.map { it.first } +
-        allPlacements.flatMap { (child, placements) ->
-            placements.map { it.first } + listOf(
-                DateRange(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
-                DateRange(child.dateOfBirth.plusYears(3), null)
-            )
-        } +
-        feeAlterations.map { DateRange(it.validFrom, it.validTo) }
-
-    return asDistinctPeriods(periods, DateRange(from, null))
-        .mapNotNull { period ->
-            val price = prices.find { it.first.contains(period) }?.second
-                ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
-
-            val baseValue = voucherValues.find { it.first.contains(period) }?.second
-                ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
-
-            val income = incomes
-                .find { headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
-                ?.toDecisionIncome()
-
-            val partnerIncome =
-                partner?.let {
-                    incomes
-                        .find {
-                            partner.id == it.personId && DateRange(
-                                it.validFrom,
-                                it.validTo
-                            ).contains(period)
-                        }
-                        ?.toDecisionIncome()
-                }
-
-            val periodPlacements = allPlacements
-                .map { (child, placements) -> child to placements.find { it.first.contains(period) }?.second }
-                .filter { (_, placement) -> placement != null }
-                .map { (child, placement) -> child to placement!! }
-
-            val voucherChildPlacement = periodPlacements.find { (child, _) -> child == voucherChild }?.second
-
-            voucherChildPlacement
-                // Skip the placement if it's not into a service voucher unit
-                ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unit } }
-                ?.let { placement ->
-                    val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                    val baseCoPayment = calculateBaseFee(price, familySize, familyIncomes)
-
-                    val siblingIndex = periodPlacements
-                        .sortedByDescending { (child, _) -> child.dateOfBirth }
-                        .indexOfFirst { (child, _) -> child == voucherChild }
-
-                    val siblingDiscount = getSiblingDiscountPercent(siblingIndex + 1)
-                    val coPaymentBeforeAlterations =
-                        calculateFeeBeforeFeeAlterations(baseCoPayment, placement.withoutHours(), siblingDiscount)
-                    val relevantFeeAlterations = feeAlterations.filter {
-                        DateRange(it.validFrom, it.validTo).contains(period)
-                    }
-
-                    val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth)
-                    val serviceCoefficient = getServiceCoefficient(placement)
-                    val value = calculateVoucherValue(baseValue, ageCoefficient, serviceCoefficient)
-
-                    period to VoucherValueDecision(
-                        id = UUID.randomUUID(),
-                        status = VoucherValueDecisionStatus.DRAFT,
-                        headOfFamily = headOfFamily,
-                        partner = partner,
-                        headOfFamilyIncome = income,
-                        partnerIncome = partnerIncome,
-                        familySize = familySize,
-                        pricing = price,
-                        validFrom = period.start,
-                        validTo = period.end,
-                        child = voucherChild,
-                        placement = placement,
-                        baseCoPayment = baseCoPayment,
-                        siblingDiscount = siblingDiscount,
-                        coPayment = coPaymentBeforeAlterations,
-                        feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
-                        baseValue = baseValue,
-                        ageCoefficient = ageCoefficient,
-                        serviceCoefficient = serviceCoefficient,
-                        value = value
-                    )
-                }
-        }
-        .let { mergePeriods(it, ::decisionContentsAreEqual) }
-        .map { (period, decision) -> decision.withValidity(period) }
-}
-
 internal fun Database.Read.getUnitsThatAreInvoiced(): List<UUID> {
     // language=sql
     return createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
-        .map { rs, _ -> rs.getUUID("id") }
-        .toList()
-}
-
-private fun Database.Read.getServiceVoucherUnits(): List<UUID> {
-    // language=sql
-    return createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")
         .map { rs, _ -> rs.getUUID("id") }
         .toList()
 }
@@ -757,15 +583,4 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
     val filteredDrafts = mergeAndFilterUnnecessaryDrafts(keptDrafts, allUpdatedActives)
 
     return Pair(updatedActives, filteredDrafts)
-}
-
-private fun Database.Read.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
-    // language=sql
-    val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
-
-    return createQuery(sql)
-        .bind("from", from)
-        .mapTo<VoucherValue>()
-        .map { it.validity to it.voucherValue }
-        .toList()
 }

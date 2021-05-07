@@ -65,7 +65,7 @@ export default React.memo(function VoucherValueDecisionPage() {
               key={decision.value.child.id}
               child={decision.value.child}
               placement={decision.value.placement}
-              placementUnit={decision.value.placementUnit}
+              serviceNeed={decision.value.serviceNeed}
             />
             <VoucherValueDecisionSummary decision={decision.value} />
           </ContentArea>

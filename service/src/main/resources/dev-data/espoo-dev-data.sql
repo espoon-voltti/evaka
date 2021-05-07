@@ -382,7 +382,7 @@ INSERT INTO unit_manager (id, name, phone, email) VALUES
 
 
 
-INSERT INTO care_area (id, name, created, updated, area_code, sub_cost_center, short_name) VALUES 
+INSERT INTO care_area (id, name, created, updated, area_code, sub_cost_center, short_name) VALUES
     ('a01b0e03-b86e-4cbc-a744-6a35473b9628', 'Leppävaara (itä)', '2019-04-16 05:26:06.303078+00', '2020-04-02 11:40:46.780692+00', 249, '01', 'leppavaara-ita'),
     ('801a6cc7-e8a5-4279-b192-4e8192d82c18', 'Leppävaara (länsi)', '2019-04-16 05:26:06.303078+00', '2020-04-02 11:40:46.780692+00', 249, '01', 'leppavaara-lansi'),
     ('aede1c92-39a0-47b3-9f7a-45b4355f6c87', 'Tapiola', '2019-04-16 05:26:06.303078+00', '2020-04-02 11:40:46.780692+00', 250, '02', 'tapiola'),
@@ -394,7 +394,7 @@ INSERT INTO care_area (id, name, created, updated, area_code, sub_cost_center, s
 
 
 
-INSERT INTO public.daycare (id, name, type, care_area_id, phone, url, created, updated, backup_location, language_emphasis_id, opening_date, closing_date, email, schedule, additional_info, unit_manager_id, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_organization_oid, oph_unit_oid, oph_organizer_oid, operation_days, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period) VALUES 
+INSERT INTO public.daycare (id, name, type, care_area_id, phone, url, created, updated, backup_location, language_emphasis_id, opening_date, closing_date, email, schedule, additional_info, unit_manager_id, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_organization_oid, oph_unit_oid, oph_organizer_oid, operation_days, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period) VALUES
     ('e704bb72-5c43-11ea-9925-6f39cb2c7dad', 'Åbergin kerho, 2,5-5-vuotiaiden kerho, ma, ti ja ke klo 8.30-11.30, 2020-2021', '{CLUB}', 'a01b0e03-b86e-4cbc-a744-6a35473b9628', 'UNIT_PHONE', 'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Avoin_varhaiskasvatus_ja_kerhot/Kerhot/Leppavaara/Abergin_kerho', '2020-03-02 05:08:45.385398', '2020-06-08 09:56:21.728311', null, null, '2020-08-13', '2021-06-04', 'UNIT_EMAIL@espoo.fi', null, '', '382d9dbe-82c8-4be8-add0-62f20400ecdc', null, false, 0, '', '', '', '', 'Ajurinkuja 4', '02650', '', 'PL 65317, 02070 Espoon kaupunki', '(24.8130985,60.2256222)', null, null, null, false, 'MUNICIPAL', 'fi', false, null, null, null, '{1,2,3,4,5}', null, null, null, null),
     ('e6e37750-5c43-11ea-9923-df804c6c209c', 'Säterin kerho, 3-5-vuotiaiden kerho, ti, ke ja to klo 13-16, 2020-2021', '{CLUB}', 'a01b0e03-b86e-4cbc-a744-6a35473b9628', 'UNIT_PHONE', 'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Avoin_varhaiskasvatus_ja_kerhot/Kerhot/Leppavaara/Saterin_kerhot', '2020-03-02 05:08:45.385398', '2020-06-08 09:56:21.728311', null, null, '2020-08-13', '2021-06-04', 'UNIT_EMAIL@espoo.fi', null, '', '58d4d550-804f-4a56-ba7b-b935a6198ae3', null, false, 0, '', '', '', '', 'Säterinkatu 9', '02600', '', 'PL 60304, 02070 Espoon kaupunki', '(24.8087617,60.214298)', null, null, null, false, 'MUNICIPAL', 'fi', false, null, null, null, '{1,2,3,4,5}', null, null, null, null),
     ('e61a837c-5c43-11ea-991e-23d4ae21eca9', 'Painiityn kerho, 2-5vuotiaiden kerho, ma-ti klo 8.30-11.30, 2020-2021', '{CLUB}', 'a01b0e03-b86e-4cbc-a744-6a35473b9628', 'UNIT_PHONE', 'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Avoin_varhaiskasvatus_ja_kerhot/Kerhot/Leppavaara/Painiityn_kerho', '2020-03-02 05:08:45.385398', '2020-06-08 09:56:21.728311', null, null, '2020-08-13', '2021-06-04', 'UNIT_EMAIL@espoo.fi', null, '', '62123089-ba06-414b-9277-61e64ae45750', null, false, 0, '', '', '', '', 'Painiityntie 21', '02680', '', null, '(24.8323221,60.2349374)', null, null, null, false, 'MUNICIPAL', 'fi', false, null, null, null, '{1,2,3,4,5}', null, null, null, null),
@@ -844,7 +844,7 @@ INSERT INTO public.daycare (id, name, type, care_area_id, phone, url, created, u
     ('e48826f4-5c43-11ea-9908-276394407cbf', 'Hiirisuon kerho, 2-vuotiaiden kerho, ti ja to klo 9-11, 2020-2021', '{CLUB}', '10842fdc-5750-447d-9b6b-50a1ca66864c', 'UNIT_PHONE', 'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Avoin_varhaiskasvatus_ja_kerhot/Kerhot/Espoon_keskus/Hiirisuon_kerho', '2020-03-02 05:08:45.385398', '2020-12-16 11:46:51.652556', null, null, '2020-08-13', '2021-06-04', 'UNIT_EMAIL@espoo.fi', null, '', 'd91b0b67-138d-4d93-a0f6-5824bca0510a', null, false, 0, '', '', '', '', 'Pohjoisentie 1', '02970', '', 'PL 97306, 02070 Espoon kaupunki', '(24.7378687,60.3028715)', null, null, null, false, 'MUNICIPAL', 'fi', false, null, null, null, '{1,2,3,4,5}', null, null, null, '[2020-03-01,)');
 
 
-INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus) VALUES 
+INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus) VALUES
     ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', '2000-01-01', '2020-07-31', 0.1070, 269700, 210200, 271300, 308000, 344700, 381300, 14200),
     ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', '2020-08-01', NULL, 0.1070, 268700, 213600, 275600, 312900, 350200, 387400, 14200);
 
@@ -1909,49 +1909,49 @@ INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date) VALUES
     ('62a33a30-f8e6-11ea-9f1d-cbaa91dc0b76', 'e5fa7276-5c43-11ea-991c-771090837b49', 'Ryhmä 1', '2020-03-01', 'infinity'),
     ('51f22140-f96f-11ea-b3ed-cb31eae1571f', 'e58483ae-5c43-11ea-9916-abde0f8c7632', 'Ryhmä 1', '2020-03-01', 'infinity');
 
-INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week) VALUES
-    ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, FALSE, FALSE),
-    ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, FALSE),
-    ('Viisivuotiaiden kokopäiväinen', 'DAYCARE_FIVE_YEAR_OLDS', TRUE, 0.8, 1.0, 1.0, 45, FALSE, FALSE),
-    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.35, 0.6, 0.5, 25, TRUE, FALSE),
-    ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE),
-    ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE),
-    ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE),
-    ('Valmistava opetus ja liittyvä varhaiskasvatus', 'PREPARATORY_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE),
-    ('Kerho', 'CLUB', TRUE, 0.0, 0.0, 1.0, 0, TRUE, TRUE),
-    ('Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 0.0, 1.0, 35, FALSE, TRUE),
-    ('Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.0, 0.54, 25, TRUE, TRUE),
-    ('Kokopäiväinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, FALSE),
-    ('Kokopäiväinen, yli 25h alle 35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, FALSE),
-    ('Osaviikkoinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, TRUE),
-    ('Osaviikkoinen, yli 25h alle 35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, TRUE),
-    ('Osaviikkoinen, enintään 25h', 'DAYCARE', FALSE, 0.6, 0.6, 1.0, 25, FALSE, TRUE),
-    ('Osapäiväinen', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, FALSE),
-    ('Osapäiväinen ja osaviikkoinen', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, TRUE),
-    ('5-vuotiaiden kokopäiväinen, vähintään 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.8, 1.0, 1.0, 45, FALSE, FALSE),
-    ('5-vuotiaiden kokopäiväinen, yli 35h alle 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, FALSE),
-    ('5-vuotiaiden kokopäiväinen, yli 25h alle 35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, FALSE),
-    ('5-vuotiaiden osaviikkoinen, yli 35h alle 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, TRUE),
-    ('5-vuotiaiden osaviikkoinen, yli 25h alle 35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, TRUE),
-    ('5-vuotiaiden osaviikkoinen, yli 20h enintään 25h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 1.0, 25, FALSE, TRUE),
-    ('5-vuotiaiden maksuton osaviikkoinen', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 1.0, 20, FALSE, TRUE),
-    ('5-vuotiaiden osapäiväinen, yli 20h enintään 25h', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 0.5, 25, TRUE, FALSE),
-    ('5-vuotiaiden maksuton osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 0.5, 20, TRUE, FALSE),
-    ('5-vuotiaiden osapäiväinen ja osaviikkoinen, yli 20h enintään 25h', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 0.5, 25, TRUE, TRUE),
-    ('5-vuotiaiden maksuton osapäiväinen ja osaviikkoinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 0.5, 20, TRUE, TRUE),
-    ('Kokopäiväinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE),
-    ('Osaviikkoinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE),
-    ('Osaviikkoinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE),
-    ('Osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE),
-    ('Osapäiväinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE),
-    ('Osapäiväinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE),
-    ('Kokopäiväinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE),
-    ('Osaviikkoinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE),
-    ('Osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE),
-    ('Osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE),
-    ('Osapäiväinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE),
-    ('Osapäiväinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE);
+INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv) VALUES
+    ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Viisivuotiaiden kokopäiväinen', 'DAYCARE_FIVE_YEAR_OLDS', TRUE, 0.8, 1.0, 1.0, 45, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25 h/viikko', 'mer än 25 h/vecka'),
+    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.0, 0.6, 0.5, 20, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
+    ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
+    ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
+    ('Valmistava opetus ja liittyvä varhaiskasvatus', 'PREPARATORY_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
+    ('Kerho', 'CLUB', TRUE, 0.0, 0.0, 1.0, 0, TRUE, TRUE, '', '', '', ''),
+    ('Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 0.0, 1.0, 35, FALSE, TRUE, '', '', '', ''),
+    ('Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.0, 0.54, 25, TRUE, TRUE, '', '', '', ''),
+    ('Kokopäiväinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'vähintään 35 h/vko', 'minst 35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('Kokopäiväinen, yli 25h alle 35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, FALSE, '25-35 h/vko', '25-35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('Osaviikkoinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, TRUE, 'vähintään 35 h/vko', 'minst 35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('Osaviikkoinen, yli 25h alle 35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, TRUE, '25-35 h/vko', '25-35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('Osaviikkoinen, enintään 25h', 'DAYCARE', FALSE, 0.6, 0.6, 1.0, 25, FALSE, TRUE, 'korkeintaan 25 h/vko', 'högst 25 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Osapäiväinen', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, FALSE, 'korkeintaan 25 h/vko', 'högst 25 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Osapäiväinen ja osaviikkoinen', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, TRUE, 'korkeintaan 25 h/vko', 'högst 25 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('5-vuotiaiden kokopäiväinen, vähintään 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.8, 1.0, 1.0, 45, FALSE, FALSE, 'maksullista varhaiskasvatusta vähintään 25 h/vko', 'avgiftsbelagd småbarnspedagogik minst 25 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('5-vuotiaiden kokopäiväinen, yli 35h alle 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, FALSE, 'maksullista varhaiskasvatusta vähintään 15-25 h/vko', 'avgiftsbelagd småbarnspedagogik minst 15-25 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('5-vuotiaiden kokopäiväinen, yli 25h alle 35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, FALSE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('5-vuotiaiden osaviikkoinen, yli 35h alle 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, TRUE, 'maksullista varhaiskasvatusta vähintään 15-25 h/vko', 'avgiftsbelagd småbarnspedagogik minst 15-25 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('5-vuotiaiden osaviikkoinen, yli 25h alle 35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, TRUE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('5-vuotiaiden osaviikkoinen, yli 20h enintään 25h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 1.0, 25, FALSE, TRUE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('5-vuotiaiden maksuton osaviikkoinen', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 1.0, 20, FALSE, TRUE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('5-vuotiaiden osapäiväinen, yli 20h enintään 25h', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 0.5, 25, TRUE, FALSE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('5-vuotiaiden maksuton osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 0.5, 20, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('5-vuotiaiden osapäiväinen ja osaviikkoinen, yli 20h enintään 25h', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 0.5, 25, TRUE, TRUE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('5-vuotiaiden maksuton osapäiväinen ja osaviikkoinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 0.5, 20, TRUE, TRUE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Kokopäiväinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
+    ('Osaviikkoinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
+    ('Osaviikkoinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
+    ('Osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
+    ('Osapäiväinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
+    ('Osapäiväinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
+    ('Kokopäiväinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
+    ('Osaviikkoinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
+    ('Osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
+    ('Osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
+    ('Osapäiväinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
+    ('Osapäiväinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
+    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', '');

@@ -97,7 +97,7 @@ class VoucherValueDecisionController(
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { it.getVoucherValueDecision(objectMapper, id) }
+        val res = db.read { it.getVoucherValueDecision(id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -109,7 +109,6 @@ class VoucherValueDecisionController(
         db.transaction {
             sendVoucherValueDecisions(
                 tx = it,
-                objectMapper = objectMapper,
                 asyncJobRunner = asyncJobRunner,
                 user = user,
                 now = ZonedDateTime.now(europeHelsinki).toInstant(),
@@ -125,7 +124,7 @@ class VoucherValueDecisionController(
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
-            val decisions = tx.getValueDecisionsByIds(objectMapper, ids)
+            val decisions = tx.getValueDecisionsByIds(ids)
             if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
                 throw BadRequest("Voucher value decision cannot be marked sent")
             tx.markVoucherValueDecisionsSent(ids, Instant.now())
@@ -148,14 +147,13 @@ class VoucherValueDecisionController(
 
 fun sendVoucherValueDecisions(
     tx: Database.Transaction,
-    objectMapper: ObjectMapper,
     asyncJobRunner: AsyncJobRunner,
     user: AuthenticatedUser,
     now: Instant,
     ids: List<UUID>
 ) {
     tx.lockValueDecisions(ids)
-    val decisions = tx.getValueDecisionsByIds(objectMapper, ids)
+    val decisions = tx.getValueDecisionsByIds(ids)
     if (decisions.isEmpty()) return
 
     if (decisions.any { it.status != VoucherValueDecisionStatus.DRAFT }) {
@@ -170,7 +168,6 @@ fun sendVoucherValueDecisions(
         .flatMap {
             tx.lockValueDecisionsForChild(it.child.id)
             tx.findValueDecisionsForChild(
-                objectMapper,
                 it.child.id,
                 DateRange(it.validFrom, it.validTo),
                 listOf(VoucherValueDecisionStatus.SENT)

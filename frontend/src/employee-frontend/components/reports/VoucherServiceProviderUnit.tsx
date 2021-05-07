@@ -164,9 +164,6 @@ function VoucherServiceProviderUnit() {
     })
   }, [filters])
 
-  const formatServiceNeed = (amount: number) =>
-    `${amount} ${i18n.reports.voucherServiceProviderUnit.serviceNeedType}`
-
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -250,9 +247,7 @@ function VoucherServiceProviderUnit() {
                         : r.type === 'CORRECTION'
                         ? 'Korjaus'
                         : '',
-                    serviceVoucherServiceCoefficient: formatCents(
-                      r.serviceVoucherServiceCoefficient
-                    ),
+                    serviceNeedDescription: r.serviceNeedDescription,
                     serviceVoucherValue: formatCents(
                       r.serviceVoucherValue,
                       true
@@ -304,7 +299,7 @@ function VoucherServiceProviderUnit() {
                   },
                   {
                     label: i18n.reports.voucherServiceProviderUnit.serviceNeed,
-                    key: 'serviceVoucherHoursPerWeek'
+                    key: 'serviceNeedDescription'
                   },
                   {
                     label:
@@ -427,9 +422,7 @@ function VoucherServiceProviderUnit() {
                           {row.numberOfDays}
                         </Tooltip>
                       </Td>
-                      <Td>
-                        {formatServiceNeed(row.serviceVoucherHoursPerWeek)}
-                      </Td>
+                      <Td>{row.serviceNeedDescription}</Td>
                       <Td>{formatCents(row.serviceVoucherValue, true)}</Td>
                       <Td>{formatCents(row.serviceVoucherCoPayment, true)}</Td>
                       <Td>{formatCents(row.realizedAmount, true)}</Td>

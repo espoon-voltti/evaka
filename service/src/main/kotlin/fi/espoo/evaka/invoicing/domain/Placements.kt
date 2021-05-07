@@ -97,5 +97,9 @@ data class PlacementWithServiceNeed(
 data class ServiceNeedValue(
     val id: UUID,
     val feeCoefficient: BigDecimal,
-    val voucherValueCoefficient: BigDecimal
+    val voucherValueCoefficient: BigDecimal,
+    val feeDescriptionFi: String,
+    val feeDescriptionSv: String,
+    val voucherValueDescriptionFi: String,
+    val voucherValueDescriptionSv: String
 )

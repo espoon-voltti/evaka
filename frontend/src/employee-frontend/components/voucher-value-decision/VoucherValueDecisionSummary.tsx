@@ -38,7 +38,7 @@ export default React.memo(function Summary({ decision }: Props) {
         <TotalTitle noMargin>
           {i18n.valueDecision.summary.totalValue}
         </TotalTitle>
-        <b>{formatCents(decision.value - decision.coPayment)} €</b>
+        <b>{formatCents(decision.voucherValue - decision.coPayment)} €</b>
       </Total>
     </CollapsibleSection>
   )

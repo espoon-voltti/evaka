@@ -187,9 +187,9 @@ export async function getVoucherValueDecision(
           ? deserializeIncome(json.partnerIncome)
           : null,
         child: deserializePersonDetailed(json.child),
-        createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
+        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
+        created: new Date(json.created)
       })
     )
     .catch((e) => Failure.fromError(e))
@@ -300,9 +300,9 @@ export async function getVoucherValueDecisions(
           ...json.child,
           dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)
         },
-        createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
+        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
+        created: new Date(json.created)
       }))
     }))
     .then((v) => Success.of(v))

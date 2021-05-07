@@ -9,15 +9,16 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
-import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
-import fi.espoo.evaka.invoicing.testPlacement
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.config.PDFConfig
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -29,7 +30,6 @@ import java.util.UUID
 
 class PdfServiceTest {
     private val service: PDFService = PDFService(PDFConfig.templateEngine())
-    private val lang = "fi"
 
     val testPricing = Pricing(
         multiplier = BigDecimal(0.1070),
@@ -92,7 +92,7 @@ class PdfServiceTest {
                 placementUnit = UnitData.Detailed(
                     id = UUID.randomUUID(),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
-                    language = lang,
+                    language = "fi",
                     areaId = UUID.randomUUID(),
                     areaName = "Test Area"
                 ),
@@ -151,34 +151,39 @@ class PdfServiceTest {
             restrictedDetailsEnabled = false
         ),
         childAge = 3,
-        placement = PermanentPlacementWithHours(
-            testPlacement.unit,
-            testPlacement.type,
-            testPlacement.serviceNeed,
-            35.0
+        placement = VoucherValueDecisionPlacementDetailed(
+            UnitData.Detailed(
+                id = UUID.randomUUID(),
+                name = "Test Daycare",
+                language = "fi",
+                areaId = UUID.randomUUID(),
+                areaName = "Test Area"
+            ),
+            PlacementType.DAYCARE
         ),
-        placementUnit = UnitData.Detailed(
-            id = UUID.randomUUID(),
-            name = "Test Daycare",
-            language = lang,
-            areaId = UUID.randomUUID(),
-            areaName = "Test Area"
+        serviceNeed = VoucherValueDecisionServiceNeed(
+            feeCoefficient = BigDecimal("1.00"),
+            voucherValueCoefficient = BigDecimal("1.00"),
+            feeDescriptionFi = "palveluntarve puuttuu, korkein maksu",
+            feeDescriptionSv = "vårdbehovet saknas, högsta avgift",
+            voucherValueDescriptionFi = "yli 25h/viikko",
+            voucherValueDescriptionSv = "mer än 25 h/vecka"
         ),
-        value = 120000,
-        ageCoefficient = 1,
+        voucherValue = 120000,
+        ageCoefficient = BigDecimal("1.00"),
         baseCoPayment = 900,
         baseValue = 90000,
         coPayment = 12000,
         feeAlterations = emptyList(),
-        siblingDiscount = 0,
-        serviceCoefficient = 1
+        finalCoPayment = 12000,
+        siblingDiscount = 0
     )
 
     @Test
     fun `variables are ok with normal decision`() {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
-            lang = lang
+            lang = DocumentLang.fi.name
         )
 
         val simpleVariables = service.getFeeDecisionPdfVariables(feeDecisionPdfData).filterKeys {
@@ -224,7 +229,7 @@ class PdfServiceTest {
     fun `variables are ok with relief decision`() {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = reliefDecision,
-            lang = lang
+            lang = DocumentLang.fi.name
         )
 
         val simpleVariables = service.getFeeDecisionPdfVariables(feeDecisionPdfData).filterKeys {
@@ -270,7 +275,7 @@ class PdfServiceTest {
     fun `generateFeeDecisionPdf smoke test`() {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
-            lang = lang
+            lang = DocumentLang.fi.name
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
@@ -284,7 +289,7 @@ class PdfServiceTest {
 
         val voucherValueDecisionPdfData = VoucherValueDecisionPdfData(
             decision = normalVoucherValueDecision,
-            lang = lang
+            lang = DocumentLang.fi
         )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
         // File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
