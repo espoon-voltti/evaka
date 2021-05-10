@@ -33,6 +33,16 @@ FROM daycare_daily_note note
 WHERE 
     note.child_id IS NOT NULL
     AND d.id = :id
+    
+UNION ALL
+    
+SELECT note.* 
+FROM daycare_daily_note note
+    LEFT JOIN backup_care p on p.child_id = note.child_id
+    LEFT JOIN daycare d ON d.id = p.unit_id
+WHERE 
+    note.child_id IS NOT NULL
+    AND d.id = :id    
         """.trimIndent()
     )
         .bind("id", unitId)
@@ -70,7 +80,14 @@ SELECT * FROM daycare_daily_note
 WHERE child_id IN (        
     SELECT p.child_id
     FROM placement p LEFT JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
-    WHERE dgp.daycare_group_id = :groupId)        
+    WHERE dgp.daycare_group_id = :groupId
+    
+    UNION ALL 
+    
+    SELECT p.child_id
+    FROM backup_care p LEFT JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+    WHERE dgp.daycare_group_id = :groupId
+    )        
         """.trimIndent()
     )
         .bind("groupId", groupId)

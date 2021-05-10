@@ -23,8 +23,10 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.dev.insertTestBackupCare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.validDaycareApplication
@@ -360,6 +362,68 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
                 unitId = testDaycare.id,
                 startDate = LocalDate.now().minusDays(100),
                 endDate = LocalDate.now().plusDays(100),
+            )
+        }
+
+        scheduledOperationController.removeOldDaycareDailyNotes(db)
+
+        db.read {
+            val notesAfterCleanup = it.getChildDaycareDailyNotes(testChild_1.id)
+            assertEquals(1, notesAfterCleanup.size)
+            assertEquals(validNoteId, notesAfterCleanup.get(0).id)
+        }
+    }
+
+    @Test
+    fun removeOldBackupCareDaycareDailyNotes() {
+        val now = Instant.now()
+        val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
+        val expiredNoteId = UUID.randomUUID()
+        val validNoteId = UUID.randomUUID()
+        db.transaction {
+            it.createDaycareDailyNote(
+                DaycareDailyNote(
+                    id = expiredNoteId,
+                    childId = testChild_1.id,
+                    date = LocalDate.ofInstant(twelveHoursAgo, ZoneOffset.UTC),
+                    modifiedAt = twelveHoursAgo,
+                    feedingNote = null,
+                    note = null,
+                    reminderNote = null,
+                    sleepingHours = null,
+                    reminders = emptyList(),
+                    modifiedBy = "integrationTest",
+                    groupId = null,
+                    sleepingNote = null
+                )
+            )
+
+            it.createDaycareDailyNote(
+                DaycareDailyNote(
+                    id = validNoteId,
+                    childId = testChild_1.id,
+                    date = LocalDate.ofInstant(now, ZoneOffset.UTC),
+                    modifiedAt = now,
+                    feedingNote = null,
+                    note = null,
+                    reminderNote = null,
+                    sleepingHours = null,
+                    reminders = emptyList(),
+                    modifiedBy = "integrationTest",
+                    groupId = null,
+                    sleepingNote = null
+                )
+            )
+            it.insertTestBackupCare(
+                DevBackupCare(
+                    childId = testChild_1.id,
+                    groupId = null,
+                    unitId = testDaycare.id,
+                    period = FiniteDateRange(
+                        LocalDate.now().minusDays(100),
+                        LocalDate.now().plusDays(100)
+                    )
+                )
             )
         }
 
