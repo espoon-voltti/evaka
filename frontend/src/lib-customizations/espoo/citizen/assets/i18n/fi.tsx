@@ -466,8 +466,16 @@ export default {
             CLUB: 'Kerhon toivottu aloituspäivä'
           },
           noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
-          instructions:
-            'Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).',
+          instructions: function ServiceNeedInstructionsText() {
+            return (
+              <>
+                Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
+                kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
+                toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
+                varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
+              </>
+            )
+          },
           placeholder: 'Valitse aloituspäivä',
           validationText: 'Toivottu aloituspäivä: '
         },
@@ -484,7 +492,7 @@ export default {
         urgent: {
           label: 'Hakemus on kiireellinen',
           attachmentsMessage: {
-            text: function UrgentApplicatiionAttachmentMessageText() {
+            text: function UrgentApplicationAttachmentMessageText() {
               return (
                 <P fitted={true}>
                   Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä
@@ -594,8 +602,14 @@ export default {
         assistanceNeed: 'Tuen tarve',
         assistanceNeeded: 'Lapsella on tuen tarve',
         assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
-        assistanceNeedInstructions:
-          'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.',
+        assistanceNeedInstructions: {
+          DAYCARE:
+            'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.',
+          CLUB:
+            'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.',
+          PRESCHOOL:
+            'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille.'
+        },
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
@@ -852,8 +866,9 @@ export default {
           'Voit halutessasi antaa hakuun liittyvää tarkempaa lisätietoa',
         dietLabel: 'Erityisruokavalio',
         dietPlaceholder: 'Voit halutessasi ilmoittaa lapsen erityisruokavalion',
-        dietInfo:
-          'Osaan erityisruokavalioista tarvitaan erikseen lääkärintodistus, joka toimitetaan varhaiskasvatuspaikkaan. Poikkeuksena vähälaktoosinen tai laktoositon ruokavalio, uskonnollisiin syihin perustuva ruokavalio tai kasvisruokavalio (lakto-ovo).',
+        dietInfo: function DietInfoText() {
+          return 'Osaan erityisruokavalioista tarvitaan erikseen lääkärintodistus, joka toimitetaan varhaiskasvatuspaikkaan. Poikkeuksena vähälaktoosinen tai laktoositon ruokavalio, uskonnollisiin syihin perustuva ruokavalio tai kasvisruokavalio (lakto-ovo).'
+        },
         allergiesLabel: 'Allergiat',
         allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat',
         allergiesInfo:

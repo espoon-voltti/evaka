@@ -507,8 +507,16 @@ const en: Translations = {
             CLUB: 'Desired start date'
           },
           noteOnDelay: 'The application processing time is 4 months.',
-          instructions:
-            'You can postpone your desired start date until the processing of your application starts. After this, you can make changes to your desired start date by contacting early childhood education service counselling (tel. 09 816 31000).',
+          instructions: function ServiceNeedInstructionsText() {
+            return (
+              <>
+                You can postpone your desired start date until the processing of
+                your application starts. After this, you can make changes to
+                your desired start date by contacting early childhood education
+                service counselling (tel. 09 816 31000).
+              </>
+            )
+          },
           placeholder: 'Select the start date',
           validationText: 'Desired start date: '
         },
@@ -524,7 +532,7 @@ const en: Translations = {
         urgent: {
           label: 'Application is urgent',
           attachmentsMessage: {
-            text: function UrgentApplicatiionAttachmentMessageText() {
+            text: function UrgentApplicationAttachmentMessageText() {
               return (
                 <P fitted={true}>
                   If the need for a place in early childhood education arises
@@ -643,8 +651,14 @@ const en: Translations = {
         assistanceNeeded: 'The child needs support',
         assistanceNeedPlaceholder:
           'Describe the need for support for the child.',
-        assistanceNeedInstructions:
-          'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+        assistanceNeedInstructions: {
+          DAYCARE:
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+          CLUB:
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+          PRESCHOOL:
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
+        },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
@@ -907,8 +921,9 @@ const en: Translations = {
         dietLabel: 'Special diet',
         dietPlaceholder:
           'If you wish, you can indicate your child’s special diet in this field',
-        dietInfo:
-          'Some special diets require a separate medical certificate to be delivered to the early childhood education location. Exceptions are a low-lactose or lactose-free diet, a diet based on religious beliefs and vegetarian diet (lacto-ovo).',
+        dietInfo: function DietInfoText() {
+          return 'Some special diets require a separate medical certificate to be delivered to the early childhood education location. Exceptions are a low-lactose or lactose-free diet, a diet based on religious beliefs and vegetarian diet (lacto-ovo).'
+        },
         allergiesLabel: 'Allergies',
         allergiesPlaceholder:
           'If you wish, you can indicate your child’s allergies in this field',
