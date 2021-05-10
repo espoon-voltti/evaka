@@ -91,8 +91,7 @@ SELECT * FROM common_guardians
         .mapTo<AccountToChild>()
         .list()
 
-    val accountIdsWithCommonChildren = accountsWithCommonChildren.map { it.id }.toSet()
-    val singleRecipients = (accountIds - accountIdsWithCommonChildren).map { setOf(it) }.toSet()
+    val singleRecipients = (accountIds - accountsWithCommonChildren.map { it.id }).map { setOf(it) }
 
     val distinctSetsOfAccountsWithCommonChildren = accountsWithCommonChildren
         .groupBy { it.childId }
@@ -100,5 +99,5 @@ SELECT * FROM common_guardians
         .map { row -> row.map { it.id }.toSet() }
         .toSet()
 
-    return singleRecipients + distinctSetsOfAccountsWithCommonChildren
+    return distinctSetsOfAccountsWithCommonChildren + singleRecipients
 }

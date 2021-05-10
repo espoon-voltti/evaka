@@ -297,7 +297,9 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertNotEquals(person1Threads, person4Threads)
         assertNotEquals(person3Threads, person4Threads)
 
-        listOf(person1Threads, person2Threads, person3Threads, person4Threads).flatten().forEach {
+        val allThreads = listOf(person1Threads, person2Threads, person3Threads, person4Threads).flatten()
+        assertEquals(5, allThreads.size)
+        allThreads.forEach {
             assertEquals(title, it.title)
             assertEquals(content, it.messages[0].content)
         }
@@ -311,19 +313,26 @@ class MessageIntegrationTest : FullApplicationTest() {
         )
 
         // then only the participants should get the message
-        listOf(
-            getMessageThreads(employee1Account, employee1),
-            getMessageThreads(person1Account, person1),
-            getMessageThreads(person2Account, person2)
-        ).forEach {
-            assertEquals(
+        val employeeThreads = getMessageThreads(employee1Account, employee1)
+        assertEquals(
+            listOf(
+                Pair(employee1Account.id, content),
+                Pair(person1Account.id, "Hello")
+            ),
+            employeeThreads.map { it.toSenderContentPairs() }.flatten()
+        )
+        assertEquals(employeeThreads, getMessageThreads(person1Account, person1))
+        assertEquals(
+            listOf(
                 listOf(
                     Pair(employee1Account.id, content),
                     Pair(person1Account.id, "Hello")
                 ),
-                it[0].toSenderContentPairs()
-            )
-        }
+                listOf(Pair(employee1Account.id, content)),
+            ),
+            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }
+        )
+
         assertEquals(person3Threads, getMessageThreads(person3Account, person3))
         assertEquals(person4Threads, getMessageThreads(person4Account, person4))
     }
