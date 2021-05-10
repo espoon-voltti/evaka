@@ -11,8 +11,14 @@ export default class AsyncRedisClient {
   async get(key: string): Promise<string | null> {
     return fromCallback<string | null>((cb) => this.client.get(key, cb))
   }
-  async del(...keys: string[]): Promise<number> {
-    return fromCallback<number>((cb) => this.client.del(...keys, cb))
+  // NOTE: redis-mock currently does not support parsing multiple arguments
+  // (see: https://github.com/yeahoffline/redis-mock/pull/178), so AsyncRedisClient
+  // should support providing the keys as an array and not use the spread
+  // operator until this is fixed upstream.
+  async del(keys: string[]): Promise<number>
+  async del(...keys: string[]): Promise<number>
+  async del(keys: string | string[]) {
+    return fromCallback<number>((cb) => this.client.del(keys, cb))
   }
   async expire(key: string, seconds: number): Promise<number> {
     return fromCallback<number>((cb) => this.client.expire(key, seconds, cb))
