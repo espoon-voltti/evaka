@@ -30,7 +30,7 @@ class SystemIdentityController {
         Audit.PersonCreate.log()
         user.assertSystemInternalUser()
         return db.transaction { tx ->
-            tx.getPersonBySSN(person.socialSecurityNumber) ?: tx.createPerson(
+            val p = tx.getPersonBySSN(person.socialSecurityNumber) ?: tx.createPerson(
                 fi.espoo.evaka.pis.service.PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
                     firstName = person.firstName,
@@ -39,6 +39,8 @@ class SystemIdentityController {
                     language = null
                 )
             )
+            tx.markPersonLastLogin(p.id)
+            p
         }
             .let { ResponseEntity.ok().body(AuthenticatedUser.Citizen(it.id)) }
     }
@@ -52,7 +54,7 @@ class SystemIdentityController {
         Audit.EmployeeGetOrCreate.log(targetId = employee.externalId)
         user.assertSystemInternalUser()
         return db.transaction {
-            it.getEmployeeUserByExternalId(employee.externalId)
+            val e = it.getEmployeeUserByExternalId(employee.externalId)
                 ?: EmployeeUser(
                     id = it.createEmployee(employee.toNewEmployee()).id,
                     firstName = employee.firstName,
@@ -60,6 +62,8 @@ class SystemIdentityController {
                     globalRoles = emptySet(),
                     allScopedRoles = emptySet()
                 )
+            it.markEmployeeLastLogin(e.id)
+            e
         }
     }
 

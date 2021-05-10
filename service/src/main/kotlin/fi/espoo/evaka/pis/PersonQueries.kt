@@ -318,3 +318,12 @@ private val toPersonDTO: (ResultSet, StatementContext) -> PersonDTO = { rs, _ ->
         forceManualFeeDecisions = rs.getBoolean("force_manual_fee_decisions")
     )
 }
+
+fun Database.Transaction.markPersonLastLogin(id: UUID) = createUpdate(
+    """
+UPDATE person 
+SET last_login = now()
+WHERE id = :id
+    """.trimIndent()
+).bind("id", id)
+    .execute()
