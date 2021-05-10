@@ -22,7 +22,7 @@ if [ "${INTERNAL_GW_URL:-X}" = 'X' ]; then
   exit 1
 fi
 
-if test -n "$DEPLOYMENT_BUCKET"; then
+if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
   s3download "$DEPLOYMENT_BUCKET" "proxy" /etc/nginx/
 fi
 
