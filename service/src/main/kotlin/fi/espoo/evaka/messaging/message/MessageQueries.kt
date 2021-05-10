@@ -154,6 +154,54 @@ SELECT
         .let(mapToPaged(pageSize))
 }
 
+fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<SentMessage> {
+    val params = mapOf(
+        "accountId" to accountId,
+        "offset" to (page - 1) * pageSize,
+        "pageSize" to pageSize
+    )
+
+    // language=SQL
+    val sql = """
+WITH pageable_messages AS (
+    SELECT id, content_id, thread_id, sent_at, COUNT(*) OVER () AS count
+    FROM message m
+    WHERE sender_id = :accountId
+    ORDER BY sent_at DESC
+    LIMIT :pageSize OFFSET :offset
+),
+recipients AS (
+    SELECT message_id, recipient_id, name_view.account_name
+    FROM message_recipients rec
+    JOIN message_account_name_view name_view ON rec.recipient_id = name_view.id
+)
+
+SELECT
+    msg.count,
+    msg.id,
+    msg.sent_at,
+    mc.content,
+    t.id AS threadId,
+    t.title AS threadTitle,
+    t.message_type AS type,
+    (SELECT jsonb_agg(json_build_object(
+           'id', rec.recipient_id,
+           'name', rec.account_name
+       ))) AS recipients
+FROM pageable_messages msg
+JOIN recipients rec ON msg.id = rec.message_id
+JOIN message_content mc ON msg.content_id = mc.id
+JOIN message_thread t ON msg.thread_id = t.id
+GROUP BY msg.count, msg.id, msg.sent_at, mc.content, t.id, t.title, t.message_type
+ORDER BY msg.sent_at DESC
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bindMap(params)
+        .map(withCountMapper<SentMessage>())
+        .let(mapToPaged(pageSize))
+}
+
 data class ThreadWithParticipants(val threadId: UUID, val type: MessageType, val sender: UUID, val recipients: Set<UUID>)
 
 fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants? {

@@ -12,6 +12,7 @@ import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageControllerCitizen
 import fi.espoo.evaka.messaging.message.MessageThread
 import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.SentMessage
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
@@ -192,6 +193,27 @@ class MessageIntegrationTest : FullApplicationTest() {
             ),
             getMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
         )
+
+        // then employee can see all sent messages
+        assertEquals(
+            listOf(
+                Pair("person 1 does not see this", setOf(person2Account.id)),
+                Pair("Juhannus tulee pian", setOf(person1Account.id, person2Account.id))
+            ),
+            getSentMessages(employee1Account, employee1).map { it.toContentRecipientsPair() }
+        )
+
+        // then person one can see all sent messages
+        assertEquals(
+            listOf(
+                Pair("person 2 does not see this", setOf(employee1Account.id)),
+                Pair("No niinpä näyttää tulevan", setOf(employee1Account.id, person2Account.id))
+            ),
+            getSentMessages(person1Account, person1).map { it.toContentRecipientsPair() }
+        )
+
+        // then person two does not see any sent messages as she has not sent anything
+        assertEquals(0, getSentMessages(person2Account, person2).size)
     }
 
     @Test
@@ -325,6 +347,14 @@ class MessageIntegrationTest : FullApplicationTest() {
     )
         .asUser(user)
         .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
+
+    private fun getSentMessages(account: MessageAccount, user: AuthenticatedUser): List<SentMessage> = http.get(
+        "${if (user.isEndUser) "/citizen" else ""}/messages/${account.id}/sent",
+        listOf("page" to 1, "pageSize" to 100)
+    )
+        .asUser(user)
+        .responseObject<Paged<SentMessage>>(objectMapper).third.get().data
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map { Pair(it.senderId, it.content) }
+fun SentMessage.toContentRecipientsPair(): Pair<String, Set<UUID>> = Pair(this.content, this.recipients.map { it.id }.toSet())

@@ -56,6 +56,21 @@ class MessageControllerCitizen {
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
+    @GetMapping("/{accountId}/sent")
+    fun getSentMessages(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
+        @RequestParam pageSize: Int,
+        @RequestParam page: Int,
+    ): Paged<SentMessage> {
+        Audit.MessagingSentMessagesRead.log(targetId = accountId)
+        user.requireOneOfRoles(UserRole.END_USER)
+        if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
+            throw Forbidden("User is not authorized to access the account")
+        return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+    }
+
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
 
     @PostMapping("/{messageId}/reply")
