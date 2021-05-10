@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express, { Router, urlencoded } from 'express'
-import passport from 'passport'
-import { logAuditEvent, logDebug } from '../../../logging'
-import { devLoginEnabled, gatewayRole, nodeEnv } from '../../../config'
-import { parseDescriptionFromSamlError } from './error-utils'
-import { SamlEndpointConfig, SamlUser } from './types'
-import { toMiddleware, toRequestHandler } from '../../../express'
-import { logoutExpress, saveLogoutToken } from '../../../session'
-import { fromCallback } from '../../../promise-utils'
-import { getEmployees } from '../../../dev-api'
 import _ from 'lodash'
+import passport from 'passport'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
+import { devLoginEnabled, gatewayRole, nodeEnv } from '../../../config'
+import { getEmployees } from '../../../dev-api'
+import { toMiddleware, toRequestHandler } from '../../../express'
+import { logAuditEvent, logDebug } from '../../../logging'
+import { fromCallback } from '../../../promise-utils'
+import { logoutExpress, saveLogoutToken } from '../../../session'
+import { parseDescriptionFromSamlError } from './error-utils'
+import { SamlEndpointConfig, SamlUser } from './types'
 
 const urlencodedParser = urlencoded({ extended: false })
 
