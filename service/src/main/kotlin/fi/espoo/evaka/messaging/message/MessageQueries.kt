@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging.message
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
@@ -23,7 +24,7 @@ fun Database.Read.getUnreadMessagesCount(
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("accountIds", accountIds)
+        .bind("accountIds", accountIds.toTypedArray())
         .mapTo<Int>()
         .one()
 }
@@ -33,11 +34,12 @@ fun Database.Transaction.insertMessage(
     threadId: UUID,
     sender: MessageAccount,
     repliesToMessageId: UUID? = null,
+    sentAt: HelsinkiDateTime? = HelsinkiDateTime.now()
 ): UUID {
     // language=SQL
     val insertMessageSql = """
-        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to)
-        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId)        
+        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at)
+        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId, :sentAt)        
         RETURNING id
     """.trimIndent()
     return createQuery(insertMessageSql)
@@ -46,6 +48,7 @@ fun Database.Transaction.insertMessage(
         .bindNullable("repliesToId", repliesToMessageId)
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
+        .bind("sentAt", sentAt)
         .mapTo<UUID>()
         .one()
 }

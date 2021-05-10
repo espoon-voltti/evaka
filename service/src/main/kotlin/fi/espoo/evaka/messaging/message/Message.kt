@@ -48,31 +48,23 @@ data class MessageAccount(
     val name: String,
 )
 
-private fun insertMessage(
-    tx: Database.Transaction,
-    threadId: UUID,
-    content: String,
-    sender: MessageAccount,
-    recipientAccountIds: Set<UUID>,
-    repliesToMessageId: UUID? = null,
-): UUID {
-    val contentId = tx.insertMessageContent(content, sender)
-    val messageId = tx.insertMessage(contentId, threadId, sender, repliesToMessageId)
-    tx.insertRecipients(recipientAccountIds, messageId)
-    return messageId
-}
-
-fun createMessageThread(
+fun createMessageThreadsForRecipientGroups(
     tx: Database.Transaction,
     title: String,
     content: String,
     type: MessageType,
     sender: MessageAccount,
-    recipientAccountIds: Set<UUID>,
-): UUID {
-    val threadId = tx.insertThread(type, title)
-    insertMessage(tx, threadId, content, sender, recipientAccountIds)
-    return threadId
+    recipientGroups: Set<Set<UUID>>,
+): List<UUID> {
+    // for each recipient group, create a thread, message and message_recipients while re-using content
+    val contentId = tx.insertMessageContent(content, sender)
+    val sentAt = HelsinkiDateTime.now()
+    return recipientGroups.map {
+        val threadId = tx.insertThread(type, title)
+        val messageId = tx.insertMessage(contentId = contentId, threadId = threadId, sender = sender, sentAt = sentAt)
+        tx.insertRecipients(it, messageId)
+        threadId
+    }
 }
 
 fun replyToThread(
@@ -91,14 +83,10 @@ fun replyToThread(
     if (!previousParticipants.contains(senderAccount.id)) throw Forbidden("Not authorized to post to message")
     if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
 
-    return db.transaction {
-        insertMessage(
-            tx = it,
-            threadId = threadId,
-            repliesToMessageId = messageId,
-            content = content,
-            sender = senderAccount,
-            recipientAccountIds = recipientAccountIds
-        )
+    return db.transaction { tx ->
+        val contentId = tx.insertMessageContent(content, senderAccount)
+        val msgId = tx.insertMessage(contentId, threadId, senderAccount, repliesToMessageId = messageId)
+        tx.insertRecipients(recipientAccountIds, msgId)
+        msgId
     }
 }

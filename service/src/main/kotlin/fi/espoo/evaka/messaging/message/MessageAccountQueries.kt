@@ -63,3 +63,42 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) 
         .bind("daycareGroupId", daycareGroupId)
         .execute()
 }
+
+fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<UUID>): Set<Set<UUID>> {
+    data class AccountToChild(val id: UUID, val childId: UUID? = null)
+
+    val accountsWithCommonChildren = createQuery(
+        """     
+WITH person_accounts AS (
+    SELECT id, person_id from message_account WHERE id = ANY(:accountIds) AND person_id IS NOT NULL
+), 
+common_guardians AS (
+    SELECT g.child_id, ma.id
+    FROM guardian g
+    JOIN message_account ma on g.guardian_id = ma.person_id
+    WHERE ma.person_id = ANY(SELECT person_id from person_accounts) AND EXISTS(
+        SELECT 1
+        FROM guardian g2
+        WHERE g2.guardian_id = ANY(SELECT person_id from person_accounts)
+          AND g2.guardian_id <> g.guardian_id
+          AND g2.child_id = g.child_id
+    )
+)
+SELECT * FROM common_guardians
+        """.trimIndent()
+    )
+        .bind("accountIds", accountIds.toTypedArray())
+        .mapTo<AccountToChild>()
+        .list()
+
+    val accountIdsWithCommonChildren = accountsWithCommonChildren.map { it.id }.toSet()
+    val singleRecipients = (accountIds - accountIdsWithCommonChildren).map { setOf(it) }.toSet()
+
+    val distinctSetsOfAccountsWithCommonChildren = accountsWithCommonChildren
+        .groupBy { it.childId }
+        .values
+        .map { row -> row.map { it.id }.toSet() }
+        .toSet()
+
+    return singleRecipients + distinctSetsOfAccountsWithCommonChildren
+}
