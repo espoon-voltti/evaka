@@ -83,7 +83,7 @@ WITH data AS (
     WHERE p.child_id = :childId
 )
 INSERT INTO new_service_need (option_id, placement_id, start_date, end_date, shift_care, confirmed_by, confirmed_at)
-SELECT (SELECT id FROM service_need_option WHERE name = option_name), placement_id, start_date, end_date, shift_care
+SELECT (SELECT id FROM service_need_option WHERE name = option_name), placement_id, start_date, end_date, shift_care, updated_by, updated
 FROM data
 WHERE option_name != 'undefined'
 """
