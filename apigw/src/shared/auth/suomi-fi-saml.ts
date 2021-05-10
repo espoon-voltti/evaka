@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
-import { SamlUser } from '../routes/auth/saml/types'
-import { Strategy as DummyStrategy } from 'passport-dummy'
-import { sfiConfig, sfiMock } from '../config'
-import certificates, { TrustedCertificates } from '../certificates'
 import fs from 'fs'
+import { Strategy as DummyStrategy } from 'passport-dummy'
+import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
+import { RedisClient } from 'redis'
+import certificates from '../certificates'
+import { sfiConfig, sfiMock } from '../config'
+import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreatePerson } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
-import { RedisClient } from 'redis'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -55,8 +55,11 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   }
 }
 
-export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (sfiMock) return {}
+export function createSamlConfig(
+  redisClient?: RedisClient,
+  enableMock: boolean = sfiMock
+): SamlConfig {
+  if (enableMock) return {}
   if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
 
   const privateCert = fs.readFileSync(sfiConfig.privateCert, {
@@ -87,9 +90,10 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
 }
 
 export default function createSuomiFiStrategy(
-  config: SamlConfig
+  config: SamlConfig,
+  enableMock: boolean = sfiMock
 ): Strategy | DummyStrategy {
-  if (sfiMock) {
+  if (enableMock) {
     return new DummyStrategy((done) => {
       verifyProfile(dummySuomiFiProfile)
         .then((user) => done(null, user))
