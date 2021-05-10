@@ -5,7 +5,9 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
@@ -22,7 +24,7 @@ data class MessageThread(
     val type: MessageType,
     val title: String,
     @Json
-    val messages: List<Message>
+    val messages: List<Message>,
 )
 
 enum class MessageType {
@@ -32,7 +34,7 @@ enum class MessageType {
 
 data class MessageAccount(
     val id: UUID,
-    val name: String
+    val name: String,
 )
 
 private fun insertMessage(
@@ -40,10 +42,11 @@ private fun insertMessage(
     threadId: UUID,
     content: String,
     sender: MessageAccount,
-    recipientAccountIds: Set<UUID>
+    recipientAccountIds: Set<UUID>,
+    repliesToMessageId: UUID? = null,
 ): UUID {
     val contentId = tx.insertMessageContent(content, sender)
-    val messageId = tx.insertMessage(contentId, threadId, sender)
+    val messageId = tx.insertMessage(contentId, threadId, sender, repliesToMessageId)
     tx.insertRecipients(recipientAccountIds, messageId)
     return messageId
 }
@@ -54,13 +57,37 @@ fun createMessageThread(
     content: String,
     type: MessageType,
     sender: MessageAccount,
-    recipientAccountIds: Set<UUID>
+    recipientAccountIds: Set<UUID>,
 ): UUID {
     val threadId = tx.insertThread(type, title)
     insertMessage(tx, threadId, content, sender, recipientAccountIds)
     return threadId
 }
 
-fun replyToThread(tx: Database.Transaction, threadId: UUID, content: String, sender: MessageAccount, recipients: Set<UUID>): UUID {
-    return insertMessage(tx, threadId, content, sender, recipients)
+fun replyToThread(
+    db: Database.Connection,
+    messageId: UUID,
+    senderAccount: MessageAccount,
+    recipientAccountIds: Set<UUID>,
+    content: String,
+): UUID {
+    val (threadId, type, sender, recipients) = db.read { it.getThreadByMessageId(messageId) }
+        ?: throw NotFound("Message not found")
+
+    if (type == MessageType.BULLETIN && sender != senderAccount.id) throw Forbidden("Only the author can reply to bulletin")
+
+    val previousParticipants = recipients + sender
+    if (!previousParticipants.contains(senderAccount.id)) throw Forbidden("Not authorized to post to message")
+    if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
+
+    return db.transaction {
+        insertMessage(
+            tx = it,
+            threadId = threadId,
+            repliesToMessageId = messageId,
+            content = content,
+            sender = senderAccount,
+            recipientAccountIds = recipientAccountIds
+        )
+    }
 }

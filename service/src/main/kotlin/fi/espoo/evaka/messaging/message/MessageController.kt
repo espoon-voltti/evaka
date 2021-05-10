@@ -25,10 +25,10 @@ data class UnreadMessagesResponse(val count: Int)
 @RestController
 @RequestMapping("/messages")
 class MessageController {
-
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
         Audit.MessagingMyAccountsRead.log()
+        authorizeAllowedMessagingRoles(user)
         return db.read { it.getMessageAccountsForUser(user) }
     }
 
@@ -41,6 +41,7 @@ class MessageController {
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log(targetId = accountId)
+        authorizeAllowedMessagingRoles(user)
         if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
@@ -49,9 +50,10 @@ class MessageController {
     @GetMapping("/unread")
     fun getUnreadMessages(
         db: Database.Connection,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
     ): UnreadMessagesResponse {
         Audit.MessagingUnreadMessagesRead.log()
+        authorizeAllowedMessagingRoles(user)
         val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
         val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
@@ -62,17 +64,17 @@ class MessageController {
         val content: String,
         val type: MessageType,
         val senderAccountId: UUID,
-        val recipientAccountIds: Set<UUID>
+        val recipientAccountIds: Set<UUID>,
     )
 
     @PostMapping
     fun createMessage(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody body: PostMessageBody
+        @RequestBody body: PostMessageBody,
     ): UUID {
         Audit.MessagingNewMessageWrite.log(targetId = body.senderAccountId)
-        user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        authorizeAllowedMessagingRoles(user)
         val sender = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("User is not authorized to access the account")
 
@@ -90,6 +92,37 @@ class MessageController {
                 recipientAccountIds = body.recipientAccountIds
             )
         }
+    }
+
+    data class ReplyToMessageBody(
+        val content: String,
+        val senderAccountId: UUID,
+        val recipientAccountIds: Set<UUID>,
+    )
+
+    @PostMapping("/{messageId}/reply")
+    fun replyToThread(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable messageId: UUID,
+        @RequestBody body: ReplyToMessageBody,
+    ) {
+        Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
+        authorizeAllowedMessagingRoles(user)
+        val account = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
+            ?: throw Forbidden("Message account not found for user")
+
+        replyToThread(
+            db = db,
+            messageId = messageId,
+            senderAccount = account,
+            recipientAccountIds = body.recipientAccountIds,
+            content = body.content
+        )
+    }
+
+    private fun authorizeAllowedMessagingRoles(user: AuthenticatedUser) {
+        user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 
     val supervisorAccount: MessageAccount = MessageAccount(id = UUID.randomUUID(), name = "Esimies Ella")
