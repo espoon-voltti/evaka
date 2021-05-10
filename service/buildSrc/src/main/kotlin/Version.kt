@@ -10,7 +10,7 @@ object Version {
         const val flyway = "7.5.3"
         const val kotlin = "1.4.30"
         const val kotlinter = "3.3.0"
-        const val owasp = "6.1.5"
+        const val owasp = "6.1.6"
         const val springBoot = "2.4.3"
         const val versions = "0.36.0"
     }
