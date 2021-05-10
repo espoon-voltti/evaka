@@ -81,12 +81,17 @@ export class GatewayTester {
     )
   }
 
-  public async login(user: AuthenticatedUser | EmployeeUser): Promise<void> {
+  public async login(
+    user: AuthenticatedUser | EmployeeUser,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    postData?: any
+  ): Promise<void> {
+    postData = postData !== undefined ? postData : { preset: 'dummy' }
     if (this.sessionType === 'employee') {
       this.nockScope.post('/system/employee-identity').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',
-        { preset: 'dummy' },
+        postData,
         {
           maxRedirects: 0,
           validateStatus: (status) => status >= 200 && status <= 302
@@ -97,7 +102,7 @@ export class GatewayTester {
       this.nockScope.post('/system/person-identity').reply(200, user)
       await this.client.post(
         '/api/application/auth/saml/login/callback',
-        { preset: 'dummy' },
+        postData,
         {
           maxRedirects: 0,
           validateStatus: (status) => status >= 200 && status <= 302
