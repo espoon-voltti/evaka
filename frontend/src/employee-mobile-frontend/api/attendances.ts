@@ -30,6 +30,7 @@ export interface Staff {
   firstName: string
   lastName: string
   id: string
+  pinSet?: boolean
 }
 
 export interface Group {

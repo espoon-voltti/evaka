@@ -396,3 +396,36 @@ test('After 5 unsuccessful tries user is locked and cannot login with correct PI
   await submitPin('1111', 'PIN-koodi on lukittu')()
   await submitPin(employeePin.data.pin, 'PIN-koodi on lukittu')()
 })
+
+test('User that has no pin set is not shown', async (t) => {
+  const id = uuidv4()
+  const pinlessEmployee = await Fixture.employee()
+    .with({
+      id,
+      externalId: `espooad: ${id}`,
+      firstName: 'Pinja',
+      lastName: 'Pinnitön',
+      email: 'pinja.pinniton@example.com',
+      roles: []
+    })
+    .save()
+
+  await setAclForDaycares(pinlessEmployee.data.externalId, daycare.data.id)
+
+  await t
+    .expect(mobileGroupsPage.childName(child.id).textContent)
+    .eql(`${child.firstName} ${child.lastName}`)
+
+  await t.click(mobileGroupsPage.childRow(enduserChildFixtureJari.id))
+  await t.click(mobileGroupsPage.childSensitiveInfoLink)
+
+  await t.click(mobileGroupsPage.pinLoginStaffSelector)
+  await t.typeText(
+    mobileGroupsPage.pinLoginStaffSelector,
+    pinlessEmployee.data.lastName
+  )
+
+  await t
+    .expect(mobileGroupsPage.pinLoginStaffSelector.textContent)
+    .contains('Ei vaihtoehtoja')
+})

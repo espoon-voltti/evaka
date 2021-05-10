@@ -112,5 +112,6 @@ data class ChildAbsence(
 data class Staff(
     val id: UUID,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
+    val pinSet: Boolean = false
 )

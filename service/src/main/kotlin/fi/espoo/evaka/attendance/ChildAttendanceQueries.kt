@@ -120,8 +120,10 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
 
     val staff = createQuery(
         """
-        SELECT e.first_name, e.last_name, e.id
-        FROM daycare_acl acl LEFT JOIN employee e ON acl.employee_id = e.id
+        SELECT e.first_name, e.last_name, e.id, char_length(COALESCE(pin.pin, '')) > 0 as pin_set
+        FROM daycare_acl acl 
+            LEFT JOIN employee e ON acl.employee_id = e.id
+            LEFT JOIN employee_pin pin ON acl.employee_id = pin.user_id
         WHERE acl.daycare_id = :id
         AND acl.role = ANY('{STAFF, UNIT_SUPERVISOR}')
         """.trimIndent()
