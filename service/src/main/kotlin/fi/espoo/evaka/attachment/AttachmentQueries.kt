@@ -81,10 +81,19 @@ fun Database.Transaction.deleteAttachment(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: UUID, type: AttachmentType): List<UUID> {
-    return this.createQuery("DELETE FROM attachment WHERE application_id = :applicationId AND type = :type RETURNING id")
+fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: UUID, type: AttachmentType, userId: UUID): List<UUID> {
+    return this.createQuery(
+        """
+            DELETE FROM attachment 
+            WHERE application_id = :applicationId 
+            AND type = :type 
+            AND (uploaded_by_employee = :userId OR uploaded_by_person = :userId)
+            RETURNING id
+        """.trimIndent()
+    )
         .bind("applicationId", applicationId)
         .bind("type", type)
+        .bind("userId", userId)
         .mapTo<UUID>()
         .toList()
 }

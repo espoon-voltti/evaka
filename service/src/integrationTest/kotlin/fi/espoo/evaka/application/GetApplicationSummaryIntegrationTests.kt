@@ -36,7 +36,7 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
             tx.insertGeneralTestFixtures()
         }
         createApplication(child = testChild_1, guardian = testAdult_1)
-        createApplication(child = testChild_2, guardian = testAdult_1, attachment = true)
+        createApplication(child = testChild_2, guardian = testAdult_1, extendedCare = true, attachment = true)
         createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
     }
 
@@ -68,10 +68,10 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest() {
         return result.get()
     }
 
-    private fun createApplication(child: PersonData.Detailed, guardian: PersonData.Detailed, attachment: Boolean = false, urgent: Boolean = false) {
+    private fun createApplication(child: PersonData.Detailed, guardian: PersonData.Detailed, attachment: Boolean = false, urgent: Boolean = false, extendedCare: Boolean = false) {
         val applicationId = db.transaction { tx ->
             tx.insertTestApplication(childId = child.id, guardianId = guardian.id).also { id ->
-                val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent)
+                val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent).copy(extendedCare = extendedCare)
                 tx.insertTestApplicationForm(id, form)
             }
         }

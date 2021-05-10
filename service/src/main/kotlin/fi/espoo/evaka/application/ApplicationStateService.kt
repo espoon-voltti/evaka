@@ -452,12 +452,12 @@ class ApplicationStateService(
 
         val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
-            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY)
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, user.id)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
-            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE)
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE, user.id)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 
@@ -480,7 +480,7 @@ class ApplicationStateService(
         return getApplication(tx, applicationId)
     }
 
-    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate) {
+    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate, userId: UUID) {
         val original = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
@@ -489,12 +489,12 @@ class ApplicationStateService(
 
         val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
-            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY)
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, userId)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 
         if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
-            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE)
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE, userId)
             deleted.forEach { documentClient.delete(filesBucket, "$it") }
         }
 

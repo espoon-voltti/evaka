@@ -146,8 +146,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application = insertSentApplication(sentDate, originalDueDate, true, shiftCare = true)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.URGENCY)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.EXTENDED_CARE)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.URGENCY)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.EXTENDED_CARE)
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
@@ -206,8 +206,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.URGENCY)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.EXTENDED_CARE)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.URGENCY)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.EXTENDED_CARE)
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingShiftCare!!.form.preferences.urgent)
