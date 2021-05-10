@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import com.lowagie.text.pdf.BaseFont
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -17,9 +18,11 @@ import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
 import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.OutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.nio.file.Paths
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -74,7 +77,18 @@ class PDFService(
 
     private fun renderHtmlPages(pages: String, os: OutputStream) {
         val textRenderer = ITextRenderer()
+
+        val res = javaClass.classLoader.getResource("ttf/OpenSans-Regular.ttf")
+        val file: File = Paths.get(res.toURI()).toFile()
+        val url: String = file.absolutePath
+
+        val boldRes = javaClass.classLoader.getResource("ttf/OpenSans-Bold.ttf")
+        val boldFile: File = Paths.get(boldRes.toURI()).toFile()
+        val boldUrl: String = boldFile.absolutePath
+
         textRenderer.setDocumentFromString(pages)
+        textRenderer.fontResolver.addFont(url, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(boldUrl, BaseFont.IDENTITY_H, true)
         textRenderer.layout()
         textRenderer.createPDF(os, false)
         textRenderer.finishPDF()
