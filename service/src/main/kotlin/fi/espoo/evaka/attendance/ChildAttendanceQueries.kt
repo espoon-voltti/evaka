@@ -120,10 +120,17 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
 
     val staff = createQuery(
         """
-        SELECT e.first_name, e.last_name, e.id, char_length(COALESCE(pin.pin, '')) > 0 as pin_set
+        SELECT e.first_name, e.last_name, e.id, char_length(COALESCE(pin.pin, '')) > 0 as pin_set, coalesce(groups, array[]::uuid[]) AS groups
         FROM daycare_acl acl 
             LEFT JOIN employee e ON acl.employee_id = e.id
             LEFT JOIN employee_pin pin ON acl.employee_id = pin.user_id
+        LEFT JOIN (
+            SELECT employee_id, array_agg(daycare_group_id) AS groups
+            FROM daycare_group_acl dga
+            JOIN daycare_group dg ON dga.daycare_group_id = dg.id
+            WHERE dg.daycare_id = :id
+            GROUP BY employee_id
+        ) group_acl ON acl.employee_id = group_acl.employee_id
         WHERE acl.daycare_id = :id
         AND acl.role = ANY('{STAFF, UNIT_SUPERVISOR}')
         """.trimIndent()

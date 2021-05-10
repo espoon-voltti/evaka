@@ -9,6 +9,7 @@ import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AbsenceType, CareType } from '../types'
 import { PlacementType } from '../types'
 import { client } from './client'
+import { UUID } from 'lib-common/types'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]
@@ -31,6 +32,7 @@ export interface Staff {
   lastName: string
   id: string
   pinSet?: boolean
+  groups: UUID[]
 }
 
 export interface Group {
