@@ -16,7 +16,6 @@ import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
 import { Table, Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Loading, Result } from 'lib-common/api'
@@ -43,7 +42,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { RequireRole } from '../../../utils/roles'
 import { useTranslation } from '../../../state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
+import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 import { H2 } from 'lib-components/typography'
 import Button from 'lib-components/atoms/buttons/Button'
 import { UUID } from '../../../types'
@@ -58,6 +57,7 @@ import { isNotProduction, isPilotUnit } from '../../../constants'
 import { AdRole } from '../../../types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 
 type Props = {
   unitId: string
@@ -94,25 +94,17 @@ function GroupListing({
   groupIds: UUID[]
 }) {
   const { i18n } = useTranslation()
-  const [expanded, setExpanded] = useState(false)
   const sortedIds = useMemo(
     () => sortBy(groupIds, (id) => unitGroups[id]?.name),
     [unitGroups, groupIds]
   )
-  const shownIds = expanded ? sortedIds : sortedIds.slice(0, 3)
-  const hiddenCount = sortedIds.length - shownIds.length
+  if (groupIds.length === 0) {
+    return <>{i18n.unit.accessControl.noGroups}</>
+  }
   return (
-    <>
-      {shownIds.map((id) => (
-        <div key={id}>{unitGroups[id]?.name}</div>
-      ))}
-      {hiddenCount > 0 && (
-        <InlineButton
-          onClick={() => setExpanded(true)}
-          text={`+${hiddenCount} ${i18n.common.expandableList.others}`}
-        />
-      )}
-    </>
+    <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
+      {[sortedIds.map((id) => <div key={id}>{unitGroups[id]?.name}</div>)]}
+    </ExpandableList>
   )
 }
 
@@ -153,8 +145,13 @@ function AclRowEditor({
       </GroupMultiSelectTd>
       <Td>
         <RowButtons>
-          <InlineButton onClick={onCancel} text={i18n.common.cancel} />
           <InlineButton
+            icon={faTimes}
+            onClick={onCancel}
+            text={i18n.common.cancel}
+          />
+          <InlineButton
+            icon={faCheck}
             data-qa="save"
             onClick={() => onSave(groups.map(({ id }) => id))}
             text={i18n.common.save}
@@ -240,16 +237,6 @@ const GroupMultiSelectTd = styled(Td)`
   vertical-align: middle;
 `
 
-const AddAclTitleContainer = styled.div`
-  display: flex;
-  align-items: center;
-
-  > svg {
-    flex: 0 0 auto;
-    margin-right: 10px;
-  }
-`
-
 const AddAclSelectContainer = styled.div`
   display: flex;
   align-items: center;
@@ -266,6 +253,10 @@ const AddAclSelectContainer = styled.div`
 
 const GroupsTh = styled(Th)`
   width: 40%;
+`
+
+const ActionsTh = styled(Th)`
+  width: 240px;
 `
 
 function AclTable({
@@ -291,7 +282,7 @@ function AclTable({
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.email}</Th>
           {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
-          <Th />
+          <ActionsTh />
         </Tr>
       </Thead>
       <Tbody>
@@ -387,6 +378,11 @@ function DeviceRow({
   )
 }
 
+const AddAclLabel = styled.p`
+  font-weight: 600;
+  margin-bottom: 0;
+`
+
 function AddAcl({
   employees,
   onAddAclRow
@@ -422,9 +418,7 @@ function AddAcl({
 
   return (
     <>
-      <AddAclTitleContainer>
-        <Title size={3}>{i18n.unit.accessControl.addPerson}</Title>
-      </AddAclTitleContainer>
+      <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
       <AddAclSelectContainer>
         <ReactSelect
           className="acl-select"
