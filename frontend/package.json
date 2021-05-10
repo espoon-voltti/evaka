@@ -63,7 +63,7 @@
     "lib-components": "link:src/lib-components",
     "lib-customizations": "link:src/lib-customizations",
     "lib-icons": "link:src/lib-icons",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "polished": "^4.1.0",
     "react": "^17.0.1",
     "react-autosize-textarea": "^7.0.0",
