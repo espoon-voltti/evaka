@@ -9,6 +9,7 @@ import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
+import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.getThreadByMessageId
 import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
@@ -226,6 +227,51 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(2, page2.pages)
         assertEquals(1, page2.data.size)
         assertEquals(messages.data[1], page2.data[0])
+    }
+
+    @Test
+    fun `sent messages`() {
+        val (employee1Account, person1Account, person2Account) = db.read {
+            listOf(
+                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
+                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+            )
+        }
+
+        // when two threads are created
+        val threadId1 = db.transaction {
+            createMessageThread(it, "thread 1", "content 1", MessageType.MESSAGE, employee1Account, setOf(person1Account.id, person2Account.id))
+        }
+        val thread2Id = db.transaction {
+            createMessageThread(it, "thread 2", "content 2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
+        }
+
+        // then sent messages are returned for sender id
+        val firstPage = db.read { it.getMessagesSentByAccount(employee1Account.id, 1, 1) }
+        assertEquals(2, firstPage.total)
+        assertEquals(2, firstPage.pages)
+        assertEquals(1, firstPage.data.size)
+
+        val newestMessage = firstPage.data[0]
+        assertEquals("content 2", newestMessage.content)
+        assertEquals("thread 2", newestMessage.threadTitle)
+        assertEquals(thread2Id, newestMessage.threadId)
+        assertEquals(setOf(person1Account), newestMessage.recipients)
+
+        val secondPage = db.read { it.getMessagesSentByAccount(employee1Account.id, 1, 2) }
+        assertEquals(2, secondPage.total)
+        assertEquals(2, secondPage.pages)
+        assertEquals(1, secondPage.data.size)
+
+        val oldestMessage = secondPage.data[0]
+        assertEquals("content 1", oldestMessage.content)
+        assertEquals("thread 1", oldestMessage.threadTitle)
+        assertEquals(threadId1, oldestMessage.threadId)
+        assertEquals(setOf(person1Account, person2Account), oldestMessage.recipients)
+
+        // then fetching sent messages by recipient ids does not return the messages
+        assertEquals(0, db.read { it.getMessagesSentByAccount(person1Account.id, 1, 1) }.total)
     }
 
     @Test

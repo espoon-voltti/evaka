@@ -27,6 +27,17 @@ data class MessageThread(
     val messages: List<Message>,
 )
 
+data class SentMessage(
+    val id: UUID,
+    val content: String,
+    val sentAt: HelsinkiDateTime,
+    val threadId: UUID,
+    val threadTitle: String,
+    val type: MessageType,
+    @Json
+    val recipients: Set<MessageAccount>,
+)
+
 enum class MessageType {
     MESSAGE,
     BULLETIN
