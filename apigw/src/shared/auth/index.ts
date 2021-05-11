@@ -84,14 +84,9 @@ export function createLogoutToken(
  */
 export async function tryParseProfile(
   req: Request,
-  saml?: SAML
+  saml: SAML
 ): Promise<Profile | undefined> {
-  if (!saml) {
-    logDebug('No SAML parser provided, skipping profile parsing from request')
-    return
-  }
-
-  let profile: Profile | undefined
+  let profile: Profile | null | undefined
 
   // NOTE: This duplicate parsing can be removed if passport-saml ever exposes
   // an alternative for passport.authenticate() that either lets us hook into
@@ -103,17 +98,15 @@ export async function tryParseProfile(
       /^\?/,
       ''
     )
-    profile =
-      (await fromCallback<Profile | null | undefined>((cb) =>
-        saml.validateRedirect(req.query, originalQuery, cb)
-      )) || undefined
+    profile = await fromCallback<Profile | null | undefined>((cb) =>
+      saml.validateRedirect(req.query, originalQuery, cb)
+    )
   } else if (req.body?.SAMLRequest) {
     // POST logout callbacks have the signature in the message body directly
-    profile =
-      (await fromCallback<Profile | null | undefined>((cb) =>
-        saml.validatePostRequest(req.body, cb)
-      )) || undefined
+    profile = await fromCallback<Profile | null | undefined>((cb) =>
+      saml.validatePostRequest(req.body, cb)
+    )
   }
 
-  return profile
+  return profile || undefined
 }
