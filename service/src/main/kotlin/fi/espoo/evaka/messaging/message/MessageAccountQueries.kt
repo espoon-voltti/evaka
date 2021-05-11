@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging.message
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
+import java.util.UUID
 
 fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<MessageAccount> {
     // language=SQL
@@ -41,4 +42,24 @@ fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<Messag
         .bind("userId", user.id)
         .mapTo<MessageAccount>()
         .toSet()
+}
+
+fun Database.Transaction.createMessageAccountForDaycareGroup(daycareGroupId: UUID) {
+    // language=SQL
+    val sql = """
+        INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("daycareGroupId", daycareGroupId)
+        .execute()
+}
+
+fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) {
+    // language=SQL
+    val sql = """
+        DELETE FROM message_account WHERE daycare_group_id =:daycareGroupId
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("daycareGroupId", daycareGroupId)
+        .execute()
 }

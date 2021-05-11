@@ -31,7 +31,9 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -93,20 +95,17 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertTrue(group.deletable)
 
         db.read { assertEquals(it.getDaycareGroup(group.id), group) }
+        assertTrue(groupHasMessageAccount(group.id))
     }
 
     @Test
     fun `delete group`() {
-        val group = DevDaycareGroup(daycareId = daycareId)
-        db.transaction {
-            it.insertTestDaycareGroup(group)
-            it.insertTestPlacement()
-            it.insertTestDaycareGroupPlacement(groupId = group.id)
-        }
+        val group = createDaycareGroup(daycareId, "Test", LocalDate.of(2019, 1, 1), 5.0)
 
         deleteDaycareGroup(daycareId, group.id)
 
-        db.read { assertNotNull(it.getDaycareGroup(group.id)) }
+        db.read { assertNull(it.getDaycareGroup(group.id)) }
+        assertFalse(groupHasMessageAccount(group.id))
     }
 
     @Test
@@ -218,5 +217,19 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
             .response()
 
         assertEquals(expectedStatus, res.statusCode)
+    }
+
+    private fun groupHasMessageAccount(groupId: UUID): Boolean {
+        // language=SQL
+        val sql = """
+            SELECT EXISTS(
+                SELECT * FROM message_account WHERE daycare_group_id = :daycareGroupId 
+            )
+        """.trimIndent()
+        return db.read {
+            it.createQuery(sql)
+                .bind("daycareGroupId", groupId)
+                .mapTo<Boolean>().first()
+        }
     }
 }

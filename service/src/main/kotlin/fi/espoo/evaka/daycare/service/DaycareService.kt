@@ -11,6 +11,8 @@ import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
+import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
+import fi.espoo.evaka.messaging.message.deleteDaycareGroupMessageAccount
 import fi.espoo.evaka.placement.getDaycareGroupPlacements
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -45,6 +47,7 @@ class DaycareService {
         initialCaretakers: Double
     ): DaycareGroup = tx.createDaycareGroup(daycareId, name, startDate).also {
         tx.initCaretakers(it.id, it.startDate, initialCaretakers)
+        tx.createMessageAccountForDaycareGroup(it.id)
     }
 
     fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {
@@ -57,6 +60,7 @@ class DaycareService {
 
         if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
 
+        tx.deleteDaycareGroupMessageAccount(groupId)
         tx.deleteDaycareGroup(groupId)
     } catch (e: UnableToExecuteStatementException) {
         throw e.psqlCause()?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
