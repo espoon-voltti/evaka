@@ -78,7 +78,18 @@ fun Database.Transaction.upsertMessageAccountForEmployee(employeeId: UUID) {
     // language=SQL
     val sql = """
         INSERT INTO message_account (employee_id) VALUES (:employeeId)
-        ON CONFLICT DO NOTHING
+        ON CONFLICT (employee_id) DO UPDATE SET active = true
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("employeeId", employeeId)
+        .execute()
+}
+
+fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: UUID) {
+    // language=SQL
+    val sql = """
+        UPDATE message_account SET active = false
+        WHERE employee_id = :employeeId
     """.trimIndent()
     createUpdate(sql)
         .bind("employeeId", employeeId)
