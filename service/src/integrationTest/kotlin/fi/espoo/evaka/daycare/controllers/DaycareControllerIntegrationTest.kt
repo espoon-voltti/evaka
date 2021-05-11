@@ -4,60 +4,219 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import com.github.kittinunf.fuel.core.extensions.jsonBody
+import com.github.kittinunf.fuel.jackson.responseObject
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycareGroup
+import fi.espoo.evaka.daycare.initCaretakers
+import fi.espoo.evaka.daycare.service.DaycareCapacityStats
+import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestBackupCare
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.resetDatabase
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import java.time.LocalDate
 import java.util.UUID
 
-class DaycareControllerIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var daycareController: DaycareController
+class DaycareControllerIntegrationTest : FullApplicationTest() {
+    private val childId = testChild_1.id
+    private val daycareId = testDaycare.id
+    private val supervisorId = UUID.randomUUID()
+    private val supervisor = AuthenticatedUser.Employee(supervisorId, emptySet())
+    private val staffId = UUID.randomUUID()
+    private val staffMember = AuthenticatedUser.Employee(staffId, emptySet())
 
-    val daycareId: UUID = UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c")
-    val groupName = "foo"
-    val groupFounded: LocalDate = LocalDate.of(2019, 5, 20)
-    val initialCaretakers = 4.5
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.insertGeneralTestFixtures()
+
+            tx.insertTestEmployee(
+                DevEmployee(
+                    id = supervisorId,
+                    firstName = "Elina",
+                    lastName = "Esimies",
+                )
+            )
+            tx.insertTestEmployee(
+                DevEmployee(
+                    id = staffId,
+                )
+            )
+            tx.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(daycareId, staffId, UserRole.STAFF)
+        }
+    }
 
     @Test
-    fun `smoke test for groups`() {
-        val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))
-        val existingGroups = daycareController.getGroups(db, user, daycareId).body!!
-        assertEquals(2, existingGroups.size)
+    fun `get daycare`() {
+        val (daycare, currentUserRoles) = getDaycare(daycareId)
 
-        val created = daycareController.createGroup(
-            db,
-            user,
-            daycareId,
-            DaycareController.CreateGroupRequest(
-                name = groupName,
-                startDate = groupFounded,
-                initialCaretakers = initialCaretakers
-            )
-        ).body!!
+        db.read { assertEquals(it.getDaycare(daycareId), daycare) }
+        assertEquals(setOf(UserRole.STAFF), currentUserRoles)
+    }
 
-        val groups = daycareController.getGroups(db, user, daycareId).body!!
-        assertEquals(3, groups.size)
+    @Test
+    fun `create group`() {
+        val name = "Ryh mä"
+        val startDate = LocalDate.of(2019, 1, 1)
+        val caretakers = 42.0
+        val group = createDaycareGroup(daycareId, name, startDate, caretakers)
 
-        val group = groups.find { it.id == created.id }!!
         assertEquals(daycareId, group.daycareId)
-        assertEquals(groupName, group.name)
-        assertEquals(groupFounded, group.startDate)
+        assertEquals(name, group.name)
+        assertEquals(startDate, group.startDate)
         assertNull(group.endDate)
+        assertTrue(group.deletable)
 
-        val stats = daycareController.getStats(db, user, daycareId, LocalDate.now(), LocalDate.now().plusDays(50)).body!!
-        val groupStats = stats.groupCaretakers[group.id]!!
-        assertEquals(initialCaretakers, groupStats.minimum)
-        assertEquals(initialCaretakers, groupStats.maximum)
+        db.read { assertEquals(it.getDaycareGroup(group.id), group) }
+    }
 
-        val deleteStatus = daycareController.deleteGroup(db, user, daycareId, group.id).statusCode
-        assertEquals(HttpStatus.NO_CONTENT, deleteStatus)
-        val groupsAfterDelete = daycareController.getGroups(db, user, daycareId).body!!
-        assertEquals(2, groupsAfterDelete.size)
+    @Test
+    fun `delete group`() {
+        val group = DevDaycareGroup(daycareId = daycareId)
+        db.transaction {
+            it.insertTestDaycareGroup(group)
+            it.insertTestPlacement()
+            it.insertTestDaycareGroupPlacement(groupId = group.id)
+        }
+
+        deleteDaycareGroup(daycareId, group.id)
+
+        db.read { assertNotNull(it.getDaycareGroup(group.id)) }
+    }
+
+    @Test
+    fun `cannot delete a group when it has a placement`() {
+        val group = DevDaycareGroup(daycareId = daycareId)
+        val placement = DevPlacement(unitId = daycareId, childId = childId)
+        db.transaction {
+            it.insertTestPlacement(placement)
+            it.insertTestDaycareGroup(group)
+            it.insertTestDaycareGroupPlacement(placement.id, group.id)
+        }
+
+        deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)
+
+        db.read { assertNotNull(it.getDaycareGroup(group.id)) }
+    }
+
+    @Test
+    fun `cannot delete a group when it is a backup care`() {
+        val group = DevDaycareGroup(daycareId = daycareId)
+        db.transaction {
+            it.insertTestDaycareGroup(group)
+            it.insertTestBackupCare(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = daycareId,
+                    groupId = group.id,
+                    period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
+                )
+            )
+        }
+
+        deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)
+
+        db.read { assertNotNull(it.getDaycareGroup(group.id)) }
+    }
+
+    @Test
+    fun `get daycare stats`() {
+        val group1 = DevDaycareGroup(daycareId = daycareId)
+        val group2 = DevDaycareGroup(daycareId = daycareId)
+        db.transaction {
+            it.insertTestDaycareGroup(group1)
+            it.insertTestDaycareGroup(group2)
+            it.initCaretakers(group1.id, LocalDate.of(2019, 1, 1), 5.0)
+            it.initCaretakers(group2.id, LocalDate.of(2019, 1, 1), 3.5)
+        }
+
+        val stats = getDaycareStats(
+            daycareId,
+            from = LocalDate.of(2019, 1, 1),
+            to = LocalDate.of(2019, 1, 1)
+        )
+
+        assertEquals(
+            mapOf(
+                group1.id to Stats(minimum = 5.0, maximum = 5.0),
+                group2.id to Stats(minimum = 3.5, maximum = 3.5)
+            ),
+            stats.groupCaretakers
+        )
+        assertEquals(Stats(minimum = 8.5, maximum = 8.5), stats.unitTotalCaretakers)
+    }
+
+    private fun getDaycare(daycareId: UUID): DaycareResponse {
+        val (_, res, body) = http.get("/daycares/$daycareId")
+            .asUser(staffMember)
+            .responseObject<DaycareResponse>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        return body.get()
+    }
+
+    private fun getDaycareStats(daycareId: UUID, from: LocalDate, to: LocalDate): DaycareCapacityStats {
+        val (_, res, body) = http.get("/daycares/$daycareId/stats?from=$from&to=$to")
+            .asUser(staffMember)
+            .responseObject<DaycareCapacityStats>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        return body.get()
+    }
+
+    private fun createDaycareGroup(
+        daycareId: UUID,
+        name: String,
+        startDate: LocalDate,
+        initialCaretakers: Double
+    ): DaycareGroup {
+        val (_, res, body) = http.post("/daycares/$daycareId/groups")
+            .jsonBody(
+                objectMapper.writeValueAsString(
+                    DaycareController.CreateGroupRequest(
+                        name = name,
+                        startDate = startDate,
+                        initialCaretakers = initialCaretakers
+                    )
+                )
+            )
+            .asUser(supervisor)
+            .responseObject<DaycareGroup>(objectMapper)
+
+        assertEquals(201, res.statusCode)
+        return body.get()
+    }
+
+    private fun deleteDaycareGroup(daycareId: UUID, groupId: UUID, expectedStatus: Int = 204) {
+        val (_, res) = http.delete("/daycares/$daycareId/groups/$groupId")
+            .asUser(supervisor)
+            .response()
+
+        assertEquals(expectedStatus, res.statusCode)
     }
 }
