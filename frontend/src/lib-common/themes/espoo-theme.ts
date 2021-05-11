@@ -43,14 +43,18 @@ const accentColors = {
 
 const theme: Theme = {
   colors: {
-    espooBrandColors,
-    blueColors: {
+    brand: {
+      primary: espooBrandColors.espooBlue,
+      secondary: espooBrandColors.espooTurquoise,
+      secondaryLight: espooBrandColors.espooTurquoiseLight
+    },
+    main: {
       ...blueColors,
       primaryHover: blueColors.medium,
       primaryActive: blueColors.dark
     },
     greyscale,
-    accentColors
+    accents: accentColors
   }
 }
 

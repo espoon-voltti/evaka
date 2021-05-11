@@ -4,12 +4,12 @@
 
 export interface Theme {
   colors: {
-    espooBrandColors: {
-      espooBlue: string
-      espooTurquoise: string
-      espooTurquoiseLight: string
+    brand: {
+      primary: string
+      secondary: string
+      secondaryLight: string
     }
-    blueColors: {
+    main: {
       dark: string
       medium: string
       primary: string
@@ -26,7 +26,7 @@ export interface Theme {
       lightest: string
       white: string
     }
-    accentColors: {
+    accents: {
       orange: string
       orangeDark: string
       green: string

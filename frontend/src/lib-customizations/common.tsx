@@ -18,8 +18,14 @@ export { theme }
 
 // mimic lib-components/colors api:
 
+export const espooBrandColors = {
+  espooBlue: theme.colors.brand.primary,
+  espooTurquoise: theme.colors.brand.secondary,
+  espooTurquoiseLight: theme.colors.brand.secondaryLight
+}
+
 export const {
-  colors: { espooBrandColors, blueColors, greyscale, accentColors }
+  colors: { main: blueColors, greyscale, accents: accentColors }
 } = theme
 
 const colors = {
