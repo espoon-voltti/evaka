@@ -87,7 +87,7 @@ class MessageController {
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PostMessageBody,
-    ): UUID {
+    ): List<UUID> {
         Audit.MessagingNewMessageWrite.log(targetId = body.senderAccountId)
         authorizeAllowedMessagingRoles(user)
         val sender = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
@@ -95,16 +95,16 @@ class MessageController {
 
         // TODO recipient account authorization
 
-        // TODO split messages to threads by "household"
+        val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
 
         return db.transaction {
-            createMessageThread(
+            createMessageThreadsForRecipientGroups(
                 it,
                 title = body.title,
                 content = body.content,
                 sender = sender,
                 type = body.type,
-                recipientAccountIds = body.recipientAccountIds
+                recipientGroups = groupedRecipients
             )
         }
     }

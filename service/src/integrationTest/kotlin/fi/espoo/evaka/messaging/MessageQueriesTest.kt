@@ -5,15 +5,17 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createMessageThread
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.getThreadByMessageId
+import fi.espoo.evaka.messaging.message.getUnreadMessagesCount
 import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.messaging.message.insertRecipients
+import fi.espoo.evaka.messaging.message.insertThread
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -63,27 +65,21 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
 
-        db.transaction {
-            createMessageThread(
-                it,
-                "Hello",
-                "Content",
-                MessageType.MESSAGE,
-                employeeAccount,
-                setOf(person1Account.id, person2Account.id)
-            )
-        }
+        val content = "Content"
+        val title = "Hello"
+        val recipientAccountIds = setOf(person1Account.id, person2Account.id)
+        createThread(title, content, employeeAccount, recipientAccountIds)
 
         assertEquals(
-            setOf(person1Account.id, person2Account.id),
+            recipientAccountIds,
             db.read { it.createQuery("SELECT recipient_id FROM message_recipients").mapTo<UUID>().toSet() }
         )
         assertEquals(
-            "Content",
+            content,
             db.read { it.createQuery("SELECT content FROM message_content").mapTo<String>().one() }
         )
         assertEquals(
-            "Hello",
+            title,
             db.read { it.createQuery("SELECT title FROM message_thread").mapTo<String>().one() }
         )
         assertEquals(
@@ -103,36 +99,9 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
 
-        val thread1Id = db.transaction {
-            createMessageThread(
-                it,
-                "Hello",
-                "Content",
-                MessageType.MESSAGE,
-                employee1Account,
-                setOf(person1Account.id, person2Account.id)
-            )
-        }
-        val thread2Id = db.transaction {
-            createMessageThread(
-                it,
-                "Newest thread",
-                "Content 2",
-                MessageType.MESSAGE,
-                employee1Account,
-                setOf(person1Account.id)
-            )
-        }
-        db.transaction {
-            createMessageThread(
-                it,
-                "Lone thread",
-                "Alone",
-                MessageType.MESSAGE,
-                employee2Account,
-                setOf(employee2Account.id)
-            )
-        }
+        val thread1Id = createThread("Hello", "Content", employee1Account, setOf(person1Account.id, person2Account.id))
+        val thread2Id = createThread("Newest thread", "Content 2", employee1Account, setOf(person1Account.id))
+        createThread("Lone Thread", "Alone", employee2Account, setOf(employee2Account.id))
 
         // employee is not a recipient in any threads
         assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account.id, 10, 1) }.data.size)
@@ -199,12 +168,8 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
 
-        db.transaction {
-            createMessageThread(it, "t1", "c1", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
-        }
-        db.transaction {
-            createMessageThread(it, "t2", "c2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
-        }
+        createThread("t1", "c1", employee1Account, setOf(person1Account.id))
+        createThread("t2", "c2", employee1Account, setOf(person1Account.id))
 
         val messages = db.read { it.getMessagesReceivedByAccount(person1Account.id, 10, 1) }
         assertEquals(2, messages.total)
@@ -240,12 +205,9 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         // when two threads are created
-        val threadId1 = db.transaction {
-            createMessageThread(it, "thread 1", "content 1", MessageType.MESSAGE, employee1Account, setOf(person1Account.id, person2Account.id))
-        }
-        val thread2Id = db.transaction {
-            createMessageThread(it, "thread 2", "content 2", MessageType.MESSAGE, employee1Account, setOf(person1Account.id))
-        }
+        val threadId1 =
+            createThread("thread 1", "content 1", employee1Account, setOf(person1Account.id, person2Account.id))
+        val thread2Id = createThread("thread 2", "content 2", employee1Account, setOf(person1Account.id))
 
         // then sent messages are returned for sender id
         val firstPage = db.read { it.getMessagesSentByAccount(employee1Account.id, 1, 1) }
@@ -284,16 +246,7 @@ class MessageQueriesTest : PureJdbiTest() {
             )
         }
 
-        val threadId = db.transaction {
-            createMessageThread(
-                tx = it,
-                title = "Hello",
-                content = "Content",
-                type = MessageType.MESSAGE,
-                sender = employee1Account,
-                recipientAccountIds = setOf(person1Account.id, person2Account.id)
-            )
-        }
+        val threadId = createThread("Hello", "Content", employee1Account, setOf(person1Account.id, person2Account.id))
 
         val participants = db.read {
             val messageId =
@@ -306,4 +259,27 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(employee1Account.id, participants?.sender)
         assertEquals(setOf(person1Account.id, person2Account.id), participants?.recipients)
     }
+
+    @Test
+    fun `unread messages`() {
+        val acc = db.read { it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first() }
+        createThread("Title", "Content", acc, setOf(acc.id))
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(acc.id)) })
+        db.transaction { it.createUpdate("UPDATE message_recipients SET read_at = now()").execute() }
+        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(acc.id)) })
+    }
+
+    private fun createThread(
+        title: String,
+        content: String,
+        sender: MessageAccount,
+        recipientAccountIds: Set<UUID>
+    ) =
+        db.transaction { tx ->
+            val contentId = tx.insertMessageContent(content, sender)
+            val threadId = tx.insertThread(MessageType.MESSAGE, title)
+            val messageId = tx.insertMessage(contentId, threadId, sender)
+            tx.insertRecipients(recipientAccountIds, messageId)
+            threadId
+        }
 }

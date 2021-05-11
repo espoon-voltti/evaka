@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging.message
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
@@ -23,7 +24,7 @@ fun Database.Read.getUnreadMessagesCount(
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("accountIds", accountIds)
+        .bind("accountIds", accountIds.toTypedArray())
         .mapTo<Int>()
         .one()
 }
@@ -33,11 +34,12 @@ fun Database.Transaction.insertMessage(
     threadId: UUID,
     sender: MessageAccount,
     repliesToMessageId: UUID? = null,
+    sentAt: HelsinkiDateTime? = HelsinkiDateTime.now()
 ): UUID {
     // language=SQL
     val insertMessageSql = """
-        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to)
-        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId)        
+        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at)
+        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId, :sentAt)        
         RETURNING id
     """.trimIndent()
     return createQuery(insertMessageSql)
@@ -46,6 +48,7 @@ fun Database.Transaction.insertMessage(
         .bindNullable("repliesToId", repliesToMessageId)
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
+        .bind("sentAt", sentAt)
         .mapTo<UUID>()
         .one()
 }
@@ -100,14 +103,18 @@ fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, p
     val sql = """
 WITH
 threads AS (
-    SELECT id, created, message_type AS type, title, COUNT(*) OVER () AS count
+    SELECT id, message_type AS type, title, last_message, COUNT(*) OVER () AS count
     FROM message_thread t
+    JOIN LATERAL (
+        SELECT MAX(sent_at) last_message FROM message WHERE thread_id = t.id
+    ) last_msg ON true
     WHERE EXISTS(
             SELECT 1
             FROM message_recipients rec
             JOIN message m ON rec.message_id = m.id
             WHERE rec.recipient_id = :accountId AND m.thread_id = t.id)
-    ORDER BY created DESC
+    GROUP BY id, message_type, title, last_message
+    ORDER BY last_message DESC
     LIMIT :pageSize OFFSET :offset
 ),
 messages AS (
@@ -132,7 +139,6 @@ messages AS (
 SELECT
     t.count,
     t.id,
-    t.created,
     t.title,
     t.type,
     (SELECT jsonb_agg(json_build_object(
@@ -144,8 +150,8 @@ SELECT
     ))) AS messages
     FROM threads t
           JOIN messages msg ON msg.thread_id = t.id
-    GROUP BY t.count, t.id, t.type, t.title, t.created
-    ORDER BY t.created DESC
+    GROUP BY t.count, t.id, t.type, t.title, t.last_message
+    ORDER BY t.last_message DESC
     """.trimIndent()
 
     return this.createQuery(sql)

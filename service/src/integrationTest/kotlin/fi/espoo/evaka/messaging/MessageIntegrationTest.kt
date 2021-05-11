@@ -14,39 +14,69 @@ import fi.espoo.evaka.messaging.message.MessageThread
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.SentMessage
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testAdult_4
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_3
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class MessageIntegrationTest : FullApplicationTest() {
 
-    private val person1Id: UUID = UUID.randomUUID()
-    private val person2Id: UUID = UUID.randomUUID()
+    private val person1Id: UUID = testAdult_1.id
+    private val person2Id: UUID = testAdult_2.id
+    private val person3Id: UUID = testAdult_3.id
+    private val person4Id: UUID = testAdult_4.id
     private val employee1Id: UUID = UUID.randomUUID()
     private val employee2Id: UUID = UUID.randomUUID()
 
     @BeforeEach
     internal fun setUp() {
-        db.transaction {
-            it.insertTestPerson(DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person"))
+        db.transaction { tx ->
+            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).forEach {
+                tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
+                tx.execute("INSERT INTO message_account (person_id) VALUES ('${it.id}')")
+            }
 
-            it.insertTestPerson(DevPerson(id = person2Id, firstName = "Firstname", lastName = "Person Two"))
-            it.execute("INSERT INTO message_account (person_id) VALUES ('$person1Id'), ('$person2Id')")
+            // person 1 and 2 are guardians of child 1
+            testChild_1.let {
+                tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
+                tx.insertTestChild(DevChild(id = it.id))
+                tx.insertGuardian(person1Id, it.id)
+                tx.insertGuardian(person2Id, it.id)
+            }
 
-            it.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
-            it.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
-            it.execute("INSERT INTO message_account (employee_id) VALUES ('$employee1Id'), ('$employee2Id')")
+            // person 2 and 3 are guardian of child 3
+            testChild_3.let {
+                tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
+                tx.insertTestChild(DevChild(id = it.id))
+                tx.insertGuardian(person2Id, it.id)
+                tx.insertGuardian(person3Id, it.id)
+            }
+
+            tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
+            tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
+            tx.execute("INSERT INTO message_account (employee_id) VALUES ('$employee1Id'), ('$employee2Id')")
         }
     }
 
@@ -56,15 +86,14 @@ class MessageIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a thread is created, accessed and replied to by several participants`() {
+    fun `a thread is created, accessed and replied to by participants who are guardian of the same child`() {
         // given
         val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
         val person1 = AuthenticatedUser.Citizen(id = person1Id)
         val person2 = AuthenticatedUser.Citizen(id = person2Id)
-        val (employee1Account, _, person1Account, person2Account) = db.read {
+        val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
                 it.getMessageAccountsForUser(employee1).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee2Id, roles = setOf())).first(),
                 it.getMessageAccountsForUser(person1).first(),
                 it.getMessageAccountsForUser(person2).first()
             )
@@ -217,6 +246,98 @@ class MessageIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `a message is split to several threads by guardianship`() {
+        // given
+        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+        val person1 = AuthenticatedUser.Citizen(id = person1Id)
+        val person2 = AuthenticatedUser.Citizen(id = person2Id)
+        val person3 = AuthenticatedUser.Citizen(id = person3Id)
+        val person4 = AuthenticatedUser.Citizen(id = person4Id)
+        val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
+            listOf(
+                it.getMessageAccountsForUser(employee1).first(),
+                it.getMessageAccountsForUser(person1).first(),
+                it.getMessageAccountsForUser(person2).first(),
+                it.getMessageAccountsForUser(person3).first(),
+                it.getMessageAccountsForUser(person4).first()
+            )
+        }
+
+        // when a new thread is created to several recipients who do not all have common children
+        val title = "Thread splitting"
+        val content = "This message is sent to several participants and split to threads"
+        postNewThread(
+            title = title,
+            message = content,
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account.id,
+            recipients = listOf(person1Account, person2Account, person3Account, person4Account).map { it.id }.toSet(),
+            user = employee1
+        )
+
+        // then three threads should be created
+        // person 1 and 2: common child
+        // person 2 and 3: common child
+        // person 4: no child
+        assertEquals(3, db.read { it.createQuery("SELECT COUNT(id) FROM message_thread").mapTo<Int>().one() })
+        assertEquals(5, db.read { it.createQuery("SELECT COUNT(id) FROM message_recipients").mapTo<Int>().one() })
+
+        val person1Threads = getMessageThreads(person1Account, person1)
+        val person2Threads = getMessageThreads(person2Account, person2)
+        val person3Threads = getMessageThreads(person3Account, person3)
+        val person4Threads = getMessageThreads(person4Account, person4)
+
+        // then
+        assertEquals(1, person1Threads.size)
+        assertEquals(2, person2Threads.size)
+        assertEquals(1, person3Threads.size)
+        assertEquals(1, person4Threads.size)
+        assertTrue(person2Threads.any { it == person1Threads[0] })
+        assertTrue(person2Threads.any { it == person3Threads[0] })
+        assertNotEquals(person1Threads, person4Threads)
+        assertNotEquals(person3Threads, person4Threads)
+
+        val allThreads = listOf(person1Threads, person2Threads, person3Threads, person4Threads).flatten()
+        assertEquals(5, allThreads.size)
+        allThreads.forEach {
+            assertEquals(title, it.title)
+            assertEquals(content, it.messages[0].content)
+        }
+
+        // when person 1 replies to thread
+        replyAsCitizen(
+            person1,
+            person1Threads.first().messages.first().id,
+            setOf(employee1Account.id, person2Account.id),
+            "Hello"
+        )
+
+        // then only the participants should get the message
+        val employeeThreads = getMessageThreads(employee1Account, employee1)
+        assertEquals(
+            listOf(
+                Pair(employee1Account.id, content),
+                Pair(person1Account.id, "Hello")
+            ),
+            employeeThreads.map { it.toSenderContentPairs() }.flatten()
+        )
+        assertEquals(employeeThreads, getMessageThreads(person1Account, person1))
+        assertEquals(
+            listOf(
+                listOf(
+                    Pair(employee1Account.id, content),
+                    Pair(person1Account.id, "Hello")
+                ),
+                listOf(Pair(employee1Account.id, content)),
+            ),
+            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }
+        )
+
+        assertEquals(person3Threads, getMessageThreads(person3Account, person3))
+        assertEquals(person4Threads, getMessageThreads(person4Account, person4))
+    }
+
+    @Test
     fun `a bulletin cannot be replied to by the recipients`() {
         // given
         val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
@@ -357,4 +478,5 @@ class MessageIntegrationTest : FullApplicationTest() {
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<UUID, String>> = this.messages.map { Pair(it.senderId, it.content) }
-fun SentMessage.toContentRecipientsPair(): Pair<String, Set<UUID>> = Pair(this.content, this.recipients.map { it.id }.toSet())
+fun SentMessage.toContentRecipientsPair(): Pair<String, Set<UUID>> =
+    Pair(this.content, this.recipients.map { it.id }.toSet())
