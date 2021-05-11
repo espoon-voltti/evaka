@@ -30,11 +30,11 @@ class PDFService(private val templateEngine: ITemplateEngine) {
 
     private fun renderHtmlPageToPDF(pages: String, os: OutputStream) {
         with(ITextRenderer()) {
-            val res = javaClass.classLoader.getResource("ttf/OpenSans-Regular.ttf")
+            val res = javaClass.classLoader.getResource("ttf/Montserrat-Regular.ttf")
             val file: File = Paths.get(res.toURI()).toFile()
             val url: String = file.absolutePath
 
-            val boldRes = javaClass.classLoader.getResource("ttf/OpenSans-Bold.ttf")
+            val boldRes = javaClass.classLoader.getResource("ttf/Montserrat-Bold.ttf")
             val boldFile: File = Paths.get(boldRes.toURI()).toFile()
             val boldUrl: String = boldFile.absolutePath
             setDocumentFromString(pages)
