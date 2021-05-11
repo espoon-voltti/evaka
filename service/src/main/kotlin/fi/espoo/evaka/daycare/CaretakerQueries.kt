@@ -35,7 +35,7 @@ fun Database.Read.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: Loca
             select t, sum(ct.amount) as total
             from generate_series(:startDate::date, :endDate::date, '1 day') t
             left outer join daycare_caretaker ct on daterange(ct.start_date, ct.end_date, '[]') @> t::date
-            left outer join daycare_group dg on ct.group_id = dg.id
+            left outer join daycare_group dg on ct.group_id = dg.id and daterange(dg.start_date, dg.end_date, '[]') @> t::date
             where dg.daycare_id = :unitId
             group by t
         )
