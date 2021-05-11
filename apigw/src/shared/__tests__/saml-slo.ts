@@ -131,9 +131,10 @@ describe('SAML Single Logout', () => {
   afterAll(async () => await tester?.stop())
 
   test('reference case (3rd party cookies available)', async () => {
-    await tester.client.get(SECURED_ENDPOINT, {
-      validateStatus: (status) => status === 401
+    const resPreAuth = await tester.client.get(SECURED_ENDPOINT, {
+      validateStatus: () => true
     })
+    expect(resPreAuth.status).toBe(401)
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
     // directly to the SAMLResponse phase)
@@ -157,9 +158,10 @@ describe('SAML Single Logout', () => {
     //
     // After few moments someone with the access to the computer writes opens
     // our service which must not be available without authentication.
-    await tester.client.get(SECURED_ENDPOINT, {
-      validateStatus: (status) => status === 401
+    const resPostLogout = await tester.client.get(SECURED_ENDPOINT, {
+      validateStatus: () => true
     })
+    expect(resPostLogout.status).toBe(401)
   })
 
   test('IdP-initiated logout works without (3rd party) cookies', async () => {
@@ -173,9 +175,10 @@ describe('SAML Single Logout', () => {
     // that have access to the same browser/machine.
 
     // Baseline
-    await tester.client.get(SECURED_ENDPOINT, {
-      validateStatus: (status) => status === 401
+    const resPreAuth = await tester.client.get(SECURED_ENDPOINT, {
+      validateStatus: () => true
     })
+    expect(resPreAuth.status).toBe(401)
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
     // directly to the SAMLResponse phase)
@@ -214,9 +217,10 @@ describe('SAML Single Logout', () => {
     //
     // Restore cookies to simulate returning our service
     await tester.setCookie(cookie as Cookie)
-    await tester.client.get(SECURED_ENDPOINT, {
-      validateStatus: (status) => status === 401
+    const resPostLogout = await tester.client.get(SECURED_ENDPOINT, {
+      validateStatus: () => true
     })
+    expect(resPostLogout.status).toBe(401)
   })
 })
 
@@ -234,9 +238,10 @@ async function callSLOEndpointAndAssertResult(
     { SAMLRequest: idpInitiatedLogoutRequest },
     {
       maxRedirects: 0,
-      validateStatus: (status) => status === 302
+      validateStatus: () => true
     }
   )
+  expect(res.status).toBe(302)
   expect(res.headers['location']).toMatch(
     new RegExp(`^${IDP_ENTRY_POINT_URL}\\?SAMLResponse=?`)
   )
