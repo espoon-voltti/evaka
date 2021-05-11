@@ -169,21 +169,41 @@ export const adExternalIdPrefix =
 export const sfiMock =
   env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
 
-const sfiCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
+// For local development & testing:
+// Explicitly use separate domains for the simulated SP and IdP to replicate
+// 3rd party cookie and SAML message parsing issues only present in those
+// conditions. SP must be in a domain that, from a browser's cookie handling
+// point of view, is a third party site to the IdP managing SSO / Single Logout.
+//
+// See also:
+// https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
+// https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
+const sfiCallbackUrl =
+  process.env.SFI_SAML_CALLBACK_URL ??
+  ifNodeEnv(
+    ['local', 'test'],
+    'https://saml-sp.qwerty.local/api/application/auth/saml/logout/callback'
+  )
+const sfiEntryPointUrl =
+  process.env.SFI_SAML_ENTRYPOINT ??
+  ifNodeEnv(['local', 'test'], 'https://identity-provider.asdf.local/idp')
+const sfiLogoutUrl = process.env.SFI_SAML_LOGOUT_URL ?? sfiEntryPointUrl
+const sfiIssuer = process.env.SFI_SAML_ISSUER ?? 'evaka-local'
 
-export const sfiConfig: EvakaSamlConfig | undefined =
-  sfiCallbackUrl && !sfiMock
-    ? {
-        callbackUrl: required(sfiCallbackUrl),
-        entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
-        logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
-        issuer: required(process.env.SFI_SAML_ISSUER),
-        publicCert: required(
-          envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
-        ),
-        privateCert: required(process.env.SFI_SAML_PRIVATE_CERT)
-      }
-    : undefined
+export const sfiConfig: EvakaSamlConfig = {
+  callbackUrl: required(sfiCallbackUrl),
+  entryPoint: required(sfiEntryPointUrl),
+  logoutUrl: required(sfiLogoutUrl),
+  issuer: required(sfiIssuer),
+  publicCert: required(
+    envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
+      ifNodeEnv(['local', 'test'], 'config/test-cert/slo-test-idp-cert.pem')
+  ),
+  privateCert: required(
+    process.env.SFI_SAML_PRIVATE_CERT ??
+      ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+  )
+}
 
 const evakaCallbackUrl =
   process.env.EVAKA_SAML_CALLBACK_URL ??

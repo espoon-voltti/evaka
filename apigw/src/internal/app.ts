@@ -14,7 +14,7 @@ import createAdSamlStrategy, {
 import createEvakaSamlStrategy, {
   createSamlConfig as createEvakaSamlconfig
 } from '../shared/auth/keycloak-saml'
-import { cookieSecret, enableDevApi, nodeEnv } from '../shared/config'
+import { cookieSecret, enableDevApi } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -32,8 +32,7 @@ import mobileDeviceSession, {
 import authStatus from './routes/auth-status'
 
 const app = express()
-// TODO: How to make this more easily injectable/overridable in tests?
-const redisClient = nodeEnv !== 'test' ? createRedisClient() : undefined
+const redisClient = createRedisClient()
 trustReverseProxy(app)
 app.set('etag', false)
 app.use(nocache())
@@ -43,7 +42,7 @@ app.use(
     contentSecurityPolicy: false
   })
 )
-app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
+app.get('/health', (_, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
 app.use(express.json({ limit: '8mb' }))
 app.use(session('employee', redisClient))
@@ -59,14 +58,14 @@ app.use('/api/csp', csp)
 
 function scheduledApiRouter() {
   const router = Router()
-  router.all('*', (req, res) => res.sendStatus(404))
+  router.all('*', (_, res) => res.sendStatus(404))
   return router
 }
 
 function internalApiRouter() {
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
-  router.all('/system/*', (req, res) => res.sendStatus(404))
+  router.all('/system/*', (_, res) => res.sendStatus(404))
 
   router.all('/auth/*', (req: express.Request, res, next) => {
     if (req.session?.idpProvider === 'evaka') {

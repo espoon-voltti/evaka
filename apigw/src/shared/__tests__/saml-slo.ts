@@ -3,44 +3,25 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { AxiosResponse } from 'axios'
-import cookieParser from 'cookie-parser'
-import express, { Router } from 'express'
 import fs from 'fs'
-import passport from 'passport'
-import type { SamlConfig } from 'passport-saml'
 import path from 'path'
-import redis from 'redis-mock'
+import { RedisClient } from 'redis'
 import { Cookie } from 'tough-cookie'
 import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
 import xmldom from 'xmldom'
 import zlib from 'zlib'
-import { requireAuthentication } from '../auth'
-import createSuomiFiStrategy from '../auth/suomi-fi-saml'
+import * as config from '../config'
+import { sfiConfig } from '../config'
 import { fromCallback } from '../promise-utils'
-import createSamlRouter from '../routes/auth/saml'
 import type { AuthenticatedUser } from '../service-client'
-import session, { sessionCookie } from '../session'
+import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
 
 const mockUser: AuthenticatedUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
   roles: ['ENDUSER']
 }
-
-// To allow manipulating the session cookie store (Redis) and SAML configs,
-// setup a custom Express app which is as close to the actual app as reasonable.
-const app = express()
-const redisClient = redis.createClient()
-app.use(express.json())
-app.use(cookieParser())
-app.use(session('enduser', redisClient))
-app.use(passport.initialize())
-app.use(passport.session())
-passport.serializeUser<Express.User>((user, done) => done(null, user))
-passport.deserializeUser<Express.User>((user, done) => done(null, user))
-
-const router = Router()
 
 // Explicitly use separate domains for the simulated SP and IdP to replicate
 // 3rd party cookie and SAML message parsing issues only present in those
@@ -50,91 +31,62 @@ const router = Router()
 // See also:
 // https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
 // https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
-const SAML_SP_DOMAIN = 'https://passport-saml-powered-SAML-SP.qwerty.local'
-const IDP_ENTRY_POINT_URL = 'https://identity-provider.asdf.local/idp'
+const SAML_SP_DOMAIN = new URL(sfiConfig.callbackUrl).origin
+const IDP_ENTRY_POINT_URL = sfiConfig.entryPoint
 
 // Helper constants to ensure correct endpoints in all cases
 const SP_LOGIN_CALLBACK_ENDPOINT = '/api/application/auth/saml/login/callback'
 const SP_LOGOUT_CALLBACK_ENDPOINT = '/api/application/auth/saml/logout/callback'
 const SP_LOGIN_CALLBACK_URL = `${SAML_SP_DOMAIN}${SP_LOGIN_CALLBACK_ENDPOINT}`
 const SP_LOGOUT_CALLBACK_URL = `${SAML_SP_DOMAIN}${SP_LOGOUT_CALLBACK_ENDPOINT}`
-const SECURED_PATH = '/test-auth'
-const SECURED_ENDPOINT = `/api/application${SECURED_PATH}`
+const SECURED_ENDPOINT = `/api/application/auth/status`
 
 // Use test certificates to validate actual SAML message parsing while not using
 // any real certificates/domains.
-const SP_ISSUER = 'evaka-local'
+const SP_ISSUER = sfiConfig.issuer
 const IDP_ISSUER = 'evaka-slo-test'
-const TEST_CERT_DIR = '../../../config/test-cert'
 const IDP_PVK = fs
   .readFileSync(
-    path.resolve(__dirname, `${TEST_CERT_DIR}/slo-test-idp-key.pem`),
+    path.resolve(__dirname, '../../../config/test-cert/slo-test-idp-key.pem'),
     'utf8'
   )
   .toString()
-const IDP_CERT = fs
-  .readFileSync(
-    path.resolve(__dirname, `${TEST_CERT_DIR}/slo-test-idp-cert.pem`),
-    'utf8'
-  )
-  .toString()
-const SP_PVK = fs
-  .readFileSync(
-    path.resolve(__dirname, `${TEST_CERT_DIR}/saml-private.pem`),
-    'utf8'
-  )
-  .toString()
-
-// Mock SAML config should match the real config as closely as possible,
-// while overriding some unnecessary checks and replacing certificates/keys
-// with the test files.
-const samlConfig: SamlConfig = {
-  acceptedClockSkewMs: 0,
-  audience: SP_ISSUER,
-  callbackUrl: SP_LOGIN_CALLBACK_URL,
-  cert: IDP_CERT,
-  disableRequestedAuthnContext: true,
-  entryPoint: IDP_ENTRY_POINT_URL,
-  identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-  issuer: SP_ISSUER,
-  privateCert: SP_PVK,
-  signatureAlgorithm: 'sha256',
-  // Disable as irrelevant to SLO and just complicates tests
-  validateInResponseTo: false
-}
-
-router.use(
-  createSamlRouter({
-    strategyName: 'suomifi',
-    strategy: createSuomiFiStrategy(samlConfig, false),
-    samlConfig: samlConfig,
-    sessionType: 'enduser',
-    pathIdentifier: 'saml'
-  })
-)
-
-// Some mock endpoint that requires authentication
-router.use(requireAuthentication)
-router.get(SECURED_PATH, (_, res) => res.status(200).json({ loggedIn: true }))
-
-app.use('/api/application', router)
 
 describe('SAML Single Logout', () => {
   let tester: GatewayTester
-  beforeAll(async () => {
+  let redisClient: RedisClient
+  const sfiMock = config.sfiMock
+
+  beforeEach(async () => {
+    // In order to enable the REAL Suomi.fi passport-saml Strategy only for
+    // these tests, config.sfiMock should be true in every other case but this
+    // test suite + as Strategy vs. DummyStrategy selection is done at app
+    // import-time -> override the config and re-import app for all of these
+    // tests to prevent affecting other test suites. Theoretically tests from
+    // other test suites could be run in-between, so must be done beforeEach
+    // instead of beforeAll.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(config as any).sfiMock = false
+    const { default: app, _TEST_ONLY_redisClient } = await import(
+      '../../enduser/app'
+    )
+    redisClient = _TEST_ONLY_redisClient
     tester = await GatewayTester.start(app, 'enduser')
   })
   afterEach(async () => {
-    await tester.afterEach()
-    await fromCallback((cb) => redisClient.flushall(cb))
+    await tester?.afterEach()
+    await tester?.stop()
+    await fromCallback((cb) => redisClient?.flushall(cb))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(config as any).sfiMock = sfiMock
   })
-  afterAll(async () => await tester?.stop())
 
   test('reference case (3rd party cookies available)', async () => {
     const resPreAuth = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
-    expect(resPreAuth.status).toBe(401)
+    expect(resPreAuth.status).toBe(200)
+    expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
     // directly to the SAMLResponse phase)
@@ -144,9 +96,16 @@ describe('SAML Single Logout', () => {
     const loginResponse = buildLoginResponse(nameId, sessionIndex, inResponseTo)
     await tester.login(mockUser, { SAMLResponse: loginResponse })
 
+    tester.nockScope.get(`/persondetails/uuid/${mockUser.id}`).reply(200, {
+      id: mockUser.id
+    })
     // Secured endpoint should now be accessible with session cookies
-    const res = await tester.client.get(SECURED_ENDPOINT)
-    expect(res.data.loggedIn).toBe(true)
+    const res = await tester.client.get(SECURED_ENDPOINT, {
+      validateStatus: () => true
+    })
+    expect(res.status).toBe(200)
+    expect(res.data?.loggedIn).toBe(true)
+    tester.nockScope.done()
 
     // Next the user uses another service participating to the same IdP SSO and
     // initiates the SLO process from that other service.
@@ -161,7 +120,8 @@ describe('SAML Single Logout', () => {
     const resPostLogout = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
-    expect(resPostLogout.status).toBe(401)
+    expect(resPostLogout.status).toBe(200)
+    expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 
   test('IdP-initiated logout works without (3rd party) cookies', async () => {
@@ -178,7 +138,8 @@ describe('SAML Single Logout', () => {
     const resPreAuth = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
-    expect(resPreAuth.status).toBe(401)
+    expect(resPreAuth.status).toBe(200)
+    expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
     // directly to the SAMLResponse phase)
@@ -189,8 +150,14 @@ describe('SAML Single Logout', () => {
     await tester.login(mockUser, { SAMLResponse: loginResponse })
 
     // Secured endpoint should now be accessible with session cookies
-    const res = await tester.client.get(SECURED_ENDPOINT)
-    expect(res.data.loggedIn).toBe(true)
+    tester.nockScope.get(`/persondetails/uuid/${mockUser.id}`).reply(200, {
+      id: mockUser.id
+    })
+    const res = await tester.client.get(SECURED_ENDPOINT, {
+      validateStatus: () => true
+    })
+    expect(res.data?.loggedIn).toBe(true)
+    tester.nockScope.done()
 
     // Proceeding to SLO...
     //
@@ -220,7 +187,8 @@ describe('SAML Single Logout', () => {
     const resPostLogout = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
-    expect(resPostLogout.status).toBe(401)
+    expect(resPostLogout.status).toBe(200)
+    expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 })
 

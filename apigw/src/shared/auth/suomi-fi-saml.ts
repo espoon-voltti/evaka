@@ -7,7 +7,7 @@ import { Strategy as DummyStrategy } from 'passport-dummy'
 import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
-import { sfiConfig, sfiMock } from '../config'
+import { nodeEnv, sfiConfig, sfiMock } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreatePerson } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
@@ -55,16 +55,19 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   }
 }
 
-export function createSamlConfig(
-  redisClient?: RedisClient,
-  enableMock: boolean = sfiMock
-): SamlConfig {
-  if (enableMock) return {}
-  if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
-
+export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
+  if (sfiMock) return {}
+  const publicCert = Array.isArray(sfiConfig.publicCert)
+    ? sfiConfig.publicCert.map(
+        (certificateName) => certificates[certificateName]
+      )
+    : fs.readFileSync(sfiConfig.publicCert, {
+        encoding: 'utf8'
+      })
   const privateCert = fs.readFileSync(sfiConfig.privateCert, {
     encoding: 'utf8'
   })
+
   return {
     acceptedClockSkewMs: 0,
     audience: sfiConfig.issuer,
@@ -72,11 +75,7 @@ export function createSamlConfig(
       ? redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
       : undefined,
     callbackUrl: sfiConfig.callbackUrl,
-    cert: Array.isArray(sfiConfig.publicCert)
-      ? sfiConfig.publicCert.map(
-          (certificateName) => certificates[certificateName]
-        )
-      : sfiConfig.publicCert,
+    cert: publicCert,
     decryptionPvk: privateCert,
     disableRequestedAuthnContext: true,
     entryPoint: sfiConfig.entryPoint,
@@ -85,15 +84,15 @@ export function createSamlConfig(
     logoutUrl: sfiConfig.logoutUrl,
     privateCert: privateCert,
     signatureAlgorithm: 'sha256',
-    validateInResponseTo: true
+    // InResponseTo validation unnecessarily complicates testing
+    validateInResponseTo: nodeEnv === 'test' ? false : true
   }
 }
 
 export default function createSuomiFiStrategy(
-  config: SamlConfig,
-  enableMock: boolean = sfiMock
+  config: SamlConfig
 ): Strategy | DummyStrategy {
-  if (enableMock) {
+  if (sfiMock) {
     return new DummyStrategy((done) => {
       verifyProfile(dummySuomiFiProfile)
         .then((user) => done(null, user))

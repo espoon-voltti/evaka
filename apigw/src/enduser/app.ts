@@ -14,7 +14,6 @@ import createEvakaCustomerSamlStrategy, {
 import createSuomiFiStrategy, {
   createSamlConfig as createSuomiFiSamlConfig
 } from '../shared/auth/suomi-fi-saml'
-import { nodeEnv } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -28,8 +27,7 @@ import routes from './routes'
 import authStatus from './routes/auth-status'
 
 const app = express()
-// TODO: How to make this more easily injectable/overridable in tests?
-const redisClient = nodeEnv !== 'test' ? createRedisClient() : undefined
+const redisClient = createRedisClient()
 trustReverseProxy(app)
 app.set('etag', false)
 app.use(nocache())
@@ -39,7 +37,7 @@ app.use(
     contentSecurityPolicy: false
   })
 )
-app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
+app.get('/health', (_, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
 app.use(express.json())
 app.use(cookieParser())
@@ -86,3 +84,4 @@ app.use('/api/application', apiRouter())
 app.use(errorHandler(false))
 
 export default app
+export const _TEST_ONLY_redisClient = redisClient

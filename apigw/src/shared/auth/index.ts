@@ -4,7 +4,7 @@
 
 import { concat } from 'lodash'
 import { NextFunction, Request, Response } from 'express'
-import { logAuditEvent, logDebug } from '../logging'
+import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
 import { createJwt } from './jwt'
 import { SamlUser } from '../routes/auth/saml/types'
