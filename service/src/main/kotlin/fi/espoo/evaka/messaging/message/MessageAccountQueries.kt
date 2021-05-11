@@ -91,13 +91,15 @@ SELECT * FROM common_guardians
         .mapTo<AccountToChild>()
         .list()
 
-    val singleRecipients = (accountIds - accountsWithCommonChildren.map { it.id }).map { setOf(it) }
-
+    // For each account that share children, create a recipient group
     val distinctSetsOfAccountsWithCommonChildren = accountsWithCommonChildren
         .groupBy { it.childId }
         .values
         .map { row -> row.map { it.id }.toSet() }
         .toSet()
+
+    // all accounts that do not have common children get their own threads
+    val singleRecipients = (accountIds - accountsWithCommonChildren.map { it.id }).map { setOf(it) }
 
     return distinctSetsOfAccountsWithCommonChildren + singleRecipients
 }
