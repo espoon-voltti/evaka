@@ -51,6 +51,8 @@ fi:
       message:
         enabled: false
     integration:
+      joto:
+        enabled: true
       dvv-modifications-service:
         password: ""
         productCode: ""

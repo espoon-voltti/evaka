@@ -74,10 +74,9 @@ data class InvoiceDetailed(
     val rows: List<InvoiceRowDetailed>,
     val number: Long?,
     val sentBy: UUID?,
-    val sentAt: Instant?
-) {
+    val sentAt: Instant?,
     val account: Int = 3295
-
+) {
     @JsonProperty("totalPrice")
     fun totalPrice(): Int = invoiceRowTotal(rows)
 }
@@ -108,10 +107,9 @@ data class InvoiceSummary(
     val headOfFamily: PersonData.Detailed,
     val rows: List<InvoiceRowSummary>,
     val sentBy: UUID?,
-    val sentAt: Instant?
-) {
+    val sentAt: Instant?,
     val account: Int = 3295
-
+) {
     @JsonProperty("totalPrice")
     fun totalPrice(): Int = invoiceRowTotal(rows)
 }
