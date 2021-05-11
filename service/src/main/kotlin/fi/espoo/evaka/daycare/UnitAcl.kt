@@ -1,5 +1,6 @@
 package fi.espoo.evaka.daycare
 
+import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
@@ -13,7 +14,10 @@ fun getDaycareAclRows(db: Database.Connection, daycareId: UUID): List<DaycareAcl
 }
 
 fun addUnitSupervisor(db: Database.Connection, daycareId: UUID, employeeId: UUID) {
-    db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
+    db.transaction {
+        it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
+        it.upsertMessageAccountForEmployee(employeeId)
+    }
 }
 
 fun removeUnitSupervisor(db: Database.Connection, daycareId: UUID, employeeId: UUID) {

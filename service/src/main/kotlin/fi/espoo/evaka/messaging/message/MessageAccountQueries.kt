@@ -74,6 +74,17 @@ fun Database.Transaction.createMessageAccountForPerson(personId: UUID) {
         .execute()
 }
 
+fun Database.Transaction.upsertMessageAccountForEmployee(employeeId: UUID) {
+    // language=SQL
+    val sql = """
+        INSERT INTO message_account (employee_id) VALUES (:employeeId)
+        ON CONFLICT DO NOTHING
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("employeeId", employeeId)
+        .execute()
+}
+
 fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<UUID>): Set<Set<UUID>> {
     data class AccountToChild(val id: UUID, val childId: UUID? = null)
 
