@@ -105,6 +105,15 @@ $where
 """
 )
 
+fun Database.Transaction.markEmployeeLastLogin(id: UUID) = createUpdate(
+    """
+UPDATE employee 
+SET last_login = now()
+WHERE id = :id
+    """.trimIndent()
+).bind("id", id)
+    .execute()
+
 fun Database.Read.getEmployeeUser(id: UUID): EmployeeUser? = createEmployeeUserQuery("WHERE id = :id")
     .bind("id", id)
     .mapTo<EmployeeUser>()
