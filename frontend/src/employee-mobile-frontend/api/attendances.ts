@@ -30,6 +30,7 @@ export interface Staff {
   firstName: string
   lastName: string
   id: string
+  pinSet?: boolean
 }
 
 export interface Group {
@@ -127,9 +128,10 @@ export async function getChildSensitiveInformation(
   pin: string
 ): Promise<Result<ChildResult>> {
   return client
-    .get<JsonOf<ChildResult>>(
-      `/attendances/child/${childId}?pin=${pin}&staffId=${staffId}`
-    )
+    .post<JsonOf<ChildResult>>(`/attendances/child/${childId}`, {
+      pin,
+      staffId
+    })
     .then((res) => res.data)
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

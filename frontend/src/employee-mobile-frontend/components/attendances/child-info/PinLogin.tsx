@@ -183,12 +183,12 @@ export default React.memo(function PinLogin() {
                 <div data-qa={'select-staff'}>
                   <ReactSelect
                     placeholder={i18n.attendances.pin.selectStaff}
-                    options={attendanceResponse.value.unit.staff.map(
-                      (staff) => ({
+                    options={attendanceResponse.value.unit.staff
+                      .filter((staff) => staff.pinSet)
+                      .map((staff) => ({
                         label: formatName(staff.firstName, staff.lastName),
                         value: staff.id
-                      })
-                    )}
+                      }))}
                     noOptionsMessage={() => i18n.attendances.pin.noOptions}
                     onChange={(option) =>
                       setSelectedStaff(

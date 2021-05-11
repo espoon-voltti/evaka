@@ -66,32 +66,36 @@ class ChildAttendanceController(
         UserRole.MOBILE
     )
 
-    @GetMapping("/child/{childId}")
+    data class GetChildSensitiveInfoRequest(
+        val pin: String,
+        val staffId: UUID
+    )
+
+    @PostMapping("/child/{childId}")
     fun getChildSensitiveInfo(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
-        @RequestParam pin: String,
-        @RequestParam staffId: UUID
+        @RequestBody body: GetChildSensitiveInfoRequest
     ): ResponseEntity<ChildResult> {
-        Audit.ChildSensitiveInfoRead.log(targetId = childId, objectId = staffId)
+        Audit.ChildSensitiveInfoRead.log(targetId = childId, objectId = body.staffId)
 
-        val employeeUser = db.read { it.getEmployeeUser(staffId) }
+        val employeeUser = db.read { it.getEmployeeUser(body.staffId) }
         if (employeeUser != null) {
             try {
                 acl.getRolesForChild(AuthenticatedUser.Employee(employeeUser), childId).requireOneOfRoles(*authorizedRoles)
             } catch (e: Forbidden) {
-                logger.warn("Unallowed user $staffId tried to access child info for $childId")
+                logger.warn("Unallowed user ${body.staffId} tried to access child info for $childId")
                 return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
             }
         } else {
-            logger.warn("Unknown user $staffId tried to access child info for $childId")
+            logger.warn("Unknown user $${body.staffId} tried to access child info for $childId")
             return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
         }
 
         val result = db.transaction {
-            if (it.employeePinIsCorrect(staffId, pin)) {
-                it.resetEmployeePinFailureCount(staffId)
+            if (it.employeePinIsCorrect(body.staffId, body.pin)) {
+                it.resetEmployeePinFailureCount(body.staffId)
                 it.getChildSensitiveInfo(childId)?.let {
                     ChildResult(
                         status = ChildResultStatus.SUCCESS,
@@ -99,7 +103,7 @@ class ChildAttendanceController(
                     )
                 } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
             } else {
-                if (it.updateEmployeePinFailureCountAndCheckIfLocked(staffId)) {
+                if (it.updateEmployeePinFailureCountAndCheckIfLocked(body.staffId)) {
                     ChildResult(status = ChildResultStatus.PIN_LOCKED, child = null)
                 } else {
                     ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)
