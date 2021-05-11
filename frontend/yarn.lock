@@ -9261,7 +9261,7 @@ __metadata:
     lib-components: "link:src/lib-components"
     lib-customizations: "link:src/lib-customizations"
     lib-icons: "link:src/lib-icons"
-    lodash: ^4.17.15
+    lodash: ^4.17.21
     make-error-cause: ^2.3.0
     parcel-bundler: ^1.12.4
     playwright: ^1.9.2
