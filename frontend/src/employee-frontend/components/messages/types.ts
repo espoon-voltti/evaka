@@ -79,3 +79,31 @@ export interface ReceiverTriplet {
   groupId?: UUID
   personId?: UUID
 }
+
+export interface MessageAccount {
+  id: UUID
+  name: string
+}
+
+interface Message {
+  id: UUID
+  senderId: UUID
+  senderName: string
+  sentAt: Date
+  content: string
+}
+
+export type MessageType = 'MESSAGE' | 'BULLETIN'
+
+export interface MessageThread {
+  id: UUID
+  type: MessageType
+  title: string
+  messages: Message[]
+}
+export const deserializeMessageThread = (
+  json: JsonOf<MessageThread>
+): MessageThread => ({
+  ...json,
+  messages: json.messages.map((m) => ({ ...m, sentAt: new Date(m.sentAt) }))
+})

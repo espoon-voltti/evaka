@@ -7,13 +7,17 @@ import { client } from '../../api/client'
 import { UUID } from '../../types'
 import {
   Bulletin,
-  IdAndName,
   deserializeBulletin,
-  SentBulletin,
-  deserializeSentBulletin,
+  deserializeMessageThread,
   deserializeReceiverChild,
+  deserializeSentBulletin,
+  IdAndName,
+  MessageAccount,
+  MessageThread,
+  MessageType,
   ReceiverGroup,
-  ReceiverTriplet
+  ReceiverTriplet,
+  SentBulletin
 } from './types'
 
 export async function initNewBulletin(
@@ -125,5 +129,65 @@ export async function getSenderOptions(
       params: { unitId }
     })
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAccounts(): Promise<Result<MessageAccount[]>> {
+  return client
+    .get<JsonOf<MessageAccount[]>>('/messages/my-accounts')
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getReceivedMessages(
+  accountId: UUID,
+  page: number,
+  pageSize = 50
+): Promise<Result<Paged<MessageThread>>> {
+  return client
+    .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/received`, {
+      params: { page, pageSize }
+    })
+    .then(({ data }) =>
+      Success.of({
+        ...data,
+        data: data.data.map(deserializeMessageThread)
+      })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function createNewMessage(
+  title: string,
+  content: string,
+  type: MessageType,
+  senderAccountId: UUID,
+  recipientAccountIds: Set<UUID>
+): Promise<Result<void>> {
+  return client
+    .post(`/messages`, {
+      title,
+      content,
+      type,
+      senderAccountId,
+      recipientAccountIds
+    })
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function replyToThread(
+  messageId: UUID,
+  content: string,
+  senderAccountId: UUID,
+  recipientAccountIds: Set<UUID>
+): Promise<Result<void>> {
+  return client
+    .post(`/messages/${messageId}/reply`, {
+      content,
+      senderAccountId,
+      recipientAccountIds
+    })
+    .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
