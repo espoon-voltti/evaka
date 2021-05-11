@@ -103,14 +103,18 @@ fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, p
     val sql = """
 WITH
 threads AS (
-    SELECT id, created, message_type AS type, title, COUNT(*) OVER () AS count
+    SELECT id, message_type AS type, title, last_message, COUNT(*) OVER () AS count
     FROM message_thread t
+    JOIN LATERAL (
+        SELECT MAX(sent_at) last_message FROM message WHERE thread_id = t.id
+    ) last_msg ON true
     WHERE EXISTS(
             SELECT 1
             FROM message_recipients rec
             JOIN message m ON rec.message_id = m.id
             WHERE rec.recipient_id = :accountId AND m.thread_id = t.id)
-    ORDER BY created DESC
+    GROUP BY id, message_type, title, last_message
+    ORDER BY last_message DESC
     LIMIT :pageSize OFFSET :offset
 ),
 messages AS (
@@ -135,7 +139,6 @@ messages AS (
 SELECT
     t.count,
     t.id,
-    t.created,
     t.title,
     t.type,
     (SELECT jsonb_agg(json_build_object(
@@ -147,8 +150,8 @@ SELECT
     ))) AS messages
     FROM threads t
           JOIN messages msg ON msg.thread_id = t.id
-    GROUP BY t.count, t.id, t.type, t.title, t.created
-    ORDER BY t.created DESC
+    GROUP BY t.count, t.id, t.type, t.title, t.last_message
+    ORDER BY t.last_message DESC
     """.trimIndent()
 
     return this.createQuery(sql)
