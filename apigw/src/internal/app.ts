@@ -12,7 +12,7 @@ import createAdSamlStrategy, {
   createSamlConfig as createAdSamlConfig
 } from '../shared/auth/ad-saml'
 import createEvakaSamlStrategy, {
-  createSamlConfig as createEvakaSalmconfig
+  createSamlConfig as createEvakaSamlconfig
 } from '../shared/auth/keycloak-saml'
 import { cookieSecret, enableDevApi, nodeEnv } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
@@ -86,7 +86,7 @@ function internalApiRouter() {
     })
   )
 
-  const evakaSamlConfig = createEvakaSalmconfig(redisClient)
+  const evakaSamlConfig = createEvakaSamlconfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'evaka',
