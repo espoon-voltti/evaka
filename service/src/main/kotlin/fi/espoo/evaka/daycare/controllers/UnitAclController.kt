@@ -5,13 +5,17 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.addSpecialEducationTeacher
+import fi.espoo.evaka.daycare.addStaffMember
+import fi.espoo.evaka.daycare.addUnitSupervisor
+import fi.espoo.evaka.daycare.getDaycareAclRows
+import fi.espoo.evaka.daycare.removeSpecialEducationTeacher
+import fi.espoo.evaka.daycare.removeStaffMember
+import fi.espoo.evaka.daycare.removeUnitSupervisor
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
-import fi.espoo.evaka.shared.auth.getDaycareAclRows
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -32,7 +36,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclRead.log()
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-        val acls = db.read { it.getDaycareAclRows(daycareId) }
+        val acls = getDaycareAclRows(db, daycareId)
         return ResponseEntity.ok(DaycareAclResponse(acls))
     }
 
@@ -46,7 +50,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
+        addUnitSupervisor(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
 
@@ -60,8 +64,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-
-        db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR) }
+        removeUnitSupervisor(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
 
@@ -75,7 +78,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+        addSpecialEducationTeacher(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
 
@@ -89,7 +92,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+        removeSpecialEducationTeacher(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
 
@@ -103,7 +106,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-        db.transaction { it.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
+        addStaffMember(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
 
@@ -117,8 +120,7 @@ class UnitAclController(private val acl: AccessControlList) {
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-
-        db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.STAFF) }
+        removeStaffMember(db, daycareId, employeeId)
         return ResponseEntity.noContent().build()
     }
 }
