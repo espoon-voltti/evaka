@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
+import { Theme } from 'lib-common/theme'
 import {
   Lang as LangCitizen,
   Translations as TranslationsCitizen
@@ -18,6 +19,10 @@ type DeepPartial<T> = {
     : T[P] extends Readonly<infer U>[]
     ? Readonly<DeepPartial<U>>[]
     : DeepPartial<T[P]>
+}
+
+export interface CommonCustomizations {
+  theme: Theme
 }
 
 export interface CitizenCustomizations {

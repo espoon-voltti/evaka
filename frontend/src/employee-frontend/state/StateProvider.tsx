@@ -19,6 +19,8 @@ import {
 } from '../state/placementdraft'
 import { DecisionDraftContextProvider } from '../state/decision'
 import { TitleContextProvider } from '../state/title'
+import { ThemeProvider } from 'styled-components'
+import { theme } from 'lib-customizations/common'
 
 const StateProvider = React.memo(function StateProvider({
   children
@@ -40,7 +42,9 @@ const StateProvider = React.memo(function StateProvider({
                           <PDUnitsContextProvider>
                             <TitleContextProvider>
                               <ApplicationUIContextProvider>
-                                {children}
+                                <ThemeProvider theme={theme}>
+                                  {children}
+                                </ThemeProvider>
                               </ApplicationUIContextProvider>
                             </TitleContextProvider>
                           </PDUnitsContextProvider>

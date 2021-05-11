@@ -9,11 +9,15 @@ import { addDecorator, addParameters } from '@storybook/react'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 
 import '../../citizen-frontend/index.css'
+import { ThemeProvider } from 'styled-components'
+import theme from 'lib-common/themes/espoo-theme'
 
 const storyWrapper = (story) => (
-  <Container>
-    <ContentArea opaque>{story()}</ContentArea>
-  </Container>
+  <ThemeProvider theme={theme}>
+    <Container>
+        <ContentArea opaque>{story()}</ContentArea>
+    </Container>
+  </ThemeProvider>
 )
 
 addParameters({

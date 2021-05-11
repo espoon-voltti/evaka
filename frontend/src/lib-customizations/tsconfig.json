@@ -8,6 +8,7 @@
     "suppressImplicitAnyIndexErrors": true
   },
   "references": [
+    { "path": "../lib-common" },
     { "path": "../lib-components" }
   ]
 }
