@@ -5,6 +5,7 @@
 import { P } from 'lib-components/typography'
 import React from 'react'
 import { Translations } from 'lib-customizations/citizen'
+import ExternalLink from 'lib-components/atoms/ExternalLink'
 
 const sv: Translations = {
   common: {
@@ -70,8 +71,20 @@ const sv: Translations = {
     title: 'Enheter på kartan',
     mainInfo:
       'I den här vyn kan du på kartan söka enheter med småbarnspedagogik och förskola.',
+    privateUnitInfo: function PrivateUnitInfo() {
+      return (
+        <span>
+          För information om privata daghem,{' '}
+          <ExternalLink
+            text="klicka här."
+            href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik"
+            newTab
+          />
+        </span>
+      )
+    },
     searchLabel: 'Sök med adress eller enhetens namn',
-    searchPlaceholder: 'T.ex. Kilovägen eller Purola daghem',
+    searchPlaceholder: 'T.ex. Purola daghem',
     address: 'Adress',
     noResults: 'Inga sökresultat',
     distanceWalking: 'Avstånd från vald enhet gående',

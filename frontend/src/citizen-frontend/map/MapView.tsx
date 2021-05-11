@@ -138,6 +138,7 @@ export default React.memo(function MapView() {
             }
             selectedUnit={selectedUnit}
             selectedAddress={selectedAddress}
+            setSelectedUnit={setSelectedUnit}
           />
         </MapContainer>
       </FlexContainer>

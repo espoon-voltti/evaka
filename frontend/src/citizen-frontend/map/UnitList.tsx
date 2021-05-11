@@ -134,7 +134,6 @@ export default React.memo(function UnitList({
 const Wrapper = styled(ContentArea)`
   box-sizing: border-box;
   width: 100%;
-  overflow-y: auto;
   flex-grow: 1;
   padding-right: ${defaultMargins.s};
 `

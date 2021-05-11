@@ -68,7 +68,10 @@ export default React.memo(function SearchSection({
   return (
     <Wrapper opaque>
       <H1>{t.map.title}</H1>
-      <P>{t.map.mainInfo}</P>
+      <P>
+        {t.map.mainInfo}
+        <PrivateUnitInfo>{t.map.privateUnitInfo()}</PrivateUnitInfo>
+      </P>
 
       <FixedSpaceColumn spacing="xs">
         <Label>{t.map.searchLabel}</Label>
@@ -138,7 +141,7 @@ export default React.memo(function SearchSection({
 
       {showMoreFilters && (
         <>
-          <Gap size="s" />
+          <Gap size="m" />
 
           <FixedSpaceColumn spacing="xs">
             <Label>{t.map.providerType}</Label>
@@ -179,7 +182,7 @@ export default React.memo(function SearchSection({
             </FixedSpaceRow>
           </FixedSpaceColumn>
 
-          <Gap size="xs" />
+          <Gap size="m" />
 
           <FixedSpaceColumn spacing="xs">
             <Label>{t.map.shiftCareTitle}</Label>
@@ -250,4 +253,12 @@ const Centered = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+`
+
+const PrivateUnitInfo = styled.span`
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 21px;
+  color: ${colors.greyscale.dark};
+  display: block;
 `
