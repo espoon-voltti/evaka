@@ -62,7 +62,7 @@ class PersonStorageService {
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
-            map(tx.createPersonFromVtj(newPerson), inputPerson.source)
+            map(createPersonFromVtj(tx, newPerson), inputPerson.source)
         } else {
             val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
             map(tx.updatePersonFromVtj(updatedPerson), inputPerson.source)

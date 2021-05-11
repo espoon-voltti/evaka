@@ -398,7 +398,7 @@ RETURNING id
             if (person != null) {
                 tx.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
             } else {
-                tx.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+                createPersonFromVtj(tx, personDTO).let { ResponseEntity.ok(it) }
             }
         }
     }

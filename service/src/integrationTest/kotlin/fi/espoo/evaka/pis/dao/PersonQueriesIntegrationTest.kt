@@ -20,7 +20,6 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -43,17 +42,20 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `create person`() = db.transaction { tx ->
+    fun `create person`() {
         val validSSN = "080512A918W"
-        val fetchedPerson = tx.createPerson(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(validSSN),
-                firstName = "Matti",
-                lastName = "Meikäläinen",
-                email = "matti.meikalainen@example.com",
-                language = "fi"
+        val fetchedPerson = db.transaction { tx ->
+            tx.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(validSSN),
+                    firstName = "Matti",
+                    lastName = "Meikäläinen",
+                    email = "matti.meikalainen@example.com",
+                    language = "fi"
+                )
             )
-        )
+        }
+
         Assertions.assertNotNull(fetchedPerson)
         Assertions.assertNotNull(fetchedPerson.id)
         Assertions.assertNotNull(fetchedPerson.customerId)
@@ -151,7 +153,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             invoicingPostOffice = "Espoo"
         )
 
-        assertTrue(db.transaction { it.updatePersonContactInfo(originalPerson.id, contactInfo) })
+        Assertions.assertTrue(db.transaction { it.updatePersonContactInfo(originalPerson.id, contactInfo) })
 
         val actual = db.read { it.getPersonById(originalPerson.id) }
         Assertions.assertEquals(contactInfo.email, actual?.email)
