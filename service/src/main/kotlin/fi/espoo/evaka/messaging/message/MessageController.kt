@@ -21,15 +21,25 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 data class UnreadMessagesResponse(val count: Int)
+data class EnrichedMessageAccount(
+        val accountId: UUID,
+        val accountName: String,
+        val unitId: UUID?,
+        val unitName: String?,
+        val groupId: UUID?,
+        val groupName: String?,
+        val personal: Boolean
+)
 
 @RestController
 @RequestMapping("/messages")
 class MessageController {
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<EnrichedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         authorizeAllowedMessagingRoles(user)
-        return db.read { it.getMessageAccountsForUser(user) }
+        return db.read { it.getEnrichedMessageAccountsForUser(user)
+        }
     }
 
     @GetMapping("/{accountId}/received")

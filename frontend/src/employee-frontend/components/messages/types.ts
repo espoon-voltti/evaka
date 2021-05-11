@@ -80,10 +80,16 @@ export interface ReceiverTriplet {
   personId?: UUID
 }
 
-export interface MessageAccount {
-  id: UUID
-  name: string
+export interface EnrichedMessageAccount {
+  accountId: UUID
+  accountName: string
+  groupId: UUID | undefined
+  groupName: string | undefined
+  unitId: UUID | undefined
+  unitName: string | undefined
+  personal: boolean
 }
+
 
 interface Message {
   id: UUID

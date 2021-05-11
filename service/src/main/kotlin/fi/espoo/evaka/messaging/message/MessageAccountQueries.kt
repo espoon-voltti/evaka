@@ -44,6 +44,35 @@ fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<Messag
         .toSet()
 }
 
+fun Database.Read.getEnrichedMessageAccountsForUser(user: AuthenticatedUser): Set<EnrichedMessageAccount> {
+    // language=SQL
+    val employeeSql = """
+        WITH accounts AS (
+            SELECT acc.id, dg.id as groupId, dg.name as groupName, dc.id as unitId, dc.name as unitName, false as personal
+            FROM daycare_acl acl
+            JOIN daycare_group dg ON acl.daycare_id = dg.daycare_id
+            JOIN daycare dc ON dc.id = acl.daycare_id
+            JOIN message_account acc ON acc.daycare_group_id = dg.id
+            WHERE acl.employee_id = :userId
+            
+            UNION
+            
+            SELECT id, NULL as groupId, NULL as groupName, NULL as unitId, NULL as unitName, true as personal
+            FROM message_account
+            WHERE message_account.employee_id = :userId
+            )
+            
+        SELECT accounts.id as accountId, name_view.account_name, groupId, groupName, unitId, unitName, personal
+        FROM accounts
+            JOIN message_account_name_view name_view ON name_view.id = accounts.id
+    """.trimIndent()
+
+    return this.createQuery(employeeSql)
+            .bind("userId", user.id)
+            .mapTo<EnrichedMessageAccount>()
+            .toSet()
+}
+
 fun Database.Transaction.createMessageAccountForDaycareGroup(daycareGroupId: UUID) {
     // language=SQL
     val sql = """

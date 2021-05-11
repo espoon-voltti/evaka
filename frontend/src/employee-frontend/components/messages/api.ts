@@ -12,7 +12,7 @@ import {
   deserializeReceiverChild,
   deserializeSentBulletin,
   IdAndName,
-  MessageAccount,
+  EnrichedMessageAccount,
   MessageThread,
   MessageType,
   ReceiverGroup,
@@ -132,9 +132,9 @@ export async function getSenderOptions(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getAccounts(): Promise<Result<MessageAccount[]>> {
+export async function getMessagingAccounts(): Promise<Result<EnrichedMessageAccount[]>> {
   return client
-    .get<JsonOf<MessageAccount[]>>('/messages/my-accounts')
+    .get<JsonOf<EnrichedMessageAccount[]>>('/messages/my-accounts')
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
