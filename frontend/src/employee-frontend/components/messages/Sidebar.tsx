@@ -4,8 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import _ from 'lodash'
-import colors from 'lib-components/colors'
+import colors, { greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { Result } from 'lib-common/api'
@@ -13,29 +12,34 @@ import { EnrichedMessageAccount } from 'employee-frontend/components/messages/ty
 import { UUID } from 'employee-frontend/types'
 
 type Props = {
-  accounts: Result<EnrichedMessageAccount[]>,
-  selectedAccount: UUID | undefined,
-  setSelectedAccount: (id: UUID) => void,
+  accounts: Result<EnrichedMessageAccount[]>
+  selectedAccount: UUID | undefined
+  setSelectedAccount: (id: UUID) => void
 }
 
 export default React.memo(function Sidebar({
-  accounts
+  accounts,
+  setSelectedAccount
 }: Props) {
-  const t = useTranslation()
-  console.log(t)
+  const { i18n } = useTranslation()
 
   return (
     <>
       <Container>
-        <HeaderContainer>
-        </HeaderContainer>
+        <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
+        <AccountHeader>{i18n.messages.sidePanel.groupsMessages}</AccountHeader>
         {accounts.isSuccess && (
-        <ul>
-          {accounts.value.map(account => (<li key={account.accountId}>{account.accountName}</li>))}
-        </ul>
-        )
-
-        }
+          <ul>
+            {accounts.value.map((account) => (
+              <li
+                key={account.accountId}
+                onClick={() => setSelectedAccount(account.accountId)}
+              >
+                {account.accountName}
+              </li>
+            ))}
+          </ul>
+        )}
       </Container>
     </>
   )
@@ -50,6 +54,10 @@ const Container = styled.div`
   overflow-y: auto;
 `
 
-const HeaderContainer = styled.div`
+const AccountHeader = styled.div`
   padding: ${defaultMargins.m};
+  color: ${greyscale.dark};
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
 `

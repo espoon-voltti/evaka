@@ -90,12 +90,12 @@ export interface EnrichedMessageAccount {
   personal: boolean
 }
 
-
 interface Message {
   id: UUID
   senderId: UUID
   senderName: string
   sentAt: Date
+  readAt: Date | null
   content: string
 }
 
@@ -111,5 +111,9 @@ export const deserializeMessageThread = (
   json: JsonOf<MessageThread>
 ): MessageThread => ({
   ...json,
-  messages: json.messages.map((m) => ({ ...m, sentAt: new Date(m.sentAt) }))
+  messages: json.messages.map((m) => ({
+    ...m,
+    sentAt: new Date(m.sentAt),
+    readAt: m.readAt ? new Date(m.readAt) : null
+  }))
 })

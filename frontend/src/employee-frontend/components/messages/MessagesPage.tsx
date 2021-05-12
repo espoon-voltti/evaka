@@ -2,31 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import MessageList from 'employee-frontend/components/messages/MessageList'
-import Sidebar from 'employee-frontend/components/messages/Sidebar'
+import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import React, { useEffect, useState } from 'react'
-import { getMessagingAccounts } from 'employee-frontend/components/messages/api'
-import { EnrichedMessageAccount } from 'employee-frontend/components/messages/types'
-import { Result, Loading } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
-import { UUID } from 'employee-frontend/types'
+import { getMessagingAccounts } from './api'
+import MessageList from './MessageList'
+import Sidebar from './Sidebar'
+import { EnrichedMessageAccount } from './types'
 
 export default React.memo(function MessagesPage() {
-
   const [accounts, setResult] = useState<Result<EnrichedMessageAccount[]>>(
     Loading.of()
   )
-  const messagingAccounts = useRestApi(getMessagingAccounts, setResult)
-  useEffect(() => messagingAccounts(), [])
+  const loadAccounts = useRestApi(getMessagingAccounts, setResult)
+  useEffect(() => loadAccounts(), [loadAccounts])
 
   const [selectedAccount, setSelectedAccount] = useState<UUID>()
 
   return (
     <Container>
-      <Sidebar accounts={accounts} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} />
-      <MessageList/>
-      <MessageList/>
+      <Sidebar
+        accounts={accounts}
+        selectedAccount={selectedAccount}
+        setSelectedAccount={setSelectedAccount}
+      />
+      {selectedAccount && (
+        <MessageList view="RECEIVED" accountId={selectedAccount} />
+      )}
     </Container>
   )
 })

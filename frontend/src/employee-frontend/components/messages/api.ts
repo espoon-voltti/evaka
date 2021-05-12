@@ -132,7 +132,9 @@ export async function getSenderOptions(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getMessagingAccounts(): Promise<Result<EnrichedMessageAccount[]>> {
+export async function getMessagingAccounts(): Promise<
+  Result<EnrichedMessageAccount[]>
+> {
   return client
     .get<JsonOf<EnrichedMessageAccount[]>>('/messages/my-accounts')
     .then(({ data }) => Success.of(data))
@@ -142,7 +144,7 @@ export async function getMessagingAccounts(): Promise<Result<EnrichedMessageAcco
 export async function getReceivedMessages(
   accountId: UUID,
   page: number,
-  pageSize = 50
+  pageSize: number
 ): Promise<Result<Paged<MessageThread>>> {
   return client
     .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/received`, {
