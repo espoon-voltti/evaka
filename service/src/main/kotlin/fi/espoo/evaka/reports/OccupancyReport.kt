@@ -386,6 +386,7 @@ private fun Database.Read.calculateGroupOccupancyReportV2(
     if (type == OccupancyType.PLANNED) throw BadRequest("Unable to calculate planned occupancy at group level")
 
     val period = getAndValidatePeriod(today, type, queryPeriod)
+
     val caretakerCounts = getCaretakers(type, period, areaId) { row ->
         Caretakers(
             UnitGroupKey(
@@ -398,7 +399,12 @@ private fun Database.Read.calculateGroupOccupancyReportV2(
             caretakerCount = row.mapColumn("caretaker_count")
         )
     }
-    val placements = getPlacements(caretakerCounts.keys, period)
+
+    val placements = when (type) {
+        OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
+        else -> getPlacements(caretakerCounts.keys, period)
+    }
+
     return calculateDailyOccupancies(caretakerCounts, placements, period, type)
         .map { (key, occupancies) ->
             OccupancyGroupReportResultRow(
@@ -505,6 +511,81 @@ WHERE $daterange && :period AND $groupingId = ANY(:keys)
         .mapTo()
 }
 
+private inline fun <reified K : Key> Database.Read.getRealizedPlacements(
+    keys: Set<K>,
+    period: FiniteDateRange
+): Iterable<Placement> {
+    val placements = getPlacements(keys, period)
+
+    // remove periods where child is away in backup care
+    val periodsAwayByChild = getPeriodsAwayInBackupCareByChildId(period, placements.map { it.childId }.toSet())
+    val placementsWithChildPresent = placements.flatMap { placement ->
+        val periodsAway = periodsAwayByChild.getOrDefault(placement.childId, emptyList())
+        val periodsPresent = placement.period.complement(periodsAway)
+        periodsPresent.map { period -> placement.copy(period = period) }
+    }
+
+    // add backup care placements into these units/groups
+    return placementsWithChildPresent + getBackupCarePlacements(keys, period)
+}
+
+private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
+    period: FiniteDateRange,
+    childIds: Set<UUID>
+): Map<UUID, List<FiniteDateRange>> {
+    data class QueryResult(
+        val childId: UUID,
+        val startDate: LocalDate,
+        val endDate: LocalDate
+    )
+
+    // language=sql
+    val query = """
+SELECT bc.child_id, bc.start_date, bc.end_date
+FROM backup_care bc
+WHERE daterange(bc.start_date, bc.end_date, '[]') && :period AND bc.child_id = ANY(:childIds)
+"""
+
+    return this.createQuery(query)
+        .bind("childIds", childIds.toTypedArray())
+        .bind("period", period)
+        .mapTo<QueryResult>()
+        .groupBy { it.childId }
+        .mapValues { entry -> entry.value.map { FiniteDateRange(it.startDate, it.endDate) } }
+}
+
+private inline fun <reified K : Key> Database.Read.getBackupCarePlacements(
+    keys: Set<K>,
+    period: FiniteDateRange
+): Iterable<Placement> {
+    val groupingId = when (K::class) {
+        UnitKey::class -> "bc.unit_id"
+        UnitGroupKey::class -> "bc.group_id"
+        else -> error("Unsupported placement query class parameter (${K::class})")
+    }
+
+    // language=sql
+    val query = """
+SELECT
+    $groupingId AS grouping_id,
+    p.id AS placement_id,
+    bc.child_id,
+    bc.unit_id,
+    p.type,
+    u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement,
+    daterange(greatest(bc.start_date, p.start_date, '[]'), least(bc.end_date, p.end_date), '[]') AS period
+FROM backup_care bc
+JOIN daycare u ON bc.unit_id = u.id
+JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
+WHERE daterange(greatest(bc.start_date, p.start_date, '[]'), least(bc.end_date, p.end_date), '[]') && :period AND $groupingId = ANY(:keys)
+"""
+
+    return this.createQuery(query)
+        .bind("keys", keys.map { it.groupingId }.toTypedArray())
+        .bind("period", period)
+        .mapTo()
+}
+
 private fun <K : Key> Database.Read.calculateDailyOccupancies(
     caretakerCounts: Map<K, List<Caretakers<K>>>,
     placements: Iterable<Placement>,
@@ -529,6 +610,7 @@ WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
             listOf()
 
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet().toTypedArray()
+
     val childBirthdays = this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
         .bind("childIds", childIds)
         .mapTo<Child>()
