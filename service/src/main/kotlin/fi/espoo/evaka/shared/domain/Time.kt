@@ -85,7 +85,7 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
                 listOf(FiniteDateRange(other.end.plusDays(1), this.end))
 
             other.start > this.start && other.end >= this.end ->
-                listOf(FiniteDateRange(other.end.plusDays(1), this.end))
+                listOf(FiniteDateRange(this.start, other.start.minusDays(1)))
 
             other.start > this.start && other.end < this.end -> listOf(
                 FiniteDateRange(this.start, other.start.minusDays(1)),

@@ -242,4 +242,63 @@ class TimeTest {
     fun `FiniteDateRange durationInDays returns 1 for one day periods`() {
         assertEquals(1, LocalDate.of(2019, 1, 1).toFiniteDateRange().durationInDays())
     }
+
+    @Test
+    fun `FiniteDateRange complement - no overlap`() {
+        val period = testRange(1, 15)
+        val other = testRange(16, 31)
+        val complement = period.complement(other)
+        assertEquals(listOf(testRange(1, 15)), complement)
+    }
+
+    @Test
+    fun `FiniteDateRange complement - full overlap`() {
+        val period = testRange(1, 31)
+        val other = testRange(1, 31)
+        val complement = period.complement(other)
+        assertEquals(emptyList<FiniteDateRange>(), complement)
+    }
+
+    @Test
+    fun `FiniteDateRange complement - overlap start`() {
+        val period = testRange(1, 31)
+        val other = testRange(1, 15)
+        val complement = period.complement(other)
+        assertEquals(listOf(testRange(16, 31)), complement)
+    }
+
+    @Test
+    fun `FiniteDateRange complement - overlap end`() {
+        val period = testRange(1, 31)
+        val other = testRange(15, 31)
+        val complement = period.complement(other)
+        assertEquals(listOf(testRange(1, 14)), complement)
+    }
+
+    @Test
+    fun `FiniteDateRange complement - overlap middle`() {
+        val period = testRange(1, 31)
+        val other = testRange(10, 20)
+        val complement = period.complement(other)
+        assertEquals(listOf(testRange(1, 9), testRange(21, 31)), complement)
+    }
+
+    @Test
+    fun `FiniteDateRange complement multiple`() {
+        val period = testRange(1, 31)
+        val other1 = testRange(1, 5)
+        val other2 = testRange(8, 15)
+        val other3 = testRange(10, 20)
+        val complement = period.complement(listOf(other1, other2, other3))
+        assertEquals(listOf(testRange(6, 7), testRange(21, 31)), complement)
+    }
+
+    @Test
+    fun `FiniteDateRange complement none`() {
+        val period = testRange(1, 31)
+        val complement = period.complement(emptyList())
+        assertEquals(listOf(testRange(1, 31)), complement)
+    }
+
+    private fun testRange(from: Int, to: Int) = FiniteDateRange(LocalDate.of(2019, 1, from), LocalDate.of(2019, 1, to))
 }
