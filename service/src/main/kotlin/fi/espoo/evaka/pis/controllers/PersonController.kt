@@ -50,7 +50,7 @@ class PersonController(
     fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
-        return db.transaction { it.createEmptyPerson() }
+        return db.transaction { createEmptyPerson(it) }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
@@ -252,7 +252,7 @@ class PersonController(
     ): ResponseEntity<UUID> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-        return db.transaction { it.createPerson(body) }
+        return db.transaction { createPerson(it, body) }
             .let { ResponseEntity.ok(it) }
     }
 

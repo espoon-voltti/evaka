@@ -159,7 +159,8 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     private fun createPerson(): PersonDTO {
         val ssn = "140881-172X"
         return db.transaction {
-            it.createPerson(
+            createPerson(
+                it,
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = "Matti",

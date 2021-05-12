@@ -64,6 +64,16 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) 
         .execute()
 }
 
+fun Database.Transaction.createMessageAccountForPerson(personId: UUID) {
+    // language=SQL
+    val sql = """
+        INSERT INTO message_account (person_id) VALUES (:personId)
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("personId", personId)
+        .execute()
+}
+
 fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<UUID>): Set<Set<UUID>> {
     data class AccountToChild(val id: UUID, val childId: UUID? = null)
 

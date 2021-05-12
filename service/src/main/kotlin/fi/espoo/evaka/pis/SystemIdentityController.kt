@@ -30,7 +30,8 @@ class SystemIdentityController {
         Audit.PersonCreate.log()
         user.assertSystemInternalUser()
         return db.transaction { tx ->
-            val p = tx.getPersonBySSN(person.socialSecurityNumber) ?: tx.createPerson(
+            val p = tx.getPersonBySSN(person.socialSecurityNumber) ?: createPerson(
+                tx,
                 fi.espoo.evaka.pis.service.PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(person.socialSecurityNumber),
                     firstName = person.firstName,
