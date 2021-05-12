@@ -20,12 +20,6 @@ logging:
 aws:
   region: eu-west-1
 
-springfox:
-  documentation:
-    swagger:
-      v2:
-        path: /api-docs
-
 voltti:
   datasource:
     password: message-app

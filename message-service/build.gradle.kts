@@ -116,7 +116,6 @@ dependencies {
     // Miscellaneous
     implementation("com.auth0:java-jwt")
     implementation("javax.annotation:javax.annotation-api")
-    implementation("io.springfox:springfox-swagger2")
     implementation("javax.jws:javax.jws-api")
     implementation("javax.xml.ws:jaxws-api")
     implementation("org.apache.commons:commons-text")
