@@ -8,12 +8,12 @@ import colors, { greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { Result } from 'lib-common/api'
-import { EnrichedMessageAccount } from 'employee-frontend/components/messages/types'
+import { MessageAccount } from 'employee-frontend/components/messages/types'
 import { UUID } from 'employee-frontend/types'
 import Button from 'lib-components/atoms/buttons/Button'
 
-type Props = {
-  accounts: Result<EnrichedMessageAccount[]>
+interface Props {
+  accounts: Result<MessageAccount[]>
   selectedAccount: UUID | undefined
   setSelectedAccount: (id: UUID) => void
   showEditor: () => void
@@ -35,10 +35,10 @@ export default React.memo(function Sidebar({
           <ul>
             {accounts.value.map((account) => (
               <li
-                key={account.accountId}
-                onClick={() => setSelectedAccount(account.accountId)}
+                key={account.id}
+                onClick={() => setSelectedAccount(account.id)}
               >
-                {account.accountName}
+                {account.name}
               </li>
             ))}
           </ul>

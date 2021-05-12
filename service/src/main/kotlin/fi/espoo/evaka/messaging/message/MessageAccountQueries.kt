@@ -44,33 +44,33 @@ fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<Messag
         .toSet()
 }
 
-fun Database.Read.getEnrichedMessageAccountsForUser(user: AuthenticatedUser): Set<EnrichedMessageAccount> {
+fun Database.Read.getAuthorizedMessageAccountsForUser(user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
     // language=SQL
     val employeeSql = """
         WITH accounts AS (
-            SELECT acc.id, dg.id as groupId, dg.name as groupName, dc.id as unitId, dc.name as unitName, false as personal
+            SELECT acc.id, false as personal, dg.id as group_id, dg.name as group_name, dc.id as group_unitId, dc.name as group_unitName
             FROM daycare_acl acl
             JOIN daycare_group dg ON acl.daycare_id = dg.daycare_id
             JOIN daycare dc ON dc.id = acl.daycare_id
             JOIN message_account acc ON acc.daycare_group_id = dg.id
             WHERE acl.employee_id = :userId
-            
+
             UNION
-            
-            SELECT id, NULL as groupId, NULL as groupName, NULL as unitId, NULL as unitName, true as personal
+
+            SELECT id, true as personal, NULL as group_id, NULL as group_name, NULL as group_unitId, NULL as group_unitName
             FROM message_account
             WHERE message_account.employee_id = :userId
             )
-            
-        SELECT accounts.id as accountId, name_view.account_name, groupId, groupName, unitId, unitName, personal
+
+        SELECT accounts.*, name_view.account_name as name
         FROM accounts
             JOIN message_account_name_view name_view ON name_view.id = accounts.id
     """.trimIndent()
 
     return this.createQuery(employeeSql)
-            .bind("userId", user.id)
-            .mapTo<EnrichedMessageAccount>()
-            .toSet()
+        .bind("userId", user.id)
+        .mapTo<AuthorizedMessageAccount>()
+        .toSet()
 }
 
 fun Database.Transaction.createMessageAccountForDaycareGroup(daycareGroupId: UUID) {

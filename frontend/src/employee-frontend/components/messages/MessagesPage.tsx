@@ -11,12 +11,10 @@ import React, { useEffect, useState } from 'react'
 import { getMessagingAccounts } from './api'
 import MessageList from './MessageList'
 import Sidebar from './Sidebar'
-import { EnrichedMessageAccount, Message } from './types'
+import { Message, MessageAccount } from './types'
 
 export default React.memo(function MessagesPage() {
-  const [accounts, setResult] = useState<Result<EnrichedMessageAccount[]>>(
-    Loading.of()
-  )
+  const [accounts, setResult] = useState<Result<MessageAccount[]>>(Loading.of())
   const loadAccounts = useRestApi(getMessagingAccounts, setResult)
   useEffect(() => loadAccounts(), [loadAccounts])
 

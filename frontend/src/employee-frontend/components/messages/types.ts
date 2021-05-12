@@ -49,14 +49,16 @@ export interface ReceiverTriplet {
   personId?: UUID
 }
 
-export interface EnrichedMessageAccount {
-  accountId: UUID
-  accountName: string
-  groupId: UUID | undefined
-  groupName: string | undefined
-  unitId: UUID | undefined
-  unitName: string | undefined
+export interface MessageAccount {
+  id: UUID
+  name: string
   personal: boolean
+  group?: {
+    id: UUID
+    name: string
+    unitId: UUID
+    unitName: string
+  }
 }
 
 export interface Message {
