@@ -19,7 +19,6 @@ class Page(val template: Template, val context: Context)
 
 fun ITemplateEngine.process(page: Page): String = this.process(page.template.value, page.context)
 
-
 @Component
 class PDFService(private val templateEngine: ITemplateEngine) {
 
