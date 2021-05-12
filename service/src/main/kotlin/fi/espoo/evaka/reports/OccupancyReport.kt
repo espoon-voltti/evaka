@@ -355,6 +355,7 @@ private fun Database.Read.calculateUnitOccupancyReportV2(
     type: OccupancyType
 ): List<OccupancyUnitReportResultRow> {
     val period = getAndValidatePeriod(today, type, queryPeriod)
+
     val caretakerCounts = getCaretakers(type, period, areaId) { row ->
         Caretakers(
             UnitKey(
@@ -365,7 +366,12 @@ private fun Database.Read.calculateUnitOccupancyReportV2(
             caretakerCount = row.mapColumn("caretaker_count")
         )
     }
-    val placements = getPlacements(caretakerCounts.keys, period)
+
+    val placements = when (type) {
+        OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
+        else -> getPlacements(caretakerCounts.keys, period)
+    }
+
     return calculateDailyOccupancies(caretakerCounts, placements, period, type)
         .map { (key, occupancies) ->
             OccupancyUnitReportResultRow(
