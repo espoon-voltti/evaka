@@ -7,11 +7,11 @@ object Version {
     const val ktlint = "0.40.0"
 
     object GradlePlugin {
-        const val flyway = "7.5.3"
+        const val flyway = "7.8.2"
         const val kotlin = "1.4.30"
-        const val kotlinter = "3.3.0"
+        const val kotlinter = "3.4.4"
         const val owasp = "6.1.6"
-        const val springBoot = "2.4.3"
-        const val versions = "0.36.0"
+        const val springBoot = "2.4.5"
+        const val versions = "0.38.0"
     }
 }
