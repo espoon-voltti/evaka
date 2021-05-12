@@ -50,7 +50,6 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.deleteEmployeeByExternalId
 import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
@@ -488,7 +487,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
 
     @DeleteMapping("/employee/external-id/{externalId}")
     fun deleteEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
-        db.transaction { it.deleteEmployeeByExternalId(externalId) }
+        db.transaction { it.deleteAndCascadeEmployeeByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }
 
@@ -954,9 +953,20 @@ fun Database.Transaction.deleteApplication(id: UUID) {
 }
 
 fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {
+    execute("DELETE FROM message_account WHERE employee_id = ?", id)
     execute("DELETE FROM mobile_device WHERE id = ?", id)
     execute("DELETE FROM employee_pin WHERE user_id = ?", id)
     execute("DELETE FROM employee WHERE id = ?", id)
+}
+
+fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: ExternalId) {
+    val employeeId = createQuery("SELECT id FROM employee WHERE external_id = :externalId")
+        .bind("externalId", externalId)
+        .mapTo<UUID>()
+        .findOne()
+    if (employeeId.isPresent()) {
+        deleteAndCascadeEmployee(employeeId.get())
+    }
 }
 
 fun Database.Transaction.deleteCareArea(id: UUID) {
