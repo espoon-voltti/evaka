@@ -11,14 +11,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <notes><![CDATA[
         Ktlint depends on versions < 1.4.30 with this vulnerability
         ]]></notes>
-        <filePath regex="true">.*/kotlin-(.*)-1\.4\.(10|21|30)\.jar</filePath>
+        <filePath regex="true">.*/kotlin-(.*)-1\.4\.[0-9][0-9]\.jar</filePath>
         <cve>CVE-2020-29582</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
         This vulnerability was already fixed in 1.4.0, but the version is parsed incorrectly.
         ]]></notes>
-        <filePath regex="true">.*/kotlin-(.*)-1\.4\.(10|21|30)\.jar</filePath>
+        <filePath regex="true">.*/kotlin-(.*)-1\.4\.[0-9][0-9]\.jar</filePath>
         <cve>CVE-2020-15824</cve>
     </suppress>
     <suppress>

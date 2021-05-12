@@ -20,7 +20,7 @@ class RedisConfig {
         @Value("\${redis.password}") redisPassword: String,
         @Value("\${redis.ssl}") useSsl: String
     ) = JedisPool(
-        GenericObjectPoolConfig<Any>(),
+        GenericObjectPoolConfig(),
         redisUrl,
         redisPort,
         Protocol.DEFAULT_TIMEOUT,

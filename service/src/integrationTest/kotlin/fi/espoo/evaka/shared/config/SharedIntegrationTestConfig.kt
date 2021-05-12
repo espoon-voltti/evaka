@@ -103,7 +103,7 @@ class SharedIntegrationTestConfig {
                 // Use database 1 to avoid conflicts with normal development setup in database 0
                 val database = 1
                 JedisPool(
-                    GenericObjectPoolConfig<Any>(),
+                    GenericObjectPoolConfig(),
                     "localhost",
                     6379,
                     redis.clients.jedis.Protocol.DEFAULT_TIMEOUT,
