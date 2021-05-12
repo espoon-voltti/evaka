@@ -78,6 +78,7 @@ const StyledSelect = styled.select`
 `
 
 const Icon = styled(FontAwesomeIcon)`
+  pointer-events: none;
   position: absolute;
   right: 8px;
   top: 12px;
