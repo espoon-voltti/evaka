@@ -17,7 +17,7 @@ class VtjCache(
     private val redisPool: JedisPool
 ) {
     private val logger = KotlinLogging.logger { }
-    private val timeToLive = 60 * 60 * 12 // in seconds
+    private val timeToLive = 60 * 60 * 12L // in seconds
 
     fun getPerson(ssn: String): VtjPerson? {
         logger.debug { "Getting data from VTJ cache" }

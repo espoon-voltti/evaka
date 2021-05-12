@@ -51,7 +51,7 @@ dependencies {
         api("org.thymeleaf:thymeleaf:3.0.12.RELEASE")
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
-        api("redis.clients:jedis:3.5.1")
+        api("redis.clients:jedis:3.6.0")
     }
 
     api(platform("com.amazonaws:aws-java-sdk-bom:1.11.1017"))
