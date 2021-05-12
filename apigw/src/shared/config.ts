@@ -190,20 +190,22 @@ const sfiEntryPointUrl =
 const sfiLogoutUrl = process.env.SFI_SAML_LOGOUT_URL ?? sfiEntryPointUrl
 const sfiIssuer = process.env.SFI_SAML_ISSUER ?? 'evaka-local'
 
-export const sfiConfig: EvakaSamlConfig = {
-  callbackUrl: required(sfiCallbackUrl),
-  entryPoint: required(sfiEntryPointUrl),
-  logoutUrl: required(sfiLogoutUrl),
-  issuer: required(sfiIssuer),
-  publicCert: required(
-    envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
-      ifNodeEnv(['local', 'test'], 'config/test-cert/slo-test-idp-cert.pem')
-  ),
-  privateCert: required(
-    process.env.SFI_SAML_PRIVATE_CERT ??
-      ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-  )
-}
+export const sfiConfig: EvakaSamlConfig | undefined = sfiCallbackUrl
+  ? {
+      callbackUrl: required(sfiCallbackUrl),
+      entryPoint: required(sfiEntryPointUrl),
+      logoutUrl: required(sfiLogoutUrl),
+      issuer: required(sfiIssuer),
+      publicCert: required(
+        envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
+          ifNodeEnv(['local', 'test'], 'config/test-cert/slo-test-idp-cert.pem')
+      ),
+      privateCert: required(
+        process.env.SFI_SAML_PRIVATE_CERT ??
+          ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+      )
+    }
+  : undefined
 
 const evakaCallbackUrl =
   process.env.EVAKA_SAML_CALLBACK_URL ??

@@ -31,6 +31,8 @@ const mockUser: AuthenticatedUser = {
 // See also:
 // https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
 // https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
+if (!sfiConfig)
+  throw new Error('sfiConfig must be defined for these tests to run')
 const SAML_SP_DOMAIN = new URL(sfiConfig.callbackUrl).origin
 const IDP_ENTRY_POINT_URL = sfiConfig.entryPoint
 
