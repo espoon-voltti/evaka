@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import MessageEditor from 'employee-frontend/components/messages/MessageEditor'
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -10,7 +11,7 @@ import React, { useEffect, useState } from 'react'
 import { getMessagingAccounts } from './api'
 import MessageList from './MessageList'
 import Sidebar from './Sidebar'
-import { EnrichedMessageAccount } from './types'
+import { EnrichedMessageAccount, Message } from './types'
 
 export default React.memo(function MessagesPage() {
   const [accounts, setResult] = useState<Result<EnrichedMessageAccount[]>>(
@@ -20,6 +21,17 @@ export default React.memo(function MessagesPage() {
   useEffect(() => loadAccounts(), [loadAccounts])
 
   const [selectedAccount, setSelectedAccount] = useState<UUID>()
+  const [showEditor, setShowEditor] = useState<boolean>(false)
+  const [message, setMessage] = useState<Message>({
+    title: '',
+    receivers: '',
+    content: '',
+    id: '',
+    senderId: '',
+    senderName: '',
+    sentAt: new Date(),
+    readAt: new Date()
+  })
 
   return (
     <Container>
@@ -27,9 +39,18 @@ export default React.memo(function MessagesPage() {
         accounts={accounts}
         selectedAccount={selectedAccount}
         setSelectedAccount={setSelectedAccount}
+        showEditor={() => setShowEditor(true)}
       />
       {selectedAccount && (
         <MessageList view="RECEIVED" accountId={selectedAccount} />
+      )}
+      {showEditor && (
+        <MessageEditor
+          message={message}
+          onChange={(message: Message) => setMessage(message)}
+          onClose={() => setShowEditor(false)}
+          onSend={() => {}}
+        />
       )}
     </Container>
   )

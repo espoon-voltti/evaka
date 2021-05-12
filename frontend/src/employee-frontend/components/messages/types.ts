@@ -6,19 +6,6 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
 
-export type Bulletin = {
-  id: UUID
-  sender: string
-  title: string
-  content: string
-  createdByEmployee: UUID
-  createdByEmployeeName: string
-  receiverUnits: { unitId: UUID; unitName: string }[]
-  receiverGroups: { unitId: UUID; groupId: UUID; groupName: string }[]
-  receiverChildren: { childId: UUID; firstName: string; lastName: string }[]
-  sentAt: Date | null
-}
-
 export type Recipient = {
   personId: string
   firstName: string
@@ -28,28 +15,10 @@ export type Recipient = {
   blocklisted: boolean
 }
 
-export function deserializeBulletin(json: JsonOf<Bulletin>): Bulletin {
-  return {
-    ...json,
-    sentAt: json.sentAt ? new Date(json.sentAt) : null
-  }
-}
-
 export type IdAndName = {
   id: UUID
   name: string
 }
-
-export type SentBulletin = Bulletin & {
-  sentAt: Date
-}
-
-export const deserializeSentBulletin = (
-  json: JsonOf<SentBulletin>
-): SentBulletin => ({
-  ...json,
-  sentAt: new Date(json.sentAt)
-})
 
 export interface ReceiverChild {
   childId: UUID
@@ -90,13 +59,15 @@ export interface EnrichedMessageAccount {
   personal: boolean
 }
 
-interface Message {
+export interface Message {
   id: UUID
   senderId: UUID
   senderName: string
   sentAt: Date
   readAt: Date | null
+  title: string
   content: string
+  receivers: string
 }
 
 export type MessageType = 'MESSAGE' | 'BULLETIN'

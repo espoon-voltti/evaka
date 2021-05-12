@@ -10,16 +10,19 @@ import { useTranslation } from '../../state/i18n'
 import { Result } from 'lib-common/api'
 import { EnrichedMessageAccount } from 'employee-frontend/components/messages/types'
 import { UUID } from 'employee-frontend/types'
+import Button from 'lib-components/atoms/buttons/Button'
 
 type Props = {
   accounts: Result<EnrichedMessageAccount[]>
   selectedAccount: UUID | undefined
   setSelectedAccount: (id: UUID) => void
+  showEditor: () => void
 }
 
 export default React.memo(function Sidebar({
   accounts,
-  setSelectedAccount
+  setSelectedAccount,
+  showEditor
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -40,6 +43,10 @@ export default React.memo(function Sidebar({
             ))}
           </ul>
         )}
+        <Button
+          text={i18n.messages.messageBoxes.newBulletin}
+          onClick={showEditor}
+        />
       </Container>
     </>
   )
