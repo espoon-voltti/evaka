@@ -57,7 +57,7 @@ dependencies {
     api(platform("com.amazonaws:aws-java-sdk-bom:1.11.1017"))
     api(platform("com.fasterxml.jackson:jackson-bom:2.12.3"))
     api(platform("org.jdbi:jdbi3-bom:3.20.0"))
-    api(platform("org.jetbrains.kotlin:kotlin-bom:1.4.30"))
+    api(platform("org.jetbrains.kotlin:kotlin-bom:1.4.32"))
     api(platform("org.junit:junit-bom:5.7.1"))
     api(platform("org.springframework.boot:spring-boot-dependencies:2.4.5"))
     api(platform("org.testcontainers:testcontainers-bom:1.15.3"))
