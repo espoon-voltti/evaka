@@ -15,19 +15,17 @@ type Props = {
 }
 
 export default React.memo(function VoucherValueDecisionValueSection({
-  decision: { childAge, ageCoefficient, placement, serviceCoefficient, value }
+  decision: { childAge, ageCoefficient, placement, serviceNeed, voucherValue }
 }: Props) {
   const { i18n } = useTranslation()
 
   const mainDescription = `${
     i18n.valueDecision.summary.age[childAge < 3 ? 'LESS_THAN_3' : 'OVER_3']
-  } (${ageCoefficient} %), ${i18n.placement.type[
+  } (${ageCoefficient * 100} %), ${i18n.placement.type[
     placement.type
-  ].toLowerCase()}${
-    placement.hours
-      ? `, ${placement.hours} ${i18n.valueDecision.summary.hoursPerWeek}`
-      : ''
-  } (${serviceCoefficient} %)`
+  ].toLowerCase()} ${serviceNeed.voucherValueDescriptionFi} (${
+    serviceNeed.voucherValueCoefficient * 100
+  } %)`
 
   return (
     <section>
@@ -35,7 +33,7 @@ export default React.memo(function VoucherValueDecisionValueSection({
       <Gap size="s" />
       <PartRow>
         <span>{mainDescription}</span>
-        <b>{`${formatCents(value) ?? ''} €`}</b>
+        <b>{`${formatCents(voucherValue) ?? ''} €`}</b>
       </PartRow>
     </section>
   )

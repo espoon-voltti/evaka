@@ -18,10 +18,11 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -31,6 +32,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChildWithNamelessGuardian
@@ -130,7 +132,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             db,
             listOf(testChild_1),
             testPeriod,
-            placementType = PlacementType.FIVE_YEARS_OLD_DAYCARE
+            placementType = fi.espoo.evaka.invoicing.domain.PlacementType.FIVE_YEARS_OLD_DAYCARE
         ).send()
 
         updateAll()
@@ -547,7 +549,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(voucherValueDecisions.first().coPayment / 100.0, it.asiakasmaksu)
-            assertEquals(voucherValueDecisions.first().value / 100.0, it.palveluseteli_arvo)
+            assertEquals(voucherValueDecisions.first().voucherValue / 100.0, it.palveluseteli_arvo)
             assertEquals(voucherValueDecisions.first().familySize, it.perheen_koko)
             assertEquals(testPeriod.start, it.alkamis_pvm)
             assertEquals(testPeriod.end, it.paattymis_pvm)
@@ -701,7 +703,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         db: Database.Connection,
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
-        placementType: PlacementType = PlacementType.DAYCARE,
+        placementType: fi.espoo.evaka.invoicing.domain.PlacementType = fi.espoo.evaka.invoicing.domain.PlacementType.DAYCARE,
         daycareId: UUID = testVoucherDaycare.id,
         guardian: UUID = testAdult_1.id
     ): FeeDecision = db.transaction {
@@ -741,11 +743,19 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 dateOfBirth = testChild_1.dateOfBirth,
                 unitId = unitId,
                 placementType = placementType,
+                serviceNeed = VoucherValueDecisionServiceNeed(
+                    snDaycareFullDay35.feeCoefficient,
+                    snDaycareFullDay35.voucherValueCoefficient,
+                    snDaycareFullDay35.feeDescriptionFi,
+                    snDaycareFullDay35.feeDescriptionSv,
+                    snDaycareFullDay35.voucherValueDescriptionFi,
+                    snDaycareFullDay35.voucherValueDescriptionSv
+                ),
                 familySize = children.size + 1
             )
         }
 
-        it.upsertValueDecisions(objectMapper, voucherValueDecisions)
+        it.upsertValueDecisions(voucherValueDecisions)
         voucherValueDecisions
     }
 
@@ -766,6 +776,6 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             .response()
         assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
-        return db.read { it.getValueDecisionsByIds(objectMapper, listOf(this.id)) }.first()
+        return db.read { it.getValueDecisionsByIds(listOf(this.id)) }.first()
     }
 }

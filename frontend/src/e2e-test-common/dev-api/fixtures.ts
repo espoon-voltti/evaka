@@ -666,18 +666,25 @@ export const voucherValueDecisionsFixture = (
   },
   child: { id: childId, dateOfBirth: '2017-06-30' },
   placement: {
-    unit: daycareId,
-    type: 'DAYCARE',
-    serviceNeed: 'GTE_35'
+    unit: { id: daycareId },
+    type: 'DAYCARE'
+  },
+  serviceNeed: {
+    feeCoefficient: 1.0,
+    voucherValueCoefficient: 1.0,
+    feeDescriptionFi: '',
+    feeDescriptionSv: '',
+    voucherValueDescriptionFi: '',
+    voucherValueDescriptionSv: ''
   },
   baseCoPayment: 28900,
   coPayment: 28900,
   siblingDiscount: 0.0,
   feeAlterations: [],
+  finalCoPayment: 28900,
   baseValue: 87000,
-  ageCoefficient: 100,
-  serviceCoefficient: 100,
-  value: 87000
+  ageCoefficient: 1.0,
+  voucherValue: 87000
 })
 
 export const invoiceFixture = (

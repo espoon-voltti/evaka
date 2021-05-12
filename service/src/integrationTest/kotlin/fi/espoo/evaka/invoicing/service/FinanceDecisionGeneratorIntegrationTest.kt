@@ -11,7 +11,6 @@ import fi.espoo.evaka.invoicing.createFeeDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.toFeeDecision
-import fi.espoo.evaka.invoicing.data.toVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -32,10 +31,7 @@ import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -57,6 +53,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -1779,12 +1776,12 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(period.start, decision.validFrom)
             assertEquals(period.end, decision.validTo)
             assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(testVoucherDaycare.id, decision.placement.unit)
+            assertEquals(testVoucherDaycare.id, decision.placement.unit.id)
             assertEquals(5800, decision.coPayment)
             assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(100, decision.serviceCoefficient)
-            assertEquals(87000, decision.value)
+            assertEquals(BigDecimal("1.00"), decision.ageCoefficient)
+            assertEquals(BigDecimal("1.00"), decision.serviceNeed.voucherValueCoefficient)
+            assertEquals(87000, decision.voucherValue)
         }
     }
 
@@ -1815,241 +1812,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(testDaycare.id, part.placement.unit)
                 assertEquals(28900, part.fee)
             }
-        }
-    }
-
-    @Test
-    fun `voucher value decisions get correct age coefficients`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(2, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(testChild_1.dateOfBirth.plusYears(3).minusDays(1), decision.validTo)
-            assertEquals(testChild_1.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(155, decision.ageCoefficient)
-            assertEquals(100, decision.serviceCoefficient)
-            assertEquals(134850, decision.value)
-        }
-        voucherValueDecisions.last().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(testChild_1.dateOfBirth.plusYears(3), decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_1.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(100, decision.serviceCoefficient)
-            assertEquals(87000, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with part time service need`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
-        val serviceNeedPeriod = period.copy(start = period.start.plusMonths(5))
-        insertServiceNeed(testChild_2.id, listOf(serviceNeedPeriod to 25.0))
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(2, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(serviceNeedPeriod.start.minusDays(1), decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(100, decision.serviceCoefficient)
-            assertEquals(87000, decision.value)
-        }
-        voucherValueDecisions.last().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(serviceNeedPeriod.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(60, decision.serviceCoefficient)
-            assertEquals(52200, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with five year olds daycare placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id)
-        insertServiceNeed(testChild_2.id, listOf(period to 40.0))
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(100, decision.serviceCoefficient)
-            assertEquals(87000, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with part day five year olds daycare placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, testVoucherDaycare.id)
-        insertServiceNeed(testChild_2.id, listOf(period to 25.0))
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(60, decision.serviceCoefficient)
-            assertEquals(52200, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with preschool placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, PRESCHOOL, testVoucherDaycare.id)
-        insertServiceNeed(testChild_2.id, listOf(period to 40.0))
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(50, decision.serviceCoefficient)
-            assertEquals(43500, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with preparatory placement`() {
-        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, PREPARATORY, testVoucherDaycare.id)
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(50, decision.serviceCoefficient)
-            assertEquals(43500, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with five year old in daycare without set hours per week`() {
-        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(100, decision.serviceCoefficient)
-            assertEquals(87000, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions with five year old in daycare with part time hours per week`() {
-        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
-        insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
-        insertServiceNeed(testChild_2.id, listOf(period to 25.0))
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions()
-        assertEquals(1, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.baseValue)
-            assertEquals(100, decision.ageCoefficient)
-            assertEquals(60, decision.serviceCoefficient)
-            assertEquals(52200, decision.value)
-        }
-    }
-
-    @Test
-    fun `voucher value decisions for a family of two children placed in voucher units`() {
-        val period = DateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2021, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
-        insertPlacement(testChild_1.id, period, DAYCARE, testVoucherDaycare.id)
-        insertPlacement(testChild_2.id, period.copy(start = period.start.plusMonths(1)), DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id)
-
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
-
-        val voucherValueDecisions = getAllVoucherValueDecisions().sortedBy { it.validFrom }
-        assertEquals(2, voucherValueDecisions.size)
-        voucherValueDecisions.first().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start, decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_1.id, decision.child.id)
-            assertEquals(87000, decision.value)
-            assertEquals(28900, decision.coPayment)
-        }
-        voucherValueDecisions.last().let { decision ->
-            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
-            assertEquals(period.start.plusMonths(1), decision.validFrom)
-            assertEquals(period.end, decision.validTo)
-            assertEquals(testChild_2.id, decision.child.id)
-            assertEquals(87000, decision.value)
-            assertEquals(28900, decision.baseCoPayment)
-            // testChild_2 is older than testChild_1
-            assertEquals(50, decision.siblingDiscount)
-            assertEquals(PlacementType.FIVE_YEARS_OLD_DAYCARE, decision.placement.type)
-            assertEquals(11600, decision.coPayment)
         }
     }
 
@@ -2150,7 +1912,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
         return db.read { tx ->
             tx.createQuery("SELECT * FROM voucher_value_decision")
-                .map(toVoucherValueDecision(objectMapper))
+                .mapTo<VoucherValueDecision>()
                 .toList()
         }
     }

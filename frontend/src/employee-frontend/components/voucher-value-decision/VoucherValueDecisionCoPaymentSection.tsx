@@ -17,7 +17,7 @@ type Props = {
 export default React.memo(function VoucherValueDecisionCoPaymentSection({
   decision: {
     placement,
-    serviceNeedMultiplier,
+    serviceNeed,
     siblingDiscount,
     coPayment,
     feeAlterations,
@@ -26,11 +26,9 @@ export default React.memo(function VoucherValueDecisionCoPaymentSection({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const mainDescription = `${
-    i18n.placement.type[placement.type]
-  }, ${i18n.placement.serviceNeed[
-    placement.serviceNeed
-  ].toLowerCase()} (${serviceNeedMultiplier} %)${
+  const mainDescription = `${i18n.placement.type[placement.type]}, ${
+    serviceNeed.feeDescriptionFi
+  } (${serviceNeed.feeCoefficient * 100} %)${
     siblingDiscount
       ? `, ${i18n.valueDecision.summary.siblingDiscount} ${siblingDiscount}%`
       : ''

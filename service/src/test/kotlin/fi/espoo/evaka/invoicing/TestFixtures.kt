@@ -23,7 +23,6 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.PermanentPlacement
-import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.Pricing
@@ -31,6 +30,8 @@ import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.service.DaycareCodes
 import fi.espoo.evaka.pis.service.Parentship
@@ -347,12 +348,10 @@ fun createVoucherValueDecisionFixture(
     dateOfBirth: LocalDate,
     unitId: UUID,
     familySize: Int = 2,
-    placementType: PlacementType = PlacementType.DAYCARE,
-    serviceNeed: ServiceNeed = ServiceNeed.MISSING,
-    hoursPerWeek: Double? = null,
+    placementType: fi.espoo.evaka.placement.PlacementType,
+    serviceNeed: VoucherValueDecisionServiceNeed,
     baseValue: Int = 87000,
-    ageCoefficient: Int = 100,
-    serviceCoefficient: Int = 100,
+    ageCoefficient: BigDecimal = BigDecimal("1.00"),
     value: Int = 87000,
     baseCoPayment: Int = 28900,
     siblingDiscount: Int = 0,
@@ -370,15 +369,16 @@ fun createVoucherValueDecisionFixture(
     familySize = familySize,
     pricing = testPricing,
     child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
-    placement = PermanentPlacementWithHours(unitId, placementType, serviceNeed, hoursPerWeek),
+    placement = VoucherValueDecisionPlacement(UnitData.JustId(unitId), placementType),
+    serviceNeed = serviceNeed,
     baseValue = baseValue,
     ageCoefficient = ageCoefficient,
-    serviceCoefficient = serviceCoefficient,
-    value = value,
+    voucherValue = value,
     baseCoPayment = baseCoPayment,
     siblingDiscount = siblingDiscount,
     coPayment = coPayment,
-    feeAlterations = feeAlterations
+    feeAlterations = feeAlterations,
+    finalCoPayment = coPayment + feeAlterations.sumBy { it.effect }
 )
 
 fun createInvoiceRowFixture(childId: UUID) = InvoiceRow(

@@ -2127,9 +2127,7 @@ export const fi = {
       serviceVoucherValue: 'Ps korkein arvo',
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
-      coefficient: 'Kerroin',
       serviceNeed: 'Palveluntarve',
-      serviceNeedType: 'h / vk',
       partTime: 'Osa/Koko'
     },
     placementSketching: {

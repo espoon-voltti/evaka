@@ -4,13 +4,11 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY
-import fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY_WITH_DAYCARE
-import fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL
-import fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL_WITH_DAYCARE
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.DateRange
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -22,29 +20,40 @@ data class VoucherValueDecision(
     override val id: UUID,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
+    @Nested("head_of_family")
     override val headOfFamily: PersonData.JustId,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
+    @Nested("partner")
     val partner: PersonData.JustId?,
+    @Json
     val headOfFamilyIncome: DecisionIncome?,
+    @Json
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
+    @Json
     val pricing: Pricing,
+    @Nested("child")
     val child: PersonData.WithDateOfBirth,
-    val placement: PermanentPlacementWithHours,
+    @Nested("placement")
+    val placement: VoucherValueDecisionPlacement,
+    @Nested("service_need")
+    val serviceNeed: VoucherValueDecisionServiceNeed,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
+    @Json
     val feeAlterations: List<FeeAlterationWithEffect>,
+    val finalCoPayment: Int,
     val baseValue: Int,
-    val ageCoefficient: Int,
-    val serviceCoefficient: Int,
-    val value: Int,
+    val ageCoefficient: BigDecimal,
+    val voucherValue: Int,
     val documentKey: String? = null,
-    val createdAt: Instant = Instant.now(),
+    @Nested("approved_by")
     val approvedBy: PersonData.JustId? = null,
     val approvedAt: Instant? = null,
-    val sentAt: Instant? = null
+    val sentAt: Instant? = null,
+    val created: Instant = Instant.now()
 ) : FinanceDecision<VoucherValueDecision> {
     override fun withRandomId() = this.copy(id = UUID.randomUUID())
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
@@ -56,14 +65,16 @@ data class VoucherValueDecision(
             this.familySize == decision.familySize &&
             this.child == decision.child &&
             this.placement == decision.placement &&
+            this.serviceNeed.feeCoefficient == decision.serviceNeed.feeCoefficient &&
+            this.serviceNeed.voucherValueCoefficient == decision.serviceNeed.voucherValueCoefficient &&
             this.baseCoPayment == decision.baseCoPayment &&
             this.siblingDiscount == decision.siblingDiscount &&
             this.coPayment == decision.coPayment &&
             this.feeAlterations == decision.feeAlterations &&
+            this.finalCoPayment == decision.finalCoPayment &&
             this.baseValue == decision.baseValue &&
             this.ageCoefficient == decision.ageCoefficient &&
-            this.serviceCoefficient == decision.serviceCoefficient &&
-            this.value == decision.value
+            this.voucherValue == decision.voucherValue
     }
 
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
@@ -86,36 +97,45 @@ enum class VoucherValueDecisionStatus {
     }
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class VoucherValueDecisionDetailed(
     val id: UUID,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
+    @Nested("head")
     val headOfFamily: PersonData.Detailed,
+    @Nested("partner")
     val partner: PersonData.Detailed?,
+    @Json
     val headOfFamilyIncome: DecisionIncome?,
+    @Json
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
+    @Json
     val pricing: Pricing,
+    @Nested("child")
     val child: PersonData.Detailed,
-    val placement: PermanentPlacementWithHours,
-    val placementUnit: UnitData.Detailed,
+    @Nested("placement")
+    val placement: VoucherValueDecisionPlacementDetailed,
+    @Nested("service_need")
+    val serviceNeed: VoucherValueDecisionServiceNeed,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
+    @Json
     val feeAlterations: List<FeeAlterationWithEffect>,
+    val finalCoPayment: Int,
     val baseValue: Int,
     val childAge: Int,
-    val ageCoefficient: Int,
-    val serviceCoefficient: Int,
-    val value: Int,
+    val ageCoefficient: BigDecimal,
+    val voucherValue: Int,
     val documentKey: String? = null,
+    @Nested("approved_by")
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
-    val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
+    val created: Instant = Instant.now(),
     val financeDecisionHandlerName: String?
 ) {
     @JsonProperty("incomeEffect")
@@ -150,15 +170,8 @@ data class VoucherValueDecisionDetailed(
 
     @JsonProperty("feePercent")
     fun feePercent(): BigDecimal = pricing.multiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
-
-    @JsonProperty("finalCoPayment")
-    fun finalCoPayment(): Int = coPayment + feeAlterations.sumBy { it.effect }
-
-    @JsonProperty("serviceNeedMultiplier")
-    fun serviceNeedMultiplier(): Int = getServiceNeedPercentage(placement.withoutHours())
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class VoucherValueDecisionSummary(
     val id: UUID,
     val validFrom: LocalDate,
@@ -168,13 +181,34 @@ data class VoucherValueDecisionSummary(
     val headOfFamily: PersonData.Basic,
     val child: PersonData.Basic,
     val finalCoPayment: Int,
-    val value: Int,
+    val voucherValue: Int,
     val approvedAt: Instant? = null,
-    val createdAt: Instant = Instant.now(),
-    val sentAt: Instant? = null
+    val sentAt: Instant? = null,
+    val created: Instant = Instant.now(),
 )
 
-fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): Int {
+data class VoucherValueDecisionPlacement(
+    @Nested("unit")
+    val unit: UnitData.JustId,
+    val type: PlacementType
+)
+
+data class VoucherValueDecisionPlacementDetailed(
+    @Nested("unit")
+    val unit: UnitData.Detailed,
+    val type: PlacementType
+)
+
+data class VoucherValueDecisionServiceNeed(
+    val feeCoefficient: BigDecimal,
+    val voucherValueCoefficient: BigDecimal,
+    val feeDescriptionFi: String,
+    val feeDescriptionSv: String,
+    val voucherValueDescriptionFi: String,
+    val voucherValueDescriptionSv: String
+)
+
+fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
     val thirdBirthday = dateOfBirth.plusYears(3)
     val birthdayInMiddleOfPeriod = period.includes(thirdBirthday) && thirdBirthday != period.start && thirdBirthday != period.end
 
@@ -183,19 +217,11 @@ fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): Int {
     }
 
     return when {
-        period.start < thirdBirthday -> 155
-        else -> 100
+        period.start < thirdBirthday -> BigDecimal("1.55")
+        else -> BigDecimal("1.00")
     }
 }
 
-fun getServiceCoefficient(placement: PermanentPlacementWithHours): Int = when {
-    listOf(PRESCHOOL, PRESCHOOL_WITH_DAYCARE, PREPARATORY, PREPARATORY_WITH_DAYCARE).contains(placement.type) -> 50
-    placement.hours != null && placement.hours <= 25.0 -> 60
-    else -> 100
-}
-
-fun calculateVoucherValue(baseValue: Int, ageCoefficient: Int, serviceCoefficient: Int): Int {
-    val ageMultiplier = BigDecimal(ageCoefficient).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
-    val serviceMultiplier = BigDecimal(serviceCoefficient).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
-    return (BigDecimal(baseValue) * ageMultiplier * serviceMultiplier).toInt()
+fun calculateVoucherValue(baseValue: Int, ageCoefficient: BigDecimal, serviceCoefficient: BigDecimal): Int {
+    return (BigDecimal(baseValue) * ageCoefficient * serviceCoefficient).toInt()
 }

@@ -169,8 +169,7 @@ data class ServiceVoucherValueRow(
     val serviceVoucherDecisionId: UUID,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
-    val serviceVoucherServiceCoefficient: Int,
-    val serviceVoucherHoursPerWeek: Int,
+    val serviceNeedDescription: String,
     val realizedAmount: Int,
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
@@ -210,7 +209,7 @@ WITH min_voucher_decision_date AS (
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[]) AND lower(p.period) = :reportDate
 ), correction_targets AS (
-    SELECT DISTINCT decision.child, p.year, p.month, p.period
+    SELECT DISTINCT decision.child_id, p.year, p.month, p.period
     FROM month_periods p
     JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && p.period
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
@@ -219,7 +218,7 @@ WITH min_voucher_decision_date AS (
 ), corrections AS (
     SELECT ct.*, decision.id AS decision_id, daterange(decision.valid_from, decision.valid_to, '[]') * ct.period AS realized_period
     FROM correction_targets ct
-    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && ct.period AND decision.child = ct.child
+    JOIN voucher_value_decision decision ON daterange(decision.valid_from, decision.valid_to, '[]') && ct.period AND decision.child_id = ct.child_id
     WHERE decision.status = ANY(:effective::voucher_value_decision_status[])
 ), refunds AS (
     SELECT
@@ -227,12 +226,12 @@ WITH min_voucher_decision_date AS (
         decision.id AS decision_id,
         sn_decision.realized_amount,
         sn_decision.realized_period,
-        rank() OVER (PARTITION BY decision.child ORDER BY sn.year desc, sn.month desc) AS rank
+        rank() OVER (PARTITION BY decision.child_id ORDER BY sn.year desc, sn.month desc) AS rank
     FROM correction_targets ct
     JOIN voucher_value_report_decision sn_decision ON extract(year from lower(sn_decision.realized_period)) = ct.year
         AND extract(month from lower(sn_decision.realized_period)) = ct.month
     JOIN voucher_value_report_snapshot sn ON sn_decision.voucher_value_report_snapshot_id = sn.id
-    JOIN voucher_value_decision decision ON sn_decision.decision_id = decision.id AND decision.child = ct.child
+    JOIN voucher_value_decision decision ON sn_decision.decision_id = decision.id AND decision.child_id = ct.child_id
     WHERE sn_decision.type != 'REFUND'
 ), report_rows AS (
     SELECT
@@ -283,11 +282,10 @@ SELECT
     decision.id AS service_voucher_decision_id,
     decision.voucher_value AS service_voucher_value,
     decision.co_payment AS service_voucher_co_payment,
-    decision.service_coefficient AS service_voucher_service_coefficient,
-    decision.hours_per_week AS service_voucher_hours_per_week,
+    decision.service_need_voucher_value_description_fi AS service_need_description,
     coalesce(
         row.realized_amount,
-        round((decision.voucher_value - decision.co_payment) * (row.number_of_days::numeric(10, 8) / (upper(row.period) - lower(row.period))))
+        round((decision.voucher_value - decision.final_co_payment) * (row.number_of_days::numeric(10, 8) / (upper(row.period) - lower(row.period))))
     ) AS realized_amount,
     row.realized_period,
     row.number_of_days,
@@ -298,8 +296,8 @@ SELECT
     ) AS is_new
 FROM report_rows row
 JOIN voucher_value_decision decision ON row.decision_id = decision.id
-JOIN person child ON decision.child = child.id
-JOIN daycare unit ON decision.placement_unit = unit.id
+JOIN person child ON decision.child_id = child.id
+JOIN daycare unit ON decision.placement_unit_id = unit.id
 JOIN care_area area ON unit.care_area_id = area.id
 LEFT JOIN LATERAL (
     SELECT STRING_AGG(dg.name, ', ') AS name
@@ -307,7 +305,7 @@ LEFT JOIN LATERAL (
     JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
     JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') && row.realized_period
-      AND p.unit_id = decision.placement_unit
+      AND p.unit_id = decision.placement_unit_id
       AND p.child_id = child.id
     GROUP BY p.child_id
 ) child_group ON true
@@ -355,8 +353,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             decision.id AS service_voucher_decision_id,
             decision.voucher_value AS service_voucher_value,
             decision.co_payment AS service_voucher_co_payment,
-            decision.service_coefficient AS service_voucher_service_coefficient,
-            decision.hours_per_week service_voucher_hours_per_week,
+            decision.service_need_voucher_value_description_fi AS service_need_description,
             sn_decision.realized_amount,
             sn_decision.realized_period,
             upper(sn_decision.realized_period) - lower(sn_decision.realized_period) AS number_of_days,
@@ -370,8 +367,8 @@ private fun Database.Read.getSnapshotVoucherValues(
         FROM voucher_value_report_snapshot sn
         JOIN voucher_value_report_decision sn_decision ON sn.id = sn_decision.voucher_value_report_snapshot_id
         JOIN voucher_value_decision decision ON decision.id = sn_decision.decision_id
-        JOIN person child ON decision.child = child.id
-        JOIN daycare unit ON decision.placement_unit = unit.id
+        JOIN person child ON decision.child_id = child.id
+        JOIN daycare unit ON decision.placement_unit_id = unit.id
         JOIN care_area area ON unit.care_area_id = area.id
         LEFT JOIN LATERAL (
             SELECT STRING_AGG(dg.name, ', ') AS name
@@ -379,7 +376,7 @@ private fun Database.Read.getSnapshotVoucherValues(
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
             WHERE daterange(dgp.start_date, dgp.end_date, '[]') && sn_decision.realized_period
-                AND p.unit_id = decision.placement_unit
+                AND p.unit_id = decision.placement_unit_id
                 AND p.child_id = child.id
             GROUP BY p.child_id
         ) child_group ON true

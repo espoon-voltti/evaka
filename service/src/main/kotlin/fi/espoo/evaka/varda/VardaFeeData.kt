@@ -6,10 +6,10 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
-import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -182,7 +182,7 @@ JOIN LATERAL (
         UNION ALL
         SELECT approved_at
         FROM voucher_value_decision d
-        WHERE d.child = varda_child.person_id AND d.status = ANY(:effectiveVoucherValueDecision::voucher_value_decision_status[])
+        WHERE d.child_id = varda_child.person_id AND d.status = ANY(:effectiveVoucherValueDecision::voucher_value_decision_status[])
     ) decisions
 ) latest_finance_decision ON true
 JOIN LATERAL (
@@ -239,7 +239,7 @@ SELECT
     (p.fee + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
     0.0 AS voucher_value,
     d.family_size AS family_size,
-    p.placement_type AS placement_type
+    p.placement_type = ANY(:feeDecisionFiveYearOldTypes) AS is_five_year_old_daycare
 FROM varda_child vc
 JOIN fee_decision_part p ON vc.person_id = p.child
 JOIN fee_decision d ON p.fee_decision_id = d.id
@@ -267,23 +267,14 @@ SELECT
     vfd.varda_id AS varda_id,
     GREATEST(d.valid_from, :decisionStartDate) AS start_date,
     LEAST(d.valid_to, :decisionEndDate) AS end_date,
-    (d.co_payment + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
+    d.final_co_payment / 100.0 AS fee,
     d.voucher_value / 100.0 AS voucher_value,
     d.family_size AS family_size,
-    d.placement_type AS placement_type
+    d.placement_type = ANY(:valueDecisionFiveYearOldTypes::placement_type[]) AS is_five_year_old_daycare
 FROM varda_child vc
-JOIN voucher_value_decision d ON vc.person_id = d.child
+JOIN voucher_value_decision d ON vc.person_id = d.child_id
     AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
     AND d.status = ANY(:effective::voucher_value_decision_status[])
-LEFT JOIN (
-    SELECT voucher_value_decision.id, SUM(effects.effect) sum
-    FROM voucher_value_decision
-    JOIN (
-        SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
-        FROM voucher_value_decision
-    ) effects ON voucher_value_decision.id = effects.id
-    GROUP BY voucher_value_decision.id
-) alterations ON d.id = alterations.id
 JOIN varda_decision vd ON vd.varda_decision_id = :decisionId
 LEFT JOIN varda_fee_data vfd ON d.id = vfd.evaka_voucher_value_decision_id AND vd.id = vfd.varda_decision_id AND vc.id = vfd.varda_child_id
 WHERE vc.varda_child_id = :childVardaId
@@ -295,6 +286,8 @@ WHERE vc.varda_child_id = :childVardaId
         .bind("decisionEndDate", decisionPeriod.paattymis_pvm)
         .bind("decisionPeriod", FiniteDateRange(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
         .bind("effective", FeeDecisionStatus.effective)
+        .bind("feeDecisionFiveYearOldTypes", arrayOf(fi.espoo.evaka.invoicing.domain.PlacementType.FIVE_YEARS_OLD_DAYCARE))
+        .bind("valueDecisionFiveYearOldTypes", arrayOf(PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS))
         .mapTo<VardaFeeDataBase>()
         .toList()
 }
@@ -324,7 +317,7 @@ private fun baseToFeeData(
         huoltajat = vardaGuardians,
         lapsi = childUrl,
         maksun_peruste_koodi =
-        if (feeDataBase.placementType == PlacementType.FIVE_YEARS_OLD_DAYCARE)
+        if (feeDataBase.isFiveYearOldDaycare)
             FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
         else
             FeeBasisCode.DAYCARE.code,
@@ -358,7 +351,7 @@ data class VardaFeeDataBase(
     val fee: Double,
     val voucherValue: Double,
     val familySize: Int,
-    val placementType: PlacementType
+    val isFiveYearOldDaycare: Boolean
 )
 
 data class VardaFeeData(

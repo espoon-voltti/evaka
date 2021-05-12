@@ -111,10 +111,10 @@ export default React.memo(function VoucherValueDecisions({
             <Td>{`${item.validFrom.format()} - ${
               item.validTo?.format() ?? ''
             }`}</Td>
-            <Td>{formatCents(item.value)}</Td>
+            <Td>{formatCents(item.voucherValue)}</Td>
             <Td>{formatCents(item.finalCoPayment)}</Td>
             <Td>{item.decisionNumber}</Td>
-            <Td>{formatDate(item.createdAt)}</Td>
+            <Td>{formatDate(item.created)}</Td>
             <Td>{formatDate(item.sentAt)}</Td>
             <Td>{i18n.valueDecision.status[item.status]}</Td>
             {showCheckboxes ? (

@@ -34,14 +34,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <tbody>
         <tr>
             <td th:text="#{decision.serviceNeed}"></td>
-
-            <td class="text-right" th:switch="${placement.serviceNeed.name}">
-                <span th:case="'GTE_35'" th:text="#{text.serviceNeed.GTE_35}"></span>
-                <span th:case="'GTE_25'" th:text="#{text.serviceNeed.GTE_25}"></span>
-                <span th:case="'GT_25_LT_35'" th:text="#{text.serviceNeed.GT_25_LT_35}"></span>
-                <span th:case="'GT_15_LT_25'" th:text="#{text.serviceNeed.GT_15_LT_25}"></span>
-                <span th:case="'LTE_25'" th:text="#{text.serviceNeed.LTE_25}"></span>
-                <span th:case="'LTE_15'" th:text="#{text.serviceNeed.LTE_15}"></span>
+            <td class="text-right">
+                <span th:switch="${placementType.name}">
+                    <span th:case="'PRESCHOOL'" th:text="#{text.placementType.preschool}"></span>
+                    <span th:case="'PRESCHOOL_DAYCARE'" th:text="#{text.placementType.preschool}"></span>
+                    <span th:case="'PREPARATORY'" th:text="#{text.placementType.preparatory}"></span>
+                    <span th:case="'PREPARATORY_DAYCARE'" th:text="#{text.placementType.preparatory}"></span>
+                    <span th:case="*" th:text="#{text.placementType.daycare}"></span>
+                </span>
+                <span th:text="${voucherValueDescription}"></span>
             </td>
         </tr>
         <tr>

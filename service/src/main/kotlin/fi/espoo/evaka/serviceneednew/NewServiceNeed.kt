@@ -50,7 +50,11 @@ data class ServiceNeedOption(
     val occupancyCoefficient: BigDecimal,
     val daycareHoursPerWeek: Int,
     val partDay: Boolean,
-    val partWeek: Boolean
+    val partWeek: Boolean,
+    val feeDescriptionFi: String,
+    val feeDescriptionSv: String,
+    val voucherValueDescriptionFi: String,
+    val voucherValueDescriptionSv: String
 )
 
 fun validateServiceNeed(

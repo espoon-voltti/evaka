@@ -29,9 +29,6 @@ import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Base64
 import java.util.UUID
 
 @Component
@@ -66,7 +63,7 @@ class VoucherValueDecisionService(
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
         }
         checkNotNull(decision.documentKey) {
-            "Cannot send fee decision ${decision.id} - missing document key"
+            "Cannot send voucher value decision ${decision.id} - missing document key"
         }
 
         if (decision.requiresManualSending()) {
@@ -111,7 +108,7 @@ LEFT JOIN LATERAL (
     SELECT range_merge(daterange(placement.start_date, placement.end_date, '[]')) combined_range
     FROM placement
     JOIN daycare ON daycare.id = placement.unit_id
-    WHERE placement.child_id = decision.child
+    WHERE placement.child_id = decision.child_id
     AND daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER'::unit_provider_type
     AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(placement.start_date, placement.end_date, '[]')
 ) placements ON true
@@ -124,7 +121,7 @@ AND placements.combined_range << daterange(:now, null)
         tx.lockValueDecisions(decisionIds)
 
         tx
-            .getValueDecisionsByIds(objectMapper, decisionIds)
+            .getValueDecisionsByIds(decisionIds)
             .forEach { decision ->
                 val mergedPlacementPeriods = tx
                     .createQuery(
@@ -136,7 +133,7 @@ ORDER BY start_date ASC
 """
                     )
                     .bind("childId", decision.child.id)
-                    .bind("unitId", decision.placement.unit)
+                    .bind("unitId", decision.placement.unit.id)
                     .bind("dateRange", DateRange(decision.validFrom, decision.validTo))
                     .mapTo<FiniteDateRange>()
                     .fold(listOf<FiniteDateRange>()) { periods, period ->
@@ -162,7 +159,7 @@ ORDER BY start_date ASC
     }
 
     private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =
-        tx.getVoucherValueDecision(objectMapper, decisionId)
+        tx.getVoucherValueDecision(decisionId)
             ?: error("No voucher value decision found with ID ($decisionId)")
 
     private val key = { id: UUID -> "value_decision_$id.pdf" }
@@ -173,7 +170,7 @@ ORDER BY start_date ASC
     }
 
     private fun generatePdf(decision: VoucherValueDecisionDetailed): ByteArray {
-        val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
+        val lang = if (decision.headOfFamily.language == "sv") DocumentLang.sv else DocumentLang.fi
         return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, lang))
     }
 }
@@ -181,156 +178,3 @@ ORDER BY start_date ASC
 private fun suomiFiDocumentFileName(lang: String) =
     if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf"
     else "Varhaiskasvatuksen_maksupäätös.pdf"
-
-private fun coverPage(decision: VoucherValueDecisionDetailed): String {
-    // language=html
-    return """
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        $styles
-    </head>
-    <body class="cover-page">
-        ${coverPageHeader(decision)}
-        <div class="content">
-            <h1>PÄÄTÖS VARHAISKASVATUKSEN PALVELUSETELIN ARVOSTA</h1>
-            <table>
-                <tr>
-                    <td colspan="2">${decision.child.firstName} ${decision.child.lastName}</td>
-                </tr>
-                <tr>
-                    <td>Yksikkö</td>
-                    <td>${decision.placementUnit.name}</td>
-                </tr>
-                <tr>
-                    <td>Palveluntarve</td>
-                    <td>${decision.placement.hours ?: "ei asetettu"}</td>
-                </tr>
-                <tr>
-                    <td>Palvelusetelin enimmäisarvo</td>
-                    <td>${decision.value / 100},${decision.value % 100} €</td>
-                </tr>
-                <tr>
-                    <td>Omavastuu</td>
-                    <td>${decision.coPayment / 100},${decision.coPayment % 100} €</td>
-                </tr>
-            </table>
-        </div>
-    </body>
-</html>
-    """.trimIndent()
-}
-
-private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-private val formatInstant = { value: Instant -> dateFormatter.format(value.atZone(ZoneId.of("Europe/Helsinki"))) }
-
-private fun coverPageHeader(decision: VoucherValueDecisionDetailed): String {
-    val encodedLogo = VoucherValueDecisionService::class.java.getResourceAsStream("/static/espoo-logo.png")
-        .readBytes()
-        .let { bytes -> Base64.getEncoder().encodeToString(bytes) }
-
-    // language=html
-    return """
-<header>
-    <div class="address-window">
-        <div class="logo"><img alt="Espoo logo" src="data:image/png;base64,$encodedLogo" /></div>
-        <div class="address">
-            <div>${decision.headOfFamily.firstName} ${decision.headOfFamily.lastName}</div>
-            <div>${decision.headOfFamily.streetAddress}</div>
-            <div>${decision.headOfFamily.postalCode} ${decision.headOfFamily.postOffice}</div>
-        </div>
-    </div>
-    <div class="heading">
-        <div class="left">
-            <div class="detail">PÄÄTÖS varhaiskasvatuksen</div>
-            <div class="detail">palvelusetelin arvosta</div>
-            <div class="detail"></div>
-            <div class="detail">Päätöspvm ${formatInstant(decision.approvedAt!!)}</div>
-        </div>
-        <div class="right">
-            <div class="detail">Sivu 1</div>
-            <div class="detail">Päätös nro</div>
-            <div class="detail">${decision.decisionNumber}</div>
-        </div>
-    </div>
-</header>
-    """.trimIndent()
-}
-
-// language=html
-private val styles =
-    """
-<style>
-    * {
-        font-family: sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
-    }
-
-    @page {
-        size: A4 portrait;
-        margin: 5mm 7mm;
-    }
-
-    body {
-        width: 200mm;
-        margin: 0;
-    }
-
-    header .address-window {
-        display: inline-block;
-        vertical-align: top;
-        margin-left: 14mm;
-        width: 80mm;
-    }
-
-    header .address-window .logo {
-        margin-top: 6mm;
-        height: 18mm;
-        width: 80mm;
-    }
-
-    header .address-window .logo img {
-        height: 18mm;
-    }
-
-    header .address-window .address {
-        margin-top: 9.6mm;
-        height: 20mm;
-        width: 66mm;
-        overflow: hidden;
-        line-height: 1.1mm;
-    }
-
-    header .address-window .address * {
-        line-height: 1.1;
-    }
-
-    header .heading {
-        display: inline-block;
-        vertical-align: top;
-        margin-left: 8mm;
-    }
-
-    header .heading .left {
-        display: inline-block;
-        vertical-align: top;
-        width: 68mm;
-    }
-
-    header .heading .right {
-        display: inline-block;
-        vertical-align: top;
-        width: 23mm;
-        text-align: right;
-    }
-
-    .content {
-        // margin: 0 5mm;
-    }
-
-    .cover-page .content {
-        margin-top: 30mm;
-    }
-</style>
-    """.trimIndent()

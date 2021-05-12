@@ -161,7 +161,7 @@ private fun generateNewFeeDecisions2(
 
                         FeeDecisionChild(
                             child,
-                            FeeDecisionPlacement(UnitData.JustId(placement.unitId), placement.type,),
+                            FeeDecisionPlacement(UnitData.JustId(placement.unitId), placement.type),
                             FeeDecisionServiceNeed(placement.serviceNeed.id, placement.serviceNeed.feeCoefficient),
                             baseFee,
                             siblingDiscount,
@@ -192,7 +192,7 @@ private fun generateNewFeeDecisions2(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun Database.Read.getPaidPlacements2(
+internal fun Database.Read.getPaidPlacements2(
     from: LocalDate,
     children: List<PersonData.WithDateOfBirth>
 ): List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>> {
@@ -203,7 +203,7 @@ private fun Database.Read.getPaidPlacements2(
         val serviceNeeds = createQuery(
             // language=sql
             """
-SELECT daterange(sn.start_date, sn.end_date, '[]') AS range, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient
+SELECT daterange(sn.start_date, sn.end_date, '[]') AS range, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient, sno.fee_description_fi, sno.fee_description_sv, sno.voucher_value_description_fi, sno.voucher_value_description_sv
 FROM new_service_need sn
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
@@ -217,7 +217,10 @@ WHERE sn.placement_id = ANY(:placementIds)
 
         val defaultServiceNeeds = createQuery(
             // language=sql
-            "SELECT valid_placement_type, id, fee_coefficient, voucher_value_coefficient FROM service_need_option WHERE default_option"
+            """
+SELECT valid_placement_type, id, fee_coefficient, voucher_value_coefficient, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv
+FROM service_need_option WHERE default_option
+"""
         )
             .map { row ->
                 row.getColumn("valid_placement_type", fi.espoo.evaka.placement.PlacementType::class.java) to row.getRow(

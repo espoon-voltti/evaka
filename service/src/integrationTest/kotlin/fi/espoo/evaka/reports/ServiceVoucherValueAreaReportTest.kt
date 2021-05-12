@@ -12,13 +12,16 @@ import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.utils.europeHelsinki
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -135,7 +138,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
             createVoucherDecision(janFirst, testDaycare.id, 52200, 28800, testAdult_2.id, testChild_2),
             createVoucherDecision(janFirst, testDaycare.id, 134850, 0, testAdult_3.id, testChild_3)
         ).sumBy { decision ->
-            decision.value - decision.coPayment
+            decision.voucherValue - decision.coPayment
         }
     }
 
@@ -160,13 +163,21 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
                 dateOfBirth = child.dateOfBirth,
                 unitId = unitId,
                 value = value,
-                coPayment = coPayment
+                coPayment = coPayment,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = VoucherValueDecisionServiceNeed(
+                    snDefaultDaycare.feeCoefficient,
+                    snDefaultDaycare.voucherValueCoefficient,
+                    snDefaultDaycare.feeDescriptionFi,
+                    snDefaultDaycare.feeDescriptionSv,
+                    snDefaultDaycare.voucherValueDescriptionFi,
+                    snDefaultDaycare.voucherValueDescriptionSv
+                )
             )
-            it.upsertValueDecisions(objectMapper, listOf(decision))
+            it.upsertValueDecisions(listOf(decision))
 
             sendVoucherValueDecisions(
                 tx = it,
-                objectMapper = objectMapper,
                 asyncJobRunner = asyncJobRunner,
                 user = financeUser,
                 now = approvedAt,

@@ -77,3 +77,4 @@ V76__messages_v2.sql
 V77__message_sent_at.sql
 V78__last_login.sql
 V79__drop_index_message_thread_created.sql
+V80__voucher_value_decision_with_new_service_needs.sql

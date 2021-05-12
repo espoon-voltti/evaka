@@ -111,5 +111,5 @@ inline fun <reified T> RowView.mapColumn(name: String, type: QualifiedType<T> = 
 /**
  * Maps a row json column to a value.
  */
-inline fun <reified T : Any> RowView.mapJsonColumn(name: String): T =
+inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T =
     mapColumn(name, QualifiedType.of(object : GenericType<T>() {}).with(Json::class.java))

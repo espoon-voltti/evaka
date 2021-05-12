@@ -8,19 +8,23 @@ import { Link } from 'react-router-dom'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { PersonDetailed, Placement, UnitDetailed } from '../../types/invoicing'
+import {
+  PersonDetailed,
+  VoucherValueDecisionPlacement,
+  VoucherValueDecisionServiceNeed
+} from '../../types/invoicing'
 import { formatName } from '../../utils'
 
 interface Props {
   child: PersonDetailed
-  placement: Placement
-  placementUnit: UnitDetailed
+  placement: VoucherValueDecisionPlacement
+  serviceNeed: VoucherValueDecisionServiceNeed
 }
 
 const ChildSection = React.memo(function ChildSection({
   child,
   placement,
-  placementUnit
+  serviceNeed
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -55,15 +59,15 @@ const ChildSection = React.memo(function ChildSection({
           },
           {
             label: i18n.valueDecision.child.careArea,
-            value: placementUnit.areaName
+            value: placement.unit.areaName
           },
           {
             label: i18n.valueDecision.child.unit,
-            value: placementUnit.name
+            value: placement.unit.name
           },
           {
             label: i18n.valueDecision.child.serviceNeed,
-            value: i18n.placement.serviceNeed[placement.serviceNeed]
+            value: serviceNeed.feeDescriptionFi
           }
         ]}
       />

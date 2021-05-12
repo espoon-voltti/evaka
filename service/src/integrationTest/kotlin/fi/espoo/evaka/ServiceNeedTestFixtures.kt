@@ -19,7 +19,11 @@ val snDefaultDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 35,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultPartDayDaycare = ServiceNeedOption(
@@ -32,7 +36,11 @@ val snDefaultPartDayDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("0.54"),
     daycareHoursPerWeek = 25,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultFiveYearOldsDaycare = ServiceNeedOption(
@@ -45,7 +53,11 @@ val snDefaultFiveYearOldsDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 45,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
@@ -58,7 +70,11 @@ val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("0.54"),
     daycareHoursPerWeek = 25,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultPreschool = ServiceNeedOption(
@@ -71,7 +87,11 @@ val snDefaultPreschool = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("0.50"),
     daycareHoursPerWeek = 0,
     partDay = true,
-    partWeek = true
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultPreschoolDaycare = ServiceNeedOption(
@@ -84,7 +104,11 @@ val snDefaultPreschoolDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 25,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultPreparatory = ServiceNeedOption(
@@ -97,7 +121,11 @@ val snDefaultPreparatory = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("0.50"),
     daycareHoursPerWeek = 0,
     partDay = true,
-    partWeek = true
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultPreparatoryDaycare = ServiceNeedOption(
@@ -110,7 +138,11 @@ val snDefaultPreparatoryDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 25,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultClub = ServiceNeedOption(
@@ -123,7 +155,11 @@ val snDefaultClub = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 0,
     partDay = true,
-    partWeek = true
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultTemporaryDaycare = ServiceNeedOption(
@@ -136,7 +172,11 @@ val snDefaultTemporaryDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 35,
     partDay = false,
-    partWeek = true
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDefaultTemporaryPartDayDaycare = ServiceNeedOption(
@@ -149,7 +189,11 @@ val snDefaultTemporaryPartDayDaycare = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("0.54"),
     daycareHoursPerWeek = 25,
     partDay = true,
-    partWeek = true
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDaycareFullDay35 = ServiceNeedOption(
@@ -162,7 +206,11 @@ val snDaycareFullDay35 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 35,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDaycareFullDay25to35 = ServiceNeedOption(
@@ -175,7 +223,11 @@ val snDaycareFullDay25to35 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 30,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDaycareFullDayPartWeek25 = ServiceNeedOption(
@@ -188,7 +240,11 @@ val snDaycareFullDayPartWeek25 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 25,
     partDay = false,
-    partWeek = true
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snDaycarePartDay25 = ServiceNeedOption(
@@ -201,7 +257,11 @@ val snDaycarePartDay25 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("0.54"),
     daycareHoursPerWeek = 25,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snPreschoolDaycare45 = ServiceNeedOption(
@@ -214,7 +274,11 @@ val snPreschoolDaycare45 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 25,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snPreschoolDaycarePartDay35to45 = ServiceNeedOption(
@@ -227,7 +291,11 @@ val snPreschoolDaycarePartDay35to45 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 20,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snPreschoolDaycarePartDay35 = ServiceNeedOption(
@@ -240,7 +308,11 @@ val snPreschoolDaycarePartDay35 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 15,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snPreparatoryDaycare50 = ServiceNeedOption(
@@ -253,7 +325,11 @@ val snPreparatoryDaycare50 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 25,
     partDay = false,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snPreparatoryDaycarePartDay40to50 = ServiceNeedOption(
@@ -266,7 +342,11 @@ val snPreparatoryDaycarePartDay40to50 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 20,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val snPreparatoryDaycarePartDay40 = ServiceNeedOption(
@@ -279,7 +359,28 @@ val snPreparatoryDaycarePartDay40 = ServiceNeedOption(
     occupancyCoefficient = BigDecimal("1.00"),
     daycareHoursPerWeek = 15,
     partDay = true,
-    partWeek = false
+    partWeek = false,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
+)
+
+val snDaycareFiveYearOldsFullDayPartWeek25 = ServiceNeedOption(
+    id = UUID.randomUUID(),
+    name = "5-vuotiaiden osaviikkoinen, yli 20h enintään 25h",
+    validPlacementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+    defaultOption = false,
+    feeCoefficient = BigDecimal("0.60"),
+    voucherValueCoefficient = BigDecimal("0.60"),
+    occupancyCoefficient = BigDecimal("1.00"),
+    daycareHoursPerWeek = 25,
+    partDay = false,
+    partWeek = true,
+    feeDescriptionFi = "",
+    feeDescriptionSv = "",
+    voucherValueDescriptionFi = "",
+    voucherValueDescriptionSv = ""
 )
 
 val serviceNeedTestFixtures = listOf(
@@ -303,5 +404,6 @@ val serviceNeedTestFixtures = listOf(
     snPreschoolDaycarePartDay35,
     snPreparatoryDaycare50,
     snPreparatoryDaycarePartDay40to50,
-    snPreparatoryDaycarePartDay40
+    snPreparatoryDaycarePartDay40,
+    snDaycareFiveYearOldsFullDayPartWeek25
 )
