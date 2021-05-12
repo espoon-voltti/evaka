@@ -53,10 +53,10 @@ val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
     name = "Viisivuotiaiden osapäiväinen",
     validPlacementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
     defaultOption = true,
-    feeCoefficient = BigDecimal("0.00"),
+    feeCoefficient = BigDecimal("0.35"),
     voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("0.54"),
-    daycareHoursPerWeek = 20,
+    daycareHoursPerWeek = 25,
     partDay = true,
     partWeek = false
 )

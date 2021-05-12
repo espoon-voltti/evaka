@@ -297,7 +297,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
         val result = getAllFeeDecisions()
 
-        assertEquals(0, result.size)
+        assertEquals(DAYCARE_PART_TIME_FIVE_YEAR_OLDS, result[0].children[0].placement.type)
+        assertEquals(BigDecimal("0.35"), result[0].children[0].serviceNeed.feeCoefficient)
+        assertEquals(10100, result[0].children[0].finalFee)
     }
 
     @Test
