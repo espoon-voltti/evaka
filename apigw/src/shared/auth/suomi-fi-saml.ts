@@ -57,6 +57,7 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
 
 export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
   if (sfiMock) return {}
+  if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
   const publicCert = Array.isArray(sfiConfig.publicCert)
     ? sfiConfig.publicCert.map(
         (certificateName) => certificates[certificateName]
