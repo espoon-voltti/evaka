@@ -20,7 +20,6 @@ javaPlatform {
 dependencies {
     constraints {
         api("com.auth0:java-jwt:3.13.0")
-        api("com.auth0:jwks-rsa:0.15.0")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
