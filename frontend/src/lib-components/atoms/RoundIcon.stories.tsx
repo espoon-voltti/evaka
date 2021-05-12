@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -15,7 +15,6 @@ import {
   fasExclamationTriangle,
   faEuroSign
 } from 'lib-icons'
-import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import { FixedSpaceRow } from '../layout/flex-helpers'
 import RoundIcon from './RoundIcon'
@@ -33,77 +32,103 @@ const ColItem = styled.div`
 const onClick = action('clicked')
 
 storiesOf('evaka/atoms/RoundIcon', module)
-  .add('default', () => (
-    <div>
-      <FixedSpaceRow spacing="L">
-        <ColItem>
-          <span>s</span>
-          <RoundIcon content={fasInfo} color={colors.accents.water} size="s" />
-        </ColItem>
-        <ColItem>
-          <span>m</span>
-          <RoundIcon
-            content={faExclamation}
-            color={colors.accents.orange}
-            size="m"
-          />
-        </ColItem>
-        <ColItem>
-          <span>m (text)</span>
-          <RoundIcon content="T" color={colors.accents.emerald} size="m" />
-        </ColItem>
-        <ColItem>
-          <span>L</span>
-          <RoundIcon content={faPlus} color={colors.primary} size="L" />
-        </ColItem>
-        <ColItem>
-          <span>XL</span>
-          <RoundIcon content={faCheck} color={colors.accents.green} size="XL" />
-        </ColItem>
-      </FixedSpaceRow>
-      <p>Note 1: use solid icons for size s, light otherwise</p>
-      <p>
-        Note 2: xs not included here, use solid icon with font-size 16px and
-        pre-included background, e.g. fasExclamationTriangle{' '}
-        <FontAwesomeIcon
-          icon={fasExclamationTriangle}
-          color={colors.accents.orange}
-          style={{ fontSize: '16px' }}
-        />
-      </p>
-    </div>
-  ))
-  .add('as filters', () => (
-    <div>
-      <FixedSpaceRow spacing="xs">
-        <RoundIcon
-          content="T"
-          color={colors.accents.emerald}
-          size="m"
-          onClick={onClick}
-          active={false}
-        />
-        <RoundIcon
-          content="2"
-          color={colors.primary}
-          size="m"
-          onClick={onClick}
-          active={true}
-        />
-        <RoundIcon
-          content={fasInfo}
-          color={colors.accents.violet}
-          size="m"
-          onClick={onClick}
-          active={false}
-        />
-        <RoundIcon
-          content={faEuroSign}
-          color={colors.accents.petrol}
-          size="m"
-          onClick={onClick}
-          active={true}
-        />
-      </FixedSpaceRow>
-    </div>
-  ))
+  .add('default', () =>
+    React.createElement(() => {
+      const theme = useTheme()
+      return (
+        <div>
+          <FixedSpaceRow spacing="L">
+            <ColItem>
+              <span>s</span>
+              <RoundIcon
+                content={fasInfo}
+                color={theme.colors.accents.water}
+                size="s"
+              />
+            </ColItem>
+            <ColItem>
+              <span>m</span>
+              <RoundIcon
+                content={faExclamation}
+                color={theme.colors.accents.orange}
+                size="m"
+              />
+            </ColItem>
+            <ColItem>
+              <span>m (text)</span>
+              <RoundIcon
+                content="T"
+                color={theme.colors.accents.emerald}
+                size="m"
+              />
+            </ColItem>
+            <ColItem>
+              <span>L</span>
+              <RoundIcon
+                content={faPlus}
+                color={theme.colors.main.primary}
+                size="L"
+              />
+            </ColItem>
+            <ColItem>
+              <span>XL</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.accents.green}
+                size="XL"
+              />
+            </ColItem>
+          </FixedSpaceRow>
+          <p>Note 1: use solid icons for size s, light otherwise</p>
+          <p>
+            Note 2: xs not included here, use solid icon with font-size 16px and
+            pre-included background, e.g. fasExclamationTriangle{' '}
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={theme.colors.accents.orange}
+              style={{ fontSize: '16px' }}
+            />
+          </p>
+        </div>
+      )
+    })
+  )
+  .add('as filters', () =>
+    React.createElement(() => {
+      const theme = useTheme()
+      return (
+        <div>
+          <FixedSpaceRow spacing="xs">
+            <RoundIcon
+              content="T"
+              color={theme.colors.accents.emerald}
+              size="m"
+              onClick={onClick}
+              active={false}
+            />
+            <RoundIcon
+              content="2"
+              color={theme.colors.main.primary}
+              size="m"
+              onClick={onClick}
+              active={true}
+            />
+            <RoundIcon
+              content={fasInfo}
+              color={theme.colors.accents.violet}
+              size="m"
+              onClick={onClick}
+              active={false}
+            />
+            <RoundIcon
+              content={faEuroSign}
+              color={theme.colors.accents.petrol}
+              size="m"
+              onClick={onClick}
+              active={true}
+            />
+          </FixedSpaceRow>
+        </div>
+      )
+    })
+  )

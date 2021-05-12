@@ -4,7 +4,6 @@
 
 import styled from 'styled-components'
 
-import { blueColors, greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { BaseProps } from './utils'
@@ -20,8 +19,10 @@ type HeadingProps = BaseProps & {
 }
 
 export const H1 = styled.h1<HeadingProps>`
-  color: ${(p) =>
-    p.primary || p.primary === undefined ? blueColors.dark : greyscale.dark};
+  color: ${({ theme: { colors }, ...p }) =>
+    p.primary || p.primary === undefined
+      ? colors.main.dark
+      : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '24px' : '36px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 200)};
@@ -38,7 +39,8 @@ export const H1 = styled.h1<HeadingProps>`
 `
 
 export const H2 = styled.h2<HeadingProps>`
-  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
+  color: ${({ theme: { colors }, ...p }) =>
+    p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '20px' : '24px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 300)};
@@ -54,7 +56,8 @@ export const H2 = styled.h2<HeadingProps>`
 `
 
 export const H3 = styled.h3<HeadingProps>`
-  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
+  color: ${({ theme: { colors }, ...p }) =>
+    p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '18px' : '20px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -64,7 +67,8 @@ export const H3 = styled.h3<HeadingProps>`
 `
 
 export const H4 = styled.h4<HeadingProps>`
-  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
+  color: ${({ theme: { colors }, ...p }) =>
+    p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '16px' : '18px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -74,7 +78,8 @@ export const H4 = styled.h4<HeadingProps>`
 `
 
 export const H5 = styled.h4<HeadingProps>`
-  color: ${(p) => (p.primary ? blueColors.dark : greyscale.dark)};
+  color: ${({ theme: { colors }, ...p }) =>
+    p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '14px' : '16px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -109,7 +114,7 @@ export const P = styled.p<ParagraphProps>`
   }
 
   a {
-    color: ${blueColors.primary};
+    color: ${({ theme: { colors } }) => colors.main.primary};
     text-decoration: none;
   }
 
@@ -118,5 +123,5 @@ export const P = styled.p<ParagraphProps>`
   }
 `
 export const Dimmed = styled.span`
-  color: ${greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `

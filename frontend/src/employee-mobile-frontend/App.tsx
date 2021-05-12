@@ -29,6 +29,8 @@ import StaffPage from './components/staff/StaffPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
 import { NavItem } from './components/common/BottomNavbar'
 import { History } from 'history'
+import { ThemeProvider } from 'styled-components'
+import { theme } from 'lib-customizations/common'
 
 export type RouteParams = { unitId: string; groupId: string }
 type RouteProps = RouteComponentProps<RouteParams>
@@ -47,59 +49,61 @@ export default function App() {
     >
       <I18nContextProvider>
         <AttendanceUIContextProvider>
-          <Router basename="/employee/mobile">
-            <Switch>
-              <Route exact path="/landing" component={MobileLander} />
-              <Route exact path="/pairing" component={PairingWizard} />
-              <Route
-                path="/units/:unitId/attendance/:groupId"
-                render={({ match, history }: RouteProps) => {
-                  const Component = ensureAuthenticated(AttendancePageWrapper)
-                  return (
-                    <Component
-                      onNavigate={navBarNavigate(match.params, history)}
-                    />
-                  )
-                }}
-              />
-              <Route
-                path="/units/:unitId/groups/:groupId/childattendance/:childId/markpresent"
-                component={ensureAuthenticated(MarkPresent)}
-              />
-              <Route
-                path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsent"
-                component={ensureAuthenticated(MarkAbsent)}
-              />
-              <Route
-                path="/units/:unitId/groups/:groupId/childattendance/:childId/markdeparted"
-                component={ensureAuthenticated(MarkDeparted)}
-              />
-              <Route
-                path="/units/:unitId/groups/:groupId/childattendance/:childId/note"
-                component={ensureAuthenticated(DailyNoteEditor)}
-              />
-              <Route
-                path="/units/:unitId/groups/:groupId/childattendance/:childId/pin"
-                component={ensureAuthenticated(PinLogin)}
-              />
-              <Route
-                path="/units/:unitId/groups/:groupId/childattendance/:childId"
-                component={ensureAuthenticated(AttendanceChildPage)}
-              />
-              <Route
-                path="/units/:unitId/staff/:groupId"
-                render={({ match, history }: RouteProps) => {
-                  const Component = ensureAuthenticated(StaffPage)
-                  return (
-                    <Component
-                      onNavigate={navBarNavigate(match.params, history)}
-                    />
-                  )
-                }}
-              />
-              <Route component={RedirectToMainPage} />
-            </Switch>
-          </Router>
+          <ThemeProvider theme={theme}>
+            <Router basename="/employee/mobile">
+              <Switch>
+                <Route exact path="/landing" component={MobileLander} />
+                <Route exact path="/pairing" component={PairingWizard} />
+                <Route
+                  path="/units/:unitId/attendance/:groupId"
+                  render={({ match, history }: RouteProps) => {
+                    const Component = ensureAuthenticated(AttendancePageWrapper)
+                    return (
+                      <Component
+                        onNavigate={navBarNavigate(match.params, history)}
+                      />
+                    )
+                  }}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markpresent"
+                  component={ensureAuthenticated(MarkPresent)}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsent"
+                  component={ensureAuthenticated(MarkAbsent)}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markdeparted"
+                  component={ensureAuthenticated(MarkDeparted)}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/note"
+                  component={ensureAuthenticated(DailyNoteEditor)}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/pin"
+                  component={ensureAuthenticated(PinLogin)}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId"
+                  component={ensureAuthenticated(AttendanceChildPage)}
+                />
+                <Route
+                  path="/units/:unitId/staff/:groupId"
+                  render={({ match, history }: RouteProps) => {
+                    const Component = ensureAuthenticated(StaffPage)
+                    return (
+                      <Component
+                        onNavigate={navBarNavigate(match.params, history)}
+                      />
+                    )
+                  }}
+                />
+                <Route component={RedirectToMainPage} />
+              </Switch>
+            </Router>
+          </ThemeProvider>
         </AttendanceUIContextProvider>
       </I18nContextProvider>
     </UserContextProvider>

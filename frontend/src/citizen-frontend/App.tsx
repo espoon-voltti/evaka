@@ -21,64 +21,68 @@ import requireAuth from './auth/requireAuth'
 import MessagesPage from './messages/MessagesPage'
 import { featureFlags } from './config'
 import { HeaderContextProvider } from './messages/state'
+import { ThemeProvider } from 'styled-components'
+import { theme } from 'lib-customizations/common'
 
 export default function App() {
   return (
     <BrowserRouter basename="/">
-      <Authentication>
-        <Localization>
-          <OverlayContextProvider>
-            <HeaderContextProvider>
-              <Header />
-              <main>
-                <Switch>
-                  <Route exact path="/" component={MapView} />
-                  <Route
-                    exact
-                    path="/applications"
-                    component={requireAuth(Applications)}
-                  />
-                  <Route
-                    exact
-                    path="/applications/new/:childId"
-                    component={requireAuth(ApplicationCreation)}
-                  />
-                  <Route
-                    exact
-                    path="/applications/:applicationId"
-                    component={requireAuth(ApplicationReadView)}
-                  />
-                  <Route
-                    exact
-                    path="/applications/:applicationId/edit"
-                    component={requireAuth(ApplicationEditor)}
-                  />
-                  <Route
-                    exact
-                    path="/decisions"
-                    component={requireAuth(Decisions)}
-                  />
-                  <Route
-                    exact
-                    path="/decisions/by-application/:applicationId"
-                    component={requireAuth(DecisionResponseList)}
-                  />
-                  {featureFlags.messaging && (
+      <ThemeProvider theme={theme}>
+        <Authentication>
+          <Localization>
+            <OverlayContextProvider>
+              <HeaderContextProvider>
+                <Header />
+                <main>
+                  <Switch>
+                    <Route exact path="/" component={MapView} />
                     <Route
                       exact
-                      path="/messages"
-                      component={requireAuth(MessagesPage, false)}
+                      path="/applications"
+                      component={requireAuth(Applications)}
                     />
-                  )}
-                  <Route path="/" component={RedirectToMap} />
-                </Switch>
-              </main>
-              <GlobalInfoDialog />
-              <GlobalErrorDialog />
-            </HeaderContextProvider>
-          </OverlayContextProvider>
-        </Localization>
-      </Authentication>
+                    <Route
+                      exact
+                      path="/applications/new/:childId"
+                      component={requireAuth(ApplicationCreation)}
+                    />
+                    <Route
+                      exact
+                      path="/applications/:applicationId"
+                      component={requireAuth(ApplicationReadView)}
+                    />
+                    <Route
+                      exact
+                      path="/applications/:applicationId/edit"
+                      component={requireAuth(ApplicationEditor)}
+                    />
+                    <Route
+                      exact
+                      path="/decisions"
+                      component={requireAuth(Decisions)}
+                    />
+                    <Route
+                      exact
+                      path="/decisions/by-application/:applicationId"
+                      component={requireAuth(DecisionResponseList)}
+                    />
+                    {featureFlags.messaging && (
+                      <Route
+                        exact
+                        path="/messages"
+                        component={requireAuth(MessagesPage, false)}
+                      />
+                    )}
+                    <Route path="/" component={RedirectToMap} />
+                  </Switch>
+                </main>
+                <GlobalInfoDialog />
+                <GlobalErrorDialog />
+              </HeaderContextProvider>
+            </OverlayContextProvider>
+          </Localization>
+        </Authentication>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

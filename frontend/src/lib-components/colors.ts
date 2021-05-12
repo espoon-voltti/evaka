@@ -2,12 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+/**
+ * @deprecated frontends: use espooBrandColors from lib-customizations/common.
+ *             lib-components: use styled components theme
+ */
 export const espooBrandColors = {
   espooBlue: '#0050bb',
   espooTurquoise: '#249fff',
   espooTurquoiseLight: '#e9f5ff'
 }
 
+/**
+ * @deprecated frontends: use blueColors from lib-customizations/common.
+ *             lib-components: use styled components theme
+ */
 export const blueColors = {
   dark: '#013c8c',
   medium: '#0050bb',
@@ -16,6 +24,10 @@ export const blueColors = {
   lighter: '#dce5f2'
 }
 
+/**
+ * @deprecated frontends: use greyscale from lib-customizations/common.
+ *             lib-components: use styled components theme
+ */
 export const greyscale = {
   darkest: '#0f0f0f',
   dark: '#6e6e6e',
@@ -26,6 +38,10 @@ export const greyscale = {
   white: '#ffffff'
 }
 
+/**
+ * @deprecated frontends: use accentColors from lib-customizations/common.
+ *             lib-components: use styled components theme
+ */
 export const accentColors = {
   orange: '#ff7300',
   orangeDark: '#b85300',
@@ -39,6 +55,10 @@ export const accentColors = {
   violet: '#9d55c3'
 }
 
+/**
+ * @deprecated frontends: use default export from lib-customizations/common.
+ *             lib-components: use styled components theme
+ */
 const colors = {
   brandEspoo: espooBrandColors,
   blues: blueColors,
@@ -49,6 +69,10 @@ const colors = {
   accents: accentColors
 }
 
+/**
+ * @deprecated frontends: use absenceColours from lib-customizations/common.
+ *             lib-components: use styled components theme
+ */
 export const absenceColours = {
   UNKNOWN_ABSENCE: colors.accents.green,
   OTHER_ABSENCE: colors.blues.dark,

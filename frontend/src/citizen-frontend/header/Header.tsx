@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { desktopMin } from 'lib-components/breakpoints'
 import EspooLogo from './EspooLogo'
 import EvakaLogo from './EvakaLogo'
