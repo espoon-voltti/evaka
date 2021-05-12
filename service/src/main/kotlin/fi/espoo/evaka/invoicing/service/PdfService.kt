@@ -75,20 +75,23 @@ class PDFService(
         return os.toByteArray()
     }
 
+    private fun getResourcePath(fileName: String): String {
+        val res = javaClass.classLoader.getResource(fileName)
+        val file: File = Paths.get(res.toURI()).toFile()
+        return file.absolutePath
+    }
+
     private fun renderHtmlPages(pages: String, os: OutputStream) {
         val textRenderer = ITextRenderer()
-
-        val res = javaClass.classLoader.getResource("ttf/Montserrat-Regular.ttf")
-        val file: File = Paths.get(res.toURI()).toFile()
-        val url: String = file.absolutePath
-
-        val boldRes = javaClass.classLoader.getResource("ttf/Montserrat-Bold.ttf")
-        val boldFile: File = Paths.get(boldRes.toURI()).toFile()
-        val boldUrl: String = boldFile.absolutePath
-
+        val montserrat = getResourcePath("ttf/Montserrat-Regular.ttf")
+        val montserratBold = getResourcePath("ttf/Montserrat-Regular.ttf")
+        val openSans = getResourcePath("ttf/OpenSans-Regular.ttf")
+        val openSansBold = getResourcePath("ttf/OpenSans-Bold.ttf")
+        textRenderer.fontResolver.addFont(montserrat, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(montserratBold, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(openSans, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(openSansBold, BaseFont.IDENTITY_H, true)
         textRenderer.setDocumentFromString(pages)
-        textRenderer.fontResolver.addFont(url, BaseFont.IDENTITY_H, true)
-        textRenderer.fontResolver.addFont(boldUrl, BaseFont.IDENTITY_H, true)
         textRenderer.layout()
         textRenderer.createPDF(os, false)
         textRenderer.finishPDF()
