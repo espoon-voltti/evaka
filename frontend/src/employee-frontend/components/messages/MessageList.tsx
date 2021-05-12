@@ -6,17 +6,20 @@ import { useTranslation } from 'employee-frontend/state/i18n'
 import { Loading, Paged, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { tabletMin } from 'lib-components/breakpoints'
-import colors from 'lib-components/colors'
 import Pagination from 'lib-components/Pagination'
 import { H1 } from 'lib-components/typography'
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { ContentArea } from '../../../lib-components/layout/Container'
 import { getReceivedMessages } from './api'
 import { ReceivedMessages } from './ReceivedMessages'
 import { MessageThread } from './types'
 
 const PAGE_SIZE = 20
+
+const MessagesContainer = styled(ContentArea)`
+  overflow: hidden;
+`
 
 interface Props {
   accountId: UUID
@@ -58,7 +61,7 @@ export default React.memo(function MessagesList({ accountId, view }: Props) {
   }, [accountId, view, page, loadReceivedMessages])
 
   return (
-    <Container>
+    <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
       {view === 'RECEIVED' ? (
         <ReceivedMessages messages={receivedMessages} />
@@ -71,28 +74,6 @@ export default React.memo(function MessagesList({ accountId, view }: Props) {
         setPage={setPage}
         label={i18n.common.page}
       />
-    </Container>
+    </MessagesContainer>
   )
 })
-
-const Container = styled.div`
-  min-width: 35%;
-  max-width: 400px;
-  min-height: 500px;
-  background-color: ${colors.greyscale.white};
-
-  @media (max-width: 750px) {
-    min-width: 50%;
-  }
-
-  @media (max-width: ${tabletMin}) {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  &.desktop-only {
-    @media (max-width: ${tabletMin}) {
-      display: none;
-    }
-  }
-`

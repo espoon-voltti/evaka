@@ -8,10 +8,15 @@ import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
 import { getMessagingAccounts } from './api'
 import MessageList from './MessageList'
 import Sidebar from './Sidebar'
 import { Message, MessageAccount } from './types'
+
+const PanelContainer = styled.div`
+  display: flex;
+`
 
 export default React.memo(function MessagesPage() {
   const [accounts, setResult] = useState<Result<MessageAccount[]>>(Loading.of())
@@ -33,23 +38,25 @@ export default React.memo(function MessagesPage() {
 
   return (
     <Container>
-      <Sidebar
-        accounts={accounts}
-        selectedAccount={selectedAccount}
-        setSelectedAccount={setSelectedAccount}
-        showEditor={() => setShowEditor(true)}
-      />
-      {selectedAccount && (
-        <MessageList view="RECEIVED" accountId={selectedAccount} />
-      )}
-      {showEditor && (
-        <MessageEditor
-          message={message}
-          onChange={(message: Message) => setMessage(message)}
-          onClose={() => setShowEditor(false)}
-          onSend={() => {}}
+      <PanelContainer>
+        <Sidebar
+          accounts={accounts}
+          selectedAccount={selectedAccount}
+          setSelectedAccount={setSelectedAccount}
+          showEditor={() => setShowEditor(true)}
         />
-      )}
+        {selectedAccount && (
+          <MessageList view="RECEIVED" accountId={selectedAccount} />
+        )}
+        {showEditor && (
+          <MessageEditor
+            message={message}
+            onChange={(message: Message) => setMessage(message)}
+            onClose={() => setShowEditor(false)}
+            onSend={() => {}}
+          />
+        )}
+      </PanelContainer>
     </Container>
   )
 })

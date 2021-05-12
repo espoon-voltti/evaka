@@ -12,6 +12,7 @@ import {
 
 export const DATE_FORMAT_DEFAULT = 'dd.MM.yyyy'
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
+export const DATE_FORMAT_NO_YEAR = 'dd.MM.'
 export const DATE_FORMAT_ISO = 'yyyy-MM-dd'
 export const DATE_FORMAT_TIME_ONLY = 'HH:mm'
 export const DATE_FORMATS_PARSED = [
