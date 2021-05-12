@@ -4,6 +4,7 @@
 
 import {
   Profile,
+  SamlConfig,
   Strategy as SamlStrategy,
   VerifiedCallback
 } from 'passport-saml'
@@ -63,8 +64,34 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
   }
 }
 
+export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
+  if (devLoginEnabled) return {}
+  if (!adConfig) throw Error('Missing AD SAML configuration')
+  return {
+    acceptedClockSkewMs: 0,
+    audience: adConfig.issuer,
+    cacheProvider: redisClient
+      ? redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
+      : undefined,
+    callbackUrl: adConfig.callbackUrl,
+    cert: Array.isArray(adConfig.publicCert)
+      ? adConfig.publicCert.map(
+          (certificateName) => certificates[certificateName]
+        )
+      : adConfig.publicCert,
+    disableRequestedAuthnContext: true,
+    entryPoint: adConfig.entryPoint,
+    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    issuer: adConfig.issuer,
+    logoutUrl: adConfig.logoutUrl,
+    privateCert: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
+    signatureAlgorithm: 'sha256',
+    validateInResponseTo: true
+  }
+}
+
 export default function createAdStrategy(
-  redisClient?: RedisClient
+  config: SamlConfig
 ): SamlStrategy | DevPassportStrategy {
   if (devLoginEnabled) {
     const getter = async (userId: string) =>
@@ -102,29 +129,8 @@ export default function createAdStrategy(
 
     return new DevPassportStrategy(getter, upserter)
   } else {
-    if (!adConfig) throw Error('Missing AD SAML configuration')
     return new SamlStrategy(
-      {
-        acceptedClockSkewMs: 0,
-        audience: adConfig.issuer,
-        cacheProvider: redisClient
-          ? redisCacheProvider(redisClient, {
-              keyPrefix: 'ad-saml-resp:'
-            })
-          : undefined,
-        callbackUrl: adConfig.callbackUrl,
-        cert: adConfig.publicCert.map(
-          (certificateName) => certificates[certificateName]
-        ),
-        disableRequestedAuthnContext: true,
-        entryPoint: adConfig.entryPointUrl,
-        identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-        issuer: adConfig.issuer,
-        logoutUrl: adConfig.logoutUrl,
-        privateCert: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
-        signatureAlgorithm: 'sha256',
-        validateInResponseTo: true
-      },
+      config,
       (profile: Profile, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         verifyProfile((profile as any) as AdProfile)

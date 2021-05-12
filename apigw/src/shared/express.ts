@@ -11,7 +11,6 @@ export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
   expiresAt: number
   value: string
-  idpProvider?: string | null
 }
 
 export type AsyncRequestHandler = (
@@ -52,6 +51,7 @@ export class InvalidRequest extends BaseError {}
 // Use TS interface merging to add fields to express req.session
 declare module 'express-session' {
   interface SessionData {
+    idpProvider?: string | null
     logoutToken?: LogoutToken
   }
 }

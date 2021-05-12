@@ -2,54 +2,55 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import fs from 'fs'
 import {
   Profile,
+  SamlConfig,
   Strategy as SamlStrategy,
   VerifiedCallback
 } from 'passport-saml'
+import { RedisClient } from 'redis'
+import { evakaCustomerSamlConfig } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreatePerson } from '../service-client'
-import { evakaCustomerSamlConfig, EvakaSamlConfig } from '../config'
-import fs from 'fs'
-import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 
-export default function createEvakaCustomerSamlStrategy(
-  redisClient?: RedisClient
-): SamlStrategy {
-  return createKeycloakSamlStrategy(evakaCustomerSamlConfig, redisClient)
+export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
+  if (!evakaCustomerSamlConfig)
+    throw new Error('Missing Keycloak SAML configuration')
+  if (Array.isArray(evakaCustomerSamlConfig.publicCert))
+    throw new Error('Expected a single string as publicCert')
+  const publicCert = fs.readFileSync(evakaCustomerSamlConfig.publicCert, {
+    encoding: 'utf8'
+  })
+  const privateCert = fs.readFileSync(evakaCustomerSamlConfig.privateCert, {
+    encoding: 'utf8'
+  })
+  return {
+    acceptedClockSkewMs: -1,
+    cacheProvider: redisClient
+      ? redisCacheProvider(redisClient, {
+          keyPrefix: 'customer-saml-resp:'
+        })
+      : undefined,
+    callbackUrl: evakaCustomerSamlConfig.callbackUrl,
+    cert: publicCert,
+    decryptionPvk: privateCert,
+    entryPoint: evakaCustomerSamlConfig.entryPoint,
+    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    issuer: evakaCustomerSamlConfig.issuer,
+    logoutUrl: evakaCustomerSamlConfig.entryPoint,
+    privateCert: privateCert,
+    signatureAlgorithm: 'sha256',
+    validateInResponseTo: true
+  }
 }
 
-function createKeycloakSamlStrategy(
-  samlConfig: EvakaSamlConfig | undefined,
-  redisClient?: RedisClient
+export default function createKeycloakSamlStrategy(
+  config: SamlConfig
 ): SamlStrategy {
-  if (!samlConfig) throw new Error('Missing Keycloak SAML configuration')
-  const publicCert = fs.readFileSync(samlConfig.publicCert, {
-    encoding: 'utf8'
-  })
-  const privateCert = fs.readFileSync(samlConfig.privateCert, {
-    encoding: 'utf8'
-  })
   return new SamlStrategy(
-    {
-      acceptedClockSkewMs: -1,
-      cacheProvider: redisClient
-        ? redisCacheProvider(redisClient, {
-            keyPrefix: 'customer-saml-resp:'
-          })
-        : undefined,
-      callbackUrl: samlConfig.callbackUrl,
-      cert: publicCert,
-      decryptionPvk: privateCert,
-      entryPoint: samlConfig.entryPoint,
-      identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-      issuer: 'evaka-customer',
-      logoutUrl: samlConfig.entryPoint,
-      privateCert: privateCert,
-      signatureAlgorithm: 'sha256',
-      validateInResponseTo: true
-    },
+    config,
     (profile: Profile, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       verifyKeycloakProfile((profile as any) as KeycloakProfile)

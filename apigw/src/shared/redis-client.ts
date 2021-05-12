@@ -30,7 +30,10 @@ export function createRedisClient() {
     logError('Redis error', undefined, undefined, err)
   )
 
-  // don't prevent the app from exiting if a redis connection is alive
-  redisClient.unref()
+  // Don't prevent the app from exiting if a redis connection is alive.
+  // Also, unref is not defined when running tests (with redis-mock active).
+  if (typeof redisClient.unref === 'function') {
+    redisClient.unref()
+  }
   return redisClient
 }

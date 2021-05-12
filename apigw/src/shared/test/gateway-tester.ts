@@ -48,8 +48,21 @@ export class GatewayTester {
     return undefined
   }
 
-  public async getCookie(key: string): Promise<string | undefined> {
-    return (await this.findCookie(key))?.value
+  public async setCookie(cookie: Cookie): Promise<Cookie> {
+    // Cookie domain must be cleared before setting to avoid issue with "localhost"
+    // being in the public suffix list (and therefore denied by setCookie())
+    cookie.domain = null
+    const cookieString = cookie.cookieString()
+    return await this.cookies.setCookie(cookieString, this.baseUrl, {
+      http: cookie.httpOnly,
+      secure: cookie.secure,
+      now: cookie.creation ?? undefined,
+      sameSiteContext: cookie.sameSite
+    })
+  }
+
+  public async getCookie(key: string): Promise<Cookie | undefined> {
+    return await this.findCookie(key)
   }
 
   public async expireSession(): Promise<void> {
@@ -68,12 +81,17 @@ export class GatewayTester {
     )
   }
 
-  public async login(user: AuthenticatedUser | EmployeeUser): Promise<void> {
+  public async login(
+    user: AuthenticatedUser | EmployeeUser,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    postData?: any
+  ): Promise<void> {
+    postData = postData !== undefined ? postData : { preset: 'dummy' }
     if (this.sessionType === 'employee') {
       this.nockScope.post('/system/employee-identity').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',
-        { preset: 'dummy' },
+        postData,
         {
           maxRedirects: 0,
           validateStatus: (status) => status >= 200 && status <= 302
@@ -84,7 +102,7 @@ export class GatewayTester {
       this.nockScope.post('/system/person-identity').reply(200, user)
       await this.client.post(
         '/api/application/auth/saml/login/callback',
-        { preset: 'dummy' },
+        postData,
         {
           maxRedirects: 0,
           validateStatus: (status) => status >= 200 && status <= 302

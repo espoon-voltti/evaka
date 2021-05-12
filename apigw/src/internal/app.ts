@@ -2,16 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import express, { Router } from 'express'
 import helmet from 'helmet'
 import nocache from 'nocache'
 import passport from 'passport'
 import { requireAuthentication } from '../shared/auth'
-import createAdSamlStrategy from '../shared/auth/ad-saml'
-import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
-import { cookieSecret, enableDevApi, nodeEnv } from '../shared/config'
+import createAdSamlStrategy, {
+  createSamlConfig as createAdSamlConfig
+} from '../shared/auth/ad-saml'
+import createEvakaSamlStrategy, {
+  createSamlConfig as createEvakaSamlconfig
+} from '../shared/auth/keycloak-saml'
+import { cookieSecret, enableDevApi } from '../shared/config'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
@@ -29,8 +32,7 @@ import mobileDeviceSession, {
 import authStatus from './routes/auth-status'
 
 const app = express()
-// TODO: How to make this more easily injectable/overridable in tests?
-const redisClient = nodeEnv !== 'test' ? createRedisClient() : undefined
+const redisClient = createRedisClient()
 trustReverseProxy(app)
 app.set('etag', false)
 app.use(nocache())
@@ -40,51 +42,55 @@ app.use(
     contentSecurityPolicy: false
   })
 )
-app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
+app.get('/health', (_, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
-app.use(bodyParser.json({ limit: '8mb' }))
+app.use(express.json({ limit: '8mb' }))
 app.use(session('employee', redisClient))
 app.use(cookieParser(cookieSecret))
 app.use(passport.initialize())
 app.use(passport.session())
 passport.serializeUser<Express.User>((user, done) => done(null, user))
 passport.deserializeUser<Express.User>((user, done) => done(null, user))
-app.use(refreshLogoutToken('employee'))
+app.use(refreshLogoutToken())
 setupLoggingMiddleware(app)
 
 app.use('/api/csp', csp)
 
 function scheduledApiRouter() {
   const router = Router()
-  router.all('*', (req, res) => res.sendStatus(404))
+  router.all('*', (_, res) => res.sendStatus(404))
   return router
 }
 
 function internalApiRouter() {
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
-  router.all('/system/*', (req, res) => res.sendStatus(404))
+  router.all('/system/*', (_, res) => res.sendStatus(404))
 
   router.all('/auth/*', (req: express.Request, res, next) => {
-    if (req.session?.logoutToken?.idpProvider === 'evaka') {
+    if (req.session?.idpProvider === 'evaka') {
       req.url = req.url.replace('saml', 'evaka')
     }
     next()
   })
 
+  const adSamlConfig = createAdSamlConfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'ead',
-      strategy: createAdSamlStrategy(redisClient),
+      strategy: createAdSamlStrategy(adSamlConfig),
+      samlConfig: adSamlConfig,
       sessionType: 'employee',
       pathIdentifier: 'saml'
     })
   )
 
+  const evakaSamlConfig = createEvakaSamlconfig(redisClient)
   router.use(
     createSamlRouter({
       strategyName: 'evaka',
-      strategy: createEvakaSamlStrategy(redisClient),
+      strategy: createEvakaSamlStrategy(evakaSamlConfig),
+      samlConfig: evakaSamlConfig,
       sessionType: 'employee',
       pathIdentifier: 'evaka'
     })

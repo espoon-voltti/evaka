@@ -1097,6 +1097,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/xml-crypto@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@types/xml-crypto@npm:1.4.1"
+  dependencies:
+    "@types/node": "*"
+    xpath: 0.0.27
+  checksum: 5d95f16be31bc639388f9fd0d8e2a9bbf93b7149d2eaa2fd8c0867cbc5a33fd6f42f75cec28396ee1b8de7fbc359d89e58e71c6bc43d8c718ea9dcdacbc05b5a
+  languageName: node
+  linkType: hard
+
+"@types/xml2js@npm:^0.4.8":
+  version: 0.4.8
+  resolution: "@types/xml2js@npm:0.4.8"
+  dependencies:
+    "@types/node": "*"
+  checksum: e78287171ad2c4b9e97ade498d8fad5f71a4d4286071c7b43d9fda17c4b5a14ec576f478d58bd2dcd51d5342cdff214e955bed18c4153fa53fa94131b7f0e2d4
+  languageName: node
+  linkType: hard
+
+"@types/xmldom@npm:^0.1.30":
+  version: 0.1.30
+  resolution: "@types/xmldom@npm:0.1.30"
+  checksum: 7b195da37ca63bcba37df495706333ec0bb7232cda5c2c146e27babce0434a0ab1684b0254c9ae6d4c571b18ef1d77b4ec8edc264fd1b7d67db9f85800bf50ba
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 20.2.0
   resolution: "@types/yargs-parser@npm:20.2.0"
@@ -2863,6 +2889,9 @@ __metadata:
     "@types/through2": ^2.0.34
     "@types/tough-cookie": ^4.0.0
     "@types/uuid": ^8.3.0
+    "@types/xml-crypto": ^1.4.1
+    "@types/xml2js": ^0.4.8
+    "@types/xmldom": ^0.1.30
     "@typescript-eslint/eslint-plugin": ^4.6.0
     "@typescript-eslint/parser": ^4.6.0
     axios: ^0.21.1
@@ -2908,6 +2937,9 @@ __metadata:
     ts-node: ^9.1.1
     typescript: ^4.1.3
     uuid: ^8.3.1
+    xml-crypto: 2.1.2
+    xml2js: ^0.4.23
+    xmldom: ^0.6.0
   languageName: unknown
   linkType: soft
 
@@ -8070,7 +8102,7 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"xml2js@npm:0.4.x":
+"xml2js@npm:0.4.x, xml2js@npm:^0.4.23":
   version: 0.4.23
   resolution: "xml2js@npm:0.4.23"
   dependencies:

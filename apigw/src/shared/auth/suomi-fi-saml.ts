@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Profile, Strategy, VerifiedCallback } from 'passport-saml'
-import { SamlUser } from '../routes/auth/saml/types'
-import { Strategy as DummyStrategy } from 'passport-dummy'
-import { sfiConfig, sfiMock } from '../config'
-import certificates from '../certificates'
 import fs from 'fs'
+import { Strategy as DummyStrategy } from 'passport-dummy'
+import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
+import { RedisClient } from 'redis'
+import certificates from '../certificates'
+import { nodeEnv, sfiConfig, sfiMock } from '../config'
+import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreatePerson } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
-import { RedisClient } from 'redis'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -54,8 +54,43 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
     sessionIndex: profile.sessionIndex
   }
 }
+
+export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
+  if (sfiMock) return {}
+  const publicCert = Array.isArray(sfiConfig.publicCert)
+    ? sfiConfig.publicCert.map(
+        (certificateName) => certificates[certificateName]
+      )
+    : fs.readFileSync(sfiConfig.publicCert, {
+        encoding: 'utf8'
+      })
+  const privateCert = fs.readFileSync(sfiConfig.privateCert, {
+    encoding: 'utf8'
+  })
+
+  return {
+    acceptedClockSkewMs: 0,
+    audience: sfiConfig.issuer,
+    cacheProvider: redisClient
+      ? redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
+      : undefined,
+    callbackUrl: sfiConfig.callbackUrl,
+    cert: publicCert,
+    decryptionPvk: privateCert,
+    disableRequestedAuthnContext: true,
+    entryPoint: sfiConfig.entryPoint,
+    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    issuer: sfiConfig.issuer,
+    logoutUrl: sfiConfig.logoutUrl,
+    privateCert: privateCert,
+    signatureAlgorithm: 'sha256',
+    // InResponseTo validation unnecessarily complicates testing
+    validateInResponseTo: nodeEnv === 'test' ? false : true
+  }
+}
+
 export default function createSuomiFiStrategy(
-  redisClient?: RedisClient
+  config: SamlConfig
 ): Strategy | DummyStrategy {
   if (sfiMock) {
     return new DummyStrategy((done) => {
@@ -64,39 +99,11 @@ export default function createSuomiFiStrategy(
         .catch(done)
     })
   } else {
-    if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
-    const privateCert = fs.readFileSync(sfiConfig.privateCert, {
-      encoding: 'utf8'
+    return new Strategy(config, (profile: Profile, done: VerifiedCallback) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      verifyProfile((profile as any) as SuomiFiProfile)
+        .then((user) => done(null, user))
+        .catch(done)
     })
-    return new Strategy(
-      {
-        acceptedClockSkewMs: 0,
-        audience: sfiConfig.issuer,
-        cacheProvider: redisClient
-          ? redisCacheProvider(redisClient, {
-              keyPrefix: 'suomifi-saml-resp:'
-            })
-          : undefined,
-        callbackUrl: sfiConfig.callbackUrl,
-        cert: sfiConfig.publicCert.map(
-          (certificateName) => certificates[certificateName]
-        ),
-        decryptionPvk: privateCert,
-        disableRequestedAuthnContext: true,
-        entryPoint: sfiConfig.entryPoint,
-        identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-        issuer: sfiConfig.issuer,
-        logoutUrl: sfiConfig.logoutUrl,
-        privateCert: privateCert,
-        signatureAlgorithm: 'sha256',
-        validateInResponseTo: true
-      },
-      (profile: Profile, done: VerifiedCallback) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        verifyProfile((profile as any) as SuomiFiProfile)
-          .then((user) => done(null, user))
-          .catch(done)
-      }
-    )
   }
 }

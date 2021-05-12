@@ -12,6 +12,7 @@
 declare module 'passport-saml' {
   import type passport from 'passport'
   import type express from 'express'
+  import { ParsedQs } from 'qs'
 
   export interface CacheItem {
     createdAt: number
@@ -176,5 +177,31 @@ declare module 'passport-saml' {
       signingCert: string | null,
       callback: (err: Error | null, metadata?: string) => void
     ): string
+  }
+
+  // SPDX-FileCopyrightText: 2017-2021 City of Espoo
+  //
+  // SPDX-License-Identifier: LGPL-2.1-or-later
+  export class SAML {
+    constructor(options: SamlConfig)
+
+    validateRedirect(
+      container: ParsedQs,
+      originalQuery: string,
+      callback: (
+        err: Error | null,
+        profile?: Profile | null,
+        loggedOut?: boolean
+      ) => void
+    ): void
+
+    validatePostRequest(
+      container: Record<string, string>,
+      callback: (
+        err: Error | null,
+        profile?: Profile | null,
+        loggedOut?: boolean
+      ) => void
+    ): void
   }
 }

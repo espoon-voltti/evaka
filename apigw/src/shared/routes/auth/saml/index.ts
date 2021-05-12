@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express, { Router } from 'express'
+import express, { Router, urlencoded } from 'express'
+import _ from 'lodash'
 import passport from 'passport'
-import { urlencoded } from 'body-parser'
-import { logAuditEvent, logDebug } from '../../../logging'
+import { AuthenticateOptions, SAML } from 'passport-saml'
+import { createLogoutToken, tryParseProfile } from '../../../auth'
 import { devLoginEnabled, gatewayRole, nodeEnv } from '../../../config'
+import { getEmployees } from '../../../dev-api'
+import { toMiddleware, toRequestHandler } from '../../../express'
+import { logAuditEvent, logDebug } from '../../../logging'
+import { fromCallback } from '../../../promise-utils'
+import { logoutExpress, saveLogoutToken } from '../../../session'
 import { parseDescriptionFromSamlError } from './error-utils'
 import { SamlEndpointConfig, SamlUser } from './types'
-import { toMiddleware, toRequestHandler } from '../../../express'
-import { logoutExpress, saveLogoutToken } from '../../../session'
-import { fromCallback } from '../../../promise-utils'
-import { getEmployees } from '../../../dev-api'
-import _ from 'lodash'
-import type { AuthenticateOptions } from 'passport-saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -54,8 +54,7 @@ function getRedirectUrl(req: express.Request): string {
 }
 
 function createLoginHandler({
-  strategyName,
-  sessionType
+  strategyName
 }: SamlEndpointConfig): express.RequestHandler {
   return (req, res, next) => {
     logAuditEvent(
@@ -94,7 +93,15 @@ function createLoginHandler({
             req,
             'User logged in successfully'
           )
-          await saveLogoutToken(req, res, sessionType, strategyName)
+
+          if (!user.nameID) {
+            throw new Error('User unexpectedly missing nameID property')
+          }
+          await saveLogoutToken(
+            req,
+            strategyName,
+            createLogoutToken(user.nameID, user.sessionIndex)
+          )
           const redirectUrl = getRedirectUrl(req)
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
@@ -135,13 +142,10 @@ function createLogoutHandler({
         await logoutExpress(req, res, sessionType)
         return res.redirect(redirectUrl)
       } catch (err) {
-        const description =
-          parseDescriptionFromSamlError(err, req) ||
-          'Could not parse SAML error.'
         logAuditEvent(
           `evaka.saml.${strategyName}.sign_out_failed`,
           req,
-          `Log out failed. Description: ${description}. Error: ${err}.`
+          `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err}.`
         )
         throw err
       }
@@ -165,7 +169,9 @@ function createLogoutHandler({
 // * HTTP redirect: the browser makes a GET request with query parameters
 // * HTTP POST: the browser makes a POST request with URI-encoded form body
 export default function createSamlRouter(config: SamlEndpointConfig): Router {
-  const { strategyName, strategy, pathIdentifier } = config
+  const { strategyName, strategy, samlConfig, pathIdentifier } = config
+  // For parsing SAML messages outside the strategy
+  const saml = new SAML(samlConfig)
 
   passport.use(strategyName, strategy)
 
@@ -177,7 +183,13 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
       req,
       'Logout callback called'
     )
-    await logoutExpress(req, res, config.sessionType)
+    const profile = await tryParseProfile(req, saml)
+    await logoutExpress(
+      req,
+      res,
+      config.sessionType,
+      profile?.nameID && createLogoutToken(profile.nameID, profile.sessionIndex)
+    )
   })
 
   const router = Router()

@@ -14,8 +14,10 @@ const names = [
   'tamperead-internal-staging.pem'
 ] as const
 
+export type TrustedCertificates = typeof names[number]
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const certificates: Record<typeof names[number], string> = {} as any
+const certificates: Record<TrustedCertificates, string> = {} as any
 for (const name of names) {
   certificates[name] = fs.readFileSync(
     path.resolve(__dirname, '../../config/certificates', name),

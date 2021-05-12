@@ -2,7 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import certificates from './certificates'
+import certificates, { TrustedCertificates } from './certificates'
+
+export interface EvakaSamlConfig {
+  callbackUrl: string
+  entryPoint: string
+  logoutUrl: string
+  issuer: string
+  publicCert: string | TrustedCertificates[]
+  privateCert: string
+}
 
 export const gatewayRoles = ['enduser', 'internal'] as const
 export type NodeEnv = typeof nodeEnvs[number]
@@ -129,9 +138,9 @@ export const enableDevApi =
   ifNodeEnv(['local', 'test'], true) ??
   false
 
-const certificateNames = Object.keys(certificates) as ReadonlyArray<
-  keyof typeof certificates
->
+const certificateNames = Object.keys(
+  certificates
+) as ReadonlyArray<TrustedCertificates>
 
 export const devLoginEnabled =
   env('DEV_LOGIN', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
@@ -140,11 +149,11 @@ const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
 const adEntryPointUrl = process.env.AD_SAML_ENTRYPOINT_URL
 const adLogoutUrl = process.env.AD_SAML_LOGOUT_URL
 
-export const adConfig =
+export const adConfig: EvakaSamlConfig | undefined =
   adCallbackUrl && !devLoginEnabled
     ? {
         callbackUrl: required(adCallbackUrl),
-        entryPointUrl: required(adEntryPointUrl),
+        entryPoint: required(adEntryPointUrl),
         logoutUrl: required(adLogoutUrl),
         issuer: required(process.env.AD_SAML_ISSUER),
         publicCert: required(
@@ -160,21 +169,41 @@ export const adExternalIdPrefix =
 export const sfiMock =
   env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
 
-const sfiCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
+// For local development & testing:
+// Explicitly use separate domains for the simulated SP and IdP to replicate
+// 3rd party cookie and SAML message parsing issues only present in those
+// conditions. SP must be in a domain that, from a browser's cookie handling
+// point of view, is a third party site to the IdP managing SSO / Single Logout.
+//
+// See also:
+// https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
+// https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
+const sfiCallbackUrl =
+  process.env.SFI_SAML_CALLBACK_URL ??
+  ifNodeEnv(
+    ['local', 'test'],
+    'https://saml-sp.qwerty.local/api/application/auth/saml/logout/callback'
+  )
+const sfiEntryPointUrl =
+  process.env.SFI_SAML_ENTRYPOINT ??
+  ifNodeEnv(['local', 'test'], 'https://identity-provider.asdf.local/idp')
+const sfiLogoutUrl = process.env.SFI_SAML_LOGOUT_URL ?? sfiEntryPointUrl
+const sfiIssuer = process.env.SFI_SAML_ISSUER ?? 'evaka-local'
 
-export const sfiConfig =
-  sfiCallbackUrl && !sfiMock
-    ? {
-        callbackUrl: required(sfiCallbackUrl),
-        entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
-        logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
-        issuer: required(process.env.SFI_SAML_ISSUER),
-        publicCert: required(
-          envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
-        ),
-        privateCert: required(process.env.SFI_SAML_PRIVATE_CERT)
-      }
-    : undefined
+export const sfiConfig: EvakaSamlConfig = {
+  callbackUrl: required(sfiCallbackUrl),
+  entryPoint: required(sfiEntryPointUrl),
+  logoutUrl: required(sfiLogoutUrl),
+  issuer: required(sfiIssuer),
+  publicCert: required(
+    envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
+      ifNodeEnv(['local', 'test'], 'config/test-cert/slo-test-idp-cert.pem')
+  ),
+  privateCert: required(
+    process.env.SFI_SAML_PRIVATE_CERT ??
+      ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+  )
+}
 
 const evakaCallbackUrl =
   process.env.EVAKA_SAML_CALLBACK_URL ??
@@ -190,10 +219,18 @@ const evakaCustomerCallbackUrl =
     `http://localhost:9099/api/application/auth/evaka-customer/login/callback`
   )
 
-export const evakaSamlConfig = evakaCallbackUrl
+export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
   ? {
       callbackUrl: required(evakaCallbackUrl),
       entryPoint: required(
+        process.env.EVAKA_SAML_ENTRYPOINT ??
+          ifNodeEnv(
+            ['local', 'test'],
+            'http://localhost:8080/auth/realms/evaka/protocol/saml'
+          )
+      ),
+      // NOTE: Same as entrypoint, on purpose
+      logoutUrl: required(
         process.env.EVAKA_SAML_ENTRYPOINT ??
           ifNodeEnv(
             ['local', 'test'],
@@ -218,13 +255,6 @@ export const evakaSamlConfig = evakaCallbackUrl
     }
   : undefined
 
-export interface EvakaSamlConfig {
-  callbackUrl: string
-  entryPoint: string
-  publicCert: string
-  privateCert: string
-}
-
 export const evakaCustomerSamlConfig:
   | EvakaSamlConfig
   | undefined = evakaCustomerCallbackUrl
@@ -235,6 +265,20 @@ export const evakaCustomerSamlConfig:
           ifNodeEnv(
             ['local', 'test'],
             'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+          )
+      ),
+      logoutUrl: required(
+        process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
+          ifNodeEnv(
+            ['local', 'test'],
+            'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
+          )
+      ),
+      issuer: required(
+        process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
+          ifNodeEnv(
+            ['local', 'test'],
+            'http://localhost:8080/auth/realms/evaka-customer'
           )
       ),
       publicCert: required(
