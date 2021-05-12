@@ -55,7 +55,7 @@ const features: Features = {
     voucherValueDecisionsPage: false,
     voucherServiceProviders: false,
     attachments: false,
-    evakaLogin: false,
+    evakaLogin: true,
     messaging: false,
     showNewServiceNeedsList: false,
     useNewServiceNeeds: false
