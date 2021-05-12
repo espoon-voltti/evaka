@@ -7,7 +7,6 @@ package fi.espoo.evaka.msg.service.sfi
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.whenever
 import fi.espoo.evaka.msg.config.CryptoBuildHelper
-import fi.espoo.evaka.msg.config.ResourceBundleConfig
 import fi.espoo.evaka.msg.config.SfiErrorResponseHandlerConfig
 import fi.espoo.evaka.msg.config.SfiSoapClientConfig
 import fi.espoo.evaka.msg.config.SoapCryptoConfig
@@ -38,8 +37,7 @@ import java.util.UUID
 @SpringBootTest(
     classes = [
         SfiClientService::class, SfiSoapClientConfig::class, TrustManagerConfig::class,
-        SoapCryptoConfig::class, SfiMapper::class, CryptoBuildHelper::class, SfiErrorResponseHandlerConfig::class,
-        ResourceBundleConfig::class
+        SoapCryptoConfig::class, SfiMapper::class, CryptoBuildHelper::class, SfiErrorResponseHandlerConfig::class
     ]
 )
 @EnableConfigurationProperties(SfiSoapProperties::class, SfiMessageProperties::class)
