@@ -293,7 +293,7 @@ class ApplicationControllerV2(
         Audit.ApplicationUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
-        db.transaction { applicationStateService.updateApplicationContentsServiceWorker(it, user, applicationId, application) }
+        db.transaction { applicationStateService.updateApplicationContentsServiceWorker(it, user, applicationId, application, user.id) }
         return ResponseEntity.noContent().build()
     }
 

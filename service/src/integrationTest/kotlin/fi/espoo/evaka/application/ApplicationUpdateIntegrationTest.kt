@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.test.getValidDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest() {
+    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id)
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
@@ -139,13 +140,142 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         assertEquals(manuallySetDueDate, afterSendingAttachment?.dueDate)
     }
 
+    @Test
+    fun `when urgency is cancelled by citizen, relevant attachments are deleted`() {
+        // given
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 5, 1)
+        val application = insertSentApplication(sentDate, originalDueDate, true, shiftCare = true)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.URGENCY)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.EXTENDED_CARE)
+
+        val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
+        assertEquals(2, beforeClearingUrgency!!.attachments.size)
+
+        // when
+        val updatedApplication =
+            application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
+        val (_, res, _) = http.put("/citizen/applications/${application.id}")
+            .jsonBody(objectMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
+            .asUser(citizen)
+            .responseString()
+
+        assertEquals(204, res.statusCode)
+
+        // then
+        val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
+        assertEquals(0, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(1, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+    }
+
+    @Test
+    fun `when urgency is cancelled by service worker, relevant attachments are deleted`() {
+        // given
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 5, 1)
+        val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.URGENCY)
+        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.EXTENDED_CARE)
+
+        val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
+        assertEquals(2, beforeClearingUrgency!!.attachments.size)
+
+        // when
+        val updatedApplication =
+            application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
+        val (_, res, _) = http.put("/v2/applications/${application.id}")
+            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
+            .asUser(serviceWorker)
+            .responseString()
+
+        assertEquals(204, res.statusCode)
+
+        // then
+        val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
+        assertEquals(0, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(1, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+    }
+
+    @Test
+    fun `when extended care is cancelled by citizen, relevant attachments are deleted`() {
+        // given
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 5, 1)
+        val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.URGENCY)
+        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.EXTENDED_CARE)
+
+        val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(true, beforeClearingShiftCare!!.form.preferences.urgent)
+        assertEquals(2, beforeClearingShiftCare!!.attachments.size)
+
+        // when
+        val updatedApplication =
+            application.copy(
+                form = application.form.copy(
+                    preferences = application.form.preferences.copy(serviceNeed = application.form.preferences.serviceNeed!!.copy(shiftCare = false))
+                )
+            )
+        val (_, res, _) = http.put("/citizen/applications/${application.id}")
+            .jsonBody(objectMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
+            .asUser(citizen)
+            .responseString()
+
+        assertEquals(204, res.statusCode)
+
+        // then
+        val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
+        assertEquals(1, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(0, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+    }
+
+    @Test
+    fun `when extended care is cancelled by service worker, relevant attachments are deleted`() {
+        // given
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 5, 1)
+        val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.URGENCY)
+        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.EXTENDED_CARE)
+
+        val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(true, beforeClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
+        assertEquals(2, beforeClearingShiftCare!!.attachments.size)
+
+        // when
+        val updatedApplication =
+            application.copy(
+                form = application.form.copy(
+                    preferences = application.form.preferences.copy(serviceNeed = application.form.preferences.serviceNeed!!.copy(shiftCare = false))
+                )
+            )
+        val (_, res, _) = http.put("/v2/applications/${application.id}")
+            .jsonBody(objectMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
+            .asUser(serviceWorker)
+            .responseString()
+
+        assertEquals(204, res.statusCode)
+
+        // then
+        val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
+        assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
+        assertEquals(1, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(0, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+    }
+
     private fun insertSentApplication(
         sentDate: LocalDate,
         dueDate: LocalDate,
-        urgent: Boolean
+        urgent: Boolean,
+        shiftCare: Boolean = false
     ): ApplicationDetails = db.transaction { tx ->
         val applicationId = tx.insertTestApplication(status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id)
-        val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
+        val validDaycareForm = DaycareFormV0.fromApplication2(getValidDaycareApplication(shiftCare = shiftCare))
         tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
         tx.fetchApplicationDetails(applicationId)!!
     }

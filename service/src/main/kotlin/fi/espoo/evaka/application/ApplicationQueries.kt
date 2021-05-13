@@ -200,7 +200,7 @@ fun Database.Read.fetchApplicationSummaries(
                 ApplicationBasis.EXTENDED_CARE -> "(f.document ->> 'extendedCare')::boolean = true"
                 ApplicationBasis.DUPLICATE_APPLICATION -> "array_length(duplicates.duplicate_application_ids, 1) > 0"
                 ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
-                ApplicationBasis.HAS_ATTACHMENTS -> "array_length(attachments.attachment_ids, 1) > 0"
+                ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
             }
         }.joinToString("\nAND ") else null,
         if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,

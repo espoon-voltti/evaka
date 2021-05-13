@@ -26,12 +26,14 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-val validDaycareApplication = applicationDetails(
-    PreferredUnit(
-        id = testDaycare.id,
-        name = testDaycare.name
-    )
+val defaultPreferredUnit = PreferredUnit(
+    id = testDaycare.id,
+    name = testDaycare.name
 )
+
+fun getValidDaycareApplication(preferredUnit: PreferredUnit = defaultPreferredUnit, shiftCare: Boolean = false) = applicationDetails(preferredUnit, shiftCare = shiftCare)
+
+val validDaycareApplication = getValidDaycareApplication()
 
 val validVoucherApplication =
     applicationDetails(
@@ -41,7 +43,7 @@ val validVoucherApplication =
         )
     )
 
-private fun applicationDetails(vararg preferredUnits: PreferredUnit) = ApplicationDetails(
+private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: Boolean = false) = ApplicationDetails(
     id = UUID.randomUUID(),
     type = ApplicationType.DAYCARE,
     status = ApplicationStatus.WAITING_DECISION,
@@ -109,7 +111,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit) = Applicati
             serviceNeed = ServiceNeed(
                 startTime = "08:00",
                 endTime = "17:00",
-                shiftCare = false,
+                shiftCare = shiftCare,
                 partTime = false
             ),
             siblingBasis = null,

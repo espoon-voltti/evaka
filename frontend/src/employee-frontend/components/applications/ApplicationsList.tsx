@@ -324,13 +324,14 @@ const ApplicationsList = React.memo(function Applications({
           {application.urgent && (
             <RoundIcon content="!" color={colors.accents.red} size="s" />
           )}
-          {application.attachmentCount > 0 && (
-            <RoundIcon
-              content={faPaperclip}
-              color={colors.accents.violet}
-              size="s"
-            />
-          )}
+          {(application.urgent || application.extendedCare) &&
+            application.attachmentCount > 0 && (
+              <RoundIcon
+                content={faPaperclip}
+                color={colors.accents.violet}
+                size="s"
+              />
+            )}
         </FixedSpaceRow>
       </Td>
       <Td>

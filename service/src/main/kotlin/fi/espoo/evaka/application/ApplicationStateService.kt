@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
+import fi.espoo.evaka.attachment.deleteAttachmentsByApplicationAndType
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.Language
@@ -49,6 +50,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
+import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
@@ -67,6 +69,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -81,7 +84,9 @@ class ApplicationStateService(
     private val decisionDraftService: DecisionDraftService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
-    private val mapper: ObjectMapper
+    private val mapper: ObjectMapper,
+    private val documentClient: DocumentService,
+    private val env: Environment
 ) {
     // STATE TRANSITIONS
 
@@ -445,6 +450,17 @@ class ApplicationStateService(
 
         val updatedForm = original.form.update(update)
 
+        val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
+        if (!updatedForm.preferences.urgent) {
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, user.id)
+            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+        }
+
+        if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE, user.id)
+            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+        }
+
         if (asDraft) {
             if (original.status !== CREATED) throw BadRequest("Cannot save as draft, application already sent")
         } else {
@@ -464,12 +480,23 @@ class ApplicationStateService(
         return getApplication(tx, applicationId)
     }
 
-    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate) {
+    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate, userId: UUID) {
         val original = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
         val updatedForm = original.form.update(update.form)
         validateApplication(tx, original.type, updatedForm, strict = false)
+
+        val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
+        if (!updatedForm.preferences.urgent) {
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.URGENCY, userId)
+            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+        }
+
+        if (updatedForm.preferences.serviceNeed?.shiftCare != true) {
+            val deleted = tx.deleteAttachmentsByApplicationAndType(applicationId, AttachmentType.EXTENDED_CARE, userId)
+            deleted.forEach { documentClient.delete(filesBucket, "$it") }
+        }
 
         tx.updateApplicationContents(original, updatedForm, manuallySetDueDate = update.dueDate)
     }
