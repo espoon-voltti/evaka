@@ -44,7 +44,7 @@ export default React.memo(function UnitDetailsPanel({
     } else {
       setDistance(null)
     }
-  }, [unit, selectedAddress])
+  }, [unit, selectedAddress]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatCareType = (type: CareType) => {
     switch (type) {

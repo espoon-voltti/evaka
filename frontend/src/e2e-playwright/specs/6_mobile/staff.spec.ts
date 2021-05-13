@@ -62,7 +62,7 @@ beforeEach(async () => {
   staffPage = new StaffPage(page)
 
   const mobileSignupUrl = await pairMobileDevice(
-    employee.data.id!,
+    employee.data.id!, // eslint-disable-line
     fixtures.daycareFixture.id
   )
   await page.goto(mobileSignupUrl)

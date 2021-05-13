@@ -25,7 +25,6 @@ import { mobileAutoSignInRole } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
-  createBackupCareFixture,
   createDaycarePlacementFixture,
   DaycareBuilder,
   DaycareGroupBuilder,

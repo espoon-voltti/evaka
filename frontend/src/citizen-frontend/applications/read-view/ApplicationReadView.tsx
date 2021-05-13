@@ -30,7 +30,7 @@ export default React.memo(function ApplicationReadView() {
   const loadApplication = useRestApi(getApplication, setApiData)
   useEffect(() => {
     loadApplication(applicationId)
-  }, [applicationId])
+  }, [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useTitle(
     t,
