@@ -132,7 +132,7 @@ function VoucherServiceProviders() {
       ...filters,
       areaId: filters.areaId || undefined
     }).then(setReport)
-  }, [filters])
+  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const months = monthOptions
   const years = yearOptions

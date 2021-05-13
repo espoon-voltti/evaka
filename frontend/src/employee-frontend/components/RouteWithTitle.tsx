@@ -21,7 +21,7 @@ export function RouteWithTitle<T>({ title, path, component, exact }: Props<T>) {
 
   useEffect(() => {
     if (title) setTitle(title)
-  }, [path])
+  }, [path]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return exact ? (
     <Route exact path={path} component={component} />

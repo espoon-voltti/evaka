@@ -62,7 +62,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
         behavior: 'smooth'
       })
     }
-  }, [toggled])
+  }, [toggled]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container ref={elRef}>

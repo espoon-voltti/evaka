@@ -185,7 +185,7 @@ function AssistanceNeedForm(props: Props) {
     setAutoCutWarning(
       isCreate(props) && checkSoftConflict() && !checkHardConflict()
     )
-  }, [form, assistanceNeeds])
+  }, [form, assistanceNeeds]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

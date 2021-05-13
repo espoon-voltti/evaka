@@ -66,7 +66,7 @@ function ChildAgeLanguage() {
 
   const filteredRows: ChildAgeLanguageReportRow[] = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters]
+    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return (

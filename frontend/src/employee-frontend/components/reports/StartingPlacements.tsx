@@ -115,7 +115,7 @@ const StartingPlacements = React.memo(function StartingPlacements() {
         (row) => row.firstName,
         (row) => row.lastName
       ]),
-    [rows, displayFilters]
+    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return (

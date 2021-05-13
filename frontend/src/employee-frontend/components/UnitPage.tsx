@@ -54,14 +54,14 @@ export default React.memo(function UnitPage() {
       const queryStart = LocalDate.parseIso(query.get('start') ?? '')
       setFilters(filters.withStartDate(queryStart))
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => loadUnitInformation(id), [id])
+  useEffect(() => loadUnitInformation(id), [id, loadUnitInformation])
   useEffect(() => {
     if (unitInformation.isSuccess) {
       setTitle(unitInformation.value.daycare.name)
     }
-  }, [unitInformation])
+  }, [setTitle, unitInformation])
 
   const loadUnitData = useRestApi(getUnitData, setUnitData)
   const loadUnitDataWithFixedPosition = () => {
@@ -71,13 +71,13 @@ export default React.memo(function UnitPage() {
 
   useEffect(() => {
     loadUnitDataWithFixedPosition()
-  }, [filters])
+  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (unitData.isSuccess) {
       scrollToPosition()
     }
-  }, [unitData])
+  }, [scrollToPosition, unitData])
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
@@ -125,7 +125,7 @@ export default React.memo(function UnitPage() {
           ]
         : [])
     ],
-    [i18n, unitData]
+    [i18n, unitData] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const RedirectToUnitInfo = useCallback(

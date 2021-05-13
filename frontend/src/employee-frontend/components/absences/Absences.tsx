@@ -80,20 +80,20 @@ export default function Absences({
       year: selectedDate.getYear(),
       month: selectedDate.getMonth()
     }).then(setAbsences)
-  }, [groupId, selectedDate])
+  }, [groupId, selectedDate, setAbsences])
 
   useEffect(() => {
     loadAbsences()
     return () => {
       setAbsences(Loading.of())
     }
-  }, [loadAbsences])
+  }, [loadAbsences]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (absences.isSuccess) {
       setTitle(`${absences.value.groupName} | ${absences.value.daycareName}`)
     }
-  }, [absences])
+  }, [absences, setTitle])
 
   function updateCareTypes(type: CareTypeCategory) {
     const included = selectedCareTypeCategories.includes(type)

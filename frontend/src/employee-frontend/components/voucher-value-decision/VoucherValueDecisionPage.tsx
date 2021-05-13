@@ -36,7 +36,7 @@ export default React.memo(function VoucherValueDecisionPage() {
     [id, setDecision]
   )
 
-  useEffect(loadDecision, [id])
+  useEffect(loadDecision, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (decision.isSuccess) {
@@ -48,7 +48,7 @@ export default React.memo(function VoucherValueDecisionPage() {
         ? setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
         : setTitle(`${name} | ${i18n.titles.valueDecision}`)
     }
-  }, [decision])
+  }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (decision.isFailure) {
     return <Redirect to="/finance/value-decisions" />

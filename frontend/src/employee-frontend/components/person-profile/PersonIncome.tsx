@@ -76,7 +76,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
         })
       }
     }
-  }, [incomes])
+  }, [incomes]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleErrors = (res: Result<unknown>) => {
     if (res.isFailure) {

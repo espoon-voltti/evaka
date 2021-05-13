@@ -56,7 +56,7 @@ function PersonFridgeHeadForm({ id, personFridgeHead }: Props) {
     if (!headPersonForm) {
       setHeadPersonForm(personFridgeHead)
     } else setFormValidation(isFormValid(headPersonForm))
-  }, [headPersonForm])
+  }, [headPersonForm]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const assignHeadPersonForm = <K extends keyof PersonContactInfo>(
     value: Pick<PersonContactInfo, K>

@@ -42,7 +42,7 @@ const MessageBlocklist = React.memo(function ChildDetails({
 
   const loadData = useRestApi(getChildRecipients, setRecipients)
 
-  useEffect(() => loadData(id), [id])
+  useEffect(() => loadData(id), [id, loadData])
 
   const getRoleString = (headOfChild: boolean, guardian: boolean) => {
     if (headOfChild && guardian) {
@@ -80,20 +80,20 @@ const MessageBlocklist = React.memo(function ChildDetails({
           <Tbody>
             {recipients.isLoading && (
               <Tr>
-                <Td></Td>
+                <Td />
                 <Td>
                   <SpinnerSegment />
                 </Td>
-                <Td></Td>
+                <Td />
               </Tr>
             )}
             {recipients.isFailure && (
               <Tr>
-                <Td></Td>
+                <Td />
                 <Td>
                   <ErrorSegment title={i18n.common.loadingFailed} />
                 </Td>
-                <Td></Td>
+                <Td />
               </Tr>
             )}
             {recipients.isSuccess &&

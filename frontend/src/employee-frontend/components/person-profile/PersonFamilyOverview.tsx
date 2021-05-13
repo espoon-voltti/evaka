@@ -105,7 +105,7 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
 
   useEffect(() => {
     void reloadFamily(id)
-  }, [id, setFamily])
+  }, [id, setFamily]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>

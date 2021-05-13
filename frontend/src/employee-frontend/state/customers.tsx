@@ -56,11 +56,13 @@ export const CustomersContextProvider = React.memo(
     const [sortDirection, setSortDirection] = useState<SearchOrder>('ASC')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
+    // TODO: fix the deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const useCustomerSearch = () => {
       const searchCustomers = useRestApi(findByNameOrAddress, setCustomers)
       useEffect(() => {
         void searchCustomers(searchTerm, sortColumn, sortDirection)
-      }, [searchCustomers, debouncedSearchTerm, sortColumn, sortDirection])
+      }, [searchCustomers, debouncedSearchTerm, sortColumn, sortDirection]) // eslint-disable-line react-hooks/exhaustive-deps
     }
 
     const sortToggle = useCallback(

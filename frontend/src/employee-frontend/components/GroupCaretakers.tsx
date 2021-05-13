@@ -82,7 +82,7 @@ function GroupCaretakers({
 
   useEffect(() => {
     loadData()
-  }, [unitId, groupId])
+  }, [unitId, groupId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const deleteRow = (id: UUID) => {
     void deleteCaretakers(unitId, groupId, id).then(loadData)

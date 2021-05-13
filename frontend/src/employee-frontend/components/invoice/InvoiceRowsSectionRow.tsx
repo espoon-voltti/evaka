@@ -249,7 +249,7 @@ const AmountInput = React.memo(function AmountInput({
       onChange(parsed)
       setInvalid(false)
     }
-  }, [stringValue])
+  }, [stringValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <NarrowInput
@@ -283,7 +283,7 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
     if (parsed !== undefined) {
       onChange(parsed)
     }
-  }, [stringValue])
+  }, [stringValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <NarrowEuroInput

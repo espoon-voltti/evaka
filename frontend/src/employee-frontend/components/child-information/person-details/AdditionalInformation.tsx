@@ -77,7 +77,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
 
   useEffect(() => {
     loadData()
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startEdit = () => {
     if (additionalInformation.isSuccess) {

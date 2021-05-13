@@ -43,7 +43,7 @@ function AssistanceNeed({ id }: Props) {
     void getAssistanceNeeds(id).then(setAssistanceNeeds)
   }
 
-  useEffect(loadData, [id])
+  useEffect(loadData, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function renderAssistanceNeeds() {
     if (assistanceNeeds.isLoading) {

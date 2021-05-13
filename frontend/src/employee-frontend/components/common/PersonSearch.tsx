@@ -81,12 +81,12 @@ function PersonSearch({
 
   useEffect(() => {
     onResult(selectedPerson)
-  }, [selectedPerson])
+  }, [selectedPerson]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const searchPeople = useRestApi(search, setPersons)
   useEffect(() => {
     searchPeople(debouncedQuery)
-  }, [debouncedQuery])
+  }, [debouncedQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filterPeople = (people: PersonDetails[]) =>
     people.filter((person) =>
@@ -101,7 +101,7 @@ function PersonSearch({
 
   const options = useMemo(
     () => persons.map((ps) => filterPeople(ps)).getOrElse([]),
-    [persons]
+    [persons] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return (
@@ -118,7 +118,7 @@ function PersonSearch({
         }
         onInputChange={setQuery}
         onChange={(option) =>
-          void setSelectedPerson(option && 'id' in option ? option : undefined)
+          setSelectedPerson(option && 'id' in option ? option : undefined)
         }
         isLoading={persons.isLoading || (!!query && query !== debouncedQuery)}
         loadingMessage={() => i18n.common.loading}

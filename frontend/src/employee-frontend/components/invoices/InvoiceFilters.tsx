@@ -34,11 +34,11 @@ function InvoiceFilters() {
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
-  }, [])
+  }, [setAvailableAreas])
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
-  }, [])
+  }, [setUnits])
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
@@ -49,7 +49,7 @@ function InvoiceFilters() {
     ) {
       setSearchFilters({ ...searchFilters, unit: undefined })
     }
-  }, [units])
+  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleArea = (code: string) => () => {
     searchFilters.area.includes(code)

@@ -47,15 +47,15 @@ function FeeDecisionFilters() {
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
-  }, [])
+  }, [setAvailableAreas])
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
-  }, [])
+  }, [setUnits])
 
   useEffect(() => {
     void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
-  }, [])
+  }, [setFinanceDecisionHandlers])
 
   const selectedFinanceDecisionHandler = useMemo(
     () =>
@@ -64,7 +64,7 @@ function FeeDecisionFilters() {
         .find(
           (handler) => handler.value === searchFilters.financeDecisionHandlerId
         ),
-    [searchFilters.financeDecisionHandlerId]
+    [searchFilters.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   // remove selected unit filter if the unit is not included in the selected areas
@@ -76,7 +76,7 @@ function FeeDecisionFilters() {
     ) {
       setSearchFilters({ ...searchFilters, unit: undefined })
     }
-  }, [units])
+  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleArea = (code: string) => () => {
     searchFilters.area.includes(code)

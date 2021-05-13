@@ -91,7 +91,7 @@ export default function AbsencesModal({ child, date }: Props) {
         }, 500)
       }
     })
-  }, [selectedDate])
+  }, [child.id, selectedDate])
 
   function calculateAbsences(
     absences: Absence[],

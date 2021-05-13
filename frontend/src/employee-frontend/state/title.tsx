@@ -24,12 +24,16 @@ export const TitleContextProvider = React.memo(function TitleContextProvider({
 }) {
   const { i18n } = useTranslation()
 
+  // TODO fix the deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const setTitle = (title?: string) => {
     document.title = title
       ? `${title} - ${i18n.titles.defaultTitle}`
       : i18n.titles.defaultTitle
   }
 
+  // TODO fix the deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const formatTitleName = (
     maybeFirstName: string | null,
     maybeLastName: string | null

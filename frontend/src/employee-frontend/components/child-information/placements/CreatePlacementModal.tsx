@@ -76,7 +76,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
         })
       }
     })
-  }, [setUnits, form.type, form.startDate])
+  }, [setUnits, form.type, form.startDate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const submitForm = () => {
     setSubmitting(true)

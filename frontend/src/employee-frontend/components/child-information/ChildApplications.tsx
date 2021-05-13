@@ -47,7 +47,7 @@ const ChildApplications = React.memo(function ChildApplications({
     void getChildApplicationSummaries(id).then(setApplications)
   }
 
-  useEffect(loadData, [id])
+  useEffect(loadData, [id, setApplications])
 
   function renderApplications() {
     if (applications.isLoading) {

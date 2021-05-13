@@ -78,7 +78,6 @@ export default React.memo(function VoucherValueDecisionsPage() {
     reloadDecisions(page, pageSize, sortBy, sortDirection, params)
   }, [
     page,
-    pageSize,
     sortBy,
     sortDirection,
     searchFilters,
@@ -101,7 +100,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
     if (currentPage?.isSuccess) {
       checkIds(currentPage.value.map((decision) => decision.id))
     }
-  }, [decisions, checkIds])
+  }, [decisions, checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container data-qa="voucher-value-decisions-page">

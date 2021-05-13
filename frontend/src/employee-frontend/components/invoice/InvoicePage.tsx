@@ -35,7 +35,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   const { setTitle } = useContext<TitleState>(TitleContext)
 
   const loadInvoice = () => getInvoice(id).then(setInvoice)
-  useEffect(() => void loadInvoice(), [id])
+  useEffect(() => void loadInvoice(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => void getInvoiceCodes().then(setInvoiceCodes), [])
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
         ? setTitle(`${name} | ${i18n.titles.invoiceDraft}`)
         : setTitle(`${name} | ${i18n.titles.invoice}`)
     }
-  }, [invoice])
+  }, [invoice]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const editable = invoice.map((inv) => inv.status === 'DRAFT').getOrElse(false)
 

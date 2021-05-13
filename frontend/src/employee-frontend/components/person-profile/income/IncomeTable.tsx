@@ -99,7 +99,7 @@ const IncomeTable = React.memo(function IncomeTable(props: Props) {
         props.setData(parseData(state))
       }
     }
-  }, [state])
+  }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const types: readonly IncomeType[] =
     props.type === 'income' ? incomeTypes : expenseTypes
