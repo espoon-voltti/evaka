@@ -13,79 +13,107 @@ import Loader from '../../../lib-components/atoms/Loader'
 import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
 import { useTranslation } from '../../state/i18n'
 import Select, { SelectOptionProps } from '../common/Select'
-import { MessageAccount } from './types'
+import GroupMessageAccountList from './GroupMessageAccountList'
+import MessageBox from './MessageBox'
+import { isGroupMessageAccount, MessageAccount } from './types'
+import { AccountView } from './types-view'
 
-type GroupMessageAccount = Required<MessageAccount>
+const AccountSection = styled.section`
+  padding: 12px 0;
 
-function getGroupAccounts(accounts: MessageAccount[]): GroupMessageAccount[] {
-  return accounts.filter((a) => a.daycareGroup) as GroupMessageAccount[]
-}
+  & + & {
+    border-top: 1px dashed ${greyscale.dark};
+  }
+`
+
+const AccountHeader = styled.div`
+  padding: 12px ${defaultMargins.m};
+  color: ${greyscale.dark};
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+`
+
+const UnitSelection = styled.div`
+  padding: 0 ${defaultMargins.s};
+`
 
 interface AccountsParams {
   accounts: MessageAccount[]
-  setSelectedAccount: (account: MessageAccount) => void
+  setView: (view: AccountView) => void
+  view: AccountView | undefined
 }
 
 function Accounts(props: AccountsParams) {
   const { i18n } = useTranslation()
   const personalAccount = props.accounts.find((a) => a.personal)
-  const groupAccounts = getGroupAccounts(props.accounts)
+  const groupAccounts = props.accounts.filter(isGroupMessageAccount)
 
-  const unitOptions = uniqBy(
-    groupAccounts.map(({ daycareGroup }) => ({
-      value: daycareGroup.unitId,
-      label: daycareGroup.unitName
-    })),
-    (val) => val.value
+  const unitOptions = sortBy(
+    uniqBy(
+      groupAccounts.map(({ daycareGroup }) => ({
+        value: daycareGroup.unitId,
+        label: daycareGroup.unitName
+      })),
+      (val) => val.value
+    ),
+    (u) => u.label
   )
 
   const [selectedUnit, setSelectedUnit] = useState<SelectOptionProps>(
     unitOptions[0]
   )
 
-  if (props.accounts.length < 1) {
-    return null
-  }
+  const visibleGroupAccounts = sortBy(
+    groupAccounts.filter(
+      (acc) => acc.daycareGroup.unitId === selectedUnit.value
+    ),
+    (val) => val.daycareGroup.name
+  )
+  const unitSelectionEnabled = unitOptions.length > 0
+
   return (
     <>
       {personalAccount && (
-        <>
+        <AccountSection>
           <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
-          <div onClick={() => props.setSelectedAccount(personalAccount)}>
-            {i18n.messages.messageBoxes.names.RECEIVED}
-          </div>{' '}
-          <div>{i18n.messages.messageBoxes.names.SENT}</div>
-        </>
+          <MessageBox
+            view="RECEIVED"
+            account={personalAccount}
+            activeView={props.view}
+            setView={props.setView}
+          />
+          <MessageBox
+            view="SENT"
+            account={personalAccount}
+            activeView={props.view}
+            setView={props.setView}
+          />
+        </AccountSection>
       )}
 
       {groupAccounts.length > 0 && (
-        <>
+        <AccountSection>
           <AccountHeader>
             {i18n.messages.sidePanel.groupsMessages}
           </AccountHeader>
-          {unitOptions.length > 0 && (
-            <Select
-              options={unitOptions}
-              onChange={(val) => val && 'value' in val && setSelectedUnit(val)}
-              value={selectedUnit}
-            />
+          {unitSelectionEnabled && (
+            <UnitSelection>
+              <Select
+                options={unitOptions}
+                onChange={(val) =>
+                  val && 'value' in val && setSelectedUnit(val)
+                }
+                value={selectedUnit}
+              />
+            </UnitSelection>
           )}
-          <ul>
-            {sortBy(
-              groupAccounts.filter(
-                (acc) => acc.daycareGroup.unitId === selectedUnit.value
-              ),
-              (val) => val.daycareGroup.name
-            ).map((account) => (
-              <li
-                key={account.id}
-                onClick={() => props.setSelectedAccount(account)}
-              >
-                {account.daycareGroup.name}
-              </li>
-            ))}
-          </ul>
-        </>
+          <GroupMessageAccountList
+            accounts={visibleGroupAccounts}
+            activeView={props.view}
+            setView={props.setView}
+          />
+        </AccountSection>
       )}
     </>
   )
@@ -93,15 +121,16 @@ function Accounts(props: AccountsParams) {
 
 interface Props {
   accounts: Result<MessageAccount[]>
-  selectedAccount: MessageAccount | undefined
-  setSelectedAccount: (acc: MessageAccount) => void
+  view: AccountView | undefined
+  setView: (view: AccountView) => void
   showEditor: () => void
 }
 
 export default React.memo(function Sidebar({
   accounts,
-  setSelectedAccount,
-  showEditor
+  setView,
+  showEditor,
+  view
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -110,10 +139,7 @@ export default React.memo(function Sidebar({
       {accounts.isLoading && <Loader />}
       {accounts.isFailure && <ErrorSegment />}
       {accounts.isSuccess && (
-        <Accounts
-          accounts={accounts.value}
-          setSelectedAccount={setSelectedAccount}
-        />
+        <Accounts accounts={accounts.value} view={view} setView={setView} />
       )}
       <Button
         text={i18n.messages.messageBoxes.newBulletin}
@@ -131,12 +157,4 @@ const Container = styled.div`
   background-color: ${colors.greyscale.white};
   overflow-y: auto;
   margin-right: ${defaultMargins.m};
-`
-
-const AccountHeader = styled.div`
-  padding: ${defaultMargins.m};
-  color: ${greyscale.dark};
-  font-family: 'Montserrat', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
 `

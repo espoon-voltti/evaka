@@ -13,6 +13,7 @@ import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
 import Sidebar from './Sidebar'
 import { Message, MessageAccount } from './types'
+import { AccountView } from './types-view'
 
 const PanelContainer = styled.div`
   display: flex;
@@ -23,7 +24,8 @@ export default React.memo(function MessagesPage() {
   const loadAccounts = useRestApi(getMessagingAccounts, setResult)
   useEffect(() => loadAccounts(), [loadAccounts])
 
-  const [selectedAccount, setSelectedAccount] = useState<MessageAccount>()
+  const [view, setView] = useState<AccountView>()
+
   const [showEditor, setShowEditor] = useState<boolean>(false)
   const [message, setMessage] = useState<Message>({
     title: '',
@@ -42,13 +44,11 @@ export default React.memo(function MessagesPage() {
       <PanelContainer>
         <Sidebar
           accounts={accounts}
-          selectedAccount={selectedAccount}
-          setSelectedAccount={setSelectedAccount}
+          view={view}
+          setView={setView}
           showEditor={() => setShowEditor(true)}
         />
-        {selectedAccount && (
-          <MessageList view="RECEIVED" account={selectedAccount} />
-        )}
+        {view && <MessageList {...view} />}
         {showEditor && (
           <MessageEditor
             message={message}

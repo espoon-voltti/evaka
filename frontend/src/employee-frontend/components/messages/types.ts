@@ -59,7 +59,12 @@ export interface MessageAccount {
     unitId: UUID
     unitName: string
   }
+  unreadCount: number
 }
+export type GroupMessageAccount = Required<MessageAccount>
+export const isGroupMessageAccount = (
+  acc: MessageAccount
+): acc is GroupMessageAccount => !!acc.daycareGroup
 
 export interface Message {
   id: UUID

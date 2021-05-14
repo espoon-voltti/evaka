@@ -13,7 +13,8 @@ import { ContentArea } from '../../../lib-components/layout/Container'
 import { getReceivedMessages } from './api'
 import { ReceivedMessages } from './ReceivedMessages'
 import { SingleThreadView } from './SingleThreadView'
-import { MessageAccount, MessageThread } from './types'
+import { MessageThread } from './types'
+import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
 
@@ -21,12 +22,10 @@ const MessagesContainer = styled(ContentArea)`
   overflow: hidden;
 `
 
-interface Props {
-  account: MessageAccount
-  view: 'RECEIVED' | 'SENT'
-}
-
-export default React.memo(function MessagesList({ account, view }: Props) {
+export default React.memo(function MessagesList({
+  account,
+  view
+}: AccountView) {
   const { i18n } = useTranslation()
 
   const [page, setPage] = useState<number>(1)

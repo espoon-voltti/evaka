@@ -58,45 +58,37 @@ interface Props {
 }
 
 export function ReceivedMessages({ messages, onViewThread }: Props) {
-  return messages.mapAll({
-    failure() {
-      return <ErrorSegment />
-    },
-    loading() {
-      return <Loader />
-    },
-    success(threads) {
-      return (
-        <>
-          {threads.map((t) => {
-            const unread = t.messages.some((m) => !m.readAt)
-            const lastMessage = t.messages[t.messages.length - 1]
-            return (
-              <MessageRow
-                key={t.id}
-                unread={unread}
-                onClick={() => onViewThread(t)}
-              >
-                <FirstColumn>
-                  <Participants unread={unread}>
-                    {t.messages.map((m) => m.senderName).join(', ')}{' '}
-                    {t.messages.length}
-                  </Participants>
-                  <Truncated>
-                    <Title unread={unread}>{t.title}</Title>
-                    {' - '}
-                    {lastMessage.content}
-                  </Truncated>
-                </FirstColumn>
-                <SecondColumn>
-                  <MessageTypeChip type={t.type} />
-                  {formatSentAt(lastMessage.sentAt)}
-                </SecondColumn>
-              </MessageRow>
-            )
-          })}
-        </>
-      )
-    }
-  })
+  if (messages.isFailure) return <ErrorSegment />
+  if (messages.isLoading) return <Loader />
+  return (
+    <>
+      {messages.value.map((t) => {
+        const unread = t.messages.some((m) => !m.readAt)
+        const lastMessage = t.messages[t.messages.length - 1]
+        return (
+          <MessageRow
+            key={t.id}
+            unread={unread}
+            onClick={() => onViewThread(t)}
+          >
+            <FirstColumn>
+              <Participants unread={unread}>
+                {t.messages.map((m) => m.senderName).join(', ')}{' '}
+                {t.messages.length}
+              </Participants>
+              <Truncated>
+                <Title unread={unread}>{t.title}</Title>
+                {' - '}
+                {lastMessage.content}
+              </Truncated>
+            </FirstColumn>
+            <SecondColumn>
+              <MessageTypeChip type={t.type} />
+              {formatSentAt(lastMessage.sentAt)}
+            </SecondColumn>
+          </MessageRow>
+        )
+      })}
+    </>
+  )
 }
