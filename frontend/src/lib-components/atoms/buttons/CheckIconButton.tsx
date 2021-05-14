@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'lib-icons'
-import colors from '../../colors'
 import { BaseProps } from '../../utils'
 
 const StyledButton = styled.button`
@@ -17,7 +16,7 @@ const StyledButton = styled.button`
   width: 34px;
   height: 34px;
   font-size: 24px;
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
   border: none;
   background: none;
   outline: none;
@@ -26,8 +25,8 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &.active {
-    color: ${colors.greyscale.white};
-    background-color: ${colors.accents.green};
+    color: ${({ theme: { colors } }) => colors.greyscale.white};
+    background-color: ${({ theme: { colors } }) => colors.accents.green};
     border-radius: 100%;
   }
 `

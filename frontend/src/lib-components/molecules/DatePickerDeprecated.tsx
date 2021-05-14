@@ -7,7 +7,6 @@ import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import styled from 'styled-components'
 import fi from 'date-fns/locale/fi'
 import LocalDate from 'lib-common/local-date'
-import colors from '../colors'
 
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -37,8 +36,8 @@ const StyledInput = styled.input`
   padding-top: calc(0.5em - 1px);
   position: relative;
   height: 2.5em;
-  border-color: ${colors.greyscale.medium};
-  color: ${colors.greyscale.darkest};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   display: block;
   box-shadow: none;
   max-width: 100%;
@@ -52,7 +51,7 @@ const StyledInput = styled.input`
   :focus {
     padding-bottom: calc(calc(0.5em - 1px) - 1px);
     border-bottom-width: 2px;
-    border-color: ${colors.primary};
+    border-color: ${({ theme: { colors } }) => colors.main.primary};
     outline: none;
   }
 `
@@ -111,7 +110,7 @@ const DatePickerContainer = styled.div`
     right: 0;
     &::after {
       background-color: transparent;
-      color: ${colors.greyscale.lighter};
+      color: ${({ theme: { colors } }) => colors.greyscale.lighter};
       font-size: 25px;
     }
   }

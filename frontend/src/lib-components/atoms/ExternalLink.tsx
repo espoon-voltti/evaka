@@ -6,7 +6,6 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExternalLink } from 'lib-icons'
 import styled from 'styled-components'
-import colors from '../colors'
 import { defaultMargins } from '../white-space'
 
 type ExternalLinkProps = {
@@ -37,7 +36,7 @@ const StyledLink = styled.a`
   font-weight: 600;
   font-size: 14px;
   line-height: 21px;
-  color: ${colors.primary};
+  color: ${({ theme: { colors } }) => colors.main.primary};
 `
 
 const Text = styled.span`

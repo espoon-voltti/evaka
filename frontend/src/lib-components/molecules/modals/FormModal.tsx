@@ -11,7 +11,6 @@ import Button from '../../atoms/buttons/Button'
 import AsyncButton from '../../atoms/buttons/AsyncButton'
 import UnderRowStatusIcon, { InfoStatus } from '../../atoms/StatusIcon'
 import Title from '../../atoms/Title'
-import colors from '../../colors'
 import { P } from '../../typography'
 import { defaultMargins, Gap } from '../../white-space'
 import { modalZIndex } from '../../layout/z-helpers'
@@ -90,10 +89,10 @@ interface ModalIconProps {
 }
 
 export const ModalIcon = styled.div<ModalIconProps>`
-  background: ${(props: ModalIconProps) => {
+  background: ${({ theme: { colors }, ...props }) => {
     switch (props.colour) {
       case 'blue':
-        return colors.blues.medium
+        return colors.main.medium
       case 'orange':
         return colors.accents.orange
       case 'green':
@@ -101,7 +100,7 @@ export const ModalIcon = styled.div<ModalIconProps>`
       case 'red':
         return colors.accents.red
       default:
-        return colors.blues.medium
+        return colors.main.medium
     }
   }};
   font-size: 36px;
@@ -319,13 +318,13 @@ const ButtonUnderRow = styled.div`
   word-wrap: break-word;
   white-space: normal;
 
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &.success {
-    color: ${colors.accents.greenDark};
+    color: ${({ theme: { colors } }) => colors.accents.greenDark};
   }
 
   &.warning {
-    color: ${colors.accents.orangeDark};
+    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
   }
 `

@@ -4,7 +4,6 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import Container from './Container'
 
@@ -23,7 +22,7 @@ export default React.memo(function StickyFooter({ children }: Props) {
 const Footer = styled.footer`
   position: sticky;
   bottom: 0;
-  background-color: ${colors.greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
   box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
 
   @media print {

@@ -6,7 +6,6 @@ import React, { KeyboardEvent, ReactNode } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronUp } from 'lib-icons'
-import colors from '../colors'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 import classNames from 'classnames'
 
@@ -62,15 +61,15 @@ export const ContentArea = styled.section<ContentAreaProps>`
           : p.paddingHorizontal
         : defaultMargins.L
     }`};
-  background-color: ${(props) =>
+  background-color: ${({ theme: { colors }, ...props }) =>
     props.opaque
       ? 'white'
       : props.blue
-      ? colors.brandEspoo.espooTurquoiseLight
+      ? colors.brand.secondaryLight
       : 'transparent'};
   position: relative;
   ${(p) => (p.fullHeight ? `min-height: 100vh` : '')}
-  ${(p) =>
+  ${({ theme: { colors }, ...p }) =>
     p.shadow ? `box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter}` : ''}
 `
 
@@ -168,7 +167,7 @@ const TitleWrapper = styled.div`
 `
 
 const TitleIcon = styled(FontAwesomeIcon)`
-  color: ${colors.blues.primary};
+  color: ${({ theme: { colors } }) => colors.main.primary};
   height: 24px !important;
   width: 24px !important;
 `

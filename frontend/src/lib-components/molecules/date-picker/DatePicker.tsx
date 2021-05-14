@@ -5,7 +5,6 @@
 import React, { useLayoutEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { greyscale } from '../../colors'
 import { defaultMargins } from '../../white-space'
 import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
@@ -32,7 +31,7 @@ const DayPickerPositioner = styled.div<{ show: boolean }>`
 `
 
 const DayPickerDiv = styled.div`
-  background-color: ${greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
   padding: ${defaultMargins.s} 0;
   border-radius: 2px;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);

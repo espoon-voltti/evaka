@@ -9,7 +9,6 @@ import TextareaAutosize from 'react-autosize-textarea'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { faTimes } from 'lib-icons'
-import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
@@ -48,19 +47,19 @@ const StyledInput = styled.input<StyledInputProps>`
 
   border-style: none none solid none;
   border-width: 1px;
-  border-color: ${colors.greyscale.medium};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
   border-radius: 2px;
   outline: none;
   box-sizing: border-box;
   text-align: ${(p) => p.align ?? 'left'};
-  background-color: ${colors.greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
 
   font-size: 1rem;
-  color: ${colors.greyscale.darkest};
+  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   padding: 6px ${(p) => (p.clearable ? '36px' : '12px')} 6px 12px;
 
   &::placeholder {
-    color: ${colors.greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.dark};
     font-size: 15px;
     font-family: 'Open Sans', 'Arial', sans-serif;
   }
@@ -68,7 +67,7 @@ const StyledInput = styled.input<StyledInputProps>`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
     margin-top: -2px;
     margin-bottom: -1px;
     padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
@@ -84,16 +83,16 @@ const StyledInput = styled.input<StyledInputProps>`
   }
 
   &.success {
-    border-color: ${colors.accents.green};
+    border-color: ${({ theme: { colors } }) => colors.accents.green};
   }
 
   &.warning {
-    border-color: ${colors.accents.orange};
+    border-color: ${({ theme: { colors } }) => colors.accents.orange};
   }
 
   &:read-only {
     border-bottom-style: dotted;
-    color: ${colors.greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.dark};
     background: none;
   }
 `
@@ -113,10 +112,10 @@ const InputIcon = styled.div`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${colors.greyscale.medium};
+  color: ${({ theme: { colors } }) => colors.greyscale.medium};
 
   &:hover {
-    color: ${colors.greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.dark};
   }
 `
 
@@ -135,14 +134,14 @@ const InputFieldUnderRow = styled.div`
   text-overflow: ellipsis;
   width: fit-content;
 
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &.success {
-    color: ${colors.accents.greenDark};
+    color: ${({ theme: { colors } }) => colors.accents.greenDark};
   }
 
   &.warning {
-    color: ${colors.accents.orangeDark};
+    color: ${({ theme: { colors } }) => colors.accents.orangeDark};
   }
 `
 
@@ -286,7 +285,7 @@ export const TextArea = styled(TextareaAutosize)`
   background-color: transparent;
   border-style: solid;
   border-width: 0 0 1px;
-  border-color: ${colors.greyscale.medium};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
   border-radius: 0;
   box-shadow: none;
 
@@ -294,7 +293,7 @@ export const TextArea = styled(TextareaAutosize)`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
     margin-top: -2px;
     margin-bottom: -1px;
     padding-left: 10px;

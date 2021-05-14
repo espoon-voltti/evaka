@@ -8,7 +8,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
 import Tooltip from './Tooltip'
 
 const Circle = styled.div`
@@ -18,7 +17,7 @@ const Circle = styled.div`
   min-height: 34px;
   max-width: 34px;
   max-height: 34px;
-  background-color: ${colors.accents.green};
+  background-color: ${({ theme: { colors } }) => colors.accents.green};
   border-radius: 100%;
 `
 
@@ -29,7 +28,7 @@ const HalfCircle = styled.div`
   min-height: 34px;
   max-width: 17px;
   max-height: 34px;
-  background-color: ${colors.accents.green};
+  background-color: ${({ theme: { colors } }) => colors.accents.green};
   border-top-left-radius: 17px;
   border-bottom-left-radius: 17px;
 `

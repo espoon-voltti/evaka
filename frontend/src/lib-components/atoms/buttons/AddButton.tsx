@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from 'lib-icons'
-import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
@@ -27,19 +26,19 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &.disabled {
-    color: ${colors.greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.dark};
     cursor: not-allowed;
 
     .icon-wrapper-inner {
-      background: ${colors.greyscale.dark};
+      background: ${({ theme: { colors } }) => colors.greyscale.dark};
     }
   }
 
   &.darker:not(.disabled) {
-    color: ${colors.primaryActive};
+    color: ${({ theme: { colors } }) => colors.main.primaryActive};
 
     .icon-wrapper-inner {
-      background: ${colors.primaryActive};
+      background: ${({ theme: { colors } }) => colors.main.primaryActive};
     }
   }
 
@@ -54,7 +53,7 @@ const StyledButton = styled.button`
   }
 
   &:focus .icon-wrapper-outer {
-    border: 2px solid ${colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
     border-radius: 100%;
   }
 
@@ -66,9 +65,9 @@ const StyledButton = styled.button`
     align-items: center;
 
     font-size: 18px;
-    color: ${colors.greyscale.white};
+    color: ${({ theme: { colors } }) => colors.greyscale.white};
     font-weight: normal;
-    background: ${colors.primary};
+    background: ${({ theme: { colors } }) => colors.main.primary};
     border-radius: 100%;
   }
 
@@ -80,7 +79,7 @@ const StyledButton = styled.button`
     }
   }
 
-  ${defaultButtonTextStyle}
+  ${({ theme }) => defaultButtonTextStyle(theme)}
 `
 
 interface AddButtonProps extends BaseProps {

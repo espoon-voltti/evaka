@@ -5,7 +5,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
-import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import Container from '../layout/Container'
 
@@ -44,7 +43,7 @@ export default React.memo(function Tabs({ tabs, mobile }: Props) {
 })
 
 const Background = styled.div`
-  background-color: ${colors.greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
 `
 
 const TabsContainer = styled.div`
@@ -65,7 +64,7 @@ const TabContainer = styled(NavLink)<TabContainerProps>`
   padding: 12px;
   flex-basis: content;
   flex-grow: 1;
-  background-color: ${colors.greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
   font-family: ${(p) =>
     p.$mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
   font-size: ${(p) => (p.$mobile ? '14px' : '15px')};
@@ -75,22 +74,22 @@ const TabContainer = styled(NavLink)<TabContainerProps>`
   max-width: ${(p) => (p.$maxWidth ? p.$maxWidth : 'none')};
 
   &.active {
-    background-color: ${(p) =>
-      p.$mobile ? colors.greyscale.white : `${colors.blues.light}33`};
-    border-bottom: ${(p) =>
-      p.$mobile ? `3px solid ${colors.blues.medium}` : 'none'};
+    background-color: ${({ theme: { colors }, ...p }) =>
+      p.$mobile ? colors.greyscale.white : `${colors.main.light}33`};
+    border-bottom: ${({ theme: { colors }, ...p }) =>
+      p.$mobile ? `3px solid ${colors.main.medium}` : 'none'};
 
     span {
       div {
-        color: ${(p) =>
-          p.$mobile ? colors.blues.medium : colors.greyscale.dark};
+        color: ${({ theme: { colors }, ...p }) =>
+          p.$mobile ? colors.main.medium : colors.greyscale.dark};
       }
     }
   }
 `
 
 const TabTitle = styled.span<TabContainerProps>`
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &.active {
     font-weight: 700;
@@ -101,8 +100,8 @@ const TabCounter = styled.span`
   height: 21px;
   padding: 0 8px;
   border-radius: 10px;
-  background-color: ${colors.accents.orange};
-  color: ${colors.greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.accents.orange};
+  color: ${({ theme: { colors } }) => colors.greyscale.white};
   margin-left: ${defaultMargins.s};
   font-weight: 700;
 `

@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faAngleUp } from 'lib-icons'
-import colors from '../colors'
 import { H3 } from '../typography'
 import { defaultMargins } from '../white-space'
 import { BaseProps } from '../utils'
@@ -24,7 +23,7 @@ const Wrapper = styled.div`
 const Row = styled.div`
   display: flex;
   align-items: center;
-  color: ${colors.greyscale.medium};
+  color: ${({ theme: { colors } }) => colors.greyscale.medium};
   margin-bottom: ${defaultMargins.m};
   &.fitted {
     margin-bottom: 0;
@@ -38,13 +37,13 @@ const Row = styled.div`
     cursor: pointer;
 
     h3 {
-      color: ${colors.greyscale.medium};
+      color: ${({ theme: { colors } }) => colors.greyscale.medium};
     }
   }
 `
 
 const IconWrapper = styled.div`
-  color: ${colors.greyscale.medium};
+  color: ${({ theme: { colors } }) => colors.greyscale.medium};
   font-size: 28px;
   width: 35px;
   margin-right: ${defaultMargins.s};
@@ -86,6 +85,7 @@ function CollapsibleSection({
   className,
   'data-qa': dataQa
 }: CollapsibleSectionProps) {
+  const { colors } = useTheme()
   const [collapsed, setCollapsed] = useState<boolean>(startCollapsed)
 
   return (
@@ -112,7 +112,7 @@ function CollapsibleSection({
         >
           <FontAwesomeIcon
             icon={collapsed ? faAngleUp : faAngleDown}
-            color={colors.blues.primary}
+            color={colors.main.primary}
           />
         </ToggleWrapper>
       </Row>

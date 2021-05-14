@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMeh } from 'lib-icons'
-import { greyscale } from '../../colors'
 import { defaultMargins, Gap } from '../../white-space'
 
 const StyledSegment = styled.div`
@@ -15,8 +14,8 @@ const StyledSegment = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${greyscale.lightest};
-  color: ${greyscale.medium};
+  background: ${({ theme: { colors } }) => colors.greyscale.lightest};
+  color: ${({ theme: { colors } }) => colors.greyscale.medium};
 
   div {
     display: flex;

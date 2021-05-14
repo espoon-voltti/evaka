@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'lib-icons'
-import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 
@@ -28,18 +27,18 @@ const Wrapper = styled.div<SizeProps>`
     cursor: not-allowed;
 
     label {
-      color: ${colors.greyscale.medium};
+      color: ${({ theme: { colors } }) => colors.greyscale.medium};
       cursor: not-allowed;
     }
   }
 
   &:hover:not(.disabled) {
     input:checked {
-      border-color: ${colors.primaryHover};
-      background-color: ${colors.primaryHover};
+      border-color: ${({ theme: { colors } }) => colors.main.primaryHover};
+      background-color: ${({ theme: { colors } }) => colors.main.primaryHover};
     }
     input:not(:checked) {
-      border-color: ${colors.greyscale.darkest};
+      border-color: ${({ theme: { colors } }) => colors.greyscale.darkest};
     }
   }
 `
@@ -62,25 +61,25 @@ const RadioInput = styled.input<SizeProps>`
   border-radius: 100%;
   border-width: 1px;
   border-style: solid;
-  border-color: ${colors.greyscale.dark};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
   margin: 0;
 
   &:checked {
-    border-color: ${colors.primary};
-    background-color: ${colors.primary};
+    border-color: ${({ theme: { colors } }) => colors.main.primary};
+    background-color: ${({ theme: { colors } }) => colors.main.primary};
 
     &:disabled {
-      background-color: ${colors.greyscale.medium};
+      background-color: ${({ theme: { colors } }) => colors.greyscale.medium};
     }
   }
 
   &:focus {
     border-width: 2px;
-    border-color: ${colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
   }
 
   &:disabled {
-    border-color: ${colors.greyscale.medium};
+    border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
   }
 `
 
@@ -96,7 +95,7 @@ const IconWrapper = styled.div<SizeProps>`
   height: ${(p) => (p.small ? '30px' : diameter)};
 
   font-size: ${(p) => (p.small ? '20px' : '25px')};
-  color: ${colors.greyscale.white};
+  color: ${({ theme: { colors } }) => colors.greyscale.white};
 `
 
 type RadioProps = BaseProps & {

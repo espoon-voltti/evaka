@@ -7,12 +7,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useEffect, useRef, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'lib-icons'
-import colors from '../../colors'
 import { StyledButton } from './Button'
 
 type Props = {
@@ -42,6 +41,7 @@ export default React.memo(function AsyncButton({
   onSuccess,
   ...props
 }: Props) {
+  const { colors } = useTheme()
   const [inProgress, setInProgress] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showFailure, setShowFailure] = useState(false)
@@ -136,7 +136,7 @@ export default React.memo(function AsyncButton({
               )
             }}
           >
-            <FontAwesomeIcon icon={faCheck} color={colors.primary} />
+            <FontAwesomeIcon icon={faCheck} color={colors.main.primary} />
           </IconWrapper>
           <IconWrapper
             style={{
@@ -178,8 +178,8 @@ const Spinner = animated(styled.div`
   width: 20px;
   height: 20px;
 
-  border: 2px solid ${colors.greyscale.lighter};
-  border-left-color: ${colors.primary};
+  border: 2px solid ${({ theme: { colors } }) => colors.greyscale.lighter};
+  border-left-color: ${({ theme: { colors } }) => colors.main.primary};
   animation: spin 1s infinite linear;
 
   @keyframes spin {

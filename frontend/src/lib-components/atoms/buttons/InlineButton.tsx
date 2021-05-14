@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import colors, { blueColors, greyscale } from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
@@ -26,25 +25,25 @@ const StyledButton = styled.button<{ color?: string }>`
   cursor: pointer;
 
   &:hover {
-    color: ${colors.primaryHover};
+    color: ${({ theme: { colors } }) => colors.main.primaryHover};
   }
 
   &:active {
-    color: ${colors.primaryActive};
+    color: ${({ theme: { colors } }) => colors.main.primaryActive};
   }
 
   &:focus {
-    outline: 2px solid ${colors.accents.petrol};
+    outline: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
     outline-offset: 2px;
   }
 
   &.disabled {
-    color: ${greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.dark};
     cursor: not-allowed;
   }
 
   &.darker:not(.disabled) {
-    color: ${blueColors.dark};
+    color: ${({ theme: { colors } }) => colors.main.dark};
   }
 
   svg {
@@ -52,8 +51,8 @@ const StyledButton = styled.button<{ color?: string }>`
     font-size: 1.25em;
   }
 
-  ${defaultButtonTextStyle}
-  color: ${(p) => p.color ?? colors.primary};
+  ${({ theme }) => defaultButtonTextStyle(theme)}
+  color: ${(p) => p.color ?? p.theme.colors.main.primary};
 `
 
 const Margin = styled.span`

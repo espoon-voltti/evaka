@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'lib-icons'
 import { useSingleAndDoubleClick } from 'lib-common/utils/useSingleAndDoubleClick'
 
-import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
 
@@ -24,7 +23,7 @@ export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   border: 1px solid ${(p) => p.color};
   border-radius: 1000px;
   background-color: ${(p) => p.color};
-  color: ${(p) =>
+  color: ${({ theme: { colors }, ...p }) =>
     p.textColor ??
     readableColor(p.color, colors.greyscale.darkest, colors.greyscale.white)};
   padding: ${defaultMargins.xxs}
@@ -32,7 +31,7 @@ export const StaticChip = styled.div<{ color: string; textColor?: string }>`
 
   outline: none;
   &:focus {
-    outline: 2px solid ${colors.blues.light};
+    outline: 2px solid ${({ theme: { colors } }) => colors.main.light};
     outline-offset: 2px;
   }
 `
@@ -135,7 +134,7 @@ const SelectionChipWrapper = styled.div`
 
   &:focus,
   &:focus-within {
-    border: 2px solid ${colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
     border-radius: 1000px;
     margin: -2px;
   }
@@ -149,12 +148,12 @@ const SelectionChipInnerWrapper = styled.div`
   position: relative;
   border-radius: 1000px;
   padding: 0 calc(${defaultMargins.xs} + ${defaultMargins.xxs});
-  background-color: ${colors.greyscale.white};
-  color: ${colors.primary};
-  border: 1px solid ${colors.primary};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  color: ${({ theme: { colors } }) => colors.main.primary};
+  border: 1px solid ${({ theme: { colors } }) => colors.main.primary};
   &.checked {
-    background-color: ${colors.primary};
-    color: ${colors.greyscale.white};
+    background-color: ${({ theme: { colors } }) => colors.main.primary};
+    color: ${({ theme: { colors } }) => colors.greyscale.white};
   }
 
   @media (max-width: ${tabletMin}) {
@@ -184,5 +183,5 @@ const IconWrapper = styled.div`
   height: 32px;
 
   font-size: 24px;
-  color: ${colors.greyscale.white};
+  color: ${({ theme: { colors } }) => colors.greyscale.white};
 `

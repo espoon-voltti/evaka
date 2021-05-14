@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 import { Gap } from 'lib-components/white-space'
-import colors from 'lib-components/colors'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import {
@@ -83,8 +82,8 @@ const FileInputLabel = styled.label`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: ${colors.greyscale.lightest};
-  border: 1px dashed ${colors.greyscale.medium};
+  background: ${({ theme: { colors } }) => colors.greyscale.lightest};
+  border: 1px dashed ${({ theme: { colors } }) => colors.greyscale.medium};
   border-radius: 8px;
   width: min(500px, 70vw);
   padding: 24px;
@@ -120,14 +119,14 @@ const File = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `
 
 const FileIcon = styled(FontAwesomeIcon)`
   margin-right: 16px;
   font-size: 20px;
   flex: 0;
-  color: ${colors.blues.primary};
+  color: ${({ theme: { colors } }) => colors.main.primary};
 `
 
 const FileDetails = styled.div`
@@ -147,7 +146,7 @@ const FileHeader = styled.div`
 
 const ProgressBarContainer = styled.div`
   position: relative;
-  background: ${colors.greyscale.medium};
+  background: ${({ theme: { colors } }) => colors.greyscale.medium};
   height: 3px;
   border-radius: 1px;
 `
@@ -161,7 +160,7 @@ const ProgressBar = styled.div<ProgressBarProps>`
   position: absolute;
   top: 0;
   left: 0;
-  background: ${colors.blues.medium};
+  background: ${({ theme: { colors } }) => colors.main.medium};
   height: 3px;
   border-radius: 1px;
   transition: width 0.5s ease-out;
@@ -174,14 +173,14 @@ const FileDeleteButton = styled(IconButton)`
   padding: 4px;
   margin-left: 12px;
   min-width: 32px;
-  color: ${colors.greyscale.medium};
+  color: ${({ theme: { colors } }) => colors.greyscale.medium};
 
   &:hover {
-    color: ${colors.blues.medium};
+    color: ${({ theme: { colors } }) => colors.main.medium};
   }
 
   &:disabled {
-    color: ${colors.greyscale.lighter};
+    color: ${({ theme: { colors } }) => colors.greyscale.lighter};
     cursor: not-allowed;
   }
 `
@@ -190,14 +189,14 @@ const ProgressBarDetails = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `
 
 const ProgressBarError = styled.div`
-  color: ${colors.accents.orangeDark};
+  color: ${({ theme: { colors } }) => colors.accents.orangeDark};
   margin-top: 3px;
   svg {
-    color: ${colors.accents.orange};
+    color: ${({ theme: { colors } }) => colors.accents.orange};
     margin-left: 8px;
   }
 `

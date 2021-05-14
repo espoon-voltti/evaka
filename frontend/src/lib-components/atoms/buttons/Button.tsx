@@ -6,7 +6,6 @@ import React from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { tabletMin } from '../../breakpoints'
-import colors, { greyscale } from '../../colors'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
 
@@ -19,9 +18,9 @@ export const StyledButton = styled.button`
   text-align: center;
   overflow-x: hidden;
 
-  border: 1px solid ${colors.primary};
+  border: 1px solid ${({ theme: { colors } }) => colors.main.primary};
   border-radius: 2px;
-  background: ${colors.greyscale.white};
+  background: ${({ theme: { colors } }) => colors.greyscale.white};
 
   outline: none;
   cursor: pointer;
@@ -30,40 +29,40 @@ export const StyledButton = styled.button`
   }
 
   &:focus {
-    outline: 2px solid ${colors.accents.petrol};
+    outline: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
     outline-offset: 2px;
   }
 
   &:hover {
-    color: ${colors.primaryHover};
-    border-color: ${colors.primaryHover};
+    color: ${({ theme: { colors } }) => colors.main.primaryHover};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryHover};
   }
 
   &:active {
-    color: ${colors.primaryActive};
-    border-color: ${colors.primaryActive};
+    color: ${({ theme: { colors } }) => colors.main.primaryActive};
+    border-color: ${({ theme: { colors } }) => colors.main.primaryActive};
   }
 
   &.disabled {
-    color: ${greyscale.dark};
-    border-color: ${greyscale.dark};
+    color: ${({ theme: { colors } }) => colors.greyscale.dark};
+    border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
   }
 
   &.primary {
-    color: ${greyscale.white};
-    background: ${colors.primary};
+    color: ${({ theme: { colors } }) => colors.greyscale.white};
+    background: ${({ theme: { colors } }) => colors.main.primary};
 
     &:hover {
-      background: ${colors.primaryHover};
+      background: ${({ theme: { colors } }) => colors.main.primaryHover};
     }
 
     &:active {
-      background: ${colors.primaryActive};
+      background: ${({ theme: { colors } }) => colors.main.primaryActive};
     }
 
     &.disabled {
-      border-color: ${greyscale.medium};
-      background: ${greyscale.medium};
+      border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+      background: ${({ theme: { colors } }) => colors.greyscale.medium};
     }
   }
 
@@ -71,7 +70,7 @@ export const StyledButton = styled.button`
     width: fit-content;
   }
 
-  ${defaultButtonTextStyle}
+  ${({ theme }) => defaultButtonTextStyle(theme)}
   letter-spacing: 0.2px;
 `
 
