@@ -108,6 +108,8 @@ fun Database.Read.calculateOccupancyPeriods(
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
 
+    // return reduceDailyOccupancyValues(this.calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, unitId = unitId))
+
     val sql = getSql(
         type,
         singleUnit = true,

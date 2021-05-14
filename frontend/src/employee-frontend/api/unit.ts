@@ -32,6 +32,7 @@ import { PlacementType } from '../types/child'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'
+import { featureFlags } from '../config'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -159,7 +160,11 @@ export async function getUnitData(
 ): Promise<Result<UnitData>> {
   try {
     const response = await client.get<JsonOf<UnitData>>(`/views/units/${id}`, {
-      params: { from: from.formatIso(), to: to.formatIso() }
+      params: {
+        from: from.formatIso(),
+        to: to.formatIso(),
+        v2: featureFlags.useNewServiceNeeds
+      }
     })
 
     return Success.of({
