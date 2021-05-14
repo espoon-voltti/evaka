@@ -108,15 +108,11 @@ dependencies {
     implementation("org.jdbi:jdbi3-postgres")
 
     // Voltti
-    implementation(project(":service-lib")) {
-        exclude("com.auth0", "auth0-spring-security-api")
-        exclude("org.springframework.boot", "spring-boot-starter-security")
-    }
+    implementation(project(":service-lib"))
 
     // Miscellaneous
     implementation("com.auth0:java-jwt")
     implementation("javax.annotation:javax.annotation-api")
-    implementation("io.springfox:springfox-swagger2")
     implementation("javax.jws:javax.jws-api")
     implementation("javax.xml.ws:jaxws-api")
     implementation("org.apache.commons:commons-text")
