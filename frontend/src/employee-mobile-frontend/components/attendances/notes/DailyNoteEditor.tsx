@@ -11,7 +11,7 @@ import Loader from 'lib-components/atoms/Loader'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Title from 'lib-components/atoms/Title'
 import {

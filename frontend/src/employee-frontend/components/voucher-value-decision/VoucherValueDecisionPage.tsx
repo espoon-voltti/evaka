@@ -16,7 +16,7 @@ import { getVoucherValueDecision } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { VoucherValueDecisionDetailed } from '../../types/invoicing'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 export const ErrorMessage = styled.div`
   color: ${colors.accents.red};

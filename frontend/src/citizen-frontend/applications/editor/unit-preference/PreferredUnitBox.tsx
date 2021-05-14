@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import {
   FixedSpaceColumn,
   FixedSpaceFlexWrap

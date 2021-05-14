@@ -9,7 +9,7 @@ import { useTranslation } from '../../state/i18n'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
 import { InvoiceDetailed } from '../../types/invoicing'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
   color: ${colors.accents.red};

@@ -14,7 +14,7 @@ import {
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { AttendanceChild, AttendanceStatus, Group } from '../../api/attendances'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 interface Props {

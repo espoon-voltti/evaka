@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { tabletMin } from 'lib-components/breakpoints'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'

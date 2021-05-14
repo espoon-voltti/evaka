@@ -13,7 +13,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { Gap } from 'lib-components/white-space'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'

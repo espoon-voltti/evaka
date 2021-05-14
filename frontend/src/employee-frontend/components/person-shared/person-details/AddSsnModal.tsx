@@ -12,7 +12,7 @@ import { UUID } from '../../../types'
 import { addSsn } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 import { isSsnValid } from '../../../utils/validation/validations'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 const Error = styled.div`
   display: flex;

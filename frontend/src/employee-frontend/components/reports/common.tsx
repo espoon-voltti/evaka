@@ -8,7 +8,7 @@ import { Table } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../../components/common/styled/containers'
 import { GapVerticalSmall } from '../../components/common/styled/separators'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 export const TableScrollableWrapper = styled.div`
   display: block;

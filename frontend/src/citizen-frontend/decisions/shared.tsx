@@ -6,7 +6,7 @@ import colors, {
   accentColors,
   blueColors,
   greyscale
-} from 'lib-components/colors'
+} from 'lib-customizations/common'
 import {
   faGavel,
   faCheck,

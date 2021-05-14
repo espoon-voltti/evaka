@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { Gap } from 'lib-components/white-space'
 
 interface Props {

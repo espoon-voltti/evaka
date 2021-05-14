@@ -21,7 +21,7 @@ import {
   faTimes,
   faTrash
 } from 'lib-icons'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
 import { CitizenApplicationSummary } from 'lib-common/api-types/application/ApplicationsOfChild'

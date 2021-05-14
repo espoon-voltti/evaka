@@ -27,7 +27,7 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 
 import {

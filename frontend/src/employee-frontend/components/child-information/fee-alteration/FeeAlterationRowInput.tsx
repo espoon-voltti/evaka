@@ -6,7 +6,7 @@ import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 import InputField from 'lib-components/atoms/form/InputField'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import {
   FeeAlterationType,
   PartialFeeAlteration

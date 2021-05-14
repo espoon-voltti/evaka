@@ -12,7 +12,7 @@ import StickyActionBar from '../common/StickyActionBar'
 import { deleteInvoices } from '../../api/invoicing'
 import { InvoiceStatus } from '../../types/invoicing'
 import { InvoicesActions } from './invoices-state'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
   color: ${colors.accents.red};

@@ -5,7 +5,7 @@
 import React from 'react'
 import { useTranslation } from './localization'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()

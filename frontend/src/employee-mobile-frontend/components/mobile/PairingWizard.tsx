@@ -15,7 +15,7 @@ import {
 } from '../../api/unit'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InputField from 'lib-components/atoms/form/InputField'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { P } from 'lib-components/typography'
 import { faArrowRight } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'

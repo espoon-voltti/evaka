@@ -10,7 +10,7 @@ import StickyActionBar from '../common/StickyActionBar'
 import { confirmFeeDecisions } from '../../api/invoicing'
 import { FeeDecisionStatus } from '../../types/invoicing'
 import { CheckedRowsInfo } from '../../components/common/CheckedRowsInfo'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
   color: ${colors.accents.red};

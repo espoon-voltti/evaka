@@ -4,7 +4,7 @@
 
 import React, { ReactNode, useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'

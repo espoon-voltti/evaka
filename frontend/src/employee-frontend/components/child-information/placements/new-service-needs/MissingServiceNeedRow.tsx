@@ -9,7 +9,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { faPlus } from 'lib-icons'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { useTranslation } from '../../../../state/i18n'
 

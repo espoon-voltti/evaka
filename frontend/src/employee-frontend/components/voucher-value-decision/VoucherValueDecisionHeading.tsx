@@ -17,7 +17,7 @@ import {
 } from '../../types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '../../components/common/WarningLabel'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { formatName } from '../../utils'
 
 type Props = {

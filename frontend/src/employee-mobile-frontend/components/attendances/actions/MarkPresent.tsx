@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { defaultMargins, Gap } from 'lib-components/white-space'

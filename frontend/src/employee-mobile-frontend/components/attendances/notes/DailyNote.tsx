@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'

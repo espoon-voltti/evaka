@@ -11,7 +11,7 @@ import { Gap } from 'lib-components/white-space'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
 import { AttendanceResponse, Group } from '../../api/attendances'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { ChipWrapper } from '../mobile/components'
 
 interface GroupSelectorProps {

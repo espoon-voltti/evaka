@@ -27,7 +27,7 @@ import { faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '../../components/common/Tooltip'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 type Props = {
   groupId: string

@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { ContentArea } from 'lib-components/layout/Container'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { faTimes } from 'lib-icons'
 

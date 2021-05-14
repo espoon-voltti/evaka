@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'

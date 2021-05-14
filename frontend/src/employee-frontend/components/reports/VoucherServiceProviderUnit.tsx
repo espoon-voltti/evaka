@@ -49,7 +49,7 @@ import { formatCents } from '../../utils/money'
 import { formatName } from '../../utils'
 import { useSyncQueryParams } from '../../utils/useSyncQueryParams'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import {
   FixedSpaceColumn,

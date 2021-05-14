@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { defaultMargins as dM } from 'lib-components/white-space'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../localization'
 import { formatCareTypes } from '../map/format'
 

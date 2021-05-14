@@ -42,7 +42,7 @@ import {
 import { faEnvelope } from 'lib-icons'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { TitleContext, TitleState } from '../../state/title'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { formatName } from '../../utils'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'

@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
