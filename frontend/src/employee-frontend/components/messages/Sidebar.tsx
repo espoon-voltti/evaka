@@ -59,6 +59,7 @@ function Accounts(props: AccountsParams) {
     ),
     (u) => u.label
   )
+  const unitSelectionEnabled = unitOptions.length > 1
 
   const [selectedUnit, setSelectedUnit] = useState<SelectOptionProps>(
     unitOptions[0]
@@ -70,7 +71,6 @@ function Accounts(props: AccountsParams) {
     ),
     (val) => val.daycareGroup.name
   )
-  const unitSelectionEnabled = unitOptions.length > 0
 
   return (
     <>
