@@ -75,6 +75,34 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
         return if (start <= end) FiniteDateRange(start, end) else null
     }
 
+    fun complement(other: FiniteDateRange): List<FiniteDateRange> {
+        return when {
+            !other.overlaps(this) -> listOf(this)
+
+            other.contains(this) -> emptyList()
+
+            other.start <= this.start && other.end < this.end ->
+                listOf(FiniteDateRange(other.end.plusDays(1), this.end))
+
+            other.start > this.start && other.end >= this.end ->
+                listOf(FiniteDateRange(this.start, other.start.minusDays(1)))
+
+            other.start > this.start && other.end < this.end -> listOf(
+                FiniteDateRange(this.start, other.start.minusDays(1)),
+                FiniteDateRange(other.end.plusDays(1), this.end)
+            )
+
+            else -> throw Error("Bug: missing when case")
+        }
+    }
+
+    fun complement(others: Collection<FiniteDateRange>): List<FiniteDateRange> {
+        return others.fold(
+            initial = listOf(this),
+            operation = { acc, other -> acc.flatMap { it.complement(other) } }
+        )
+    }
+
     /**
      * Returns a lazy sequence of all dates included in this date range.
      */
