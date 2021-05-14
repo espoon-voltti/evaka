@@ -7,7 +7,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from 'lib-icons'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'

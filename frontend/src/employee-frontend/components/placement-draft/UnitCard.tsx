@@ -20,7 +20,7 @@ import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { getOccupancyRates, OccupancyResponse } from '../../api/unit'
 
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { faCheck } from 'lib-icons'
 

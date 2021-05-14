@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../../../state/i18n'
 import Title from 'lib-components/atoms/Title'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

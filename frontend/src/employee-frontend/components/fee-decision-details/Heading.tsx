@@ -19,7 +19,7 @@ import {
   FeeDecisionType,
   PersonDetailed
 } from '../../types/invoicing'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { formatDate } from '../../utils/date'
 import { formatName } from '../../utils'
 

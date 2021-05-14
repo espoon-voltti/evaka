@@ -39,7 +39,7 @@ import CareTypeLabel, {
   careTypesFromPlacementType
 } from '../../../../components/common/CareTypeLabel'
 import styled from 'styled-components'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { capitalizeFirstLetter, formatName } from '../../../../utils'
 import { StatusIconContainer } from '../../../../components/common/StatusIconContainer'
 import { UnitBackupCare } from '../../../../types/child'

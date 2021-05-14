@@ -26,7 +26,7 @@ import {
   faDatabase,
   faMoneyBillWave
 } from 'lib-icons'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { RequireRole } from '../utils/roles'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { defaultMargins } from 'lib-components/white-space'

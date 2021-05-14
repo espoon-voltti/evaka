@@ -9,7 +9,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React from 'react'
 import styled from 'styled-components'
 import { formatDecimal } from 'lib-common/utils/number'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 interface Props {
   value: number

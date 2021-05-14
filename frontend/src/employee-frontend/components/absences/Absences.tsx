@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { flatMap, partition } from 'lodash'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { Label, LabelText } from '../../components/common/styled/common'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'

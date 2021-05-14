@@ -17,7 +17,7 @@ import {
   PlacementDraftPlacement
 } from '../../types/placementdraft'
 import { PlacementType } from '../../types/child'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import FiniteDateRange from 'lib-common/finite-date-range'
 
 const DateRow = styled.div`

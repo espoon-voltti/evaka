@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ApplicationNote } from '../../types/application'
 import styled from 'styled-components'
-import { greyscale } from 'lib-components/colors'
+import { greyscale } from 'lib-customizations/common'
 import { Label } from 'lib-components/typography'
 import { formatDate } from '../../utils/date'
 import { formatParagraphs } from '../../utils/html-utils'

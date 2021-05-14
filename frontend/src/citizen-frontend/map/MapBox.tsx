@@ -5,7 +5,7 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import leaflet from 'leaflet'
 import { FooterContent } from '../Footer'
 import {

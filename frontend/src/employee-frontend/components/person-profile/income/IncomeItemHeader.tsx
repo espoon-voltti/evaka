@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { faChevronLeft, faChevronDown, faPen, faTrash } from 'lib-icons'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import Title from 'lib-components/atoms/Title'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 const Container = styled.div`

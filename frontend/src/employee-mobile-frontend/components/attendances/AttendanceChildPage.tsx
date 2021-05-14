@@ -14,7 +14,7 @@ import {
   farStickyNote,
   farUser
 } from 'lib-icons'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'

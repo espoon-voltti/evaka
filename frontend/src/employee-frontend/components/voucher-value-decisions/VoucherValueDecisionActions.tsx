@@ -10,7 +10,7 @@ import StickyActionBar from '../common/StickyActionBar'
 import { sendVoucherValueDecisions } from '../../api/invoicing'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { CheckedRowsInfo } from '../../components/common/CheckedRowsInfo'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 
 const ErrorMessage = styled.div`
   color: ${colors.accents.red};

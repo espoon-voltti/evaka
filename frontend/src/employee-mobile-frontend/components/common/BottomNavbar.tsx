@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import {
   FixedSpaceColumn,
   FixedSpaceRow

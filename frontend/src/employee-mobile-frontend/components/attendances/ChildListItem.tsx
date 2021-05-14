@@ -12,7 +12,7 @@ import {
   Group
 } from '../../api/attendances'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { farStickyNote, farUser } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'

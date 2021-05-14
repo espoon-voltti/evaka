@@ -26,7 +26,7 @@ import {
 import { FeeDecision } from '../../types/invoicing'
 import { DateTd, StatusTd } from '../../components/PersonProfile'
 import { formatCents } from '../../utils/money'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 
 interface Props {

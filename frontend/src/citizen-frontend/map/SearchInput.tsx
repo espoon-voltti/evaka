@@ -15,7 +15,7 @@ import classNames from 'classnames'
 import { Result, Success } from 'lib-common/api'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,

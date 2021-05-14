@@ -14,7 +14,7 @@ import {
   PlacementDraftState,
   PlacementDraftContext
 } from '../../state/placementdraft'
-import colors from 'lib-components/colors'
+import colors from 'lib-customizations/common'
 import { getStatusLabelByDateRange } from '../../utils/date'
 import StatusLabel from '../../components/common/StatusLabel'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
