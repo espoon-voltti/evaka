@@ -67,7 +67,7 @@ SET
   claimed_at = now(),
   claimed_by = txid_current()
 WHERE id = (SELECT id FROM claimed_job)
-RETURNING id AS jobId, type AS jobType, txid_current() AS txId
+RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
 """
     ).bind("jobTypes", jobTypes.toTypedArray())
         .executeAndReturnGeneratedKeys()

@@ -9,6 +9,8 @@ import fi.espoo.evaka.dvv.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.voltti.logging.MdcKey
+import fi.espoo.voltti.logging.loggers.error
+import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import java.lang.reflect.UndeclaredThrowableException
@@ -175,11 +177,16 @@ class AsyncJobRunner(
     }
 
     private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef) {
+        val logMeta = mapOf(
+            "jobId" to job.jobId,
+            "jobType" to job.jobType,
+            "remainingAttempts" to job.remainingAttempts
+        )
         try {
             MdcKey.TRACE_ID.set(job.jobId.toString())
             MdcKey.SPAN_ID.set(job.jobId.toString())
             runningCount.incrementAndGet()
-            logger.info { "Running async job $job" }
+            logger.info(logMeta) { "Running async job $job" }
             val completed = db.transaction {
                 when (job.jobType) {
                     AsyncJobType.PLACEMENT_PLAN_APPLIED -> it.runJob(job, this.notifyPlacementPlanApplied)
@@ -213,13 +220,13 @@ class AsyncJobRunner(
                 }.exhaust()
             }
             if (completed) {
-                logger.info { "Completed async job $job" }
+                logger.info(logMeta) { "Completed async job $job" }
             } else {
-                logger.info { "Skipped async job $job due to contention" }
+                logger.info(logMeta) { "Skipped async job $job due to contention" }
             }
         } catch (e: Throwable) {
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
-            logger.error(exception) { "Failed to run async job $job" }
+            logger.error(exception, logMeta) { "Failed to run async job $job" }
         } finally {
             runningCount.decrementAndGet()
             MdcKey.SPAN_ID.unset()

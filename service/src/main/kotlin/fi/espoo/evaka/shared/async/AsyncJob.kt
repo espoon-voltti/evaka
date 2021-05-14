@@ -166,4 +166,4 @@ data class JobParams<T : AsyncJobPayload>(
     val runAt: HelsinkiDateTime
 )
 
-data class ClaimedJobRef(val jobId: UUID, val jobType: AsyncJobType, val txId: Long)
+data class ClaimedJobRef(val jobId: UUID, val jobType: AsyncJobType, val txId: Long, val remainingAttempts: Int)

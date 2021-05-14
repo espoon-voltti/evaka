@@ -30,4 +30,4 @@ data class JobParams<T : AsyncJobPayload>(
     val runAt: Instant = Instant.now()
 )
 
-data class ClaimedJobRef(val jobId: UUID, val jobType: AsyncJobType, val txId: Long)
+data class ClaimedJobRef(val jobId: UUID, val jobType: AsyncJobType, val txId: Long, val remainingAttempts: Int)
