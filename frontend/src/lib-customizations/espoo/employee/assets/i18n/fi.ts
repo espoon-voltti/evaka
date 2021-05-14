@@ -2315,6 +2315,7 @@ export const fi = {
     },
     messageBoxes: {
       names: {
+        RECEIVED: 'Saapuneet',
         SENT: 'Lähetetyt',
         DRAFT: 'Luonnokset'
       },

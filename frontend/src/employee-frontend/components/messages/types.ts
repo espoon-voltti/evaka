@@ -53,7 +53,7 @@ export interface MessageAccount {
   id: UUID
   name: string
   personal: boolean
-  group?: {
+  daycareGroup?: {
     id: UUID
     name: string
     unitId: UUID
