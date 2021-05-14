@@ -31,7 +31,16 @@ interface FileObject extends Attachment {
   key: number
   file: File | undefined
   error: FileUploadError | undefined
+  /**
+   * Percentage of upload done.
+   * NOTE: 100 does not mean the file upload has finished processing,
+   * check "uploaded" truthyness instead.
+   */
   progress: number
+  /**
+   * Marker to separate transfer and processing readiness
+   */
+  uploaded: boolean
 }
 
 interface FileUploadI18n {
@@ -201,7 +210,8 @@ const attachmentToFile = (attachment: Attachment): FileObject => {
     name: attachment.name,
     contentType: attachment.contentType,
     progress: 100,
-    error: undefined
+    error: undefined,
+    uploaded: true
   }
 }
 
@@ -221,7 +231,7 @@ const fileIcon = (file: FileObject): IconDefinition => {
   }
 }
 
-const inProgress = (file: FileObject): boolean => file.progress !== 100
+const inProgress = (file: FileObject): boolean => file.uploaded === false
 
 export default React.memo(function FileUpload({
   i18n,
@@ -303,6 +313,7 @@ export default React.memo(function FileUpload({
       name: file.name,
       contentType: file.type,
       progress: 0,
+      uploaded: false,
       error
     }
 
@@ -325,6 +336,7 @@ export default React.memo(function FileUpload({
           {
             ...fileObject,
             progress: 100,
+            uploaded: true,
             id: result.value
           },
           fileObject.id
