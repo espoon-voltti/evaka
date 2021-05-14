@@ -2,20 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
+import { Result } from 'lib-common/api'
+import Button from 'lib-components/atoms/buttons/Button'
 import colors, { greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
+import React from 'react'
+import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
-import { Result } from 'lib-common/api'
-import { MessageAccount } from 'employee-frontend/components/messages/types'
-import { UUID } from 'employee-frontend/types'
-import Button from 'lib-components/atoms/buttons/Button'
+import { MessageAccount } from './types'
 
 interface Props {
   accounts: Result<MessageAccount[]>
-  selectedAccount: UUID | undefined
-  setSelectedAccount: (id: UUID) => void
+  selectedAccount: MessageAccount | undefined
+  setSelectedAccount: (acc: MessageAccount) => void
   showEditor: () => void
 }
 
@@ -33,7 +32,7 @@ export default React.memo(function Sidebar({
       {accounts.isSuccess && (
         <ul>
           {accounts.value.map((account) => (
-            <li key={account.id} onClick={() => setSelectedAccount(account.id)}>
+            <li key={account.id} onClick={() => setSelectedAccount(account)}>
               {account.name}
             </li>
           ))}

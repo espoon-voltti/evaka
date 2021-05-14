@@ -4,17 +4,16 @@
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Loading, Paged, Result } from 'lib-common/api'
-import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
-import { H1 } from 'lib-components/typography'
+import { H1, H2 } from 'lib-components/typography'
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ContentArea } from '../../../lib-components/layout/Container'
 import { getReceivedMessages } from './api'
 import { ReceivedMessages } from './ReceivedMessages'
 import { SingleThreadView } from './SingleThreadView'
-import { MessageThread } from './types'
+import { MessageAccount, MessageThread } from './types'
 
 const PAGE_SIZE = 20
 
@@ -23,11 +22,11 @@ const MessagesContainer = styled(ContentArea)`
 `
 
 interface Props {
-  accountId: UUID
+  account: MessageAccount
   view: 'RECEIVED' | 'SENT'
 }
 
-export default React.memo(function MessagesList({ accountId, view }: Props) {
+export default React.memo(function MessagesList({ account, view }: Props) {
   const { i18n } = useTranslation()
 
   const [page, setPage] = useState<number>(1)
@@ -56,31 +55,33 @@ export default React.memo(function MessagesList({ accountId, view }: Props) {
     setSelectedThread(undefined)
     switch (view) {
       case 'RECEIVED':
-        loadReceivedMessages(accountId, page, PAGE_SIZE)
+        loadReceivedMessages(account.id, page, PAGE_SIZE)
         break
       case 'SENT':
         setReceivedMessages(Loading.of())
     }
-  }, [accountId, view, page, loadReceivedMessages])
+  }, [account.id, view, page, loadReceivedMessages])
 
-  if (selectedThread)
+  if (selectedThread) {
     return (
       <SingleThreadView
         goBack={() => setSelectedThread(undefined)}
         thread={selectedThread}
       />
     )
+  }
 
   return (
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
+      {!account.personal && <H2>{account.name}</H2>}
       {view === 'RECEIVED' ? (
         <ReceivedMessages
           messages={receivedMessages}
           onViewThread={setSelectedThread}
         />
       ) : (
-        <div>TODO</div>
+        <div>TODO sent messages</div>
       )}
       <Pagination
         pages={pages}
