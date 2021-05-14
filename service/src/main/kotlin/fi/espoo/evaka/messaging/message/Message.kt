@@ -62,7 +62,8 @@ data class AuthorizedMessageAccount(
     val name: String,
     @Nested("group_")
     val daycareGroup: Group?,
-    val personal: Boolean
+    val personal: Boolean,
+    val unreadCount: Int
 )
 
 fun createMessageThreadsForRecipientGroups(

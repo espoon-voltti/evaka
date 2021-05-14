@@ -12,30 +12,23 @@ import java.util.UUID
 fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<MessageAccount> {
     // language=SQL
     val employeeSql = """
-        WITH accounts AS (
-            SELECT acc.id
-            FROM daycare_acl acl
-            JOIN daycare_group dg ON acl.daycare_id = dg.daycare_id
-            JOIN message_account acc ON acc.daycare_group_id = dg.id
-            WHERE acl.employee_id = :userId
-            
-            UNION
-            
-            SELECT id
-            FROM message_account
-            WHERE message_account.employee_id = :userId
-        )
-        SELECT accounts.id, name_view.account_name AS name
-        FROM accounts
-            JOIN message_account_name_view name_view ON name_view.id = accounts.id
+SELECT acc.id,
+       name_view.account_name AS name
+FROM message_account acc
+    JOIN message_account_name_view name_view ON name_view.id = acc.id
+    LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+    LEFT JOIN daycare dc ON dc.id = dg.daycare_id
+    LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
+WHERE acc.employee_id = :userId
+   OR acl.employee_id = :userId
     """.trimIndent()
 
     // language=SQL
     val citizenSql = """
-        SELECT acc.id, name_view.account_name AS name
-        FROM message_account acc
-        JOIN message_account_name_view name_view ON name_view.id = acc.id
-        WHERE acc.person_id = :userId
+SELECT acc.id, name_view.account_name AS name
+FROM message_account acc
+    JOIN message_account_name_view name_view ON name_view.id = acc.id
+WHERE acc.person_id = :userId
     """.trimIndent()
 
     return this.createQuery(if (user.isEndUser) citizenSql else employeeSql)
@@ -45,26 +38,27 @@ fun Database.Read.getMessageAccountsForUser(user: AuthenticatedUser): Set<Messag
 }
 
 fun Database.Read.getAuthorizedMessageAccountsForUser(user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
-    // language=SQL
     val employeeSql = """
-        WITH accounts AS (
-            SELECT acc.id, false as personal, dg.id as group_id, dg.name as group_name, dc.id as group_unitId, dc.name as group_unitName
-            FROM daycare_acl acl
-            JOIN daycare_group dg ON acl.daycare_id = dg.daycare_id
-            JOIN daycare dc ON dc.id = acl.daycare_id
-            JOIN message_account acc ON acc.daycare_group_id = dg.id
-            WHERE acl.employee_id = :userId
-
-            UNION
-
-            SELECT id, true as personal, NULL as group_id, NULL as group_name, NULL as group_unitId, NULL as group_unitName
-            FROM message_account
-            WHERE message_account.employee_id = :userId
-            )
-
-        SELECT accounts.*, name_view.account_name as name
-        FROM accounts
-            JOIN message_account_name_view name_view ON name_view.id = accounts.id
+SELECT acc.id,
+       name_view.account_name AS name,
+       CASE
+           WHEN acc.daycare_group_id IS NOT NULL THEN FALSE
+           ELSE TRUE
+       END                    AS personal,
+       dg.id                  AS group_id,
+       dg.name                AS group_name,
+       dc.id                  AS group_unitId,
+       dc.name                AS group_unitName,
+       COUNT(rec.id)          AS unreadCount
+FROM message_account acc
+    JOIN message_account_name_view name_view ON name_view.id = acc.id
+    LEFT JOIN message_recipients rec ON acc.id = rec.recipient_id AND rec.read_at IS NULL
+    LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+    LEFT JOIN daycare dc ON dc.id = dg.daycare_id
+    LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
+WHERE acc.employee_id = :userId
+   OR acl.employee_id = :userId
+GROUP BY acc.id, account_name, personal, group_id, group_name, group_unitId, group_unitName
     """.trimIndent()
 
     return this.createQuery(employeeSql)
