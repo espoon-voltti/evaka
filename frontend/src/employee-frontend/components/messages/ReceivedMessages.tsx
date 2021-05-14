@@ -1,25 +1,21 @@
 import { isToday } from 'date-fns'
 import { Result } from 'lib-common/api'
+import Loader from 'lib-components/atoms/Loader'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { espooBrandColors, greyscale } from 'lib-components/colors'
+import { defaultMargins } from 'lib-components/white-space'
 import React from 'react'
 import styled from 'styled-components'
-import { StaticChip } from '../../../lib-components/atoms/Chip'
-import Loader from '../../../lib-components/atoms/Loader'
-import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
-import {
-  accentColors,
-  espooBrandColors,
-  greyscale
-} from '../../../lib-components/colors'
-import { defaultMargins } from '../../../lib-components/white-space'
 import { DATE_FORMAT_NO_YEAR, DATE_FORMAT_TIME_ONLY } from '../../constants'
-import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
+import { MessageTypeChip } from './MessageTypeChip'
 import { MessageThread } from './types'
 
 const MessageRow = styled.div<{ unread: boolean }>`
   display: flex;
   justify-content: space-between;
   padding: ${defaultMargins.s};
+  cursor: pointer;
   :first-child {
     border-top: 1px solid ${greyscale.lighter};
   }
@@ -50,15 +46,6 @@ const SecondColumn = styled.div`
   flex-direction: column;
   align-items: flex-end;
 `
-// TODO is the 20px line-height in StaticChip unintentional?
-const MessageTypeChip = styled(StaticChip)`
-  line-height: 16px;
-`
-
-const chipColors = {
-  MESSAGE: accentColors.yellow,
-  BULLETIN: accentColors.water
-}
 
 function formatSentAt(sentAt: Date) {
   const format = isToday(sentAt) ? DATE_FORMAT_TIME_ONLY : DATE_FORMAT_NO_YEAR
@@ -67,10 +54,10 @@ function formatSentAt(sentAt: Date) {
 
 interface Props {
   messages: Result<MessageThread[]>
+  onViewThread: (thread: MessageThread) => void
 }
 
-export function ReceivedMessages({ messages }: Props) {
-  const { i18n } = useTranslation()
+export function ReceivedMessages({ messages, onViewThread }: Props) {
   return messages.mapAll({
     failure() {
       return <ErrorSegment />
@@ -85,7 +72,11 @@ export function ReceivedMessages({ messages }: Props) {
             const unread = t.messages.some((m) => !m.readAt)
             const lastMessage = t.messages[t.messages.length - 1]
             return (
-              <MessageRow key={t.id} unread={unread}>
+              <MessageRow
+                key={t.id}
+                unread={unread}
+                onClick={() => onViewThread(t)}
+              >
                 <FirstColumn>
                   <Participants unread={unread}>
                     {t.messages.map((m) => m.senderName).join(', ')}{' '}
@@ -98,9 +89,7 @@ export function ReceivedMessages({ messages }: Props) {
                   </Truncated>
                 </FirstColumn>
                 <SecondColumn>
-                  <MessageTypeChip color={chipColors[t.type]}>
-                    {i18n.messages.types[t.type]}
-                  </MessageTypeChip>
+                  <MessageTypeChip type={t.type} />
                   {formatSentAt(lastMessage.sentAt)}
                 </SecondColumn>
               </MessageRow>

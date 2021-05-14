@@ -7,6 +7,7 @@ import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
+import { Gap } from 'lib-components/white-space'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { getMessagingAccounts } from './api'
@@ -38,6 +39,7 @@ export default React.memo(function MessagesPage() {
 
   return (
     <Container>
+      <Gap size="L" />
       <PanelContainer>
         <Sidebar
           accounts={accounts}

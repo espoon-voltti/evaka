@@ -27,28 +27,23 @@ export default React.memo(function Sidebar({
   const { i18n } = useTranslation()
 
   return (
-    <>
-      <Container>
-        <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
-        <AccountHeader>{i18n.messages.sidePanel.groupsMessages}</AccountHeader>
-        {accounts.isSuccess && (
-          <ul>
-            {accounts.value.map((account) => (
-              <li
-                key={account.id}
-                onClick={() => setSelectedAccount(account.id)}
-              >
-                {account.name}
-              </li>
-            ))}
-          </ul>
-        )}
-        <Button
-          text={i18n.messages.messageBoxes.newBulletin}
-          onClick={showEditor}
-        />
-      </Container>
-    </>
+    <Container>
+      <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
+      <AccountHeader>{i18n.messages.sidePanel.groupsMessages}</AccountHeader>
+      {accounts.isSuccess && (
+        <ul>
+          {accounts.value.map((account) => (
+            <li key={account.id} onClick={() => setSelectedAccount(account.id)}>
+              {account.name}
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button
+        text={i18n.messages.messageBoxes.newBulletin}
+        onClick={showEditor}
+      />
+    </Container>
   )
 })
 
@@ -59,6 +54,7 @@ const Container = styled.div`
   min-height: 500px;
   background-color: ${colors.greyscale.white};
   overflow-y: auto;
+  margin-right: ${defaultMargins.m};
 `
 
 const AccountHeader = styled.div`

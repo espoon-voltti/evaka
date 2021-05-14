@@ -13,6 +13,7 @@ import styled from 'styled-components'
 import { ContentArea } from '../../../lib-components/layout/Container'
 import { getReceivedMessages } from './api'
 import { ReceivedMessages } from './ReceivedMessages'
+import { SingleThreadView } from './SingleThreadView'
 import { MessageThread } from './types'
 
 const PAGE_SIZE = 20
@@ -34,6 +35,7 @@ export default React.memo(function MessagesList({ accountId, view }: Props) {
   const [receivedMessages, setReceivedMessages] = useState<
     Result<MessageThread[]>
   >(Loading.of())
+  const [selectedThread, setSelectedThread] = useState<MessageThread>()
 
   const setMessagesResult = useCallback(
     (result: Result<Paged<MessageThread>>) => {
@@ -51,6 +53,7 @@ export default React.memo(function MessagesList({ accountId, view }: Props) {
   )
 
   useEffect(() => {
+    setSelectedThread(undefined)
     switch (view) {
       case 'RECEIVED':
         loadReceivedMessages(accountId, page, PAGE_SIZE)
@@ -60,11 +63,22 @@ export default React.memo(function MessagesList({ accountId, view }: Props) {
     }
   }, [accountId, view, page, loadReceivedMessages])
 
+  if (selectedThread)
+    return (
+      <SingleThreadView
+        goBack={() => setSelectedThread(undefined)}
+        thread={selectedThread}
+      />
+    )
+
   return (
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
       {view === 'RECEIVED' ? (
-        <ReceivedMessages messages={receivedMessages} />
+        <ReceivedMessages
+          messages={receivedMessages}
+          onViewThread={setSelectedThread}
+        />
       ) : (
         <div>TODO</div>
       )}
