@@ -21,6 +21,7 @@ There are also some internal subprojects:
 - `e2e-test` - E2E tests
 - `lib-common` - Common code usable in all frontends and E2E tests
 - `lib-components` - Common React components usable in all frontends
+- `lib-customizations` - Customizable code and assets for eVaka forks, e.g. localizations
 - `lib-icons` - Icon set, switchable between free and pro Font Awesome
 - `maintenance-page` - Static website to be shown during maintenance instead of the other frontends
 
@@ -253,6 +254,7 @@ e2e_test_wip:
 [The cron schedule expression editor](https://crontab.guru/)
 
 #### Known issues
+
 - Some selectors still use IDs/classes instead of data-qa attributes
 - Should replace for loops by selector's visibilitycheck option
 - Tests aren't run against multiple different browsers
@@ -291,3 +293,7 @@ eVaka has a support for using [Sentry](https://sentry.io) for error
 logging in the frontend applications. Sentry's application monitoring
 platform is a commercial product, that is not free to use.
 **Please note, that you can run the application also without Sentry.**
+
+## Customizing the frontend in forks
+
+See the [docs in `src/lib-customizations/`](./src/lib-customizations/README.md).
