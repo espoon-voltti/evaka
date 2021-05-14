@@ -53,10 +53,16 @@ const maxDecisionStartDate = (
     : startDate.addDays(14)
 }
 
+export interface Term {
+  start: LocalDate
+  end: LocalDate
+}
+
 export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
-  type: ApplicationType
+  type: ApplicationType,
+  terms?: Term[]
 ): boolean => {
   if (date.isBefore(minPreferredStartDate(originalPreferredStartDate)))
     return false
@@ -67,6 +73,10 @@ export const isValidPreferredStartDate = (
     // cannot apply for summer time between extended preschool terms
     if (date.isBetween(LocalDate.of(2021, 6, 5), LocalDate.of(2021, 7, 31)))
       return false
+  }
+
+  if (terms !== undefined) {
+    return terms.some(({ start, end }) => date.isBetween(start, end))
   }
 
   return true
@@ -95,21 +105,23 @@ export const isValidDecisionStartDate = (
 
 const preferredStartDateValidator = (
   originalPreferredStartDate: LocalDate | null,
-  type: ApplicationType
+  type: ApplicationType,
+  terms?: Term[]
 ) => (
   val: string,
   err: ErrorKey = 'preferredStartDate'
 ): ErrorKey | undefined => {
   const date = LocalDate.parseFiOrNull(val)
   return date &&
-    isValidPreferredStartDate(date, originalPreferredStartDate, type)
+    isValidPreferredStartDate(date, originalPreferredStartDate, type, terms)
     ? undefined
     : err
 }
 
 export const validateApplication = (
   apiData: ApplicationDetails,
-  form: ApplicationFormData
+  form: ApplicationFormData,
+  terms?: Term[]
 ): ApplicationFormDataErrors => {
   const requireFullFamily =
     apiData.type === 'DAYCARE' ||
@@ -126,7 +138,8 @@ export const validateApplication = (
         validDate,
         preferredStartDateValidator(
           apiData.form.preferences.preferredStartDate,
-          apiData.type
+          apiData.type,
+          terms
         )
       ),
       startTime:

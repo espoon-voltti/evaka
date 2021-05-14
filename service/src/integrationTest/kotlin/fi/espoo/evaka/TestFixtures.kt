@@ -539,6 +539,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     )
 
     insertPreschoolTerms()
+    insertClubTerms()
 
     insertServiceNeedOptions()
 }
@@ -587,6 +588,19 @@ VALUES (
         """.trimIndent()
 
     createUpdate(sql).execute()
+}
+
+fun Database.Transaction.insertClubTerms() {
+    createUpdate(
+        """
+INSERT INTO club_term (term, application_period)
+VALUES
+    -- 2020-2021
+    ('[2020-08-13, 2021-06-04]', '[2020-01-08, 2020-01-20]'),
+    -- 2021-2022
+    ('[2021-08-11, 2022-06-03]', '[2021-01-08, 2021-01-20]');
+"""
+    ).execute()
 }
 
 fun Database.Transaction.insertServiceNeedOptions() {

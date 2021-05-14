@@ -18,7 +18,7 @@ import ServiceTimeSubSectionPreschool from '../../../applications/editor/service
 import { getErrorCount } from '../../../form-validation'
 import { useTranslation } from '../../../localization'
 import { ServiceNeedFormData } from '../ApplicationFormData'
-import { ApplicationFormDataErrors } from '../validations'
+import { ApplicationFormDataErrors, Term } from '../validations'
 
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus
@@ -28,6 +28,7 @@ export type ServiceNeedSectionProps = {
   updateFormData: UpdateStateFn<ServiceNeedFormData>
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
+  terms?: Term[]
 }
 
 export default React.memo(function ServiceNeedSection(
