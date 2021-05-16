@@ -1,5 +1,6 @@
 package fi.espoo.evaka.occupancy
 
+import fi.espoo.evaka.ChildBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.insertServiceNeedOptions
@@ -7,23 +8,19 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDefaultPartDayDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.util.UUID
 
@@ -41,12 +38,19 @@ class OccupancyTest : PureJdbiTest() {
     val familyGroup1: UUID = UUID.randomUUID()
     val familyGroup2: UUID = UUID.randomUUID()
 
+    val employeeId: UUID = UUID.randomUUID()
+
     @BeforeEach
     internal fun setUp() {
         db.transaction {
             it.resetDatabase()
 
             it.insertServiceNeedOptions()
+            it.insertTestEmployee(
+                DevEmployee(
+                    id = employeeId
+                )
+            )
 
             it.insertTestCareArea(DevCareArea(id = careArea1, name = "1", shortName = "1"))
             it.insertTestCareArea(DevCareArea(id = careArea2, name = "2", shortName = "2"))
@@ -78,12 +82,12 @@ class OccupancyTest : PureJdbiTest() {
     }
 
     @Test
-    fun `confirmed daycare occupancy for child under 3 year old is 1,75 and over 3 years old is 1,0`() {
+    fun `calculateDailyUnitOccupancyValues smoke test`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today)
-                .childOfAge(3)
+            ChildBuilder(tx, today).childOfAge(3)
                 .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).exec()
-                .withGroupPlacement().toGroup(daycareGroup1).exec()
+                .withGroupPlacement().toGroup(daycareGroup1).execAndDone()
+                .done()
         }
 
         db.read {
@@ -103,6 +107,16 @@ class OccupancyTest : PureJdbiTest() {
             assertEquals(4.2, occupancyValues[0].occupancies[period.start]!!.percentage)
             assertEquals(2.4, occupancyValues[0].occupancies[period.end]!!.percentage)
         }
+    }
+
+    @Test
+    fun `calculateDailyGroupOccupancyValues smoke test`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(3)
+                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).exec()
+                .withGroupPlacement().toGroup(daycareGroup1).execAndDone()
+                .done()
+        }
 
         db.read { tx ->
             val occupancyValues =
@@ -117,92 +131,160 @@ class OccupancyTest : PureJdbiTest() {
         }
     }
 
+    @Test
+    fun `occupancy for a child under 3 year old is 1,75 and `() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(3)
+                .hasPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).fromDay(-1).toDay(0).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.minusDays(1L), 1.75)
+        }
+    }
+
+    @Test
+    fun `occupancy is 1,75 when unit is family unit`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(4)
+                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, familyUnitInArea2, OccupancyType.CONFIRMED, today, 1.75)
+        }
+    }
+
+    @Test
+    fun `daycare occupancy with default service need for a child over 3 year old is 1,0`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(3)
+                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 1.0)
+        }
+    }
+
+    @Test
+    fun `part time daycare occupancy with default service need for a child over 3 year old is 0,54`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(3)
+                .hasPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 0.54)
+        }
+    }
+
+    @Test
+    fun `preschool occupancy with default service need is 0,5`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(6, 5)
+                .hasPlacement().ofType(PlacementType.PRESCHOOL).toUnit(daycareInArea1).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 0.5)
+        }
+    }
+
+    @Test
+    fun `preschool daycare occupancy with default service need is 1,0`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(6, 5)
+                .hasPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 1.0)
+        }
+    }
+
+    @Test
+    fun `occupancy is based on service need`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(6, 5)
+                // a valid PRESCHOOL_DAYCARE service need would have occupancy 1.0
+                .hasPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).exec()
+                // but child has service need of daycare part time with occupancy 0.54
+                .withServiceNeed().createdBy(employeeId).withOption(snDefaultPartDayDaycare.id).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 0.54)
+        }
+    }
+
+    @Test
+    fun `occupancy is multiplied by assistance need factor`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(3)
+                .hasPlacement().ofType(PlacementType.DAYCARE).fromDay(0).toDay(1).toUnit(daycareInArea1).execAndDone()
+                .hasAssistanceNeed().createdBy(employeeId).withFactor(2.0).fromDay(1).toDay(1).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 1.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.plusDays(1L), 2.0)
+        }
+    }
+
+    @Test
+    fun `placement plan affects only planned occupancy`() {
+        db.transaction { tx ->
+            ChildBuilder(tx, today).childOfAge(3)
+                .hasPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndDone()
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 0.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.PLANNED, today, 1.0)
+        }
+    }
+
     private fun getPeriod(from: Int, to: Int) = FiniteDateRange(today.plusDays(from.toLong()), today.plusDays(to.toLong()))
-}
 
-private class ChildBuilder(
-    private val tx: Database.Transaction,
-    private val today: LocalDate
-) {
-    fun childOfAge(years: Int, months: Int = 0, days: Int = 0): ChildFixture {
-        val dob = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
-        val childId = tx.insertTestPerson(DevPerson(dateOfBirth = dob))
-        tx.insertTestChild(DevChild(childId))
-        return ChildFixture(tx, today, childId)
-    }
-
-    class ChildFixture(
-        private val tx: Database.Transaction,
-        private val today: LocalDate,
-        val childId: UUID
+    private fun getAndAssertOccupancyInUnit(
+        tx: Database.Read,
+        unitId: UUID,
+        type: OccupancyType,
+        date: LocalDate,
+        expectedSum: Double
     ) {
-        fun hasPlacement() = PlacementBuilder(tx, today, childId)
-    }
-
-    class PlacementBuilder(
-        private val tx: Database.Transaction,
-        private val today: LocalDate,
-        private val childId: UUID
-    ) {
-        private var unitId: UUID? = null
-        private var type: PlacementType? = null
-        private var from: Int = 0
-        private var to: Int = 0
-
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
-        fun ofType(type: PlacementType) = this.apply { this.type = type }
-        fun fromDay(day: Int) = this.apply { this.from = day }
-        fun toDay(day: Int) = this.apply { this.to = day }
-
-        fun exec(): PlacementFixture {
-            val placementId = tx.insertTestPlacement(
-                childId = childId,
-                unitId = unitId ?: throw IllegalStateException("unit not set"),
-                type = type ?: throw IllegalStateException("type not set"),
-                startDate = today.plusDays(from.toLong()),
-                endDate = today.plusDays(to.toLong())
-            )
-            return PlacementFixture(
-                tx = tx,
+        assertOccupancySum(
+            expectedSum = expectedSum,
+            date = date,
+            groupingId = unitId,
+            occupancyValues = tx.calculateDailyUnitOccupancyValues(
                 today = today,
-                childId = childId,
-                placementId = placementId,
-                placementPeriod = FiniteDateRange(today.plusDays(from.toLong()), today.plusDays(to.toLong()))
+                queryPeriod = FiniteDateRange(date, date),
+                type = type,
+                unitId = unitId
             )
-        }
+        )
     }
 
-    class PlacementFixture(
-        private val tx: Database.Transaction,
-        private val today: LocalDate,
-        val childId: UUID,
-        val placementId: UUID,
-        val placementPeriod: FiniteDateRange
+    private fun <K : OccupancyGroupingKey> assertOccupancySum(
+        expectedSum: Double,
+        period: FiniteDateRange,
+        groupingId: UUID,
+        occupancyValues: List<DailyOccupancyValues<K>>
     ) {
-        fun withGroupPlacement() = GroupPlacementBuilder(tx, today, this)
+        period.dates().forEach { date -> assertOccupancySum(expectedSum, date, groupingId, occupancyValues) }
     }
 
-    class GroupPlacementBuilder(
-        private val tx: Database.Transaction,
-        private val today: LocalDate,
-        private val placementFixture: PlacementFixture
+    private fun <K : OccupancyGroupingKey> assertOccupancySum(
+        expectedSum: Double,
+        date: LocalDate,
+        groupingId: UUID,
+        occupancyValues: List<DailyOccupancyValues<K>>
     ) {
-        private var groupId: UUID? = null
-        private var from: LocalDate? = null
-        private var to: LocalDate? = null
-
-        fun toGroup(id: UUID) = this.apply { this.groupId = id }
-        fun fromDay(day: Int) = this.apply { this.from = today.plusDays(day.toLong()) }
-        fun toDay(day: Int) = this.apply { this.to = today.plusDays(day.toLong()) }
-
-        fun exec(): PlacementFixture {
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementFixture.placementId,
-                groupId = groupId ?: throw IllegalStateException("group not set"),
-                startDate = from ?: placementFixture.placementPeriod.start,
-                endDate = to ?: placementFixture.placementPeriod.end
-            )
-            return placementFixture
-        }
+        assertEquals(
+            expectedSum,
+            occupancyValues.find { it.key.groupingId == groupingId }?.occupancies?.get(date)?.sum ?: 0.0
+        )
     }
 }
