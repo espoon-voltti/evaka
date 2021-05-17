@@ -225,6 +225,7 @@ export type SortByInvoices =
   | 'END'
   | 'SUM'
   | 'STATUS'
+  | 'CREATED_AT'
 
 export async function getFeeDecisions(
   page: number,
@@ -366,6 +367,7 @@ export async function getInvoices(
         ...json,
         ...deserializePeriodic(json),
         headOfFamily: deserializePersonDetailed(json.headOfFamily),
+        createdAt: json.createdAt ? new Date(json.createdAt) : null,
         rows: json.rows.map((rowJson) => ({
           child: {
             ...rowJson.child,

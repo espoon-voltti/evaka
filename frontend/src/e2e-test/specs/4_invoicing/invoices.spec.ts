@@ -28,6 +28,7 @@ import {
   insertPersonFixture
 } from 'e2e-test-common/dev-api'
 import { seppoAdminRole } from '../../config/users'
+import LocalDate from 'lib-common/local-date'
 
 const page = new InvoicingPage()
 
@@ -239,4 +240,12 @@ test('Invoices are listed on the admin UI guardian page', async (t) => {
 
   const guardianPage = new GuardianPage()
   await guardianPage.containsInvoice('01.01.2020', '01.02.2020', 'Luonnos')
+})
+
+test('Invoices are listed on the admin UI guardian page', async (t) => {
+  await t.click(page.createInvoices)
+
+  const today = LocalDate.today().format()
+
+  await t.expect(page.invoiceCreatedAt.innerText).eql(today)
 })

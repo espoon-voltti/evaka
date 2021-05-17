@@ -118,6 +118,7 @@ export default class InvoicingPage {
   readonly priceInput = Selector('[data-qa="input-price"]')
   readonly addRowButton = Selector('[data-qa="invoice-button-add-row"]')
   readonly deleteRowButton = Selector('[data-qa="delete-invoice-row-button"]')
+  readonly invoiceCreatedAt = Selector('[data-qa="invoice-created-at"]')
 
   readonly loaderSpinner = Selector('.loader-spinner')
 
