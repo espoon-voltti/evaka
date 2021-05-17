@@ -11,6 +11,8 @@ import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
   getApplication,
+  getClubTerms,
+  getPreschoolTerms,
   saveApplicationDraft,
   sendApplication,
   updateApplication
@@ -27,6 +29,7 @@ import {
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,
+  Term,
   validateApplication
 } from '../../applications/editor/validations'
 import { faAngleLeft, faCheck, faExclamation } from 'lib-icons'
@@ -57,6 +60,7 @@ export type ApplicationFormProps = {
   ) => void
   errors: ApplicationFormDataErrors
   verificationRequested: boolean
+  terms?: Term[]
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
@@ -69,6 +73,28 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
     OverlayContext
   )
+
+  const [terms, setTerms] = useState<Term[]>()
+  useEffect(() => {
+    switch (apiData.type) {
+      case 'PRESCHOOL':
+        void getPreschoolTerms().then((res) =>
+          setTerms(
+            res
+              .map((terms) => terms.map((term) => term.extendedTerm))
+              .getOrElse([])
+          )
+        )
+        break
+      case 'CLUB':
+        void getClubTerms().then((res) =>
+          setTerms(
+            res.map((terms) => terms.map(({ term }) => term)).getOrElse([])
+          )
+        )
+        break
+    }
+  }, [apiData.type, setTerms])
 
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(apiData, user)
@@ -84,11 +110,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     validateApplication(apiData, formData)
   )
   useEffect(() => {
-    setErrors(validateApplication(apiData, formData))
-  }, [formData])
+    setErrors(validateApplication(apiData, formData, terms))
+  }, [apiData, formData, terms])
 
   const onVerify = () => {
-    setErrors(validateApplication(apiData, formData))
+    setErrors(validateApplication(apiData, formData, terms))
     setVerificationRequested(true)
 
     if (!applicationHasErrors(errors)) {
@@ -226,6 +252,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
+            terms={terms}
           />
         )
       case 'CLUB':
@@ -236,6 +263,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
+            terms={terms}
           />
         )
     }
@@ -378,7 +406,7 @@ export default React.memo(function ApplicationEditor() {
   const loadApplication = useRestApi(getApplication, setApiData)
   useEffect(() => {
     loadApplication(applicationId)
-  }, [applicationId])
+  }, [applicationId, loadApplication])
 
   useTitle(
     t,

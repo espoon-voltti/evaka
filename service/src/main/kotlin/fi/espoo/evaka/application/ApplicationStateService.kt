@@ -22,6 +22,7 @@ import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
@@ -576,6 +577,13 @@ class ApplicationStateService(
                 ?: false
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")
+            }
+        }
+
+        if (type == ApplicationType.CLUB && preferredStartDate != null) {
+            val canApplyForPreferredDate = tx.getClubTerms().any { it.term.includes(preferredStartDate) }
+            if (!canApplyForPreferredDate) {
+                throw BadRequest("Cannot apply to club on $preferredStartDate")
             }
         }
 

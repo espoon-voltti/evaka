@@ -28,7 +28,8 @@ export default React.memo(function PreferredStartSubSection({
   formData,
   updateFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  terms
 }: ServiceNeedSectionProps) {
   const { applicationId } = useParams<{ applicationId: string }>()
   const t = useTranslation()
@@ -92,7 +93,7 @@ export default React.memo(function PreferredStartSubSection({
           <P key={index}>{info}</P>
         ))}
 
-        {type === 'CLUB' && <ClubTermsInfo />}
+        {type === 'CLUB' && <ClubTermsInfo clubTerms={terms ?? []} />}
 
         {type !== 'CLUB' ? (
           <ExpandingInfo
@@ -122,7 +123,12 @@ export default React.memo(function PreferredStartSubSection({
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
           isValidDate={(date: LocalDate) =>
-            isValidPreferredStartDate(date, originalPreferredStartDate, type)
+            isValidPreferredStartDate(
+              date,
+              originalPreferredStartDate,
+              type,
+              terms
+            )
           }
           data-qa={'preferredStartDate-input'}
           id={labelId}

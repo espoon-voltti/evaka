@@ -5,16 +5,23 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.daycare.ClubTerm
+import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
+import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ClubTermController {
+class TermsController {
 
     @GetMapping("/public/club-terms")
     fun getClubTerms(db: Database.Connection): List<ClubTerm> {
         return db.read { it.getClubTerms() }
+    }
+
+    @GetMapping("/public/preschool-terms")
+    fun getPreschoolTerms(db: Database.Connection): List<PreschoolTerm> {
+        return db.read { it.getPreschoolTerms() }
     }
 }

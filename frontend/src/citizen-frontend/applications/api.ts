@@ -5,8 +5,10 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   ClubTerm,
-  deserializeClubTerm
-} from 'lib-common/api-types/units/ClubTerm'
+  deserializeClubTerm,
+  deserializePreschoolTerm,
+  PreschoolTerm
+} from 'lib-common/api-types/units/terms'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import {
@@ -214,6 +216,17 @@ export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
   try {
     const result = await client.get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
     return Success.of(result.data.map(deserializeClubTerm))
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
+  try {
+    const result = await client.get<JsonOf<PreschoolTerm[]>>(
+      `/public/preschool-terms`
+    )
+    return Success.of(result.data.map(deserializePreschoolTerm))
   } catch (e) {
     return Failure.fromError(e)
   }

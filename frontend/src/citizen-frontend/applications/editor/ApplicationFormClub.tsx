@@ -18,7 +18,8 @@ export default React.memo(function ApplicationFormClub({
   formData,
   setFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  terms
 }: ApplicationFormProps) {
   const applicationType = 'CLUB'
 
@@ -52,6 +53,7 @@ export default React.memo(function ApplicationFormClub({
         }
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
+        terms={terms}
       />
 
       <UnitPreferenceSection

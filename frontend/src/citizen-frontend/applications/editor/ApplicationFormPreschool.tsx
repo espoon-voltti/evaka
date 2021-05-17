@@ -19,7 +19,8 @@ export default React.memo(function ApplicationFormPreschool({
   formData,
   setFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  terms
 }: ApplicationFormProps) {
   const applicationType = 'PRESCHOOL'
 
@@ -53,6 +54,7 @@ export default React.memo(function ApplicationFormPreschool({
         }
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
+        terms={terms}
       />
 
       <UnitPreferenceSection
