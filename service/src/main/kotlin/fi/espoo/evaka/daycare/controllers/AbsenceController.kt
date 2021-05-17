@@ -84,6 +84,18 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         db.transaction { absenceService.upsertChildAbsence(it, childId, absenceType.absenceType, absenceType.careType, user.id) }
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/by-child/{childId}/future")
+    fun getFutureAbsencesByChild(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID
+    ): ResponseEntity<List<Absence>> {
+        Audit.AbsenceRead.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.MOBILE)
+        val absences = db.read { absenceService.getFutureAbsencesByChild(it, childId) }
+        return ResponseEntity.ok(absences)
+    }
 }
 
 data class AbsenceBody(
