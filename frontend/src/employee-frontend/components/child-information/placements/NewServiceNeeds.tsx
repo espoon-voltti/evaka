@@ -56,7 +56,10 @@ function NewServiceNeeds({ placement, reload }: Props) {
 
   const options = serviceNeedOptions.isSuccess
     ? serviceNeedOptions.value
-        .filter((opt) => opt.validPlacementType === placementType)
+        .filter(
+          (opt) =>
+            opt.validPlacementType === placementType && !opt.defaultOption
+        )
         .map((opt) => ({
           label: opt.name,
           value: opt.id
