@@ -1,6 +1,6 @@
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.ChildBuilder
+import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -90,9 +90,12 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `calculateDailyUnitOccupancyValues smoke test`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).exec()
-                .withGroupPlacement().toGroup(daycareGroup1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
         }
 
         db.read {
@@ -102,24 +105,35 @@ class OccupancyTest : PureJdbiTest() {
 
             assertEquals(1, occupancyValues.size)
             assertEquals(daycareInArea1, occupancyValues[0].key.unitId)
-            assertEquals(2, occupancyValues[0].occupancies.size)
-            assertEquals(1.75, occupancyValues[0].occupancies[period.start]!!.sum)
-            assertEquals(1.0, occupancyValues[0].occupancies[period.end]!!.sum)
-            assertEquals(1, occupancyValues[0].occupancies[period.start]!!.headcount)
-            assertEquals(1, occupancyValues[0].occupancies[period.end]!!.headcount)
-            assertEquals(6.0, occupancyValues[0].occupancies[period.start]!!.caretakers)
-            assertEquals(6.0, occupancyValues[0].occupancies[period.end]!!.caretakers)
-            assertEquals(4.2, occupancyValues[0].occupancies[period.start]!!.percentage)
-            assertEquals(2.4, occupancyValues[0].occupancies[period.end]!!.percentage)
+            assertEquals(
+                mapOf(
+                    period.start to OccupancyValues(
+                        sum = 1.75,
+                        headcount = 1,
+                        caretakers = 6.0,
+                        percentage = 4.2
+                    ),
+                    period.end to OccupancyValues(
+                        sum = 1.0,
+                        headcount = 1,
+                        caretakers = 6.0,
+                        percentage = 2.4
+                    )
+                ),
+                occupancyValues[0].occupancies
+            )
         }
     }
 
     @Test
     fun `calculateDailyGroupOccupancyValues smoke test`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).exec()
-                .withGroupPlacement().toGroup(daycareGroup1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-1).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
         }
 
         db.read { tx ->
@@ -136,10 +150,12 @@ class OccupancyTest : PureJdbiTest() {
     }
 
     @Test
-    fun `occupancy for a child under 3 year old is 1,75 and `() {
+    fun `occupancy for a child under 3 year old is 1,75`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).fromDay(-1).toDay(0).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).fromDay(-1).toDay(0).save()
+                }
         }
 
         db.read { tx ->
@@ -150,8 +166,10 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `occupancy is 1,75 when unit is family unit`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(4)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).fromDay(-1).toDay(0).save()
+                }
         }
 
         db.read { tx ->
@@ -162,8 +180,10 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `daycare occupancy with default service need for a child over 3 year old is 1,0`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -174,8 +194,10 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `part time daycare occupancy with default service need for a child over 3 year old is 0,54`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -186,8 +208,10 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `preschool occupancy with default service need is 0,5`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(6, 5)
-                .hasPlacement().ofType(PlacementType.PRESCHOOL).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(6, 5).saveAnd {
+                    addPlacement().ofType(PlacementType.PRESCHOOL).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -198,8 +222,10 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `preschool daycare occupancy with default service need is 1,0`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(6, 5)
-                .hasPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(6, 5).saveAnd {
+                    addPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -210,11 +236,13 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `occupancy is based on service need`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(6, 5)
-                // a valid PRESCHOOL_DAYCARE service need would have occupancy 1.0
-                .hasPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).exec()
-                // but child has service need of daycare part time with occupancy 0.54
-                .withServiceNeed().createdBy(employeeId).withOption(snDefaultPartDayDaycare.id).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(6, 5).saveAnd {
+                    // a valid PRESCHOOL_DAYCARE service need would have occupancy 1.0
+                    addPlacement().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1).saveAnd {
+                        addServiceNeed().createdBy(employeeId).withOption(snDefaultPartDayDaycare.id).save()
+                    }
+                }
         }
 
         db.read { tx ->
@@ -225,22 +253,26 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `occupancy is multiplied by assistance need factor`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE).fromDay(0).toDay(1).toUnit(daycareInArea1).execAndReturn()
-                .hasAssistanceNeed().createdBy(employeeId).withFactor(2.0).fromDay(1).toDay(1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(0).toDay(1).save()
+                    addAssistanceNeed().createdBy(employeeId).withFactor(2.0).fromDay(1).toDay(1).save()
+                }
         }
 
         db.read { tx ->
             getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 1.0)
-            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.plusDays(1L), 2.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.plusDays(1), 2.0)
         }
     }
 
     @Test
     fun `placement plan affects only planned occupancy`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -252,8 +284,10 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `deleted placement plan has no effect`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).asDeleted().execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).asDeleted().save()
+                }
         }
 
         db.read { tx ->
@@ -265,9 +299,11 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `if placement plan is to different unit than overlapping placement then both are counted to planned occupancy`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndReturn()
-                .hasPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
+                    addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).save()
+                }
         }
 
         db.read { tx ->
@@ -279,9 +315,11 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `if placement plan is to same unit as overlapping placement then the maximum is counted to planned occupancy - test 1`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).execAndReturn()
-                .hasPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).save()
+                    addPlacementPlan().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -293,9 +331,11 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `if placement plan is to same unit as overlapping placement then the maximum is counted to planned occupancy - test 2`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(3)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndReturn()
-                .hasPlacementPlan().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(3).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
+                    addPlacementPlan().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).save()
+                }
         }
 
         db.read { tx ->
@@ -307,9 +347,12 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `realized occupancy uses staff attendance for caretaker count`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(4)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-2).toDay(1).exec()
-                .withGroupPlacement().toGroup(daycareGroup1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-2).toDay(1).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                }
 
             tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today.minusDays(2), count = 1.5)
             // day between has staff attendance missing
@@ -364,14 +407,15 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `realized occupancy does not count absent children unless absence type is PRESENCE or PLANNED_ABSENCE`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(4)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-3).toDay(0).exec()
-                .withGroupPlacement().toGroup(daycareGroup1).execAndReturn()
-                .returnFromPlacement()
-                .hasAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-2).forCareTypes(AbsenceCareType.DAYCARE)
-                .andAnother().ofType(AbsenceType.PRESENCE).onDay(-1).forCareTypes(AbsenceCareType.DAYCARE)
-                .andAnother().ofType(AbsenceType.PLANNED_ABSENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE)
-                .execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-3).toDay(0).saveAnd {
+                        addGroupPlacement().toGroup(daycareGroup1).save()
+                    }
+                    addAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-2).forCareTypes(AbsenceCareType.DAYCARE).save()
+                    addAbsence().ofType(AbsenceType.PRESENCE).onDay(-1).forCareTypes(AbsenceCareType.DAYCARE).save()
+                    addAbsence().ofType(AbsenceType.PLANNED_ABSENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE).save()
+                }
 
             FiniteDateRange(today.minusDays(3), today).dates().forEach { date ->
                 tx.insertTestStaffAttendance(groupId = daycareGroup1, date = date, count = 3.0)
@@ -390,9 +434,11 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `when child is in backup care the realized occupancy is taken from backup location`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(4)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).execAndReturn()
-                .hasBackupCare().toUnit(familyUnitInArea2).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).save()
+                    addBackupCare().toUnit(familyUnitInArea2).save()
+                }
 
             tx.insertTestStaffAttendance(groupId = daycareGroup1, date = today, count = 3.0)
             tx.insertTestStaffAttendance(groupId = daycareGroup2, date = today, count = 3.0)
@@ -411,11 +457,13 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `child can be in backup care within same unit`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(4)
-                .hasPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).exec()
-                .withGroupPlacement().toGroup(familyGroup1).execAndReturn()
-                .returnFromPlacement()
-                .hasBackupCare().toUnit(familyUnitInArea2).toGroup(familyGroup2).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(familyUnitInArea2).saveAnd {
+                        addGroupPlacement().toGroup(familyGroup1).save()
+                    }
+                    addBackupCare().toUnit(familyUnitInArea2).toGroup(familyGroup2).save()
+                }
 
             tx.insertTestStaffAttendance(groupId = familyGroup1, date = today, count = 3.0)
             tx.insertTestStaffAttendance(groupId = familyGroup2, date = today, count = 3.0)
@@ -434,9 +482,11 @@ class OccupancyTest : PureJdbiTest() {
     @Test
     fun `reduceDailyOccupancyValues merges periods`() {
         db.transaction { tx ->
-            ChildBuilder(tx, today).childOfAge(4)
-                .hasPlacement().ofType(PlacementType.DAYCARE).fromDay(-3).toDay(5).toUnit(daycareInArea1).execAndReturn()
-                .hasPlacement().ofType(PlacementType.DAYCARE_PART_TIME).fromDay(6).toDay(10).toUnit(daycareInArea1).execAndReturn()
+            FixtureBuilder(tx, today)
+                .addChild().withAge(4).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-3).toDay(5).save()
+                    addPlacement().ofType(PlacementType.DAYCARE_PART_TIME).toUnit(daycareInArea1).fromDay(6).toDay(10).save()
+                }
         }
 
         db.read { tx ->

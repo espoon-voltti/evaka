@@ -23,27 +23,62 @@ import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.util.UUID
 
-class ChildBuilder(
+class FixtureBuilder(
     private val tx: Database.Transaction,
     private val today: LocalDate
 ) {
-    fun childOfAge(years: Int, months: Int = 0, days: Int = 0): ChildFixture {
-        val dob = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
-        val childId = tx.insertTestPerson(DevPerson(dateOfBirth = dob))
-        tx.insertTestChild(DevChild(childId))
-        return ChildFixture(tx, today, childId)
+    fun addChild() = ChildBuilder(tx, today, this)
+
+    class ChildBuilder(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        private val fixtureBuilder: FixtureBuilder
+    ) {
+        private var dateOfBirth: LocalDate? = null
+
+        fun withDateOfBirth(dateOfBirth: LocalDate) = this.apply {
+            this.dateOfBirth = dateOfBirth
+        }
+
+        fun withAge(years: Int, months: Int = 0, days: Int = 0) = this.apply {
+            this.dateOfBirth = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
+        }
+
+        fun save(): FixtureBuilder {
+            doInsert()
+            return fixtureBuilder
+        }
+
+        fun saveAnd(f: ChildFixture.() -> Unit): FixtureBuilder {
+            val childId = doInsert()
+
+            f(ChildFixture(tx, today, childId))
+
+            return fixtureBuilder
+        }
+
+        private fun doInsert(): UUID {
+            val childId = tx.insertTestPerson(
+                DevPerson(
+                    dateOfBirth = dateOfBirth ?: throw IllegalStateException("date of birth not set")
+                )
+            )
+            tx.insertTestChild(DevChild(childId))
+            return childId
+        }
     }
 
+    @TestFixture
     class ChildFixture(
         private val tx: Database.Transaction,
         private val today: LocalDate,
         val childId: UUID
     ) {
-        fun hasAssistanceNeed() = AssistanceNeedBuilder(tx, today, this)
-        fun hasPlacementPlan() = PlacementPlanBuilder(tx, today, this)
-        fun hasBackupCare() = BackupCareBuilder(tx, today, this)
-        fun hasPlacement() = PlacementBuilder(tx, today, this)
-        fun hasAbsence() = AbsenceBuilder(tx, today, this)
+        fun addAssistanceNeed() = AssistanceNeedBuilder(tx, today, this)
+        fun addPlacementPlan() = PlacementPlanBuilder(tx, today, this)
+        fun addBackupCare() = BackupCareBuilder(tx, today, this)
+        fun addPlacement() = PlacementBuilder(tx, today, this)
+        fun addAbsence() = AbsenceBuilder(tx, today, this)
     }
 
     class AssistanceNeedBuilder(
@@ -51,23 +86,25 @@ class ChildBuilder(
         private val today: LocalDate,
         private val childFixture: ChildFixture
     ) {
+        private var from: LocalDate = today
+        private var to: LocalDate = today
         private var employeeId: UUID? = null
         private var factor: Double = 1.0
-        private var from: Int = 0
-        private var to: Int = 0
 
+        fun fromDay(date: LocalDate) = this.apply { this.from = date }
+        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun withFactor(factor: Double) = this.apply { this.factor = factor }
-        fun fromDay(day: Int) = this.apply { this.from = day }
-        fun toDay(day: Int) = this.apply { this.to = day }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
 
-        fun execAndReturn(): ChildFixture {
+        fun save(): ChildFixture {
             tx.insertTestAssistanceNeed(
                 DevAssistanceNeed(
                     childId = childFixture.childId,
                     updatedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
-                    startDate = today.plusDays(from.toLong()),
-                    endDate = today.plusDays(to.toLong()),
+                    startDate = from,
+                    endDate = to,
                     capacityFactor = factor
                 )
             )
@@ -80,33 +117,26 @@ class ChildBuilder(
         private val today: LocalDate,
         private val childFixture: ChildFixture
     ) {
-        private var day: Int = 0
+        private var date: LocalDate = today
         private var type: AbsenceType? = null
         private var careTypes: List<CareType>? = null
 
-        fun onDay(day: Int) = this.apply { this.day = day }
+        fun onDay(date: LocalDate) = this.apply { this.date = date }
+        fun onDay(relativeDays: Int) = this.apply { this.date = today.plusDays(relativeDays.toLong()) }
         fun ofType(type: AbsenceType) = this.apply { this.type = type }
         fun forCareTypes(vararg careTypes: CareType) = this.apply { this.careTypes = careTypes.asList() }
 
-        private fun exec() {
+        fun save(): ChildFixture {
             careTypes?.forEach { careType ->
                 tx.insertTestAbsence(
                     childId = childFixture.childId,
-                    date = today.plusDays(day.toLong()),
+                    date = date,
                     absenceType = type ?: throw IllegalStateException("absence type not set"),
                     careType = careType
                 )
             } ?: throw IllegalStateException("care types not set")
-        }
 
-        fun execAndReturn(): ChildFixture {
-            exec()
             return childFixture
-        }
-
-        fun andAnother(): AbsenceBuilder {
-            exec()
-            return AbsenceBuilder(tx, today, childFixture)
         }
     }
 
@@ -115,19 +145,21 @@ class ChildBuilder(
         private val today: LocalDate,
         private val childFixture: ChildFixture
     ) {
+        private var from: LocalDate = today
+        private var to: LocalDate = today
         private var unitId: UUID? = null
         private var type: PlacementType? = null
-        private var from: Int = 0
-        private var to: Int = 0
         private var deleted = false
 
+        fun fromDay(date: LocalDate) = this.apply { this.from = date }
+        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: UUID) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
-        fun fromDay(day: Int) = this.apply { this.from = day }
-        fun toDay(day: Int) = this.apply { this.to = day }
         fun asDeleted() = this.apply { this.deleted = true }
 
-        fun execAndReturn(): ChildFixture {
+        fun save(): ChildFixture {
             val applicationGuardianId = tx.insertTestPerson(DevPerson())
             val applicationId = tx.insertTestApplication(
                 guardianId = applicationGuardianId,
@@ -138,8 +170,8 @@ class ChildBuilder(
                 applicationId = applicationId,
                 unitId = unitId ?: throw IllegalStateException("unit not set"),
                 type = type ?: throw IllegalStateException("type not set"),
-                startDate = today.plusDays(from.toLong()),
-                endDate = today.plusDays(to.toLong()),
+                startDate = from,
+                endDate = to,
                 deleted = deleted
             )
             return childFixture
@@ -151,22 +183,24 @@ class ChildBuilder(
         private val today: LocalDate,
         private val childFixture: ChildFixture
     ) {
+        private var from: LocalDate = today
+        private var to: LocalDate = today
         private var unitId: UUID? = null
         private var groupId: UUID? = null
-        private var from: Int = 0
-        private var to: Int = 0
 
+        fun fromDay(date: LocalDate) = this.apply { this.from = date }
+        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: UUID) = this.apply { this.unitId = id }
         fun toGroup(id: UUID) = this.apply { this.groupId = id }
-        fun fromDay(day: Int) = this.apply { this.from = day }
-        fun toDay(day: Int) = this.apply { this.to = day }
 
-        fun execAndReturn(): ChildFixture {
+        fun save(): ChildFixture {
             tx.insertTestBackUpCare(
                 childId = childFixture.childId,
                 unitId = unitId ?: throw IllegalStateException("unit not set"),
-                startDate = today.plusDays(from.toLong()),
-                endDate = today.plusDays(to.toLong()),
+                startDate = from,
+                endDate = to,
                 groupId = groupId
             )
             return childFixture
@@ -178,51 +212,57 @@ class ChildBuilder(
         private val today: LocalDate,
         private val childFixture: ChildFixture
     ) {
+        private var from: LocalDate = today
+        private var to: LocalDate = today
         private var unitId: UUID? = null
         private var type: PlacementType? = null
-        private var from: Int = 0
-        private var to: Int = 0
 
+        fun fromDay(date: LocalDate) = this.apply { this.from = date }
+        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: UUID) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
-        fun fromDay(day: Int) = this.apply { this.from = day }
-        fun toDay(day: Int) = this.apply { this.to = day }
 
-        fun exec(): PlacementFixture {
-            val placementId = tx.insertTestPlacement(
-                childId = childFixture.childId,
-                unitId = unitId ?: throw IllegalStateException("unit not set"),
-                type = type ?: throw IllegalStateException("type not set"),
-                startDate = today.plusDays(from.toLong()),
-                endDate = today.plusDays(to.toLong())
-            )
-            return PlacementFixture(
-                tx = tx,
-                today = today,
-                childFixture = childFixture,
-                placementId = placementId,
-                placementPeriod = FiniteDateRange(today.plusDays(from.toLong()), today.plusDays(to.toLong()))
-            )
-        }
-
-        fun execAndReturn(): ChildFixture {
-            exec()
+        fun save(): ChildFixture {
+            doInsert()
             return childFixture
         }
+
+        fun saveAnd(f: PlacementFixture.() -> Unit): ChildFixture {
+            val placementId = doInsert()
+
+            f(
+                PlacementFixture(
+                    tx = tx,
+                    today = today,
+                    placementId = placementId,
+                    placementPeriod = FiniteDateRange(from, to)
+                )
+            )
+
+            return childFixture
+        }
+
+        private fun doInsert() = tx.insertTestPlacement(
+            childId = childFixture.childId,
+            unitId = unitId ?: throw IllegalStateException("unit not set"),
+            type = type ?: throw IllegalStateException("type not set"),
+            startDate = from,
+            endDate = to
+        )
     }
 
+    @TestFixture
     class PlacementFixture(
         private val tx: Database.Transaction,
         private val today: LocalDate,
-        val childFixture: ChildFixture,
         val placementId: UUID,
         val placementPeriod: FiniteDateRange
     ) {
-        fun withGroupPlacement() = GroupPlacementBuilder(tx, today, this)
+        fun addGroupPlacement() = GroupPlacementBuilder(tx, today, this)
 
-        fun withServiceNeed() = ServiceNeedBuilder(tx, today, this)
-
-        fun returnFromPlacement() = childFixture
+        fun addServiceNeed() = ServiceNeedBuilder(tx, today, this)
     }
 
     class GroupPlacementBuilder(
@@ -230,15 +270,17 @@ class ChildBuilder(
         private val today: LocalDate,
         private val placementFixture: PlacementFixture
     ) {
-        private var groupId: UUID? = null
         private var from: LocalDate? = null
         private var to: LocalDate? = null
+        private var groupId: UUID? = null
 
+        fun fromDay(date: LocalDate) = this.apply { this.from = date }
+        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(date: LocalDate) = this.apply { this.to = date }
+        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toGroup(id: UUID) = this.apply { this.groupId = id }
-        fun fromDay(day: Int) = this.apply { this.from = today.plusDays(day.toLong()) }
-        fun toDay(day: Int) = this.apply { this.to = today.plusDays(day.toLong()) }
 
-        fun execAndReturn(): PlacementFixture {
+        fun save(): PlacementFixture {
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = placementFixture.placementId,
                 groupId = groupId ?: throw IllegalStateException("group not set"),
@@ -254,17 +296,19 @@ class ChildBuilder(
         private val today: LocalDate,
         private val placementFixture: PlacementFixture
     ) {
-        private var optionId: UUID? = null
         private var from: LocalDate? = null
         private var to: LocalDate? = null
+        private var optionId: UUID? = null
         private var employeeId: UUID? = null
 
+        fun fromDay(date: LocalDate) = this.apply { this.from = date }
+        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(date: LocalDate) = this.apply { this.to = date }
+        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun withOption(id: UUID) = this.apply { this.optionId = id }
-        fun fromDay(day: Int) = this.apply { this.from = today.plusDays(day.toLong()) }
-        fun toDay(day: Int) = this.apply { this.to = today.plusDays(day.toLong()) }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
 
-        fun execAndReturn(): PlacementFixture {
+        fun save(): PlacementFixture {
             tx.insertTestNewServiceNeed(
                 confirmedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
                 placementId = placementFixture.placementId,
@@ -278,3 +322,13 @@ class ChildBuilder(
         }
     }
 }
+
+/**
+ * This is needed for better control of implicit this references.
+ *
+ * See:
+ * https://github.com/Kotlin/KEEP/pull/38
+ * https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-dsl-marker/
+ */
+@DslMarker
+annotation class TestFixture
