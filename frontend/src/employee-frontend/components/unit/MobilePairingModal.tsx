@@ -63,7 +63,7 @@ export default React.memo(function MobilePairingModal({
     if (phase === 1) {
       void postPairing(unitId).then(setPairingResponse)
     }
-  }, [phase])
+  }, [phase, unitId])
 
   useEffect(() => {
     if (responseKey.length === 10) {
@@ -82,7 +82,7 @@ export default React.memo(function MobilePairingModal({
         })
       }
     }
-  }, [responseKey])
+  }, [responseKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const polling = setInterval(() => {

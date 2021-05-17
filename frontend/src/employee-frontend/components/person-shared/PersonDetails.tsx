@@ -130,7 +130,7 @@ const PersonDetails = React.memo(function PersonDetails({
   // clear ui mode when dismounting component
   useEffect(() => {
     return clearUiMode
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (personResult.isLoading) {
     return <Loader />

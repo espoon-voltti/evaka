@@ -40,7 +40,7 @@ export default function UnitDetailsPage(): JSX.Element {
     if (unit.isSuccess) {
       setTitle(unit.value.daycare.name)
     }
-  }, [unit])
+  }, [setTitle, unit])
 
   useEffect(() => {
     void getAreas().then(setAreas)
@@ -57,7 +57,7 @@ export default function UnitDetailsPage(): JSX.Element {
       )
     })
     void getDaycare(id).then(setUnit)
-  }, [])
+  }, [id])
 
   const onSubmit = (fields: DaycareFields, currentUnit: UnitResponse) => {
     if (!id) return

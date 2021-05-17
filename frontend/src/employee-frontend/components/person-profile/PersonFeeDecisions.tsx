@@ -51,7 +51,7 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
     })
   }, [id, setFeeDecisions])
 
-  useEffect(loadDecisions, [id, setFeeDecisions])
+  useEffect(loadDecisions, [id, setFeeDecisions]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderFeeDecisions = () =>
     feeDecisions.isSuccess
@@ -170,7 +170,7 @@ const Modal = React.memo(function Modal({
         .then(loadDecisions)
         .catch(() => setError(true))
     }
-  }, [clear, date])
+  }, [clear, date]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <FormModal

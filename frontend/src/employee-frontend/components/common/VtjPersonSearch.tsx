@@ -63,12 +63,12 @@ function VtjPersonSearch({ onResult, onFocus }: Props) {
 
   useEffect(() => {
     onResult(selectedPerson)
-  }, [selectedPerson])
+  }, [selectedPerson]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const searchPeople = useRestApi(search, setPersons)
   useEffect(() => {
     searchPeople(debouncedQuery)
-  }, [debouncedQuery])
+  }, [debouncedQuery]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const options = useMemo(() => persons.getOrElse([]), [persons])
 
@@ -86,7 +86,7 @@ function VtjPersonSearch({ onResult, onFocus }: Props) {
         }
         onInputChange={setQuery}
         onChange={(option) =>
-          void setSelectedPerson(
+          setSelectedPerson(
             option && 'socialSecurityNumber' in option ? option : undefined
           )
         }

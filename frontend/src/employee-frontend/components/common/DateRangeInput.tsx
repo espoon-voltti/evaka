@@ -117,7 +117,7 @@ function BaseDateRangeInput({
       }))
       handleOnChange(startValue, end)
     }
-  }, [startValue])
+  }, [startValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (endValue === 'invalid') {
@@ -132,11 +132,11 @@ function BaseDateRangeInput({
       }))
       handleOnChange(start, endValue)
     }
-  }, [endValue])
+  }, [endValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     onValidationResult(!!validationErrors.start || !!validationErrors.end)
-  }, [validationErrors])
+  }, [validationErrors]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container>

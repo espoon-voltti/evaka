@@ -55,7 +55,7 @@ export default React.memo(function MarkPresent() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [])
+  }, [loadDaycareAttendances, unitId])
 
   function childArrives() {
     return childArrivesPOST(unitId, childId, time)

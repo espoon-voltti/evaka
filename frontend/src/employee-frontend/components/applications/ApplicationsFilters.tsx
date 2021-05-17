@@ -75,7 +75,7 @@ export default React.memo(function ApplicationFilters() {
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const areas =
@@ -85,13 +85,13 @@ export default React.memo(function ApplicationFilters() {
             .map((areas) => areas.map(({ shortName }) => shortName))
             .getOrElse([])
     void getUnits(areas, type).then(setAllUnits)
-  }, [type, availableAreas, area])
+  }, [type, availableAreas, area]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (units.length === 0 && distinctions.includes('SECONDARY')) {
       setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
     }
-  }, [units])
+  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setApplicationsResult(Loading.of())

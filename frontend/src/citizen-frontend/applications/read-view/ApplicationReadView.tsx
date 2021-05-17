@@ -30,7 +30,7 @@ export default React.memo(function ApplicationReadView() {
   const loadApplication = useRestApi(getApplication, setApiData)
   useEffect(() => {
     loadApplication(applicationId)
-  }, [applicationId])
+  }, [applicationId, loadApplication])
 
   useTitle(
     t,

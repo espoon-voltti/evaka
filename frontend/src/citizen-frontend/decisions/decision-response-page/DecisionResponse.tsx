@@ -137,7 +137,7 @@ export default React.memo(function DecisionResponse({
         setDateErrorMessage(t.validationErrors.preferredStartDate)
       }
     }
-  }, [parsedDate])
+  }, [parsedDate, startDate, decisionType]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div data-qa={`decision-${decision.id}`}>

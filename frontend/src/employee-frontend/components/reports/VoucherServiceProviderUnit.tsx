@@ -162,7 +162,7 @@ function VoucherServiceProviderUnit() {
         setUnitName(res.value.rows[0].unitName)
       }
     })
-  }, [filters])
+  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container>

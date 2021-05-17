@@ -39,7 +39,7 @@ export default React.memo(function DecisionResponseList() {
   ] = useState<boolean>(false)
 
   const loadDecisions = useRestApi(getApplicationDecisions, setDecisionsRequest)
-  useEffect(() => loadDecisions(applicationId), [applicationId])
+  useEffect(() => loadDecisions(applicationId), [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useTitle(t, t.decisions.title)
 

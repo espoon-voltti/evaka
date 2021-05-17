@@ -80,22 +80,22 @@ export default React.memo(function EmployeePinCodePage() {
       : undefined
   }
 
-  const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-    if (dirty) {
-      // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
-      e.preventDefault()
-      e.returnValue = i18n.pinCode.unsavedDataWarning
-      return i18n.pinCode.unsavedDataWarning
-    }
-    return
-  }
-
   useEffect(() => {
+    const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
+        e.preventDefault()
+        e.returnValue = i18n.pinCode.unsavedDataWarning
+        return i18n.pinCode.unsavedDataWarning
+      }
+      return
+    }
+
     window.addEventListener('beforeunload', beforeUnloadHandler)
     return () => {
       window.removeEventListener('beforeunload', beforeUnloadHandler)
     }
-  }, [beforeUnloadHandler])
+  }, [dirty]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Container>

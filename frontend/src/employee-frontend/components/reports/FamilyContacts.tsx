@@ -32,7 +32,7 @@ function FamilyContacts() {
     setUnit(Loading.of())
     void getFamilyContactsReport(unitId).then(setRows)
     void getDaycare(unitId).then(setUnit)
-  }, [])
+  }, [unitId])
 
   return (
     <Container>

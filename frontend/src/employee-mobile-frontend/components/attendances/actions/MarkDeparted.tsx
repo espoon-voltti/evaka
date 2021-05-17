@@ -86,7 +86,7 @@ export default React.memo(function MarkDeparted() {
   useEffect(() => {
     loadDaycareAttendances(unitId)
     void getChildDeparture(unitId, childId, time).then(setChildDepartureInfo)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function markDeparted() {
     return childDeparts(unitId, childId, time)

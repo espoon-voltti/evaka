@@ -116,7 +116,7 @@ export default React.memo(function DailyNoteEditor() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [])
+  }, [loadDaycareAttendances, unitId])
 
   useEffect(() => {
     if (attendanceResponse.isSuccess) {
@@ -133,7 +133,7 @@ export default React.memo(function DailyNoteEditor() {
         setGroupNote(gNote)
       }
     }
-  }, [attendanceResponse])
+  }, [attendanceResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const child =
     attendanceResponse.isSuccess &&

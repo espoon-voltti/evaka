@@ -57,14 +57,14 @@ export default function EmployeesPage() {
         setTotalPages(result.value.pages)
       }
     },
-    [page]
+    [page] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const loadEmployees = useRestApi(searchEmployees, setEmployeesResult)
 
   useEffect(() => {
     loadEmployees(page, PAGE_SIZE, debouncedSearchTerm)
-  }, [loadEmployees, page, PAGE_SIZE, debouncedSearchTerm])
+  }, [loadEmployees, page, debouncedSearchTerm])
 
   useEffect(() => setPage(1), [searchTerm])
 

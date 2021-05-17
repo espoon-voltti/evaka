@@ -74,7 +74,7 @@ export default memo(function StaffAttendance({
     return () => {
       isMountedRef.current = false
     }
-  }, [groupId, selectedDate])
+  }, [groupId, selectedDate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateAttendances = (attendance: StaffAttendance) =>
     postStaffAttendance(attendance).then(refreshAttendances)
@@ -185,13 +185,14 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
 
       setUpdatedValue(undefined)
     }
-  }, [debouncedValue])
+  }, [debouncedValue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const update = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUpdatedValue(parseFloat(event.target.value.replace(',', '.')) || 0)
     setInputValue(event.target.value)
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const toggleEditing = useCallback(() => setEditing((prev) => !prev), [
     editing
   ])

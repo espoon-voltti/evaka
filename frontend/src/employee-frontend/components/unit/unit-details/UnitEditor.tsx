@@ -541,7 +541,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       props.financeDecisionHandlerOptions.find(
         (e) => e.value === form.financeDecisionHandlerId
       ),
-    [form.financeDecisionHandlerId]
+    [form.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const areaOptions = props.areas.map(({ id, name }) => ({

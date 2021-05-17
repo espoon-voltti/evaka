@@ -33,7 +33,7 @@ export default function useCloseOnOutsideClick<T extends HTMLElement>(
 
     document.addEventListener('click', onClick, false)
     return () => document.removeEventListener('click', onClick, false)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return containerRef
 }

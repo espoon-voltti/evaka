@@ -60,7 +60,7 @@ export default function useInactivityTimeout(
         clearTimeouts()
       }
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return
 }

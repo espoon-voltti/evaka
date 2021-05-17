@@ -38,7 +38,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
   const loadDecision = () => getFeeDecision(id).then((dec) => setDecision(dec))
-  useEffect(() => void loadDecision(), [id])
+  useEffect(() => void loadDecision(), [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (decision.isSuccess) {
@@ -51,7 +51,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
         : setTitle(`${name} | ${i18n.titles.feeDecision}`)
       setNewDecisionType(decision.value.decisionType)
     }
-  }, [decision])
+  }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const changeDecisionType = (type: string) => {
     if (decision.isSuccess) {
@@ -64,7 +64,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
 
   const goBack = () => history.goBack()
 
-  const goToDecisions = useCallback(() => goBack(), [history])
+  const goToDecisions = useCallback(() => goBack(), [history]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (decision.isFailure) {
     return <Redirect to="/finance/fee-decisions" />

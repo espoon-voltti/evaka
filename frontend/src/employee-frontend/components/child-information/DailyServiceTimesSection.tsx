@@ -116,7 +116,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
   ] = useState<ValidationResult | null>(null)
 
   const loadData = useRestApi(getChildDailyServiceTimes, setApiData)
-  useEffect(() => loadData(id), [id])
+  useEffect(() => loadData(id), [id, loadData])
 
   const startEditing = () => {
     if (apiData.isSuccess) {
@@ -213,7 +213,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     }
   }
 
-  useEffect(validate, [formData])
+  useEffect(validate, [formData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = () => {
     if (!formIsValid || !formData) return

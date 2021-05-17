@@ -77,7 +77,6 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
     reloadDecisions(page, pageSize, sortBy, sortDirection, params)
   }, [
     page,
-    pageSize,
     sortBy,
     sortDirection,
     searchFilters,
@@ -100,7 +99,7 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
     if (currentPage.isSuccess) {
       checkIds(currentPage.value.map((decision) => decision.id))
     }
-  }, [decisions, checkIds])
+  }, [decisions, checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkedIds = Object.keys(checked).filter((id) => !!checked[id])
 

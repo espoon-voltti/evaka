@@ -53,17 +53,15 @@ function NewServiceNeedEditorRow({
     !form.endDate.isBefore(form.startDate)
 
   const onSubmit = () => {
-    if (
-      form.startDate !== undefined &&
-      form.endDate !== undefined &&
-      form.optionId
-    ) {
+    const startDate = form.startDate
+    const endDate = form.endDate
+    if (startDate !== undefined && endDate !== undefined && form.optionId) {
       if (
         placement.serviceNeeds.find(
           (sn) =>
             sn.id !== editingId &&
-            sn.startDate.isEqualOrBefore(form.endDate!) &&
-            sn.endDate.isEqualOrAfter(form.startDate!)
+            sn.startDate.isEqualOrBefore(endDate) &&
+            sn.endDate.isEqualOrAfter(startDate)
         ) !== undefined
       ) {
         setOverlapWarning(true)

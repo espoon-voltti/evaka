@@ -193,7 +193,7 @@ function ServiceNeedForm(props: Props) {
     }
 
     setFormErrors(checkFormErrors())
-  }, [form, serviceNeeds])
+  }, [form, serviceNeeds]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const autoCutWarning =
     isCreate(props) && checkSoftConflict() && !checkHardConflict()

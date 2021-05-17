@@ -44,7 +44,7 @@ function ReportDownload({ data, headers, filename, 'data-qa': dataQa }: Props) {
   */
   useLayoutEffect(() => {
     if (!reloadCSV) setReloadCSV(true)
-  }, [data, headers, filename])
+  }, [data, headers, filename]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handler = reloadCSV

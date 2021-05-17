@@ -64,7 +64,7 @@ function ApplicationsPage() {
         setPage(result.value.pages)
       }
     },
-    [setApplicationsResult]
+    [setApplicationsResult] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const reloadApplications = useRestApi(getApplications, onApplicationsResponse)
@@ -104,7 +104,6 @@ function ApplicationsPage() {
     reloadApplications(page, pageSize, sortBy, sortDirection, params)
   }, [
     page,
-    pageSize,
     sortBy,
     sortDirection,
     area,
@@ -145,7 +144,8 @@ function ApplicationsPage() {
     distinctions,
     startDate,
     endDate,
-    debouncedSearchTerms
+    debouncedSearchTerms,
+    setCheckedIds
   ])
 
   return (

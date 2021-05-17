@@ -50,16 +50,15 @@ export default React.memo(function ApplicationActions({
 
   const handlePromise = (promise: Promise<void>) => {
     void promise
-      .then(() => void reloadApplications())
-      .catch(
-        () =>
-          void setErrorMessage({
-            type: 'error',
-            title: i18n.common.error.unknown,
-            resolveLabel: i18n.common.ok
-          })
+      .then(() => reloadApplications())
+      .catch(() =>
+        setErrorMessage({
+          type: 'error',
+          title: i18n.common.error.unknown,
+          resolveLabel: i18n.common.ok
+        })
       )
-      .finally(() => void setActionInFlight(false))
+      .finally(() => setActionInFlight(false))
   }
 
   const actions: Action[] = useMemo(
@@ -195,7 +194,7 @@ export default React.memo(function ApplicationActions({
         }
       }
     ],
-    [i18n, application]
+    [i18n, application] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const applicableActions = actions.filter(({ enabled }) => enabled)

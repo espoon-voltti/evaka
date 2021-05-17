@@ -105,8 +105,6 @@ test('Admin sends a bulletin and blocked guardian does not get it', async (t) =>
   })
   await home.navigateToMessages()
 
-  const daycareId = fixtures.daycareFixture.id
-
   await employeeHome.navigateToChildInformation(
     fixtures.enduserChildFixtureJari.id
   )

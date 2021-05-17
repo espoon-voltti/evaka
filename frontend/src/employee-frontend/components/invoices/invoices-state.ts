@@ -9,9 +9,9 @@ import {
   createInvoices,
   getInvoices,
   InvoiceSearchParams,
-  SortByInvoices,
   sendInvoices,
-  sendInvoicesByDate
+  sendInvoicesByDate,
+  SortByInvoices
 } from '../../api/invoicing'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { SearchOrder } from '../../types'
@@ -96,7 +96,7 @@ const useActions = (setState: React.Dispatch<React.SetStateAction<State>>) =>
       allInvoicesToggle: () =>
         setState((s) => ({ ...s, allInvoicesToggle: !s.allInvoicesToggle }))
     }),
-    []
+    [setState]
   )
 
 export type InvoicesActions = ReturnType<typeof useActions>
@@ -121,7 +121,7 @@ export function useInvoicesState() {
           .getOrElse(previousState.invoiceTotals)
       }))
     },
-    [setState, state.page]
+    [setState, state.page] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const loadInvoices = useRestApi(getInvoices, setInvoicesResult)
@@ -172,7 +172,7 @@ export function useInvoicesState() {
       invoiceDate: LocalDate
       dueDate: LocalDate
     }) => {
-      const request = state.allInvoicesToggle
+      return state.allInvoicesToggle
         ? sendInvoicesByDate(
             invoiceDate,
             dueDate,
@@ -182,7 +182,6 @@ export function useInvoicesState() {
             searchFilters.useCustomDatesForInvoiceSending
           )
         : sendInvoices(Object.keys(state.checkedInvoices), invoiceDate, dueDate)
-      return request
     },
     [
       state.checkedInvoices,

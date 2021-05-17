@@ -53,7 +53,7 @@ export const UIContextProvider = React.memo(function UIContextProvider({
       setErrorMessage,
       clearErrorMessage
     }),
-    [uiMode, setUiMode, errorMessage, setErrorMessage]
+    [uiMode, setUiMode, errorMessage, setErrorMessage] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>

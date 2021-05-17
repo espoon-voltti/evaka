@@ -63,7 +63,7 @@ export default React.memo(function UnitsSubSection({
 
       loadUnits(unitType, preferredStartDate, shiftCare)
     }
-  }, [applicationType, preparatory, preferredStartDateIso, shiftCare])
+  }, [applicationType, preparatory, preferredStartDateIso, shiftCare]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (units.isSuccess) {
@@ -73,7 +73,7 @@ export default React.memo(function UnitsSubSection({
         )
       })
     }
-  }, [units])
+  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>

@@ -44,7 +44,7 @@ export default React.memo(function ApplicationCreation() {
   >(duplicatesDefault)
   useEffect(() => {
     void getDuplicateApplications(childId).then(setDuplicates)
-  }, [])
+  }, [childId])
 
   const duplicateExists =
     selectedType !== undefined && duplicates[selectedType] === true
@@ -56,7 +56,7 @@ export default React.memo(function ApplicationCreation() {
     void getActivePlacementsByApplicationType(childId).then(
       setTransferApplicationTypes
     )
-  }, [])
+  }, [childId])
 
   const shouldUseTransferApplication =
     (selectedType === 'DAYCARE' || selectedType === 'PRESCHOOL') &&

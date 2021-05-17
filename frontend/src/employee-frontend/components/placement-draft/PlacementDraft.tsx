@@ -127,7 +127,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
           .map((unit) => unit.ghostUnit)
           .includes(true)
       )
-  }, [placement])
+  }, [placement]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function hasOverlap(
     placement: PlacementDraftPlacement,
@@ -185,7 +185,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         calculateOverLaps(withoutOldPlacements)
       }
     })
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -194,7 +194,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         placement.period?.start ?? placementDraft.value.period.start
       ).then(setUnits)
     }
-  }, [placementDraft, placement.period?.start])
+  }, [placementDraft, placement.period?.start]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (placementDraft.isSuccess) {
@@ -204,7 +204,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
       )
       setTitle(`${name} | ${i18n.titles.placementDraft}`)
     }
-  }, [placementDraft])
+  }, [placementDraft]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function fixNullLengthPeriods(
     periodType: 'period' | 'preschoolDaycarePeriod',

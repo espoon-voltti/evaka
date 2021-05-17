@@ -172,7 +172,7 @@ const ChildInformation = React.memo(function ChildInformation({
     ) {
       void getParentshipsByChild(id).then(setParentships)
     }
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (person.isSuccess) {
@@ -182,7 +182,7 @@ const ChildInformation = React.memo(function ChildInformation({
       )
       setTitle(`${name} | ${i18n.titles.customers}`)
     }
-  }, [person])
+  }, [person]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const layout = useMemo(() => getLayout(layouts, roles), [roles])
 

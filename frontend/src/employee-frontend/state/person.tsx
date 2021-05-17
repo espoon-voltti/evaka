@@ -90,6 +90,8 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
     defaultState.invoices
   )
 
+  // TODO: fix the deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const reloadFamily = (id: string) => {
     setFamily(Loading.of())
     void getFamilyOverview(id).then(setFamily)

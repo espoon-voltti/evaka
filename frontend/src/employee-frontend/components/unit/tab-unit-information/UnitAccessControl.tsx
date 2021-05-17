@@ -480,9 +480,9 @@ function UnitAccessControl({ unitId, groups }: Props) {
   const reloadEmployees = useRestApi(getEmployees, setEmployees)
   const reloadDaycareAclRows = useRestApi(getDaycareAclRows, setDaycareAclRows)
   const reloadMobileDevices = useRestApi(getMobileDevices, setMobileDevices)
-  useEffect(() => reloadEmployees(), [])
-  useEffect(() => reloadDaycareAclRows(unitId), [unitId])
-  useEffect(() => reloadMobileDevices(unitId), [unitId])
+  useEffect(() => reloadEmployees(), [reloadEmployees])
+  useEffect(() => reloadDaycareAclRows(unitId), [reloadDaycareAclRows, unitId])
+  useEffect(() => reloadMobileDevices(unitId), [reloadMobileDevices, unitId])
 
   const candidateEmployees = useMemo(
     () =>
@@ -498,7 +498,7 @@ function UnitAccessControl({ unitId, groups }: Props) {
             [(row) => row.email, (row) => row.id]
           )
         : [],
-    [employees, daycareAclRows]
+    [employees, daycareAclRows] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   function formatRows(rows: DaycareAclRow[]): FormattedRow[] {
@@ -522,7 +522,7 @@ function UnitAccessControl({ unitId, groups }: Props) {
             )
           )
         : undefined,
-    [daycareAclRows]
+    [daycareAclRows] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const specialEducationTeachers = useMemo(
@@ -534,7 +534,7 @@ function UnitAccessControl({ unitId, groups }: Props) {
             )
           )
         : undefined,
-    [daycareAclRows]
+    [daycareAclRows] // eslint-disable-line react-hooks/exhaustive-deps
   )
   const staff = useMemo(
     () =>
@@ -543,7 +543,7 @@ function UnitAccessControl({ unitId, groups }: Props) {
             daycareAclRows.value.filter(({ role }) => role === 'STAFF')
           )
         : undefined,
-    [daycareAclRows]
+    [daycareAclRows] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const addUnitSupervisor = (employeeId: UUID) =>

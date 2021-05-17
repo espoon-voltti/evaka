@@ -22,7 +22,7 @@ export default function useIntersectionObserver<E extends Element>(
       observer.observe(ref.current)
     }
     return () => observer.disconnect()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return ref
 }

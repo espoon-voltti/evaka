@@ -72,7 +72,7 @@ function PlacementSketching() {
 
   const filteredRows: PlacementSketchingRow[] = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
-    [rows, displayFilters]
+    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const yesNo = (b: boolean) => (b ? i18n.common.yes : i18n.common.no)

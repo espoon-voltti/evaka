@@ -80,6 +80,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     }
   }, [
     editing,
+    editedApplication,
     editedApplication?.type,
     editedApplication?.form.preferences.preferredStartDate
   ])
@@ -109,7 +110,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     })
   }
 
-  useEffect(reloadApplication, [applicationId])
+  useEffect(reloadApplication, [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (debouncedEditedApplication && units.isSuccess) {
@@ -117,11 +118,11 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
         validateApplication(debouncedEditedApplication, units.value, i18n)
       )
     }
-  }, [debouncedEditedApplication])
+  }, [debouncedEditedApplication]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.scrollTo({ left: 0, top: position })
-  }, [application])
+  }, [application]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderApplication = (applicationData: ApplicationResponse) =>
     editing ? (

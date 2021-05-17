@@ -56,7 +56,7 @@ const FeeAlteration = React.memo(function FeeAlteration({
   useEffect(() => {
     loadFeeAlterations()
     return () => setFeeAlterations(Loading.of())
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (result: Result<void>) => {
     if (result.isSuccess) {

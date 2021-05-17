@@ -317,6 +317,7 @@ export const InvoicingUIContextProvider = React.memo(
           setAvailableAreas
         }
       }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [
         feeDecisionSearchFilters,
         setFeeDecisionSearchFilters,

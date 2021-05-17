@@ -105,6 +105,7 @@ export const AbsencesContextProvider = React.memo(
         setSelectedCareTypeCategories,
         toggleCellSelection
       }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [
         absences,
         setAbsences,

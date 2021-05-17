@@ -53,7 +53,7 @@ export default React.memo(function MessagesPage() {
   useEffect(() => {
     setBulletinsState((state) => ({ ...state, nextPage: Loading.of() }))
     loadBulletins(bulletinsState.currentPage)
-  }, [bulletinsState.currentPage])
+  }, [bulletinsState.currentPage, loadBulletins])
 
   const loadNextPage = () =>
     setBulletinsState((state) => {

@@ -173,7 +173,7 @@ const Decision = memo(function Decision({
         setSelectedUnit(result.value.unit)
       }
     })
-  }, [applicationId])
+  }, [applicationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (decisionDraftGroup.isSuccess) {
@@ -183,7 +183,7 @@ const Decision = memo(function Decision({
       )
       setTitle(`${name} | ${i18n.titles.decision}`)
     }
-  }, [decisionDraftGroup])
+  }, [decisionDraftGroup]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void getDecisionUnits().then(setUnits)

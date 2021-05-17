@@ -25,7 +25,7 @@ export default React.memo(function Header() {
 
   useEffect(() => {
     if (user) refreshUnreadBulletinsCount()
-  }, [user])
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <HeaderContainer fixed={showMenu}>

@@ -174,7 +174,7 @@ function AbsenceCellWrapper({
         absences={absences}
         backupCare={backupCare}
         isSelected={isSelected}
-        toggle={useCallback(toggleCellSelection(id), [id])}
+        toggle={useCallback(toggleCellSelection(id), [id])} // eslint-disable-line react-hooks/exhaustive-deps
       />
     </Tooltip>
   )

@@ -40,15 +40,15 @@ export default React.memo(function VoucherValueDecisionFilters() {
   const { i18n } = useTranslation()
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
-  }, [])
+  }, [setAvailableAreas])
 
   useEffect(() => {
     void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
-  }, [])
+  }, [setFinanceDecisionHandlers])
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
-  }, [])
+  }, [setUnits])
 
   const selectedFinanceDecisionHandler = useMemo(
     () =>
@@ -57,7 +57,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
         .find(
           (handler) => handler.value === searchFilters.financeDecisionHandlerId
         ),
-    [searchFilters.financeDecisionHandlerId]
+    [searchFilters.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   // remove selected unit filter if the unit is not included in the selected areas
@@ -73,7 +73,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
     ) {
       setSearchFilters((filters) => ({ ...filters, unit: undefined }))
     }
-  }, [units])
+  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleArea = useCallback(
     (code: string) => () => {

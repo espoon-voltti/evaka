@@ -44,7 +44,7 @@ export default React.memo(function UnitDetailsPanel({
     } else {
       setDistance(null)
     }
-  }, [unit, selectedAddress])
+  }, [unit, selectedAddress, loadDistance])
 
   const formatCareType = (type: CareType) => {
     switch (type) {

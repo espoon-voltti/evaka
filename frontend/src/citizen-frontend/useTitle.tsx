@@ -13,5 +13,5 @@ export default function useTitle(
   return useEffect(() => {
     document.title = title ? `${t.common.title} | ${title}` : t.common.title
     return () => void (document.title = t.common.title)
-  }, deps)
+  }, deps) // eslint-disable-line react-hooks/exhaustive-deps
 }
