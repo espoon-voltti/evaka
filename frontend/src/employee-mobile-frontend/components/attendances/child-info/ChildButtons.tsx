@@ -1,8 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
-import colors from 'lib-components/colors'
 import { faComments, faChild, faPen } from 'lib-icons'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -28,6 +27,7 @@ export default React.memo(function ChildButtons({
   groupNote
 }: Props) {
   const { i18n } = useTranslation()
+  const { colors } = useTheme()
   const noteFound = child.dailyNote !== null || !!groupNote
   return (
     <IconWrapper>
@@ -49,7 +49,7 @@ export default React.memo(function ChildButtons({
         >
           <RoundIcon
             content={faChild}
-            color={colors.blues.primary}
+            color={colors.main.primary}
             size="XL"
             label={i18n.common.information}
           />
@@ -60,7 +60,7 @@ export default React.memo(function ChildButtons({
         >
           <RoundIcon
             content={faPen}
-            color={colors.blues.primary}
+            color={colors.main.primary}
             size="XL"
             label={i18n.common.dailyNotes}
             bubble={noteFound}
