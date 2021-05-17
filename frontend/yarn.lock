@@ -1913,6 +1913,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.13.17":
+  version: 7.14.0
+  resolution: "@babel/runtime@npm:7.14.0"
+  dependencies:
+    regenerator-runtime: ^0.13.4
+  checksum: ab6653f2f8ecdaebf36674894cef458a9d4f881dc007fdcd50a8261f5c6d9731e03fda2c17e32ecf0e6c779d69eb6cf49d68a48c780aaf07d5b572e8b7ef0508
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.12.13, @babel/template@npm:^7.3.3, @babel/template@npm:^7.4.4":
   version: 7.12.13
   resolution: "@babel/template@npm:7.12.13"
@@ -9266,7 +9275,7 @@ __metadata:
     make-error-cause: ^2.3.0
     parcel-bundler: ^1.12.4
     playwright: ^1.9.2
-    polished: ^4.1.0
+    polished: ^4.1.2
     postcss-loader: ^5.2.0
     postcss-preset-env: ^6.7.0
     prettier: ^2.2.1
@@ -15187,13 +15196,12 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"polished@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "polished@npm:4.1.0"
+"polished@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "polished@npm:4.1.2"
   dependencies:
-    "@babel/runtime": ^7.12.5
-    "@scarf/scarf": ^1.1.0
-  checksum: 013588440627689567dc4890a47faee534b5cff990839917c9d8f383b993993341e7b6de4ba3ff575222c3a38ca8733123ada456e8818989073d43c6e23e7a55
+    "@babel/runtime": ^7.13.17
+  checksum: 98cd991bba0ee0ec9b8926e374bc6701ebdff2ab9ab7258589046afbe90d3d4e7db48e7c9e32d3e36ba7a6d788ededc6ec053f64f448e6e765edabe9ce28d6aa
   languageName: node
   linkType: hard
 
