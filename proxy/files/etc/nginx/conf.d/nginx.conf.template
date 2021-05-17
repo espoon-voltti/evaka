@@ -78,11 +78,31 @@ limit_req_zone $binary_remote_addr zone=req_zone_wl:1m rate=100r/s;
 
 # Logging
 
+# As nginx does not currently have a built-in variable for outputting ISO 8601
+# timestamps with millisecond resolution, generate it manually from
+# $time_iso8601 and $msec (which is in ms resolution but as seconds).
+#
+# This is less performant than the alternative of having an external tool like
+# Functionbeat or Logstash ingest the timestamps in another format but
+# shouldn't matter in eVaka's context + has the benefit of being human-readable
+# in its raw format.
+#
+# Source: https://thatsamguy.com/nginx-iso8601-time-format/
+map $time_iso8601 $time_iso8601_p1 {
+  ~([^+]+) $1;
+}
+map $time_iso8601 $time_iso8601_p2 {
+  ~\+([0-9:]+)$ $1;
+}
+map $msec $millisec {
+  ~\.([0-9]+)$ $1;
+}
+
 # Output logs in accordance to eVaka's log schema (type app-requests-received).
 # NOTE: userIdHash cannot easily be computed here, so left empty.
 log_format json_access escape=json
   '{'
-    '"@timestamp":"$time_iso8601",'
+    '"@timestamp":"$time_iso8601_p1.$millisec+$time_iso8601_p2",'
     '"appBuild":"<%= ENV["APP_BUILD"] %>",'
     '"appCommit":"<%= ENV["APP_COMMIT"] %>",'
     '"appName":"evaka-proxy",'
