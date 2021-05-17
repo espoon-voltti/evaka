@@ -13,7 +13,9 @@ import fi.espoo.evaka.messaging.message.MessageControllerCitizen
 import fi.espoo.evaka.messaging.message.MessageThread
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.SentMessage
+import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
+import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
@@ -55,7 +57,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).forEach {
                 tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
-                tx.execute("INSERT INTO message_account (person_id) VALUES ('${it.id}')")
+                tx.createMessageAccountForPerson(it.id)
             }
 
             // person 1 and 2 are guardians of child 1
@@ -76,7 +78,7 @@ class MessageIntegrationTest : FullApplicationTest() {
 
             tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
             tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
-            tx.execute("INSERT INTO message_account (employee_id) VALUES ('$employee1Id'), ('$employee2Id')")
+            listOf(employee1Id, employee2Id).forEach { tx.upsertMessageAccountForEmployee(it) }
         }
     }
 

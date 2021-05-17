@@ -7,6 +7,9 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
+import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
+import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
 import fi.espoo.evaka.messaging.message.getAuthorizedMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getUnreadMessagesCount
@@ -14,6 +17,7 @@ import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.messaging.message.insertRecipients
 import fi.espoo.evaka.messaging.message.insertThread
+import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -46,20 +50,20 @@ class MessageAccountQueriesTest : PureJdbiTest() {
     internal fun setUp() {
         db.transaction {
             it.insertTestPerson(DevPerson(id = personId, firstName = "Firstname", lastName = "Person"))
-            it.execute("INSERT INTO message_account (person_id) VALUES ('$personId')")
+            it.createMessageAccountForPerson(personId)
 
             it.insertTestEmployee(DevEmployee(id = employeeId, firstName = "Firstname", lastName = "Employee"))
-            it.execute("INSERT INTO message_account (employee_id) VALUES ('$employeeId')")
+            it.upsertMessageAccountForEmployee(employeeId)
 
             val randomUuid = it.insertTestEmployee(DevEmployee(firstName = "Random", lastName = "Employee"))
-            it.execute("INSERT INTO message_account (employee_id) VALUES ('$randomUuid')")
+            it.upsertMessageAccountForEmployee(randomUuid)
 
             it.insertTestEmployee(DevEmployee(firstName = "Random", lastName = "Employee without account"))
 
             val areaId = it.insertTestCareArea(DevCareArea())
             val daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId))
             val groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId))
-            it.execute("INSERT INTO message_account (daycare_group_id) VALUES ('$groupId')")
+            it.createMessageAccountForDaycareGroup(groupId)
             it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
         }
     }

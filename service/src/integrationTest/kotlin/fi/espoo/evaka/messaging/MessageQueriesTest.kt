@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
 import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
@@ -16,6 +17,7 @@ import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.messaging.message.insertRecipients
 import fi.espoo.evaka.messaging.message.insertThread
+import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -38,15 +40,14 @@ class MessageQueriesTest : PureJdbiTest() {
 
     @BeforeEach
     internal fun setUp() {
-        db.transaction {
-            it.insertTestPerson(DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person"))
+        db.transaction { tx ->
+            tx.insertTestPerson(DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person"))
+            tx.insertTestPerson(DevPerson(id = person2Id, firstName = "Firstname", lastName = "Person Two"))
+            listOf(person1Id, person2Id).forEach { tx.createMessageAccountForPerson(it) }
 
-            it.insertTestPerson(DevPerson(id = person2Id, firstName = "Firstname", lastName = "Person Two"))
-            it.execute("INSERT INTO message_account (person_id) VALUES ('$person1Id'), ('$person2Id')")
-
-            it.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
-            it.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
-            it.execute("INSERT INTO message_account (employee_id) VALUES ('$employee1Id'), ('$employee2Id')")
+            tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
+            tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
+            listOf(employee1Id, employee2Id).forEach { tx.upsertMessageAccountForEmployee(it) }
         }
     }
 
