@@ -373,7 +373,6 @@ class ChildAttendanceController(
                         tx.insertAbsence(user, childId, date, careType, body.absenceType)
                     }
                 }
-
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
