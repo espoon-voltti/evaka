@@ -104,6 +104,18 @@ class MessageAccountQueriesTest : PureJdbiTest() {
     }
 
     @Test
+    fun `employee has no access to inactive accounts`() {
+        val groupAccountName = "Test Daycare - Testiläiset"
+        assertEquals(2, db.read { it.getMessageAccountsForUser(employee) }.size)
+
+        db.transaction { it.deactivateEmployeeMessageAccount(employeeId) }
+
+        val accounts = db.transaction { it.getMessageAccountsForUser(employee) }
+        assertEquals(1, accounts.size)
+        assertEquals(1, accounts.filter { it.name == groupAccountName }.size)
+    }
+
+    @Test
     fun `unread counts`() {
         val accounts = db.read { it.getAuthorizedMessageAccountsForUser(employee) }
         assertEquals(0, accounts.first().unreadCount)
