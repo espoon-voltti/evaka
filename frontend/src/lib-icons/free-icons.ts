@@ -81,7 +81,8 @@ import {
   faUsers,
   faComments,
   faTruck,
-  faPhone
+  faPhone,
+  faCalendarTimes
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faFileAlt as farFileAlt,
@@ -185,7 +186,8 @@ const icons: IconSet = {
   farUser,
   faComments,
   faTruck,
-  faPhone
+  faPhone,
+  faCalendarTimes
 }
 
 export default icons
