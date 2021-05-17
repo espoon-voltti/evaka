@@ -103,7 +103,9 @@ function GroupListing({
   }
   return (
     <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
-      {[sortedIds.map((id) => <div key={id}>{unitGroups[id]?.name}</div>)]}
+      {sortedIds.map((id) => (
+        <div key={id}>{unitGroups[id]?.name}</div>
+      ))}
     </ExpandableList>
   )
 }
