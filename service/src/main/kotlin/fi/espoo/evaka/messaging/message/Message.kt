@@ -8,6 +8,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
@@ -46,6 +48,22 @@ enum class MessageType {
 data class MessageAccount(
     val id: UUID,
     val name: String,
+)
+
+data class Group(
+    @PropagateNull
+    val id: UUID,
+    val name: String,
+    val unitId: UUID,
+    val unitName: String,
+)
+data class AuthorizedMessageAccount(
+    val id: UUID,
+    val name: String,
+    @Nested("group_")
+    val daycareGroup: Group?,
+    val personal: Boolean,
+    val unreadCount: Int
 )
 
 fun createMessageThreadsForRecipientGroups(

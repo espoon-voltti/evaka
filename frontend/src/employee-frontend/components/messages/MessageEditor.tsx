@@ -1,11 +1,6 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
-//
-// SPDX-License-Identifier: LGPL-2.1-or-later
-
 import React from 'react'
 import styled from 'styled-components'
 import { faTimes, faTrash } from 'lib-icons'
-import { UpdateStateFn } from 'lib-common/form-state'
 import colors from 'lib-customizations/common'
 import InputField from 'lib-components/atoms/form/InputField'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -14,45 +9,22 @@ import Button from 'lib-components/atoms/buttons/Button'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
-import { Bulletin } from './types'
-import { SelectorChange } from 'employee-frontend/components/messages/receiver-selection-utils'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import Select from '../common/Select'
+import { Message } from './types'
 
-type Option = {
-  label: string
-  value: string
-}
-
-type Props = {
-  bulletin: Bulletin
-  senderOptions: string[]
-  onChange: UpdateStateFn<Bulletin>
-  onDeleteDraft: () => void
+interface Props {
+  message: Message
+  onChange: (message: Message) => void
   onClose: () => void
   onSend: () => void
-  selectedReceivers: Option[]
-  receiverOptions: Option[]
-  updateSelection: (selectorChange: SelectorChange) => void
 }
 
 export default React.memo(function MessageEditor({
-  bulletin,
-  senderOptions,
+  message,
   onChange,
-  onDeleteDraft,
   onClose,
-  onSend,
-  selectedReceivers: selected,
-  receiverOptions: options,
-  updateSelection
+  onSend
 }: Props) {
   const { i18n } = useTranslation()
-
-  const mappedSenderOptions = senderOptions.map((name) => ({
-    value: name,
-    label: name
-  }))
 
   return (
     <Container>
@@ -64,65 +36,23 @@ export default React.memo(function MessageEditor({
         <div>
           <Gap size={'xs'} />
           <div>{i18n.messages.messageEditor.receivers}</div>
-          <Gap size={'xs'} />
-          <MultiSelect
-            placeholder={i18n.common.search}
-            value={selected}
-            options={options}
-            onChange={(newSelection) => {
-              if (newSelection.length < selected.length) {
-                const values = newSelection.map((option) => option.value)
-                const deselected = selected.find(
-                  (option) => !values.includes(option.value)
-                )
-                if (deselected) {
-                  updateSelection({
-                    selectorId: deselected.value,
-                    selected: false
-                  })
-                }
-              } else {
-                const values = selected.map((option) => option.value)
-                const newlySelected = newSelection.find(
-                  (option) => !values.includes(option.value)
-                )
-                if (newlySelected) {
-                  updateSelection({
-                    selectorId: newlySelected.value,
-                    selected: true
-                  })
-                }
-              }
-            }}
-            noOptionsMessage={i18n.common.noResults}
-            getOptionId={({ value }) => value}
-            getOptionLabel={({ label }) => label}
-            data-qa="select-receiver"
-          />
         </div>
+        <InputField
+          value={message.receivers}
+          onChange={(receivers) =>
+            onChange({ ...message, receivers: receivers })
+          }
+          data-qa={'input-title'}
+        />
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.sender}</div>
         <Gap size={'xs'} />
-        <Select
-          options={mappedSenderOptions}
-          onChange={(selected) =>
-            selected &&
-            'value' in selected &&
-            onChange({ sender: selected.value })
-          }
-          value={
-            mappedSenderOptions.find(
-              ({ value }) => value === bulletin.sender
-            ) || null
-          }
-          data-qa="select-sender"
-        />
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.title}</div>
         <Gap size={'xs'} />
         <InputField
-          value={bulletin.title}
-          onChange={(title) => onChange({ title })}
+          value={message.title}
+          onChange={(title) => onChange({ ...message, title: title })}
           data-qa={'input-title'}
         />
         <Gap size={'s'} />
@@ -130,16 +60,16 @@ export default React.memo(function MessageEditor({
         <Label>{i18n.messages.messageEditor.message}</Label>
         <Gap size={'xs'} />
         <StyledTextArea
-          value={bulletin.content}
+          value={message.content}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            onChange({ content: e.target.value })
+            onChange({ ...message, content: e.target.value })
           }
           data-qa={'input-content'}
         />
         <Gap size={'s'} />
         <BottomRow>
           <InlineButton
-            onClick={onDeleteDraft}
+            onClick={onClose}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
           />

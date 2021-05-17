@@ -1909,6 +1909,8 @@ INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date) VALUES
     ('62a33a30-f8e6-11ea-9f1d-cbaa91dc0b76', 'e5fa7276-5c43-11ea-991c-771090837b49', 'Ryhmä 1', '2020-03-01', 'infinity'),
     ('51f22140-f96f-11ea-b3ed-cb31eae1571f', 'e58483ae-5c43-11ea-9916-abde0f8c7632', 'Ryhmä 1', '2020-03-01', 'infinity');
 
+INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group;
+
 INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv) VALUES
     ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25h/viikko', 'mer än 25 h/vecka'),
     ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),

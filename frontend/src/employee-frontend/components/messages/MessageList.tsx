@@ -2,180 +2,92 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import { Loading, Paged, Result } from 'lib-common/api'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { ContentArea } from 'lib-components/layout/Container'
+import Pagination from 'lib-components/Pagination'
+import { H1, H2 } from 'lib-components/typography'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import LocalDate from 'lib-common/local-date'
-import { Result } from 'lib-common/api'
-import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
-import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
-import { H1, H2, H3 } from 'lib-components/typography'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { useTranslation } from '../../state/i18n'
-import { formatDate } from '../../utils/date'
-import { MessageBoxType } from './MessageBoxes'
-import { Bulletin, IdAndName } from './types'
+import { getReceivedMessages } from './api'
+import { ReceivedMessages } from './ReceivedMessages'
+import { SingleThreadView } from './SingleThreadView'
+import { MessageThread } from './types'
+import { AccountView } from './types-view'
 
-interface Props {
-  bulletins: Bulletin[]
-  unitName: string
-  nextPage: Result<void>
-  loadNextPage: () => void
-  messageBoxType: MessageBoxType
-  groups: IdAndName[]
-  selectMessage: (msg: Bulletin) => void
-}
+const PAGE_SIZE = 20
 
-export default React.memo(function MessageList({
-  bulletins,
-  unitName,
-  nextPage,
-  loadNextPage,
-  messageBoxType,
-  selectMessage
-}: Props) {
+const MessagesContainer = styled(ContentArea)`
+  overflow: hidden;
+`
+
+export default React.memo(function MessagesList({
+  account,
+  view
+}: AccountView) {
   const { i18n } = useTranslation()
 
-  const renderReceivers = (msg: Bulletin): string => {
-    const visibleNamesCount = 3
-    const parseFirstName = (firstNames: string) =>
-      firstNames.trim().split(/\s+/)[0]
-    const maybeVisible = [
-      ...msg.receiverUnits
-        .slice(0, visibleNamesCount)
-        .map(({ unitName }) => unitName),
-      ...msg.receiverGroups
-        .slice(0, visibleNamesCount)
-        .map(({ groupName }) => groupName),
-      ...msg.receiverChildren
-        .slice(0, visibleNamesCount)
-        .map(
-          ({ firstName, lastName }) =>
-            `${parseFirstName(firstName)} ${lastName}`
-        )
-    ]
-    const visibleNames = maybeVisible.slice(0, visibleNamesCount).join(', ')
-    return maybeVisible.length > visibleNamesCount
-      ? `${visibleNames}, ...`
-      : visibleNames
+  const [page, setPage] = useState<number>(1)
+  const [pages, setPages] = useState<number>()
+  const [receivedMessages, setReceivedMessages] = useState<
+    Result<MessageThread[]>
+  >(Loading.of())
+  const [selectedThread, setSelectedThread] = useState<MessageThread>()
+
+  const setMessagesResult = useCallback(
+    (result: Result<Paged<MessageThread>>) => {
+      setReceivedMessages(result.map((r) => r.data))
+      if (result.isSuccess) {
+        setPages(result.value.pages)
+      }
+    },
+    []
+  )
+
+  const loadReceivedMessages = useRestApi(
+    getReceivedMessages,
+    setMessagesResult
+  )
+
+  useEffect(() => {
+    setSelectedThread(undefined)
+    switch (view) {
+      case 'RECEIVED':
+        loadReceivedMessages(account.id, page, PAGE_SIZE)
+        break
+      case 'SENT':
+        setReceivedMessages(Loading.of())
+    }
+  }, [account.id, view, page, loadReceivedMessages])
+
+  if (selectedThread) {
+    return (
+      <SingleThreadView
+        goBack={() => setSelectedThread(undefined)}
+        thread={selectedThread}
+      />
+    )
   }
 
   return (
-    <Container>
-      <HeaderContainer>
-        <H1 noMargin>{i18n.messages.messageList.titles[messageBoxType]}</H1>
-        <H2>{unitName}</H2>
-      </HeaderContainer>
-      {bulletins.map((msg) => (
-        <React.Fragment key={msg.id}>
-          <MessageListItem onClick={() => selectMessage(msg)}>
-            <MessageTopRow>
-              <FixedSpaceRow
-                justifyContent="space-between"
-                alignItems="baseline"
-              >
-                <MessageReceivers>{renderReceivers(msg)}</MessageReceivers>
-
-                {msg.sentAt ? (
-                  <span>
-                    {formatDate(
-                      msg.sentAt,
-                      LocalDate.fromSystemTzDate(msg.sentAt).isEqual(
-                        LocalDate.today()
-                      )
-                        ? 'HH:mm'
-                        : 'd.M.'
-                    )}
-                  </span>
-                ) : (
-                  <span>{i18n.messages.notSent}</span>
-                )}
-              </FixedSpaceRow>
-            </MessageTopRow>
-            <MessageSummary>
-              <MessageTitle>
-                {msg.title || `(${i18n.messages.noTitle})`}
-              </MessageTitle>
-              {' - '}
-              {msg.content.substring(0, 200).replace('\n', ' ')}
-            </MessageSummary>
-          </MessageListItem>
-          <StyledHr />
-        </React.Fragment>
-      ))}
-      {nextPage.isSuccess && <OnEnterView onEnter={loadNextPage} />}
-      {nextPage.isLoading && <SpinnerSegment />}
-      {nextPage.isFailure && <ErrorSegment title={i18n.common.loadingFailed} />}
-    </Container>
+    <MessagesContainer opaque>
+      <H1>{i18n.messages.messageList.titles[view]}</H1>
+      {!account.personal && <H2>{account.name}</H2>}
+      {view === 'RECEIVED' ? (
+        <ReceivedMessages
+          messages={receivedMessages}
+          onViewThread={setSelectedThread}
+        />
+      ) : (
+        <div>TODO sent messages</div>
+      )}
+      <Pagination
+        pages={pages}
+        currentPage={page}
+        setPage={setPage}
+        label={i18n.common.page}
+      />
+    </MessagesContainer>
   )
 })
-
-const OnEnterView = React.memo(function IsInView({
-  onEnter
-}: {
-  onEnter: () => void
-}) {
-  const ref = useIntersectionObserver<HTMLDivElement>(onEnter)
-  return <div ref={ref} />
-})
-
-const Container = styled.div`
-  align-self: flex-start;
-  flex-grow: 1;
-  min-height: 500px;
-  background-color: ${colors.greyscale.white};
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: 100%;
-`
-
-const HeaderContainer = styled.div`
-  padding: ${defaultMargins.m};
-`
-
-const MessageListItem = styled.button`
-  background: white;
-  border: none;
-  padding: ${defaultMargins.s} ${defaultMargins.m};
-  margin: 0 0 ${defaultMargins.xxs};
-  text-align: left;
-  cursor: pointer;
-  &.selected-message {
-    font-weight: 600;
-    background: ${colors.brandEspoo.espooTurquoiseLight};
-  }
-`
-
-const MessageTopRow = styled.div`
-  width: 100%;
-`
-
-const MessageReceivers = styled(H3)`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${colors.greyscale.dark};
-`
-
-const MessageTitle = styled.span`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${colors.greyscale.darkest};
-`
-
-const MessageSummary = styled.div`
-  width: 80%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`
-
-const StyledHr = styled(HorizontalLine)`
-  margin-block-start: 0;
-  margin-block-end: 0;
-  width: calc(100% - ${defaultMargins.m});
-`
