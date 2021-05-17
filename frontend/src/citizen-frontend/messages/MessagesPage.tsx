@@ -44,7 +44,7 @@ export default React.memo(function MessagesPage() {
 
         return state
       }),
-    [setMessagesState]
+    []
   )
 
   const loadMessages = useRestApi(getReceivedMessages, setMessagesResult)
@@ -64,30 +64,30 @@ export default React.memo(function MessagesPage() {
       return state
     })
 
-  const openThread = (thread: MessageThread) => {
-    const hasUnreadMessages = thread.messages.some((m) => !m.readAt)
+  const openThread = ({ id, messages }: MessageThread) => {
+    const hasUnreadMessages = messages.some((m) => !m.readAt)
 
     if (hasUnreadMessages) {
       setMessagesState(({ threads, ...state }) => ({
         ...state,
-        threads: threads.map((thread) =>
-          thread.id === thread.id
+        threads: threads.map((t) =>
+          t.id === id
             ? {
-                ...thread,
-                messages: thread.messages.map((m) => ({
+                ...t,
+                messages: t.messages.map((m) => ({
                   ...m,
                   readAt: m.readAt || new Date()
                 }))
               }
-            : thread
+            : t
         )
       }))
     }
 
-    setActiveThread(messagesState.threads.find((t) => t.id === thread.id))
+    setActiveThread(messagesState.threads.find((t) => t.id === id))
 
     if (hasUnreadMessages) {
-      void markThreadRead(thread.id).then(() => {
+      void markThreadRead(id).then(() => {
         refreshUnreadMessagesCount()
       })
     }

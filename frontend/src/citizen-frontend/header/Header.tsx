@@ -25,7 +25,7 @@ export default React.memo(function Header() {
 
   useEffect(() => {
     if (user) refreshUnreadMessagesCount()
-  }, [user])
+  }, [refreshUnreadMessagesCount, user])
 
   return (
     <HeaderContainer fixed={showMenu}>
