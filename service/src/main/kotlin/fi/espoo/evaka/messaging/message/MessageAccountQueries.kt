@@ -19,8 +19,8 @@ FROM message_account acc
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
     LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
-WHERE acc.employee_id = :userId
-   OR acl.employee_id = :userId
+WHERE (acc.employee_id = :userId OR acl.employee_id = :userId)
+  AND acc.active
     """.trimIndent()
 
     // language=SQL
@@ -29,6 +29,7 @@ SELECT acc.id, name_view.account_name AS name
 FROM message_account acc
     JOIN message_account_name_view name_view ON name_view.id = acc.id
 WHERE acc.person_id = :userId
+  AND acc.active
     """.trimIndent()
 
     return this.createQuery(if (user.isEndUser) citizenSql else employeeSql)
