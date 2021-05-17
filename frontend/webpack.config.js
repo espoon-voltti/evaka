@@ -138,7 +138,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
         },
         // Static files
         {
-          test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg)$/,
+          test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg|ico)$/,
           type: 'asset/resource'
         }
       ]
