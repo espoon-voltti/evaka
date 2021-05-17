@@ -19,8 +19,11 @@ import fi.espoo.evaka.occupancy.OccupancyPeriod
 import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
 import fi.espoo.evaka.occupancy.OccupancyResponse
 import fi.espoo.evaka.occupancy.OccupancyType
+import fi.espoo.evaka.occupancy.calculateDailyGroupOccupancyValues
+import fi.espoo.evaka.occupancy.calculateDailyUnitOccupancyValues
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriods
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
+import fi.espoo.evaka.occupancy.reduceDailyOccupancyValues
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
@@ -57,7 +60,8 @@ class UnitsView(private val acl: AccessControlList) {
         @RequestParam(
             value = "to",
             required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam(required = false) v2: Boolean = false
     ): ResponseEntity<UnitDataResponse> {
         Audit.UnitView.log(targetId = unitId)
         val currentUserRoles = acl.getRolesForUnit(user, unitId)
@@ -83,8 +87,8 @@ class UnitsView(private val acl: AccessControlList) {
             )
 
             if (currentUserRoles.hasOneOfRoles(*detailedDataRoles)) {
-                val unitOccupancies = getUnitOccupancies(it, unitId, period)
-                val groupOccupancies = getGroupOccupancies(it, unitId, period)
+                val unitOccupancies = getUnitOccupancies(it, LocalDate.now(), unitId, period, v2)
+                val groupOccupancies = getGroupOccupancies(it, LocalDate.now(), unitId, period, v2)
                 val placementProposals = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
                 val placementPlans = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
                 val applications = it.getApplicationUnitSummaries(unitId)
@@ -130,10 +134,28 @@ data class UnitOccupancies(
 
 private fun getUnitOccupancies(
     tx: Database.Read,
+    today: LocalDate,
     unitId: UUID,
-    period: FiniteDateRange
+    period: FiniteDateRange,
+    v2: Boolean = false
 ): UnitOccupancies {
-    return UnitOccupancies(
+    val occupancyResponseV2 = { type: OccupancyType ->
+        when {
+            type == OccupancyType.REALIZED && period.start > today ->
+                OccupancyResponse(emptyList(), null, null)
+
+            else ->
+                tx.calculateDailyUnitOccupancyValues(today, period, type, unitId = unitId)
+                    .let { reduceDailyOccupancyValues(it).entries.firstOrNull()?.value ?: emptyList() }
+                    .let { getOccupancyResponse(it) }
+        }
+    }
+
+    return if (v2) UnitOccupancies(
+        planned = occupancyResponseV2(OccupancyType.PLANNED),
+        confirmed = occupancyResponseV2(OccupancyType.CONFIRMED),
+        realized = occupancyResponseV2(OccupancyType.REALIZED)
+    ) else UnitOccupancies(
         planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)),
         confirmed = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED)),
         realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED))
@@ -155,25 +177,45 @@ data class GroupOccupancies(
 
 private fun getGroupOccupancies(
     tx: Database.Read,
+    today: LocalDate,
     unitId: UUID,
-    period: FiniteDateRange
+    period: FiniteDateRange,
+    v2: Boolean = false
 ): GroupOccupancies {
-    return GroupOccupancies(
-        confirmed = getGroupOccupancyResponses(
-            tx.calculateOccupancyPeriodsGroupLevel(
-                unitId,
-                period,
-                OccupancyType.CONFIRMED
-            )
-        ),
-        realized = getGroupOccupancyResponses(
-            tx.calculateOccupancyPeriodsGroupLevel(
-                unitId,
-                period,
-                OccupancyType.REALIZED
+    return if (v2) {
+        val occupancyResponseV2 = { type: OccupancyType ->
+            when {
+                type == OccupancyType.REALIZED && period.start > today -> emptyMap()
+
+                else ->
+                    tx.calculateDailyGroupOccupancyValues(today, period, type, unitId = unitId)
+                        .let { reduceDailyOccupancyValues(it) }
+                        .let { it.entries.associate { (key, periods) -> key.groupId to getOccupancyResponse(periods) } }
+            }
+        }
+
+        GroupOccupancies(
+            confirmed = occupancyResponseV2(OccupancyType.CONFIRMED),
+            realized = occupancyResponseV2(OccupancyType.REALIZED)
+        )
+    } else {
+        GroupOccupancies(
+            confirmed = getGroupOccupancyResponses(
+                tx.calculateOccupancyPeriodsGroupLevel(
+                    unitId,
+                    period,
+                    OccupancyType.CONFIRMED
+                )
+            ),
+            realized = getGroupOccupancyResponses(
+                tx.calculateOccupancyPeriodsGroupLevel(
+                    unitId,
+                    period,
+                    OccupancyType.REALIZED
+                )
             )
         )
-    )
+    }
 }
 
 private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<UUID, OccupancyResponse> {

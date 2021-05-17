@@ -8,7 +8,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.reports.OccupancyReportRowGroupedValues
 import fi.espoo.evaka.reports.OccupancyUnitReportResultRow
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -482,7 +481,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
         return objectMapper.readValue<OccupancyResponse>(result.get()).occupancies
     }
 
-    private fun fetchAndParsePlannedOccupancyReportForUnitDay(careAreaId: UUID, unitId: UUID, date: LocalDate): OccupancyReportRowGroupedValues? {
+    private fun fetchAndParsePlannedOccupancyReportForUnitDay(careAreaId: UUID, unitId: UUID, date: LocalDate): OccupancyValues? {
         val (_, response, result) = http.get(
             "/reports/occupancy-by-unit",
             listOf("type" to "PLANNED", "careAreaId" to careAreaId, "year" to date.year, "month" to date.month.value)
