@@ -116,7 +116,7 @@ export default React.memo(function DailyNoteEditor() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [])
+  }, [loadDaycareAttendances, unitId])
 
   useEffect(() => {
     if (attendanceResponse.isSuccess) {

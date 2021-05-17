@@ -74,7 +74,7 @@ export default React.memo(function PinLogin() {
 
   useEffect(() => {
     void getDaycareAttendances(unitId).then(setAttendanceResponse)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useLayoutEffect(() => {
     if (selectedStaff && pinInputRef && pinInputRef.current) {

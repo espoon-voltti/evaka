@@ -63,7 +63,7 @@ export default React.memo(function MarkAbsent() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [])
+  }, [loadDaycareAttendances, unitId])
 
   async function postAbsence(absenceType: AbsenceType) {
     return postFullDayAbsence(unitId, childId, absenceType)

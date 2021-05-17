@@ -92,7 +92,7 @@ export default React.memo(function AttendanceChildPage() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [])
+  }, [loadDaycareAttendances, unitId])
 
   useEffect(() => {
     if (attendanceResponse.isSuccess) {
@@ -106,7 +106,7 @@ export default React.memo(function AttendanceChildPage() {
         )
       )
     }
-  }, [attendanceResponse])
+  }, [attendanceResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loading = attendanceResponse.isLoading
   const groupNote = group?.dailyNote
