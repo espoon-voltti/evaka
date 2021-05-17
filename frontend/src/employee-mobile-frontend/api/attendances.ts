@@ -10,6 +10,10 @@ import { AbsenceType, CareType } from '../types'
 import { PlacementType } from '../types'
 import { client } from './client'
 import { UUID } from 'lib-common/types'
+import {
+  Absence,
+  deserializeAbsence
+} from 'lib-common/api-types/child/Absences'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]
@@ -51,7 +55,7 @@ export interface AttendanceChild {
   status: AttendanceStatus
   placementType: PlacementType
   attendance: Attendance | null
-  absences: Absence[]
+  absences: AbsenceSummary[]
   dailyServiceTimes: DailyServiceTimes | null
   dailyNote: DailyNote | null
 }
@@ -62,7 +66,7 @@ interface Attendance {
   departed: Date | null
 }
 
-interface Absence {
+interface AbsenceSummary {
   careType: CareType
   childId: string
   id: string
@@ -240,6 +244,44 @@ export async function postFullDayAbsence(
       }
     )
     .then((res) => deserializeAttendanceResponse(res.data))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface AbsencePayload {
+  absenceType: AbsenceType
+  childId: UUID
+  date: LocalDate
+  careType: CareType
+}
+
+export async function postAbsenceRange(
+  unitId: string,
+  childId: string,
+  absenceType: AbsenceType,
+  startDate: LocalDate,
+  endDate: LocalDate
+): Promise<Result<AttendanceResponse>> {
+  return client
+    .post<JsonOf<AttendanceResponse>>(
+      `/attendances/units/${unitId}/children/${childId}/absence-range`,
+      {
+        absenceType,
+        startDate,
+        endDate
+      }
+    )
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getFutureAbsencesByChild(
+  childId: UUID
+): Promise<Result<Absence[]>> {
+  return client
+    .get<JsonOf<Absence[]>>(`/absences/by-child/${childId}/future`)
+    .then((res) => res.data.map((absence) => deserializeAbsence(absence)))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
