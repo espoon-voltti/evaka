@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronUp,
@@ -12,11 +12,10 @@ import {
   fasChevronDown
 } from 'lib-icons'
 import { defaultMargins, Gap } from '../white-space'
-import { greyscale } from '../colors'
 
 export const Table = styled.table`
-  background-color: ${greyscale.white};
-  color: ${greyscale.darkest};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
+  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   width: 100%;
   border-collapse: separate;
 `
@@ -28,25 +27,26 @@ interface ThProps {
 
 export const Th = styled.th<ThProps>`
   font-size: 14px;
-  color: ${greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
   font-weight: 700;
   line-height: 1.3em;
   text-transform: uppercase;
   vertical-align: middle;
   border-style: solid;
-  border-color: ${greyscale.lighter};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.lighter};
   border-width: 0 0 1px;
   padding: ${defaultMargins.s};
   text-align: left;
   position: ${(p) => (p.sticky ? 'sticky' : 'static')};
   top: ${(p) => (p.sticky && p.top ? p.top : 'auto')};
-  background: ${(p) => (p.sticky ? greyscale.white : 'none')};
+  background: ${({ theme: { colors }, ...p }) =>
+    p.sticky ? colors.greyscale.white : 'none'};
 `
 
 export const Td = styled.td<{ align?: 'right' | 'left' }>`
   line-height: 1.3em;
   border-style: solid;
-  border-color: ${greyscale.lighter};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.lighter};
   border-width: 0 0 1px;
   padding: ${defaultMargins.s};
   vertical-align: top;
@@ -90,7 +90,7 @@ interface SortableProps {
 const CustomButton = styled.button`
   display: flex;
   font-size: 14px;
-  color: ${greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
   border: none;
   background: none;
   outline: none;
@@ -107,23 +107,28 @@ export const SortableTh = ({
   sorted,
   sticky,
   top
-}: SortableProps) => (
-  <Th sticky={sticky} top={top}>
-    <CustomButton onClick={onClick}>
-      <span>{children}</span>
-      <Gap horizontal size="xs" />
-      <SortableIconContainer>
-        <FontAwesomeIcon
-          icon={sorted === 'ASC' ? fasChevronUp : faChevronUp}
-          color={sorted === 'ASC' ? greyscale.dark : greyscale.medium}
-          size="xs"
-        />
-        <FontAwesomeIcon
-          icon={sorted === 'DESC' ? fasChevronDown : faChevronDown}
-          color={sorted === 'DESC' ? greyscale.dark : greyscale.medium}
-          size="xs"
-        />
-      </SortableIconContainer>
-    </CustomButton>
-  </Th>
-)
+}: SortableProps) => {
+  const {
+    colors: { greyscale }
+  } = useTheme()
+  return (
+    <Th sticky={sticky} top={top}>
+      <CustomButton onClick={onClick}>
+        <span>{children}</span>
+        <Gap horizontal size="xs" />
+        <SortableIconContainer>
+          <FontAwesomeIcon
+            icon={sorted === 'ASC' ? fasChevronUp : faChevronUp}
+            color={sorted === 'ASC' ? greyscale.dark : greyscale.medium}
+            size="xs"
+          />
+          <FontAwesomeIcon
+            icon={sorted === 'DESC' ? fasChevronDown : faChevronDown}
+            color={sorted === 'DESC' ? greyscale.dark : greyscale.medium}
+            size="xs"
+          />
+        </SortableIconContainer>
+      </CustomButton>
+    </Th>
+  )
+}

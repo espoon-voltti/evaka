@@ -8,13 +8,12 @@ import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import { downloadBlobAsFile } from 'lib-common/utils/file'
 import { Attachment } from 'lib-common/api-types/application/ApplicationDetails'
-import { blueColors } from 'lib-components/colors'
 import { UUID } from 'lib-common/types'
 
 const DownloadButton = styled.button`
   background: none;
   border: none;
-  color: ${blueColors.medium};
+  color: ${({ theme: { colors } }) => colors.main.medium};
   cursor: pointer;
   font-size: 1rem;
   padding: 0;

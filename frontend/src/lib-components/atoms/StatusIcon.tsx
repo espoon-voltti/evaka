@@ -8,11 +8,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import { defaultMargins } from 'lib-components/white-space'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 import { BaseProps } from 'lib-components/utils'
-import colors from 'lib-components/colors'
 
 export const StatusIcon = styled.div`
   font-size: 15px;
@@ -26,6 +25,7 @@ interface UnderRowStatusIconProps extends BaseProps {
 }
 
 function UnderRowStatusIcon({ status }: UnderRowStatusIconProps) {
+  const { colors } = useTheme()
   return (
     <StatusIcon>
       {status === 'warning' && (

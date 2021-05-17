@@ -4,8 +4,7 @@
 
 import { fasInfo, faTimes } from 'lib-icons'
 import React, { ReactNode, useState } from 'react'
-import styled from 'styled-components'
-import colors from '../colors'
+import styled, { useTheme } from 'styled-components'
 import RoundIcon from '../atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -23,7 +22,7 @@ const InfoBoxContainer = styled(Container)`
     }
   }
 
-  background-color: ${colors.blues.lighter};
+  background-color: ${({ theme: { colors } }) => colors.main.lighter};
   overflow: hidden;
   margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};
 
@@ -40,7 +39,7 @@ const InfoBoxContentArea = styled(ContentArea)`
 
 const InfoContainer = styled.div`
   flex-grow: 1;
-  color: ${colors.blues.dark};
+  color: ${({ theme: { colors } }) => colors.main.dark};
   padding: 0 ${defaultMargins.s};
 `
 
@@ -59,6 +58,7 @@ export default function ExpandingInfo({
   info,
   ariaLabel
 }: ExpandingInfoProps) {
+  const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
 
   return (
@@ -67,7 +67,7 @@ export default function ExpandingInfo({
         <div>{children}</div>
         <RoundIconWithMargin
           content={fasInfo}
-          color={colors.brandEspoo.espooTurquoise}
+          color={colors.brand.secondary}
           size="s"
           onClick={() => setExpanded(!expanded)}
           tabindex={0}
@@ -80,7 +80,7 @@ export default function ExpandingInfo({
           <InfoBoxContentArea opaque={false}>
             <RoundIcon
               content={fasInfo}
-              color={colors.brandEspoo.espooTurquoise}
+              color={colors.brand.secondary}
               size="s"
             />
 

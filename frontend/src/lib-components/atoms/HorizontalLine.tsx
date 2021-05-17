@@ -4,7 +4,6 @@
 
 import styled from 'styled-components'
 import { defaultMargins } from '../white-space'
-import colors from '../colors'
 import { tabletMin } from '../breakpoints'
 
 const HorizontalLine = styled.hr<{ slim?: boolean }>`
@@ -12,7 +11,7 @@ const HorizontalLine = styled.hr<{ slim?: boolean }>`
   margin-block-start: ${(p) => (p.slim ? defaultMargins.m : defaultMargins.XL)};
   margin-block-end: ${(p) => (p.slim ? defaultMargins.m : defaultMargins.XL)};
   border: none;
-  border-bottom: 1px solid ${colors.greyscale.lighter};
+  border-bottom: 1px solid ${(p) => p.theme.colors.greyscale.lighter};
 
   @media (max-width: ${tabletMin}) {
     margin-block-start: ${(p) =>

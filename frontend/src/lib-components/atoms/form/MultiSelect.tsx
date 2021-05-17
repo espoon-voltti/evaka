@@ -5,7 +5,6 @@
 import React from 'react'
 import styled from 'styled-components'
 import { StaticCheckBox } from './Checkbox'
-import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
 import ReactSelect, { Props } from 'react-select'
@@ -113,7 +112,7 @@ const OptionWrapper = styled.div`
   cursor: pointer;
   &:hover,
   &.focused {
-    background-color: ${colors.blues.lighter};
+    background-color: ${({ theme: { colors } }) => colors.main.lighter};
   }
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
 `
@@ -142,5 +141,5 @@ const SecondaryText = styled.span`
   font-size: 14px;
   line-height: 21px;
   font-weight: 600;
-  color: ${colors.greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 `

@@ -6,7 +6,6 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCaretDown, fasCaretUp } from 'lib-icons'
-import { greyscale } from '../colors'
 import { defaultMargins } from '../white-space'
 import classNames from 'classnames'
 import { BaseProps } from '../utils'
@@ -37,11 +36,11 @@ const TooltipPositioner = styled.div`
 `
 
 const TooltipDiv = styled.div`
-  color: ${greyscale.white};
+  color: ${({ theme: { colors } }) => colors.greyscale.white};
   font-size: 15px;
   line-height: 22px;
 
-  background-color: ${greyscale.dark};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.dark};
   padding: ${defaultMargins.s};
   border-radius: 2px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
@@ -60,7 +59,7 @@ const Beak = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  color: ${greyscale.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
 
   &.up {
     top: auto;

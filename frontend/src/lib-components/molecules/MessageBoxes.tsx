@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfo, faExclamation } from 'lib-icons'
-import { accentColors } from '../colors'
 import React from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { defaultMargins, Gap } from '../white-space'
@@ -108,6 +107,9 @@ export function InfoBox({
   thin,
   ...props
 }: InfoBoxProps) {
+  const {
+    colors: { accents: accentColors }
+  } = useTheme()
   // without this hacking compiler gives an error because IconProp type is already super complex
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
   const notNullIcon: IconProp = (icon as any) ?? faInfo
@@ -139,6 +141,9 @@ export function AlertBox({
   thin,
   ...props
 }: AlertBoxProps) {
+  const {
+    colors: { accents: accentColors }
+  } = useTheme()
   return (
     <MessageBox
       title={title}

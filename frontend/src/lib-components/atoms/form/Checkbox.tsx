@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'lib-icons'
-import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 
@@ -29,18 +28,18 @@ const Wrapper = styled.div`
     cursor: not-allowed;
 
     label {
-      color: ${colors.greyscale.medium};
+      color: ${({ theme: { colors } }) => colors.greyscale.medium};
       cursor: not-allowed;
     }
   }
 
   &:hover:not(.disabled) {
     input:checked {
-      border-color: ${colors.primaryHover};
-      background-color: ${colors.primaryHover};
+      border-color: ${({ theme: { colors } }) => colors.main.primaryHover};
+      background-color: ${({ theme: { colors } }) => colors.main.primaryHover};
     }
     input:not(:checked) {
-      border-color: ${colors.greyscale.darkest};
+      border-color: ${({ theme: { colors } }) => colors.greyscale.darkest};
     }
   }
 `
@@ -60,26 +59,26 @@ const CheckboxInput = styled.input`
   border-radius: 2px;
   border-width: 1px;
   border-style: solid;
-  border-color: ${colors.greyscale.dark};
+  border-color: ${({ theme: { colors } }) => colors.greyscale.dark};
   margin: 0;
 
-  background-color: ${colors.greyscale.white};
+  background-color: ${({ theme: { colors } }) => colors.greyscale.white};
   &:checked {
-    border-color: ${colors.primary};
-    background-color: ${colors.primary};
+    border-color: ${({ theme: { colors } }) => colors.main.primary};
+    background-color: ${({ theme: { colors } }) => colors.main.primary};
 
     &:disabled {
-      background-color: ${colors.greyscale.medium};
+      background-color: ${({ theme: { colors } }) => colors.greyscale.medium};
     }
   }
 
   &:focus {
     border-width: 2px;
-    border-color: ${colors.accents.petrol};
+    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
   }
 
   &:disabled {
-    border-color: ${colors.greyscale.medium};
+    border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
   }
 `
 
@@ -95,7 +94,7 @@ const IconWrapper = styled.div`
   height: ${diameter};
 
   font-size: 25px;
-  color: ${colors.greyscale.white};
+  color: ${({ theme: { colors } }) => colors.greyscale.white};
 `
 
 interface CommonProps extends BaseProps {

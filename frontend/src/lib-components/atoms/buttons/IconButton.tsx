@@ -7,7 +7,6 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import colors, { greyscale } from '../../colors'
 import { BaseProps } from '../../utils'
 import { IconSize } from '../RoundIcon'
 
@@ -70,12 +69,12 @@ const StyledButton = styled.button<ButtonProps>`
         return '20px'
     }
   }};
-  color: ${(props) =>
+  color: ${({ theme: { colors }, ...props }) =>
     props.gray
       ? colors.greyscale.dark
       : props.white
       ? colors.greyscale.white
-      : colors.primary};
+      : colors.main.primary};
   border: none;
   border-radius: 100%;
   background: none;
@@ -85,7 +84,7 @@ const StyledButton = styled.button<ButtonProps>`
   margin: -6px;
 
   &:focus {
-    border: 2px solid ${colors.accents.petrol};
+    border: 2px solid ${({ theme: { colors } }) => colors.accents.petrol};
   }
 
   .icon-wrapper {
@@ -96,19 +95,19 @@ const StyledButton = styled.button<ButtonProps>`
   }
 
   &:hover .icon-wrapper {
-    color: ${(props) =>
-      props.gray ? colors.greyscale.dark : colors.primaryHover};
+    color: ${({ theme: { colors }, ...props }) =>
+      props.gray ? colors.greyscale.dark : colors.main.primaryHover};
   }
 
   &:active .icon-wrapper {
-    color: ${(props) =>
-      props.gray ? colors.greyscale.darkest : colors.primaryActive};
+    color: ${({ theme: { colors }, ...props }) =>
+      props.gray ? colors.greyscale.darkest : colors.main.primaryActive};
   }
 
   &.disabled {
     cursor: not-allowed;
     .icon-wrapper {
-      color: ${greyscale.medium};
+      color: ${({ theme: { colors } }) => colors.greyscale.medium};
     }
   }
 `

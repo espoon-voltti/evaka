@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 import { useHistory } from 'react-router-dom'
 
 import { faAngleLeft } from 'lib-icons'
 import InlineButton from './InlineButton'
-import colors from '../../colors'
 import { tabletMin } from '../../breakpoints'
 import { defaultMargins } from '../../white-space'
 
@@ -41,6 +40,7 @@ export default React.memo(function ReturnButton({
   label,
   'data-qa': dataQa
 }: Props) {
+  const { colors } = useTheme()
   const history = useHistory()
   return (
     <ReturnButtonWrapper>
@@ -50,7 +50,7 @@ export default React.memo(function ReturnButton({
         onClick={() => history.goBack()}
         data-qa={dataQa}
         disabled={history.length <= 1}
-        color={colors.blues.dark}
+        color={colors.main.dark}
       />
     </ReturnButtonWrapper>
   )
