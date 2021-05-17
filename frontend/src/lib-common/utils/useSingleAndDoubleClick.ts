@@ -19,7 +19,7 @@ export const useSingleAndDoubleClick = (
         clicks.current === 3 ? onDoubleClick(e) : onClick(e)
         clicks.current = 0
       }, DELAY),
-    []
+    [] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -27,7 +27,7 @@ export const useSingleAndDoubleClick = (
     callFunction(e)
   }
 
-  const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleDoubleClick = () => {
     clicks.current++
   }
 

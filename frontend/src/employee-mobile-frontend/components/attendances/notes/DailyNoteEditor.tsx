@@ -133,7 +133,7 @@ export default React.memo(function DailyNoteEditor() {
         setGroupNote(gNote)
       }
     }
-  }, [attendanceResponse])
+  }, [attendanceResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const child =
     attendanceResponse.isSuccess &&

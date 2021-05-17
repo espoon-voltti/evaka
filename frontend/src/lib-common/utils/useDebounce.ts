@@ -15,7 +15,7 @@ export const useDebounce = <T>(value: T, delay: number): T => {
     return () => {
       clearTimeout(handler)
     }
-  }, [value])
+  }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return debouncedValue
 }

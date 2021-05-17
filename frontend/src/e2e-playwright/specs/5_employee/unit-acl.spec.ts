@@ -78,7 +78,7 @@ describe('Employee - unit ACL', () => {
 
     const expectedRow = {
       name: `${tauno.firstName} ${tauno.lastName}`,
-      email: tauno.email!,
+      email: tauno.email!, // eslint-disable-line
       groups: []
     }
 
