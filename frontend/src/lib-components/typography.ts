@@ -25,7 +25,8 @@ export const H1 = styled.h1<HeadingProps>`
       : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '24px' : '36px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${(p) => (p.bold ? 600 : 200)};
+  font-weight: ${({ theme: { typography }, ...p }) =>
+    p.bold ? typography?.h1?.bold ?? 600 : typography?.h1?.weight ?? 200};
   line-height: 58px;
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.m};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
@@ -33,7 +34,8 @@ export const H1 = styled.h1<HeadingProps>`
 
   @media (max-width: 600px) {
     font-size: 24px;
-    font-weight: 600;
+    font-weight: ${({ theme: { typography } }) =>
+      typography?.h1?.mobile?.weight ?? 600}};
     line-height: 36px;
   }
 `
@@ -43,14 +45,16 @@ export const H2 = styled.h2<HeadingProps>`
     p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '20px' : '24px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${(p) => (p.bold ? 600 : 300)};
+  font-weight: ${({ theme: { typography }, ...p }) =>
+    p.bold ? typography?.h2?.bold ?? 600 : typography?.h2?.weight ?? 300};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
 
   @media (max-width: 600px) {
     font-size: 20px;
-    font-weight: 600;
+    font-weight: ${({ theme: { typography } }) =>
+      typography?.h2?.mobile?.weight ?? 600}};
     line-height: 30px;
   }
 `
@@ -60,10 +64,17 @@ export const H3 = styled.h3<HeadingProps>`
     p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '18px' : '20px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${(p) => (p.bold ? 600 : 'normal')};
+  font-weight: ${({ theme: { typography }, ...p }) =>
+    p.bold ? typography?.h3?.bold ?? 600 : typography?.h3?.weight ?? 'normal'};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
+
+  @media (max-width: 600px) {
+    ${({ theme: { typography } }) =>
+      typography?.h3?.mobile?.weight &&
+      `font-weight: ${typography?.h3?.mobile?.weight};`}
+  }
 `
 
 export const H4 = styled.h4<HeadingProps>`
@@ -71,10 +82,17 @@ export const H4 = styled.h4<HeadingProps>`
     p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '16px' : '18px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${(p) => (p.bold ? 600 : 'normal')};
+  font-weight: ${({ theme: { typography }, ...p }) =>
+    p.bold ? typography?.h4?.bold ?? 600 : typography?.h4?.weight ?? 'normal'};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
+
+  @media (max-width: 600px) {
+    ${({ theme: { typography } }) =>
+      typography?.h4?.mobile?.weight &&
+      `font-weight: ${typography?.h4?.mobile?.weight};`}
+  }
 `
 
 export const H5 = styled.h4<HeadingProps>`
@@ -82,10 +100,17 @@ export const H5 = styled.h4<HeadingProps>`
     p.primary ? colors.main.dark : colors.greyscale.dark};
   font-size: ${(p) => (p.smaller ? '14px' : '16px')};
   font-family: Montserrat, sans-serif;
-  font-weight: ${(p) => (p.bold ? 600 : 'normal')};
+  font-weight: ${({ theme: { typography }, ...p }) =>
+    p.bold ? typography?.h5?.bold ?? 600 : typography?.h5?.weight ?? 'normal'};
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
+
+  @media (max-width: 600px) {
+    ${({ theme: { typography } }) =>
+      typography?.h5?.mobile?.weight &&
+      `font-weight: ${typography?.h5?.mobile?.weight};`}
+  }
 `
 
 type LabelProps = {
