@@ -2307,8 +2307,13 @@ export const fi = {
     unitList: {
       title: 'Yksiköt'
     },
+    sidePanel: {
+      ownMessages: 'Omat viestit',
+      groupsMessages: 'Ryhmien viestit'
+    },
     messageBoxes: {
       names: {
+        RECEIVED: 'Saapuneet',
         SENT: 'Lähetetyt',
         DRAFT: 'Luonnokset'
       },
@@ -2317,9 +2322,14 @@ export const fi = {
     },
     messageList: {
       titles: {
+        RECEIVED: 'Saapuneet viestit',
         SENT: 'Lähetetyt viestit',
         DRAFT: 'Luonnokset'
       }
+    },
+    types: {
+      MESSAGE: 'Viesti',
+      BULLETIN: 'Tiedote'
     },
     receiverSelection: {
       title: 'Vastaanottajat',

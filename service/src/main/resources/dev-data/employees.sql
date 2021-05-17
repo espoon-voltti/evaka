@@ -14,6 +14,8 @@ INSERT INTO employee (id, first_name, last_name, email, external_id) VALUES
     ('00000000-0000-0000-0005-000000000001', 'Kalle', 'Kasvattaja', 'kalle.kasvattaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0005-000000000001'),
     ('00000000-0000-0000-0006-000000000000', 'Erkki', 'Erityisopettaja', 'erkki.erityisopettaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0006-000000000000');
 
+INSERT INTO message_account (employee_id) SELECT id FROM employee;
+
 INSERT INTO daycare_acl (daycare_id, employee_id, role) VALUES
     ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0004-000000000000', 'UNIT_SUPERVISOR'),
     ('2dda790a-788e-11e9-bdab-27ae0339236a', '00000000-0000-0000-0004-000000000000', 'UNIT_SUPERVISOR'),
@@ -27,3 +29,4 @@ INSERT INTO daycare_acl (daycare_id, employee_id, role) VALUES
     ('d5c7c7f8-2abe-11e9-8d80-2b926c773065', '00000000-0000-0000-0005-000000000001', 'STAFF'),
     ('2dd6e5f6-788e-11e9-bd72-9f1cfe2d8405', '00000000-0000-0000-0006-000000000000', 'SPECIAL_EDUCATION_TEACHER'),
     ('2dda790a-788e-11e9-bdab-27ae0339236a', '00000000-0000-0000-0006-000000000000', 'SPECIAL_EDUCATION_TEACHER');
+

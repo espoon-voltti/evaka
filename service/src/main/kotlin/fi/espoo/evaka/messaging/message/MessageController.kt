@@ -26,10 +26,10 @@ data class UnreadMessagesResponse(val count: Int)
 @RequestMapping("/messages")
 class MessageController {
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<MessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         authorizeAllowedMessagingRoles(user)
-        return db.read { it.getMessageAccountsForUser(user) }
+        return db.read { it.getAuthorizedMessageAccountsForUser(user) }
     }
 
     @GetMapping("/{accountId}/received")
