@@ -10,6 +10,7 @@ import { faPlus } from 'lib-icons'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
+import { IconDefinition } from '@fortawesome/fontawesome-common-types'
 
 const StyledButton = styled.button`
   width: fit-content;
@@ -89,6 +90,7 @@ interface AddButtonProps extends BaseProps {
   flipped?: boolean
   darker?: boolean
   'data-qa'?: string
+  icon?: IconDefinition
 }
 
 function AddButton({
@@ -98,7 +100,8 @@ function AddButton({
   onClick,
   disabled = false,
   flipped = false,
-  darker = false
+  darker = false,
+  icon
 }: AddButtonProps) {
   return (
     <StyledButton
@@ -109,7 +112,7 @@ function AddButton({
     >
       <div className="icon-wrapper-outer">
         <div className="icon-wrapper-inner">
-          <FontAwesomeIcon icon={faPlus} />
+          <FontAwesomeIcon icon={icon ?? faPlus} />
         </div>
       </div>
       {text && <span>{text}</span>}

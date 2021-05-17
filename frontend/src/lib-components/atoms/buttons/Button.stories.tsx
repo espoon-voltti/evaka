@@ -4,7 +4,7 @@
 
 import { action } from '@storybook/addon-actions'
 import { storiesOf } from '@storybook/react'
-import { faChevronLeft, faPen, faTrash } from 'lib-icons'
+import { faCalendarTimes, faChevronLeft, faPen, faTrash } from 'lib-icons'
 import React from 'react'
 import { H3 } from '../../typography'
 import { Gap } from '../../white-space'
@@ -112,6 +112,14 @@ storiesOf('evaka/atoms/buttons', module)
 
       <H3>Darker, disabled</H3>
       <AddButton onClick={onClick} text="Luo uusi sijoitus" darker disabled />
+      <Gap />
+
+      <H3>Custom icon</H3>
+      <AddButton
+        onClick={onClick}
+        text="Luo uusi sijoitus"
+        icon={faCalendarTimes}
+      />
       <Gap />
     </div>
   ))
