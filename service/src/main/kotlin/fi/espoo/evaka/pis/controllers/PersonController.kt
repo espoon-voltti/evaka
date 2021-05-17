@@ -111,7 +111,7 @@ class PersonController(
         ) sortDirection: String
     ): ResponseEntity<List<PersonJSON>>? {
         Audit.PersonDetailsSearch.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return ResponseEntity.ok()
             .body(
                 db.read {
