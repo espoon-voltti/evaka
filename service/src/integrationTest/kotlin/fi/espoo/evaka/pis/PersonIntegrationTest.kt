@@ -62,7 +62,7 @@ class PersonIntegrationTest : PureJdbiTest() {
         // language=SQL
         val sql = """
             SELECT EXISTS(
-                SELECT * FROM message_account WHERE person_id = :personId
+                SELECT * FROM message_account WHERE person_id = :personId AND active = true
             )
         """.trimIndent()
         return db.read {

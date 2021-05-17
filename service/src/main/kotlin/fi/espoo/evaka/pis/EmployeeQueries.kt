@@ -181,15 +181,6 @@ WHERE id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
-fun Database.Transaction.deleteEmployeeByExternalId(externalId: ExternalId) = createUpdate(
-    // language=SQL
-    """
-DELETE FROM employee
-WHERE external_id = :externalId
-    """.trimIndent()
-).bind("externalId", externalId)
-    .execute()
-
 fun Database.Transaction.deleteEmployeeRolesByExternalId(externalId: ExternalId) = createUpdate(
     // language=SQL
     """

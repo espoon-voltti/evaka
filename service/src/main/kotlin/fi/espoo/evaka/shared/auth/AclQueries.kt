@@ -30,6 +30,19 @@ WHERE daycare_id = :daycareId
     .mapTo<DaycareAclRow>()
     .toList()
 
+fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: UUID, role: UserRole): Boolean = createQuery(
+    """
+        SELECT EXISTS(
+            SELECT * FROM daycare_acl
+            WHERE employee_id = :employeeId AND role = :role
+        )
+    """.trimIndent()
+)
+    .bind("employeeId", employeeId)
+    .bind("role", role)
+    .mapTo<Boolean>()
+    .one()
+
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: UUID,
     employeeId: UUID,
