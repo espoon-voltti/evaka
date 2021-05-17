@@ -953,3 +953,10 @@ fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) = createQ
     .first()
 
 fun Database.Transaction.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()
+
+fun Database.Transaction.insertTestDaycareGroupAcl(aclRow: DevDaycareGroupAcl) = createUpdate(
+    """
+INSERT INTO daycare_group_acl (daycare_group_id, employee_id)
+VALUES (:groupId, :employeeId)
+"""
+).bindKotlin(aclRow).execute()

@@ -62,6 +62,8 @@ data class DaycareFields(
     }
 }
 
+data class DaycareGroupSummary(val id: UUID, val name: String)
+
 private fun Database.Read.getDaycaresQuery() = createQuery(
     // language=SQL
     """
@@ -307,3 +309,13 @@ fun Database.Read.getUnitManager(unitId: UUID): DaycareManager? = createQuery(
     .bind("unitId", unitId)
     .mapTo<DaycareManager>()
     .firstOrNull()
+
+fun Database.Read.getDaycareGroupSummaries(daycareId: UUID): List<DaycareGroupSummary> = createQuery(
+    """
+SELECT id, name
+FROM daycare_group
+WHERE daycare_id = :daycareId
+    """
+).bind("daycareId", daycareId)
+    .mapTo<DaycareGroupSummary>()
+    .list()

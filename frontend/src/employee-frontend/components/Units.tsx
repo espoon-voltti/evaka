@@ -79,7 +79,7 @@ function Units() {
           )
           .map((unit: Unit) => {
             return (
-              <Tr key={unit.id} data-qa="unit-row">
+              <Tr key={unit.id} data-qa="unit-row" data-id={unit.id}>
                 <Td>
                   <Link to={`/units/${unit.id}`}>{unit.name}</Link>
                 </Td>

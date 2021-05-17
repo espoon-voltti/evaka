@@ -1,4 +1,5 @@
 DROP VIEW IF EXISTS child_acl_view;
+DROP VIEW IF EXISTS daycare_group_acl_view;
 DROP VIEW IF EXISTS daycare_acl_view;
 
 -- Effective ACL role in a daycare for a user
@@ -10,34 +11,60 @@ CREATE VIEW daycare_acl_view(employee_id, daycare_id, role) AS (
 
     UNION ALL
 
-    SELECT id AS employee_id, unit_id AS daycare_id, 'MOBILE' AS role
+    SELECT id, unit_id, 'MOBILE'
     FROM mobile_device
     WHERE deleted = false
 );
 
-CREATE OR REPLACE VIEW child_acl_view (
-    "employee_id",
-    "child_id",
-    "role"
-) AS
-SELECT
-    acl.employee_id AS "employee_id",
-    ch.id AS "child_id",
-    acl.role AS "role"
-FROM person ch
-    LEFT JOIN placement pl ON pl.child_id = ch.id AND pl.end_date > current_date - INTERVAL '1 month'
-    LEFT JOIN application a ON a.child_id = ch.id AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
-    LEFT JOIN placement_plan pp ON pp.application_id = a.id
-    JOIN daycare_acl_view acl ON acl.daycare_id = pl.unit_id OR acl.daycare_id = pp.unit_id
-UNION SELECT
-    acl.employee_id AS "employee_id",
-    ch.id AS "child_id",
-    CASE
-        WHEN acl.role = 'UNIT_SUPERVISOR'::public.user_role THEN 'UNIT_SUPERVISOR'::public.user_role
-        ELSE 'STAFF'::public.user_role
-    END AS "role"
-FROM person ch
-    LEFT JOIN backup_care bc ON bc.child_id = ch.id AND bc.end_date > current_date - INTERVAL '1 month'
+CREATE VIEW daycare_group_acl_view(employee_id, daycare_group_id, role) AS (
+    SELECT employee_id, dp.id, role
+    FROM daycare_group dp
+    JOIN daycare_acl_view USING (daycare_id)
+
+    UNION ALL
+
+    SELECT employee_id, daycare_group_id, 'GROUP_STAFF'
+    FROM daycare_group_acl acl
+);
+
+CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
+    SELECT employee_id, pl.child_id, role
+    FROM placement pl
+    JOIN daycare_acl_view acl ON pl.unit_id = acl.daycare_id
+    WHERE pl.end_date > current_date - interval '1 month'
+
+    UNION ALL
+
+    SELECT employee_id, a.child_id, role
+    FROM placement_plan pp
+    JOIN application a ON pp.application_id = a.id
+    JOIN daycare_acl_view acl ON pp.unit_id = acl.daycare_id
+    WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
+
+    UNION ALL
+
+    SELECT employee_id, child_id, 'GROUP_STAFF'
+    FROM daycare_group_placement dgp
+    JOIN placement dp ON dp.id = dgp.daycare_placement_id
+    JOIN daycare_group_acl USING (daycare_group_id)
+    WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> current_date
+
+    UNION ALL
+
+    SELECT
+        employee_id, child_id,
+        (CASE
+            WHEN role = 'UNIT_SUPERVISOR' THEN 'UNIT_SUPERVISOR'
+            ELSE 'STAFF'
+        END)::user_role
+    FROM backup_care bc
     JOIN daycare_acl_view acl ON acl.daycare_id = bc.unit_id
-ORDER BY
-    role;
+    WHERE bc.end_date > current_date - INTERVAL '1 month'
+
+    UNION ALL
+
+    SELECT employee_id, child_id, 'GROUP_STAFF'
+    FROM backup_care bc
+    JOIN daycare_group_acl acl ON bc.group_id = acl.daycare_group_id
+    WHERE bc.end_date > current_date - interval '1 month'
+);

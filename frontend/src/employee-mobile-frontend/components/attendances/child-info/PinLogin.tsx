@@ -6,13 +6,14 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import ReactSelect from 'react-select'
-
+import { sortBy } from 'lodash'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -55,8 +56,9 @@ export default React.memo(function PinLogin() {
 
   const pinInputRef = useRef<HTMLInputElement>(null)
 
-  const { childId, unitId } = useParams<{
+  const { childId, groupId, unitId } = useParams<{
     unitId: string
+    groupId: string
     childId: string
   }>()
 
@@ -80,12 +82,29 @@ export default React.memo(function PinLogin() {
     }
   }, [selectedStaff])
 
+  function formatName(firstName: string, lastName: string) {
+    return `${lastName} ${firstName}`
+  }
+
+  const staffOptions = useMemo(() => {
+    if (attendanceResponse.isSuccess) {
+      return sortBy(
+        attendanceResponse.value.unit.staff.filter(({ pinSet }) => pinSet),
+        ({ groups }) => (groups.includes(groupId) ? 0 : 1),
+        ({ lastName }) => lastName,
+        ({ firstName }) => firstName
+      ).map((staff) => ({
+        label: formatName(staff.firstName, staff.lastName),
+        value: staff.id
+      }))
+    } else {
+      return []
+    }
+  }, [groupId, attendanceResponse])
+
   const childBasicInfo =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
-
-  const formatName = (firstName: string, lastName: string) =>
-    `${lastName} ${firstName}`
 
   const loggedInStaffName = (): string => {
     const loggedInStaff = attendanceResponse.isSuccess
@@ -183,12 +202,7 @@ export default React.memo(function PinLogin() {
                 <div data-qa={'select-staff'}>
                   <ReactSelect
                     placeholder={i18n.attendances.pin.selectStaff}
-                    options={attendanceResponse.value.unit.staff
-                      .filter((staff) => staff.pinSet)
-                      .map((staff) => ({
-                        label: formatName(staff.firstName, staff.lastName),
-                        value: staff.id
-                      }))}
+                    options={staffOptions}
                     noOptionsMessage={() => i18n.attendances.pin.noOptions}
                     onChange={(option) =>
                       setSelectedStaff(

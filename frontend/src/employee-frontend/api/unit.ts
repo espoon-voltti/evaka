@@ -64,8 +64,14 @@ export async function getDaycares(): Promise<Result<Unit[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
+export interface DaycareGroupSummary {
+  id: UUID
+  name: string
+}
+
 export interface UnitResponse {
   daycare: Unit
+  groups: DaycareGroupSummary[]
   currentUserRoles: AdRole[]
 }
 
@@ -414,6 +420,7 @@ export async function getOccupancyRates(
 export interface DaycareAclRow {
   employee: DaycareAclRowEmployee
   role: AdRole
+  groupIds: UUID[]
 }
 
 export interface DaycareAclRowEmployee {
@@ -492,6 +499,19 @@ export async function removeDaycareAclStaff(
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/staff/${personId}`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateDaycareGroupAcl(
+  unitId: UUID,
+  employeeId: UUID,
+  groupIds: UUID[]
+): Promise<Result<void>> {
+  return client
+    .put(`/daycares/${unitId}/staff/${employeeId}/groups`, {
+      groupIds
+    })
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }

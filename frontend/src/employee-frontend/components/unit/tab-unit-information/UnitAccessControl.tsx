@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { sortBy } from 'lodash'
 import React, {
   Fragment,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -12,10 +14,8 @@ import React, {
 import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
-
 import { ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
-import Title from 'lib-components/atoms/Title'
 import { Table, Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Loading, Result } from 'lib-common/api'
@@ -31,7 +31,9 @@ import {
   putMobileDeviceName,
   removeDaycareAclStaff,
   removeDaycareAclSupervisor,
-  removeDaycareAclSpecialEducationTeacher
+  removeDaycareAclSpecialEducationTeacher,
+  DaycareGroupSummary,
+  updateDaycareGroupAcl
 } from '../../../api/unit'
 import { getEmployees } from '../../../api/employees'
 import { Employee } from '../../../types/employee'
@@ -40,7 +42,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import { RequireRole } from '../../../utils/roles'
 import { useTranslation } from '../../../state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { faPen, faQuestion, faTrash } from 'lib-icons'
+import { faCheck, faPen, faQuestion, faTimes, faTrash } from 'lib-icons'
 import { H2 } from 'lib-components/typography'
 import Button from 'lib-components/atoms/buttons/Button'
 import { UUID } from '../../../types'
@@ -53,13 +55,20 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InputField from 'lib-components/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '../../../constants'
 import { AdRole } from '../../../types'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { ExpandableList } from 'lib-components/atoms/ExpandableList'
 
-type Props = { unitId: string }
+type Props = {
+  unitId: string
+  groups: Record<UUID, DaycareGroupSummary>
+}
 
 interface FormattedRow {
   id: UUID
   name: string
   email: string
+  groupIds: UUID[]
 }
 
 const Flex = styled.div`
@@ -68,56 +77,162 @@ const Flex = styled.div`
   justify-content: center;
 `
 
-function AclRow({
+const RowButtons = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  & > * {
+    margin-left: 10px;
+  }
+`
+
+function GroupListing({
+  unitGroups,
+  groupIds
+}: {
+  unitGroups: Record<UUID, DaycareGroupSummary>
+  groupIds: UUID[]
+}) {
+  const { i18n } = useTranslation()
+  const sortedIds = useMemo(
+    () => sortBy(groupIds, (id) => unitGroups[id]?.name),
+    [unitGroups, groupIds]
+  )
+  if (groupIds.length === 0) {
+    return <>{i18n.unit.accessControl.noGroups}</>
+  }
+  return (
+    <ExpandableList rowsToOccupy={3} i18n={i18n.common.expandableList}>
+      {sortedIds.map((id) => (
+        <div key={id}>{unitGroups[id]?.name}</div>
+      ))}
+    </ExpandableList>
+  )
+}
+
+function AclRowEditor({
   row,
-  isDeletable,
-  onClickDelete,
-  rolesAllowedToRemoveRows
+  onSave,
+  onCancel,
+  unitGroups
 }: {
   row: FormattedRow
-  isDeletable: boolean
-  onClickDelete: () => void
-  rolesAllowedToRemoveRows?: AdRole[]
+  onSave: (groupIds: UUID[]) => void
+  onCancel: () => void
+  unitGroups: Record<UUID, DaycareGroupSummary>
 }) {
+  const { i18n } = useTranslation()
+  const options = useMemo(
+    () => sortBy(Object.values(unitGroups), ({ name }) => name),
+    [unitGroups]
+  )
+  const [groups, setGroups] = useState<DaycareGroupSummary[]>(
+    options.filter(({ id }) => row.groupIds.includes(id))
+  )
+
   return (
     <Tr data-qa="acl-row">
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
+      <GroupMultiSelectTd>
+        <MultiSelect
+          data-qa="groups"
+          value={groups}
+          options={options}
+          getOptionId={(x) => x.id}
+          getOptionLabel={(x) => x.name}
+          onChange={(values) => setGroups(values)}
+          placeholder={`${i18n.common.select}...`}
+        />
+      </GroupMultiSelectTd>
       <Td>
-        {rolesAllowedToRemoveRows ? (
-          <RequireRole oneOf={rolesAllowedToRemoveRows}>
-            {isDeletable && (
-              <IconButton
-                icon={faTrash}
-                onClick={onClickDelete}
-                data-qa="delete"
-              />
-            )}
-          </RequireRole>
-        ) : (
-          <>
-            {isDeletable && (
-              <IconButton
-                icon={faTrash}
-                onClick={onClickDelete}
-                data-qa="delete"
-              />
-            )}
-          </>
-        )}
+        <RowButtons>
+          <InlineButton
+            icon={faTimes}
+            onClick={onCancel}
+            text={i18n.common.cancel}
+          />
+          <InlineButton
+            icon={faCheck}
+            data-qa="save"
+            onClick={() => onSave(groups.map(({ id }) => id))}
+            text={i18n.common.save}
+          />
+        </RowButtons>
       </Td>
     </Tr>
   )
 }
 
-const AddAclTitleContainer = styled.div`
-  display: flex;
-  align-items: center;
+function AclRow({
+  row,
+  isDeletable,
+  onClickDelete,
+  onChangeGroups,
+  rolesAllowedToEdit,
+  unitGroups
+}: {
+  row: FormattedRow
+  isDeletable: boolean
+  onClickDelete: () => void
+  onChangeGroups: (ids: UUID[]) => void
+  rolesAllowedToEdit: AdRole[]
+  unitGroups: Record<UUID, DaycareGroupSummary> | undefined
+}) {
+  const isEditable = !!unitGroups
+  const [editing, setEditing] = useState(false)
 
-  > svg {
-    flex: 0 0 auto;
-    margin-right: 10px;
+  const onClickEdit = useCallback(() => setEditing(true), [setEditing])
+  const onCancelEditing = useCallback(() => setEditing(false), [setEditing])
+  const onSave = useCallback(
+    (groupIds) => {
+      setEditing(false)
+      onChangeGroups(groupIds)
+    },
+    [setEditing, onChangeGroups]
+  )
+
+  if (editing) {
+    return (
+      <AclRowEditor
+        row={row}
+        unitGroups={unitGroups ?? {}}
+        onCancel={onCancelEditing}
+        onSave={onSave}
+      />
+    )
   }
+
+  const buttons = (
+    <RowButtons>
+      {isEditable && (
+        <IconButton icon={faPen} onClick={onClickEdit} data-qa="edit" />
+      )}
+      {isDeletable && (
+        <IconButton icon={faTrash} onClick={onClickDelete} data-qa="delete" />
+      )}
+    </RowButtons>
+  )
+
+  return (
+    <Tr data-qa="acl-row">
+      <Td data-qa="name">{row.name}</Td>
+      <Td data-qa="email">{row.email}</Td>
+      {unitGroups && (
+        <Td data-qa="groups">
+          <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
+        </Td>
+      )}
+      <Td>
+        <RequireRole oneOf={rolesAllowedToEdit}>{buttons}</RequireRole>
+      </Td>
+    </Tr>
+  )
+}
+
+const GroupMultiSelectTd = styled(Td)`
+  padding: 0;
+  vertical-align: middle;
 `
 
 const AddAclSelectContainer = styled.div`
@@ -134,14 +249,26 @@ const AddAclSelectContainer = styled.div`
   }
 `
 
+const GroupsTh = styled(Th)`
+  width: 40%;
+`
+
+const ActionsTh = styled(Th)`
+  width: 240px;
+`
+
 function AclTable({
+  unitGroups,
   rows,
   onDeleteAclRow,
-  rolesAllowedToRemoveRows
+  onChangeAclGroups,
+  rolesAllowedToEdit
 }: {
+  unitGroups?: Record<UUID, DaycareGroupSummary>
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
-  rolesAllowedToRemoveRows?: AdRole[]
+  onChangeAclGroups?: (employeeId: UUID, groupIds: UUID[]) => void
+  rolesAllowedToEdit: AdRole[]
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -152,17 +279,24 @@ function AclTable({
         <Tr>
           <Th>{i18n.common.form.name}</Th>
           <Th>{i18n.unit.accessControl.email}</Th>
-          <Th />
+          {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
+          <ActionsTh />
         </Tr>
       </Thead>
       <Tbody>
         {rows.map((row) => (
           <AclRow
             key={row.id}
+            unitGroups={unitGroups}
             row={row}
             isDeletable={row.id !== user?.id}
             onClickDelete={() => onDeleteAclRow(row.id)}
-            rolesAllowedToRemoveRows={rolesAllowedToRemoveRows}
+            onChangeGroups={
+              onChangeAclGroups
+                ? (ids) => onChangeAclGroups(row.id, ids)
+                : () => undefined
+            }
+            rolesAllowedToEdit={rolesAllowedToEdit}
           />
         ))}
       </Tbody>
@@ -242,6 +376,11 @@ function DeviceRow({
   )
 }
 
+const AddAclLabel = styled.p`
+  font-weight: 600;
+  margin-bottom: 0;
+`
+
 function AddAcl({
   employees,
   onAddAclRow
@@ -277,9 +416,7 @@ function AddAcl({
 
   return (
     <>
-      <AddAclTitleContainer>
-        <Title size={3}>{i18n.unit.accessControl.addPerson}</Title>
-      </AddAclTitleContainer>
+      <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
       <AddAclSelectContainer>
         <ReactSelect
           className="acl-select"
@@ -325,7 +462,7 @@ interface RemoveState {
   removeFn: (unitId: UUID, employeeId: UUID) => Promise<unknown>
 }
 
-function UnitAccessControl({ unitId }: Props) {
+function UnitAccessControl({ unitId, groups }: Props) {
   const { i18n } = useTranslation()
 
   const { user } = useContext(UserContext)
@@ -369,7 +506,8 @@ function UnitAccessControl({ unitId }: Props) {
       rows.map((row) => ({
         id: row.employee.id,
         name: formatName(row.employee.firstName, row.employee.lastName, i18n),
-        email: row.employee.email ?? row.employee.id
+        email: row.employee.email ?? row.employee.id,
+        groupIds: row.groupIds
       })),
       (row) => row.name
     )
@@ -422,6 +560,12 @@ function UnitAccessControl({ unitId }: Props) {
     addDaycareAclStaff(unitId, employeeId).then(() =>
       reloadDaycareAclRows(unitId)
     )
+
+  const updateStaffGroupAcls = (employeeId: UUID, groupIds: UUID[]) => {
+    void updateDaycareGroupAcl(unitId, employeeId, groupIds).then(() =>
+      reloadDaycareAclRows(unitId)
+    )
+  }
 
   const [removeState, setRemoveState] = useState<RemoveState | undefined>(
     undefined
@@ -546,7 +690,7 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclSupervisor
                 })
               }
-              rolesAllowedToRemoveRows={['ADMIN']}
+              rolesAllowedToEdit={['ADMIN']}
             />
           )}
           <RequireRole oneOf={['ADMIN']}>
@@ -569,7 +713,7 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclSpecialEducationTeacher
                 })
               }
-              rolesAllowedToRemoveRows={['ADMIN']}
+              rolesAllowedToEdit={['ADMIN']}
             />
           )}
           <RequireRole oneOf={['ADMIN']}>
@@ -592,6 +736,9 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclStaff
                 })
               }
+              unitGroups={groups}
+              onChangeAclGroups={updateStaffGroupAcls}
+              rolesAllowedToEdit={['ADMIN', 'UNIT_SUPERVISOR']}
             />
           )}
           <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />

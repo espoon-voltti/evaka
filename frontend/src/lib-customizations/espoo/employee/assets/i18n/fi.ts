@@ -1129,7 +1129,9 @@ export const fi = {
         editName: 'Muokkaa laitteen nimeä',
         removeConfirmation: 'Haluatko poistaa mobiililaitteen?',
         editPlaceholder: 'esim. Hippiäisten kännykkä'
-      }
+      },
+      groups: 'Luvitukset ryhmiin',
+      noGroups: 'Ei luvituksia'
     },
     filters: {
       title: 'Näytä tiedot',

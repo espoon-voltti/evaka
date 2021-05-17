@@ -113,5 +113,6 @@ data class Staff(
     val id: UUID,
     val firstName: String,
     val lastName: String,
-    val pinSet: Boolean = false
+    val pinSet: Boolean = false,
+    val groups: List<UUID>
 )

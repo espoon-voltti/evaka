@@ -86,9 +86,8 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
                 // language=SQL
                 """
 SELECT role
-FROM daycare_group
-JOIN daycare_acl_view USING (daycare_id)
-WHERE employee_id = :userId AND daycare_group.id = :groupId
+FROM daycare_group_acl_view
+WHERE employee_id = :userId AND daycare_group_id = :groupId
                 """.trimIndent()
             ).bind("userId", user.id).bind("groupId", groupId).mapTo<UserRole>().toSet()
         }
@@ -250,10 +249,9 @@ JOIN LATERAL (
     UNION ALL
 
     SELECT role
-    FROM daycare_acl_view acl
-    JOIN daycare_group dg USING (daycare_id)
+    FROM daycare_group_acl_view acl
     WHERE acl.employee_id = :userId
-    AND dg.id = dn.group_id
+    AND acl.daycare_group_id = dn.group_id
 ) acls ON true
 WHERE dn.id = :noteId
 """

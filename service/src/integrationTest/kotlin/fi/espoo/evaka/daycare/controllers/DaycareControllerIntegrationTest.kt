@@ -75,7 +75,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get daycare`() {
-        val (daycare, currentUserRoles) = getDaycare(daycareId)
+        val (daycare, _, currentUserRoles) = getDaycare(daycareId)
 
         db.read { assertEquals(it.getDaycare(daycareId), daycare) }
         assertEquals(setOf(UserRole.STAFF), currentUserRoles)
