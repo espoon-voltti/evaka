@@ -13,7 +13,7 @@ import {
 } from '../../api/attendances'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
-import { getTimeString } from './AttendanceChildPage'
+import { getTimeString } from './child-info/ChildInfo'
 import { ArrivalTime, InlineWideAsyncButton } from './components'
 import { WideLinkButton } from '../../components/mobile/components'
 

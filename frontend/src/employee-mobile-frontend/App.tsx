@@ -18,12 +18,13 @@ import { UserContextProvider } from './state/user'
 import MobileLander from './components/mobile/MobileLander'
 import PairingWizard from './components/mobile/PairingWizard'
 import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
-import AttendanceChildPage from './components/attendances/AttendanceChildPage'
+import AttendanceChildPage from './components/attendances/child-info/ChildInfo'
 import { getAuthStatus, AuthStatus } from './api/auth'
 import { client } from './api/client'
 import MarkPresent from './components/attendances/actions/MarkPresent'
 import MarkDeparted from './components/attendances/actions/MarkDeparted'
 import MarkAbsent from './components/attendances/actions/MarkAbsent'
+import MarkAbsentBeforehand from './components/attendances/actions/MarkAbsentBeforehand'
 import DailyNoteEditor from './components/attendances/notes/DailyNoteEditor'
 import StaffPage from './components/staff/StaffPage'
 import PinLogin from './components/attendances/child-info/PinLogin'
@@ -72,6 +73,10 @@ export default function App() {
                 <Route
                   path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsent"
                   component={ensureAuthenticated(MarkAbsent)}
+                />
+                <Route
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsentbeforhand"
+                  component={ensureAuthenticated(MarkAbsentBeforehand)}
                 />
                 <Route
                   path="/units/:unitId/groups/:groupId/childattendance/:childId/markdeparted"
