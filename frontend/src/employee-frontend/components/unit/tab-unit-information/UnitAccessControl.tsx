@@ -176,7 +176,7 @@ function AclRow({
   isDeletable: boolean
   onClickDelete: () => void
   onChangeGroups: (ids: UUID[]) => void
-  rolesAllowedToEdit?: AdRole[]
+  rolesAllowedToEdit: AdRole[]
   unitGroups: Record<UUID, DaycareGroupSummary> | undefined
 }) {
   const isEditable = !!unitGroups
@@ -224,11 +224,7 @@ function AclRow({
         </Td>
       )}
       <Td>
-        {rolesAllowedToEdit ? (
-          <RequireRole oneOf={rolesAllowedToEdit}>{buttons}</RequireRole>
-        ) : (
-          buttons
-        )}
+        <RequireRole oneOf={rolesAllowedToEdit}>{buttons}</RequireRole>
       </Td>
     </Tr>
   )
@@ -272,7 +268,7 @@ function AclTable({
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
   onChangeAclGroups?: (employeeId: UUID, groupIds: UUID[]) => void
-  rolesAllowedToEdit?: AdRole[]
+  rolesAllowedToEdit: AdRole[]
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -742,6 +738,7 @@ function UnitAccessControl({ unitId, groups }: Props) {
               }
               unitGroups={groups}
               onChangeAclGroups={updateStaffGroupAcls}
+              rolesAllowedToEdit={['ADMIN', 'UNIT_SUPERVISOR']}
             />
           )}
           <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
