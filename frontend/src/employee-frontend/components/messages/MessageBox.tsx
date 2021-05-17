@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { espooBrandColors } from '../../../lib-components/colors'
-import { defaultMargins } from '../../../lib-components/white-space'
+import { espooBrandColors } from 'lib-customizations/common'
+import { defaultMargins } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { MessageAccount } from './types'
 import { AccountView, View } from './types-view'

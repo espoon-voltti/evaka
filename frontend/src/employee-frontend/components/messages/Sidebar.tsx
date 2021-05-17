@@ -4,13 +4,13 @@
 
 import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
+import Loader from 'lib-components/atoms/Loader'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import colors, { greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import Loader from '../../../lib-components/atoms/Loader'
-import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
 import { useTranslation } from '../../state/i18n'
 import Select, { SelectOptionProps } from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
@@ -136,11 +136,17 @@ export default React.memo(function Sidebar({
 
   return (
     <Container>
-      {accounts.isLoading && <Loader />}
-      {accounts.isFailure && <ErrorSegment />}
-      {accounts.isSuccess && (
-        <Accounts accounts={accounts.value} view={view} setView={setView} />
-      )}
+      {accounts.mapAll({
+        loading() {
+          return <Loader />
+        },
+        failure() {
+          return <ErrorSegment />
+        },
+        success(accounts) {
+          return <Accounts accounts={accounts} view={view} setView={setView} />
+        }
+      })}
       <Button
         text={i18n.messages.messageBoxes.newBulletin}
         onClick={showEditor}
