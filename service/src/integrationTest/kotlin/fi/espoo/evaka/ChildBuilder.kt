@@ -1,13 +1,17 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
@@ -37,7 +41,9 @@ class ChildBuilder(
     ) {
         fun hasAssistanceNeed() = AssistanceNeedBuilder(tx, today, this)
         fun hasPlacementPlan() = PlacementPlanBuilder(tx, today, this)
+        fun hasBackupCare() = BackupCareBuilder(tx, today, this)
         fun hasPlacement() = PlacementBuilder(tx, today, this)
+        fun hasAbsence() = AbsenceBuilder(tx, today, this)
     }
 
     class AssistanceNeedBuilder(
@@ -55,7 +61,7 @@ class ChildBuilder(
         fun toDay(day: Int) = this.apply { this.to = day }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
 
-        fun execAndDone(): ChildFixture {
+        fun execAndReturn(): ChildFixture {
             tx.insertTestAssistanceNeed(
                 DevAssistanceNeed(
                     childId = childFixture.childId,
@@ -69,6 +75,41 @@ class ChildBuilder(
         }
     }
 
+    class AbsenceBuilder(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        private val childFixture: ChildFixture
+    ) {
+        private var day: Int = 0
+        private var type: AbsenceType? = null
+        private var careTypes: List<CareType>? = null
+
+        fun onDay(day: Int) = this.apply { this.day = day }
+        fun ofType(type: AbsenceType) = this.apply { this.type = type }
+        fun forCareTypes(vararg careTypes: CareType) = this.apply { this.careTypes = careTypes.asList() }
+
+        private fun exec() {
+            careTypes?.forEach { careType ->
+                tx.insertTestAbsence(
+                    childId = childFixture.childId,
+                    date = today.plusDays(day.toLong()),
+                    absenceType = type ?: throw IllegalStateException("absence type not set"),
+                    careType = careType
+                )
+            } ?: throw IllegalStateException("care types not set")
+        }
+
+        fun execAndReturn(): ChildFixture {
+            exec()
+            return childFixture
+        }
+
+        fun andAnother(): AbsenceBuilder {
+            exec()
+            return AbsenceBuilder(tx, today, childFixture)
+        }
+    }
+
     class PlacementPlanBuilder(
         private val tx: Database.Transaction,
         private val today: LocalDate,
@@ -78,13 +119,15 @@ class ChildBuilder(
         private var type: PlacementType? = null
         private var from: Int = 0
         private var to: Int = 0
+        private var deleted = false
 
         fun toUnit(id: UUID) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
         fun fromDay(day: Int) = this.apply { this.from = day }
         fun toDay(day: Int) = this.apply { this.to = day }
+        fun asDeleted() = this.apply { this.deleted = true }
 
-        fun execAndDone(): ChildFixture {
+        fun execAndReturn(): ChildFixture {
             val applicationGuardianId = tx.insertTestPerson(DevPerson())
             val applicationId = tx.insertTestApplication(
                 guardianId = applicationGuardianId,
@@ -96,7 +139,35 @@ class ChildBuilder(
                 unitId = unitId ?: throw IllegalStateException("unit not set"),
                 type = type ?: throw IllegalStateException("type not set"),
                 startDate = today.plusDays(from.toLong()),
-                endDate = today.plusDays(to.toLong())
+                endDate = today.plusDays(to.toLong()),
+                deleted = deleted
+            )
+            return childFixture
+        }
+    }
+
+    class BackupCareBuilder(
+        private val tx: Database.Transaction,
+        private val today: LocalDate,
+        private val childFixture: ChildFixture
+    ) {
+        private var unitId: UUID? = null
+        private var groupId: UUID? = null
+        private var from: Int = 0
+        private var to: Int = 0
+
+        fun toUnit(id: UUID) = this.apply { this.unitId = id }
+        fun toGroup(id: UUID) = this.apply { this.groupId = id }
+        fun fromDay(day: Int) = this.apply { this.from = day }
+        fun toDay(day: Int) = this.apply { this.to = day }
+
+        fun execAndReturn(): ChildFixture {
+            tx.insertTestBackUpCare(
+                childId = childFixture.childId,
+                unitId = unitId ?: throw IllegalStateException("unit not set"),
+                startDate = today.plusDays(from.toLong()),
+                endDate = today.plusDays(to.toLong()),
+                groupId = groupId
             )
             return childFixture
         }
@@ -134,7 +205,7 @@ class ChildBuilder(
             )
         }
 
-        fun execAndDone(): ChildFixture {
+        fun execAndReturn(): ChildFixture {
             exec()
             return childFixture
         }
@@ -151,7 +222,7 @@ class ChildBuilder(
 
         fun withServiceNeed() = ServiceNeedBuilder(tx, today, this)
 
-        fun done() = childFixture
+        fun returnFromPlacement() = childFixture
     }
 
     class GroupPlacementBuilder(
@@ -167,7 +238,7 @@ class ChildBuilder(
         fun fromDay(day: Int) = this.apply { this.from = today.plusDays(day.toLong()) }
         fun toDay(day: Int) = this.apply { this.to = today.plusDays(day.toLong()) }
 
-        fun execAndDone(): PlacementFixture {
+        fun execAndReturn(): PlacementFixture {
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = placementFixture.placementId,
                 groupId = groupId ?: throw IllegalStateException("group not set"),
@@ -193,7 +264,7 @@ class ChildBuilder(
         fun toDay(day: Int) = this.apply { this.to = today.plusDays(day.toLong()) }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
 
-        fun execAndDone(): PlacementFixture {
+        fun execAndReturn(): PlacementFixture {
             tx.insertTestNewServiceNeed(
                 confirmedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
                 placementId = placementFixture.placementId,
