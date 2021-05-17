@@ -135,6 +135,7 @@ enum class Audit(
     MessagingSenderOptionsRead("messaging.bulletin.sender-options.read"),
     MessagingMyAccountsRead("messaging.messages.my-accounts.read"),
     MessagingUnreadMessagesRead("messaging.messages.unread.read"),
+    MessagingMarkMessagesReadWrite("messaging.messages.mark-read.write"),
     MessagingReceivedMessagesRead("messaging.messages.received-messages.read"),
     MessagingSentMessagesRead("messaging.messages.sent-messages.read"),
     MessagingNewMessageWrite("messaging.messages.new-message.write"),

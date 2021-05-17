@@ -19,6 +19,7 @@ data class Message(
     val senderName: String,
     val sentAt: HelsinkiDateTime,
     val content: String,
+    val readAt: HelsinkiDateTime? = null
 )
 
 data class MessageThread(
