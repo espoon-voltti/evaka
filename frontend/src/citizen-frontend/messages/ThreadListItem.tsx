@@ -2,51 +2,62 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
-import LocalDate from 'lib-common/local-date'
-import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { useTranslation } from '../localization'
 import { formatDate } from '../util'
-import { ReceivedBulletin } from '../messages/types'
+import { MessageTypeChip } from './MessageTypeChip'
+import { MessageThread } from './types'
 
-type Props = {
-  bulletin: ReceivedBulletin
+interface Props {
+  thread: MessageThread
   active: boolean
   onClick: () => void
 }
 
-export default React.memo(function MessageListItem({
-  bulletin,
+const hasUnreadMessages = (thread: MessageThread) =>
+  thread.messages.some((m) => !m.readAt)
+
+export default React.memo(function ThreadListItem({
+  thread,
   active,
   onClick
 }: Props) {
+  const i18n = useTranslation()
+  const lastMessage = thread.messages[thread.messages.length - 1]
+  const participants = thread.messages.map((t) => t.senderName).join(', ')
   return (
     <Container
-      isRead={bulletin.isRead}
+      isRead={!hasUnreadMessages(thread)}
       active={active}
       onClick={onClick}
-      data-qa="bulletin-list-item"
+      data-qa="message-list-item"
     >
       <FixedSpaceColumn>
         <Header>
-          <span data-qa="bulletin-sender">{bulletin.sender}</span>
+          <Truncated data-qa="message-participants">{participants}</Truncated>
+          <MessageTypeChip type={thread.type} labels={i18n.messages.types} />
+        </Header>
+        <TitleAndDate>
+          <Truncated>{thread.title}</Truncated>
           <span>
             {formatDate(
-              bulletin.sentAt,
-              LocalDate.fromSystemTzDate(bulletin.sentAt).isEqual(
+              lastMessage.sentAt,
+              LocalDate.fromSystemTzDate(lastMessage.sentAt).isEqual(
                 LocalDate.today()
               )
                 ? 'HH:mm'
                 : 'd.M.'
             )}
           </span>
-        </Header>
-        <Title>{bulletin.title}</Title>
-        <ContentSummary>
-          {bulletin.content.substring(0, 200).replace('\n', ' ')}
-        </ContentSummary>
+        </TitleAndDate>
+        <Truncated>
+          {lastMessage.content.substring(0, 200).replace('\n', ' ')}
+        </Truncated>
       </FixedSpaceColumn>
     </Container>
   )
@@ -89,18 +100,22 @@ const Header = styled.div`
   justify-content: space-between;
   font-weight: bold;
   font-size: 16px;
-
-  :first-child {
-    margin-right: ${defaultMargins.s};
-  }
+  margin-bottom: 12px;
 `
 
-const Title = styled.div`
+const TitleAndDate = styled.div`
+  display: flex;
+  justify-content: space-between;
   font-weight: 600;
+  margin-bottom: ${defaultMargins.xxs};
 `
 
-const ContentSummary = styled.div`
+const Truncated = styled.span`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  :not(:last-child) {
+    margin-right: ${defaultMargins.s};
+  }
 `

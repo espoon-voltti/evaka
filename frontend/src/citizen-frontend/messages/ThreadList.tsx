@@ -2,36 +2,36 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import styled from 'styled-components'
 import { Result } from 'lib-common/api'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
-import { faArrowLeft } from 'lib-icons'
-import { tabletMin } from 'lib-components/breakpoints'
-import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
-import { H1 } from 'lib-components/typography'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
-import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
+import { tabletMin } from 'lib-components/breakpoints'
+import { H1 } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faArrowLeft } from 'lib-icons'
+import React from 'react'
+import styled from 'styled-components'
 import { useTranslation } from '../localization'
-import { ReceivedBulletin } from '../messages/types'
-import MessageListItem from '../messages/MessageListItem'
+import ThreadListItem from './ThreadListItem'
+import { MessageThread } from './types'
 
 type Props = {
-  bulletins: ReceivedBulletin[]
+  threads: MessageThread[]
   nextPage: Result<void>
-  activeBulletin: ReceivedBulletin | null
-  onClickBulletin: (target: ReceivedBulletin) => void
+  activeThread: MessageThread | undefined
+  onClickThread: (target: MessageThread) => void
   onReturn: () => void
   loadNextPage: () => void
 }
 
-export default React.memo(function MessagesList({
-  bulletins,
+export default React.memo(function ThreadList({
+  threads,
   nextPage,
-  activeBulletin,
-  onClickBulletin,
+  activeThread,
+  onClickThread,
   onReturn,
   loadNextPage
 }: Props) {
@@ -39,7 +39,7 @@ export default React.memo(function MessagesList({
 
   return (
     <>
-      {activeBulletin && (
+      {activeThread && (
         <MobileOnly>
           <Return
             icon={faArrowLeft}
@@ -48,20 +48,20 @@ export default React.memo(function MessagesList({
           />
         </MobileOnly>
       )}
-      <Container className={activeBulletin ? 'desktop-only' : undefined}>
+      <Container className={activeThread ? 'desktop-only' : undefined}>
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
-          {nextPage.isSuccess && bulletins.length === 0 && (
+          {nextPage.isSuccess && threads.length === 0 && (
             <span>{t.messages.noMessages}</span>
           )}
         </HeaderContainer>
 
-        {bulletins.map((bulletin) => (
-          <MessageListItem
-            key={bulletin.id}
-            bulletin={bulletin}
-            onClick={() => onClickBulletin(bulletin)}
-            active={activeBulletin?.id === bulletin.id}
+        {threads.map((thread) => (
+          <ThreadListItem
+            key={thread.id}
+            thread={thread}
+            onClick={() => onClickThread(thread)}
+            active={activeThread?.id === thread.id}
           />
         ))}
         {nextPage.isFailure && (

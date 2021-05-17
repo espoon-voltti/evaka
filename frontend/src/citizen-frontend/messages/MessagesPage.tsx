@@ -2,35 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Loading, Paged, Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { tabletMin } from 'lib-components/breakpoints'
-import Container from 'lib-components/layout/Container'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
+import Container from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
-import { ReceivedBulletin } from '../messages/types'
-import { getBulletins, markBulletinRead } from '../messages/api'
-import MessagesList from '../messages/MessagesList'
-import MessageReadView from '../messages/MessageReadView'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { HeaderState, HeaderContext } from './state'
+import { getReceivedMessages, markThreadRead } from './api'
+import ThreadReadView from './ThreadReadView'
+import ThreadList from './ThreadList'
+import { MessageThread } from './types'
+import { HeaderContext, HeaderState } from './state'
 
 export default React.memo(function MessagesPage() {
-  const { refreshUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
-  const [bulletinsState, setBulletinsState] = useState<BulletinsState>(
+  const { refreshUnreadMessagesCount } = useContext<HeaderState>(HeaderContext)
+  const [messagesState, setMessagesState] = useState<MessagesState>(
     initialState
   )
-  const [activeBulletin, setActiveBulletin] = useState<ReceivedBulletin | null>(
-    null
-  )
-  const setBulletinsResult = useCallback(
-    (result: Result<Paged<ReceivedBulletin>>) =>
-      setBulletinsState((state) => {
+  const [activeMessage, setActiveThread] = useState<MessageThread>()
+  const setMessagesResult = useCallback(
+    (result: Result<Paged<MessageThread>>) =>
+      setMessagesState((state) => {
         if (result.isSuccess) {
           return {
             ...state,
-            bulletins: [...state.bulletins, ...result.value.data],
+            threads: [...state.threads, ...result.value.data],
             nextPage: Success.of(undefined),
             total: result.value.total,
             pages: result.value.pages
@@ -46,17 +44,17 @@ export default React.memo(function MessagesPage() {
 
         return state
       }),
-    [setBulletinsState]
+    [setMessagesState]
   )
 
-  const loadBulletins = useRestApi(getBulletins, setBulletinsResult)
+  const loadMessages = useRestApi(getReceivedMessages, setMessagesResult)
   useEffect(() => {
-    setBulletinsState((state) => ({ ...state, nextPage: Loading.of() }))
-    loadBulletins(bulletinsState.currentPage)
-  }, [bulletinsState.currentPage, loadBulletins])
+    setMessagesState((state) => ({ ...state, nextPage: Loading.of() }))
+    loadMessages(messagesState.currentPage)
+  }, [loadMessages, messagesState.currentPage])
 
   const loadNextPage = () =>
-    setBulletinsState((state) => {
+    setMessagesState((state) => {
       if (state.currentPage < state.pages) {
         return {
           ...state,
@@ -66,54 +64,63 @@ export default React.memo(function MessagesPage() {
       return state
     })
 
-  const openBulletin = (bulletin: ReceivedBulletin) => {
-    setActiveBulletin(bulletin)
+  const openThread = (thread: MessageThread) => {
+    const hasUnreadMessages = thread.messages.some((m) => !m.readAt)
 
-    if (bulletin.isRead) return
-
-    void markBulletinRead(bulletin.id).then(() => {
-      refreshUnreadBulletinsCount()
-      setActiveBulletin((b) =>
-        b?.id === bulletin.id ? { ...b, isRead: true } : b
-      )
-
-      setBulletinsState(({ bulletins, ...state }) => ({
+    if (hasUnreadMessages) {
+      setMessagesState(({ threads, ...state }) => ({
         ...state,
-        bulletins: bulletins.map((b) =>
-          b.id === bulletin.id ? { ...b, isRead: true } : b
+        threads: threads.map((thread) =>
+          thread.id === thread.id
+            ? {
+                ...thread,
+                messages: thread.messages.map((m) => ({
+                  ...m,
+                  readAt: m.readAt || new Date()
+                }))
+              }
+            : thread
         )
       }))
-    })
+    }
+
+    setActiveThread(messagesState.threads.find((t) => t.id === thread.id))
+
+    if (hasUnreadMessages) {
+      void markThreadRead(thread.id).then(() => {
+        refreshUnreadMessagesCount()
+      })
+    }
   }
 
   return (
     <Container>
       <Gap size="s" />
       <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-        <MessagesList
-          bulletins={bulletinsState.bulletins}
-          nextPage={bulletinsState.nextPage}
-          activeBulletin={activeBulletin}
-          onClickBulletin={openBulletin}
-          onReturn={() => setActiveBulletin(null)}
+        <ThreadList
+          threads={messagesState.threads}
+          nextPage={messagesState.nextPage}
+          activeThread={activeMessage}
+          onClickThread={openThread}
+          onReturn={() => setActiveThread(undefined)}
           loadNextPage={loadNextPage}
         />
-        {activeBulletin && <MessageReadView bulletin={activeBulletin} />}
+        {activeMessage && <ThreadReadView thread={activeMessage} />}
       </StyledFlex>
     </Container>
   )
 })
 
-interface BulletinsState {
-  bulletins: ReceivedBulletin[]
+interface MessagesState {
+  threads: MessageThread[]
   nextPage: Result<void>
   currentPage: number
   pages: number
   total?: number
 }
 
-const initialState: BulletinsState = {
-  bulletins: [],
+const initialState: MessagesState = {
+  threads: [],
   nextPage: Loading.of(),
   currentPage: 1,
   pages: 0

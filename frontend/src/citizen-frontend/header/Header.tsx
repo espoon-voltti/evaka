@@ -10,7 +10,7 @@ import EspooLogo from './EspooLogo'
 import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
-import { headerHeight } from '../header/const'
+import { headerHeight } from './const'
 import { useUser } from '../auth'
 import { HeaderContext, HeaderState } from '../messages/state'
 
@@ -19,23 +19,23 @@ export default React.memo(function Header() {
   const user = useUser()
 
   const {
-    unreadBulletinsCount,
-    refreshUnreadBulletinsCount
+    unreadMessagesCount,
+    refreshUnreadMessagesCount
   } = useContext<HeaderState>(HeaderContext)
 
   useEffect(() => {
-    if (user) refreshUnreadBulletinsCount()
-  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (user) refreshUnreadMessagesCount()
+  }, [user])
 
   return (
     <HeaderContainer fixed={showMenu}>
       <EspooLogo />
       <EvakaLogo />
-      <DesktopNav unreadMessagesCount={unreadBulletinsCount ?? 0} />
+      <DesktopNav unreadMessagesCount={unreadMessagesCount ?? 0} />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}
-        unreadMessagesCount={unreadBulletinsCount ?? 0}
+        unreadMessagesCount={unreadMessagesCount ?? 0}
       />
     </HeaderContainer>
   )

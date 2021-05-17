@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import mockThreadData
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -29,7 +29,7 @@ class MessageController {
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         authorizeAllowedMessagingRoles(user)
-        return db.read { it.getAuthorizedMessageAccountsForUser(user) }
+        return db.read { it.getAuthorizedMessageAccountsForEmployee(user) }
     }
 
     @GetMapping("/{accountId}/received")
@@ -42,7 +42,7 @@ class MessageController {
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log(targetId = accountId)
         authorizeAllowedMessagingRoles(user)
-        if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
+        if (!db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
@@ -57,7 +57,7 @@ class MessageController {
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log(targetId = accountId)
         authorizeAllowedMessagingRoles(user)
-        if (!db.read { it.getMessageAccountsForUser(user) }.map { it.id }.contains(accountId))
+        if (!db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }.contains(accountId))
             throw Forbidden("User is not authorized to access the account")
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
@@ -69,7 +69,7 @@ class MessageController {
     ): UnreadMessagesResponse {
         Audit.MessagingUnreadMessagesRead.log()
         authorizeAllowedMessagingRoles(user)
-        val accountIds = db.read { it.getMessageAccountsForUser(user) }.map { it.id }
+        val accountIds = db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }
         val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
     }
@@ -90,7 +90,7 @@ class MessageController {
     ): List<UUID> {
         Audit.MessagingNewMessageWrite.log(targetId = body.senderAccountId)
         authorizeAllowedMessagingRoles(user)
-        val sender = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
+        val sender = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("User is not authorized to access the account")
 
         // TODO recipient account authorization
@@ -124,7 +124,7 @@ class MessageController {
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         authorizeAllowedMessagingRoles(user)
-        val account = db.read { it.getMessageAccountsForUser(user) }.find { it.id == body.senderAccountId }
+        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == body.senderAccountId }
             ?: throw Forbidden("Message account not found for user")
 
         replyToThread(
@@ -140,71 +140,8 @@ class MessageController {
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 
-    val supervisorAccount: MessageAccount = MessageAccount(id = UUID.randomUUID(), name = "Esimies Ella")
-    val aatusMomAccount: MessageAccount = MessageAccount(id = UUID.randomUUID(), name = "Aatun äiti")
-    val aatusDadAccount: MessageAccount = MessageAccount(id = UUID.randomUUID(), name = "Aatun isä")
-
     @GetMapping
     fun getThreadsMock(): Paged<MessageThread> {
-        val aatuMeritahtiMessage = Message(
-            id = UUID.randomUUID(),
-            senderId = supervisorAccount.id,
-            senderName = supervisorAccount.name,
-            content = "Hei Aatun äiti ja isä! Aatu on kasvanut kovaa vauhtia ja nyt on tullut aika siirtyä seuraavaan ikäryhmään. Aatu aloittaa Meritähdissä kesäkuussa.",
-            sentAt = HelsinkiDateTime.now().minusDays(3)
-        )
-        val aatusDadsResponse = Message(
-            id = UUID.randomUUID(),
-            senderId = aatusDadAccount.id,
-            senderName = aatusDadAccount.name,
-            content = "Kuulostaa hyvältä, kiitos tiedosta.",
-            sentAt = HelsinkiDateTime.now().minusDays(2)
-        )
-        val aatusMomsResponse = Message(
-            id = UUID.randomUUID(),
-            senderId = aatusMomAccount.id,
-            senderName = aatusMomAccount.name,
-            content = "Joo, se käy oikein mainiosti :-) Hyvää kevään jatkoa!",
-            sentAt = HelsinkiDateTime.now().minusDays(2).plusHours(2)
-        )
-        val bulletin = Message(
-            id = UUID.randomUUID(),
-            senderId = supervisorAccount.id,
-            senderName = supervisorAccount.name,
-            content = """Hei vanhemmat!
-
-Kevät lähestyy jo kovaa vauhtia. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas dapibus blandit porta. Aliquam pellentesque ex sed magna efficitur convallis. Sed elementum felis quis placerat rutrum.
-
-Suspendisse pretium pulvinar ligula, nec pellentesque tortor eleifend sed. Fusce placerat luctus erat a lobortis. Aenean et finibus purus, a rhoncus odio. Donec at velit laoreet, convallis ex vel, iaculis lorem. Vestibulum posuere dapibus est, at venenatis nunc consequat pharetra. Nullam sollicitudin orci sed accumsan consectetur. Sed urna augue, sollicitudin at ex sed, hendrerit malesuada enim.
-
-Nyt kun viimeiset lumet sulavat ja on märät kelit, niin huolehdittehan, että lapsen kuravaatteet ovat päiväkodilla, ja että lapsella on lokerossa tarpeeksi vaihtovaatteita niin sisälle kuin ulkoleikkeihinkin.
-
-Aurinkoisia päiviä!
-
-T. Ella Esimies""",
-            sentAt = HelsinkiDateTime.now().minusWeeks(1)
-        )
-
-        return Paged(
-            total = 2, pages = 1,
-            data = listOf(
-                MessageThread(
-                    id = UUID.randomUUID(),
-                    type = MessageType.MESSAGE,
-                    title = "Aatun siirtyminen Meritähtiin",
-                    messages = listOf(
-                        aatuMeritahtiMessage,
-                        aatusDadsResponse,
-                        aatusMomsResponse
-                    )
-                ),
-                MessageThread(
-                    id = UUID.randomUUID(),
-                    type = MessageType.BULLETIN,
-                    title = "Kevät",
-                    messages = listOf(bulletin)
-                )
-            )
-        )
+        return mockThreadData()
     }
 }

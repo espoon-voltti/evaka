@@ -44,7 +44,7 @@ const SentDate = styled.div`
 `
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
-  white-space: pre-wrap;
+  white-space: pre-line;
 `
 
 function Message({

@@ -10,8 +10,9 @@ import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
 import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
-import fi.espoo.evaka.messaging.message.getAuthorizedMessageAccountsForUser
-import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
+import fi.espoo.evaka.messaging.message.getAuthorizedMessageAccountsForEmployee
+import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
+import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
 import fi.espoo.evaka.messaging.message.getUnreadMessagesCount
 import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
@@ -75,9 +76,8 @@ class MessageAccountQueriesTest : PureJdbiTest() {
 
     @Test
     fun `person gets access to his own account`() {
-        val accounts = db.read { it.getMessageAccountsForUser(AuthenticatedUser.Citizen(personId)) }
-        assertEquals(1, accounts.size)
-        assertEquals("Person Firstname", accounts.first().name)
+        val account = db.read { it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(personId)) }
+        assertEquals("Person Firstname", account.name)
     }
 
     @Test
@@ -85,12 +85,12 @@ class MessageAccountQueriesTest : PureJdbiTest() {
         val personalAccountName = "Employee Firstname"
         val groupAccountName = "Test Daycare - Testiläiset"
 
-        val accounts = db.transaction { it.getMessageAccountsForUser(employee) }
+        val accounts = db.transaction { it.getMessageAccountsForEmployee(employee) }
         assertEquals(2, accounts.size)
         assertEquals(1, accounts.filter { it.name == personalAccountName }.size)
         assertEquals(1, accounts.filter { it.name == groupAccountName }.size)
 
-        val accounts2 = db.read { it.getAuthorizedMessageAccountsForUser(employee) }
+        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee) }
         assertEquals(2, accounts2.size)
         val personalAccount = accounts2.find { it.personal } ?: throw Error("Personal account not found")
         assertEquals(personalAccountName, personalAccount.name)
@@ -106,18 +106,18 @@ class MessageAccountQueriesTest : PureJdbiTest() {
     @Test
     fun `employee has no access to inactive accounts`() {
         val groupAccountName = "Test Daycare - Testiläiset"
-        assertEquals(2, db.read { it.getMessageAccountsForUser(employee) }.size)
+        assertEquals(2, db.read { it.getMessageAccountsForEmployee(employee) }.size)
 
         db.transaction { it.deactivateEmployeeMessageAccount(employeeId) }
 
-        val accounts = db.transaction { it.getMessageAccountsForUser(employee) }
+        val accounts = db.transaction { it.getMessageAccountsForEmployee(employee) }
         assertEquals(1, accounts.size)
         assertEquals(1, accounts.filter { it.name == groupAccountName }.size)
     }
 
     @Test
     fun `unread counts`() {
-        val accounts = db.read { it.getAuthorizedMessageAccountsForUser(employee) }
+        val accounts = db.read { it.getAuthorizedMessageAccountsForEmployee(employee) }
         assertEquals(0, accounts.first().unreadCount)
 
         val employeeAccount = MessageAccount(accounts.first().id, "foo")
@@ -131,6 +131,6 @@ class MessageAccountQueriesTest : PureJdbiTest() {
         }
 
         assertEquals(2, db.read { it.getUnreadMessagesCount(accounts.map { acc -> acc.id }.toSet()) })
-        assertEquals(1, db.read { it.getAuthorizedMessageAccountsForUser(employee) }.first().unreadCount)
+        assertEquals(1, db.read { it.getAuthorizedMessageAccountsForEmployee(employee) }.first().unreadCount)
     }
 }
