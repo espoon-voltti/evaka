@@ -54,6 +54,7 @@ enum class Audit(
     ChildAttendancesDepartureRead("evaka.child-attendances.departure.read"),
     ChildAttendancesDepartureCreate("evaka.child-attendances.departure.create"),
     ChildAttendancesFullDayAbsenceCreate("evaka.child-attendances.full-day-absence.create"),
+    ChildAttendancesAbsenceRangeCreate("evaka.child-attendances.absence-range.create"),
     ChildAttendancesReturnToComing("evaka.child-attendances.return-to-coming"),
     ChildAttendancesReturnToPresent("evaka.child-attendances.return-to-present"),
     ChildBackupPickupCreate("evaka.child.backup-pickup.create"),

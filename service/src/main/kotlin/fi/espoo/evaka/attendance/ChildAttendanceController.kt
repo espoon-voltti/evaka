@@ -148,7 +148,7 @@ class ChildAttendanceController(
             if (tx.getChildCurrentDayAttendance(childId, unitId) != null)
                 throw Conflict("Cannot arrive, already arrived today")
 
-            tx.deleteCurrentDayAbsences(childId)
+            tx.deleteAbsences(childId)
             try {
                 tx.insertAttendance(
                     childId = childId,
@@ -176,7 +176,7 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
-            tx.deleteCurrentDayAbsences(childId)
+            tx.deleteAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null) {
@@ -252,7 +252,7 @@ class ChildAttendanceController(
             }
 
             val absentFrom = getPartialAbsenceCareTypes(placementBasics, LocalTime.ofInstant(attendance.arrived, europeHelsinki), body.departed)
-            tx.deleteCurrentDayAbsences(childId)
+            tx.deleteAbsences(childId)
             if (absentFrom.isNotEmpty()) {
                 if (body.absenceType == null) {
                     throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
@@ -290,7 +290,7 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
-            tx.deleteCurrentDayAbsences(childId)
+            tx.deleteAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
 
@@ -331,10 +331,49 @@ class ChildAttendanceController(
             }
 
             try {
-                tx.deleteCurrentDayAbsences(childId)
-                getCareTypes(placementBasics).forEach { careType ->
+                tx.deleteAbsences(childId)
+                getCareTypes(placementBasics.placementType).forEach { careType ->
                     tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
                 }
+            } catch (e: Exception) {
+                throw mapPSQLException(e)
+            }
+
+            tx.getAttendancesResponse(unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+    data class AbsenceRangeRequest(
+        val absenceType: AbsenceType,
+        val startDate: LocalDate,
+        val endDate: LocalDate
+    )
+    data class AbsenceDay(
+        val date: LocalDate,
+        val placementType: PlacementType,
+        val dateOfBirth: LocalDate
+    )
+    @PostMapping("/units/{unitId}/children/{childId}/absence-range")
+    fun postAbsenceRange(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID,
+        @RequestBody body: AbsenceRangeRequest
+    ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return db.transaction { tx ->
+            val typeOnDates = tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
+
+            try {
+                for ((date, placementType) in typeOnDates) {
+                    tx.deleteAbsences(childId, date)
+                    getCareTypes(placementType).forEach { careType ->
+                        tx.insertAbsence(user, childId, date, careType, body.absenceType)
+                    }
+                }
+
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
@@ -368,6 +407,30 @@ private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: UUID)
         .mapTo<ChildPlacementBasics>()
         .list()
         .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
+}
+data class PlacementTypeDate(
+    val date: LocalDate,
+    val placementType: PlacementType
+)
+private fun Database.Read.fetchChildPlacementTypeDates(childId: UUID, unitId: UUID, startDate: LocalDate, endDate: LocalDate): List<PlacementTypeDate> {
+
+    // language=sql
+    val sql = """
+        SELECT d::date AS date, p.type AS placement_type
+        FROM generate_series(:startDate, :endDate, '1 day') d
+        JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> d::date
+        LEFT JOIN backup_care bc
+            ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> d::date
+        WHERE p.child_id = :childId AND (p.unit_id = :unitId OR bc.unit_id = :unitId)
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate)
+        .mapTo<PlacementTypeDate>()
+        .list()
 }
 
 private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceResponse {
@@ -416,11 +479,11 @@ private fun getChildAttendanceStatus(placementBasics: ChildPlacementBasics, atte
 }
 
 private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<ChildAbsence>): Boolean {
-    return getCareTypes(placementBasics).all { type -> absences.map { it.careType }.contains(type) }
+    return getCareTypes(placementBasics.placementType).all { type -> absences.map { it.careType }.contains(type) }
 }
 
-private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> =
-    when (placementBasics.placementType) {
+private fun getCareTypes(placementType: PlacementType): List<CareType> =
+    when (placementType) {
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
             listOf(CareType.PRESCHOOL)
         PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
