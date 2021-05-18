@@ -503,12 +503,11 @@ class MessageIntegrationTest : FullApplicationTest() {
         content: String,
     ) =
         http.post(
-            "/messages/$messageId/reply",
+            "/messages/${account.id}/$messageId/reply",
         )
             .jsonBody(
                 objectMapper.writeValueAsString(
                     MessageController.ReplyToMessageBody(
-                        senderAccountId = account.id,
                         content = content,
                         recipientAccountIds = recipientAccountIds
                     )

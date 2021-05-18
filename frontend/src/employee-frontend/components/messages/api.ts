@@ -136,9 +136,8 @@ export async function replyToThread(
   recipientAccountIds: Set<UUID>
 ): Promise<Result<void>> {
   return client
-    .post(`/messages/${messageId}/reply`, {
+    .post(`/messages/${senderAccountId}/${messageId}/reply`, {
       content,
-      senderAccountId,
       recipientAccountIds
     })
     .then(() => Success.of(undefined))

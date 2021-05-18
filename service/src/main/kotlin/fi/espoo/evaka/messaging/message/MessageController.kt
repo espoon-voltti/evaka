@@ -111,20 +111,20 @@ class MessageController {
 
     data class ReplyToMessageBody(
         val content: String,
-        val senderAccountId: UUID,
         val recipientAccountIds: Set<UUID>,
     )
 
-    @PostMapping("/{messageId}/reply")
+    @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         authorizeAllowedMessagingRoles(user)
-        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == body.senderAccountId }
+        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
             ?: throw Forbidden("Message account not found for user")
 
         replyToThread(
