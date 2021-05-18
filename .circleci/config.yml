@@ -666,7 +666,7 @@ jobs:
             - frontend/node_modules
       - run:
           working_directory: *workspace_frontend
-          command: yarn lint
+          command: yarn lint-strict
       - run:
           working_directory: *workspace_frontend
           command: yarn type-check
