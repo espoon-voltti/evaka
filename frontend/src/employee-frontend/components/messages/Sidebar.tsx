@@ -6,7 +6,7 @@ import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import colors, { greyscale } from 'lib-components/colors'
+import colors, { espooBrandColors, greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
 import React, { useState } from 'react'
@@ -147,6 +147,14 @@ export default React.memo(function Sidebar({
           return <Accounts accounts={accounts} view={view} setView={setView} />
         }
       })}
+      <Received
+        active={!!view && view.view === 'RECEIVERS'}
+        onClick={() =>
+          view && setView({ account: view.account, view: 'RECEIVERS' })
+        }
+      >
+        {i18n.messages.receiverSelection.title}
+      </Received>
       <Button
         text={i18n.messages.messageBoxes.newBulletin}
         onClick={showEditor}
@@ -154,6 +162,14 @@ export default React.memo(function Sidebar({
     </Container>
   )
 })
+
+export const Received = styled.div<{ active: boolean }>`
+  cursor: pointer;
+  padding: 12px ${defaultMargins.m};
+  font-weight: ${(p) => (p.active ? '600;' : 'unset')}
+  background-color: ${(p) =>
+    p.active ? espooBrandColors.espooTurquoiseLight : 'unset'}
+`
 
 const Container = styled.div`
   width: 20%;

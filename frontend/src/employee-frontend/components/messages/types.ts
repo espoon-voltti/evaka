@@ -26,7 +26,7 @@ export interface ReceiverChild {
   childLastName: string
   childDateOfBirth: LocalDate
   receiverPersons: {
-    receiverId: UUID
+    accountId: UUID
     receiverFirstName: string
     receiverLastName: string
   }[]
@@ -37,6 +37,7 @@ export interface ReceiverGroup {
   groupName: string
   receivers: ReceiverChild[]
 }
+
 export const deserializeReceiverChild = (
   json: JsonOf<ReceiverChild>
 ): ReceiverChild => ({
@@ -76,7 +77,15 @@ export interface Message {
   readAt: Date | null
   title: string
   content: string
-  receivers: string
+  receivers: UUID[]
+}
+
+export interface MessageBody {
+  title: string
+  content: string
+  type: MessageType
+  senderAccountId: UUID
+  recipientAccountIds: UUID[]
 }
 
 export type MessageType = 'MESSAGE' | 'BULLETIN'

@@ -12,6 +12,7 @@ import {
   deserializeSentMessage,
   IdAndName,
   MessageAccount,
+  MessageBody,
   MessageThread,
   MessageType,
   ReceiverGroup,
@@ -60,7 +61,7 @@ export async function getReceivers(
   unitId: UUID
 ): Promise<Result<ReceiverGroup[]>> {
   return client
-    .get<JsonOf<ReceiverGroup[]>>('/bulletins/receivers', {
+    .get<JsonOf<ReceiverGroup[]>>('/messages/receivers', {
       params: { unitId }
     })
     .then((res) =>
@@ -160,6 +161,13 @@ export async function replyToThread(
       content,
       recipientAccountIds
     })
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postMessage(body: MessageBody): Promise<Result<void>> {
+  return client
+    .post<void>('/messages', body)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }

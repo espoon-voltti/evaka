@@ -10,19 +10,32 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../state/i18n'
 import { Message } from './types'
+import { SelectorChange } from 'employee-frontend/components/messages/SelectorNode'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+
+type Option = {
+  label: string
+  value: string
+}
 
 interface Props {
   message: Message
   onChange: (message: Message) => void
   onClose: () => void
   onSend: () => void
+  selectedReceivers: Option[]
+  receiverOptions: Option[]
+  setSelectorChange: (change: SelectorChange) => void
 }
 
 export default React.memo(function MessageEditor({
   message,
   onChange,
   onClose,
-  onSend
+  onSend,
+  selectedReceivers,
+  receiverOptions,
+  setSelectorChange
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -37,12 +50,39 @@ export default React.memo(function MessageEditor({
           <Gap size={'xs'} />
           <div>{i18n.messages.messageEditor.receivers}</div>
         </div>
-        <InputField
-          value={message.receivers}
-          onChange={(receivers) =>
-            onChange({ ...message, receivers: receivers })
-          }
-          data-qa={'input-title'}
+        <MultiSelect
+          placeholder={i18n.common.search}
+          value={selectedReceivers}
+          options={receiverOptions}
+          onChange={(newSelection: Option[]) => {
+            if (newSelection.length < selectedReceivers.length) {
+              const values = newSelection.map((option) => option.value)
+              const deselected = selectedReceivers.find(
+                (option) => !values.includes(option.value)
+              )
+              if (deselected) {
+                setSelectorChange({
+                  selectorId: deselected.value,
+                  selected: false
+                })
+              }
+            } else {
+              const values = selectedReceivers.map((option) => option.value)
+              const newlySelected = newSelection.find(
+                (option) => !values.includes(option.value)
+              )
+              if (newlySelected) {
+                setSelectorChange({
+                  selectorId: newlySelected.value,
+                  selected: true
+                })
+              }
+            }
+          }}
+          noOptionsMessage={i18n.common.noResults}
+          getOptionId={({ value }) => value}
+          getOptionLabel={({ label }) => label}
+          data-qa="select-receiver"
         />
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.sender}</div>
