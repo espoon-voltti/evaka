@@ -33,7 +33,7 @@ CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
     JOIN daycare_acl_view acl ON pl.unit_id = acl.daycare_id
     WHERE pl.end_date > current_date - interval '1 month'
 
-    UNION DISTINCT
+    UNION ALL
 
     SELECT employee_id, a.child_id, role
     FROM placement_plan pp
@@ -41,7 +41,7 @@ CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
     JOIN daycare_acl_view acl ON pp.unit_id = acl.daycare_id
     WHERE a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
 
-    UNION DISTINCT
+    UNION ALL
 
     SELECT employee_id, child_id, 'GROUP_STAFF'
     FROM daycare_group_placement dgp
@@ -49,7 +49,7 @@ CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
     JOIN daycare_group_acl USING (daycare_group_id)
     WHERE daterange(dgp.start_date, dgp.end_date, '[]') @> current_date
 
-    UNION DISTINCT
+    UNION ALL
 
     SELECT
         employee_id, child_id,
@@ -61,7 +61,7 @@ CREATE VIEW child_acl_view(employee_id, child_id, role) AS (
     JOIN daycare_acl_view acl ON acl.daycare_id = bc.unit_id
     WHERE bc.end_date > current_date - INTERVAL '1 month'
 
-    UNION DISTINCT
+    UNION ALL
 
     SELECT employee_id, child_id, 'GROUP_STAFF'
     FROM backup_care bc

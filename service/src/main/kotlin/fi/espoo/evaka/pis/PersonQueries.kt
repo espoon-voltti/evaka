@@ -69,11 +69,12 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
 
     // language=SQL
     val sql = """
-        SELECT person.*
+        SELECT DISTINCT person.*
         FROM person
         ${if (scopedRole) "JOIN child_acl_view acl ON acl.child_id = person.id AND acl.employee_id = :userId" else ""}
         WHERE $freeTextQuery
         ORDER BY $orderBy
+        LIMIT 100
     """.trimIndent()
 
     return createQuery(sql)
