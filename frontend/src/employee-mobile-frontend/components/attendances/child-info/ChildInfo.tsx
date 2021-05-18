@@ -232,7 +232,7 @@ export default React.memo(function AttendanceChildPage() {
       </TallContentAreaNoOverflow>
       <BottonButtonWrapper>
         <LinkButtonWithIcon
-          to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/markabsentbeforhand`}
+          to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/mark-absent-beforehand`}
         >
           <RoundIcon
             size={'L'}

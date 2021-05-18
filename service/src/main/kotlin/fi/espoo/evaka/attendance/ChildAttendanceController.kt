@@ -148,7 +148,7 @@ class ChildAttendanceController(
             if (tx.getChildCurrentDayAttendance(childId, unitId) != null)
                 throw Conflict("Cannot arrive, already arrived today")
 
-            tx.deleteAbsences(childId)
+            tx.deleteAbsencesByDate(childId, LocalDate.now(europeHelsinki))
             try {
                 tx.insertAttendance(
                     childId = childId,
@@ -176,7 +176,7 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
-            tx.deleteAbsences(childId)
+            tx.deleteAbsencesByDate(childId, LocalDate.now(europeHelsinki))
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null) {
@@ -252,7 +252,7 @@ class ChildAttendanceController(
             }
 
             val absentFrom = getPartialAbsenceCareTypes(placementBasics, LocalTime.ofInstant(attendance.arrived, europeHelsinki), body.departed)
-            tx.deleteAbsences(childId)
+            tx.deleteAbsencesByDate(childId, LocalDate.now(europeHelsinki))
             if (absentFrom.isNotEmpty()) {
                 if (body.absenceType == null) {
                     throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
@@ -290,7 +290,7 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.fetchChildPlacementBasics(childId, unitId)
-            tx.deleteAbsences(childId)
+            tx.deleteAbsencesByDate(childId, LocalDate.now(europeHelsinki))
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
 
@@ -331,7 +331,7 @@ class ChildAttendanceController(
             }
 
             try {
-                tx.deleteAbsences(childId)
+                tx.deleteAbsencesByDate(childId, LocalDate.now(europeHelsinki))
                 getCareTypes(placementBasics.placementType).forEach { careType ->
                     tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
                 }
@@ -368,7 +368,7 @@ class ChildAttendanceController(
 
             try {
                 for ((date, placementType) in typeOnDates) {
-                    tx.deleteAbsences(childId, date)
+                    tx.deleteAbsencesByDate(childId, date)
                     getCareTypes(placementType).forEach { careType ->
                         tx.insertAbsence(user, childId, date, careType, body.absenceType)
                     }
@@ -415,7 +415,7 @@ private fun Database.Read.fetchChildPlacementTypeDates(childId: UUID, unitId: UU
 
     // language=sql
     val sql = """
-        SELECT d::date AS date, p.type AS placement_type
+        SELECT DISTINCT d::date AS date, p.type AS placement_type
         FROM generate_series(:startDate, :endDate, '1 day') d
         JOIN placement p ON daterange(p.start_date, p.end_date, '[]') @> d::date
         LEFT JOIN backup_care bc

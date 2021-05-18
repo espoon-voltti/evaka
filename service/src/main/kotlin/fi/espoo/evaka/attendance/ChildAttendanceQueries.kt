@@ -353,7 +353,7 @@ fun Database.Transaction.deleteAttendance(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.deleteAbsences(childId: UUID, date: LocalDate? = LocalDate.now(europeHelsinki)) {
+fun Database.Transaction.deleteAbsencesByDate(childId: UUID, date: LocalDate) {
     // language=sql
     val sql =
         """

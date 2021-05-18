@@ -75,7 +75,7 @@ export default function App() {
                   component={ensureAuthenticated(MarkAbsent)}
                 />
                 <Route
-                  path="/units/:unitId/groups/:groupId/childattendance/:childId/markabsentbeforhand"
+                  path="/units/:unitId/groups/:groupId/childattendance/:childId/mark-absent-beforehand"
                   component={ensureAuthenticated(MarkAbsentBeforehand)}
                 />
                 <Route
