@@ -407,14 +407,16 @@ export async function getOccupancyRates(
   unitId: UUID,
   from: LocalDate,
   to: LocalDate,
-  type: OccupancyType
+  type: OccupancyType,
+  useNewSeviceNeeds: boolean
 ): Promise<Result<OccupancyResponse>> {
   return client
     .get<JsonOf<OccupancyResponse>>(`/occupancy/by-unit/${unitId}`, {
       params: {
         from: from.formatIso(),
         to: to.formatIso(),
-        type
+        type,
+        useNewSeviceNeeds
       }
     })
     .then(({ data }) => mapOccupancyResponse(data))
