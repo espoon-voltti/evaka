@@ -32,13 +32,16 @@ class OccupancyController(private val acl: AccessControlList) {
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType
+        @RequestParam type: OccupancyType,
+        @RequestParam(required = false) useNewServiceNeeds: Boolean = false
     ): ResponseEntity<OccupancyResponse> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        val occupancies = db.read { it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type) }
+        val occupancies = db.read {
+            it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type, useNewServiceNeeds)
+        }
 
         val response = OccupancyResponse(
             occupancies = occupancies,
@@ -55,13 +58,16 @@ class OccupancyController(private val acl: AccessControlList) {
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType
+        @RequestParam type: OccupancyType,
+        @RequestParam(required = false) useNewServiceNeeds: Boolean = false
     ): ResponseEntity<List<OccupancyResponseGroupLevel>> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
-        val occupancies = db.read { it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type) }
+        val occupancies = db.read {
+            it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type, useNewServiceNeeds)
+        }
 
         val response = occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
@@ -102,13 +108,18 @@ data class OccupancyResponse(
 fun Database.Read.calculateOccupancyPeriods(
     unitId: UUID,
     period: FiniteDateRange,
-    type: OccupancyType
+    type: OccupancyType,
+    useNewServiceNeeds: Boolean
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
 
-    // return reduceDailyOccupancyValues(this.calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, unitId = unitId))
+    if (useNewServiceNeeds) {
+        return reduceDailyOccupancyValues(
+            calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
+        ).flatMap { (_, values) -> values }
+    }
 
     val sql = getSql(
         type,
@@ -138,10 +149,28 @@ fun Database.Read.calculateOccupancyPeriods(
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: UUID,
     period: FiniteDateRange,
-    type: OccupancyType
+    type: OccupancyType,
+    useNewServiceNeeds: Boolean
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
+    }
+
+    if (useNewServiceNeeds) {
+        return reduceDailyOccupancyValues(
+            calculateDailyGroupOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
+        ).flatMap { (groupKey, values) ->
+            values.map { value ->
+                OccupancyPeriodGroupLevel(
+                    groupId = groupKey.groupId,
+                    period = value.period,
+                    sum = value.sum,
+                    headcount = value.headcount,
+                    percentage = value.percentage,
+                    caretakers = value.caretakers
+                )
+            }
+        }
     }
 
     val sql = getSql(

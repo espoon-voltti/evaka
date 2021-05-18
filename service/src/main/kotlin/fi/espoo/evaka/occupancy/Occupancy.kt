@@ -437,7 +437,8 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     areaId: UUID? = null,
     unitId: UUID? = null
 ): List<DailyOccupancyValues<UnitKey>> {
-    if (areaId == null && unitId == null) throw Error("Must provide areaId or unitId")
+    if (areaId == null && unitId == null) error("Must provide areaId or unitId")
+    if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts = getCaretakers(type, period, areaId, unitId) { row ->
@@ -466,7 +467,8 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     areaId: UUID? = null,
     unitId: UUID? = null
 ): List<DailyOccupancyValues<UnitGroupKey>> {
-    if (areaId == null && unitId == null) throw Error("Must provide areaId or unitId")
+    if (areaId == null && unitId == null) error("Must provide areaId or unitId")
+    if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts = getCaretakers(type, period, areaId, unitId) { row ->
@@ -498,7 +500,7 @@ fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(dailyOccupancies: List
     )
 }
 
-fun reduceDailyOccupancyValues(dailyOccupancies: Map<LocalDate, OccupancyValues>): List<OccupancyPeriod> {
+private fun reduceDailyOccupancyValues(dailyOccupancies: Map<LocalDate, OccupancyValues>): List<OccupancyPeriod> {
     return dailyOccupancies.entries.sortedBy { it.key }
         .fold(listOf<Pair<FiniteDateRange, OccupancyValues>>()) { acc, (date, values) ->
             when {
@@ -684,7 +686,7 @@ SELECT
     daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') AS period
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
-JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
+JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && :period AND $groupingId = ANY(:keys)
 """
 
