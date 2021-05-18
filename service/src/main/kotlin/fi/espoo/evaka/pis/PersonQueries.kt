@@ -11,9 +11,12 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonPatch
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.utils.applyIf
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -49,7 +52,7 @@ fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
 private val personSortColumns =
     listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
 
-fun Database.Read.searchPeople(searchTerms: String, sortColumns: String, sortDirection: String): List<PersonDTO> {
+fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sortColumns: String, sortDirection: String): List<PersonDTO> {
     if (searchTerms.isBlank()) return listOf()
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
@@ -62,12 +65,20 @@ fun Database.Read.searchPeople(searchTerms: String, sortColumns: String, sortDir
     }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("person"), searchTerms)
+    val scopedRole = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
 
     // language=SQL
-    val sql = "SELECT * FROM person WHERE $freeTextQuery ORDER BY $orderBy"
+    val sql = """
+        SELECT person.*
+        FROM person
+        ${if (scopedRole) "JOIN child_acl_view acl ON acl.child_id = person.id AND acl.employee_id = :userId" else ""}
+        WHERE $freeTextQuery
+        ORDER BY $orderBy
+    """.trimIndent()
 
     return createQuery(sql)
         .bindMap(freeTextParams)
+        .applyIf(scopedRole) { bind("userId", user.id) }
         .map(toPersonDTO)
         .toList()
 }

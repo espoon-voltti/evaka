@@ -135,7 +135,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </NavbarLink>
               </RequireRole>
 
-              <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN', 'UNIT_SUPERVISOR', 'SPECIAL_EDUCATION_TEACHER']}>
+              <RequireRole
+                oneOf={[
+                  'ADMIN',
+                  'SERVICE_WORKER',
+                  'FINANCE_ADMIN',
+                  'UNIT_SUPERVISOR',
+                  'SPECIAL_EDUCATION_TEACHER'
+                ]}
+              >
                 <NavbarLink
                   onClick={() => setPopupVisible(false)}
                   className={`navbar-item is-tab ${

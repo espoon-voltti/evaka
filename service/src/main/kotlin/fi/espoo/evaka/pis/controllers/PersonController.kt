@@ -116,6 +116,7 @@ class PersonController(
             .body(
                 db.read {
                     it.searchPeople(
+                        user,
                         searchTerm,
                         orderBy,
                         sortDirection
