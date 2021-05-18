@@ -5,12 +5,14 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.LocalDate
 import java.util.UUID
 
 fun Database.Read.getUnreadMessagesCount(
@@ -248,4 +250,95 @@ fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants?
         .bind("messageId", messageId)
         .mapTo<ThreadWithParticipants>()
         .firstOrNull()
+}
+
+data class MessageReceiversResult(
+    val childId: UUID,
+    val groupId: UUID,
+    val groupName: String,
+    val childFirstName: String,
+    val childLastName: String,
+    val childDateOfBirth: LocalDate,
+    val accountId: UUID,
+    val receiverFirstName: String,
+    val receiverLastName: String
+)
+fun Database.Read.getReceiversForNewMessage(
+    user: AuthenticatedUser,
+    unitId: UUID
+): List<MessageReceiversResponse> {
+    // language=sql
+    val sql = """
+        WITH children AS (
+            SELECT pl.child_id, dg.id group_id, dg.name group_name
+            FROM daycare_group dg
+            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
+            JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            WHERE pl.unit_id = :unitId
+        ), receivers AS (
+            SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
+            FROM children c
+            JOIN guardian g ON g.child_id = c.child_id
+            WHERE NOT EXISTS (
+                SELECT 1 FROM messaging_blocklist bl 
+                WHERE bl.child_id = c.child_id 
+                AND bl.blocked_recipient = g.guardian_id
+            )
+
+            UNION DISTINCT
+            
+            SELECT c.child_id, c.group_id, c.group_name, fc.head_of_child AS receiver_id
+            FROM children c
+            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+            WHERE NOT EXISTS (
+                SELECT 1 FROM messaging_blocklist bl 
+                WHERE bl.child_id = c.child_id 
+                AND bl.blocked_recipient = fc.head_of_child
+            )
+        )
+        SELECT
+            acc.id account_id,
+            r.group_id,
+            r.group_name,
+            p.first_name receiver_first_name,
+            p.last_name receiver_last_name,
+            r.child_id,
+            c.first_name child_first_name,
+            c.last_name child_last_name,
+            c.date_of_birth child_date_of_birth
+        FROM receivers r
+        JOIN person p ON r.receiver_id = p.id
+        JOIN person c ON r.child_id = c.id
+        JOIN message_account acc ON p.id = acc.person_id
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("date", HelsinkiDateTime.now().toLocalDate())
+        .bind("userId", user.id)
+        .bind("unitId", unitId)
+        .mapTo<MessageReceiversResult>()
+        .toList()
+        .groupBy { it.groupId }
+        .map { (groupId, receiverChildren) ->
+            MessageReceiversResponse(
+                groupId = groupId,
+                groupName = receiverChildren.first().groupName,
+                receivers = receiverChildren.groupBy { it.childId }
+                    .map { (childId, receivers) ->
+                        MessageReceiver(
+                            childId = childId,
+                            childFirstName = receivers.first().childFirstName,
+                            childLastName = receivers.first().childLastName,
+                            childDateOfBirth = receivers.first().childDateOfBirth,
+                            receiverPersons = receivers.map { it ->
+                                MessageReceiverPerson(
+                                    accountId = it.accountId,
+                                    receiverFirstName = it.receiverFirstName,
+                                    receiverLastName = it.receiverLastName
+                                )
+                            }
+                        )
+                    }
+            )
+        }
 }

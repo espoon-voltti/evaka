@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
+import java.time.LocalDate
 import java.util.UUID
 
 data class Message(
@@ -65,6 +66,24 @@ data class AuthorizedMessageAccount(
     val daycareGroup: Group?,
     val personal: Boolean,
     val unreadCount: Int
+)
+
+data class MessageReceiverPerson(
+    val accountId: UUID,
+    val receiverFirstName: String,
+    val receiverLastName: String
+)
+data class MessageReceiver(
+    val childId: UUID,
+    val childFirstName: String,
+    val childLastName: String,
+    val childDateOfBirth: LocalDate,
+    val receiverPersons: List<MessageReceiverPerson>
+)
+data class MessageReceiversResponse(
+    val groupId: UUID,
+    val groupName: String,
+    val receivers: List<MessageReceiver>
 )
 
 fun createMessageThreadsForRecipientGroups(

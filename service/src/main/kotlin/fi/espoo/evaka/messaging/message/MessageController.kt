@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -24,7 +25,9 @@ data class UnreadMessagesResponse(val count: Int)
 
 @RestController
 @RequestMapping("/messages")
-class MessageController {
+class MessageController(
+    private val acl: AccessControlList
+) {
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
@@ -149,6 +152,18 @@ class MessageController {
             ?: throw Forbidden("Message account not found for user")
 
         return db.transaction { it.markThreadRead(account.id, threadId) }
+    }
+
+    @GetMapping("/receivers")
+    fun getReceiversForNewMessage(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestParam unitId: UUID
+    ): List<MessageReceiversResponse> {
+        Audit.MessagingMessageReceiversRead.log(unitId)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+
+        return db.transaction { it.getReceiversForNewMessage(user, unitId) }
     }
 
     private fun authorizeAllowedMessagingRoles(user: AuthenticatedUser) {
