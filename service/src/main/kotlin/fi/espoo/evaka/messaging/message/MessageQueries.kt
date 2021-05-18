@@ -33,7 +33,7 @@ fun Database.Transaction.markThreadRead(accountId: UUID, threadId: UUID): Int {
     // language=SQL
     val sql = """
 UPDATE message_recipients rec
-SET read_at = :readAt
+SET read_at = now()
 FROM message msg
 WHERE rec.message_id = msg.id
   AND msg.thread_id = :threadId
@@ -44,7 +44,6 @@ WHERE rec.message_id = msg.id
     return this.createUpdate(sql)
         .bind("accountId", accountId)
         .bind("threadId", threadId)
-        .bind("readAt", HelsinkiDateTime.now())
         .execute()
 }
 
