@@ -8,6 +8,7 @@
     "clean": "rm -rf dist/ && rm -rf node_modules/.cache",
     "dev": "tsc -b . && node dev-server.js",
     "lint": "eslint --ext .ts,.tsx src",
+    "lint-strict": "eslint --ext .ts,.tsx --max-warnings 0 src",
     "lint:fix": "yarn lint --fix",
     "type-check": "tsc -b .",
     "build": "webpack --mode production",
