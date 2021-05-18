@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ProviderType } from './unit'
 import { AssistanceMeasure } from 'lib-customizations/types'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 
 export type PlacementType =
   | 'CLUB'
@@ -102,11 +103,6 @@ export interface ServiceNeedOption {
   daycareHoursPerWeek: number
   partDay: boolean
   partWeek: boolean
-}
-
-interface ServiceNeedOptionSummary {
-  id: UUID
-  name: string
 }
 
 export interface NewServiceNeed {

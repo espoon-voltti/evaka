@@ -11,6 +11,8 @@ import {
 import { ApplicationGuardianAgreementStatus } from 'lib-common/api-types/application/enums'
 import { User } from '../../auth/state'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+
 
 export type ServiceNeedFormData = {
   preferredStartDate: string
@@ -27,6 +29,7 @@ export type ServiceNeedFormData = {
   urgencyAttachments: ApplicationAttachment[]
   wasOnClubCare: boolean
   wasOnDaycare: boolean
+  serviceNeedOption: ServiceNeedOptionSummary | null
 }
 
 export type UnitPreferenceFormData = {
@@ -180,6 +183,7 @@ export function apiDataToFormData(
       endTime: application.form.preferences.serviceNeed?.endTime ?? '',
       shiftCare: application.form.preferences.serviceNeed?.shiftCare ?? false,
       partTime: application.form.preferences.serviceNeed?.partTime ?? false,
+      serviceNeedOption: application.form.preferences.serviceNeed?.serviceNeedOption ?? null,
       preparatory: application.form.preferences.preparatory,
       assistanceNeeded: application.form.child.assistanceNeeded,
       assistanceDescription: application.form.child.assistanceDescription,
@@ -365,7 +369,8 @@ export function formDataToApiData(
               startTime: form.serviceNeed.startTime,
               endTime: form.serviceNeed.endTime,
               shiftCare: form.serviceNeed.shiftCare,
-              partTime: type === 'DAYCARE' && form.serviceNeed.partTime
+              partTime: type === 'DAYCARE' && form.serviceNeed.partTime,
+              serviceNeedOption: form.serviceNeed.serviceNeedOption
             }
           : null,
       siblingBasis: form.unitPreference.siblingBasis

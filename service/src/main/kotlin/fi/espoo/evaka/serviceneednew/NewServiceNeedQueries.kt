@@ -240,3 +240,18 @@ fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
         .mapTo<ServiceNeedOption>()
         .list()
 }
+
+fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<String>): List<ServiceNeedOptionPublicInfo> {
+    val sql = """
+        SELECT
+            id,
+            name,
+            valid_placement_type
+        FROM service_need_option
+        WHERE default_option IS FALSE AND valid_placement_type::text in (<placementTypes>)
+    """.trimIndent()
+    return createQuery(sql)
+        .bindList("placementTypes", placementTypes)
+        .mapTo<ServiceNeedOptionPublicInfo>()
+        .list()
+}

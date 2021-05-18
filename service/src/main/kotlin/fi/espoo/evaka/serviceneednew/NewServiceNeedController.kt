@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
@@ -118,4 +119,15 @@ class NewServiceNeedController(
 
         return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
     }
+
+    @GetMapping("/public/new-service-needs/options")
+    fun getServiceNeedOptionPublicInfos(
+        db: Database.Connection,
+        @RequestParam(required = true) placementTypes: List<String>
+    ): ResponseEntity<List<ServiceNeedOptionPublicInfo>> {
+        return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
+            .let { ResponseEntity.ok(it) }
+    }
+
+
 }

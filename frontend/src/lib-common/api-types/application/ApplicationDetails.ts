@@ -12,6 +12,7 @@ import {
 import { JsonOf } from '../../json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+import { ServiceNeedOptionSummary } from '../serviceNeed/common'
 
 export interface GuardianApplications {
   childId: string
@@ -204,6 +205,7 @@ export interface ApplicationServiceNeed {
   endTime: string
   shiftCare: boolean
   partTime: boolean
+  serviceNeedOption: ServiceNeedOptionSummary | null
 }
 
 export interface ApplicationClubDetails {

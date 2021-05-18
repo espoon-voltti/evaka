@@ -22,7 +22,8 @@ import {
 } from 'lib-common/api-types/application/ApplicationsOfChild'
 import {
   ApplicationType,
-  AttachmentType
+  AttachmentType,
+  PlacementType
 } from 'lib-common/api-types/application/enums'
 import { client } from '../api-client'
 import {
@@ -30,6 +31,7 @@ import {
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
 import { UUID } from 'lib-common/types'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 
 export type ApplicationUnitType =
   | 'CLUB'
@@ -230,4 +232,13 @@ export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   } catch (e) {
     return Failure.fromError(e)
   }
+}
+
+export async function getServiceNeedOptionPublicInfos(placementTypes: PlacementType[]): Promise<
+  Result<ServiceNeedOptionPublicInfo[]>
+> {
+  return client
+    .get<JsonOf<ServiceNeedOptionPublicInfo[]>>('/public/new-service-needs/options', { params: { placementTypes: placementTypes.join() }})
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
