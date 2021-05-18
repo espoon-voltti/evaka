@@ -39,20 +39,20 @@ export interface Theme {
       violet: string
     }
   }
-  typography?: {
-    h1?: FontSettings & HasBoldOption
-    h2?: FontSettings & HasBoldOption
-    h3?: FontSettings & HasBoldOption
-    h4?: FontSettings & HasBoldOption
-    h5?: FontSettings & HasBoldOption
+  typography: {
+    h1: FontSettings & HasBoldOption
+    h2: FontSettings & HasBoldOption
+    h3: FontSettings & HasBoldOption
+    h4: FontSettings & HasBoldOption
+    h5: FontSettings & HasBoldOption
   }
 }
 
 type FontSettings = {
-  weight?: FontWeight
+  weight: FontWeight
   mobile?: Omit<FontSettings, 'mobile'>
 }
-type HasBoldOption = { bold?: FontWeight }
+type HasBoldOption = { bold: FontWeight }
 
 type FontWeight =
   | 'normal'
