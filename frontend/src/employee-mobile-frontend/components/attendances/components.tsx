@@ -10,7 +10,11 @@ import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import colors from 'lib-customizations/common'
-import { defaultMargins } from 'lib-components/white-space'
+import {
+  defaultMargins,
+  isSpacingSize,
+  SpacingSize
+} from 'lib-components/white-space'
 import { Label } from 'lib-components/typography'
 import Title from 'lib-components/atoms/Title'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -83,13 +87,23 @@ export const Flex = styled.div`
   flex-wrap: wrap;
 `
 
-export const FlexColumn = styled.div`
+export const FlexColumn = styled.div<{
+  paddingHorizontal?: SpacingSize | string
+}>`
   @media screen and (max-width: 1023px) {
     justify-content: space-between;
   }
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
+  padding: ${(p) =>
+    `0 ${
+      p.paddingHorizontal
+        ? isSpacingSize(p.paddingHorizontal)
+          ? defaultMargins[p.paddingHorizontal]
+          : p.paddingHorizontal
+        : 0
+    }`};
 `
 
 export const FlexLabel = styled(Label)`

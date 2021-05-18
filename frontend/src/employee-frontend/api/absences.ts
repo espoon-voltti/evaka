@@ -12,12 +12,12 @@ import {
   Group,
   AbsencePayload,
   deserializeChild,
-  AbsenceType,
-  CareType
+  AbsenceType
 } from '../types/absence'
 import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import { AbsenceCareType } from 'lib-common/api-types/child/Absences'
 
 interface SearchParams {
   year: number
@@ -103,7 +103,7 @@ export async function postStaffAttendance(
 
 export async function postChildAbsence(
   absenceType: AbsenceType,
-  careType: CareType,
+  careType: AbsenceCareType,
   childId: UUID
 ): Promise<Result<void>> {
   return client

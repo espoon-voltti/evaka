@@ -78,6 +78,14 @@ storiesOf('evaka/atoms/RoundIcon', module)
                 size="XL"
               />
             </ColItem>
+            <ColItem>
+              <span>XXL</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.accents.green}
+                size="XXL"
+              />
+            </ColItem>
           </FixedSpaceRow>
           <p>Note 1: use solid icons for size s, light otherwise</p>
           <p>
@@ -88,6 +96,66 @@ storiesOf('evaka/atoms/RoundIcon', module)
               color={theme.colors.accents.orange}
               style={{ fontSize: '16px' }}
             />
+          </p>
+          <br />
+          <FixedSpaceRow>
+            <ColItem>
+              <span>With label</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.main.primary}
+                size="XL"
+                label={'label'}
+              />
+            </ColItem>
+            <ColItem>
+              <span>With label and a bubble</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.main.primary}
+                size="XL"
+                label={'label'}
+                bubble
+              />
+            </ColItem>
+            <ColItem>
+              <span>With label and a bubble with a number</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.main.primary}
+                size="XL"
+                label={'label'}
+                number={3}
+                bubble
+              />
+            </ColItem>
+            <ColItem>
+              <span>Large with label and a bubble</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.main.primary}
+                size="L"
+                label={'label'}
+                bubble
+              />
+            </ColItem>
+            <ColItem>
+              <span>Large with label and a bubble</span>
+              <RoundIcon
+                content={faCheck}
+                color={theme.colors.main.primary}
+                size="L"
+                label={'label'}
+                number={2}
+                bubble
+              />
+            </ColItem>
+          </FixedSpaceRow>
+
+          <p>Note 3: the XL size on mobile will be 56px instead of 64px.</p>
+          <p>
+            Note 4: the bubble will only work with XL and L sizes and RoundIcons
+            with a label
           </p>
         </div>
       )

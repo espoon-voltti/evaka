@@ -80,6 +80,8 @@ export default function TopBar({
 const NoMarginTitle = styled(Title)`
   margin-top: 0;
   margin-bottom: 0;
+  padding-top: ${defaultMargins.s};
+  padding-bottom: ${defaultMargins.s};
   display: flex;
   justify-content: center;
   align-items: center;

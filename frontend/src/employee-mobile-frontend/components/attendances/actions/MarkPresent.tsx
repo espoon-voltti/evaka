@@ -28,7 +28,7 @@ import {
   getDaycareAttendances
 } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { getCurrentTime } from '../AttendanceChildPage'
+import { getCurrentTime } from '../child-info/ChildInfo'
 import DailyNote from '../notes/DailyNote'
 import { Actions } from '../components'
 

@@ -49,7 +49,11 @@ export const fi = {
     hours: 'Tuntia',
     remove: 'Poista',
     clear: 'Tyhjennä',
-    save: 'Tallenna'
+    save: 'Tallenna',
+    starts: 'Alkaa',
+    ends: 'Päättyy',
+    information: 'Tiedot',
+    dailyNotes: 'Muikkarit'
   },
   absences: {
     title: 'Poissaolomerkinnät',
@@ -71,7 +75,11 @@ export const fi = {
       DAYCARE: 'Varhaiskasvatus',
       CLUB: 'Kerho'
     },
-    absence: 'Poissaolo'
+    absence: 'Poissaolo',
+    chooseStartDate: 'Valitse tuleva päivä',
+    startBeforeEnd: 'Aloitus oltava ennen päättymispäivää.',
+    reason: 'Poissaolon syy',
+    fullDayHint: 'Poissaolomerkintä tehdään koko päivälle'
   },
   attendances: {
     types: {
@@ -92,7 +100,8 @@ export const fi = {
       markPresent: 'Merkitse saapuneeksi',
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
-      returnToPresent: 'Palauta läsnäoleviin'
+      returnToPresent: 'Palauta läsnäoleviin',
+      markAbsentBeforehand: 'Merkitse tuleva poissaolo'
     },
     timeLabel: 'Merkintä',
     departureTime: 'Lähtöaika',

@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import { API_URL, client } from '../api/client'
 import { SearchOrder, UUID } from '../types'
-import { Absence, deserializeAbsence } from '../types/absence'
 import { deserializeIncome } from '../types/income'
 import {
   deserializePeriodic,
@@ -23,6 +22,10 @@ import {
   VoucherValueDecisionSummary,
   InvoiceSummary
 } from '../types/invoicing'
+import {
+  Absence,
+  deserializeAbsence
+} from 'lib-common/api-types/child/Absences'
 
 export interface SearchParams {
   status?: string

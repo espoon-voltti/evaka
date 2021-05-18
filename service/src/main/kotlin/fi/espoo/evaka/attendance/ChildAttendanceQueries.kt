@@ -353,17 +353,17 @@ fun Database.Transaction.deleteAttendance(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
+fun Database.Transaction.deleteAbsencesByDate(childId: UUID, date: LocalDate) {
     // language=sql
     val sql =
         """
         DELETE FROM absence
-        WHERE child_id = :childId AND date = :today
+        WHERE child_id = :childId AND date = :date
         """.trimIndent()
 
     createUpdate(sql)
         .bind("childId", childId)
-        .bind("today", LocalDate.now(europeHelsinki))
+        .bind("date", date)
         .execute()
 }
 

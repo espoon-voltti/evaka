@@ -116,6 +116,11 @@ class AbsenceService {
         )
     }
 
+    fun getFutureAbsencesByChild(tx: Database.Read, childId: UUID): List<Absence> {
+        val period = DateRange(LocalDate.now().plusDays(1), null)
+        return tx.getAbsencesByChildByPeriod(childId, period)
+    }
+
     private fun composeAbsenceMap(
         period: FiniteDateRange,
         absenceListByChild: List<Absence>
@@ -422,6 +427,23 @@ fun Database.Read.getAbsencesByChildByRange(childId: UUID, period: FiniteDateRan
         FROM absence a
         WHERE date <@ :period
         AND a.child_id = :childId
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("period", period)
+        .mapTo<Absence>()
+        .list()
+}
+
+fun Database.Read.getAbsencesByChildByPeriod(childId: UUID, period: DateRange): List<Absence> {
+    //language=SQL
+    val sql =
+        """
+        SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, a.modified_at, a.modified_by
+        FROM absence a
+        WHERE date <@ :period
+        AND a.child_id = :childId 
         """.trimIndent()
 
     return createQuery(sql)

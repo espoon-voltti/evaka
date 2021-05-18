@@ -14,7 +14,7 @@ import {
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { useTranslation } from '../../state/i18n'
 import Absences from './Absences'
-import { getTimeString } from './AttendanceChildPage'
+import { getTimeString } from './child-info/ChildInfo'
 import {
   ArrivalTime,
   CustomHorizontalLine,

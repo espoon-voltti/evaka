@@ -2,9 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '../types'
 import LocalDate from 'lib-common/local-date'
 import { JsonOf } from 'lib-common/json'
+import {
+  Absence,
+  AbsenceCareType,
+  deserializeAbsence
+} from 'lib-common/api-types/child/Absences'
+
+import { UUID } from '../types'
 import { PlacementType } from './child'
 import { Translations } from '../state/i18n'
 
@@ -34,13 +40,6 @@ export const AbsenceTypes: AbsenceType[] = [
 export const defaultAbsenceType = 'SICKLEAVE'
 export const defaultCareTypeCategory: CareTypeCategory[] = []
 
-export type CareType =
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'DAYCARE_5YO_FREE'
-  | 'DAYCARE'
-  | 'CLUB'
-
 export type CareTypeCategory = 'BILLABLE' | 'NONBILLABLE'
 
 export const CareTypeCategories: CareTypeCategory[] = [
@@ -48,10 +47,13 @@ export const CareTypeCategories: CareTypeCategory[] = [
   'BILLABLE'
 ]
 
-export const billableCareTypes: CareType[] = ['PRESCHOOL_DAYCARE', 'DAYCARE']
+export const billableCareTypes: AbsenceCareType[] = [
+  'PRESCHOOL_DAYCARE',
+  'DAYCARE'
+]
 
 export function formatCareType(
-  careType: CareType,
+  careType: AbsenceCareType,
   placementType: PlacementType,
   i18n: Translations
 ) {
@@ -86,7 +88,7 @@ export interface CellPart {
   childId: UUID
   date: LocalDate
   absenceType?: AbsenceType
-  careType: CareType
+  careType: AbsenceCareType
   position: string
 }
 
@@ -94,27 +96,17 @@ export interface AbsencePayload {
   absenceType: AbsenceType
   childId: UUID
   date: LocalDate
-  careType: CareType
+  careType: AbsenceCareType
 }
 
 // Response
-
-export interface Absence {
-  id: UUID
-  childId: UUID
-  date: LocalDate
-  absenceType: AbsenceType
-  careType: CareType
-  modifiedAt?: Date
-  modifiedBy?: string
-}
 
 export interface Child {
   id: UUID
   firstName: string
   lastName: string
   dob: LocalDate
-  placements: { [key: string]: CareType[] }
+  placements: { [key: string]: AbsenceCareType[] }
   absences: { [key: string]: Absence[] }
   backupCares: { [key: string]: AbsenceBackupCare | null }
 }
@@ -141,12 +133,6 @@ export const deserializeChild = (child: JsonOf<Child>): Child => ({
     }),
     {}
   )
-})
-
-export const deserializeAbsence = (absence: JsonOf<Absence>): Absence => ({
-  ...absence,
-  date: LocalDate.parseIso(absence.date),
-  modifiedAt: absence.modifiedAt ? new Date(absence.modifiedAt) : undefined
 })
 
 export interface Group {

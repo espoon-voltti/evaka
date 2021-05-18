@@ -5,9 +5,7 @@
 import React, { useContext, useCallback, memo } from 'react'
 import LocalDate from 'lib-common/local-date'
 import {
-  Absence,
   AbsenceType,
-  CareType,
   CellPart,
   billableCareTypes,
   AbsenceBackupCare
@@ -16,6 +14,7 @@ import { UUID } from '../../types'
 import { AbsencesState, AbsencesContext } from '../../state/absence'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
+import { Absence, AbsenceCareType } from 'lib-common/api-types/child/Absences'
 
 interface AbsenceCellPartProps {
   position: string
@@ -40,7 +39,7 @@ function AbsenceCellPart({
 interface AbsenceCellProps {
   childId: UUID
   date: LocalDate
-  careTypes: CareType[]
+  careTypes: AbsenceCareType[]
   absences: Absence[]
   backupCare: AbsenceBackupCare | null
 }
@@ -51,11 +50,11 @@ const getCellId = (childId: UUID, date: LocalDate) =>
 function getCellParts(
   childId: UUID,
   date: LocalDate,
-  careTypes: CareType[],
+  careTypes: AbsenceCareType[],
   absences: Absence[],
   backupCare: AbsenceBackupCare | null
 ): CellPart[] {
-  function placementAbsence(placement: CareType): Absence | undefined {
+  function placementAbsence(placement: AbsenceCareType): Absence | undefined {
     return absences.find(({ careType }) => careType === placement)
   }
 

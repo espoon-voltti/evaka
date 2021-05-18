@@ -4,17 +4,20 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { getDay } from 'date-fns'
+
 import LocalDate from 'lib-common/local-date'
-import { useTranslation } from '../../state/i18n'
-import { UIContext } from '../../state/ui'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { getDay } from 'date-fns'
+import { faAbacus } from 'lib-icons'
+import { Absence } from 'lib-common/api-types/child/Absences'
+
 import { formatName } from '../../utils'
 import { getAbsencesByChild } from '../../api/invoicing'
+import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import {
-  Absence,
   AbsenceTypes,
   AbsenceType,
   billableCareTypes
@@ -23,7 +26,6 @@ import { UUID } from '../../types'
 import ColourInfoItem from '../../components/common/ColourInfoItem'
 import Tooltip from '../../components/common/Tooltip'
 import PeriodPicker from '../../components/absences/PeriodPicker'
-import { faAbacus } from 'lib-icons'
 
 const Section = styled.section``
 

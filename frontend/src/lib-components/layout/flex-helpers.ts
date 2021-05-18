@@ -12,6 +12,7 @@ interface FixedSpaceRowProps {
   alignItems?: Property.AlignItems
   marginBottom?: SpacingSize | string
   fullWidth?: boolean
+  maxWidth?: string
 }
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   display: flex;
@@ -39,6 +40,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     &:last-child {
       margin-right: 0;
     }
+    ${(p) => (p.maxWidth ? `max-width: ${p.maxWidth};` : '')};
   }
 
   > button {

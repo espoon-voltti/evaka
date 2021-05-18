@@ -81,7 +81,8 @@ import {
   faUsers,
   faComments,
   faTruck,
-  faPhone
+  faPhone,
+  faCalendarTimes
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
 } from '@fortawesome/pro-light-svg-icons'
@@ -205,7 +206,8 @@ const icons: IconSet = {
   farUser: faUser,
   faComments,
   faTruck,
-  faPhone
+  faPhone,
+  faCalendarTimes
 }
 
 export default icons

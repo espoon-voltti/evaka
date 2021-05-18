@@ -5,42 +5,37 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { lighten } from 'polished'
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import {
-  faArrowLeft,
-  faComments,
-  faInfo,
-  farStickyNote,
-  farUser
-} from 'lib-icons'
-import colors from 'lib-customizations/common'
-import { useTranslation } from '../../state/i18n'
+import { faArrowLeft, faCalendarTimes, farUser } from 'lib-icons'
+import colors from 'lib-components/colors'
+import { useTranslation } from '../../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
 import { StaticChip } from 'lib-components/atoms/Chip'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import AttendanceChildComing from './AttendanceChildComing'
-import AttendanceChildPresent from './AttendanceChildPresent'
-import AttendanceChildDeparted from './AttendanceChildDeparted'
-import AttendanceDailyServiceTimes from './AttendanceDailyServiceTimes'
+import AttendanceChildComing from '../AttendanceChildComing'
+import AttendanceChildPresent from '../AttendanceChildPresent'
+import AttendanceChildDeparted from '../AttendanceChildDeparted'
+import AttendanceDailyServiceTimes from '../AttendanceDailyServiceTimes'
 import {
   AttendanceChild,
   AttendanceStatus,
   getDaycareAttendances,
   Group
-} from '../../api/attendances'
-import { AttendanceUIContext } from '../../state/attendance-ui'
-import { FlexColumn } from './components'
-import AttendanceChildAbsent from './AttendanceChildAbsent'
-import { BackButton, TallContentArea } from '../../components/mobile/components'
+} from '../../../api/attendances'
+import { AttendanceUIContext } from '../../../state/attendance-ui'
+import { FlexColumn } from '../components'
+import AttendanceChildAbsent from '../AttendanceChildAbsent'
+import { BackButton, TallContentArea } from '../../mobile/components'
+import ChildButtons from './ChildButtons'
 
 const ChildStatus = styled.div`
   color: ${colors.greyscale.medium};
+  top: 10px;
+  position: relative;
 `
 
 const CustomTitle = styled.h1`
@@ -51,6 +46,7 @@ const CustomTitle = styled.h1`
   margin-top: 0;
   color: ${colors.blues.dark};
   text-align: center;
+  margin-bottom: ${defaultMargins.xs};
 `
 
 const GroupName = styled.div`
@@ -63,10 +59,53 @@ const GroupName = styled.div`
   color: ${colors.greyscale.dark};
 `
 
-const IconWrapper = styled.div`
+const Zindex = styled.div`
+  z-index: 1;
+  margin-left: -8%;
+  margin-right: -8%;
+`
+
+const ChildBackground = styled.div<{ status: AttendanceStatus }>`
+  background: ${(p) => p.status && lighten(0.2, getColorByStatus(p.status))};
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0% 0% 50% 50%;
+  padding-top: ${defaultMargins.s};
+`
+
+const BackButtonMargin = styled(BackButton)`
+  margin-left: 8px;
+  margin-top: 8px;
+  z-index: 2;
+`
+
+const TallContentAreaNoOverflow = styled(TallContentArea)`
+  overflow-x: hidden;
+  height: calc(100% - 74px);
+`
+
+const Center = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100vw;
+`
+
+const BottonButtonWrapper = styled.div`
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 16px;
+  height: 74px;
+`
+const LinkButtonWithIcon = styled(Link)``
+
+const LinkButtonText = styled.span`
+  color: ${colors.blues.primary};
+  margin-left: ${defaultMargins.s};
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 16px;
 `
 
 export default React.memo(function AttendanceChildPage() {
@@ -106,74 +145,64 @@ export default React.memo(function AttendanceChildPage() {
         )
       )
     }
-  }, [attendanceResponse]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [attendanceResponse, childId])
 
   const loading = attendanceResponse.isLoading
   const groupNote = group?.dailyNote
 
   return (
     <Fragment>
-      <TallContentArea opaque paddingHorizontal={'s'} spaced>
-        <BackButton
+      <TallContentAreaNoOverflow
+        opaque
+        paddingHorizontal={'0px'}
+        paddingVertical={'0px'}
+        spaced
+        shadow
+      >
+        <BackButtonMargin
           onClick={() => history.goBack()}
           icon={faArrowLeft}
           data-qa="back-btn"
         />
         {child && group && !loading ? (
           <Fragment>
-            <FixedSpaceColumn alignItems={'center'}>
-              <RoundIcon
-                content={farUser}
-                color={getColorByStatus(child.status)}
-                size="XXL"
-              />
-              <CustomTitle data-qa={'child-name'}>
-                {child.firstName} {child.lastName}
-              </CustomTitle>
-              <GroupName>{group.name}</GroupName>
-              <ChildStatus>
-                <StaticChip
-                  color={getColorByStatus(child.status)}
-                  data-qa="child-status"
-                >
-                  {i18n.attendances.types[child.status]}
-                </StaticChip>
-              </ChildStatus>
-              <IconWrapper>
-                <FixedSpaceRow spacing={'m'}>
+            <Zindex>
+              <ChildBackground status={child.status}>
+                <Center>
                   <RoundIcon
-                    content={faComments}
-                    color={colors.greyscale.medium}
-                    size="L"
-                    active={false}
+                    content={farUser}
+                    color={getColorByStatus(child.status)}
+                    size="XXL"
                   />
-                  <Link
-                    to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/note`}
-                    data-qa={'link-child-daycare-daily-note'}
-                  >
-                    <RoundIcon
-                      content={farStickyNote}
-                      color={colors.accents.petrol}
-                      size="L"
-                      active={child?.dailyNote || groupNote ? true : false}
-                    />
-                  </Link>
-                  <Link
-                    to={`/units/${unitId}/groups/${groupId}/childattendance/${child.id}/pin`}
-                    data-qa={'link-child-sensitive-info'}
-                  >
-                    <RoundIcon
-                      content={faInfo}
-                      color={colors.accents.petrol}
-                      size="L"
-                      active={false}
-                    />
-                  </Link>
-                </FixedSpaceRow>
-              </IconWrapper>
-            </FixedSpaceColumn>
 
-            <FlexColumn>
+                  <Gap size={'s'} />
+
+                  <CustomTitle data-qa={'child-name'}>
+                    {child.firstName} {child.lastName}
+                  </CustomTitle>
+
+                  <GroupName>{group.name}</GroupName>
+
+                  <ChildStatus>
+                    <StaticChip
+                      color={getColorByStatus(child.status)}
+                      data-qa="child-status"
+                    >
+                      {i18n.attendances.types[child.status]}
+                    </StaticChip>
+                  </ChildStatus>
+                </Center>
+              </ChildBackground>
+
+              <ChildButtons
+                unitId={unitId}
+                groupId={groupId}
+                child={child}
+                groupNote={groupNote}
+              />
+            </Zindex>
+
+            <FlexColumn paddingHorizontal={'s'}>
               <AttendanceDailyServiceTimes times={child.dailyServiceTimes} />
               {child.status === 'COMING' && (
                 <AttendanceChildComing
@@ -200,7 +229,19 @@ export default React.memo(function AttendanceChildPage() {
         ) : (
           <Loader />
         )}
-      </TallContentArea>
+      </TallContentAreaNoOverflow>
+      <BottonButtonWrapper>
+        <LinkButtonWithIcon
+          to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/mark-absent-beforehand`}
+        >
+          <RoundIcon
+            size={'L'}
+            content={faCalendarTimes}
+            color={colors.blues.primary}
+          />
+          <LinkButtonText>Merkitse tuleva poissaolo</LinkButtonText>
+        </LinkButtonWithIcon>
+      </BottonButtonWrapper>
     </Fragment>
   )
 })

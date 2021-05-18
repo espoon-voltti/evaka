@@ -33,7 +33,7 @@ import {
   postDeparture
 } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { getCurrentTime } from '../AttendanceChildPage'
+import { getCurrentTime } from '../child-info/ChildInfo'
 import DailyNote from '../notes/DailyNote'
 import { isBefore, parse } from 'date-fns'
 import AbsenceSelector from '../AbsenceSelector'
