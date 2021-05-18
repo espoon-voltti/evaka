@@ -686,7 +686,7 @@ SELECT
     daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') AS period
 FROM backup_care bc
 JOIN daycare u ON bc.unit_id = u.id
-JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
+JOIN placement p ON bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
 WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_date), '[]') && :period AND $groupingId = ANY(:keys)
 """
 
