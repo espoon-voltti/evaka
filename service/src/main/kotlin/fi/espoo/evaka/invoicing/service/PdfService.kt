@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import com.lowagie.text.pdf.BaseFont
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -17,9 +18,11 @@ import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
 import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.OutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.nio.file.Paths
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -76,8 +79,22 @@ class PDFService(
         return os.toByteArray()
     }
 
+    private fun getResourcePath(fileName: String): String {
+        val res = javaClass.classLoader.getResource(fileName)
+        val file: File = Paths.get(res.toURI()).toFile()
+        return file.absolutePath
+    }
+
     private fun renderHtmlPages(pages: String, os: OutputStream) {
         val textRenderer = ITextRenderer()
+        val montserrat = getResourcePath("ttf/Montserrat-Regular.ttf")
+        val montserratBold = getResourcePath("ttf/Montserrat-Regular.ttf")
+        val openSans = getResourcePath("ttf/OpenSans-Regular.ttf")
+        val openSansBold = getResourcePath("ttf/OpenSans-Bold.ttf")
+        textRenderer.fontResolver.addFont(montserrat, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(montserratBold, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(openSans, BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFont(openSansBold, BaseFont.IDENTITY_H, true)
         textRenderer.setDocumentFromString(pages)
         textRenderer.layout()
         textRenderer.createPDF(os, false)
