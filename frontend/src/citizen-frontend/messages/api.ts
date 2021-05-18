@@ -5,35 +5,32 @@
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../api-client'
-import {
-  deserializeReceivedBulletin,
-  ReceivedBulletin
-} from '../messages/types'
+import { deserializeMessageThread, MessageThread } from './types'
 
-export async function getBulletins(
+export async function getReceivedMessages(
   page: number,
-  pageSize = 50
-): Promise<Result<Paged<ReceivedBulletin>>> {
+  pageSize = 20
+): Promise<Result<Paged<MessageThread>>> {
   return client
-    .get<JsonOf<Paged<ReceivedBulletin>>>('/citizen/bulletins', {
+    .get<JsonOf<Paged<MessageThread>>>('/citizen/messages/received', {
       params: { page, pageSize }
     })
     .then((res) =>
       Success.of({
         ...res.data,
-        data: res.data.data.map(deserializeReceivedBulletin)
+        data: res.data.data.map(deserializeMessageThread)
       })
     )
     .catch((e) => Failure.fromError(e))
 }
 
-export async function markBulletinRead(id: string): Promise<void> {
-  return client.put(`/citizen/bulletins/${id}/read`)
+export async function markThreadRead(id: string): Promise<void> {
+  return client.put(`/citizen/messages/${id}/read`)
 }
 
-export async function getUnreadBulletinsCount(): Promise<Result<number>> {
+export async function getUnreadMessagesCount(): Promise<Result<number>> {
   return client
-    .get(`/citizen/bulletins/unread/`)
+    .get(`/citizen/messages/unread-count`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

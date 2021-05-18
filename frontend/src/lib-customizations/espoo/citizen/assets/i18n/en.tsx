@@ -128,7 +128,11 @@ const en: Translations = {
   },
   messages: {
     inboxTitle: 'Inbox',
-    noMessages: 'No messages'
+    noMessages: 'No messages',
+    types: {
+      MESSAGE: 'Message',
+      BULLETIN: 'Bulletin'
+    }
   },
   applications: {
     title: 'Applications',

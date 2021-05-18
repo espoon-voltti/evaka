@@ -14,7 +14,8 @@ import fi.espoo.evaka.messaging.message.MessageThread
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.SentMessage
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
+import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
+import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
 import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
@@ -95,9 +96,9 @@ class MessageIntegrationTest : FullApplicationTest() {
         val person2 = AuthenticatedUser.Citizen(id = person2Id)
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(employee1).first(),
-                it.getMessageAccountsForUser(person1).first(),
-                it.getMessageAccountsForUser(person2).first()
+                it.getMessageAccountsForEmployee(employee1).first(),
+                it.getMessageAccountForEndUser(person1),
+                it.getMessageAccountForEndUser(person2)
             )
         }
 
@@ -257,11 +258,11 @@ class MessageIntegrationTest : FullApplicationTest() {
         val person4 = AuthenticatedUser.Citizen(id = person4Id)
         val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(employee1).first(),
-                it.getMessageAccountsForUser(person1).first(),
-                it.getMessageAccountsForUser(person2).first(),
-                it.getMessageAccountsForUser(person3).first(),
-                it.getMessageAccountsForUser(person4).first()
+                it.getMessageAccountsForEmployee(employee1).first(),
+                it.getMessageAccountForEndUser(person1),
+                it.getMessageAccountForEndUser(person2),
+                it.getMessageAccountForEndUser(person3),
+                it.getMessageAccountForEndUser(person4)
             )
         }
 
@@ -346,8 +347,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         val person1 = AuthenticatedUser.Citizen(id = person1Id)
         val (employee1Account, person1Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(employee1).first(),
-                it.getMessageAccountsForUser(person1).first(),
+                it.getMessageAccountsForEmployee(employee1).first(),
+                it.getMessageAccountForEndUser(person1),
             )
         }
 
@@ -465,14 +466,14 @@ class MessageIntegrationTest : FullApplicationTest() {
             .response()
 
     private fun getMessageThreads(account: MessageAccount, user: AuthenticatedUser): List<MessageThread> = http.get(
-        "${if (user.isEndUser) "/citizen" else ""}/messages/${account.id}/received",
+        if (user.isEndUser) "/citizen/messages/received" else "/messages/${account.id}/received",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
         .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
 
     private fun getSentMessages(account: MessageAccount, user: AuthenticatedUser): List<SentMessage> = http.get(
-        "${if (user.isEndUser) "/citizen" else ""}/messages/${account.id}/sent",
+        if (user.isEndUser) "/citizen/messages/sent" else "/messages/${account.id}/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)

@@ -4,16 +4,16 @@
 
 import React, { useMemo, useState, createContext } from 'react'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getUnreadBulletinsCount } from './api'
+import { getUnreadMessagesCount } from './api'
 
 export interface HeaderState {
-  unreadBulletinsCount: number | null
-  refreshUnreadBulletinsCount: () => void
+  unreadMessagesCount: number | undefined
+  refreshUnreadMessagesCount: () => void
 }
 
 const defaultState = {
-  unreadBulletinsCount: null,
-  refreshUnreadBulletinsCount: () => undefined
+  unreadMessagesCount: undefined,
+  refreshUnreadMessagesCount: () => undefined
 }
 
 export const HeaderContext = createContext<HeaderState>(defaultState)
@@ -23,21 +23,19 @@ export const HeaderContextProvider = React.memo(function HeaderContextProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [unreadBulletinsCount, setUnreadBulletinsCount] = useState<
-    number | null
-  >(null)
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>()
 
-  const refreshUnreadBulletinsCount = useRestApi(
-    getUnreadBulletinsCount,
-    (result) => result.isSuccess && setUnreadBulletinsCount(result.value)
+  const refreshUnreadMessagesCount = useRestApi(
+    getUnreadMessagesCount,
+    (result) => result.isSuccess && setUnreadMessagesCount(result.value)
   )
 
   const value = useMemo(
     () => ({
-      unreadBulletinsCount,
-      refreshUnreadBulletinsCount
+      unreadMessagesCount,
+      refreshUnreadMessagesCount
     }),
-    [unreadBulletinsCount, refreshUnreadBulletinsCount]
+    [unreadMessagesCount, refreshUnreadMessagesCount]
   )
 
   return (

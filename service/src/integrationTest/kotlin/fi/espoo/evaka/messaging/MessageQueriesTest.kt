@@ -8,7 +8,8 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.getMessageAccountsForUser
+import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
+import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.getThreadByMessageId
@@ -60,9 +61,9 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `a thread can be created`() {
         val (employeeAccount, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person2Id))
             )
         }
 
@@ -93,10 +94,10 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `messages received by account are grouped properly`() {
         val (employee1Account, employee2Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee2Id, roles = setOf())).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee2Id, roles = setOf())).first(),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person2Id))
             )
         }
 
@@ -164,8 +165,8 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `received messages can be paged`() {
         val (employee1Account, person1Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first()
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id))
             )
         }
 
@@ -199,9 +200,9 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `sent messages`() {
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person2Id))
             )
         }
 
@@ -241,9 +242,9 @@ class MessageQueriesTest : PureJdbiTest() {
     fun `message participants by messageId`() {
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForUser(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first(),
-                it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person2Id)).first()
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person2Id))
             )
         }
 
@@ -263,7 +264,7 @@ class MessageQueriesTest : PureJdbiTest() {
 
     @Test
     fun `unread messages`() {
-        val acc = db.read { it.getMessageAccountsForUser(AuthenticatedUser.Citizen(id = person1Id)).first() }
+        val acc = db.read { it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)) }
         createThread("Title", "Content", acc, setOf(acc.id))
         assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(acc.id)) })
         db.transaction { it.createUpdate("UPDATE message_recipients SET read_at = now()").execute() }

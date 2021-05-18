@@ -127,7 +127,11 @@ export default {
   },
   messages: {
     inboxTitle: 'Saapuneet viestit',
-    noMessages: 'Ei saapuneita viestejä'
+    noMessages: 'Ei saapuneita viestejä',
+    types: {
+      MESSAGE: 'Viesti',
+      BULLETIN: 'Tiedote'
+    }
   },
   applications: {
     title: 'Hakemukset',

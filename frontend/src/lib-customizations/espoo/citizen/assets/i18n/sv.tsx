@@ -128,7 +128,11 @@ const sv: Translations = {
   },
   messages: {
     inboxTitle: 'Inkorg',
-    noMessages: 'Inga meddelanden'
+    noMessages: 'Inga meddelanden',
+    types: {
+      MESSAGE: 'Meddelande',
+      BULLETIN: 'Bulletin'
+    }
   },
   applications: {
     title: 'Ansökningar',
