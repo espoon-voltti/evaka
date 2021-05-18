@@ -163,12 +163,12 @@ describe('Child information page', () => {
     })
   })
 
-  test('Unit supervisor sees units, reports and messaging tabs', async () => {
+  test('Unit supervisor sees units, search, reports and messaging tabs', async () => {
     await nav.login('UNIT_SUPERVISOR')
     await nav.tabsVisible({
       applications: false,
       units: true,
-      search: false,
+      search: true,
       finance: false,
       reports: true,
       messages: true
