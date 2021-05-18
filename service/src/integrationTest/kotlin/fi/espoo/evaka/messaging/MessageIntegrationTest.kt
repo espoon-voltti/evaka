@@ -52,6 +52,11 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val person4Id: UUID = testAdult_4.id
     private val employee1Id: UUID = UUID.randomUUID()
     private val employee2Id: UUID = UUID.randomUUID()
+    private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val person1 = AuthenticatedUser.Citizen(id = person1Id)
+    private val person2 = AuthenticatedUser.Citizen(id = person2Id)
+    private val person3 = AuthenticatedUser.Citizen(id = person3Id)
+    private val person4 = AuthenticatedUser.Citizen(id = person4Id)
 
     @BeforeEach
     internal fun setUp() {
@@ -91,9 +96,6 @@ class MessageIntegrationTest : FullApplicationTest() {
     @Test
     fun `a thread is created, accessed and replied to by participants who are guardian of the same child`() {
         // given
-        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-        val person1 = AuthenticatedUser.Citizen(id = person1Id)
-        val person2 = AuthenticatedUser.Citizen(id = person2Id)
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
                 it.getMessageAccountsForEmployee(employee1).first(),
@@ -251,11 +253,6 @@ class MessageIntegrationTest : FullApplicationTest() {
     @Test
     fun `a message is split to several threads by guardianship`() {
         // given
-        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-        val person1 = AuthenticatedUser.Citizen(id = person1Id)
-        val person2 = AuthenticatedUser.Citizen(id = person2Id)
-        val person3 = AuthenticatedUser.Citizen(id = person3Id)
-        val person4 = AuthenticatedUser.Citizen(id = person4Id)
         val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
             listOf(
                 it.getMessageAccountsForEmployee(employee1).first(),
@@ -343,8 +340,6 @@ class MessageIntegrationTest : FullApplicationTest() {
     @Test
     fun `a bulletin cannot be replied to by the recipients`() {
         // given
-        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-        val person1 = AuthenticatedUser.Citizen(id = person1Id)
         val (employee1Account, person1Account) = db.read {
             listOf(
                 it.getMessageAccountsForEmployee(employee1).first(),
@@ -404,9 +399,6 @@ class MessageIntegrationTest : FullApplicationTest() {
     @Test
     fun `messages can be marked read`() {
         // given
-        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-        val person1 = AuthenticatedUser.Citizen(id = person1Id)
-        val person2 = AuthenticatedUser.Citizen(id = person2Id)
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
                 it.getMessageAccountsForEmployee(employee1).first(),
