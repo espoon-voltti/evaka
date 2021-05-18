@@ -206,7 +206,8 @@ export default React.memo(function ChildSensitiveInfo({ child }: Props) {
                     {renderKeyValue(
                       i18n.attendances.childInfo.phone,
                       backupPickup.phone,
-                      `child-info-backup-pickup${index + 1}-phone`
+                      `child-info-backup-pickup${index + 1}-phone`,
+                      true
                     )}
 
                     <Divider />
