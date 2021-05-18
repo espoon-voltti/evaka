@@ -314,7 +314,7 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR']}>
+          <RequireRole oneOf={['ADMIN', 'FINANCE_ADMIN']}>
             <ReportItem>
               <TitleRow>
                 <RoundIcon

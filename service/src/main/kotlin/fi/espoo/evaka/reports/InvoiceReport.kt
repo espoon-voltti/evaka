@@ -37,7 +37,7 @@ class InvoiceReportController {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<InvoiceReport> {
         Audit.InvoicesReportRead.log()
-        user.requireOneOfRoles(UserRole.FINANCE_ADMIN, UserRole.DIRECTOR, UserRole.ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.read {
             it.getInvoiceReportWithRows(
                 getMonthPeriod(date)
