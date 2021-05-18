@@ -18,6 +18,7 @@ import fi.espoo.evaka.messaging.message.insertMessage
 import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.messaging.message.insertRecipients
 import fi.espoo.evaka.messaging.message.insertThread
+import fi.espoo.evaka.messaging.message.markThreadRead
 import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -263,12 +264,45 @@ class MessageQueriesTest : PureJdbiTest() {
     }
 
     @Test
-    fun `unread messages`() {
-        val acc = db.read { it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)) }
-        createThread("Title", "Content", acc, setOf(acc.id))
-        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(acc.id)) })
-        db.transaction { it.createUpdate("UPDATE message_recipients SET read_at = now()").execute() }
-        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(acc.id)) })
+    fun `unread messages and marking messages read`() {
+        // given
+        val (employee1Account, person1Account, person2Account) = db.read {
+            listOf(
+                it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employee1Id, roles = setOf())).first(),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person1Id)),
+                it.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = person2Id))
+            )
+        }
+        val thread1 = createThread("Title", "Content", person1Account, setOf(employee1Account.id, person2Account.id))
+
+        // then unread count is zero for sender and one for recipients
+        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(person1Account.id)) })
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(employee1Account.id)) })
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person2Account.id)) })
+
+        // when employee reads the message
+        db.transaction { it.markThreadRead(employee1Account.id, thread1) }
+
+        // then the thread does not count towards unread messages
+        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(person1Account.id)) })
+        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(employee1Account.id)) })
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person2Account.id)) })
+
+        // when a new thread is created
+        val thread2 = createThread("Title", "Content", employee1Account, setOf(person1Account.id, person2Account.id))
+
+        // then unread counts are bumped by one for recipients
+        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(employee1Account.id)) })
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person1Account.id)) })
+        assertEquals(2, db.read { it.getUnreadMessagesCount(setOf(person2Account.id)) })
+
+        // when person two reads a thread
+        db.transaction { it.markThreadRead(person2Account.id, thread2) }
+
+        // then unread count goes down by one
+        assertEquals(0, db.read { it.getUnreadMessagesCount(setOf(employee1Account.id)) })
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person1Account.id)) })
+        assertEquals(1, db.read { it.getUnreadMessagesCount(setOf(person2Account.id)) })
     }
 
     private fun createThread(

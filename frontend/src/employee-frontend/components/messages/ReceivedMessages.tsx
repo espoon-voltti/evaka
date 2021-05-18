@@ -54,10 +54,10 @@ function formatSentAt(sentAt: Date) {
 
 interface Props {
   messages: Result<MessageThread[]>
-  onViewThread: (thread: MessageThread) => void
+  onSelectThread: (thread: MessageThread) => void
 }
 
-export function ReceivedMessages({ messages, onViewThread }: Props) {
+export function ReceivedMessages({ messages, onSelectThread }: Props) {
   if (messages.isFailure) return <ErrorSegment />
   if (messages.isLoading) return <Loader />
   return (
@@ -69,7 +69,7 @@ export function ReceivedMessages({ messages, onViewThread }: Props) {
           <MessageRow
             key={t.id}
             unread={unread}
-            onClick={() => onViewThread(t)}
+            onClick={() => onSelectThread(t)}
           >
             <FirstColumn>
               <Participants unread={unread}>

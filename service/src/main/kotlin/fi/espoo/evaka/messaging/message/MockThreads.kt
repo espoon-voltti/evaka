@@ -2,10 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import fi.espoo.evaka.messaging.message.Message
-import fi.espoo.evaka.messaging.message.MessageAccount
-import fi.espoo.evaka.messaging.message.MessageThread
-import fi.espoo.evaka.messaging.message.MessageType
+package fi.espoo.evaka.messaging.message
+
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID

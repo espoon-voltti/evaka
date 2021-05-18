@@ -10,10 +10,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import mockThreadData
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -111,20 +111,20 @@ class MessageController {
 
     data class ReplyToMessageBody(
         val content: String,
-        val senderAccountId: UUID,
         val recipientAccountIds: Set<UUID>,
     )
 
-    @PostMapping("/{messageId}/reply")
+    @PostMapping("{accountId}/{messageId}/reply")
     fun replyToThread(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         authorizeAllowedMessagingRoles(user)
-        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == body.senderAccountId }
+        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
             ?: throw Forbidden("Message account not found for user")
 
         replyToThread(
@@ -134,6 +134,21 @@ class MessageController {
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
+    }
+
+    @PutMapping("/{accountId}/threads/{threadId}/read")
+    fun markThreadRead(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable("accountId") accountId: UUID,
+        @PathVariable("threadId") threadId: UUID
+    ) {
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
+        authorizeAllowedMessagingRoles(user)
+        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+            ?: throw Forbidden("Message account not found for user")
+
+        return db.transaction { it.markThreadRead(account.id, threadId) }
     }
 
     private fun authorizeAllowedMessagingRoles(user: AuthenticatedUser) {

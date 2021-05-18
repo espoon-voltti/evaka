@@ -29,6 +29,24 @@ fun Database.Read.getUnreadMessagesCount(
         .one()
 }
 
+fun Database.Transaction.markThreadRead(accountId: UUID, threadId: UUID): Int {
+    // language=SQL
+    val sql = """
+UPDATE message_recipients rec
+SET read_at = now()
+FROM message msg
+WHERE rec.message_id = msg.id
+  AND msg.thread_id = :threadId
+  AND rec.recipient_id = :accountId
+  AND read_at IS NULL;
+    """.trimIndent()
+
+    return this.createUpdate(sql)
+        .bind("accountId", accountId)
+        .bind("threadId", threadId)
+        .execute()
+}
+
 fun Database.Transaction.insertMessage(
     contentId: UUID,
     threadId: UUID,
@@ -122,12 +140,14 @@ messages AS (
         m.thread_id,
         m.id,
         c.content,
+        rec.read_at,
         m.sent_at,
         m.sender_id,
         m.sender_name
     FROM threads t
     JOIN message m ON m.thread_id = t.id
     JOIN message_content c ON m.content_id = c.id
+    LEFT JOIN message_recipients rec ON m.id = rec.message_id AND rec.recipient_id = :accountId
     WHERE
         m.sender_id = :accountId OR
         EXISTS(SELECT 1
@@ -146,7 +166,8 @@ SELECT
         'sentAt', msg.sent_at,
         'content', msg.content,
         'senderName', msg.sender_name,
-        'senderId', msg.sender_id
+        'senderId', msg.sender_id,
+        'readAt', msg.read_at
     ))) AS messages
     FROM threads t
           JOIN messages msg ON msg.thread_id = t.id

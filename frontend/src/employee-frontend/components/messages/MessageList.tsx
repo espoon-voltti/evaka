@@ -9,8 +9,9 @@ import Pagination from 'lib-components/Pagination'
 import { H1, H2 } from 'lib-components/typography'
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { UUID } from '../../../lib-common/types'
 import { useTranslation } from '../../state/i18n'
-import { getReceivedMessages } from './api'
+import { getReceivedMessages, markThreadRead } from './api'
 import { ReceivedMessages } from './ReceivedMessages'
 import { SingleThreadView } from './SingleThreadView'
 import { MessageThread } from './types'
@@ -21,6 +22,17 @@ const PAGE_SIZE = 20
 const MessagesContainer = styled(ContentArea)`
   overflow: hidden;
 `
+
+const markMessagesReadIfThreadIdMatches = (id: UUID) => (t: MessageThread) =>
+  t.id === id
+    ? {
+        ...t,
+        messages: t.messages.map((m) => ({
+          ...m,
+          readAt: m.readAt ?? new Date()
+        }))
+      }
+    : t
 
 export default React.memo(function MessagesList({
   account,
@@ -50,6 +62,7 @@ export default React.memo(function MessagesList({
     setMessagesResult
   )
 
+  // reset view and load messages if account, view or page changes
   useEffect(() => {
     setSelectedThread(undefined)
     switch (view) {
@@ -60,6 +73,23 @@ export default React.memo(function MessagesList({
         setReceivedMessages(Loading.of())
     }
   }, [account.id, view, page, loadReceivedMessages])
+
+  const onSelectThread = useCallback(
+    (thread: MessageThread) => {
+      setSelectedThread(thread)
+
+      const hasUnreadMessages = thread.messages.some((m) => !m.readAt)
+      if (hasUnreadMessages) {
+        setReceivedMessages((prev) =>
+          prev.map((t: MessageThread[]) =>
+            t.map(markMessagesReadIfThreadIdMatches(thread.id))
+          )
+        )
+        void markThreadRead(account.id, thread.id)
+      }
+    },
+    [account.id]
+  )
 
   if (selectedThread) {
     return (
@@ -77,7 +107,7 @@ export default React.memo(function MessagesList({
       {view === 'RECEIVED' ? (
         <ReceivedMessages
           messages={receivedMessages}
-          onViewThread={setSelectedThread}
+          onSelectThread={onSelectThread}
         />
       ) : (
         <div>TODO sent messages</div>

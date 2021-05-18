@@ -25,7 +25,7 @@ export async function getReceivedMessages(
 }
 
 export async function markThreadRead(id: string): Promise<void> {
-  return client.put(`/citizen/messages/${id}/read`)
+  return client.put(`/citizen/messages/threads/${id}/read`)
 }
 
 export async function getUnreadMessagesCount(): Promise<Result<number>> {

@@ -401,6 +401,58 @@ class MessageIntegrationTest : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `messages can be marked read`() {
+        // given
+        val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+        val person1 = AuthenticatedUser.Citizen(id = person1Id)
+        val person2 = AuthenticatedUser.Citizen(id = person2Id)
+        val (employee1Account, person1Account, person2Account) = db.read {
+            listOf(
+                it.getMessageAccountsForEmployee(employee1).first(),
+                it.getMessageAccountForEndUser(person1),
+                it.getMessageAccountForEndUser(person2)
+            )
+        }
+
+        // when a message thread is created
+        postNewThread(
+            title = "t1",
+            message = "m1",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account.id,
+            recipients = setOf(person1Account.id, person2Account.id),
+            user = employee1,
+        )
+
+        // then 
+        val person1UnreadMessages = getUnreadMessages(person1Account, person1)
+        assertEquals(1, person1UnreadMessages.size)
+        assertEquals(1, getUnreadMessages(person2Account, person2).size)
+        assertEquals(0, getUnreadMessages(employee1Account, employee1).size)
+
+        // when a person replies to the thread
+        replyAsCitizen(person1, person1UnreadMessages.first().id, setOf(employee1Account.id, person2Account.id), "reply")
+
+        // then
+        assertEquals(1, getUnreadMessages(employee1Account, employee1).size)
+        assertEquals(1, getUnreadMessages(person1Account, person1).size)
+        assertEquals(2, getUnreadMessages(person2Account, person2).size)
+
+        // when a thread is marked read
+        markThreadRead(person2, person2Account, getMessageThreads(person2Account, person2).first().id)
+
+        // then the thread is marked read
+        assertEquals(1, getUnreadMessages(employee1Account, employee1).size)
+        assertEquals(1, getUnreadMessages(person1Account, person1).size)
+        assertEquals(0, getUnreadMessages(person2Account, person2).size)
+    }
+
+    private fun getUnreadMessages(
+        account: MessageAccount,
+        user: AuthenticatedUser
+    ) = getMessageThreads(account, user).flatMap { it.messages.filter { m -> m.senderId != account.id && m.readAt == null } }
+
     private fun postNewThread(
         title: String,
         message: String,
@@ -451,17 +503,27 @@ class MessageIntegrationTest : FullApplicationTest() {
         content: String,
     ) =
         http.post(
-            "/messages/$messageId/reply",
+            "/messages/${account.id}/$messageId/reply",
         )
             .jsonBody(
                 objectMapper.writeValueAsString(
                     MessageController.ReplyToMessageBody(
-                        senderAccountId = account.id,
                         content = content,
                         recipientAccountIds = recipientAccountIds
                     )
                 )
             )
+            .asUser(user)
+            .response()
+
+    private fun markThreadRead(
+        user: AuthenticatedUser,
+        account: MessageAccount,
+        threadId: UUID
+    ) =
+        http.put(
+            if (user.isEndUser) "/citizen/messages/threads/$threadId/read" else "/messages/${account.id}/threads/$threadId/read"
+        )
             .asUser(user)
             .response()
 
