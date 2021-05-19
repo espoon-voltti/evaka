@@ -150,6 +150,7 @@ class FixtureBuilder(
         private var unitId: UUID? = null
         private var type: PlacementType? = null
         private var deleted = false
+        private var preschoolDaycareDates: FiniteDateRange? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
@@ -158,6 +159,7 @@ class FixtureBuilder(
         fun toUnit(id: UUID) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
         fun asDeleted() = this.apply { this.deleted = true }
+        fun withPreschoolDaycareDates(range: FiniteDateRange) = this.apply { this.preschoolDaycareDates = range }
 
         fun save(): ChildFixture {
             val applicationGuardianId = tx.insertTestPerson(DevPerson())
@@ -172,7 +174,9 @@ class FixtureBuilder(
                 type = type ?: throw IllegalStateException("type not set"),
                 startDate = from,
                 endDate = to,
-                deleted = deleted
+                deleted = deleted,
+                preschoolDaycareStartDate = preschoolDaycareDates?.start,
+                preschoolDaycareEndDate = preschoolDaycareDates?.end
             )
             return childFixture
         }

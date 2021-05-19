@@ -138,7 +138,7 @@ class AbsenceService {
         .map {
             it to placementListByChild
                 .filter { placement -> DateRange(placement.startDate, placement.endDate).includes(it) }
-                .flatMap { placement -> getCareType(placement) }
+                .flatMap { placement -> getAbsenceCareTypes(placement.type) }
         }
         .toMap()
 
@@ -151,21 +151,20 @@ class AbsenceService {
                 ?.let { backupCare -> AbsenceBackupCare(childId = backupCare.childId, date = it) }
         }
         .toMap()
+}
 
-    private fun getCareType(placement: AbsencePlacement): List<CareType> =
-        when (placement.type) {
-            PlacementType.CLUB -> listOf(CareType.CLUB)
-            PlacementType.PRESCHOOL,
-            PlacementType.PREPARATORY -> listOf(CareType.PRESCHOOL)
-            PlacementType.PRESCHOOL_DAYCARE,
-            PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
-            PlacementType.DAYCARE -> listOf(CareType.DAYCARE)
-            PlacementType.DAYCARE_PART_TIME -> listOf(CareType.DAYCARE)
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
-            PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
-                listOf(CareType.DAYCARE)
-        }
+fun getAbsenceCareTypes(placementType: PlacementType): List<CareType> = when (placementType) {
+    PlacementType.CLUB -> listOf(CareType.CLUB)
+    PlacementType.PRESCHOOL,
+    PlacementType.PREPARATORY -> listOf(CareType.PRESCHOOL)
+    PlacementType.PRESCHOOL_DAYCARE,
+    PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
+    PlacementType.DAYCARE -> listOf(CareType.DAYCARE)
+    PlacementType.DAYCARE_PART_TIME -> listOf(CareType.DAYCARE)
+    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+    PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+        listOf(CareType.DAYCARE)
 }
 
 enum class CareType {
@@ -231,10 +230,6 @@ enum class AbsenceType {
     PARENTLEAVE,
     FORCE_MAJEURE,
     PRESENCE;
-
-    companion object {
-        val nonAbsences = setOf(PRESENCE, PLANNED_ABSENCE)
-    }
 }
 
 data class AbsencePlacement(
