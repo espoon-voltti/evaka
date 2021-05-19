@@ -22,11 +22,13 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.varda.VardaServiceNeed
 import fi.espoo.evaka.vasu.VasuContent
 import fi.espoo.evaka.vasu.VasuQuestion
 import fi.espoo.evaka.vasu.VasuSection
@@ -485,12 +487,16 @@ fun Database.Transaction.insertTestNewServiceNeed(
     optionId: UUID,
     shiftCare: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    id: UUID = UUID.randomUUID()
+    id: UUID = UUID.randomUUID(),
+    updated: HelsinkiDateTime = HelsinkiDateTime.now()
 ): UUID {
     createUpdate(
         """
-INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at)
-VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt)
+ALTER TABLE new_service_need DISABLE TRIGGER set_timestamp;
+INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at, updated)
+VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt, :updated);
+ALTER TABLE new_service_need ENABLE TRIGGER set_timestamp;
+
 """
     )
         .bind("id", id)
@@ -501,8 +507,23 @@ VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirm
         .bind("shiftCare", shiftCare)
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
+        .bind("updated", updated)
         .execute()
     return id
+}
+
+fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
+    createUpdate(
+        // language=sql
+        """
+ALTER TABLE service_need_option DISABLE TRIGGER set_timestamp;
+INSERT INTO service_need_option (id, name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, updated)
+VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :voucherValueCoefficient, :occupancyCoefficient, :daycareHoursPerWeek, :partDay, :partWeek, :feeDescriptionFi, :feeDescriptionSv, :voucherValueDescriptionFi, :voucherValueDescriptionSv, :updated);
+ALTER TABLE service_need_option ENABLE TRIGGER set_timestamp;
+"""
+    )
+        .bindKotlin(option)
+        .execute()
 }
 
 fun Database.Transaction.insertTestIncome(
@@ -1008,3 +1029,12 @@ INSERT INTO daycare_group_acl (daycare_group_id, employee_id)
 VALUES (:groupId, :employeeId)
 """
 ).bindKotlin(aclRow).execute()
+
+fun Database.Transaction.insertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) = insertTestDataRow(
+    vardaServiceNeed,
+    """
+INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_relation_id)
+VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaRelationId)
+RETURNING evaka_service_need_id
+    """
+)

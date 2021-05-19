@@ -68,7 +68,8 @@ data class ServiceNeedOption(
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
-    val voucherValueDescriptionSv: String
+    val voucherValueDescriptionSv: String,
+    val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 
 fun validateServiceNeed(
