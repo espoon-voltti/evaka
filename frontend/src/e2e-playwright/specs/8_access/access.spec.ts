@@ -151,7 +151,7 @@ describe('Child information page', () => {
     })
   })
 
-  test('Staff sees only the units tab', async () => {
+  test('Staff sees only the units and messaging tabs', async () => {
     await nav.login('STAFF')
     await nav.tabsVisible({
       applications: false,
@@ -159,7 +159,7 @@ describe('Child information page', () => {
       search: false,
       finance: false,
       reports: false,
-      messages: false
+      messages: true
     })
   })
 
