@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: 2017-2020 City of Espoo
+-- SPDX-FileCopyrightText: 2017-2021 City of Espoo
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -1911,53 +1911,6 @@ INSERT INTO daycare_group (id, daycare_id, name, start_date, end_date) VALUES
     ('51f22140-f96f-11ea-b3ed-cb31eae1571f', 'e58483ae-5c43-11ea-9916-abde0f8c7632', 'Ryhmä 1', '2020-03-01', 'infinity');
 
 INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group;
-
-INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv) VALUES
-    ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 1.0, 0.6, 0.54, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Viisivuotiaiden kokopäiväinen', 'DAYCARE_FIVE_YEAR_OLDS', TRUE, 0.8, 1.0, 1.0, 45, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25 h/viikko', 'mer än 25 h/vecka'),
-    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.8, 0.6, 0.5, 20, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
-    ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
-    ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
-    ('Valmistava opetus ja liittyvä varhaiskasvatus', 'PREPARATORY_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
-    ('Kerho', 'CLUB', TRUE, 0.0, 0.0, 1.0, 0, TRUE, TRUE, '', '', '', ''),
-    ('Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 0.0, 1.0, 35, FALSE, TRUE, '', '', '', ''),
-    ('Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.0, 0.54, 25, TRUE, TRUE, '', '', '', ''),
-    ('Kokopäiväinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'vähintään 35 h/vko', 'minst 35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('Kokopäiväinen, yli 25h alle 35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, FALSE, '25-35 h/vko', '25-35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('Osaviikkoinen, vähintään 35h', 'DAYCARE', FALSE, 1.0, 1.0, 1.0, 35, FALSE, TRUE, 'vähintään 35 h/vko', 'minst 35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('Osaviikkoinen, yli 25h alle 35h', 'DAYCARE', FALSE, 0.8, 1.0, 1.0, 30, FALSE, TRUE, '25-35 h/vko', '25-35 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('Osaviikkoinen, enintään 25h', 'DAYCARE', FALSE, 0.6, 0.6, 1.0, 25, FALSE, TRUE, 'korkeintaan 25 h/vko', 'högst 25 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Osapäiväinen, enintään 25h', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, FALSE, 'korkeintaan 25 h/vko', 'högst 25 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Osapäiväinen ja osaviikkoinen, enintään 25h', 'DAYCARE_PART_TIME', FALSE, 0.6, 0.6, 0.54, 25, TRUE, TRUE, 'korkeintaan 25 h/vko', 'högst 25 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('5-vuotiaiden kokopäiväinen, vähintään 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.8, 1.0, 1.0, 45, FALSE, FALSE, 'maksullista varhaiskasvatusta vähintään 25 h/vko', 'avgiftsbelagd småbarnspedagogik minst 25 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('5-vuotiaiden kokopäiväinen, yli 35h alle 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, FALSE, 'maksullista varhaiskasvatusta 15-25 h/vko', 'avgiftsbelagd småbarnspedagogik 15-25 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('5-vuotiaiden kokopäiväinen, yli 25h alle 35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, FALSE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('5-vuotiaiden osaviikkoinen, yli 35h alle 45h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.6, 1.0, 1.0, 40, FALSE, TRUE, 'maksullista varhaiskasvatusta 15-25 h/vko', 'avgiftsbelagd småbarnspedagogik 15-25 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('5-vuotiaiden osaviikkoinen, yli 25h alle 35h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 1.0, 1.0, 35, FALSE, TRUE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('5-vuotiaiden osaviikkoinen, yli 20h enintään 25h', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 1.0, 25, FALSE, TRUE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('5-vuotiaiden maksuton osaviikkoinen', 'DAYCARE_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 1.0, 20, FALSE, TRUE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('5-vuotiaiden osapäiväinen, yli 20h enintään 25h', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 0.5, 25, TRUE, FALSE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('5-vuotiaiden maksuton osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 0.5, 20, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('5-vuotiaiden osapäiväinen ja osaviikkoinen, yli 20h enintään 25h', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.35, 0.6, 0.5, 25, TRUE, TRUE, 'maksullista varhaiskasvatusta korkeintaan 15 h/vko', 'avgiftsbelagd småbarnspedagogik högst 15 h/vecka', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('5-vuotiaiden maksuton osapäiväinen ja osaviikkoinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', FALSE, 0.0, 0.6, 0.5, 20, TRUE, TRUE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Kokopäiväinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
-    ('Osaviikkoinen liittyvä, yhteensä vähintään 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
-    ('Osaviikkoinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
-    ('Osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
-    ('Osapäiväinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
-    ('Osapäiväinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 35h alle 45h', 'PRESCHOOL_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 35h', 'PRESCHOOL_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
-    ('Kokopäiväinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, FALSE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
-    ('Osaviikkoinen liittyvä, yhteensä vähintään 50h', 'PREPARATORY_DAYCARE', FALSE, 0.8, 0.5, 1.0, 25, FALSE, TRUE, 'varhaiskasvatusta vähintään 25 h/vko', 'småbarnspedagogik minst 25 h/vecka', '', ''),
-    ('Osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, FALSE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
-    ('Osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, FALSE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
-    ('Osapäiväinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, FALSE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
-    ('Osapäiväinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, FALSE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', ''),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
-    ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', '');
 
 INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),

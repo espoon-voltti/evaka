@@ -1,8 +1,19 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
+import styled from 'styled-components'
+import { Link } from 'react-router-dom'
+
+import { faQuestion } from 'lib-icons'
+import LocalDate from 'lib-common/local-date'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { Gap } from 'lib-components/white-space'
+import Button from 'lib-components/atoms/buttons/Button'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Placement } from '../../../types/child'
 import ToolbarAccordion, {
   RestrictedToolbar
@@ -13,27 +24,15 @@ import {
   isActiveDateRange
 } from '../../../utils/date'
 import { useTranslation } from '../../../state/i18n'
-import { faQuestion } from 'lib-icons'
-import styled from 'styled-components'
-import { Gap } from 'lib-components/white-space'
-import Button from 'lib-components/atoms/buttons/Button'
-import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { UIContext, UiState } from '../../../state/ui'
-import { Link } from 'react-router-dom'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import Toolbar from '../../../components/common/Toolbar'
 import {
   deletePlacement,
   PlacementUpdate,
   updatePlacement
 } from '../../../api/child/placements'
-import { InputWarning } from '../../../components/common/InputWarning'
-import LocalDate from 'lib-common/local-date'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { InputWarning } from '../../common/InputWarning'
 import NewServiceNeeds from './NewServiceNeeds'
-import { featureFlags } from '../../../config'
-import FiniteDateRange from 'lib-common/finite-date-range'
 
 interface Props {
   placement: Placement
@@ -150,17 +149,6 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
       : setStartDateWarning(false)
   }
 
-  const showServiceNeedWarning =
-    placement.type !== 'CLUB' &&
-    !editing &&
-    placement.missingServiceNeedDays > 0
-
-  const missingServiceNeedDays = featureFlags.useNewServiceNeeds
-    ? placement.missingNewServiceNeedDays
-    : showServiceNeedWarning
-    ? placement.missingServiceNeedDays
-    : 0
-
   const currentGroupPlacement = placement.groupPlacements.find((gp) =>
     FiniteDateRange.from(gp).includes(LocalDate.today())
   )
@@ -202,9 +190,9 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             }
             dataQaDelete="btn-remove-placement"
             warning={
-              missingServiceNeedDays > 0
+              placement.missingNewServiceNeedDays > 0
                 ? {
-                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
+                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingNewServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
                     tooltipId: `tooltip_missing-service-need_${placement.id}`
                   }
                 : undefined
@@ -312,13 +300,6 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           </DataValue>
         </DataRow>
         <Gap size="s" />
-        {missingServiceNeedDays > 0 && !featureFlags.showNewServiceNeedsList ? (
-          <AlertBox
-            message={`${i18n.childInformation.placements.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissing2}`}
-            thin
-            wide
-          />
-        ) : null}
         {editing && (
           <ActionRow>
             <FixedSpaceRow>
@@ -335,13 +316,9 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           </ActionRow>
         )}
 
-        {featureFlags.showNewServiceNeedsList && (
-          <>
-            <Gap size="s" />
+        <Gap size="s" />
 
-            <NewServiceNeeds placement={placement} reload={onRefreshNeeded} />
-          </>
-        )}
+        <NewServiceNeeds placement={placement} reload={onRefreshNeeded} />
       </ToolbarAccordion>
       {confirmingDelete && (
         <InfoModal

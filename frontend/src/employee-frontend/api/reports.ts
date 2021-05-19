@@ -67,15 +67,13 @@ export async function getDecisionsReport(
 }
 
 export async function getRawReport(
-  filters: PeriodFilters,
-  useNewServiceNeeds: boolean
+  filters: PeriodFilters
 ): Promise<Result<RawReportRow[]>> {
   return client
     .get<JsonOf<RawReportRow[]>>('/reports/raw', {
       params: {
         from: filters.from.formatIso(),
-        to: filters.to.formatIso(),
-        useNewServiceNeeds
+        to: filters.to.formatIso()
       }
     })
     .then((res) =>
@@ -139,12 +137,11 @@ export interface MissingServiceNeedReportFilters {
 }
 
 export async function getMissingServiceNeedReport(
-  filters: MissingServiceNeedReportFilters,
-  v2?: boolean
+  filters: MissingServiceNeedReportFilters
 ): Promise<Result<MissingServiceNeedReportRow[]>> {
   return client
     .get<JsonOf<MissingServiceNeedReportRow[]>>(
-      `/reports/missing-service-need${v2 ? '/v2' : ''}`,
+      '/reports/missing-service-need',
       {
         params: {
           from: filters.startDate.formatIso(),
@@ -232,18 +229,14 @@ export async function getChildAgeLanguageReport(
 }
 
 export async function getServiceNeedReport(
-  filters: DateFilters,
-  v2?: boolean
+  filters: DateFilters
 ): Promise<Result<ServiceNeedReportRow[]>> {
   return client
-    .get<JsonOf<ServiceNeedReportRow[]>>(
-      `/reports/service-need${v2 ? '/v2' : ''}`,
-      {
-        params: {
-          date: filters.date.formatIso()
-        }
+    .get<JsonOf<ServiceNeedReportRow[]>>('/reports/service-need', {
+      params: {
+        date: filters.date.formatIso()
       }
-    )
+    })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -283,8 +276,7 @@ export interface OccupancyReportFilters {
 }
 
 export async function getOccupanciesReport(
-  filters: OccupancyReportFilters,
-  useNewServiceNeeds: boolean
+  filters: OccupancyReportFilters
 ): Promise<Result<OccupancyReportRow[]>> {
   return client
     .get<JsonOf<OccupancyReportRow[]>>(
@@ -292,8 +284,7 @@ export async function getOccupanciesReport(
       {
         params: {
           ...filters,
-          type: filters.type.split('_')[1],
-          useNewServiceNeeds
+          type: filters.type.split('_')[1]
         }
       }
     )

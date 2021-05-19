@@ -11,12 +11,11 @@ import { Loading, Result } from 'lib-common/api'
 import { RawReportRow } from '../../types/reports'
 import { getRawReport, PeriodFilters } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { FilterLabel, FilterRow } from '../../components/reports/common'
+import { FilterLabel, FilterRow } from './common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../../components/common/styled/containers'
+import { FlexRow } from '../common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
-import { featureFlags } from '../../config'
 
 function Raw() {
   const { i18n } = useTranslation()
@@ -31,7 +30,7 @@ function Raw() {
   useEffect(() => {
     setRows(Loading.of())
     if (!invertedRange && !tooLongRange) {
-      void getRawReport(filters, featureFlags.useNewServiceNeeds).then(setRows)
+      void getRawReport(filters).then(setRows)
     }
   }, [filters, invertedRange, tooLongRange])
 

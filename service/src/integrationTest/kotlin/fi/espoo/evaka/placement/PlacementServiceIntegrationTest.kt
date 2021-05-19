@@ -759,7 +759,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
-                    missingServiceNeedDays = 6,
                     missingNewServiceNeedDays = 6,
                     groupPlacements = listOf(
                         DaycareGroupPlacement(
@@ -836,7 +835,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
-                    missingServiceNeedDays = 20,
                     missingNewServiceNeedDays = 20,
                     groupPlacements = listOf(
                         DaycareGroupPlacement(

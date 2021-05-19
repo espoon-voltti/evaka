@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import {
   Coordinate,
   DaycareDailyNote,
@@ -32,7 +32,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
-import { featureFlags } from '../config'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -164,7 +163,6 @@ export async function getUnitData(
       params: {
         from: from.formatIso(),
         to: to.formatIso(),
-        v2: featureFlags.useNewServiceNeeds,
         missingGroupPlacementsV2
       }
     })
@@ -409,16 +407,14 @@ export async function getOccupancyRates(
   unitId: UUID,
   from: LocalDate,
   to: LocalDate,
-  type: OccupancyType,
-  useNewSeviceNeeds: boolean
+  type: OccupancyType
 ): Promise<Result<OccupancyResponse>> {
   return client
     .get<JsonOf<OccupancyResponse>>(`/occupancy/by-unit/${unitId}`, {
       params: {
         from: from.formatIso(),
         to: to.formatIso(),
-        type,
-        useNewSeviceNeeds
+        type
       }
     })
     .then(({ data }) => mapOccupancyResponse(data))

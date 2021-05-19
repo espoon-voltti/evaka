@@ -177,20 +177,6 @@ WHERE bc.id = :backupCareId AND acl.employee_id = :userId
         }
     )
 
-    fun getRolesForServiceNeed(user: AuthenticatedUser, serviceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
-            it.createQuery(
-                // language=SQL
-                """
-SELECT role
-FROM child_acl_view acl
-JOIN service_need sn ON acl.child_id = sn.child_id
-WHERE sn.id = :serviceNeedId AND acl.employee_id = :userId
-                """.trimIndent()
-            ).bind("serviceNeedId", serviceNeedId).bind("userId", user.id).mapTo<UserRole>().toSet()
-        }
-    )
-
     fun getRolesForNewServiceNeed(user: AuthenticatedUser, serviceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(

@@ -116,7 +116,6 @@ export interface DaycarePlacement {
   }
   groupPlacements: DaycareGroupPlacement[]
   type: PlacementType
-  missingServiceNeedDays: number
   missingNewServiceNeedDays: number
   startDate: LocalDate
   endDate: LocalDate
@@ -163,7 +162,6 @@ export interface DaycareGroupPlacement {
 export interface DaycareGroupPlacementDetailed extends DaycareGroupPlacement {
   daycarePlacementStartDate: LocalDate
   daycarePlacementEndDate: LocalDate
-  daycarePlacementMissingServiceNeedDays: number
   daycarePlacementMissingNewServiceNeedDays: number
   child: ChildBasics
 }
@@ -179,8 +177,6 @@ export const flatMapGroupPlacements = (
         daycarePlacementStartDate: daycarePlacement.startDate,
         daycarePlacementEndDate: daycarePlacement.endDate,
         daycarePlacementId: daycarePlacement.id,
-        daycarePlacementMissingServiceNeedDays:
-          daycarePlacement.missingServiceNeedDays,
         daycarePlacementMissingNewServiceNeedDays:
           daycarePlacement.missingNewServiceNeedDays
       }))

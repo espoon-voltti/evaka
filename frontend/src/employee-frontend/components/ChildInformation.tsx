@@ -15,7 +15,6 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
 import ChildDetails from '../components/child-information/ChildDetails'
-import ServiceNeed from '../components/child-information/ServiceNeed'
 import Assistance from '../components/child-information/Assistance'
 import FeeAlteration from '../components/child-information/FeeAlteration'
 import { UUID } from '../types'
@@ -74,7 +73,6 @@ const components = {
   guardians: Guardians,
   parents: FridgeParents,
   placements: Placements,
-  'service-need': ServiceNeed,
   'daily-service-times': DailyServiceTimesSection,
   assistance: Assistance,
   'backup-care': BackupCare,
@@ -93,7 +91,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
@@ -104,7 +101,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'parents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
@@ -116,7 +112,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'parents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
     { component: 'daily-service-times', open: false }
   ],
   ['UNIT_SUPERVISOR']: [
@@ -124,7 +119,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'parents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
@@ -136,14 +130,12 @@ const layouts: Layouts<typeof components> = {
     { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
     { component: 'daily-service-times', open: false }
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false }
   ]

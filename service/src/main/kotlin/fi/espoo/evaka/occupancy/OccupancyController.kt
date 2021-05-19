@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.format.annotation.DateTimeFormat
@@ -32,15 +31,14 @@ class OccupancyController(private val acl: AccessControlList) {
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType,
-        @RequestParam(required = false) useNewServiceNeeds: Boolean = false
+        @RequestParam type: OccupancyType
     ): ResponseEntity<OccupancyResponse> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         val occupancies = db.read {
-            it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type, useNewServiceNeeds)
+            it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type)
         }
 
         val response = OccupancyResponse(
@@ -58,15 +56,14 @@ class OccupancyController(private val acl: AccessControlList) {
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType,
-        @RequestParam(required = false) useNewServiceNeeds: Boolean = false
+        @RequestParam type: OccupancyType
     ): ResponseEntity<List<OccupancyResponseGroupLevel>> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
         val occupancies = db.read {
-            it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type, useNewServiceNeeds)
+            it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type)
         }
 
         val response = occupancies.groupBy({ it.groupId }) {
@@ -108,93 +105,38 @@ data class OccupancyResponse(
 fun Database.Read.calculateOccupancyPeriods(
     unitId: UUID,
     period: FiniteDateRange,
-    type: OccupancyType,
-    useNewServiceNeeds: Boolean
+    type: OccupancyType
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
 
-    if (useNewServiceNeeds) {
-        return reduceDailyOccupancyValues(
-            calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
-        ).flatMap { (_, values) -> values }
-    }
-
-    val sql = getSql(
-        type,
-        singleUnit = true,
-        includeGroups = false
-    )
-
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("startDate", period.start)
-        .bind("endDate", period.end)
-        .map { rs, _ ->
-            OccupancyPeriod(
-                period = FiniteDateRange(
-                    rs.getDate("period_start").toLocalDate(),
-                    rs.getDate("period_end").toLocalDate()
-                ),
-                sum = rs.getDouble("sum"),
-                headcount = rs.getInt("headcount"),
-                percentage = rs.getBigDecimal("percentage")?.toDouble(),
-                caretakers = rs.getBigDecimal("caretakers")?.toDouble()
-            )
-        }
-        .list()
+    return reduceDailyOccupancyValues(
+        calculateDailyUnitOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
+    ).flatMap { (_, values) -> values }
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: UUID,
     period: FiniteDateRange,
-    type: OccupancyType,
-    useNewServiceNeeds: Boolean
+    type: OccupancyType
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
 
-    if (useNewServiceNeeds) {
-        return reduceDailyOccupancyValues(
-            calculateDailyGroupOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
-        ).flatMap { (groupKey, values) ->
-            values.map { value ->
-                OccupancyPeriodGroupLevel(
-                    groupId = groupKey.groupId,
-                    period = value.period,
-                    sum = value.sum,
-                    headcount = value.headcount,
-                    percentage = value.percentage,
-                    caretakers = value.caretakers
-                )
-            }
-        }
-    }
-
-    val sql = getSql(
-        type,
-        singleUnit = true,
-        includeGroups = true
-    )
-
-    return createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("startDate", period.start)
-        .bind("endDate", period.end)
-        .map { rs, _ ->
+    return reduceDailyOccupancyValues(
+        calculateDailyGroupOccupancyValues(LocalDate.now(), period, type, unitId = unitId)
+    ).flatMap { (groupKey, values) ->
+        values.map { value ->
             OccupancyPeriodGroupLevel(
-                groupId = rs.getUUID("group_id"),
-                period = FiniteDateRange(
-                    rs.getDate("period_start").toLocalDate(),
-                    rs.getDate("period_end").toLocalDate()
-                ),
-                sum = rs.getDouble("sum"),
-                headcount = rs.getInt("headcount"),
-                percentage = rs.getBigDecimal("percentage")?.toDouble(),
-                caretakers = rs.getBigDecimal("caretakers")?.toDouble()
+                groupId = groupKey.groupId,
+                period = value.period,
+                sum = value.sum,
+                headcount = value.headcount,
+                percentage = value.percentage,
+                caretakers = value.caretakers
             )
         }
-        .list()
+    }
 }

@@ -14,13 +14,8 @@ import { DateFilters, getServiceNeedReport } from '../../api/reports'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
-import {
-  FilterLabel,
-  FilterRow,
-  TableScrollable
-} from '../../components/reports/common'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 import LocalDate from 'lib-common/local-date'
-import { featureFlags } from '../../config'
 
 interface DisplayFilters {
   careArea: string
@@ -49,9 +44,7 @@ function ServiceNeeds() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getServiceNeedReport(filters, featureFlags.useNewServiceNeeds).then(
-      setRows
-    )
+    void getServiceNeedReport(filters).then(setRows)
   }, [filters])
 
   const filteredRows: ServiceNeedReportRow[] = useMemo(

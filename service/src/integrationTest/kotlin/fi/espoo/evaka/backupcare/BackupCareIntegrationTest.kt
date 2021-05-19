@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
@@ -147,12 +146,6 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                 placementId = placementId,
                 optionId = snDefaultDaycare.id
             )
-            tx.insertTestServiceNeed(
-                childId = testChild_1.id,
-                startDate = serviceNeedPeriod.start,
-                endDate = serviceNeedPeriod.end,
-                updatedBy = testDecisionMaker_1.id
-            )
         }
         val id = createBackupCareAndAssert(groupId = groupId)
         val (_, res, result) = http.get(
@@ -182,7 +175,6 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                         name = groupName
                     ),
                     period = period,
-                    missingServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt(),
                     missingNewServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
                 )
             ),

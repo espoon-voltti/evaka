@@ -38,7 +38,6 @@ import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
 import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
-import ReportInvalidServiceNeed from './components/reports/InvalidServiceNeed'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
 import ReportChildrenInDifferentAddress from './components/reports/ChildrenInDifferentAddress'
 import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
@@ -241,12 +240,6 @@ export default function App() {
               exact
               path="/reports/missing-service-need"
               component={ensureAuthenticated(ReportMissingServiceNeed)}
-              title={i18n.titles.reports}
-            />
-            <RouteWithTitle
-              exact
-              path="/reports/invalid-service-need"
-              component={ensureAuthenticated(ReportInvalidServiceNeed)}
               title={i18n.titles.reports}
             />
             <RouteWithTitle

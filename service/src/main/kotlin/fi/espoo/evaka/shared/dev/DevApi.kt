@@ -120,7 +120,8 @@ class DevApi(
         db.transaction {
             it.resetDatabase()
 
-            // Terms are not inserted by fixtures
+            // Service need options and terms are not inserted by fixtures
+            it.runDevScript("service-need-options.sql")
             it.runDevScript("preschool-terms.sql")
             it.runDevScript("club-terms.sql")
         }
