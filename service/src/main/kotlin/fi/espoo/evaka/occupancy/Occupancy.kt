@@ -5,6 +5,8 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -750,10 +752,10 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED)
-            this.createQuery("SELECT child_id, date FROM absence WHERE child_id = ANY(:childIds) AND :period @> date AND NOT absence_type = ANY(:nonAbsences)")
+            this.createQuery("SELECT child_id, date, care_type FROM absence WHERE child_id = ANY(:childIds) AND :period @> date AND NOT absence_type = :presence")
                 .bind("childIds", childIds)
                 .bind("period", period)
-                .bind("nonAbsences", AbsenceType.nonAbsences.toTypedArray())
+                .bind("presence", AbsenceType.PRESENCE)
                 .mapTo<Absence>()
                 .groupBy { it.childId }
         else
@@ -790,7 +792,7 @@ WHERE sn.placement_id = ANY(:placementIds)
                 .associate { caretakers ->
                     val placementsOnDate = (placementsAndPlans[key.groupingId] ?: listOf())
                         .filter { it.period.includes(caretakers.date) }
-                        .filterNot { absences[it.childId]?.any { absence -> absence.date == caretakers.date } ?: false }
+                        .filterNot { childWasAbsentWholeDay(caretakers.date, it.type, absences[it.childId] ?: listOf()) }
 
                     val coefficientSum = placementsOnDate
                         .groupBy { it.childId }
@@ -819,6 +821,15 @@ WHERE sn.placement_id = ANY(:placementIds)
                 occupancies = occupancies
             )
         }
+}
+
+private fun childWasAbsentWholeDay(
+    date: LocalDate,
+    childPlacementType: PlacementType,
+    childAbsences: List<Absence>
+): Boolean {
+    val absencesOnDate = childAbsences.filter { it.date == date }.map { it.careType }.toSet()
+    return absencesOnDate.isNotEmpty() && absencesOnDate == getAbsenceCareTypes(childPlacementType).toSet()
 }
 
 private data class Caretakers<K : OccupancyGroupingKey>(
@@ -856,5 +867,6 @@ private data class AssistanceNeed(
 
 private data class Absence(
     val childId: UUID,
-    val date: LocalDate
+    val date: LocalDate,
+    val careType: CareType
 )

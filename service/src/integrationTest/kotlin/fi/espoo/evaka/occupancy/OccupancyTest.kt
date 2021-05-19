@@ -404,28 +404,26 @@ class OccupancyTest : PureJdbiTest() {
     }
 
     @Test
-    fun `realized occupancy does not count absent children unless absence type is PRESENCE or PLANNED_ABSENCE`() {
+    fun `realized occupancy does not count absent children unless absence type is PRESENCE`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today)
                 .addChild().withAge(4).saveAnd {
-                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-3).toDay(0).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-2).toDay(0).saveAnd {
                         addGroupPlacement().toGroup(daycareGroup1).save()
                     }
-                    addAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-2).forCareTypes(AbsenceCareType.DAYCARE).save()
-                    addAbsence().ofType(AbsenceType.PRESENCE).onDay(-1).forCareTypes(AbsenceCareType.DAYCARE).save()
-                    addAbsence().ofType(AbsenceType.PLANNED_ABSENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE).save()
+                    addAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-1).forCareTypes(AbsenceCareType.DAYCARE).save()
+                    addAbsence().ofType(AbsenceType.PRESENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE).save()
                 }
 
-            FiniteDateRange(today.minusDays(3), today).dates().forEach { date ->
+            FiniteDateRange(today.minusDays(2), today).dates().forEach { date ->
                 tx.insertTestStaffAttendance(groupId = daycareGroup1, date = date, count = 3.0)
             }
         }
 
         db.read { tx ->
-            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(3), 1.0)
-            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(2), 0.0)
-            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.minusDays(2), 1.0)
-            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(1), 1.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(2), 1.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(1), 0.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.minusDays(1), 1.0)
             getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today, 1.0)
         }
     }
