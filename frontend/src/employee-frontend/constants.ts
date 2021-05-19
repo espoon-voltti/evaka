@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
+import { featureFlags } from 'lib-customizations/employee'
 import { UUID } from './types'
 import {
   AssistanceActionType,
@@ -102,11 +103,19 @@ export const ASSISTANCE_ACTION_TYPE_LIST: AssistanceActionType[] = [
   'OTHER'
 ]
 
-export const ASSISTANCE_MEASURE_LIST: AssistanceMeasure[] = [
-  'SPECIAL_ASSISTANCE_DECISION',
-  'INTENSIFIED_ASSISTANCE',
-  'EXTENDED_COMPULSORY_EDUCATION',
-  'CHILD_SERVICE',
-  'CHILD_ACCULTURATION_SUPPORT',
-  'TRANSPORT_BENEFIT'
-]
+export const ASSISTANCE_MEASURE_LIST: AssistanceMeasure[] = featureFlags.assistanceMeasureChildServiceEnabled
+  ? [
+      'SPECIAL_ASSISTANCE_DECISION',
+      'INTENSIFIED_ASSISTANCE',
+      'EXTENDED_COMPULSORY_EDUCATION',
+      'CHILD_SERVICE',
+      'CHILD_ACCULTURATION_SUPPORT',
+      'TRANSPORT_BENEFIT'
+    ]
+  : [
+      'SPECIAL_ASSISTANCE_DECISION',
+      'INTENSIFIED_ASSISTANCE',
+      'EXTENDED_COMPULSORY_EDUCATION',
+      'CHILD_ACCULTURATION_SUPPORT',
+      'TRANSPORT_BENEFIT'
+    ]

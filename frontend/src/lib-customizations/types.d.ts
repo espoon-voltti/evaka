@@ -49,6 +49,7 @@ interface MapConfig {
 }
 
 interface FeatureFlags {
+  assistanceMeasureChildServiceEnabled: boolean
   urgencyAttachmentsEnabled: boolean
   preschoolEnabled: boolean
 }
