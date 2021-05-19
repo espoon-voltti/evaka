@@ -118,7 +118,8 @@ interface Props<T> {
   disabled?: boolean
   placeholder?: string
   filterItems?: (inputValue: string, items: T[]) => T[]
-  getLabel?: (item: T) => string
+  getItemLabel?: (item: T) => string
+  getItemDataQa?: (item: T) => string | undefined
   menuEmptyLabel?: string
   children?: {
     menuItem?: (props: MenuItemProps<T>) => React.ReactNode
@@ -127,7 +128,7 @@ interface Props<T> {
   'data-qa'?: string
 }
 
-function defaultGetLabel<T>(item: T) {
+function defaultGetItemLabel<T>(item: T) {
   return String(item)
 }
 
@@ -154,7 +155,8 @@ export default function Combobox<T>(props: Props<T>) {
     clearable,
     disabled,
     placeholder,
-    getLabel = defaultGetLabel,
+    getItemLabel = defaultGetItemLabel,
+    getItemDataQa,
     menuEmptyLabel,
     children,
     'data-qa': dataQa
@@ -165,18 +167,21 @@ export default function Combobox<T>(props: Props<T>) {
     (inputValue: string, items: T[]) => {
       const filter = inputValue.toLowerCase()
       return items.filter((item) =>
-        getLabel(item).toLowerCase().startsWith(filter)
+        getItemLabel(item).toLowerCase().startsWith(filter)
       )
     },
-    [getLabel]
+    [getItemLabel]
   )
   const defaultRenderMenuItem = useCallback(
     ({ highlighted, item }: MenuItemProps<T>) => (
-      <MenuItem className={classNames({ highlighted, clickable: true })}>
-        {getLabel(item)}
+      <MenuItem
+        data-qa={getItemDataQa && getItemDataQa(item)}
+        className={classNames({ highlighted, clickable: true })}
+      >
+        {getItemLabel(item)}
       </MenuItem>
     ),
-    [getLabel]
+    [getItemLabel, getItemDataQa]
   )
 
   const filterItems = useMemo(() => props.filterItems ?? defaultFilterItems, [
@@ -195,8 +200,8 @@ export default function Combobox<T>(props: Props<T>) {
   )
 
   const itemToString = useCallback(
-    (item: T | null) => (item ? getLabel(item) : ''),
-    [getLabel]
+    (item: T | null) => (item ? getItemLabel(item) : ''),
+    [getItemLabel]
   )
   const [focused, setFocused] = useState(false)
   const [currentFilter, setCurrentFilter] = useState('')
@@ -284,12 +289,13 @@ export default function Combobox<T>(props: Props<T>) {
           })}
         />
         {clearable && selectedItem && (
-          <Button onClick={enabled ? onClickClear : undefined}>
+          <Button data-qa="clear" onClick={enabled ? onClickClear : undefined}>
             <FontAwesomeIcon icon={faTimes} />
           </Button>
         )}
         <Separator>&nbsp;</Separator>
         <Button
+          data-qa="toggle"
           {...getToggleButtonProps({
             disabled,
             // avoid toggling the menu again in parent onClick handle
@@ -316,7 +322,11 @@ export default function Combobox<T>(props: Props<T>) {
                 </MenuItemWrapper>
               )}
               {filteredItems.map((item, index) => (
-                <MenuItemWrapper key={index} {...getItemProps({ item, index })}>
+                <MenuItemWrapper
+                  data-qa="item"
+                  key={index}
+                  {...getItemProps({ item, index })}
+                >
                   {renderMenuItem({
                     item,
                     highlighted: highlightedIndex === index

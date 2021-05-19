@@ -419,12 +419,14 @@ function AddAcl({
       <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
       <AddAclSelectContainer>
         <Combobox
+          data-qa="acl-combobox"
           placeholder={i18n.unit.accessControl.choosePerson}
           selectedItem={selectedEmployee}
-          onChange={(employee) => setSelectedEmployee(employee)}
+          onChange={setSelectedEmployee}
           items={options}
           menuEmptyLabel={i18n.common.noResults}
-          getLabel={(item) => item.label}
+          getItemLabel={(item) => item.label}
+          getItemDataQa={(item) => `value-${item.value}`}
         />
         <Button
           data-qa="acl-add-button"

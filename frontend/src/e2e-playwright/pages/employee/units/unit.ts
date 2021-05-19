@@ -31,7 +31,7 @@ class UnitInformationSection {
 
 class StaffAclSection extends RawElement {
   readonly #table = this.find('[data-qa="acl-table"]')
-  readonly #addInput = this.find('.acl-select')
+  readonly #combobox = this.find('[data-qa="acl-combobox"]')
   readonly #addButton = this.find('[data-qa="acl-add-button"]')
 
   async waitUntilLoaded() {
@@ -39,9 +39,8 @@ class StaffAclSection extends RawElement {
   }
   async addEmployeeAcl(employeeId: UUID) {
     await this.waitUntilLoaded()
-    // typing text would be better, but it's buggy with react-select
-    await this.#addInput.click()
-    await this.find(`[data-qa="value-${employeeId}"]`).click()
+    await this.#combobox.click()
+    await this.#combobox.find(`[data-qa="value-${employeeId}"]`).click()
     await this.#addButton.click()
     await this.waitUntilLoaded()
   }
@@ -49,15 +48,13 @@ class StaffAclSection extends RawElement {
     return this.page.$$eval(
       `${this.#table.selector} [data-qa="acl-row"]`,
       (rows) =>
-        rows
-          // .filter((row): row is HTMLElement => row instanceof HTMLElement)
-          .map((row) => ({
-            name: row.querySelector('[data-qa="name"]')?.textContent ?? '',
-            email: row.querySelector('[data-qa="email"]')?.textContent ?? '',
-            groups: Array.from(
-              row.querySelectorAll('[data-qa="groups"] > div')
-            ).map((element) => element.textContent ?? '')
-          }))
+        rows.map((row) => ({
+          name: row.querySelector('[data-qa="name"]')?.textContent ?? '',
+          email: row.querySelector('[data-qa="email"]')?.textContent ?? '',
+          groups: Array.from(
+            row.querySelectorAll('[data-qa="groups"] > div')
+          ).map((element) => element.textContent ?? '')
+        }))
     )
   }
   async getRow(name: string): Promise<StaffAclRow> {
