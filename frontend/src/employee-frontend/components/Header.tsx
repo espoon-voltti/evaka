@@ -189,7 +189,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
               </RequireRole>
 
               {featureFlags.messaging && (
-                <RequireRole oneOf={['UNIT_SUPERVISOR']}>
+                <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
                   <NavbarLink
                     onClick={() => setPopupVisible(false)}
                     className="navbar-item is-tab"
