@@ -20,7 +20,10 @@ BEGIN
         (SELECT count(*) FROM invoice WHERE head_of_family = $1) > 0 OR
         (SELECT count(*) FROM invoice_row WHERE child = $1) > 0 OR
         (SELECT count(*) FROM placement WHERE child_id = $1) > 0 OR
-        (SELECT count(*) FROM service_need WHERE child_id = $1) > 0
+        (SELECT count(*) FROM service_need WHERE child_id = $1) > 0 OR
+        (SELECT count(*) FROM message WHERE sender_id = (SELECT id FROM message_account WHERE person_id = $1)) > 0 OR
+        (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = $1)) > 0 OR
+        (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = $1)) > 0
     ) THEN RAISE EXCEPTION 'Person still has references.';
     END IF;
 END;
