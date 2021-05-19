@@ -11,9 +11,19 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.messaging.message.MessageAccount
+import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
+import fi.espoo.evaka.messaging.message.createMessageThreadsForRecipientGroups
+import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
+import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
+import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
+import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
+import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
@@ -146,6 +156,103 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, countAfter)
 
         verifyZeroInteractions(asyncJobRunnerMock)
+    }
+
+    @Test
+    fun `merging a person moves sent messages`() {
+        val employeeId = UUID.randomUUID()
+        val receiverAccount = db.transaction {
+            it.insertTestEmployee(DevEmployee(id = employeeId))
+            it.upsertMessageAccountForEmployee(employeeId)
+            it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employeeId, roles = setOf())).first()
+        }
+
+        val senderId = UUID.randomUUID()
+        val senderIdDuplicate = UUID.randomUUID()
+        val (senderAccount, senderDuplicateAccount) = db.transaction { tx ->
+            listOf(senderId, senderIdDuplicate).map {
+                tx.insertTestPerson(DevPerson(id = it))
+                tx.createMessageAccountForPerson(it)
+                tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = it))
+            }
+        }
+
+        db.transaction { tx ->
+            createMessageThreadsForRecipientGroups(
+                tx,
+                title = "Juhannus",
+                content = "Juhannus tulee kohta",
+                type = MessageType.MESSAGE,
+                sender = senderDuplicateAccount,
+                recipientGroups = setOf(setOf(receiverAccount.id))
+            )
+        }
+        assertEquals(
+            listOf(0, 1),
+            sentMessageCounts(senderAccount, senderDuplicateAccount)
+        )
+
+        db.transaction {
+            mergeService.mergePeople(it, senderId, senderIdDuplicate)
+            mergeService.deleteEmptyPerson(it, senderIdDuplicate)
+        }
+
+        assertEquals(
+            listOf(1, 0),
+            sentMessageCounts(senderAccount, senderDuplicateAccount)
+        )
+    }
+
+    private fun sentMessageCounts(vararg accounts: MessageAccount): List<Int> = db.read { tx ->
+        accounts.map { tx.getMessagesSentByAccount(it.id, 10, 1).total }
+    }
+
+    @Test
+    fun `merging a person moves received messages`() {
+        val employeeId = UUID.randomUUID()
+        val senderAccount = db.transaction {
+            it.insertTestEmployee(DevEmployee(id = employeeId))
+            it.upsertMessageAccountForEmployee(employeeId)
+            it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employeeId, roles = setOf())).first()
+        }
+
+        val receiverId = UUID.randomUUID()
+        val receiverIdDuplicate = UUID.randomUUID()
+        val (receiverAccount, receiverDuplicateAccount) = db.transaction { tx ->
+            listOf(receiverId, receiverIdDuplicate).map {
+                tx.insertTestPerson(DevPerson(id = it))
+                tx.createMessageAccountForPerson(it)
+                tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = it))
+            }
+        }
+        db.transaction { tx ->
+            createMessageThreadsForRecipientGroups(
+                tx,
+                title = "Juhannus",
+                content = "Juhannus tulee kohta",
+                type = MessageType.MESSAGE,
+                sender = senderAccount,
+                recipientGroups = setOf(setOf(receiverDuplicateAccount.id))
+            )
+        }
+        assertEquals(
+            listOf(0, 1),
+            receivedMessageCounts(receiverAccount, receiverDuplicateAccount)
+        )
+
+        db.transaction {
+            mergeService.mergePeople(it, receiverId, receiverIdDuplicate)
+            mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
+        }
+
+        assertEquals(
+            listOf(1, 0),
+            receivedMessageCounts(receiverAccount, receiverDuplicateAccount)
+        )
+    }
+
+    private fun receivedMessageCounts(vararg accounts: MessageAccount): List<Int> = db.read { tx ->
+        accounts.map { tx.getMessagesReceivedByAccount(it.id, 10, 1).total }
     }
 
     @Test

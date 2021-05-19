@@ -78,6 +78,10 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
             UPDATE invoice_row SET child = :id_master WHERE child = :id_duplicate;
             UPDATE placement SET child_id = :id_master WHERE child_id = :id_duplicate;
             UPDATE service_need SET child_id = :id_master WHERE child_id = :id_duplicate;
+            
+            UPDATE message SET sender_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE sender_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
+            UPDATE message_content SET author_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
+            UPDATE message_recipients SET recipient_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             """.trimIndent()
         tx.createUpdate(updateSQL)
             .bind("id_master", master)
@@ -113,6 +117,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
         // language=sql
         val sql2 =
             """
+            DELETE FROM message_account WHERE person_id = :id;
             DELETE FROM child WHERE id = :id;
             DELETE FROM person WHERE id = :id;
             """.trimIndent()
