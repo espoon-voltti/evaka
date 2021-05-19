@@ -55,6 +55,34 @@ const theme: Theme = {
     },
     greyscale,
     accents: accentColors
+  },
+  typography: {
+    h1: {
+      weight: 200,
+      bold: 600,
+      mobile: {
+        weight: 600
+      }
+    },
+    h2: {
+      weight: 300,
+      bold: 600,
+      mobile: {
+        weight: 600
+      }
+    },
+    h3: {
+      weight: 'normal',
+      bold: 600
+    },
+    h4: {
+      weight: 'normal',
+      bold: 600
+    },
+    h5: {
+      weight: 'normal',
+      bold: 600
+    }
   }
 }
 
