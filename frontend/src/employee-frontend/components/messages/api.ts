@@ -9,12 +9,14 @@ import { UUID } from '../../types'
 import {
   deserializeMessageThread,
   deserializeReceiverChild,
+  deserializeSentMessage,
   IdAndName,
   MessageAccount,
   MessageThread,
   MessageType,
   ReceiverGroup,
-  ReceiverTriplet
+  ReceiverTriplet,
+  SentMessage
 } from './types'
 
 export async function deleteDraftBulletin(id: UUID): Promise<void> {
@@ -105,6 +107,24 @@ export async function getReceivedMessages(
       Success.of({
         ...data,
         data: data.data.map(deserializeMessageThread)
+      })
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getSentMessages(
+  accountId: UUID,
+  page: number,
+  pageSize: number
+): Promise<Result<Paged<SentMessage>>> {
+  return client
+    .get<JsonOf<Paged<SentMessage>>>(`/messages/${accountId}/sent`, {
+      params: { page, pageSize }
+    })
+    .then(({ data }) =>
+      Success.of({
+        ...data,
+        data: data.data.map(deserializeSentMessage)
       })
     )
     .catch((e) => Failure.fromError(e))

@@ -49,9 +49,11 @@ export interface ReceiverTriplet {
   personId?: UUID
 }
 
-export interface MessageAccount {
+export interface BaseMessageAccount {
   id: UUID
   name: string
+}
+export interface MessageAccount extends BaseMessageAccount {
   personal: boolean
   daycareGroup?: {
     id: UUID
@@ -78,6 +80,22 @@ export interface Message {
 }
 
 export type MessageType = 'MESSAGE' | 'BULLETIN'
+
+export interface SentMessage {
+  id: UUID
+  type: MessageType
+  threadTitle: string
+  content: string
+  recipients: BaseMessageAccount[]
+  sentAt: Date
+}
+export const deserializeSentMessage = ({
+  sentAt,
+  ...rest
+}: JsonOf<SentMessage>): SentMessage => ({
+  ...rest,
+  sentAt: new Date(sentAt)
+})
 
 export interface MessageThread {
   id: UUID
