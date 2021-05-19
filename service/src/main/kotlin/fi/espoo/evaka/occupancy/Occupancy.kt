@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.result.RowView
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -706,18 +707,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
 ): List<DailyOccupancyValues<K>> {
     val placementPlans =
         if (type == OccupancyType.PLANNED)
-            this.createQuery(
-                """
-SELECT u.id AS grouping_id, p.id AS placement_id, a.child_id, p.unit_id, p.type, u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement, daterange(p.start_date, p.end_date, '[]') AS period
-FROM placement_plan p
-JOIN application a ON p.application_id = a.id
-JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(:unitIds)
-WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
-"""
-            )
-                .bind("unitIds", caretakerCounts.keys.map { it.unitId }.toTypedArray())
-                .bind("period", period)
-                .mapTo<Placement>()
+            this.getPlacementPlans(period, caretakerCounts.keys.map { it.unitId }.toTypedArray())
         else
             listOf()
 
@@ -823,6 +813,68 @@ WHERE sn.placement_id = ANY(:placementIds)
         }
 }
 
+private fun Database.Read.getPlacementPlans(period: FiniteDateRange, unitIds: Array<UUID>): List<Placement> {
+    return this.createQuery(
+        """
+SELECT
+    u.id AS grouping_id,
+    p.id AS placement_id,
+    a.child_id,
+    p.unit_id,
+    p.type,
+    u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS family_unit_placement,
+    daterange(p.start_date, p.end_date, '[]') AS period,
+    preschool_daycare_start_date,
+    preschool_daycare_end_date
+FROM placement_plan p
+JOIN application a ON p.application_id = a.id
+JOIN daycare u ON p.unit_id = u.id AND u.id = ANY(:unitIds)
+WHERE NOT p.deleted AND daterange(p.start_date, p.end_date, '[]') && :period
+"""
+    )
+        .bind("unitIds", unitIds)
+        .bind("period", period)
+        .mapTo<PlacementPlan>()
+        .flatMap { placementPlan ->
+            // If the placement plan has preschool daycare dates set it means that the placement plan could in reality
+            // be split into parts with and without preschool daycare, so take that into account.
+            if (placementPlan.preschoolDaycareStartDate == null || placementPlan.preschoolDaycareEndDate == null)
+                listOf(placementPlan.placement)
+            else {
+                val placementTypeOutsideDaycare = when (placementPlan.placement.type) {
+                    PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
+                    PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
+                    else -> placementPlan.placement.type
+                }
+
+                listOfNotNull(
+                    if (placementPlan.preschoolDaycareStartDate > placementPlan.placement.period.start)
+                        placementPlan.placement.copy(
+                            type = placementTypeOutsideDaycare,
+                            period = placementPlan.placement.period.copy(
+                                end = placementPlan.preschoolDaycareStartDate.minusDays(1)
+                            )
+                        )
+                    else null,
+                    placementPlan.placement.copy(
+                        period = FiniteDateRange(
+                            maxOf(placementPlan.preschoolDaycareStartDate, placementPlan.placement.period.start),
+                            minOf(placementPlan.preschoolDaycareEndDate, placementPlan.placement.period.end)
+                        )
+                    ),
+                    if (placementPlan.preschoolDaycareEndDate < placementPlan.placement.period.end)
+                        placementPlan.placement.copy(
+                            type = placementTypeOutsideDaycare,
+                            period = placementPlan.placement.period.copy(
+                                start = placementPlan.preschoolDaycareEndDate.plusDays(1)
+                            )
+                        )
+                    else null,
+                )
+            }
+        }
+}
+
 private fun childWasAbsentWholeDay(
     date: LocalDate,
     childPlacementType: PlacementType,
@@ -846,6 +898,13 @@ private data class Placement(
     val type: PlacementType,
     val familyUnitPlacement: Boolean,
     val period: FiniteDateRange
+)
+
+private data class PlacementPlan(
+    @Nested
+    val placement: Placement,
+    val preschoolDaycareStartDate: LocalDate?,
+    val preschoolDaycareEndDate: LocalDate?
 )
 
 private data class Child(

@@ -345,6 +345,25 @@ class OccupancyTest : PureJdbiTest() {
     }
 
     @Test
+    fun `preschool placement plan with separate daycare period is handled correctly`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today)
+                .addChild().withAge(6).saveAnd {
+                    addPlacementPlan().ofType(PlacementType.PRESCHOOL_DAYCARE).toUnit(daycareInArea1)
+                        .fromDay(today.minusDays(1)).toDay(today.plusDays(1))
+                        .withPreschoolDaycareDates(FiniteDateRange(today, today))
+                        .save()
+                }
+        }
+
+        db.read { tx ->
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.PLANNED, today.minusDays(1), 0.5)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.PLANNED, today, 1.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.PLANNED, today.plusDays(1), 0.5)
+        }
+    }
+
+    @Test
     fun `realized occupancy uses staff attendance for caretaker count`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today)
