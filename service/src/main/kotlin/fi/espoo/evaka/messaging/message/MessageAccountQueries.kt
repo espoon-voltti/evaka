@@ -9,6 +9,20 @@ import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
+fun Database.Read.getMessageAccountForDaycareGroup(daycareGroupId: UUID): MessageAccount? {
+    // language=SQL
+    val sql = """
+SELECT acc.id, name_view.account_name AS name
+FROM message_account acc
+    JOIN message_account_name_view name_view ON name_view.id = acc.id
+WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
+    """.trimIndent()
+    return this.createQuery(sql)
+        .bind("daycareGroupId", daycareGroupId)
+        .mapTo<MessageAccount>()
+        .firstOrNull()
+}
+
 fun Database.Read.getMessageAccountForEndUser(user: AuthenticatedUser): MessageAccount {
     // language=SQL
     val sql = """
@@ -85,7 +99,18 @@ fun Database.Transaction.createMessageAccountForDaycareGroup(daycareGroupId: UUI
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) {
     // language=SQL
     val sql = """
-        DELETE FROM message_account WHERE daycare_group_id =:daycareGroupId
+        DELETE FROM message_account WHERE daycare_group_id = :daycareGroupId
+    """.trimIndent()
+    createUpdate(sql)
+        .bind("daycareGroupId", daycareGroupId)
+        .execute()
+}
+
+fun Database.Transaction.deactivateDaycareGroupMessageAccount(daycareGroupId: UUID) {
+    // language=SQL
+    val sql = """
+        UPDATE message_account SET daycare_group_id = NULL, active = false
+        WHERE daycare_group_id = :daycareGroupId
     """.trimIndent()
     createUpdate(sql)
         .bind("daycareGroupId", daycareGroupId)
