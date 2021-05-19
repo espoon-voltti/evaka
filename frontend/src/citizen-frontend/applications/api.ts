@@ -234,11 +234,14 @@ export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
   }
 }
 
-export async function getServiceNeedOptionPublicInfos(placementTypes: PlacementType[]): Promise<
-  Result<ServiceNeedOptionPublicInfo[]>
-> {
+export async function getServiceNeedOptionPublicInfos(
+  placementTypes: PlacementType[]
+): Promise<Result<ServiceNeedOptionPublicInfo[]>> {
   return client
-    .get<JsonOf<ServiceNeedOptionPublicInfo[]>>('/public/new-service-needs/options', { params: { placementTypes: placementTypes.join() }})
+    .get<JsonOf<ServiceNeedOptionPublicInfo[]>>(
+      '/public/new-service-needs/options',
+      { params: { placementTypes: placementTypes.join() } }
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

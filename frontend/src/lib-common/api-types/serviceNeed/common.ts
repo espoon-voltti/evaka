@@ -1,5 +1,5 @@
-import { UUID } from "lib-common/types";
-import { PlacementType } from "../application/enums";
+import { UUID } from 'lib-common/types'
+import { PlacementType } from '../application/enums'
 
 export interface ServiceNeedOptionPublicInfo {
   id: UUID

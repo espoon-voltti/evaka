@@ -25,6 +25,4 @@ export type ApplicationGuardianAgreementStatus =
 
 export type AttachmentType = 'URGENCY' | 'EXTENDED_CARE'
 
-export type PlacementType = 
- | 'DAYCARE'
- | 'DAYCARE_PART_TIME'
+export type PlacementType = 'DAYCARE' | 'DAYCARE_PART_TIME'

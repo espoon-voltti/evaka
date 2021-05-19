@@ -8,7 +8,9 @@ import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/co
 
 export interface DaycareApplicationState {
   serviceNeedOptions: Result<ServiceNeedOptionPublicInfo[]>
-  setServiceNeedOptions: (request: Result<ServiceNeedOptionPublicInfo[]>) => void
+  setServiceNeedOptions: (
+    request: Result<ServiceNeedOptionPublicInfo[]>
+  ) => void
 }
 
 const defaultState: DaycareApplicationState = {
@@ -16,25 +18,32 @@ const defaultState: DaycareApplicationState = {
   setServiceNeedOptions: () => undefined
 }
 
-export const DaycareApplicationContext = createContext<DaycareApplicationState>(defaultState)
+export const DaycareApplicationContext = createContext<DaycareApplicationState>(
+  defaultState
+)
 
-export const DaycareApplicationContextProvider = React.memo(function DaycareApplicationContextProvider({
-  children
-}: {
-  children: JSX.Element
-}) {
-  const [serviceNeedOptions, setServiceNeedOptions] = useState<Result<ServiceNeedOptionPublicInfo[]>>(defaultState.serviceNeedOptions)
+export const DaycareApplicationContextProvider = React.memo(
+  function DaycareApplicationContextProvider({
+    children
+  }: {
+    children: JSX.Element
+  }) {
+    const [serviceNeedOptions, setServiceNeedOptions] = useState<
+      Result<ServiceNeedOptionPublicInfo[]>
+    >(defaultState.serviceNeedOptions)
 
-  const value = useMemo(
-    () => ({
-      serviceNeedOptions,
-      setServiceNeedOptions
-    }),
-    [
-      serviceNeedOptions,
-      setServiceNeedOptions
-    ]
-  )
+    const value = useMemo(
+      () => ({
+        serviceNeedOptions,
+        setServiceNeedOptions
+      }),
+      [serviceNeedOptions, setServiceNeedOptions]
+    )
 
-  return <DaycareApplicationContext.Provider value={value}>{children}</DaycareApplicationContext.Provider>
-})
+    return (
+      <DaycareApplicationContext.Provider value={value}>
+        {children}
+      </DaycareApplicationContext.Provider>
+    )
+  }
+)

@@ -13,7 +13,10 @@ import ContactInfoSection from '../../applications/editor/contact-info/ContactIn
 import FeeSection from '../../applications/editor/FeeSection'
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
-import { DaycareApplicationState, DaycareApplicationContext } from './state/daycareApplication'
+import {
+  DaycareApplicationState,
+  DaycareApplicationContext
+} from './state/daycareApplication'
 import Loader from 'lib-components/atoms/Loader'
 import { getServiceNeedOptionPublicInfos } from '../api'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -42,18 +45,16 @@ export default React.memo(function ApplicationFormDaycare({
     setServiceNeedOptions
   )
   useEffect(() => {
-      if (featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
-        loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
-      } else {
-        setServiceNeedOptions(Success.of([]));
-      }
-    }, [ setServiceNeedOptions, loadServiceNeedOptions ])
+    if (featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
+      loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
+    } else {
+      setServiceNeedOptions(Success.of([]))
+    }
+  }, [setServiceNeedOptions, loadServiceNeedOptions])
 
   return (
     <>
-      {serviceNeedOptions.isLoading && (
-        <Loader />
-      )}
+      {serviceNeedOptions.isLoading && <Loader />}
       {serviceNeedOptions.isFailure && (
         <ErrorSegment title={t.common.errors.genericGetError} />
       )}
@@ -69,7 +70,9 @@ export default React.memo(function ApplicationFormDaycare({
 
           <ServiceNeedSection
             status={apiData.status}
-            originalPreferredStartDate={apiData.form.preferences.preferredStartDate}
+            originalPreferredStartDate={
+              apiData.form.preferences.preferredStartDate
+            }
             type={applicationType}
             formData={formData.serviceNeed}
             updateFormData={(data) =>

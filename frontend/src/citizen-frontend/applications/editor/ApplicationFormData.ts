@@ -13,7 +13,6 @@ import { User } from '../../auth/state'
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 
-
 export type ServiceNeedFormData = {
   preferredStartDate: string
   urgent: boolean
@@ -183,7 +182,8 @@ export function apiDataToFormData(
       endTime: application.form.preferences.serviceNeed?.endTime ?? '',
       shiftCare: application.form.preferences.serviceNeed?.shiftCare ?? false,
       partTime: application.form.preferences.serviceNeed?.partTime ?? false,
-      serviceNeedOption: application.form.preferences.serviceNeed?.serviceNeedOption ?? null,
+      serviceNeedOption:
+        application.form.preferences.serviceNeed?.serviceNeedOption ?? null,
       preparatory: application.form.preferences.preparatory,
       assistanceNeeded: application.form.child.assistanceNeeded,
       assistanceDescription: application.form.child.assistanceDescription,

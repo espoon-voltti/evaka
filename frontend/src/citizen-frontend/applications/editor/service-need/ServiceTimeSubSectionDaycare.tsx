@@ -23,9 +23,11 @@ import { errorToInputInfo } from '../../../form-validation'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/citizen'
-import { DaycareApplicationContext, DaycareApplicationState } from 'citizen-frontend/applications/editor/state/daycareApplication'
+import {
+  DaycareApplicationContext,
+  DaycareApplicationState
+} from 'citizen-frontend/applications/editor/state/daycareApplication'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
-
 
 const Hyphenbox = styled.div`
   display: flex;
@@ -46,27 +48,46 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   const t = useTranslation()
   const { applicationId } = useParams<{ applicationId: string }>()
 
-  const {
-    serviceNeedOptions
-  } = useContext<DaycareApplicationState>(DaycareApplicationContext)
+  const { serviceNeedOptions } = useContext<DaycareApplicationState>(
+    DaycareApplicationContext
+  )
 
-  const [ fullTimeOptions, setFullTimeOptions ] = useState<ServiceNeedOptionSummary[]>([]);
-  const [ partTimeOptions, setPartTimeOptions ] = useState<ServiceNeedOptionSummary[]>([]);
-  const [ showServiceNeedSelection, setShowServiceNeedSelection ] = useState<boolean>(false)
+  const [fullTimeOptions, setFullTimeOptions] = useState<
+    ServiceNeedOptionSummary[]
+  >([])
+  const [partTimeOptions, setPartTimeOptions] = useState<
+    ServiceNeedOptionSummary[]
+  >([])
+  const [
+    showServiceNeedSelection,
+    setShowServiceNeedSelection
+  ] = useState<boolean>(false)
 
   useEffect(() => {
     if (!featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
-      setShowServiceNeedSelection(true);
+      setShowServiceNeedSelection(true)
     }
     if (serviceNeedOptions.isSuccess) {
-      setFullTimeOptions(serviceNeedOptions.value.filter((opt) => opt.validPlacementType === 'DAYCARE'))
-      setPartTimeOptions(serviceNeedOptions.value.filter((opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'))
+      setFullTimeOptions(
+        serviceNeedOptions.value.filter(
+          (opt) => opt.validPlacementType === 'DAYCARE'
+        )
+      )
+      setPartTimeOptions(
+        serviceNeedOptions.value.filter(
+          (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
+        )
+      )
       setShowServiceNeedSelection(true)
       if (formData.serviceNeedOption === null) {
-        updateFormData({ serviceNeedOption: formData.partTime ? partTimeOptions[0] : fullTimeOptions[0] })
+        updateFormData({
+          serviceNeedOption: formData.partTime
+            ? partTimeOptions[0]
+            : fullTimeOptions[0]
+        })
       }
     }
-  }, [ serviceNeedOptions ])
+  }, [serviceNeedOptions])
 
   const uploadExtendedCareAttachment = (
     file: File,
@@ -104,63 +125,69 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     })
 
   function renderServiceNeedSelection() {
-    return showServiceNeedSelection && (
-      <FixedSpaceColumn>
-        <Radio
-          id={`service-need-part-time-true`}
-          label={t.applications.editor.serviceNeed.partTime.true}
-          checked={formData.partTime}
-          data-qa={'partTime-input-true'}
-          onChange={() =>
-            updateFormData({
-              partTime: true,
-              serviceNeedOption: partTimeOptions[0]
-            })
-          }
-        />
-        {featureFlags.daycareApplicationServiceNeedOptionsEnabled && formData.partTime && (
-          <SubRadios>
-            <FixedSpaceColumn>
-              {partTimeOptions.map(opt => (
-                <Radio
-                  key={opt.id}
-                  label={opt.name}
-                  checked={formData.serviceNeedOption?.id === opt.id}
-                  onChange={() => updateFormData({serviceNeedOption: opt})}
-                />
-                ))
-              }
-            </FixedSpaceColumn>
-          </SubRadios>
-        )}
-        <Radio
-          id={`service-need-part-time-false`}
-          label={t.applications.editor.serviceNeed.partTime.false}
-          checked={!formData.partTime}
-          data-qa={'partTime-input-false'}
-          onChange={() =>
-            updateFormData({
-              partTime: false,
-              serviceNeedOption: fullTimeOptions[0]
-            })
-          }
-        />
-        {featureFlags.daycareApplicationServiceNeedOptionsEnabled && !formData.partTime && (
-          <SubRadios>
-            <FixedSpaceColumn>
-              {fullTimeOptions.map(opt => (
-                <Radio
-                  key={opt.id}
-                  label={opt.name}
-                  checked={formData.serviceNeedOption?.id === opt.id}
-                  onChange={() => updateFormData({serviceNeedOption: opt})}
-                />
-                ))
-              }
-            </FixedSpaceColumn>
-          </SubRadios>
-        )}
-      </FixedSpaceColumn>
+    return (
+      showServiceNeedSelection && (
+        <FixedSpaceColumn>
+          <Radio
+            id={`service-need-part-time-true`}
+            label={t.applications.editor.serviceNeed.partTime.true}
+            checked={formData.partTime}
+            data-qa={'partTime-input-true'}
+            onChange={() =>
+              updateFormData({
+                partTime: true,
+                serviceNeedOption: partTimeOptions[0]
+              })
+            }
+          />
+          {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+            formData.partTime && (
+              <SubRadios>
+                <FixedSpaceColumn>
+                  {partTimeOptions.map((opt) => (
+                    <Radio
+                      key={opt.id}
+                      label={opt.name}
+                      checked={formData.serviceNeedOption?.id === opt.id}
+                      onChange={() =>
+                        updateFormData({ serviceNeedOption: opt })
+                      }
+                    />
+                  ))}
+                </FixedSpaceColumn>
+              </SubRadios>
+            )}
+          <Radio
+            id={`service-need-part-time-false`}
+            label={t.applications.editor.serviceNeed.partTime.false}
+            checked={!formData.partTime}
+            data-qa={'partTime-input-false'}
+            onChange={() =>
+              updateFormData({
+                partTime: false,
+                serviceNeedOption: fullTimeOptions[0]
+              })
+            }
+          />
+          {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+            !formData.partTime && (
+              <SubRadios>
+                <FixedSpaceColumn>
+                  {fullTimeOptions.map((opt) => (
+                    <Radio
+                      key={opt.id}
+                      label={opt.name}
+                      checked={formData.serviceNeedOption?.id === opt.id}
+                      onChange={() =>
+                        updateFormData({ serviceNeedOption: opt })
+                      }
+                    />
+                  ))}
+                </FixedSpaceColumn>
+              </SubRadios>
+            )}
+        </FixedSpaceColumn>
+      )
     )
   }
 
