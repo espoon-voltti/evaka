@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -110,6 +111,61 @@ class MessageController(
                 recipientGroups = groupedRecipients
             )
         }
+    }
+
+    @GetMapping("/{accountId}/drafts")
+    fun getDrafts(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
+    ): List<DraftContent> {
+        Audit.MessagingDraftsRead.log(accountId)
+        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+            ?: throw Forbidden("User is not authorized to access the account")
+        authorizeAllowedMessagingRoles(user)
+        return db.transaction { it.getDrafts(accountId) }
+    }
+
+    @PostMapping("/{accountId}/drafts")
+    fun initDraft(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
+    ): UUID {
+        Audit.MessagingCreateDraft.log(accountId)
+        authorizeAllowedMessagingRoles(user)
+        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+            ?: throw Forbidden("User is not authorized to access the account")
+        return db.transaction { it.initDraft(accountId) }
+    }
+
+    @PutMapping("/{accountId}/drafts/{draftId}")
+    fun upsertDraft(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
+        @PathVariable draftId: UUID,
+        @RequestBody content: DraftContent,
+    ) {
+        Audit.MessagingUpdateDraft.log(accountId, draftId)
+        authorizeAllowedMessagingRoles(user)
+        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+            ?: throw Forbidden("User is not authorized to access the account")
+        return db.transaction { it.upsertDraft(accountId, draftId, content) }
+    }
+
+    @DeleteMapping("/{accountId}/drafts/{draftId}")
+    fun deleteDraft(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
+        @PathVariable draftId: UUID,
+    ) {
+        Audit.MessagingDeleteDraft.log(accountId, draftId)
+        authorizeAllowedMessagingRoles(user)
+        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+            ?: throw Forbidden("User is not authorized to access the account")
+        return db.transaction { it.deleteDraft(accountId, draftId) }
     }
 
     data class ReplyToMessageBody(
