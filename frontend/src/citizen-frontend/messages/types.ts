@@ -7,7 +7,7 @@ import { UUID } from 'lib-common/types'
 
 export interface MessageAccount {
   id: UUID
-  name: string
+  name: string | null
 }
 
 export interface Message {

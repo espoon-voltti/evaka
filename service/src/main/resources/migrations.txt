@@ -86,3 +86,4 @@ V85__message_draft_table.sql
 V86__add_invoice_created_at.sql
 V87__drop_service_need_option_id_from_fee_decision.sql
 V88__draft_type_and_recipients.sql
+V89__message_account_null_foreign_keys.sql

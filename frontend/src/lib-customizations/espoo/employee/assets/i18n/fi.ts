@@ -2357,7 +2357,8 @@ export const fi = {
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',
-    editDraft: 'Muokkaa luonnosta'
+    editDraft: 'Muokkaa luonnosta',
+    deletedAccount: '(Lähettäjä on poistettu järjestelmästä)'
   },
   pinCode: {
     title: 'eVaka-mobiilin PIN-koodi',

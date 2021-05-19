@@ -55,7 +55,7 @@ export const messageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
 
 export interface BaseMessageAccount {
   id: UUID
-  name: string
+  name: string | null
 }
 export interface MessageAccount extends BaseMessageAccount {
   personal: boolean

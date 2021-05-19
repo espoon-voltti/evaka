@@ -49,7 +49,7 @@ enum class MessageType {
 
 data class MessageAccount(
     val id: UUID,
-    val name: String,
+    val name: String?,
 )
 
 data class Group(

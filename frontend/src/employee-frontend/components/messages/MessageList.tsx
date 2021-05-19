@@ -139,7 +139,9 @@ export default React.memo(function MessagesList({
   return (
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
-      {!account.personal && <H2>{account.name}</H2>}
+      {!account.personal && (
+        <H2>{account.name ?? i18n.messages.deletedAccount}</H2>
+      )}
       {view === 'RECEIVED' && (
         <ReceivedMessages
           messages={receivedMessages}
