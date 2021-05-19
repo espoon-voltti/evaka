@@ -67,7 +67,6 @@ export default React.memo(function SearchInput({
       .filter((u) =>
         u.name.toLowerCase().includes(debouncedInputString.toLowerCase())
       )
-      .slice(0, 5)
       .map<MapAddress>((u) => ({
         unit: {
           id: u.id,
