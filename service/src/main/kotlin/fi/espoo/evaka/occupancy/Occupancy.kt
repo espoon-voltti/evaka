@@ -804,9 +804,9 @@ WHERE sn.placement_id = ANY(:placementIds)
                     val percentage =
                         if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) null
                         else coefficientSum
-                            .divide(caretakers.caretakerCount * BigDecimal(7), 4, RoundingMode.HALF_UP)
+                            .divide(caretakers.caretakerCount * BigDecimal(7), 4, RoundingMode.HALF_EVEN)
                             .times(BigDecimal(100))
-                            .setScale(1, RoundingMode.HALF_UP)
+                            .setScale(1, RoundingMode.HALF_EVEN)
 
                     caretakers.date to OccupancyValues(
                         sum = coefficientSum.toDouble(),
