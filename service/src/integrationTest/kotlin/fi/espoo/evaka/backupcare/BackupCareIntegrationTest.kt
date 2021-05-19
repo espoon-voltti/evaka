@@ -9,18 +9,24 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -126,6 +132,21 @@ class BackupCareIntegrationTest : FullApplicationTest() {
             tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
         }
         db.transaction { tx ->
+            val placementId = tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    type = PlacementType.DAYCARE,
+                    unitId = testDaycare2.id,
+                    startDate = period.start.minusYears(1),
+                    endDate = period.end.plusYears(1)
+                )
+            )
+            tx.insertTestNewServiceNeed(
+                confirmedBy = testDecisionMaker_1.id,
+                period = serviceNeedPeriod,
+                placementId = placementId,
+                optionId = snDefaultDaycare.id
+            )
             tx.insertTestServiceNeed(
                 childId = testChild_1.id,
                 startDate = serviceNeedPeriod.start,
@@ -161,7 +182,8 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                         name = groupName
                     ),
                     period = period,
-                    missingServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
+                    missingServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt(),
+                    missingNewServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
                 )
             ),
             backupCares
