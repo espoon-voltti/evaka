@@ -33,6 +33,7 @@ export default React.memo(function ExternalLink({
 
 const StyledLink = styled.a`
   text-decoration: none;
+  display: inline-block;
   font-weight: 600;
   font-size: 14px;
   line-height: 21px;
