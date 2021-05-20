@@ -108,7 +108,8 @@ data class InvoiceSummary(
     val headOfFamily: PersonData.Detailed,
     val rows: List<InvoiceRowSummary>,
     val sentBy: UUID?,
-    val sentAt: Instant?
+    val sentAt: Instant?,
+    val createdAt: Instant? = null
 ) {
     val account: Int = 3295
 

@@ -50,7 +50,8 @@ enum class InvoiceSortParam {
     START,
     END,
     SUM,
-    STATUS
+    STATUS,
+    CREATED_AT
 }
 
 @RestController

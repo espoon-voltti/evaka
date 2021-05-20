@@ -34,6 +34,7 @@ import { SearchOrder } from '../../types'
 import { SortByInvoices } from '../../api/invoicing'
 import Pagination from 'lib-components/Pagination'
 import { InvoicesActions } from './invoices-state'
+import LocalDate from 'lib-common/local-date'
 
 interface Props {
   actions: InvoicesActions
@@ -227,6 +228,12 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
         <SortableTh sorted={isSorted('START')} onClick={toggleSort('START')}>
           {i18n.invoices.table.period}
         </SortableTh>
+        <SortableTh
+          sorted={isSorted('CREATED_AT')}
+          onClick={toggleSort('CREATED_AT')}
+        >
+          {i18n.invoices.table.createdAt}
+        </SortableTh>
         <SortableTh sorted={isSorted('SUM')} onClick={toggleSort('SUM')}>
           {i18n.invoices.table.totalPrice}
         </SortableTh>
@@ -283,6 +290,10 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <ChildrenCell people={item.rows.map(({ child }) => child)} />
           </Td>
           <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
+          <Td data-qa="invoice-created-at">
+            {item.createdAt &&
+              LocalDate.fromSystemTzDate(item.createdAt).format()}
+          </Td>
           <Td>{formatCents(item.totalPrice)}</Td>
           <Td>
             {item.headOfFamily.restrictedDetailsEnabled && (

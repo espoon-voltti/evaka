@@ -186,6 +186,7 @@ fun Database.Read.paginatedSearch(
         InvoiceSortParam.END -> Pair("max(invoice.period_end)", "invoice.period_end")
         InvoiceSortParam.SUM -> Pair("sum", "invoice_ids.sum")
         InvoiceSortParam.STATUS -> Pair("max(invoice.status)", "invoice.status")
+        InvoiceSortParam.CREATED_AT -> Pair("max(invoice.created_at)", "invoice.created_at")
     }
 
     val params = mapOf<String, Any>()
@@ -236,6 +237,7 @@ fun Database.Read.paginatedSearch(
             invoice.sent_at,
             invoice.sent_by,
             invoice.agreement_type,
+            invoice.created_at,
             head.date_of_birth as head_date_of_birth,
             head.first_name as head_first_name,
             head.last_name as head_last_name,
@@ -639,7 +641,8 @@ val toInvoiceSummary = { rs: ResultSet, _: StatementContext ->
             restrictedDetailsEnabled = rs.getBoolean("head_restricted_details_enabled")
         ),
         sentBy = rs.getString(rs.findColumn("sent_by"))?.let { UUID.fromString(it) },
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
+        createdAt = rs.getTimestamp("created_at")?.toInstant()
     )
 }
 

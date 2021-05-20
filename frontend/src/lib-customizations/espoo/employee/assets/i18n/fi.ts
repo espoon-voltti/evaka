@@ -1344,6 +1344,7 @@ export const fi = {
       head: 'Päämies',
       children: 'Lapset',
       period: 'Laskutuskausi',
+      createdAt: 'Luonnos luotu',
       nb: 'Huom',
       totalPrice: 'Summa',
       status: 'Tila'

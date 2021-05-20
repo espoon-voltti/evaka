@@ -168,6 +168,7 @@ export interface InvoiceSummary extends Periodic {
   headOfFamily: PersonDetailed
   rows: Array<{ child: PersonBasic }>
   totalPrice: number
+  createdAt: Date | null
 }
 
 export interface InvoiceRowDetailed extends Periodic {
