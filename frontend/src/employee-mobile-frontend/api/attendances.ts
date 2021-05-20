@@ -14,6 +14,7 @@ import {
   Absence,
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]
@@ -353,6 +354,22 @@ export async function upsertGroupDaycareDailyNote(
     ? client.put(url, daycareDailyNote)
     : client.post(url, daycareDailyNote)
   )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteAbsenceRange(
+  unitId: UUID,
+  childId: UUID,
+  period: FiniteDateRange
+): Promise<Result<void>> {
+  return client
+    .post(
+      `/attendances/units/${unitId}/children/${childId}/absence-range/delete`,
+      {
+        period
+      }
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

@@ -162,6 +162,8 @@ export const BackButtonInline = styled(InlineButton)`
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
   margin-bottom: ${defaultMargins.s};
+  overflow-x: hidden;
+  width: calc(100vw - 16px);
 `
 
 const AbsentFromWrapper = styled.div`
