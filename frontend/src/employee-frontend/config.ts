@@ -49,7 +49,7 @@ const features: Features = {
     evakaLogin: true,
     messaging: true,
     showNewServiceNeedsList: true,
-    useNewServiceNeeds: false
+    useNewServiceNeeds: true
   },
   prod: {
     voucherValueDecisionsPage: false,
@@ -58,7 +58,7 @@ const features: Features = {
     evakaLogin: true,
     messaging: false,
     showNewServiceNeedsList: false,
-    useNewServiceNeeds: false
+    useNewServiceNeeds: true
   }
 }
 
