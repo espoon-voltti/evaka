@@ -44,6 +44,7 @@ import { AttendanceUIContext } from '../../../state/attendance-ui'
 import { TallContentArea, ChipWrapper } from '../../mobile/components'
 import { UserContext } from '../../../state/user'
 import { User } from '../../../types/index'
+import { BackButtonInline } from '../components'
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -254,7 +255,7 @@ export default React.memo(function DailyNoteEditor() {
             paddingVertical={'zero'}
           >
             <TopRow>
-              <BackButton
+              <BackButtonInline
                 onClick={() => {
                   if (dirty) {
                     setDialogType('CONFIRM')
@@ -576,13 +577,6 @@ function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
     return true
   return false
 }
-
-const BackButton = styled(InlineButton)`
-  color: ${colors.blues.dark};
-  margin-top: ${defaultMargins.s};
-  margin-left: ${defaultMargins.s};
-  margin-bottom: ${defaultMargins.s};
-`
 
 const Time = styled.div`
   display: flex;
