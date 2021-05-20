@@ -22,8 +22,9 @@ val feeDecisionQueryBase2 =
         child.child_date_of_birth,
         child.placement_unit_id,
         child.placement_type,
-        child.service_need_option_id,
         child.service_need_fee_coefficient,
+        child.service_need_description_fi,
+        child.service_need_description_sv,
         child.base_fee,
         child.sibling_discount,
         child.fee,
@@ -105,8 +106,9 @@ private fun Database.Transaction.insertChildren2(decisions: List<Pair<UUID, List
             child_date_of_birth,
             placement_unit_id,
             placement_type,
-            service_need_option_id,
             service_need_fee_coefficient,
+            service_need_description_fi,
+            service_need_description_sv,
             base_fee,
             sibling_discount,
             fee,
@@ -119,8 +121,9 @@ private fun Database.Transaction.insertChildren2(decisions: List<Pair<UUID, List
             :childDateOfBirth,
             :placementUnitId,
             :placementType,
-            :serviceNeedOptionId,
             :serviceNeedFeeCoefficient,
+            :serviceNeedDescriptionFi,
+            :serviceNeedDescriptionSv,
             :baseFee,
             :siblingDiscount,
             :fee,
@@ -140,8 +143,9 @@ private fun Database.Transaction.insertChildren2(decisions: List<Pair<UUID, List
                 .bind("childDateOfBirth", child.child.dateOfBirth)
                 .bind("placementUnitId", child.placement.unit.id)
                 .bind("placementType", child.placement.type)
-                .bind("serviceNeedOptionId", child.serviceNeed.optionId)
                 .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
+                .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)
+                .bind("serviceNeedDescriptionSv", child.serviceNeed.descriptionSv)
                 .add()
         }
     }

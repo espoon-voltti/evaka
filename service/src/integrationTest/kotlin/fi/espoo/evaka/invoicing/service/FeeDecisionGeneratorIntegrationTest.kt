@@ -1823,7 +1823,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
-        optionId = this.id,
-        feeCoefficient = this.feeCoefficient
+        feeCoefficient = this.feeCoefficient,
+        descriptionFi = this.feeDescriptionFi,
+        descriptionSv = this.feeDescriptionSv
     )
 }

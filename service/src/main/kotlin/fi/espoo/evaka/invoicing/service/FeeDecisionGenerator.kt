@@ -162,7 +162,11 @@ private fun generateNewFeeDecisions2(
                         FeeDecisionChild(
                             child,
                             FeeDecisionPlacement(UnitData.JustId(placement.unitId), placement.type),
-                            FeeDecisionServiceNeed(placement.serviceNeed.id, placement.serviceNeed.feeCoefficient),
+                            FeeDecisionServiceNeed(
+                                placement.serviceNeed.feeCoefficient,
+                                placement.serviceNeed.feeDescriptionFi,
+                                placement.serviceNeed.feeDescriptionSv
+                            ),
                             baseFee,
                             siblingDiscount,
                             feeBeforeAlterations,

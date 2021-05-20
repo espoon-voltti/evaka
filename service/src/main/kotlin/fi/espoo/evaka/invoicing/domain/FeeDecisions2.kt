@@ -99,6 +99,7 @@ data class FeeDecisionPlacement(
 )
 
 data class FeeDecisionServiceNeed(
-    val optionId: UUID,
-    val feeCoefficient: BigDecimal
+    val feeCoefficient: BigDecimal,
+    val descriptionFi: String,
+    val descriptionSv: String
 )
