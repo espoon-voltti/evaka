@@ -100,35 +100,70 @@ export default React.memo(function MarkAbsentBeforehand() {
     )
   }
 
-  function deleteAbsences() {
-    void deleteAbsenceRange(
+  async function deleteAbsences() {
+    await deleteAbsenceRange(
       unitId,
       childId,
       new FiniteDateRange(deleteRange[0], deleteRange[1])
     )
     setDeleteRange([])
+    loadFutureAbsences(childId)
+    setUiMode('default')
   }
 
   function DeleteAbsencesModal() {
     return (
       <InfoModal
         iconColour={'orange'}
-        title={'Haluatko poistaa tämän poissaolon'}
+        title={i18n.absences.confirmDelete}
         icon={faExclamation}
         reject={{
           action: () => {
             setDeleteRange([])
             setUiMode('default')
           },
-          label: i18n.common.cancel
+          label: i18n.common.doNotRemove
         }}
         resolve={{
           action: () => {
-            deleteAbsences()
+            void deleteAbsences()
           },
           label: i18n.common.remove
         }}
       />
+    )
+  }
+
+  function ConfirmExitModal() {
+    return (
+      <InfoModal
+        iconColour={'orange'}
+        title={i18n.common.saveBeforeClosing}
+        icon={faExclamation}
+        reject={{
+          action: () => {
+            history.goBack()
+          },
+          label: i18n.common.doNotSave
+        }}
+        resolve={
+          selectedAbsenceType && {
+            action: () => {
+              void postAbsence(selectedAbsenceType).then(() => {
+                history.goBack()
+              })
+            },
+            label: i18n.common.save
+          }
+        }
+      />
+    )
+  }
+
+  function canSave() {
+    return (
+      isAfter(new Date(startDate), subDays(new Date(), 1)) &&
+      isBefore(new Date(startDate), addDays(new Date(endDate), 1))
     )
   }
 
@@ -147,7 +182,13 @@ export default React.memo(function MarkAbsentBeforehand() {
           paddingVertical={'zero'}
         >
           <BackButtonInline
-            onClick={() => history.goBack()}
+            onClick={() => {
+              if (selectedAbsenceType && canSave()) {
+                setUiMode('confirmExit')
+              } else {
+                history.goBack()
+              }
+            }}
             icon={faArrowLeft}
             text={
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
@@ -215,9 +256,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                   text={i18n.common.cancel}
                   onClick={() => history.goBack()}
                 />
-                {selectedAbsenceType &&
-                isAfter(new Date(startDate), subDays(new Date(), 1)) &&
-                isBefore(new Date(startDate), addDays(new Date(endDate), 1)) ? (
+                {selectedAbsenceType && canSave() ? (
                   <AsyncButton
                     primary
                     text={i18n.common.confirm}
@@ -266,6 +305,7 @@ export default React.memo(function MarkAbsentBeforehand() {
         </TallContentArea>
       )}
       {uiMode === `confirmDelete` && <DeleteAbsencesModal />}
+      {uiMode === `confirmExit` && <ConfirmExitModal />}
     </>
   )
 })

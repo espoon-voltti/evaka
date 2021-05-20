@@ -48,12 +48,15 @@ export const fi = {
     back: 'Takaisin',
     hours: 'Tuntia',
     remove: 'Poista',
+    doNotRemove: 'Älä poista',
     clear: 'Tyhjennä',
     save: 'Tallenna',
+    doNotSave: 'Älä tallenna',
     starts: 'Alkaa',
     ends: 'Päättyy',
     information: 'Tiedot',
-    dailyNotes: 'Muikkarit'
+    dailyNotes: 'Muikkarit',
+    saveBeforeClosing: 'Tallennetaanko ennen sulkemista'
   },
   absences: {
     title: 'Poissaolomerkinnät',
@@ -79,7 +82,8 @@ export const fi = {
     chooseStartDate: 'Valitse tuleva päivä',
     startBeforeEnd: 'Aloitus oltava ennen päättymispäivää.',
     reason: 'Poissaolon syy',
-    fullDayHint: 'Poissaolomerkintä tehdään koko päivälle'
+    fullDayHint: 'Poissaolomerkintä tehdään koko päivälle',
+    confirmDelete: 'Haluatko poistaa tämän poissaolon?'
   },
   attendances: {
     types: {
