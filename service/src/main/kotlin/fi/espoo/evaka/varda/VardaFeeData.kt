@@ -49,6 +49,7 @@ fun deleteAnnulledFeeData(db: Database.Connection, client: VardaClient) {
 }
 
 fun deleteFeeData(db: Database.Connection, client: VardaClient, vardaIds: List<Long>) {
+    logger.info { "Varda: Deleting ${vardaIds.size} fee data records" }
     vardaIds.forEach { vardaId ->
         if (client.deleteFeeData(vardaId)) {
             db.transaction { deleteVardaFeeData(it, vardaId) }

@@ -72,6 +72,7 @@ fun removeDeletedPlacements(db: Database.Connection, client: VardaClient) {
 }
 
 fun deletePlacements(db: Database.Connection, client: VardaClient, placementIds: List<Long>) {
+    logger.info { "Varda: Deleting ${placementIds.size} placement records" }
     placementIds.forEach { vardaPlacementId ->
         client.deletePlacement(vardaPlacementId).let { success ->
             if (success) db.transaction { deletePlacement(it, vardaPlacementId) }
