@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.utils.dateNow
 import fi.espoo.evaka.shared.utils.europeHelsinki
@@ -27,6 +28,7 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -347,10 +349,8 @@ class ChildAttendanceController(
         val startDate: LocalDate,
         val endDate: LocalDate
     )
-    data class AbsenceDay(
-        val date: LocalDate,
-        val placementType: PlacementType,
-        val dateOfBirth: LocalDate
+    data class AbsenceRangeDeleteRequest(
+        val period: FiniteDateRange
     )
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
@@ -378,6 +378,20 @@ class ChildAttendanceController(
             }
 
             tx.getAttendancesResponse(unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/units/{unitId}/children/{childId}/absence-range/delete")
+    fun deleteAbsenceRange(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID,
+        @RequestBody body: AbsenceRangeDeleteRequest
+    ): ResponseEntity<Unit> {
+        Audit.AbsenceDeleteRange.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
+        return db.transaction { tx ->
+            tx.deleteAbsencesByPeriod(childId, body.period)
         }.let { ResponseEntity.ok(it) }
     }
 }

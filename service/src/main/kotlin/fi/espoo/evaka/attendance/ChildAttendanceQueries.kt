@@ -18,6 +18,7 @@ import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.jdbi.v3.core.kotlin.mapTo
@@ -364,6 +365,20 @@ fun Database.Transaction.deleteAbsencesByDate(childId: UUID, date: LocalDate) {
     createUpdate(sql)
         .bind("childId", childId)
         .bind("date", date)
+        .execute()
+}
+
+fun Database.Transaction.deleteAbsencesByPeriod(childId: UUID, period: FiniteDateRange) {
+    // language=sql
+    val sql =
+        """
+        DELETE FROM absence
+        WHERE child_id = :childId AND :period @> date
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("childId", childId)
+        .bind("period", period)
         .execute()
 }
 
