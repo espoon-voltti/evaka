@@ -68,10 +68,11 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   margin-right: ${defaultMargins.xxs};
   overflow-y: scroll;
 
-  @media (min-width: ${tabletMin}) {
-    padding-left: ${defaultMargins.L};
-    padding-right: ${defaultMargins.L};
-    color: lime !important;
+  @media (max-width: ${tabletMin}) {
+    padding-left: ${defaultMargins.XL};
+    padding-right: ${defaultMargins.XL};
+    margin-left: ${defaultMargins.s};
+    margin-right: ${defaultMargins.s};
   }
 `
 
@@ -124,12 +125,17 @@ export const ModalBackground = styled.div`
   background: rgba(15, 15, 15, 0.86);
 `
 
-export const ModalButtons = styled.div`
+export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
   display: flex;
   flex-direction: row;
   justify-content: center;
   margin-top: ${defaultMargins.XXL};
   margin-bottom: ${defaultMargins.X3L};
+  justify-content: ${(p) => (p.$singleButton ? `center` : `space-between`)};
+
+  @media (max-width: ${tabletMin}) {
+    margin-bottom: 32px;
+  }
 `
 
 export const ModalTitle = styled.div`

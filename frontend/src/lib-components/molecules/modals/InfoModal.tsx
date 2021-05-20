@@ -23,8 +23,8 @@ import {
 } from 'lib-components/molecules/modals/FormModal'
 import Title from 'lib-components/atoms/Title'
 import { Gap } from 'lib-components/white-space'
-import Button from 'lib-components/atoms/buttons/Button'
 import { P } from 'lib-components/typography'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 
 interface SizeProps {
   size: ModalSize
@@ -165,10 +165,10 @@ function InfoModal({
               </ModalTitle>
               {children}
               {resolve && (
-                <ModalButtons>
+                <ModalButtons $singleButton={!reject}>
                   {reject && (
                     <>
-                      <Button
+                      <InlineButton
                         onClick={reject.action}
                         data-qa="modal-cancelBtn"
                         text={reject.label}
@@ -176,8 +176,7 @@ function InfoModal({
                       <Gap horizontal size={'xs'} />
                     </>
                   )}
-                  <Button
-                    primary
+                  <InlineButton
                     data-qa="modal-okBtn"
                     onClick={resolve.action}
                     disabled={resolveDisabled}
