@@ -68,7 +68,11 @@ fun sendUpdatedPlacements(db: Database.Connection, client: VardaClient) {
 fun removeDeletedPlacements(db: Database.Connection, client: VardaClient) {
     val removedPlacements = db.read { getRemovedPlacements(it) }
     logger.info { "Varda: Deleting ${removedPlacements.size} removed placements" }
-    removedPlacements.forEach { vardaPlacementId ->
+    deletePlacements(db, client, removedPlacements)
+}
+
+fun deletePlacements(db: Database.Connection, client: VardaClient, placementIds: List<Long>) {
+    placementIds.forEach { vardaPlacementId ->
         client.deletePlacement(vardaPlacementId).let { success ->
             if (success) db.transaction { deletePlacement(it, vardaPlacementId) }
         }

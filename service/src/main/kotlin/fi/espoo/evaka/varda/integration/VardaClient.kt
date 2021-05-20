@@ -315,6 +315,47 @@ class VardaClient(
         }
     }
 
+    fun deleteChild(vardaChildId: Long): Boolean {
+        val (request, _, result) = fuel.delete(getChildUrl(vardaChildId))
+            .authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "Deleting child from Varda succeeded (id: $vardaChildId)" }
+                true
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                false
+            }
+        }
+    }
+
+    data class VardaResultId(
+        val id: Long
+    )
+
+    fun getFeeDataByChild(vardaChildId: Long): List<Long> {
+        logger.info { "Getting fee data from Varda (child id: $vardaChildId)" }
+        return getAllPages("$feeDataUrl?lapsi=$vardaChildId") {
+            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+        }.map { it.id }
+    }
+
+    fun getPlacementsByChild(vardaChildId: Long): List<Long> {
+        logger.info { "Getting placements from Varda (child id: $vardaChildId)" }
+        return getAllPages("$placementUrl?lapsi=$vardaChildId") {
+            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+        }.map { it.id }
+    }
+
+    fun getDecisionsByChild(vardaChildId: Long): List<Long> {
+        logger.info { "Getting decisions from Varda (child id: $vardaChildId)" }
+        return getAllPages("$decisionUrl?lapsi=$vardaChildId") {
+            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+        }.map { it.id }
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class DecisionPeriod(
         val id: Long,
