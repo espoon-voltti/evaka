@@ -291,7 +291,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           </DataValue>
         </DataRow>
         <Gap size="s" />
-        {missingServiceNeedDays > 0 && !featureFlags.useNewServiceNeeds ? (
+        {missingServiceNeedDays > 0 && !featureFlags.showNewServiceNeedsList ? (
           <AlertBox
             message={`${i18n.childInformation.placements.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissing2}`}
             thin
