@@ -73,7 +73,6 @@
     "react-autosize-textarea": "^7.1.0",
     "react-chartjs-2": "^2.11.1",
     "react-csv": "^2.0.3",
-    "react-datalist-input": "^1.2.12",
     "react-datepicker": "^2.10.1",
     "react-day-picker": "7.4.10",
     "react-dom": "^17.0.2",
