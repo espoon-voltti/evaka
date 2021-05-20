@@ -63,16 +63,17 @@ data class IsMobile(val requirePinLogin: Boolean) : ActionRuleParams<IsMobile> {
 
     fun inPlacementUnitOfChild() = DatabaseActionRule(
         this,
-        Query<ChildId> { tx, mobileId, _, ids ->
+        Query<ChildId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT child_id
-FROM child_acl_view
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_daycare_acl(:today)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND child_id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -81,17 +82,18 @@ AND child_id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildDailyNote() = DatabaseActionRule(
         this,
-        Query<ChildDailyNoteId> { tx, mobileId, _, ids ->
+        Query<ChildDailyNoteId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT cdn.id
-FROM child_acl_view
-JOIN child_daily_note cdn ON child_acl_view.child_id = cdn.child_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_daily_note cdn
+JOIN child_daycare_acl(:today) USING (child_id)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND cdn.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -100,17 +102,18 @@ AND cdn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildStickyNote() = DatabaseActionRule(
         this,
-        Query<ChildStickyNoteId> { tx, mobileId, _, ids ->
+        Query<ChildStickyNoteId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT csn.id
-FROM child_acl_view
-JOIN child_sticky_note csn ON child_acl_view.child_id = csn.child_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_sticky_note csn
+JOIN child_daycare_acl(:today) USING (child_id)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND csn.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()
@@ -119,17 +122,18 @@ AND csn.id = ANY(:ids)
 
     fun inPlacementUnitOfChildOfChildImage() = DatabaseActionRule(
         this,
-        Query<ChildImageId> { tx, mobileId, _, ids ->
+        Query<ChildImageId> { tx, mobileId, now, ids ->
             tx.createQuery(
                 """
 SELECT img.id
-FROM child_acl_view
-JOIN child_images img ON child_acl_view.child_id = img.child_id
-WHERE employee_id = :userId
-AND role = 'MOBILE'
+FROM child_images img
+JOIN child_daycare_acl(:today) USING (child_id)
+JOIN mobile_device_daycare_acl_view USING (daycare_id)
+WHERE mobile_device_id = :userId
 AND img.id = ANY(:ids)
                 """.trimIndent()
             )
+                .bind("today", now.toLocalDate())
                 .bind("ids", ids.toTypedArray())
                 .bind("userId", mobileId)
                 .mapTo()

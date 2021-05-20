@@ -597,6 +597,14 @@ fun Database.Read.getReceiversForNewMessage(
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
             JOIN daycare d ON pl.unit_id = d.id
             WHERE pl.unit_id = :unitId AND EXISTS (
+                SELECT 1
+                FROM child_daycare_acl(:date)
+                JOIN mobile_device_daycare_acl_view USING (daycare_id)
+                WHERE mobile_device_id = :employeeOrMobileId
+                AND child_id = pl.child_id
+                
+                UNION ALL
+                
                 SELECT 1 FROM child_acl_view a
                 WHERE a.employee_id = :employeeOrMobileId AND a.child_id = pl.child_id
             )
@@ -609,6 +617,14 @@ fun Database.Read.getReceiversForNewMessage(
             JOIN backup_care bc ON dg.id = bc.group_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
             JOIN daycare d ON bc.unit_id = d.id
             WHERE d.id = :unitId AND EXISTS (
+                SELECT 1
+                FROM child_daycare_acl(:date)
+                JOIN mobile_device_daycare_acl_view USING (daycare_id)
+                WHERE mobile_device_id = :employeeOrMobileId
+                AND child_id = bc.child_id
+                
+                UNION ALL
+                
                 SELECT 1 FROM child_acl_view a
                 WHERE a.employee_id = :employeeOrMobileId AND a.child_id = bc.child_id
             )
@@ -674,6 +690,13 @@ fun Database.Read.isEmployeeAuthorizedToSendTo(employeeOrMobileId: Id<*>, accoun
     // language=SQL
     val sql = """
         WITH children AS (
+            SELECT child_id
+            FROM child_daycare_acl(:date)
+            JOIN mobile_device_daycare_acl_view USING (daycare_id)
+            WHERE mobile_device_id = :employeeOrMobileId
+            
+            UNION ALL
+            
             SELECT child_id
             FROM child_acl_view
             WHERE employee_id = :employeeOrMobileId
