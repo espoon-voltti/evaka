@@ -237,7 +237,7 @@ describe('Child information page sections', () => {
     })
   })
 
-  test('Staff sees family contacts, placements, backup care and service need sections', async () => {
+  test('Staff sees family contacts, backup pickups, placements, backup care and service need sections', async () => {
     await nav.login('STAFF')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -253,11 +253,11 @@ describe('Child information page sections', () => {
       familyContacts: true,
       childApplications: false,
       messageBlocklist: false,
-      backupPickup: false
+      backupPickup: true
     })
   })
 
-  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance, applications and family contacts sections', async () => {
+  test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance, applications and family contacts, backup pickups sections', async () => {
     await nav.login('UNIT_SUPERVISOR')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -273,11 +273,11 @@ describe('Child information page sections', () => {
       familyContacts: true,
       childApplications: true,
       messageBlocklist: false,
-      backupPickup: false
+      backupPickup: true
     })
   })
 
-  test('Special education techer sees family contacts, backup pickups, placements, backup care, service need and assistance sections', async () => {
+  test('Special education techer sees family contacts, placements, backup care, service need and assistance sections', async () => {
     await nav.login('SPECIAL_EDUCATION_TEACHER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
@@ -293,7 +293,7 @@ describe('Child information page sections', () => {
       familyContacts: true,
       childApplications: false,
       messageBlocklist: false,
-      backupPickup: true
+      backupPickup: false
     })
   })
 })
