@@ -11,16 +11,18 @@ import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { UUID } from '../../../lib-common/types'
 import { useTranslation } from '../../state/i18n'
-import { getReceivedMessages, markThreadRead } from './api'
+import { getReceivedMessages, getSentMessages, markThreadRead } from './api'
 import { ReceivedMessages } from './ReceivedMessages'
+import { SentMessages } from './SentMessages'
 import { SingleThreadView } from './SingleThreadView'
-import { MessageThread } from './types'
+import { MessageThread, SentMessage } from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
 
 const MessagesContainer = styled(ContentArea)`
   overflow: hidden;
+  flex-grow: 1;
 `
 
 const markMessagesReadIfThreadIdMatches = (id: UUID) => (t: MessageThread) =>
@@ -46,8 +48,11 @@ export default React.memo(function MessagesList({
     Result<MessageThread[]>
   >(Loading.of())
   const [selectedThread, setSelectedThread] = useState<MessageThread>()
+  const [sentMessages, setSentMessages] = useState<Result<SentMessage[]>>(
+    Loading.of()
+  )
 
-  const setMessagesResult = useCallback(
+  const setReceivedMessagesResult = useCallback(
     (result: Result<Paged<MessageThread>>) => {
       setReceivedMessages(result.map((r) => r.data))
       if (result.isSuccess) {
@@ -56,11 +61,21 @@ export default React.memo(function MessagesList({
     },
     []
   )
-
   const loadReceivedMessages = useRestApi(
     getReceivedMessages,
-    setMessagesResult
+    setReceivedMessagesResult
   )
+
+  const setSentMessagesResult = useCallback(
+    (result: Result<Paged<SentMessage>>) => {
+      setSentMessages(result.map((r) => r.data))
+      if (result.isSuccess) {
+        setPages(result.value.pages)
+      }
+    },
+    []
+  )
+  const loadSentMessages = useRestApi(getSentMessages, setSentMessagesResult)
 
   // reset view and load messages if account, view or page changes
   useEffect(() => {
@@ -70,9 +85,9 @@ export default React.memo(function MessagesList({
         loadReceivedMessages(account.id, page, PAGE_SIZE)
         break
       case 'SENT':
-        setReceivedMessages(Loading.of())
+        loadSentMessages(account.id, page, PAGE_SIZE)
     }
-  }, [account.id, view, page, loadReceivedMessages])
+  }, [account.id, view, page, loadReceivedMessages, loadSentMessages])
 
   const onSelectThread = useCallback(
     (thread: MessageThread) => {
@@ -110,7 +125,7 @@ export default React.memo(function MessagesList({
           onSelectThread={onSelectThread}
         />
       ) : (
-        <div>TODO sent messages</div>
+        <SentMessages messages={sentMessages} />
       )}
       <Pagination
         pages={pages}
