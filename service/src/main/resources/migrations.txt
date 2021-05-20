@@ -82,3 +82,4 @@ V81__message_account_active.sql
 V82__daycare_group_acl.sql
 V83__group_staff.sql
 V84__create_message_accounts.sql
+V85__message_draft_table.sql
