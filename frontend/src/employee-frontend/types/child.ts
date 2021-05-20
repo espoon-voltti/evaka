@@ -163,6 +163,7 @@ export interface UnitBackupCare {
   id: UUID
   period: FiniteDateRange
   missingServiceNeedDays: number
+  missingNewServiceNeedDays: number
   group?: {
     id: UUID
     name: string

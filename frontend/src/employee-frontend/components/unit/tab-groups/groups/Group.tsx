@@ -65,6 +65,7 @@ import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { isNotProduction, isPilotUnit } from '../../../../constants'
+import { featureFlags } from '../../../../config'
 
 interface Props {
   unit: Unit
@@ -516,7 +517,11 @@ function Group({
                   {sortedPlacements.map((placement) => {
                     const missingServiceNeedDays =
                       'type' in placement
-                        ? placement.daycarePlacementMissingServiceNeedDays
+                        ? featureFlags.useNewServiceNeeds
+                          ? placement.daycarePlacementMissingNewServiceNeedDays
+                          : placement.daycarePlacementMissingServiceNeedDays
+                        : featureFlags.useNewServiceNeeds
+                        ? placement.missingNewServiceNeedDays
                         : placement.missingServiceNeedDays
                     return (
                       <Tr
