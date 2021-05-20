@@ -374,6 +374,19 @@ export async function deleteAbsenceRange(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function deleteAbsenceByDate(
+  unitId: UUID,
+  childId: UUID,
+  date: LocalDate
+): Promise<Result<void>> {
+  return client
+    .post(`/attendances/units/${unitId}/children/${childId}/absence`, {
+      date
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 function compareByProperty(
   a: JsonOf<AttendanceChild>,
   b: JsonOf<AttendanceChild>,

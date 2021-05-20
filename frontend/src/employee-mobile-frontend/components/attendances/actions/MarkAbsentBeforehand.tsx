@@ -31,6 +31,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { TallContentArea } from '../../../components/mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
+  deleteAbsenceByDate,
   deleteAbsenceRange,
   getDaycareAttendances,
   getFutureAbsencesByChild,
@@ -42,6 +43,7 @@ import AbsenceSelector from '../AbsenceSelector'
 import { CustomTitle, Actions, BackButtonInline } from '../components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { orderBy } from 'lodash'
+import Title from 'lib-components/atoms/Title'
 
 export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()
@@ -101,11 +103,15 @@ export default React.memo(function MarkAbsentBeforehand() {
   }
 
   async function deleteAbsences() {
-    await deleteAbsenceRange(
-      unitId,
-      childId,
-      new FiniteDateRange(deleteRange[0], deleteRange[1])
-    )
+    if (deleteRange.length > 1) {
+      await deleteAbsenceRange(
+        unitId,
+        childId,
+        new FiniteDateRange(deleteRange[0], deleteRange[1])
+      )
+    } else {
+      await deleteAbsenceByDate(unitId, childId, deleteRange[0])
+    }
     setDeleteRange([])
     loadFutureAbsences(childId)
     setUiMode('default')
@@ -270,6 +276,10 @@ export default React.memo(function MarkAbsentBeforehand() {
               </FixedSpaceRow>
             </Actions>
             <HorizontalLine />
+
+            <Title size={2} smaller primary>
+              {i18n.absences.futureAbsence}
+            </Title>
             <FixedSpaceColumn>
               {absenceRanges.map((absenceRange) => {
                 if (absenceRange.length > 1) {

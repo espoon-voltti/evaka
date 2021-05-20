@@ -83,7 +83,8 @@ export const fi = {
     startBeforeEnd: 'Aloitus oltava ennen päättymispäivää.',
     reason: 'Poissaolon syy',
     fullDayHint: 'Poissaolomerkintä tehdään koko päivälle',
-    confirmDelete: 'Haluatko poistaa tämän poissaolon?'
+    confirmDelete: 'Haluatko poistaa tämän poissaolon?',
+    futureAbsence: 'Tulevat poissaolot'
   },
   attendances: {
     types: {
