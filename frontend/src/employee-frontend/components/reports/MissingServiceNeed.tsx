@@ -28,8 +28,7 @@ import {
 } from 'lib-components/molecules/DatePickerDeprecated'
 import LocalDate from 'lib-common/local-date'
 import { distinct } from '../../utils'
-import { RequireRole } from '../../utils/roles'
-import Checkbox from '../../../lib-components/atoms/form/Checkbox'
+import { featureFlags } from '../../config'
 
 interface DisplayFilters {
   careArea: string
@@ -52,7 +51,6 @@ function MissingServiceNeed() {
     startDate: LocalDate.today().subMonths(1).withDate(1),
     endDate: LocalDate.today().addMonths(2).lastDayOfMonth()
   })
-  const [v2, setV2] = useState(false)
 
   const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
     emptyDisplayFilters
@@ -66,8 +64,11 @@ function MissingServiceNeed() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getMissingServiceNeedReport(filters, v2).then(setRows)
-  }, [filters, v2])
+    void getMissingServiceNeedReport(
+      filters,
+      featureFlags.useNewServiceNeeds
+    ).then(setRows)
+  }, [filters])
 
   const filteredRows: MissingServiceNeedReportRow[] = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
@@ -135,16 +136,6 @@ function MissingServiceNeed() {
             />
           </Wrapper>
         </FilterRow>
-
-        <RequireRole oneOf={['ADMIN']}>
-          <FilterRow>
-            <Checkbox
-              label="Käytä uusia palveluntarpeita"
-              checked={v2}
-              onChange={setV2}
-            />
-          </FilterRow>
-        </RequireRole>
 
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
