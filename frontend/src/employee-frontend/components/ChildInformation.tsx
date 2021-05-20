@@ -127,10 +127,12 @@ const layouts: Layouts<typeof components> = {
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
-    { component: 'family-contacts', open: false }
+    { component: 'family-contacts', open: false },
+    { component: 'backup-pickup', open: false }
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
+    { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
@@ -138,7 +140,6 @@ const layouts: Layouts<typeof components> = {
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
-    { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'service-need', open: false },
