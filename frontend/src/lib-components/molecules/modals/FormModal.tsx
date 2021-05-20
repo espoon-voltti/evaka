@@ -14,6 +14,7 @@ import Title from '../../atoms/Title'
 import { P } from '../../typography'
 import { defaultMargins, Gap } from '../../white-space'
 import { modalZIndex } from '../../layout/z-helpers'
+import { tabletMin } from 'lib-components/breakpoints'
 
 export const DimmedModal = styled.div``
 
@@ -66,6 +67,12 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   margin-left: ${defaultMargins.xxs};
   margin-right: ${defaultMargins.xxs};
   overflow-y: scroll;
+
+  @media (min-width: ${tabletMin}) {
+    padding-left: ${defaultMargins.L};
+    padding-right: ${defaultMargins.L};
+    color: lime !important;
+  }
 `
 
 export const ModalWrapper = styled.div<zIndexProps>`
