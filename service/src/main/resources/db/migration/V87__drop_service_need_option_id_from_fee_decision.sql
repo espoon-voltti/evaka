@@ -1,0 +1,1 @@
+ALTER TABLE new_fee_decision_child DROP COLUMN service_need_option_id;

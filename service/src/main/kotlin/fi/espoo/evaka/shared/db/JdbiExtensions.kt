@@ -172,8 +172,9 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision2> = RowMap
                         type = rs.getEnum("placement_type"),
                     ),
                     serviceNeed = FeeDecisionServiceNeed(
-                        optionId = rs.getUUID("service_need_option_id"),
-                        feeCoefficient = rs.getBigDecimal("service_need_fee_coefficient")
+                        feeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),
+                        descriptionFi = rs.getString("service_need_description_fi"),
+                        descriptionSv = rs.getString("service_need_description_sv")
                     ),
                     baseFee = rs.getInt("base_fee"),
                     siblingDiscount = rs.getInt("sibling_discount"),
