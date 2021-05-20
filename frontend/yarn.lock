@@ -8775,7 +8775,7 @@ __metadata:
     lodash: ^4.17.21
     make-error-cause: ^2.3.0
     parcel-bundler: ^1.12.5
-    playwright: ^1.9.2
+    playwright: ^1.11.0
     polished: ^4.1.2
     postcss-loader: ^5.3.0
     postcss-preset-env: ^6.7.0
@@ -14602,9 +14602,9 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.9.2":
-  version: 1.9.2
-  resolution: "playwright@npm:1.9.2"
+"playwright@npm:^1.11.0":
+  version: 1.11.1
+  resolution: "playwright@npm:1.11.1"
   dependencies:
     commander: ^6.1.0
     debug: ^4.1.1
@@ -14619,9 +14619,10 @@ fsevents@^1.2.7:
     rimraf: ^3.0.2
     stack-utils: ^2.0.3
     ws: ^7.3.1
+    yazl: ^2.5.1
   bin:
     playwright: lib/cli/cli.js
-  checksum: cbcdd4adc56eb30dfc758392f03424c3fb919f1e2202ac092d9c4761c4860d2c2e6e6cfd0b0752c7cb8f7313cf739ee4b49012bf80f9904b0373a6212af726ec
+  checksum: 1446964b6ef8b4d7fafb45a38f9b992ee76e456e7072a7179f720cafb4204bce2e737a26929065778336450a598ec83c5fdd19d5199e6b42b4d075a5a930d931
   languageName: node
   linkType: hard
 
@@ -20520,6 +20521,15 @@ typescript@^4.1.3:
     buffer-crc32: ~0.2.3
     fd-slicer: ~1.1.0
   checksum: 6d0c4e72706ec2df6ea842d09c792e7b34badc5db3d8a893e0c70d0e464c9bf82bac4b1690f3515b5e1d96b72fceb6cc4dd96465426077ba6dddc54e7dd4d517
+  languageName: node
+  linkType: hard
+
+"yazl@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "yazl@npm:2.5.1"
+  dependencies:
+    buffer-crc32: ~0.2.3
+  checksum: ee9bd2f57dfe1bdca333749bbb42b5a9e68a39871a31d8eed93b5606b8dfa1a1dda89af5cfd274a455c0f5f5790d743538067f2468d3bc8cd4227cdc94bc6ec3
   languageName: node
   linkType: hard
 
