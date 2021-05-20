@@ -14,6 +14,7 @@ enum class Audit(
 ) {
     AbsenceRead("evaka.absence.read"),
     AbsenceDeleteRange("evaka.absence.delete.range"),
+    AbsenceDelete("evaka.absence.delete.range"),
     AbsenceUpdate("evaka.absence.update"),
     ApplicationAdminDetailsUpdate("evaka.application.admin-details.update"),
     ApplicationCancel("evaka.application.cancel"),

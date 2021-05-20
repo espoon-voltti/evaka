@@ -349,9 +349,6 @@ class ChildAttendanceController(
         val startDate: LocalDate,
         val endDate: LocalDate
     )
-    data class AbsenceRangeDeleteRequest(
-        val period: FiniteDateRange
-    )
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
         db: Database.Connection,
@@ -381,6 +378,9 @@ class ChildAttendanceController(
         }.let { ResponseEntity.ok(it) }
     }
 
+    data class AbsenceRangeDeleteRequest(
+        val period: FiniteDateRange
+    )
     @PostMapping("/units/{unitId}/children/{childId}/absence-range/delete")
     fun deleteAbsenceRange(
         db: Database.Connection,
@@ -392,6 +392,23 @@ class ChildAttendanceController(
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
         return db.transaction { tx ->
             tx.deleteAbsencesByPeriod(childId, body.period)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    data class AbsenceDateDeleteRequest(
+        val date: LocalDate
+    )
+    @PostMapping("/units/{unitId}/children/{childId}/absence")
+    fun deleteAbsence(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID,
+        @RequestBody body: AbsenceDateDeleteRequest
+    ): ResponseEntity<Unit> {
+        Audit.AbsenceDelete.log(targetId = childId)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
+        return db.transaction { tx ->
+            tx.deleteAbsencesByDate(childId, body.date)
         }.let { ResponseEntity.ok(it) }
     }
 }
