@@ -82,7 +82,6 @@ const BackButtonMargin = styled(BackButton)`
 
 const TallContentAreaNoOverflow = styled(TallContentArea)`
   overflow-x: hidden;
-  height: calc(100% - 74px);
 `
 
 const Center = styled.div`
@@ -96,7 +95,8 @@ const BottonButtonWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 74px;
+  min-height: 74px;
+  background: ${colors.greyscale.lightest};
 `
 const LinkButtonWithIcon = styled(Link)``
 
@@ -106,6 +106,15 @@ const LinkButtonText = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 16px;
+`
+
+const Shadow = styled.div`
+  box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter};
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 `
 
 export default React.memo(function AttendanceChildPage() {
@@ -156,7 +165,6 @@ export default React.memo(function AttendanceChildPage() {
         opaque
         paddingHorizontal={'0px'}
         paddingVertical={'0px'}
-        spaced
         shadow
       >
         <BackButtonMargin
@@ -165,7 +173,7 @@ export default React.memo(function AttendanceChildPage() {
           data-qa="back-btn"
         />
         {child && group && !loading ? (
-          <Fragment>
+          <Shadow>
             <Zindex>
               <ChildBackground status={child.status}>
                 <Center>
@@ -225,23 +233,25 @@ export default React.memo(function AttendanceChildPage() {
                 <AttendanceChildAbsent child={child} unitId={unitId} />
               )}
             </FlexColumn>
-          </Fragment>
+          </Shadow>
         ) : (
           <Loader />
         )}
+        <BottonButtonWrapper>
+          <LinkButtonWithIcon
+            to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/mark-absent-beforehand`}
+          >
+            <RoundIcon
+              size={'L'}
+              content={faCalendarTimes}
+              color={colors.blues.primary}
+            />
+            <LinkButtonText>
+              {i18n.attendances.actions.markAbsentBeforehand}
+            </LinkButtonText>
+          </LinkButtonWithIcon>
+        </BottonButtonWrapper>
       </TallContentAreaNoOverflow>
-      <BottonButtonWrapper>
-        <LinkButtonWithIcon
-          to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/mark-absent-beforehand`}
-        >
-          <RoundIcon
-            size={'L'}
-            content={faCalendarTimes}
-            color={colors.blues.primary}
-          />
-          <LinkButtonText>Merkitse tuleva poissaolo</LinkButtonText>
-        </LinkButtonWithIcon>
-      </BottonButtonWrapper>
     </Fragment>
   )
 })
