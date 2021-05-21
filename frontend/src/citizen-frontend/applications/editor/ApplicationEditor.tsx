@@ -47,7 +47,6 @@ import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
 import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
 import Footer from '../../Footer'
 import useTitle from '../../useTitle'
-import { DaycareApplicationContextProvider } from './state/daycareApplication'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails
@@ -237,15 +236,13 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     switch (apiData.type) {
       case 'DAYCARE':
         return (
-          <DaycareApplicationContextProvider>
-            <ApplicationFormDaycare
-              apiData={apiData}
-              formData={formData}
-              setFormData={setFormData}
-              errors={errors}
-              verificationRequested={verificationRequested}
-            />
-          </DaycareApplicationContextProvider>
+          <ApplicationFormDaycare
+            apiData={apiData}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            verificationRequested={verificationRequested}
+          />
         )
       case 'PRESCHOOL':
         return (
