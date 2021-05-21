@@ -24,6 +24,17 @@ fun updateChildren(db: Database.Connection, client: VardaClient, organizerName: 
     createChildren(db, client, organizerName)
 }
 
+fun deleteChild(db: Database.Connection, client: VardaClient, vardaChildId: Long) {
+    if (client.deleteChild(vardaChildId)) {
+        logger.info { "Varda: deleting varda child from db by id $vardaChildId" }
+        db.transaction {
+            it.createUpdate("delete from varda_child where varda_child_id = :vardaChildId")
+                .bind("vardaChildId", vardaChildId)
+                .execute()
+        }
+    }
+}
+
 private fun createPersons(db: Database.Connection, client: VardaClient) {
     val vardaPersons = db.read { getPersonsToUpload(it) }
     logger.info { "Varda: Creating ${vardaPersons.size} new people" }

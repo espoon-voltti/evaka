@@ -66,6 +66,35 @@ class VardaUpdateService(
         val client = VardaClient(tokenProvider, fuel, env, mapper)
         db.connect { updateAll(it, client, personService, organizer) }
     }
+
+    fun deleteChild(vardaChildId: Long, db: Database.Connection) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        deleteChild(db, client, vardaChildId)
+    }
+
+    fun deleteFeeDataByChild(vardaChildId: Long, db: Database.Connection) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val feeDataIds = client.getFeeDataByChild(vardaChildId)
+
+        deleteFeeData(db, client, feeDataIds)
+    }
+
+    fun deletePlacementsByChild(vardaChildId: Long, db: Database.Connection) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val decisionIds = client.getDecisionsByChild(vardaChildId)
+        val placementIds = decisionIds.flatMap {
+            client.getPlacementsByDecision(it)
+        }
+
+        deletePlacements(db, client, placementIds)
+    }
+
+    fun deleteDecisionsByChild(vardaChildId: Long, db: Database.Connection) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val decisionIds = client.getDecisionsByChild(vardaChildId)
+
+        deleteDecisions(db, client, decisionIds)
+    }
 }
 
 fun updateAll(

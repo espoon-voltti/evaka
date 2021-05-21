@@ -36,6 +36,16 @@ fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient)
     }
 }
 
+fun deleteDecisions(db: Database.Connection, client: VardaClient, decisionIds: List<Long>) {
+    logger.info { "Varda: Deleting ${decisionIds.size} decision records" }
+    decisionIds.forEach { vardaId ->
+        if (client.deleteDecision(vardaId)) {
+            logger.info { "Varda: Deleting decision from db by id $vardaId" }
+            db.transaction { deleteDecision(it, vardaId) }
+        }
+    }
+}
+
 fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
     val newDecisions = db.read { getNewDecisions(it, client.getChildUrl, client.sourceSystem) }
     logger.info { "Varda: Creating ${newDecisions.size} new decisions" }
