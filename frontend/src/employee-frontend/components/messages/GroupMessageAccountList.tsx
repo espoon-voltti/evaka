@@ -5,11 +5,11 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { ReactNode, useState } from 'react'
 import styled from 'styled-components'
-import { greyscale } from '../../../lib-components/colors'
 import { defaultMargins } from '../../../lib-components/white-space'
+import colors from '../../../lib-customizations/common'
 import { faChevronDown, faChevronUp } from '../../../lib-icons'
 import MessageBox, { MessageBoxRow } from './MessageBox'
-import { GroupMessageAccount } from './types'
+import { GroupMessageAccount, messageBoxes } from './types'
 import { AccountView } from './types-view'
 
 const AccountContainer = styled.div`
@@ -43,7 +43,7 @@ function CollapsibleRow({
         <FontAwesomeIcon
           icon={expanded ? faChevronUp : faChevronDown}
           size="xs"
-          color={greyscale.darkest}
+          color={colors.greyscale.darkest}
         />
       </CollapseToggle>
       <Content visible={expanded}>{children}</Content>
@@ -76,18 +76,15 @@ export default function GroupMessageAccountList({
           startCollapsed={i > 0}
           title={acc.daycareGroup.name}
         >
-          <MessageBox
-            account={acc}
-            activeView={activeView}
-            setView={setView}
-            view="RECEIVED"
-          />
-          <MessageBox
-            account={acc}
-            activeView={activeView}
-            setView={setView}
-            view="SENT"
-          />
+          {messageBoxes.map((view) => (
+            <MessageBox
+              key={view}
+              view={view}
+              account={acc}
+              activeView={activeView}
+              setView={setView}
+            />
+          ))}
         </CollapsibleRow>
       ))}
     </CollapsibleMessageBoxesContainer>

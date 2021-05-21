@@ -7,9 +7,11 @@ import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { UUID } from '../../types'
 import {
+  deserializeDraftContent,
   deserializeMessageThread,
   deserializeReceiverChild,
   deserializeSentMessage,
+  DraftContent,
   IdAndName,
   MessageAccount,
   MessageBody,
@@ -17,7 +19,8 @@ import {
   MessageType,
   ReceiverGroup,
   ReceiverTriplet,
-  SentMessage
+  SentMessage,
+  UpsertableDraftContent
 } from './types'
 
 export async function deleteDraftBulletin(id: UUID): Promise<void> {
@@ -128,6 +131,43 @@ export async function getSentMessages(
         data: data.data.map(deserializeSentMessage)
       })
     )
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getMessageDrafts(
+  accountId: UUID
+): Promise<Result<DraftContent[]>> {
+  return client
+    .get<JsonOf<DraftContent[]>>(`/messages/${accountId}/drafts`)
+    .then(({ data }) => Success.of(data.map(deserializeDraftContent)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
+  return client
+    .post<UUID>(`/messages/${accountId}/drafts`)
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function saveDraft(
+  accountId: UUID,
+  draftId: UUID,
+  content: UpsertableDraftContent
+): Promise<Result<void>> {
+  return client
+    .put(`/messages/${accountId}/drafts/${draftId}`, content)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteDraft(
+  accountId: UUID,
+  draftId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/messages/${accountId}/drafts/${draftId}`)
+    .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
 

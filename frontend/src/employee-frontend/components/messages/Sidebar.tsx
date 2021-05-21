@@ -6,29 +6,29 @@ import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import colors, { espooBrandColors, greyscale } from 'lib-components/colors'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import colors from '../../../lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import Select, { SelectOptionProps } from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
-import { isGroupMessageAccount, MessageAccount } from './types'
+import { isGroupMessageAccount, MessageAccount, messageBoxes } from './types'
 import { AccountView } from './types-view'
 
 const AccountSection = styled.section`
   padding: 12px 0;
 
   & + & {
-    border-top: 1px dashed ${greyscale.dark};
+    border-top: 1px dashed ${colors.greyscale.dark};
   }
 `
 
 const AccountHeader = styled.div`
   padding: 12px ${defaultMargins.m};
-  color: ${greyscale.dark};
+  color: ${colors.greyscale.dark};
   font-family: 'Montserrat', sans-serif;
   font-size: 20px;
   font-weight: 600;
@@ -77,18 +77,15 @@ function Accounts(props: AccountsParams) {
       {personalAccount && (
         <AccountSection>
           <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
-          <MessageBox
-            view="RECEIVED"
-            account={personalAccount}
-            activeView={props.view}
-            setView={props.setView}
-          />
-          <MessageBox
-            view="SENT"
-            account={personalAccount}
-            activeView={props.view}
-            setView={props.setView}
-          />
+          {messageBoxes.map((view) => (
+            <MessageBox
+              key={view}
+              view={view}
+              account={personalAccount}
+              activeView={props.view}
+              setView={props.setView}
+            />
+          ))}
         </AccountSection>
       )}
 
@@ -168,7 +165,7 @@ export const Received = styled.div<{ active: boolean }>`
   padding: 12px ${defaultMargins.m};
   font-weight: ${(p) => (p.active ? '600;' : 'unset')}
   background-color: ${(p) =>
-    p.active ? espooBrandColors.espooTurquoiseLight : 'unset'}
+    p.active ? colors.brandEspoo.espooTurquoiseLight : 'unset'}
 `
 
 const Container = styled.div`

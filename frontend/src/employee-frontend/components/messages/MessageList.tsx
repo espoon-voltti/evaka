@@ -11,11 +11,17 @@ import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { UUID } from '../../../lib-common/types'
 import { useTranslation } from '../../state/i18n'
-import { getReceivedMessages, getSentMessages, markThreadRead } from './api'
+import {
+  getMessageDrafts,
+  getReceivedMessages,
+  getSentMessages,
+  markThreadRead
+} from './api'
+import { MessageDrafts } from './MessageDrafts'
 import { ReceivedMessages } from './ReceivedMessages'
 import { SentMessages } from './SentMessages'
 import { SingleThreadView } from './SingleThreadView'
-import { MessageThread, SentMessage } from './types'
+import { DraftContent, MessageThread, SentMessage } from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
@@ -47,6 +53,9 @@ export default React.memo(function MessagesList({
   const [receivedMessages, setReceivedMessages] = useState<
     Result<MessageThread[]>
   >(Loading.of())
+  const [messageDrafts, setMessageDrafts] = useState<Result<DraftContent[]>>(
+    Loading.of()
+  )
   const [selectedThread, setSelectedThread] = useState<MessageThread>()
   const [sentMessages, setSentMessages] = useState<Result<SentMessage[]>>(
     Loading.of()
@@ -65,6 +74,8 @@ export default React.memo(function MessagesList({
     getReceivedMessages,
     setReceivedMessagesResult
   )
+
+  const loadMessageDrafts = useRestApi(getMessageDrafts, setMessageDrafts)
 
   const setSentMessagesResult = useCallback(
     (result: Result<Paged<SentMessage>>) => {
@@ -86,8 +97,18 @@ export default React.memo(function MessagesList({
         break
       case 'SENT':
         loadSentMessages(account.id, page, PAGE_SIZE)
+        break
+      case 'DRAFTS':
+        loadMessageDrafts(account.id)
     }
-  }, [account.id, view, page, loadReceivedMessages, loadSentMessages])
+  }, [
+    account.id,
+    view,
+    page,
+    loadReceivedMessages,
+    loadSentMessages,
+    loadMessageDrafts
+  ])
 
   const onSelectThread = useCallback(
     (thread: MessageThread) => {
@@ -119,14 +140,14 @@ export default React.memo(function MessagesList({
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
       {!account.personal && <H2>{account.name}</H2>}
-      {view === 'RECEIVED' ? (
+      {view === 'RECEIVED' && (
         <ReceivedMessages
           messages={receivedMessages}
           onSelectThread={onSelectThread}
         />
-      ) : (
-        <SentMessages messages={sentMessages} />
       )}
+      {view === 'SENT' && <SentMessages messages={sentMessages} />}
+      {view === 'DRAFTS' && <MessageDrafts drafts={messageDrafts} />}
       <Pagination
         pages={pages}
         currentPage={page}
