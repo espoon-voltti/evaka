@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
+import org.springframework.core.env.Environment
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -39,9 +40,11 @@ import java.util.UUID
 @RequestMapping("/placements")
 class PlacementController(
     private val acl: AccessControlList,
-    private val placementService: PlacementService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner,
+    env: Environment
 ) {
+    private val useFiveYearsOldDaycare = env.getProperty("fi.espoo.evaka.five_years_old_daycare.enabled", Boolean::class.java, true)
+
     @GetMapping
     fun getPlacements(
         db: Database.Connection,
@@ -117,13 +120,14 @@ class PlacementController(
                 )
             }
 
-            placementService.createPlacement(
+            createPlacement(
                 tx,
                 type = body.type,
                 childId = body.childId,
                 unitId = body.unitId,
                 startDate = body.startDate,
-                endDate = body.endDate
+                endDate = body.endDate,
+                useFiveYearsOldDaycare = useFiveYearsOldDaycare
             )
             asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
         }
@@ -145,7 +149,7 @@ class PlacementController(
 
         val aclAuth = acl.getAuthorizedDaycares(user)
         db.transaction { tx ->
-            val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth)
+            val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth, useFiveYearsOldDaycare)
             asyncJobRunner.plan(
                 tx,
                 listOf(

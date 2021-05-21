@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
@@ -22,9 +23,11 @@ import java.util.UUID
 
 @Service
 class PlacementPlanService(
-    private val placementService: PlacementService,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner,
+    env: Environment
 ) {
+    private val useFiveYearsOldDaycare = env.getProperty("fi.espoo.evaka.five_years_old_daycare.enabled", Boolean::class.java, true)
+
     fun getPlacementPlanDraft(tx: Database.Read, applicationId: UUID): PlacementPlanDraft {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
@@ -119,13 +122,14 @@ class PlacementPlanService(
         if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)) {
             if (allowPreschool) {
                 val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
-                placementService.createPlacement(
+                createPlacement(
                     tx,
                     type = if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY,
                     childId = childId,
                     unitId = plan.unitId,
                     startDate = period.start,
-                    endDate = period.end
+                    endDate = period.end,
+                    useFiveYearsOldDaycare = useFiveYearsOldDaycare
                 )
                 effectivePeriod = period
             }
@@ -143,30 +147,33 @@ class PlacementPlanService(
                 // if the preschool daycare extends beyond the end of the preschool term, a normal daycare
                 // placement is used because invoices are handled differently
                 if (period.end.isAfter(exactTerm.end)) {
-                    placementService.createPlacement(
+                    createPlacement(
                         tx,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
                         startDate = period.start,
-                        endDate = exactTerm.end
+                        endDate = exactTerm.end,
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare
                     )
-                    placementService.createPlacement(
+                    createPlacement(
                         tx,
                         type = PlacementType.DAYCARE,
                         childId = childId,
                         unitId = plan.unitId,
                         startDate = exactTerm.end.plusDays(1),
-                        endDate = period.end
+                        endDate = period.end,
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare
                     )
                 } else {
-                    placementService.createPlacement(
+                    createPlacement(
                         tx,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
                         startDate = period.start,
-                        endDate = period.end
+                        endDate = period.end,
+                        useFiveYearsOldDaycare = useFiveYearsOldDaycare
                     )
                 }
                 effectivePeriod = effectivePeriod?.let {
@@ -178,13 +185,14 @@ class PlacementPlanService(
             }
         } else {
             val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
-            placementService.createPlacement(
+            createPlacement(
                 tx,
                 type = plan.type,
                 childId = childId,
                 unitId = plan.unitId,
                 startDate = period.start,
-                endDate = period.end
+                endDate = period.end,
+                useFiveYearsOldDaycare = useFiveYearsOldDaycare
             )
             effectivePeriod = period
         }
