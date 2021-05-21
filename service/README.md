@@ -56,10 +56,12 @@ Run integration tests (needs to have docker daemon running):
 ```
 
 To start dev server connected to integration test database (suitable for e.g. running E2E tests without cluttering
- development data):
+development data):
+
 ```sh
 ./gradlew bootRunTest
 ```
+
 Enable running flyway commands against integration test database in `gradle.properties`
 
 Run linter autofix:
@@ -106,12 +108,16 @@ Documentation: <https://backend-qa.varda-db.csc.fi/> (You need Voltti, Gofore or
 
 ### DB migration bookkeeping
 
-Add `./list-migrations.sh` to your *existing* pre-commit hook (`.git/hooks/pre-commit`) to enable automatic DB migration bookkeeping
+Add `./service/list-migrations.sh` to your _existing_ pre-commit hook (`.git/hooks/pre-commit`) to enable automatic DB migration bookkeeping
 
-OR if you don't have a pre-commit hook, you can create a symbolic link to the script with:
+OR if you don't have a pre-commit hook yet, you can create a new one:
 
 ```sh
-ln -s ../../list-migrations.sh .git/hooks/pre-commit
+cat >.git/hooks/pre-commit <<EOF
+#!/bin/sh
+./service/list-migrations.sh
+EOF
+chmod a+x .git/hooks/pre-commit
 ```
 
 ## OWASP dependency check
