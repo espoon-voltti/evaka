@@ -398,6 +398,8 @@ function RedirectToMainPage() {
     return <Redirect to={'/applications'} />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
     return <Redirect to={'/units'} />
+  } else if (hasRole(roles, 'DIRECTOR')) {
+    return <Redirect to={'/reports'} />
   } else {
     return <Redirect to={'/search'} />
   }
