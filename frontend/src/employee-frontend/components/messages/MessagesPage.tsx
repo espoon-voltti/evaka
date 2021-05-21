@@ -134,11 +134,10 @@ export default React.memo(function MessagesPage() {
             onChange={(message: Message) => setMessage(message)}
             onClose={() => setShowEditor(false)}
             onSend={() =>
-              postMessage({
+              postMessage(accounts.value[0].id, {
                 title: message.title,
                 content: message.content,
                 type: 'MESSAGE',
-                senderAccountId: accounts.value[0].id,
                 recipientAccountIds: message.receivers
               })
             }

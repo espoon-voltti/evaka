@@ -82,19 +82,19 @@ class MessageController(
         val title: String,
         val content: String,
         val type: MessageType,
-        val senderAccountId: UUID,
         val recipientAccountIds: Set<UUID>,
     )
 
-    @PostMapping
+    @PostMapping("/{accountId}")
     fun createMessage(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable accountId: UUID,
         @RequestBody body: PostMessageBody,
     ): List<UUID> {
-        Audit.MessagingNewMessageWrite.log(targetId = body.senderAccountId)
+        Audit.MessagingNewMessageWrite.log(accountId)
         authorizeAllowedMessagingRoles(user)
-        val sender = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == body.senderAccountId }
+        val sender = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
             ?: throw Forbidden("User is not authorized to access the account")
 
         // TODO recipient account authorization
