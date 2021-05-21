@@ -31,6 +31,20 @@ fun Database.Read.getUnreadMessagesCount(
         .one()
 }
 
+fun Database.Read.accountHasMessages(accountId: UUID): Boolean {
+    // language=SQL
+    val sql = """
+        SELECT (SELECT COUNT(*) FROM message WHERE sender_id = :accountId) > 0
+            OR (SELECT COUNT(*) FROM message_content WHERE author_id = :accountId) > 0
+            OR (SELECT COUNT(*) FROM message_recipients WHERE recipient_id = :accountId) > 0
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("accountId", accountId)
+        .mapTo<Boolean>()
+        .one()
+}
+
 fun Database.Transaction.markThreadRead(accountId: UUID, threadId: UUID): Int {
     // language=SQL
     val sql = """

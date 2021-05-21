@@ -7,7 +7,8 @@ SELECT
     COALESCE(
         nullif(concat_ws(' - ', d.name, dg.name), ''),
         nullif(concat_ws(' ', p.last_name, p.first_name), ''),
-        concat_ws(' ', e.last_name, e.first_name)
+        nullif(concat_ws(' ', e.last_name, e.first_name), ''),
+        deleted_owner_name
     )
 FROM message_account acc
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
