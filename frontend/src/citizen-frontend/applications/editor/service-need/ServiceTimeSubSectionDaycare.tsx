@@ -304,5 +304,6 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 })
 
 const SubRadios = styled.div`
-  padding-left: 2em;
+  margin-bottom: ${defaultMargins.s};
+  margin-left: ${defaultMargins.XL};
 `
