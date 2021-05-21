@@ -245,7 +245,12 @@ ORDER BY msg.sent_at DESC
         .let(mapToPaged(pageSize))
 }
 
-data class ThreadWithParticipants(val threadId: UUID, val type: MessageType, val sender: UUID, val recipients: Set<UUID>)
+data class ThreadWithParticipants(
+    val threadId: UUID,
+    val type: MessageType,
+    val sender: UUID,
+    val recipients: Set<UUID>
+)
 
 fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants? {
     val sql = """
@@ -277,6 +282,7 @@ data class MessageReceiversResult(
     val receiverFirstName: String,
     val receiverLastName: String
 )
+
 fun Database.Read.getReceiversForNewMessage(
     user: AuthenticatedUser,
     unitId: UUID
@@ -355,4 +361,15 @@ fun Database.Read.getReceiversForNewMessage(
                     }
             )
         }
+}
+
+fun Database.Transaction.markNotificationAsSent(messageRecipientId: UUID) {
+    val sql = """
+        UPDATE message_recipients
+        SET notification_sent_at = now()
+        WHERE id = :id
+    """.trimIndent()
+    this.createUpdate(sql)
+        .bind("id", messageRecipientId)
+        .execute()
 }

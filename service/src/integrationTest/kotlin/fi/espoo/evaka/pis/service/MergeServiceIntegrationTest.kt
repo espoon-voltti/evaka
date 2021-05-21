@@ -12,9 +12,10 @@ import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.MessageAccount
+import fi.espoo.evaka.messaging.message.MessageNotificationEmailService
+import fi.espoo.evaka.messaging.message.MessageService
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.createMessageThreadsForRecipientGroups
 import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
 import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
@@ -51,7 +52,9 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
     lateinit var mergeService: MergeService
 
     private val objectMapper: ObjectMapper = defaultObjectMapper()
-    private val asyncJobRunnerMock: AsyncJobRunner = Mockito.mock(AsyncJobRunner::class.java)
+    private val asyncJobRunnerMock = Mockito.mock(AsyncJobRunner::class.java)
+    private val messageNotificationEmailService = Mockito.mock(MessageNotificationEmailService::class.java)
+    private val messageService: MessageService = MessageService(messageNotificationEmailService)
 
     @BeforeEach
     internal fun setUp() {
@@ -178,7 +181,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         }
 
         db.transaction { tx ->
-            createMessageThreadsForRecipientGroups(
+            messageService.createMessageThreadsForRecipientGroups(
                 tx,
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
@@ -226,7 +229,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
             }
         }
         db.transaction { tx ->
-            createMessageThreadsForRecipientGroups(
+            messageService.createMessageThreadsForRecipientGroups(
                 tx,
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",

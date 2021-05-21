@@ -3,10 +3,11 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.messaging.message.MessageNotificationEmailService
+import fi.espoo.evaka.messaging.message.MessageService
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.createMessageThreadsForRecipientGroups
 import fi.espoo.evaka.messaging.message.deleteOrDeactivateDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.getMessageAccountForDaycareGroup
 import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
@@ -21,9 +22,13 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import java.util.UUID
 
 class MessageAccountIntegrationTest : PureJdbiTest() {
+    private val messageNotificationEmailService = Mockito.mock(MessageNotificationEmailService::class.java)
+    private val messageService = MessageService(messageNotificationEmailService)
+
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
@@ -67,7 +72,7 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
         }
 
         db.transaction { tx ->
-            createMessageThreadsForRecipientGroups(
+            messageService.createMessageThreadsForRecipientGroups(
                 tx,
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
@@ -105,7 +110,7 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
         }
 
         db.transaction { tx ->
-            createMessageThreadsForRecipientGroups(
+            messageService.createMessageThreadsForRecipientGroups(
                 tx,
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",

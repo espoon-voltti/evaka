@@ -2,31 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.messaging.bulletin
+package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SendUnreadBulletinNotificationEmail
+import fi.espoo.evaka.shared.async.SendMessageNotificationEmail
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import mu.KotlinLogging
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
-import java.time.OffsetDateTime
 import java.util.UUID
 
-private val logger = KotlinLogging.logger { }
-
 @Service
-class BulletinNotificationEmailService(
+class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner,
     private val emailClient: IEmailClient,
     env: Environment
 ) {
     init {
-        asyncJobRunner.sendBulletinNotificationEmail = ::sendBulletinNotification
+        asyncJobRunner.sendMessageNotificationEmail = ::sendMessageNotification
     }
 
     val baseUrl: String = env.getRequiredProperty("application.frontend.baseurl")
@@ -40,56 +36,41 @@ class BulletinNotificationEmailService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    data class BulletinReceiver(
-        val id: UUID,
-        val receiverId: UUID,
-        val receiverEmail: String,
-        val language: String
-    )
-
-    fun getBulletinNotificationReceivers(tx: Database.Transaction, bulletinId: UUID): List<BulletinReceiver> {
+    fun getMessageNotifications(tx: Database.Transaction, messageId: UUID): List<SendMessageNotificationEmail> {
         return tx.createQuery(
             """
             SELECT DISTINCT
-                bi.id,
-                bi.receiver_person_id AS receiver_id,
-                g.email receiver_email,
-                coalesce(lower(g.language), 'fi') as language
-            FROM bulletin_instance bi
-            JOIN person g ON bi.receiver_person_id = g.id
-            WHERE bi.bulletin_id = :bulletinId
-            AND bi.read_at IS NULL
-            AND bi.notification_sent_at IS NULL
-            AND g.email IS NOT NULL
+                mr.id as message_recipient_id,
+                p.id as person_id,
+                p.email as person_email,
+                coalesce(lower(p.language), 'fi') as language
+            FROM message_recipients mr
+            JOIN message_account ma ON ma.id = mr.recipient_id 
+            JOIN person p ON p.id = ma.person_id
+            WHERE mr.message_id = :messageId
+              AND mr.read_at IS NULL
+              AND mr.notification_sent_at IS NULL
+              AND p.email IS NOT NULL
             """.trimIndent()
         )
-            .bind("bulletinId", bulletinId)
-            .mapTo<BulletinReceiver>()
+            .bind("messageId", messageId)
+            .map { row ->
+                SendMessageNotificationEmail(
+                    messageRecipientId = row.mapColumn("message_recipient_id"),
+                    personEmail = row.mapColumn("person_email"),
+                    language = getLanguage(row.mapColumn("language"))
+                )
+            }
             .toList()
     }
 
-    fun scheduleSendingBulletinNotifications(tx: Database.Transaction, bulletinId: UUID) {
-        val bulletinNotifications = getBulletinNotificationReceivers(tx, bulletinId)
-
-        bulletinNotifications.forEach { notification ->
-            if (!notification.receiverEmail.isNullOrBlank()) {
-                asyncJobRunner.plan(
-                    tx,
-                    payloads = listOf(
-                        SendUnreadBulletinNotificationEmail(
-                            id = notification.id,
-                            receiverId = notification.receiverId,
-                            receiverEmail = notification.receiverEmail,
-                            language = getLanguage(notification.language)
-                        )
-                    ),
-                    runAt = HelsinkiDateTime.now(),
-                    retryCount = 10
-                )
-            } else {
-                logger.warn("Could not send bulletin notification email to guardian ${notification.receiverId}: missing email")
-            }
-        }
+    fun scheduleSendingMessageNotifications(tx: Database.Transaction, messageId: UUID) {
+        asyncJobRunner.plan(
+            tx,
+            payloads = getMessageNotifications(tx, messageId),
+            runAt = HelsinkiDateTime.now(),
+            retryCount = 10
+        )
     }
 
     private fun getLanguage(languageStr: String?): Language {
@@ -100,28 +81,19 @@ class BulletinNotificationEmailService(
         }
     }
 
-    fun sendBulletinNotification(db: Database, msg: SendUnreadBulletinNotificationEmail) {
+    fun sendMessageNotification(db: Database, msg: SendMessageNotificationEmail) {
+        val (messageRecipientId, personEmail, language) = msg
+
         db.transaction { tx ->
             emailClient.sendEmail(
-                traceId = msg.id.toString(),
-                toAddress = msg.receiverEmail,
-                fromAddress = getFromAddress(msg.language),
-                getSubject(msg.language),
-                getHtml(msg.language),
-                getText(msg.language)
+                traceId = messageRecipientId.toString(),
+                toAddress = personEmail,
+                fromAddress = getFromAddress(language),
+                subject = getSubject(language),
+                htmlBody = getHtml(language),
+                textBody = getText(language)
             )
-
-            // Mark as sent
-            tx.createUpdate(
-                """
-                UPDATE bulletin_instance 
-                SET notification_sent_at = :sent_at
-                WHERE id = :id
-                """.trimIndent()
-            )
-                .bind("id", msg.id)
-                .bind("sent_at", OffsetDateTime.now())
-                .execute()
+            tx.markNotificationAsSent(messageRecipientId)
         }
     }
 
@@ -129,9 +101,9 @@ class BulletinNotificationEmailService(
         val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
         return when (language) {
-            Language.en -> "New bulletin in eVaka$postfix"
+            Language.en -> "New message in eVaka$postfix"
             Language.sv -> "Ny meddelande i eVaka$postfix"
-            else -> "Uusi tiedote eVakassa$postfix"
+            else -> "Uusi viesti eVakassa$postfix"
         }
     }
 

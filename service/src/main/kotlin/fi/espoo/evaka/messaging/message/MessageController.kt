@@ -27,8 +27,11 @@ data class UnreadMessagesResponse(val count: Int)
 @RestController
 @RequestMapping("/messages")
 class MessageController(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val messageNotificationEmailService: MessageNotificationEmailService
 ) {
+    private val messageService = MessageService(messageNotificationEmailService)
+
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
@@ -102,7 +105,7 @@ class MessageController(
         val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
 
         return db.transaction {
-            createMessageThreadsForRecipientGroups(
+            messageService.createMessageThreadsForRecipientGroups(
                 it,
                 title = body.title,
                 content = body.content,
@@ -186,9 +189,9 @@ class MessageController(
         val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
             ?: throw Forbidden("Message account not found for user")
 
-        replyToThread(
+        messageService.replyToThread(
             db = db,
-            messageId = messageId,
+            replyToMessageId = messageId,
             senderAccount = account,
             recipientAccountIds = body.recipientAccountIds,
             content = body.content

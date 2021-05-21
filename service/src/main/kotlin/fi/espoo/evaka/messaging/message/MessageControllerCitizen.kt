@@ -21,7 +21,11 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/citizen/messages")
-class MessageControllerCitizen {
+class MessageControllerCitizen(
+    private val messageNotificationEmailService: MessageNotificationEmailService
+) {
+    private val messageService = MessageService(messageNotificationEmailService)
+
     @GetMapping("/unread-count")
     fun getUnreadMessages(
         db: Database.Connection,
@@ -92,9 +96,9 @@ class MessageControllerCitizen {
         user.requireOneOfRoles(UserRole.END_USER)
         val account = db.read { it.getMessageAccountForEndUser(user) }
 
-        replyToThread(
+        messageService.replyToThread(
             db = db,
-            messageId = messageId,
+            replyToMessageId = messageId,
             senderAccount = account,
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
