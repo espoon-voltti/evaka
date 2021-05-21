@@ -27,13 +27,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
 class PlacementServiceIntegrationTest : FullApplicationTest() {
-    @Autowired
-    lateinit var placementService: PlacementService
 
     val childId = testChild_1.id
     val unitId = testDaycare.id
@@ -94,13 +91,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `inserting placement without overlap`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 21),
-                LocalDate.of(year, month, 30)
+                LocalDate.of(year, month, 30),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -118,13 +116,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `inserting identical placement`() {
         val newPlacements = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }
 
@@ -141,13 +140,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts earlier`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 11),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -167,13 +167,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement calls clearOldPlacements`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 21),
-                LocalDate.of(year, month, 30)
+                LocalDate.of(year, month, 30),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -183,7 +184,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         assertTrue(originalPlacements.containsAll(listOf(oldPlacement, newPlacement)))
 
         val newStart = oldPlacement.endDate.minusDays(5)
-        db.transaction { it.updatePlacement(newPlacement.id, newStart, newPlacement.endDate) }
+        db.transaction {
+            it.updatePlacement(
+                id = newPlacement.id,
+                startDate = newStart,
+                endDate = newPlacement.endDate,
+                useFiveYearsOldDaycare = true
+            )
+        }
 
         val newPlacements = db.read { it.getPlacementsForChild(childId) }
         val old = newPlacements.find { it.id == oldPlacement.id }!!
@@ -204,13 +212,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts earlier, ends earlier`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 11),
-                LocalDate.of(year, month, 21)
+                LocalDate.of(year, month, 21),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -235,13 +244,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts earlier, ends later`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 11),
-                LocalDate.of(year, month, 19)
+                LocalDate.of(year, month, 19),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -273,13 +283,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement ends earlier`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 21)
+                LocalDate.of(year, month, 21),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -297,13 +308,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement ends later`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 19)
+                LocalDate.of(year, month, 19),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -328,13 +340,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts later`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 9),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -352,13 +365,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts later, ends earlier`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 9),
-                LocalDate.of(year, month, 21)
+                LocalDate.of(year, month, 21),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -376,13 +390,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts later, ends later`() {
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 9),
-                LocalDate.of(year, month, 19)
+                LocalDate.of(year, month, 19),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -407,23 +422,25 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `placement overlaps with two earlier placements`() {
         val old2 = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL_DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 21),
-                LocalDate.of(year, month, 31)
+                LocalDate.of(year, month, 31),
+                useFiveYearsOldDaycare = true
             )
         }.first()
         val newPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PREPARATORY,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 15),
-                LocalDate.of(year, month, 25)
+                LocalDate.of(year, month, 25),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
@@ -450,17 +467,25 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be earlier`() {
         val oldPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
-        db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 19)) }
+        db.transaction {
+            it.updatePlacement(
+                id = oldPlacement.id,
+                startDate = oldPlacement.startDate,
+                endDate = LocalDate.of(year, month, 19),
+                useFiveYearsOldDaycare = true
+            )
+        }
 
         val updated = db.read { it.getPlacement(oldPlacement.id) }
         val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 19))
@@ -470,13 +495,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be earlier cuts group placements and service needs`() {
         val oldPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }.first()
         val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
@@ -495,7 +521,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 15)) }
+        db.transaction {
+            it.updatePlacement(
+                id = oldPlacement.id,
+                startDate = oldPlacement.startDate,
+                endDate = LocalDate.of(year, month, 15),
+                useFiveYearsOldDaycare = true
+            )
+        }
 
         val groupPlacementEndDates = db.read {
             it.createQuery("SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
@@ -519,13 +552,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `changing placement type by creating new placement ends the group placements and service needs also`() {
         val oldPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 1),
-                LocalDate.of(year, month, 30)
+                LocalDate.of(year, month, 30),
+                useFiveYearsOldDaycare = true
             )
         }.first()
         val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
@@ -545,13 +579,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         }
 
         db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.PRESCHOOL_DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 15),
-                LocalDate.of(year, month, 30)
+                LocalDate.of(year, month, 30),
+                useFiveYearsOldDaycare = true
             )
         }
 
@@ -586,18 +621,24 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be later`() {
         val oldPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }.first()
 
         db.transaction {
-            it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 21))
+            it.updatePlacement(
+                id = oldPlacement.id,
+                startDate = oldPlacement.startDate,
+                endDate = LocalDate.of(year, month, 21),
+                useFiveYearsOldDaycare = true
+            )
         }
 
         val updated = db.read { it.getPlacement(oldPlacement.id) }
@@ -608,21 +649,23 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be earlier than startDate is not allowed`() {
         val oldPlacement = db.transaction {
-            placementService.createPlacement(
+            createPlacement(
                 it,
                 PlacementType.DAYCARE,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 10),
-                LocalDate.of(year, month, 20)
+                LocalDate.of(year, month, 20),
+                useFiveYearsOldDaycare = true
             )
         }.first()
         db.transaction {
             assertThrows<BadRequest> {
                 it.updatePlacement(
-                    oldPlacement.id,
-                    oldPlacement.startDate,
-                    oldPlacement.startDate.minusDays(1)
+                    id = oldPlacement.id,
+                    startDate = oldPlacement.startDate,
+                    endDate = oldPlacement.startDate.minusDays(1),
+                    useFiveYearsOldDaycare = true
                 )
             }
         }

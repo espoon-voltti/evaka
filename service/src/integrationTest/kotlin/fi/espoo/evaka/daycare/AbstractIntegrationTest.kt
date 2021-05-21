@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.placement.PlacementService
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.Database
@@ -38,9 +37,6 @@ abstract class AbstractIntegrationTest {
 
     @MockBean
     lateinit var redisPool: JedisPool
-
-    @MockBean
-    lateinit var placementService: PlacementService
 
     @Autowired
     lateinit var dataSource: DataSource

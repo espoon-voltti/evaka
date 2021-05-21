@@ -19,25 +19,28 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
 
-@Service
-class PlacementService {
-    fun createPlacement(
-        tx: Database.Transaction,
-        type: PlacementType,
-        childId: UUID,
-        unitId: UUID,
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): List<Placement> {
-        tx.clearOldPlacements(childId, startDate, endDate)
-        val placementTypePeriods = handleFiveYearOldDaycare(tx, childId, type, startDate, endDate)
-        return placementTypePeriods.map { (period, type) ->
-            tx.insertPlacement(type, childId, unitId, period.start, period.end)
-        }
+fun createPlacement(
+    tx: Database.Transaction,
+    type: PlacementType,
+    childId: UUID,
+    unitId: UUID,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    useFiveYearsOldDaycare: Boolean
+): List<Placement> {
+    tx.clearOldPlacements(childId, startDate, endDate)
+
+    val placementTypePeriods = if (useFiveYearsOldDaycare) {
+        handleFiveYearOldDaycare(tx, childId, type, startDate, endDate)
+    } else {
+        listOf(FiniteDateRange(startDate, endDate) to type)
+    }
+
+    return placementTypePeriods.map { (period, type) ->
+        tx.insertPlacement(type, childId, unitId, period.start, period.end)
     }
 }
 
@@ -45,7 +48,8 @@ fun Database.Transaction.updatePlacement(
     id: UUID,
     startDate: LocalDate,
     endDate: LocalDate,
-    aclAuth: AclAuthorization = AclAuthorization.All
+    aclAuth: AclAuthorization = AclAuthorization.All,
+    useFiveYearsOldDaycare: Boolean
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
@@ -61,7 +65,11 @@ fun Database.Transaction.updatePlacement(
     clearOldPlacements(childId = old.childId, from = startDate, to = endDate, excludePlacement = id, aclAuth = aclAuth)
 
     try {
-        val placementTypePeriods = handleFiveYearOldDaycare(this, old.childId, old.type, startDate, endDate)
+        val placementTypePeriods = if (useFiveYearsOldDaycare) {
+            handleFiveYearOldDaycare(this, old.childId, old.type, startDate, endDate)
+        } else {
+            listOf(FiniteDateRange(startDate, endDate) to old.type)
+        }
         val (updatedPeriods, newPeriods) = placementTypePeriods.partition { (period, type) ->
             period.overlaps(FiniteDateRange(old.startDate, old.endDate)) && type == old.type
         }
