@@ -5,7 +5,6 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.assistanceaction.AssistanceActionType
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -369,7 +368,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         data class TestCase(
             val period: FiniteDateRange,
             val measure: AssistanceMeasure,
-            val action: AssistanceActionType? = null
+            val action: String? = null
         )
         insertPlacement(testChild_1)
         val testCases = listOf(
@@ -378,7 +377,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
             TestCase(
                 testPeriod(4L to 5L),
                 AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
-                AssistanceActionType.SPECIAL_GROUP
+                "SPECIAL_GROUP"
             )
         )
         db.transaction { tx ->

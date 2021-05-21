@@ -60,17 +60,7 @@ class AssistanceActionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post first assistance action, with action types and measures`() {
-        val allActionTypes = setOf(
-            AssistanceActionType.ASSISTANCE_SERVICE_CHILD,
-            AssistanceActionType.ASSISTANCE_SERVICE_UNIT,
-            AssistanceActionType.SMALLER_GROUP,
-            AssistanceActionType.SPECIAL_GROUP,
-            AssistanceActionType.PERVASIVE_VEO_SUPPORT,
-            AssistanceActionType.RESOURCE_PERSON,
-            AssistanceActionType.RATIO_DECREASE,
-            AssistanceActionType.PERIODICAL_VEO_SUPPORT,
-            AssistanceActionType.OTHER
-        )
+        val allActionTypes = db.transaction { it.getAssistanceActionOptions() }.map { it.value }.toSet()
         val allMeasures = setOf(
             AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
             AssistanceMeasure.INTENSIFIED_ASSISTANCE,

@@ -84,4 +84,10 @@ class AssistanceActionController(
         assistanceActionService.deleteAssistanceAction(db, assistanceActionId)
         return noContent()
     }
+
+    @GetMapping("/assistance-action-options")
+    fun getAssistanceActionOptions(db: Database.Connection, user: AuthenticatedUser): List<AssistanceActionOption> {
+        user.requireAnyEmployee()
+        return assistanceActionService.getAssistanceActionOptions(db)
+    }
 }
