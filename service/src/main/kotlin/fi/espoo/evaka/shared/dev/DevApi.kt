@@ -14,7 +14,6 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
-import fi.espoo.evaka.assistanceaction.AssistanceActionType
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.CareType
@@ -1198,7 +1197,7 @@ data class DevAssistanceAction(
     val updatedBy: UUID,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    val actions: Set<AssistanceActionType> = emptySet(),
+    val actions: Set<String> = emptySet(),
     val measures: Set<AssistanceMeasure> = emptySet(),
     val otherAction: String = ""
 )

@@ -97,14 +97,18 @@ TABLE (
             ) AS special_assistance_decision_without_group
         FROM (
             SELECT
+                aa.id,
                 daterange(aa.start_date, aa.end_date, '[]') AS date_interval,
                 aa.start_date,
                 aa.end_date,
                 aa.measures,
-                aa.actions
+                array_remove(array_agg(aao.value), null) AS actions
             FROM assistance_action aa
+            LEFT JOIN assistance_action_option_ref aaor ON aaor.action_id = aa.id
+            LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
             WHERE aa.child_id = p.child_id
             AND daterange(aa.start_date, aa.end_date, '[]') && full_range
+            GROUP BY aa.id, daterange(aa.start_date, aa.end_date, '[]'), aa.start_date, aa.end_date, aa.measures
             ORDER BY aa.id
         ) matching_assistance_action
     ) aa ON true

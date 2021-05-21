@@ -61,16 +61,16 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
             count(DISTINCT pl.child_id) FILTER (WHERE 'OTHER'::assistance_basis = ANY(an.bases)) AS other_assistance_need,
             count(DISTINCT pl.child_id) FILTER (WHERE cardinality(an.bases) = 0) AS no_assistance_needs,
             
-            count(DISTINCT pl.child_id) FILTER (WHERE 'ASSISTANCE_SERVICE_CHILD'::assistance_action_type = ANY(aa.actions)) AS assistance_service_child,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'ASSISTANCE_SERVICE_UNIT'::assistance_action_type = ANY(aa.actions)) AS assistance_service_unit,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'SMALLER_GROUP'::assistance_action_type = ANY(aa.actions)) AS smaller_group,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'SPECIAL_GROUP'::assistance_action_type = ANY(aa.actions)) AS special_group,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'PERVASIVE_VEO_SUPPORT'::assistance_action_type = ANY(aa.actions)) AS pervasive_veo_support,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'RESOURCE_PERSON'::assistance_action_type = ANY(aa.actions)) AS resource_person,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'RATIO_DECREASE'::assistance_action_type = ANY(aa.actions)) AS ratio_decrease,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'PERIODICAL_VEO_SUPPORT'::assistance_action_type = ANY(aa.actions)) AS periodical_veo_support,
-            count(DISTINCT pl.child_id) FILTER (WHERE 'OTHER'::assistance_action_type = ANY(aa.actions)) AS other_assistance_action,
-            count(DISTINCT pl.child_id) FILTER (WHERE cardinality(aa.actions) = 0) AS no_assistance_actions
+            count(DISTINCT pl.child_id) FILTER (WHERE 'ASSISTANCE_SERVICE_CHILD' = ANY(aao.actions)) AS assistance_service_child,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'ASSISTANCE_SERVICE_UNIT' = ANY(aao.actions)) AS assistance_service_unit,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'SMALLER_GROUP' = ANY(aao.actions)) AS smaller_group,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'SPECIAL_GROUP' = ANY(aao.actions)) AS special_group,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'PERVASIVE_VEO_SUPPORT' = ANY(aao.actions)) AS pervasive_veo_support,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'RESOURCE_PERSON' = ANY(aao.actions)) AS resource_person,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'RATIO_DECREASE' = ANY(aao.actions)) AS ratio_decrease,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'PERIODICAL_VEO_SUPPORT' = ANY(aao.actions)) AS periodical_veo_support,
+            count(DISTINCT pl.child_id) FILTER (WHERE 'OTHER' = ANY(aao.actions)) AS other_assistance_action,
+            count(DISTINCT pl.child_id) FILTER (WHERE cardinality(aao.actions) = 0) AS no_assistance_actions
         FROM daycare u
         JOIN care_area ca on u.care_area_id = ca.id
         JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> :target_date
@@ -78,6 +78,12 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
         LEFT JOIN placement pl ON pl.id = gpl.daycare_placement_id
         LEFT JOIN assistance_need an on an.child_id = pl.child_id AND daterange(an.start_date, an.end_date, '[]') @> :target_date
         LEFT JOIN assistance_action aa on aa.child_id = pl.child_id AND daterange(aa.start_date, aa.end_date, '[]') @> :target_date
+        LEFT JOIN (
+            SELECT r.action_id, array_remove(array_agg(o.value), null) AS actions
+            FROM assistance_action_option_ref r
+            JOIN assistance_action_option o ON o.id = r.option_id
+            GROUP BY r.action_id
+        ) aao ON aao.action_id = aa.id
         ${if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:units)" else ""}
         GROUP BY ca.name, u.id, u.name, g.id, g.name, u.type, u.provider_type
         ORDER BY ca.name, u.name, g.name;
