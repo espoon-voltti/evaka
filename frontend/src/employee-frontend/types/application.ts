@@ -10,7 +10,6 @@ import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '../types/unit'
-import { PlacementType } from '../types/child'
 import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,
@@ -20,6 +19,7 @@ import {
   ApplicationOrigin,
   ApplicationStatus
 } from 'lib-common/api-types/application/enums'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 export interface ApplicationSummary {
   applicationId: UUID

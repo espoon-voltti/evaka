@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
@@ -23,10 +23,7 @@ import { errorToInputInfo } from '../../../form-validation'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/citizen'
-import {
-  DaycareApplicationContext,
-  DaycareApplicationState
-} from 'citizen-frontend/applications/editor/state/daycareApplication'
+import { defaultMargins } from 'lib-components/white-space'
 import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 
 const Hyphenbox = styled.div`
@@ -43,14 +40,11 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   formData,
   updateFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
   const t = useTranslation()
   const { applicationId } = useParams<{ applicationId: string }>()
-
-  const { serviceNeedOptions } = useContext<DaycareApplicationState>(
-    DaycareApplicationContext
-  )
 
   const [fullTimeOptions, setFullTimeOptions] = useState<
     ServiceNeedOptionSummary[]
@@ -67,7 +61,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     if (!featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
       setShowServiceNeedSelection(true)
     }
-    if (serviceNeedOptions.isSuccess) {
+    if (serviceNeedOptions?.isSuccess) {
       setFullTimeOptions(
         serviceNeedOptions.value.filter(
           (opt) => opt.validPlacementType === 'DAYCARE'
@@ -143,7 +137,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
             formData.partTime && (
               <SubRadios>
-                <FixedSpaceColumn>
+                <FixedSpaceColumn spacing={'xs'}>
                   {partTimeOptions.map((opt) => (
                     <Radio
                       key={opt.id}
@@ -172,7 +166,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
             !formData.partTime && (
               <SubRadios>
-                <FixedSpaceColumn>
+                <FixedSpaceColumn spacing={'xs'}>
                   {fullTimeOptions.map((opt) => (
                     <Radio
                       key={opt.id}

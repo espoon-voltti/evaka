@@ -9,7 +9,6 @@ import { UUID } from '../../../types'
 import { useTranslation } from '../../../state/i18n'
 import { getApplicationUnits } from '../../../api/daycare'
 import { Loading, Result } from 'lib-common/api'
-import { PlacementType } from '../../../types/child'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faMapMarkerAlt } from 'lib-icons'
 import { UIContext } from '../../../state/ui'
@@ -19,6 +18,7 @@ import Select from '../../../components/common/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 export interface Props {
   childId: UUID

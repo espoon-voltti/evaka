@@ -28,10 +28,10 @@ import { UnitBackupCare } from '../types/child'
 import { AdRole, DayOfWeek, UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { PlacementType } from '../types/child'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { featureFlags } from '../config'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {

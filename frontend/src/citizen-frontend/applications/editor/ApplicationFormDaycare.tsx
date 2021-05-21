@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Heading from '../../applications/editor/Heading'
@@ -13,17 +13,14 @@ import ContactInfoSection from '../../applications/editor/contact-info/ContactIn
 import FeeSection from '../../applications/editor/FeeSection'
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
-import {
-  DaycareApplicationState,
-  DaycareApplicationContext
-} from './state/daycareApplication'
 import Loader from 'lib-components/atoms/Loader'
 import { getServiceNeedOptionPublicInfos } from '../api'
 import { featureFlags } from 'lib-customizations/citizen'
-import { Success } from 'lib-common/api'
+import { Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from 'citizen-frontend/localization'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 
 export default React.memo(function ApplicationFormDaycare({
   apiData,
@@ -35,15 +32,15 @@ export default React.memo(function ApplicationFormDaycare({
   const applicationType = 'DAYCARE'
   const t = useTranslation()
 
-  const {
-    serviceNeedOptions,
-    setServiceNeedOptions
-  } = useContext<DaycareApplicationState>(DaycareApplicationContext)
+  const [serviceNeedOptions, setServiceNeedOptions] = useState<
+    Result<ServiceNeedOptionPublicInfo[]>
+  >(Success.of([]))
 
   const loadServiceNeedOptions = useRestApi(
     getServiceNeedOptionPublicInfos,
     setServiceNeedOptions
   )
+
   useEffect(() => {
     if (featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
       loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
@@ -90,6 +87,7 @@ export default React.memo(function ApplicationFormDaycare({
             }
             errors={errors.serviceNeed}
             verificationRequested={verificationRequested}
+            serviceNeedOptions={serviceNeedOptions}
           />
 
           <UnitPreferenceSection

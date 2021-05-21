@@ -251,7 +251,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<String>):
         WHERE default_option IS FALSE AND valid_placement_type::text in (<placementTypes>)
     """.trimIndent()
     return createQuery(sql)
-        .bindList("placementTypes", placementTypes)
+        .bind("placementTypes", placementTypes.toTypedArray())
         .mapTo<ServiceNeedOptionPublicInfo>()
         .list()
 }

@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Result } from 'lib-common/api'
 import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/api-types/application/enums'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -29,6 +31,7 @@ export type ServiceNeedSectionProps = {
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
   terms?: Term[]
+  serviceNeedOptions?: Result<ServiceNeedOptionPublicInfo[]>
 }
 
 export default React.memo(function ServiceNeedSection(

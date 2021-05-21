@@ -22,8 +22,7 @@ import {
 } from 'lib-common/api-types/application/ApplicationsOfChild'
 import {
   ApplicationType,
-  AttachmentType,
-  PlacementType
+  AttachmentType
 } from 'lib-common/api-types/application/enums'
 import { client } from '../api-client'
 import {
@@ -31,7 +30,10 @@ import {
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
 import { UUID } from 'lib-common/types'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import {
+  PlacementType,
+  ServiceNeedOptionPublicInfo
+} from 'lib-common/api-types/serviceNeed/common'
 
 export type ApplicationUnitType =
   | 'CLUB'

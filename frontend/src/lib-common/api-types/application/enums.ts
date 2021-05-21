@@ -24,5 +24,3 @@ export type ApplicationGuardianAgreementStatus =
   | 'RIGHT_TO_GET_NOTIFIED'
 
 export type AttachmentType = 'URGENCY' | 'EXTENDED_CARE'
-
-export type PlacementType = 'DAYCARE' | 'DAYCARE_PART_TIME'

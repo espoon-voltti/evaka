@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../types'
 import { FeeAlterationType } from '../types/fee-alteration'
 import { Income, IncomeEffect } from '../types/income'
-import { PlacementType } from '../types/child'
 
 // Enums
 
