@@ -10,7 +10,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Read.getDrafts(accountId: UUID): List<DraftContent> {
-    return this.createQuery("SELECT * FROM message_draft WHERE account_id = :accountId")
+    return this.createQuery("SELECT * FROM message_draft WHERE account_id = :accountId ORDER BY created DESC")
         .bind("accountId", accountId)
         .mapTo<DraftContent>()
         .list()
