@@ -342,9 +342,9 @@ class VardaClient(
         }.map { it.id }
     }
 
-    fun getPlacementsByChild(vardaChildId: Long): List<Long> {
-        logger.info { "Getting placements from Varda (child id: $vardaChildId)" }
-        return getAllPages("$placementUrl?lapsi=$vardaChildId") {
+    fun getPlacementsByDecision(vardaDecisionId: Long): List<Long> {
+        logger.info { "Getting placements from Varda (decision id: $vardaDecisionId)" }
+        return getAllPages("$placementUrl?varhaiskasvatuspaatos=$vardaDecisionId") {
             objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
         }.map { it.id }
     }

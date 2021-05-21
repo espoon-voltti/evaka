@@ -81,7 +81,10 @@ class VardaUpdateService(
 
     fun deletePlacementsByChild(vardaChildId: Long, db: Database.Connection) {
         val client = VardaClient(tokenProvider, fuel, env, mapper)
-        val placementIds = client.getPlacementsByChild(vardaChildId)
+        val decisionIds = client.getDecisionsByChild(vardaChildId)
+        val placementIds = decisionIds.flatMap {
+            client.getPlacementsByDecision(it)
+        }
 
         deletePlacements(db, client, placementIds)
     }
