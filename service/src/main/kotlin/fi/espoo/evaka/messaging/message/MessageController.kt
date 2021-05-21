@@ -145,7 +145,7 @@ class MessageController(
         user: AuthenticatedUser,
         @PathVariable accountId: UUID,
         @PathVariable draftId: UUID,
-        @RequestBody content: DraftContent,
+        @RequestBody content: UpsertableDraftContent,
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
         authorizeAllowedMessagingRoles(user)

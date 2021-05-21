@@ -10,7 +10,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Read.getDrafts(accountId: UUID): List<DraftContent> {
-    return this.createQuery("SELECT * FROM message_draft WHERE account_id = :accountId")
+    return this.createQuery("SELECT * FROM message_draft WHERE account_id = :accountId ORDER BY created DESC")
         .bind("accountId", accountId)
         .mapTo<DraftContent>()
         .list()
@@ -27,23 +27,27 @@ fun Database.Transaction.initDraft(accountId: UUID): UUID {
         .one()
 }
 
-fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: DraftContent) {
+fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: UpsertableDraftContent) {
     this.createUpdate(
         """
-        INSERT INTO message_draft (id, account_id, title, content, recipients)
-        VALUES (:id, :accountId, :title, :content, :recipients)
+        INSERT INTO message_draft (id, account_id, title, content, type, recipient_account_ids, recipient_names)
+        VALUES (:id, :accountId, :title, :content, :type, :recipientIds, :recipientNames)
         ON CONFLICT (id)
         DO UPDATE SET
              title = excluded.title,
              content = excluded.content,
-             recipients = excluded.recipients
+             type = excluded.type,
+             recipient_account_ids = excluded.recipient_account_ids,
+             recipient_names = excluded.recipient_names
         """.trimIndent()
     )
         .bind("accountId", accountId)
         .bind("id", id)
+        .bindNullable("type", draft.type)
         .bindNullable("title", draft.title)
         .bindNullable("content", draft.content)
-        .bindNullable("recipients", draft.recipients?.toTypedArray())
+        .bindNullable("recipientIds", draft.recipientAccountIds?.toTypedArray())
+        .bindNullable("recipientNames", draft.recipientNames?.toTypedArray())
         .execute()
 }
 

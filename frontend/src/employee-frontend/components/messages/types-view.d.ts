@@ -4,7 +4,7 @@
 
 import { MessageAccount } from './types'
 
-export type View = 'RECEIVED' | 'SENT' | 'RECEIVERS'
+export type View = 'RECEIVED' | 'SENT' | 'RECEIVERS' | 'DRAFTS'
 
 export interface AccountView {
   account: MessageAccount

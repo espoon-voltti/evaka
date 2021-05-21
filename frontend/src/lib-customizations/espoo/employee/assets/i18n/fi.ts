@@ -2318,7 +2318,7 @@ export const fi = {
       names: {
         RECEIVED: 'Saapuneet',
         SENT: 'Lähetetyt',
-        DRAFT: 'Luonnokset'
+        DRAFTS: 'Luonnokset'
       },
       receivers: 'Vastaanottajat',
       newBulletin: 'Uusi viesti'

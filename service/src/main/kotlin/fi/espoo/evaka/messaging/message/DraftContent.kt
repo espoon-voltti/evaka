@@ -4,10 +4,23 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
 data class DraftContent(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val type: MessageType? = null,
     val title: String? = null,
     val content: String? = null,
-    val recipients: Set<UUID>? = null,
+    val recipientAccountIds: Set<UUID>? = null,
+    val recipientNames: List<String>? = null,
+)
+
+data class UpsertableDraftContent(
+    val type: MessageType? = null,
+    val title: String? = null,
+    val content: String? = null,
+    val recipientAccountIds: Set<UUID>? = null,
+    val recipientNames: List<String>? = null,
 )

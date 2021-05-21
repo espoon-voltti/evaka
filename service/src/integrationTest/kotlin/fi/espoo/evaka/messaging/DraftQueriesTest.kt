@@ -5,7 +5,8 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.messaging.message.DraftContent
+import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.UpsertableDraftContent
 import fi.espoo.evaka.messaging.message.deleteDraft
 import fi.espoo.evaka.messaging.message.getDrafts
 import fi.espoo.evaka.messaging.message.initDraft
@@ -15,7 +16,6 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -44,29 +44,45 @@ class DraftQueriesTest : PureJdbiTest() {
     fun `draft queries`() {
         val content = "Content"
         val title = "Hello"
+        val type = MessageType.MESSAGE
         val recipients = setOf(UUID.randomUUID(), UUID.randomUUID())
+        val recipientNames = listOf("Auringonkukat", "Hippiäiset")
 
         val id = db.transaction { it.initDraft(accountId) }
 
-        assertNotNull(id)
-        assertContent(DraftContent())
+        val emptyContent = UpsertableDraftContent()
+        assertContent(emptyContent)
 
-        upsert(id, DraftContent())
-        assertContent(DraftContent())
+        upsert(id, emptyContent)
+        assertContent(emptyContent)
 
-        upsert(id, DraftContent("Foo", content = null, recipients))
-        assertContent(DraftContent(title = "Foo", recipients = recipients))
+        val partialContent = UpsertableDraftContent(title = "Foo", content = null, recipientAccountIds = recipients)
+        upsert(id, partialContent)
+        assertContent(partialContent)
 
-        upsert(id, DraftContent(title, content, recipients))
-        assertContent(DraftContent(title, content, recipients))
+        val fullContent = UpsertableDraftContent(
+            type = type,
+            title = title,
+            content = content,
+            recipientAccountIds = recipients,
+            recipientNames = recipientNames
+        )
+        upsert(id, fullContent)
+        assertContent(fullContent)
 
         db.transaction { it.deleteDraft(accountId, id) }
         assertEquals(0, db.read { it.getDrafts(accountId) }.size)
     }
 
-    private fun upsert(draftId: UUID, content: DraftContent) =
+    private fun upsert(draftId: UUID, content: UpsertableDraftContent) =
         db.transaction { it.upsertDraft(accountId, draftId, content) }
 
-    private fun assertContent(expected: DraftContent) =
-        assertEquals(expected, db.read { it.getDrafts(accountId)[0] })
+    private fun assertContent(expected: UpsertableDraftContent) {
+        val actual = db.read { it.getDrafts(accountId)[0] }
+        assertEquals(expected.title, actual.title)
+        assertEquals(expected.type, actual.type)
+        assertEquals(expected.content, actual.content)
+        assertEquals(expected.recipientAccountIds, actual.recipientAccountIds)
+        assertEquals(expected.recipientNames, actual.recipientNames)
+    }
 }

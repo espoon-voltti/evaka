@@ -5,6 +5,7 @@
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
+import { View } from './types-view'
 
 export type Recipient = {
   personId: string
@@ -50,6 +51,8 @@ export interface ReceiverTriplet {
   personId?: UUID
 }
 
+export const messageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
+
 export interface BaseMessageAccount {
   id: UUID
   name: string
@@ -86,6 +89,21 @@ export interface MessageBody {
   type: MessageType
   recipientAccountIds: UUID[]
 }
+
+export type UpsertableDraftContent = Partial<MessageBody> & {
+  recipientNames?: string[]
+}
+export interface DraftContent extends UpsertableDraftContent {
+  id: UUID
+  created: Date
+}
+export const deserializeDraftContent = ({
+  created,
+  ...rest
+}: JsonOf<DraftContent>): DraftContent => ({
+  ...rest,
+  created: new Date(created)
+})
 
 export type MessageType = 'MESSAGE' | 'BULLETIN'
 
