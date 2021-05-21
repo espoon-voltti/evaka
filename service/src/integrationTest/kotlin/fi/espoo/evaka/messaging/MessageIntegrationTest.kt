@@ -452,14 +452,13 @@ class MessageIntegrationTest : FullApplicationTest() {
         sender: UUID,
         recipients: Set<UUID>,
         user: AuthenticatedUser.Employee,
-    ) = http.post("/messages")
+    ) = http.post("/messages/$sender")
         .jsonBody(
             objectMapper.writeValueAsString(
                 MessageController.PostMessageBody(
                     title,
                     message,
                     messageType,
-                    sender,
                     recipientAccountIds = recipients
                 )
             )

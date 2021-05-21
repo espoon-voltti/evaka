@@ -84,7 +84,6 @@ export interface MessageBody {
   title: string
   content: string
   type: MessageType
-  senderAccountId: UUID
   recipientAccountIds: UUID[]
 }
 

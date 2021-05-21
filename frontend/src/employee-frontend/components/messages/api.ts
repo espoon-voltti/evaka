@@ -165,9 +165,12 @@ export async function replyToThread(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function postMessage(body: MessageBody): Promise<Result<void>> {
+export async function postMessage(
+  accountId: UUID,
+  body: MessageBody
+): Promise<Result<void>> {
   return client
-    .post<void>('/messages', body)
+    .post(`/messages/${accountId}`, body)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
