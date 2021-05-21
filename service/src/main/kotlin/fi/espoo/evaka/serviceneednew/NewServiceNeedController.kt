@@ -128,6 +128,4 @@ class NewServiceNeedController(
         return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
             .let { ResponseEntity.ok(it) }
     }
-
-
 }
