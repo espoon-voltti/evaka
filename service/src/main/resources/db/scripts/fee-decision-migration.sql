@@ -21,6 +21,8 @@ SELECT
     placement_unit,
     (CASE
         WHEN placement_type = 'FIVE_YEARS_OLD_DAYCARE' THEN 'DAYCARE_FIVE_YEAR_OLDS'::placement_type
+        WHEN placement_type = 'PRESCHOOL_WITH_DAYCARE' THEN 'PRESCHOOL_DAYCARE'::placement_type
+        WHEN placement_type = 'PREPARATORY_WITH_DAYCARE' THEN 'PREPARATORY_DAYCARE'::placement_type
         ELSE placement_type::placement_type
     END),
     (CASE

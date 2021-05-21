@@ -18,15 +18,18 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.serviceneed.deleteServiceNeed
+import fi.espoo.evaka.serviceneednew.deleteNewServiceNeed
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
+import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.snDefaultPreschool
+import fi.espoo.evaka.snDefaultPreschoolDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -70,7 +73,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `municipal daycare decision is sent when it has all required data`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         val decisionId = insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.DAYCARE)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -169,36 +173,11 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a daycare decision is not sent when service need does not overlap with decision`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, FiniteDateRange(period.start.minusYears(1), period.end.minusYears(1)))
-        insertVardaChild(db, testChild_1.id)
-
-        updateDecisions(db, vardaClient)
-
-        val result = getVardaDecisions()
-        assertEquals(0, result.size)
-    }
-
-    @Test
-    fun `daycare decision is not sent when hours per week is zero`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period, 0.0)
-        insertVardaChild(db, testChild_1.id)
-
-        updateDecisions(db, vardaClient)
-
-        val result = getVardaDecisions()
-        assertEquals(0, result.size)
-    }
-
-    @Test
     fun `a daycare decision is not sent when the child has not been imported to varda yet`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.DAYCARE)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
 
         updateDecisions(db, vardaClient)
 
@@ -210,7 +189,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `preschool decisions are not sent`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL)
+        insertServiceNeed(db, placementId, period, snDefaultPreschool.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -224,7 +204,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         val decisionId =
             insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, placementId, period, snDefaultPreschoolDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -239,13 +220,14 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         val serviceNeedEndDate = period.start.plusMonths(1)
         insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-        insertServiceNeed(db, testChild_1.id, period.copy(end = serviceNeedEndDate))
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, placementId, period.copy(end = serviceNeedEndDate), snDefaultPreschoolDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
         val originalUploadedAt = getVardaDecisions().first().uploadedAt
 
-        insertServiceNeed(db, testChild_1.id, period.copy(start = serviceNeedEndDate.plusDays(1)))
+        insertServiceNeed(db, placementId, period.copy(start = serviceNeedEndDate.plusDays(1)), snDefaultPreschoolDaycare.id)
         updateDecisions(db, vardaClient)
 
         val result = getVardaDecisions()
@@ -257,7 +239,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `a daycare decision is updated when service need is updated`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-        val serviceNeedId = insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
+        val serviceNeedId = insertServiceNeed(db, placementId, period, snDefaultPreschoolDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -275,7 +258,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `a daycare decision is updated when a new overlapping decision is made`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.DAYCARE)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -294,7 +278,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         val firstDecisionId =
             insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, placementId, period, snDefaultPreschoolDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -313,8 +298,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `a derived daycare decision is sent when there is a placement without a decision`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        val placementId = insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period, type = PlacementType.DAYCARE)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -329,17 +314,17 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
         val firstSemester = FiniteDateRange(LocalDate.of(2018, 1, 8), LocalDate.of(2019, 5, 31))
         val firstSummer = FiniteDateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 7, 31))
-        insertPlacement(db, testChild_1.id, firstSemester, PlacementType.PRESCHOOL_DAYCARE)
-        insertPlacement(db, testChild_1.id, firstSummer, PlacementType.DAYCARE)
-        insertServiceNeed(db, testChild_1.id, firstSemester)
-        insertServiceNeed(db, testChild_1.id, firstSummer)
+        val placementId1 = insertPlacement(db, testChild_1.id, firstSemester, PlacementType.PRESCHOOL_DAYCARE)
+        val placementId2 = insertPlacement(db, testChild_1.id, firstSummer, PlacementType.DAYCARE)
+        insertServiceNeed(db, placementId1, firstSemester, snDefaultPreschoolDaycare.id)
+        insertServiceNeed(db, placementId2, firstSummer, snDefaultDaycare.id)
 
         val secondSemester = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31))
         val secondSummer = FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
-        insertPlacement(db, testChild_1.id, secondSemester, PlacementType.PRESCHOOL_DAYCARE)
-        insertPlacement(db, testChild_1.id, secondSummer, PlacementType.DAYCARE)
-        insertServiceNeed(db, testChild_1.id, secondSemester)
-        insertServiceNeed(db, testChild_1.id, secondSummer)
+        val placementId3 = insertPlacement(db, testChild_1.id, secondSemester, PlacementType.PRESCHOOL_DAYCARE)
+        val placementId4 = insertPlacement(db, testChild_1.id, secondSummer, PlacementType.DAYCARE)
+        insertServiceNeed(db, placementId3, secondSemester, snDefaultPreschoolDaycare.id)
+        insertServiceNeed(db, placementId4, secondSummer, snDefaultDaycare.id)
 
         updateDecisions(db, vardaClient)
 
@@ -351,7 +336,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `a derived daycare decision is updated when the placement is updated`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         val placementId = insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -368,8 +353,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `a derived daycare decision is updated when service need is updated`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertPlacement(db, testChild_1.id, period)
-        val serviceNeedId = insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        val serviceNeedId = insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -387,7 +372,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `a derived daycare decision is deleted when the placement is removed`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         val placementId = insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -403,15 +388,15 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `a derived daycare decision is deleted when its service need is removed`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertPlacement(db, testChild_1.id, period)
-        val serviceNeedId = insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        val serviceNeedId = insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
         val beforeDelete = getVardaDecisions()
         assertEquals(1, beforeDelete.size)
 
-        db.transaction { it.deleteServiceNeed(serviceNeedId) }
+        db.transaction { it.deleteNewServiceNeed(serviceNeedId) }
         updateDecisions(db, vardaClient)
         val result = getVardaDecisions()
         assertEquals(0, result.size)
@@ -420,8 +405,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `a derived decision is sent when child has a rejected decision`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
         insertDecisionWithApplication(
             db,
@@ -438,8 +423,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `a derived decision is sent when child has a pending decision`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
         insertDecisionWithApplication(
             db,
@@ -457,7 +442,6 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `a derived daycare decision is sent as temporary when the placement type is temporary`() {
         val period = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 7, 3))
         insertPlacement(db, testChild_1.id, period, type = PlacementType.TEMPORARY_DAYCARE)
-        insertServiceNeed(db, testChild_1.id, period)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -469,6 +453,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         decisions.values.first().let { decision ->
             assertTrue(decision.temporary)
             assertTrue(decision.fullDay)
+            assertFalse(decision.daily)
         }
     }
 
@@ -476,7 +461,6 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `a derived daycare decision is sent as temporary when the placement type is temporary part day`() {
         val period = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 7, 3))
         insertPlacement(db, testChild_1.id, period, type = PlacementType.TEMPORARY_DAYCARE_PART_DAY)
-        insertServiceNeed(db, testChild_1.id, period)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -487,7 +471,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         assertEquals(1, decisions.size)
         decisions.values.first().let { decision ->
             assertTrue(decision.temporary)
-            assertFalse(decision.fullDay)
+            assertFalse(decision.daily)
         }
     }
 
@@ -496,7 +480,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2019, 6, 1)
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period, sentDate = sentDate)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -507,7 +492,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val decision = decisions.values.first()
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
-        assertEquals(40.0, decision.hoursPerWeek)
+        assertEquals(snDefaultDaycare.daycareHoursPerWeek.toDouble(), decision.hoursPerWeek)
         assertEquals(false, decision.temporary)
         assertEquals(true, decision.daily)
         assertEquals(true, decision.fullDay)
@@ -522,7 +507,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2019, 6, 1)
         val period = FiniteDateRange(sentDate.minusMonths(1), sentDate.plusMonths(1))
         insertDecisionWithApplication(db, testChild_1, period, sentDate = sentDate)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -537,7 +523,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val sentDate = LocalDate.of(2019, 6, 1)
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period, sentDate = sentDate, unitId = testPurchasedDaycare.id)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id, ophOrganizationOid = defaultPurchasedOrganizerOid)
 
         updateDecisions(db, vardaClient)
@@ -548,7 +535,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val decision = decisions.values.first()
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
-        assertEquals(40.0, decision.hoursPerWeek)
+        assertEquals(snDefaultDaycare.daycareHoursPerWeek.toDouble(), decision.hoursPerWeek)
         assertEquals(false, decision.temporary)
         assertEquals(true, decision.daily)
         assertEquals(true, decision.fullDay)
@@ -559,49 +546,24 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a preschool daycare decision without preparatory is sent with correct hours per week`() {
-        val weeklyHours = 50.0
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-        insertServiceNeed(db, testChild_1.id, period, weeklyHours)
-        insertVardaChild(db, testChild_1.id)
-        insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
-        updateDecisions(db, vardaClient)
-
-        val decisions = mockEndpoint.decisions
-        assertEquals(1, decisions.size)
-        assertEquals(weeklyHours - 20, decisions.values.first().hoursPerWeek)
-    }
-
-    @Test
-    fun `a preschool daycare decision with preparatory is sent with correct hours per week`() {
-        val weeklyHours = 50.0
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-        insertServiceNeed(db, testChild_1.id, period, weeklyHours)
-        insertVardaChild(db, testChild_1.id)
-        insertPlacement(db, testChild_1.id, period, type = PlacementType.PREPARATORY_DAYCARE)
-        updateDecisions(db, vardaClient)
-
-        val decisions = mockEndpoint.decisions
-        assertEquals(1, decisions.size)
-        assertEquals(weeklyHours - 25, decisions.values.first().hoursPerWeek)
-    }
-
-    @Test
     fun `a decision has a correct end date when another decision replaces it midway`() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val periodFirstHalf = period.copy(end = period.start.plusMonths(1).minusDays(1))
+        val periodSecondHalf = period.copy(start = period.start.plusMonths(1))
         insertDecisionWithApplication(db, testChild_1, period)
-        insertDecisionWithApplication(db, testChild_1, period.copy(start = period.start.plusMonths(1)))
-        insertServiceNeed(db, testChild_1.id, period)
+        insertDecisionWithApplication(db, testChild_1, periodSecondHalf)
+        val placementId1 = insertPlacement(db, testChild_1.id, periodFirstHalf)
+        insertServiceNeed(db, placementId1, periodFirstHalf, snDefaultDaycare.id)
+        val placementId2 = insertPlacement(db, testChild_1.id, periodSecondHalf)
+        insertServiceNeed(db, placementId2, periodSecondHalf, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
         val result = mockEndpoint.decisions.values.sortedBy { it.startDate }
         assertEquals(2, result.size)
         assertEquals(period.start, result[0].startDate)
-        assertEquals(period.start.plusMonths(1).minusDays(1), result[0].endDate)
-        assertEquals(period.start.plusMonths(1), result[1].startDate)
+        assertEquals(periodFirstHalf.end, result[0].endDate)
+        assertEquals(periodSecondHalf.start, result[1].startDate)
         assertEquals(period.end, result[1].endDate)
     }
 
@@ -614,7 +576,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             testChild_1,
             FiniteDateRange(period.end.plusDays(1), period.end.plusMonths(1))
         )
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -624,46 +587,11 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a decision is not full day with 24 hours`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period, hours = 24.0)
-        insertVardaChild(db, testChild_1.id)
-
-        updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions.values.first()
-        assertEquals(false, result.fullDay)
-    }
-
-    @Test
-    fun `a decision is full day with 25 hours`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period, hours = 25.0)
-        insertVardaChild(db, testChild_1.id)
-
-        updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions.values.first()
-        assertEquals(true, result.fullDay)
-    }
-
-    @Test
-    fun `a decision is full day with more than 25 hours`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period, hours = 25.5)
-        insertVardaChild(db, testChild_1.id)
-
-        updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions.values.first()
-        assertEquals(true, result.fullDay)
-    }
-
-    @Test
     fun `decision in the future is not sent to Varda`() {
         val period = FiniteDateRange(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(2))
         insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -675,8 +603,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `derived decision in the future is not sent to Varda`() {
         val period = FiniteDateRange(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(2))
-        insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -690,13 +618,21 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
         insertVardaUnit(db)
-        insertServiceNeed(db, testChild_1.id, period)
         insertVardaChild(db, testChild_1.id)
         val newMiddleStart = period.start.plusMonths(1)
         val newMiddleEnd = period.end.minusMonths(1)
-        insertPlacement(db, testChild_1.id, FiniteDateRange(period.start, newMiddleStart.minusDays(1)))
-        insertPlacement(db, testChild_1.id, FiniteDateRange(newMiddleStart, newMiddleEnd))
-        insertPlacement(db, testChild_1.id, FiniteDateRange(newMiddleEnd.plusDays(1), period.end))
+        FiniteDateRange(period.start, newMiddleStart.minusDays(1)).let { subPeriod ->
+            val placementId = insertPlacement(db, testChild_1.id, subPeriod)
+            insertServiceNeed(db, placementId, subPeriod, snDefaultDaycare.id)
+        }
+        FiniteDateRange(newMiddleStart, newMiddleEnd).let { subPeriod ->
+            val placementId = insertPlacement(db, testChild_1.id, subPeriod)
+            insertServiceNeed(db, placementId, subPeriod, snDefaultDaycare.id)
+        }
+        FiniteDateRange(newMiddleEnd.plusDays(1), period.end).let { subPeriod ->
+            val placementId = insertPlacement(db, testChild_1.id, subPeriod)
+            insertServiceNeed(db, placementId, subPeriod, snDefaultDaycare.id)
+        }
 
         updateDecisions(db, vardaClient)
 
@@ -714,13 +650,13 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
         insertVardaUnit(db)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
         updateDecisions(db, vardaClient)
         val decisions = getVardaDecisions()
         assertEquals(1, decisions.size)
 
-        val placementId = insertPlacement(db, testChild_1.id, period)
         updatePlacements(db, vardaClient)
         val placements = getVardaPlacements(db)
         assertEquals(1, placements.size)
@@ -743,13 +679,13 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
         insertVardaUnit(db)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
         updateDecisions(db, vardaClient)
         val decisions = getVardaDecisions()
         assertEquals(1, decisions.size)
 
-        val placementId = insertPlacement(db, testChild_1.id, period)
         updatePlacements(db, vardaClient)
         val placements = getVardaPlacements(db)
         assertEquals(1, placements.size)
@@ -769,7 +705,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
         insertVardaUnit(db)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -780,13 +717,20 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         assertEquals(period.start, initialDecision.startDate)
         assertEquals(period.end, initialDecision.endDate)
 
+        deletePlacement(db, placementId)
         val newStart = period.start.minusMonths(1)
         val newEnd = period.end.plusMonths(1)
         val newMiddleStart = period.start.plusMonths(1)
         val newMiddleEnd = period.end.minusMonths(1)
-        insertPlacement(db, testChild_1.id, FiniteDateRange(newStart, newMiddleStart.minusDays(1)))
-        insertPlacement(db, testChild_1.id, FiniteDateRange(newMiddleStart, newMiddleEnd))
-        insertPlacement(db, testChild_1.id, FiniteDateRange(newMiddleEnd.plusDays(1), newEnd))
+        insertPlacement(db, testChild_1.id, FiniteDateRange(newStart, newMiddleStart.minusDays(1))).let {
+            insertServiceNeed(db, it, FiniteDateRange(newStart, newMiddleStart.minusDays(1)), snDefaultDaycare.id)
+        }
+        insertPlacement(db, testChild_1.id, FiniteDateRange(newMiddleStart, newMiddleEnd)).let {
+            insertServiceNeed(db, it, FiniteDateRange(newMiddleStart, newMiddleEnd), snDefaultDaycare.id)
+        }
+        insertPlacement(db, testChild_1.id, FiniteDateRange(newMiddleEnd.plusDays(1), newEnd)).let {
+            insertServiceNeed(db, it, FiniteDateRange(newMiddleEnd.plusDays(1), newEnd), snDefaultDaycare.id)
+        }
 
         updateDecisions(db, vardaClient)
 
@@ -802,7 +746,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
         insertVardaUnit(db)
-        insertServiceNeed(db, testChild_1.id, period)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -823,15 +768,16 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertDecisionWithApplication(db, testChild_1, period)
         insertVardaUnit(db, unitId = testDaycare.id)
-        insertServiceNeed(db, testChild_1.id, period)
+        val newPlacementStart = period.start.plusMonths(1)
+        val placementId = insertPlacement(db, testChild_1.id, period.copy(end = newPlacementStart.minusDays(1)))
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
 
         db.transaction { it.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute() }
 
-        val newStart = period.start.minusMonths(1)
-        insertPlacement(db, testChild_1.id, FiniteDateRange(newStart, period.end))
+        insertPlacement(db, testChild_1.id, FiniteDateRange(newPlacementStart, period.end))
         updateDecisions(db, vardaClient)
 
         val decision = mockEndpoint.decisions.values.first()
@@ -891,15 +837,16 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
 
         val decisionId = insertDecisionWithApplication(db, testChild_1, period)
-        insertServiceNeed(db, testChild_1.id, period)
+        insertPlacement(db, testChild_1.id, period).let {
+            insertServiceNeed(db, it, period, snDefaultDaycare.id)
+        }
         insertVardaChild(db, testChild_1.id)
 
         val placementId = insertPlacement(db, testChild_2.id, period)
-        insertServiceNeed(db, testChild_2.id, period)
+        insertServiceNeed(db, placementId, period, snDefaultDaycare.id)
         insertVardaChild(db, testChild_2.id)
 
         val temporaryPlacementId = insertPlacement(db, testChild_3.id, period, type = PlacementType.TEMPORARY_DAYCARE)
-        insertServiceNeed(db, testChild_3.id, period)
         insertVardaChild(db, testChild_3.id)
 
         updateDecisions(db, vardaClient)
@@ -940,7 +887,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun updateServiceNeed(id: UUID, updatedAt: Instant) = db.transaction {
-        it.createUpdate("UPDATE service_need SET updated = :updatedAt WHERE id = :id")
+        it.createUpdate("UPDATE new_service_need SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)
             .bind("updatedAt", updatedAt)
             .execute()
@@ -953,17 +900,16 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
 internal fun insertServiceNeed(
     db: Database.Connection,
-    childId: UUID,
+    placementId: UUID,
     period: FiniteDateRange,
-    hours: Double = 40.0
+    optionId: UUID
 ): UUID {
     return db.transaction {
-        it.insertTestServiceNeed(
-            childId,
-            testDecisionMaker_1.id,
-            startDate = period.start,
-            endDate = period.end,
-            hoursPerWeek = hours
+        it.insertTestNewServiceNeed(
+            confirmedBy = testDecisionMaker_1.id,
+            placementId = placementId,
+            period = period,
+            optionId = optionId
         )
     }
 }
@@ -1031,13 +977,18 @@ fun insertDecisionWithApplication(
 
 fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: UUID, period: FiniteDateRange): Pair<UUID, UUID> {
     val decisionId = insertDecisionWithApplication(db, child = child, period = period, unitId = unitId)
-    insertServiceNeed(db, child.id, period)
     return db.transaction {
         val placementId = it.insertTestPlacement(
             childId = child.id,
             unitId = unitId,
             startDate = period.start,
             endDate = period.end
+        )
+        it.insertTestNewServiceNeed(
+            confirmedBy = testDecisionMaker_1.id,
+            placementId = placementId,
+            period = period,
+            optionId = snDefaultDaycare.id
         )
         Pair(decisionId, placementId)
     }

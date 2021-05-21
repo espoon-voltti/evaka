@@ -217,15 +217,10 @@ SELECT
     least(d.start_date, first_placement.start_date) AS start_date,
     greatest(d.end_date, last_placement.end_date) AS end_date,
     d.urgent,
-    (CASE WHEN last_placement.type = 'PREPARATORY_DAYCARE'
-    THEN latest_sn.hours_per_week - 25
-    WHEN last_placement.type = 'PRESCHOOL_DAYCARE'
-    THEN latest_sn.hours_per_week - 20
-    ELSE latest_sn.hours_per_week END) 
-    AS hours_per_week,
+    latest_sn.daycare_hours_per_week AS hours_per_week,
     false AS temporary, -- temporary placements are handled separately
     NOT latest_sn.part_week AS daily,
-    latest_sn.shift_care AS shift_care,
+    latest_sn.shift_care,
     u.provider_type AS provider_type
 FROM accepted_daycare_decision d
 JOIN daycare u ON (d.unit_id = u.id AND u.upload_to_varda = true)
@@ -246,8 +241,9 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) last_placement ON TRUE
 JOIN LATERAL (
-    SELECT * FROM service_need sn
-    WHERE sn.child_id = d.child_id
+    SELECT sno.daycare_hours_per_week, sno.part_week, sn.shift_care, sn.updated FROM new_service_need sn
+    JOIN service_need_option sno ON sn.option_id = sno.id
+    WHERE sn.placement_id = last_placement.id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     ORDER BY sn.start_date DESC
     LIMIT 1
@@ -347,19 +343,19 @@ SELECT
     p.start_date,
     p.end_date,
     false AS urgent,
-    latest_sn.hours_per_week,
+    latest_sn.daycare_hours_per_week AS hours_per_week,
     false AS temporary, -- temporary placements are handled separately
     NOT latest_sn.part_week AS daily,
-    latest_sn.shift_care AS shift_care,
+    latest_sn.shift_care,
     u.provider_type AS provider_type
 FROM placement_without_decision p
 LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted_at IS NULL
 JOIN daycare u ON p.unit_id = u.id
 JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
 JOIN LATERAL (
-    SELECT * FROM service_need sn
-    WHERE sn.child_id = p.child_id
-    AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+    SELECT sno.daycare_hours_per_week, sno.part_week, sn.shift_care, sn.updated FROM new_service_need sn
+    JOIN service_need_option sno ON sn.option_id = sno.id
+    WHERE sn.placement_id = p.id
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON true
@@ -377,24 +373,17 @@ SELECT
     p.start_date,
     p.end_date,
     false AS urgent,
-    (CASE
-        WHEN p.type = 'TEMPORARY_DAYCARE' THEN 40
-        ELSE 20 -- these values are slightly arbitrary
-    END) AS hours_per_week,
+    sn.daycare_hours_per_week AS hours_per_week,
     true AS temporary,
     NOT sn.part_week AS daily,
-    sn.shift_care AS shift_care,
+    false AS shift_care,
     u.provider_type AS provider_type
 FROM placement p
 LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted_at IS NULL
 JOIN daycare u ON p.unit_id = u.id AND p.type = ANY(:temporaryPlacementTypes::placement_type[])
 JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
 JOIN LATERAL (
-    SELECT * FROM service_need sn
-    WHERE sn.child_id = p.child_id
-    AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-    ORDER BY sn.start_date DESC
-    LIMIT 1
+    SELECT * FROM service_need_option WHERE valid_placement_type = p.type AND default_option
 ) sn ON true
     """.trimIndent()
 
