@@ -26,7 +26,7 @@ fun updateChildren(db: Database.Connection, client: VardaClient, organizerName: 
 
 fun deleteChild(db: Database.Connection, client: VardaClient, vardaChildId: Long) {
     if (client.deleteChild(vardaChildId)) {
-        logger.info { "Varda: deleting varda child $vardaChildId from our side" }
+        logger.info { "Varda: deleting varda child from db by id $vardaChildId" }
         db.transaction {
             it.createUpdate("delete from varda_child where varda_child_id = :vardaChildId")
                 .bind("vardaChildId", vardaChildId)

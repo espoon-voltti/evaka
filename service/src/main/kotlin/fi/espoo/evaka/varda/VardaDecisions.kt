@@ -38,9 +38,10 @@ fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient)
 
 fun deleteDecisions(db: Database.Connection, client: VardaClient, decisionIds: List<Long>) {
     logger.info { "Varda: Deleting ${decisionIds.size} decision records" }
-    decisionIds.forEach { id ->
-        if (client.deleteDecision(id)) {
-            db.transaction { deleteDecision(it, id) }
+    decisionIds.forEach { vardaId ->
+        if (client.deleteDecision(vardaId)) {
+            logger.info { "Varda: Deleting decision from db by id $vardaId" }
+            db.transaction { deleteDecision(it, vardaId) }
         }
     }
 }
