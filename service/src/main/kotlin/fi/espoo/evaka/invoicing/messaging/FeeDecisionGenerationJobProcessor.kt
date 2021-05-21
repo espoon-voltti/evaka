@@ -48,9 +48,10 @@ class FeeDecisionGenerationJobProcessor(
         generator.handleIncomeChange(tx, msg.personId, DateRange(msg.startDate, msg.endDate))
     }
 
-    fun runJob(db: Database, msg: NotifyPlacementPlanApplied) = db.transaction { tx ->
+    fun runJob(db: Database, msg: NotifyPlacementPlanApplied) {
         logger.info { "Handling placement plan accepted event ($msg)" }
-        generator.handlePlacement(tx, msg.childId, DateRange(msg.startDate, msg.endDate))
+        db.transaction { syncNewServiceNeed(it, msg.childId) }
+        db.transaction { generator.handlePlacement(it, msg.childId, DateRange(msg.startDate, msg.endDate)) }
     }
 
     fun runJob(db: Database, msg: NotifyServiceNeedUpdated) {
