@@ -16,21 +16,21 @@ fun mockThreadData(): Paged<MessageThread> {
     val aatuMeritahtiMessage = Message(
         id = UUID.randomUUID(),
         senderId = supervisorAccount.id,
-        senderName = supervisorAccount.name!!,
+        senderName = supervisorAccount.name,
         content = "Hei Aatun äiti ja isä! Aatu on kasvanut kovaa vauhtia ja nyt on tullut aika siirtyä seuraavaan ikäryhmään. Aatu aloittaa Meritähdissä kesäkuussa.",
         sentAt = HelsinkiDateTime.now().minusDays(3)
     )
     val aatusDadsResponse = Message(
         id = UUID.randomUUID(),
         senderId = aatusDadAccount.id,
-        senderName = aatusDadAccount.name!!,
+        senderName = aatusDadAccount.name,
         content = "Kuulostaa hyvältä, kiitos tiedosta.",
         sentAt = HelsinkiDateTime.now().minusDays(2)
     )
     val aatusMomsResponse = Message(
         id = UUID.randomUUID(),
         senderId = aatusMomAccount.id,
-        senderName = aatusMomAccount.name!!,
+        senderName = aatusMomAccount.name,
         content = "Joo, se käy oikein mainiosti :-) Hyvää kevään jatkoa!",
         sentAt = HelsinkiDateTime.now().minusDays(2).plusHours(2)
     )

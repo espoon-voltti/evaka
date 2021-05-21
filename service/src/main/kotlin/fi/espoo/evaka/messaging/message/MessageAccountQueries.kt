@@ -109,7 +109,13 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) 
 fun Database.Transaction.deactivateDaycareGroupMessageAccount(daycareGroupId: UUID) {
     // language=SQL
     val sql = """
-        UPDATE message_account SET daycare_group_id = NULL, active = false
+        UPDATE message_account acc
+        SET daycare_group_id = NULL,
+            active = false,
+            -- The daycare group is going to be deleted, so save its name
+            deleted_owner_name = (
+                SELECT account_name FROM message_account_name_view n WHERE n.id = acc.id
+            )
         WHERE daycare_group_id = :daycareGroupId
     """.trimIndent()
     createUpdate(sql)

@@ -1,6 +1,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
@@ -114,14 +115,19 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
             )
         }
         assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount.id))
+        assertEquals("Test Daycare - Testiläiset", getMessageAccountName(groupAccount.id))
 
         // when deleting the daycare message account
         db.transaction {
             deleteOrDeactivateDaycareGroupMessageAccount(it, groupId)
+            it.deleteDaycareGroup(groupId)
         }
 
         // the account should actually stay
         assertEquals(MessageAccountState.INACTIVE, getMessageAccountState(groupAccount.id))
+
+        // account name should be available even though the group has been deleted
+        assertEquals("Test Daycare - Testiläiset", getMessageAccountName(groupAccount.id))
     }
 
     private enum class MessageAccountState {
@@ -148,6 +154,18 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
                 }
             } else if (accounts.isEmpty()) MessageAccountState.NO_ACCOUNT
             else throw RuntimeException("Employee has more than one account")
+        }
+    }
+
+    private fun getMessageAccountName(accountId: UUID): String {
+        // language=SQL
+        val sql = """
+            SELECT account_name
+            FROM message_account_name_view acc
+            WHERE acc.id = :accountId
+        """.trimIndent()
+        return db.read {
+            it.createQuery(sql).bind("accountId", accountId).mapTo<String>().one()
         }
     }
 }
