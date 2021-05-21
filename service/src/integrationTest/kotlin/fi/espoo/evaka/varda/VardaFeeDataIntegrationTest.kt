@@ -29,10 +29,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChildWithNamelessGuardian
@@ -671,13 +673,18 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         daycareId: UUID = testDaycare.id
     ) {
         insertDecisionWithApplication(db, child, period, unitId = daycareId)
-        insertServiceNeed(db, child.id, period)
         db.transaction {
-            it.insertTestPlacement(
+            val placementId = it.insertTestPlacement(
                 childId = child.id,
                 unitId = daycareId,
                 startDate = period.start,
                 endDate = period.end
+            )
+            it.insertTestNewServiceNeed(
+                confirmedBy = testDecisionMaker_1.id,
+                placementId = placementId,
+                period = period,
+                optionId = snDefaultDaycare.id
             )
         }
     }
