@@ -99,7 +99,7 @@ class AsyncJobRunner(
     var sendPendingDecisionEmail: (db: Database, msg: SendPendingDecisionEmail) -> Unit = noHandler
 
     @Volatile
-    var sendBulletinNotificationEmail: (db: Database, msg: SendUnreadBulletinNotificationEmail) -> Unit = noHandler
+    var sendMessageNotificationEmail: (db: Database, msg: SendMessageNotificationEmail) -> Unit = noHandler
 
     fun plan(
         tx: Database.Transaction,
@@ -216,7 +216,7 @@ class AsyncJobRunner(
                     AsyncJobType.VARDA_UPDATE -> it.runJob(job, this.vardaUpdate)
                     AsyncJobType.SCHEDULE_KOSKI_UPLOADS -> it.runJob(job, this.scheduleKoskiUploads)
                     AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
-                    AsyncJobType.SEND_UNREAD_BULLETIN_NOTIFICATION -> it.runJob(job, this.sendBulletinNotificationEmail)
+                    AsyncJobType.SEND_UNREAD_MESSAGE_NOTIFICATION -> it.runJob(job, this.sendMessageNotificationEmail)
                 }.exhaust()
             }
             if (completed) {

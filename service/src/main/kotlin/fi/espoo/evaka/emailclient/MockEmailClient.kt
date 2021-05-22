@@ -13,7 +13,7 @@ class MockEmailClient : IEmailClient {
         val emails = mutableListOf<MockEmail>()
 
         fun getEmail(toAddress: String): MockEmail? {
-            return emails.find { email -> email.toAddress === toAddress }
+            return emails.find { email -> email.toAddress == toAddress }
         }
     }
 
