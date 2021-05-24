@@ -148,7 +148,7 @@ export default {
     deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
     creation: {
       title: 'Valitse hakemustyyppi',
-      daycareLabel: 'Varhaiskasvatushakemus',
+      daycareLabel: 'Varhaiskasvatus- ja palvelusetelihakemus',
       daycareInfo:
         'Varhaiskasvatushakemuksella haetaan kunnallista varhaiskasvatuspaikkaa päiväkotiin, perhepäivähoitoon tai ryhmäperhepäiväkotiin. Samalla hakemuksella voi hakea myös varhaiskasvatuksen palveluseteliä, valitsemalla Hakutoiveet-kohtaan palveluseteliyksikkö, johon halutaan hakea.',
       preschoolLabel:
@@ -188,7 +188,7 @@ export default {
     editor: {
       heading: {
         title: {
-          DAYCARE: 'Varhaiskasvatushakemus',
+          DAYCARE: 'Varhaiskasvatus- ja palvelusetelihakemus',
           PRESCHOOL: 'Ilmoittautuminen esiopetukseen',
           CLUB: 'Kerhohakemus'
         },
@@ -1088,7 +1088,9 @@ export default {
       return (
         <P width="800px">
           Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja
-          kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot
+          kerhoon tai ilmoittaa lapsen esiopetukseen. Samalla hakemuksella voi
+          hakea myös varhaiskasvatuksen palveluseteliä, hakemalla
+          varhaiskasvatuspaikkaa palveluseteliyksiköstä. Huoltajan lasten tiedot
           haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.
         </P>
       )

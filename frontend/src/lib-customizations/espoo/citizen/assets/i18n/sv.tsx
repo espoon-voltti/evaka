@@ -149,7 +149,8 @@ const sv: Translations = {
     deleteUnprocessedApplicationError: 'Att radera ansökan misslyckades',
     creation: {
       title: 'Val av ansökningsblankett',
-      daycareLabel: 'Ansökan till småbarnspedagogik',
+      daycareLabel:
+        'Ansökan till småbarnspedagogik och ansökan om servicesedel',
       daycareInfo:
         'Med en ansökan till småbarnspedagogisk verksamhet ansöker du om en plats i småbarnspedagogisk verksamhet i ett daghem, hos en familjedagvårdare eller i ett gruppfamiljedaghem. Med samma ansökan kan du också ansöka om servicesedel inom småbarnspedagogiken, genom att vid alternativet Ansökningsönskemål välja den servicesedelenhet som du vill söka till.',
       preschoolLabel:
@@ -187,7 +188,7 @@ const sv: Translations = {
     editor: {
       heading: {
         title: {
-          DAYCARE: 'Ansökan till småbarnspedagogik',
+          DAYCARE: 'Ansökan till småbarnspedagogik och ansökan om servicesedel',
           PRESCHOOL: 'Anmälan till förskolan',
           CLUB: 'Ansökan till klubbverksamhet'
         },
@@ -1101,9 +1102,10 @@ const sv: Translations = {
       return (
         <P width="800px">
           Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka
-          om plats i småbarnspedagogisk verksamhet. Uppgifter om
-          vårdnadshavarens barn kommer automatiskt från befolkningsdatabasen
-          till denna sida.
+          om plats i småbarnspedagogisk verksamhet. Med samma ansökan kan du
+          ansöka om servicesedel inom småbarnspedagogik när du ansöker om en
+          plats i en servicesedelenhet. Uppgifter om vårdnadshavarens barn
+          kommer automatiskt från befolkningsdatabasen till denna sida.
         </P>
       )
     },
