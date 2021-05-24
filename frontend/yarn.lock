@@ -2546,14 +2546,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-leaflet/core@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@react-leaflet/core@npm:1.0.2"
+"@react-leaflet/core@npm:^1.0.2, @react-leaflet/core@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@react-leaflet/core@npm:1.1.0"
   peerDependencies:
     leaflet: ^1.7.1
     react: ^17.0.1
     react-dom: ^17.0.1
-  checksum: d0819720426ae84df87eb156e6477d0bc9060f1715eeadebc774ee630124d5b94155ce007becfe62f2bee854f8bc982b5b2b862b3b77d0654ed88265f572cb30
+  checksum: 4e52e24efc34ef695299e52456ca39f09bb85259b61432280ce1f6644e9624ae3435b1a6f745e904420fcc6b1e7e65e6e034e992c60d5d83d23c4f534edd73b1
   languageName: node
   linkType: hard
 
@@ -3561,12 +3561,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-tooltip@npm:^3.11.0":
-  version: 3.11.0
-  resolution: "@types/react-tooltip@npm:3.11.0"
+"@types/react-tooltip@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "@types/react-tooltip@npm:4.2.4"
   dependencies:
-    "@types/react": "*"
-  checksum: b08321bb93c1cc407fbcdc5951c3d8e26f96bbc40cea01e6db548371fbce56b1c822ce17453961144e31dc7fffb66d4d19729c9f8e9355a2e9e759c2d21c74b0
+    react-tooltip: "*"
+  checksum: 331b7082479ece1db30153fc209c5e819bef000e426af6b6f37fc84ada437a059c52e10309ca9b902b27574d061bb4bd1d53a8bc51a41f93c88761072f8976c8
   languageName: node
   linkType: hard
 
@@ -8730,7 +8730,7 @@ __metadata:
     "@types/react-dom": ^17.0.0
     "@types/react-router-dom": ^5.1.7
     "@types/react-select": 3.0.22
-    "@types/react-tooltip": ^3.11.0
+    "@types/react-tooltip": ^4.2.4
     "@types/styled-components": ^5.1.9
     "@typescript-eslint/eslint-plugin": ^4.22.0
     "@typescript-eslint/parser": ^4.22.0
@@ -8757,7 +8757,7 @@ __metadata:
     eslint-plugin-react-hooks: ^4.2.0
     express: ^4.17.1
     express-http-proxy: ^1.6.2
-    focus-trap-react: ^8.4.2
+    focus-trap-react: ^8.5.0
     fork-ts-checker-webpack-plugin: ^6.2.10
     history: ^4.9.0
     html-webpack-plugin: ^5.3.1
@@ -8781,7 +8781,7 @@ __metadata:
     postcss-preset-env: ^6.7.0
     prettier: ^2.2.1
     react: ^17.0.2
-    react-autosize-textarea: ^7.0.0
+    react-autosize-textarea: ^7.1.0
     react-chartjs-2: ^2.11.1
     react-csv: ^2.0.3
     react-datalist-input: ^1.2.12
@@ -8789,9 +8789,9 @@ __metadata:
     react-day-picker: 7.4.10
     react-dom: ^17.0.2
     react-focus-lock: 2.5.1
-    react-leaflet: ^3.1.0
+    react-leaflet: ^3.2.0
     react-leaflet-markercluster: ^3.0.0-rc1
-    react-meta-tags: 0.7.4
+    react-meta-tags: 1.0.1
     react-router-dom: ^5.1.2
     react-select: ^3.0.8
     react-spring: ^8.0.27
@@ -9441,25 +9441,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"focus-trap-react@npm:^8.4.2":
-  version: 8.4.2
-  resolution: "focus-trap-react@npm:8.4.2"
+"focus-trap-react@npm:^8.5.0":
+  version: 8.5.0
+  resolution: "focus-trap-react@npm:8.5.0"
   dependencies:
-    focus-trap: ^6.3.0
+    focus-trap: ^6.4.0
   peerDependencies:
     prop-types: ^15.7.2
     react: ">=16.0.0"
     react-dom: ">=16.0.0"
-  checksum: a11a7755f6aa3d931e3b99d5233a33b3c62f975bef001b98e120154060544a6b1fa52018ddf40ebc29e9202b7d2b30142a358ae2344595770706cf536ac25c89
+  checksum: 389a1ea1458a7e674ad06f4b9c7080e4be55ad2020d4e1986edd8e545a190bd67bcc29cc6cb25ae90ad9e297aa64d31e428e0eb2d7c67d0f4f74d443d10e79e1
   languageName: node
   linkType: hard
 
-"focus-trap@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "focus-trap@npm:6.3.0"
+"focus-trap@npm:^6.4.0":
+  version: 6.4.0
+  resolution: "focus-trap@npm:6.4.0"
   dependencies:
-    tabbable: ^5.1.5
-  checksum: eb3f2c304fbce4b0428d94e563519e263998e973185629224e7b21eb009d0bf377779923d631fd2c65c255e809fe279dfbc7b938548d26f772a44c8273df50ed
+    tabbable: ^5.2.0
+  checksum: 2f2dcd8f3ff976aef383922510a789e96d80394be01f65fd73d62c6b079866cafb8ce126f34eb7ec7b4750ee17ccd943880191df992309b6731a3a2e35264d0f
   languageName: node
   linkType: hard
 
@@ -16083,7 +16083,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-autosize-textarea@npm:^7.0.0":
+"react-autosize-textarea@npm:^7.1.0":
   version: 7.1.0
   resolution: "react-autosize-textarea@npm:7.1.0"
   dependencies:
@@ -16392,16 +16392,16 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-leaflet@npm:^3.0.0, react-leaflet@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "react-leaflet@npm:3.1.0"
+"react-leaflet@npm:^3.0.0, react-leaflet@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "react-leaflet@npm:3.2.0"
   dependencies:
-    "@react-leaflet/core": ^1.0.2
+    "@react-leaflet/core": ^1.1.0
   peerDependencies:
     leaflet: ^1.7.1
     react: ^17.0.1
     react-dom: ^17.0.1
-  checksum: 983744e95dd29891f97cd5977feb9c6eafe97c2abf9f8ca63cbc93e17311b80beac211d9f6dc860aab3fffae62ce17382eca37f61b3a36229b3c23f86365d948
+  checksum: fb0cb3a90ea78180a21bacbb13e327c05a6a4b7858252369029e1bdd10d22f6eb429d3cbbab47546d9c1374300f03a407dd2db20e4e5570bef5da790af5e60e3
   languageName: node
   linkType: hard
 
@@ -16412,15 +16412,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-meta-tags@npm:0.7.4":
-  version: 0.7.4
-  resolution: "react-meta-tags@npm:0.7.4"
-  dependencies:
-    prop-types: ^15.6.0
+"react-meta-tags@npm:1.0.1":
+  version: 1.0.1
+  resolution: "react-meta-tags@npm:1.0.1"
   peerDependencies:
-    react: ^0.14 || ^15.0.0 || ^ 16.0.0
-    react-dom: ^0.14 || ^15.0.0 || ^ 16.0.0
-  checksum: df4b8448a57913c7f7b54622d9d41a864aee9c3581bccde3e55b1a930d4e11e98c6138292ec42ca74983b1ac06e0988eb2b12d4d31aaf2c607c73f491ef61a83
+    react: ^16.6.0
+    react-dom: ^16.6.0
+  checksum: 7b7804cbed4a8caeb22aa2c958d85cafcb7d4fea0b1c6a316a666b33d4577792504b800fcbfc0a6f5a3e63b35ba7c61d22572c2e6eef6ca3b0119dee3e74825f
   languageName: node
   linkType: hard
 
@@ -16597,7 +16595,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-tooltip@npm:^4.2.19":
+"react-tooltip@npm:*, react-tooltip@npm:^4.2.19":
   version: 4.2.19
   resolution: "react-tooltip@npm:4.2.19"
   dependencies:
@@ -18412,10 +18410,10 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"tabbable@npm:^5.1.5":
-  version: 5.1.6
-  resolution: "tabbable@npm:5.1.6"
-  checksum: cce1826264254c8a5777f71361aee1eaec36ee797a1c7e7c5fd15a32ca4548d0b3fd33d77114a032418915542d24d4bf1f69389cfe4fb873c3652d06db95d775
+"tabbable@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "tabbable@npm:5.2.0"
+  checksum: d8662aeb2d05c16521bc595f088c2c9217aa19b7cad223f0133eacd1c542a16cacefd0af9c0cec535308dce7d546168a3fd6245bbb733987ac1499434491464d
   languageName: node
   linkType: hard
 
