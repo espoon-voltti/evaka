@@ -30,6 +30,7 @@ const InputWrapper = styled.div`
 `
 
 const MenuWrapper = styled.div`
+  margin: 0 -2px;
   z-index: 1;
   height: 0;
 `
@@ -52,7 +53,6 @@ const Menu = styled.div`
 `
 
 const MenuItemWrapper = styled.li`
-  margin: 0;
   padding: 0;
   list-style: none;
 `
@@ -60,7 +60,7 @@ const MenuItemWrapper = styled.li`
 const MenuItem = styled.div`
   padding: 8px 10px;
   &.highlighted {
-    background-color: ${({ theme: { colors } }) => colors.greyscale.lightest};
+    background-color: ${({ theme: { colors } }) => colors.brand.secondaryLight};
   }
   &.clickable {
     cursor: pointer;
