@@ -358,6 +358,22 @@ export async function insertParentshipFixtures(
   }
 }
 
+export async function deleteMessageAccounts(): Promise<void> {
+  try {
+    await devClient.delete(`/message-account/delete-all`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function upsertMessageAccounts(): Promise<void> {
+  try {
+    await devClient.post(`/message-account/upsert-all`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function setAclForDaycares(
   externalId: string,
   daycareId: UUID,

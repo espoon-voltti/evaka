@@ -2,20 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { getReceivers } from 'employee-frontend/components/messages/api'
+import {
+  SelectorNode,
+  unitAsSelectorNode
+} from 'employee-frontend/components/messages/SelectorNode'
 import { Result } from 'lib-common/api'
 import Button from 'lib-components/atoms/buttons/Button'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../../../lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import Select, { SelectOptionProps } from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
-import { isGroupMessageAccount, MessageAccount, messageBoxes } from './types'
+import {
+  isGroupMessageAccount,
+  MessageAccount,
+  messageBoxes,
+  ReceiverGroup
+} from './types'
 import { AccountView } from './types-view'
 
 const AccountSection = styled.section`
@@ -41,13 +51,21 @@ const UnitSelection = styled.div`
 interface AccountsParams {
   accounts: MessageAccount[]
   setView: (view: AccountView) => void
-  view: AccountView | undefined
+  setSelectedReceivers: React.Dispatch<
+    React.SetStateAction<SelectorNode | undefined>
+  >
+  accountView: AccountView | undefined
 }
 
-function Accounts(props: AccountsParams) {
+function Accounts({
+  accounts,
+  setView,
+  setSelectedReceivers,
+  accountView
+}: AccountsParams) {
   const { i18n } = useTranslation()
-  const personalAccount = props.accounts.find((a) => a.personal)
-  const groupAccounts = props.accounts.filter(isGroupMessageAccount)
+  const personalAccount = accounts.find((a) => a.personal)
+  const groupAccounts = accounts.filter(isGroupMessageAccount)
 
   const unitOptions = sortBy(
     uniqBy(
@@ -64,6 +82,16 @@ function Accounts(props: AccountsParams) {
   const [selectedUnit, setSelectedUnit] = useState<SelectOptionProps>(
     unitOptions[0]
   )
+
+  useEffect(() => {
+    const { label: unitName, value: unitId } = selectedUnit
+    void getReceivers(unitId).then((result: Result<ReceiverGroup[]>) => {
+      if (result.isSuccess)
+        setSelectedReceivers(() =>
+          unitAsSelectorNode({ id: unitId, name: unitName }, result.value)
+        )
+    })
+  }, [selectedUnit, setSelectedReceivers])
 
   const visibleGroupAccounts = sortBy(
     groupAccounts.filter(
@@ -82,8 +110,8 @@ function Accounts(props: AccountsParams) {
               key={view}
               view={view}
               account={personalAccount}
-              activeView={props.view}
-              setView={props.setView}
+              activeView={accountView}
+              setView={setView}
             />
           ))}
         </AccountSection>
@@ -107,8 +135,8 @@ function Accounts(props: AccountsParams) {
           )}
           <GroupMessageAccountList
             accounts={visibleGroupAccounts}
-            activeView={props.view}
-            setView={props.setView}
+            activeView={accountView}
+            setView={setView}
           />
         </AccountSection>
       )}
@@ -120,12 +148,16 @@ interface Props {
   accounts: Result<MessageAccount[]>
   view: AccountView | undefined
   setView: (view: AccountView) => void
+  setSelectedReceivers: React.Dispatch<
+    React.SetStateAction<SelectorNode | undefined>
+  >
   showEditor: () => void
 }
 
 export default React.memo(function Sidebar({
   accounts,
   setView,
+  setSelectedReceivers,
   showEditor,
   view
 }: Props) {
@@ -141,14 +173,19 @@ export default React.memo(function Sidebar({
           return <ErrorSegment />
         },
         success(accounts) {
-          return <Accounts accounts={accounts} view={view} setView={setView} />
+          return (
+            <Accounts
+              accounts={accounts}
+              accountView={view}
+              setView={setView}
+              setSelectedReceivers={setSelectedReceivers}
+            />
+          )
         }
       })}
       <Received
         active={!!view && view.view === 'RECEIVERS'}
-        onClick={() =>
-          view && setView({ account: view.account, view: 'RECEIVERS' })
-        }
+        onClick={() => view && setView({ ...view, view: 'RECEIVERS' })}
       >
         {i18n.messages.receiverSelection.title}
       </Received>

@@ -6,11 +6,13 @@ import config from 'e2e-test-common/config'
 import {
   clearBulletins,
   deleteEmployeeFixture,
+  deleteMessageAccounts,
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  setAclForDaycares
+  setAclForDaycares,
+  upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
@@ -67,12 +69,14 @@ fixture('Sending and receiving bulletins')
       daycareGroupFixture.id
     )
     await insertDaycareGroupPlacementFixtures([daycareGroupPlacementFixture])
+    await upsertMessageAccounts()
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
     await clearBulletins()
   })
   .after(async () => {
+    await deleteMessageAccounts()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await cleanUp()
   })

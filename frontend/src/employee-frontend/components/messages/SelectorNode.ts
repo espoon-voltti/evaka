@@ -34,9 +34,9 @@ interface ReactSelectOption {
 export const getSelectorStatus = (id: UUID, selector: SelectorNode): boolean =>
   id === selector.selectorId
     ? selector.selected
-    : !!selector.childNodes
-        ?.map((childNode) => getSelectorStatus(id, childNode))
-        .find((x) => x === true)
+    : !!selector.childNodes?.some((childNode) =>
+        getSelectorStatus(id, childNode)
+      )
 
 export const getSelectorName = (
   id: UUID,
@@ -46,7 +46,7 @@ export const getSelectorName = (
     ? selector.name
     : selector.childNodes
         ?.map((childNode) => getSelectorName(id, childNode))
-        .find((x) => x && x.length > 0)
+        .find((x) => x)
 
 export const updateSelector = (
   selector: SelectorNode,
@@ -67,9 +67,9 @@ export const updateSelector = (
     const updatedChildNodes = selector.childNodes.map((childNode) =>
       updateSelector(childNode, selectorChange)
     )
-    const allChildNodesSelected = !updatedChildNodes
-      .map((childNode) => childNode.selected)
-      .includes(false)
+    const allChildNodesSelected = updatedChildNodes.every(
+      ({ selected }) => selected
+    )
     return {
       selectorId: selector.selectorId,
       selected: allChildNodesSelected,

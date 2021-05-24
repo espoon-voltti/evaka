@@ -2,7 +2,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   getSelectorStatus,
   SelectorChange,
-  SelectorNode
+  SelectorNode,
+  updateSelector
 } from 'employee-frontend/components/messages/SelectorNode'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { UUID } from 'employee-frontend/types'
@@ -11,21 +12,24 @@ import { Table, Thead, Tr, Th, Tbody, Td } from 'lib-components/layout/Table'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faAngleUp, faAngleDown } from 'lib-icons'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 interface Props {
   selectedReceivers: SelectorNode
-  setSelectorChange: (change: SelectorChange) => void
+  setSelectedReceivers: React.Dispatch<
+    React.SetStateAction<SelectorNode | undefined>
+  >
 }
 
 export default React.memo(function ReceiverSelection({
   selectedReceivers,
-  setSelectorChange
+  setSelectedReceivers
 }: Props) {
   const { i18n } = useTranslation()
 
   const [collapsedGroups, setCollapsedGroups] = useState<UUID[]>([])
+  const [selectorChange, setSelectorChange] = useState<SelectorChange>()
 
   const isCollapsed = (groupId: UUID) => collapsedGroups.indexOf(groupId) > -1
 
@@ -37,11 +41,20 @@ export default React.memo(function ReceiverSelection({
       old.filter((id: string) => id !== groupId)
     )
 
+  useEffect(() => {
+    if (selectorChange) {
+      setSelectedReceivers((selectedReceivers: SelectorNode | undefined) =>
+        selectedReceivers
+          ? updateSelector(selectedReceivers, selectorChange)
+          : undefined
+      )
+    }
+  }, [selectorChange, setSelectedReceivers])
+
   const toggleCollapsed = (groupId: UUID) =>
     isCollapsed(groupId) ? setNotCollapsed(groupId) : setCollapsed(groupId)
 
-  const unitName = selectedReceivers.name
-  const unitId = selectedReceivers.selectorId
+  const { name: unitName, selectorId: unitId } = selectedReceivers
 
   return (
     <Container>

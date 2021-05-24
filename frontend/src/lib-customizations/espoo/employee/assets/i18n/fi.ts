@@ -2348,6 +2348,11 @@ export const fi = {
         placeholder: 'Valitse ryhmä',
         noOptions: 'Ei ryhmiä'
       },
+      type: {
+        label: 'Viestin tyyppi',
+        message: 'Viesti',
+        bulletin: 'Tiedote (vastaanottaja ei voi vastata)'
+      },
       sender: 'Lähettäjä',
       receivers: 'Vastaanottajat',
       title: 'Otsikko',
