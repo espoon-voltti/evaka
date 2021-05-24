@@ -35,7 +35,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteRead.log(user.id)
 
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.read { it.getGroupDaycareDailyNotes(groupId) + it.getDaycareDailyNotesForChildrenInGroup(groupId) }.let { ResponseEntity.ok(it) }
     }
@@ -49,7 +49,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteRead.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.read { it.getChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok(it) }
     }
@@ -64,7 +64,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(childId = childId))) }
     }
@@ -79,7 +79,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteUpdate.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(childId = childId))) }
     }
@@ -94,7 +94,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.transaction { ResponseEntity.ok(it.createDaycareDailyNote(body.copy(groupId = groupId))) }
     }
@@ -109,7 +109,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteUpdate.log(user.id)
 
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.transaction { ResponseEntity.ok(it.updateDaycareDailyNote(body.copy(groupId = groupId))) }
     }
@@ -123,7 +123,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteDelete.log(user.id)
 
         acl.getRolesForDailyNote(user, noteId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.transaction { it.deleteDaycareDailyNote(noteId) }.let { ResponseEntity.ok() }
     }
@@ -137,7 +137,7 @@ class DaycareDailyNoteController(
         Audit.DaycareDailyNoteDelete.log(user.id)
 
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.MOBILE)
 
         return db.transaction { it.deleteChildDaycareDailyNotes(childId) }.let { ResponseEntity.ok() }
     }
