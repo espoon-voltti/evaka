@@ -2342,7 +2342,7 @@ export const fi = {
       confirmText: 'Lähetä viesti valituille'
     },
     messageEditor: {
-      newBulletin: 'Uusi viesti',
+      newMessage: 'Uusi viesti',
       to: {
         label: 'Vastaanottaja',
         placeholder: 'Valitse ryhmä',
