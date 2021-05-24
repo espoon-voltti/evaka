@@ -42,7 +42,7 @@ import AbsenceSelector from '../AbsenceSelector'
 import { CustomTitle, Actions, BackButtonInline } from '../components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import Title from 'lib-components/atoms/Title'
-import { groupAbsencesByDateRange } from './helpers'
+import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 
 export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()

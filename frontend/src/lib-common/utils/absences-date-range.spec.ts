@@ -6,7 +6,7 @@ import { uniqueId } from 'lodash'
 
 import { Absence } from 'lib-common/api-types/child/Absences'
 import LocalDate from 'lib-common/local-date'
-import { groupAbsencesByDateRange } from './helpers'
+import { groupAbsencesByDateRange } from './absences'
 
 describe('absences date range', () => {
   describe('grouping works with', () => {
