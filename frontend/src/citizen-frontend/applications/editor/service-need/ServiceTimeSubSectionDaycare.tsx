@@ -62,7 +62,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
   useEffect(() => {
     if (
-      featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+      featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
       formData.serviceNeedOption === null
     ) {
       updateFormData({
@@ -129,7 +129,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             })
           }
         />
-        {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+        {featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
           formData.partTime && (
             <SubRadios>
               <FixedSpaceColumn spacing={'xs'}>
@@ -156,7 +156,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             })
           }
         />
-        {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+        {featureFlags.daycareApplication.serviceNeedOptionsEnabled &&
           !formData.partTime && (
             <SubRadios>
               <FixedSpaceColumn spacing={'xs'}>
@@ -175,6 +175,66 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     )
   }
 
+  function renderServiceNeedDailyTimeSelection() {
+    return (
+      featureFlags.daycareApplication.dailyTimesEnabled && (
+        <>
+          <ExpandingInfo
+            info={
+              t.applications.editor.serviceNeed.dailyTime.instructions[
+                applicationType
+              ]
+            }
+            ariaLabel={t.common.openExpandingInfo}
+          >
+            <Label>
+              {t.applications.editor.serviceNeed.dailyTime
+                .usualArrivalAndDeparture[applicationType] + ' *'}
+            </Label>
+          </ExpandingInfo>
+
+          <Gap size={'s'} />
+
+          <FixedSpaceRow spacing={'m'}>
+            <FixedSpaceColumn spacing={'xs'}>
+              <Label htmlFor={'daily-time-starts'}>
+                {t.applications.editor.serviceNeed.dailyTime.starts}
+              </Label>
+              <InputField
+                id={'daily-time-starts'}
+                type={'time'}
+                value={formData.startTime}
+                data-qa={'startTime-input'}
+                onChange={(value) => updateFormData({ startTime: value })}
+                width={'s'}
+                info={errorToInputInfo(errors.startTime, t.validationErrors)}
+                hideErrorsBeforeTouched={!verificationRequested}
+              />
+            </FixedSpaceColumn>
+
+            <Hyphenbox>-</Hyphenbox>
+
+            <FixedSpaceColumn spacing={'xs'}>
+              <Label htmlFor={'daily-time-ends'}>
+                {t.applications.editor.serviceNeed.dailyTime.ends}
+              </Label>
+              <InputField
+                id={'daily-time-ends'}
+                type={'time'}
+                value={formData.endTime}
+                data-qa={'endTime-input'}
+                onChange={(value) => updateFormData({ endTime: value })}
+                width={'s'}
+                info={errorToInputInfo(errors.endTime, t.validationErrors)}
+                hideErrorsBeforeTouched={!verificationRequested}
+              />
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+        </>
+      )
+    )
+  }
+
   return (
     <>
       <H3>
@@ -187,58 +247,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
       <Gap size={'m'} />
 
-      <ExpandingInfo
-        info={
-          t.applications.editor.serviceNeed.dailyTime.instructions[
-            applicationType
-          ]
-        }
-        ariaLabel={t.common.openExpandingInfo}
-      >
-        <Label>
-          {t.applications.editor.serviceNeed.dailyTime.usualArrivalAndDeparture[
-            applicationType
-          ] + ' *'}
-        </Label>
-      </ExpandingInfo>
-
-      <Gap size={'s'} />
-
-      <FixedSpaceRow spacing={'m'}>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label htmlFor={'daily-time-starts'}>
-            {t.applications.editor.serviceNeed.dailyTime.starts}
-          </Label>
-          <InputField
-            id={'daily-time-starts'}
-            type={'time'}
-            value={formData.startTime}
-            data-qa={'startTime-input'}
-            onChange={(value) => updateFormData({ startTime: value })}
-            width={'s'}
-            info={errorToInputInfo(errors.startTime, t.validationErrors)}
-            hideErrorsBeforeTouched={!verificationRequested}
-          />
-        </FixedSpaceColumn>
-
-        <Hyphenbox>-</Hyphenbox>
-
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label htmlFor={'daily-time-ends'}>
-            {t.applications.editor.serviceNeed.dailyTime.ends}
-          </Label>
-          <InputField
-            id={'daily-time-ends'}
-            type={'time'}
-            value={formData.endTime}
-            data-qa={'endTime-input'}
-            onChange={(value) => updateFormData({ endTime: value })}
-            width={'s'}
-            info={errorToInputInfo(errors.endTime, t.validationErrors)}
-            hideErrorsBeforeTouched={!verificationRequested}
-          />
-        </FixedSpaceColumn>
-      </FixedSpaceRow>
+      {renderServiceNeedDailyTimeSelection()}
 
       <Gap size={'L'} />
 
