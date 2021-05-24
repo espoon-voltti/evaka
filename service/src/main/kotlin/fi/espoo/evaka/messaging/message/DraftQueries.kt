@@ -34,6 +34,7 @@ fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: Upsertabl
         VALUES (:id, :accountId, :title, :content, :type, :recipientIds, :recipientNames)
         ON CONFLICT (id)
         DO UPDATE SET
+             account_id = excluded.account_id,
              title = excluded.title,
              content = excluded.content,
              type = excluded.type,
@@ -41,8 +42,8 @@ fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: Upsertabl
              recipient_names = excluded.recipient_names
         """.trimIndent()
     )
-        .bind("accountId", accountId)
         .bind("id", id)
+        .bind("accountId", accountId)
         .bindNullable("type", draft.type)
         .bindNullable("title", draft.title)
         .bindNullable("content", draft.content)

@@ -1,27 +1,31 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { faTimes, faTrash } from 'lib-icons'
-import colors from 'lib-customizations/common'
-import InputField from 'lib-components/atoms/form/InputField'
+import { Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
+import { useDebounce } from 'lib-common/utils/useDebounce'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Button from 'lib-components/atoms/buttons/Button'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import InputField from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import Radio from 'lib-components/atoms/form/Radio'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faTimes, faTrash } from 'lib-icons'
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+import Select from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
-import { MessageBody } from './types'
+import * as api from './api'
 import {
   getSelected,
   getSelectedBottomElements,
   SelectorChange,
   SelectorNode,
   updateSelector
-} from 'employee-frontend/components/messages/SelectorNode'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import Select from 'employee-frontend/components/common/Select'
-import Radio from 'lib-components/atoms/form/Radio'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { UUID } from 'lib-common/types'
+} from './SelectorNode'
+import { MessageBody } from './types'
 
 const emptyMessageBody: MessageBody = {
   title: '',
@@ -57,6 +61,9 @@ export default React.memo(function MessageEditor({
   hideEditor
 }: Props) {
   const { i18n } = useTranslation()
+  const [newDraftRequested, setNewDraftRequested] = useState<boolean>(false)
+  const [draftId, setDraftId] = useState<UUID>()
+  const [draftSaveResult, setDraftSaveResult] = useState<Result<void>>()
   const [selectorChange, setSelectorChange] = useState<SelectorChange>()
   const [selectedReceiverOptions, setSelectedReceiverOptions] = useState<
     Option[]
@@ -65,6 +72,34 @@ export default React.memo(function MessageEditor({
     defaultAccountSelection
   )
   const [messageBody, setMessageBody] = useState<MessageBody>(emptyMessageBody)
+
+  const saveDraft = useRestApi(api.saveDraft, setDraftSaveResult)
+  const initDraft = useRestApi(api.initDraft, (res: Result<UUID>) => {
+    setNewDraftRequested(false)
+    if (res.isSuccess) {
+      setDraftId(res.value)
+    }
+  })
+
+  // initialize draft when requested
+  useEffect(() => {
+    if (newDraftRequested && !draftId) {
+      initDraft(selectedAccount.value)
+    }
+  }, [draftId, newDraftRequested, initDraft, selectedAccount.value])
+
+  // save draft on input change or ask for a new draft to be initialized
+  const debouncedMessageBody = useDebounce(messageBody, 2000)
+  useEffect(() => {
+    if (!(debouncedMessageBody.title || debouncedMessageBody.content)) {
+      return
+    }
+    if (!draftId) {
+      setNewDraftRequested(true)
+    } else {
+      saveDraft(selectedAccount.value, draftId, debouncedMessageBody)
+    }
+  }, [draftId, debouncedMessageBody, saveDraft, selectedAccount.value])
 
   useEffect(() => {
     if (selectorChange) {
@@ -84,10 +119,40 @@ export default React.memo(function MessageEditor({
     }))
   }, [selectedReceivers])
 
+  // update saving/saved/error status in title with debounce
+  const [titleStatus, setTitleStatus] = useState<string>()
+  const debouncedTitleStatus = useDebounce(titleStatus, 250)
+  useEffect(() => {
+    if (!draftSaveResult) return
+    setTitleStatus(
+      draftSaveResult.isLoading
+        ? `${i18n.common.saving}...`
+        : draftSaveResult.isSuccess
+        ? i18n.common.saved
+        : i18n.common.error.unknown
+    )
+
+    const clearStatus = () => setTitleStatus(undefined)
+    const timeoutHandle = setTimeout(clearStatus, 1500)
+    return () => clearTimeout(timeoutHandle)
+  }, [i18n, draftSaveResult])
+
+  const title =
+    debouncedTitleStatus ||
+    messageBody.title ||
+    i18n.messages.messageEditor.newMessage
+
+  const onClickSend = () => {
+    onSend(selectedAccount.value, messageBody)
+    if (draftId) {
+      void api.deleteDraft(selectedAccount.value, draftId)
+    }
+  }
+
   return (
     <Container>
       <TopBar>
-        <span>{i18n.messages.messageEditor.newBulletin}</span>
+        <span>{title}</span>
         <IconButton icon={faTimes} onClick={hideEditor} white />
       </TopBar>
       <FormArea>
@@ -188,7 +253,7 @@ export default React.memo(function MessageEditor({
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={() => onSend(selectedAccount.value, messageBody)}
+            onClick={onClickSend}
             data-qa="send-message-btn"
           />
         </BottomRow>
