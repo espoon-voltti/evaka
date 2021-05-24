@@ -13,7 +13,7 @@ test-results
 junit.xml
 .DS_Store
 .vscode
-e2e-test/screenshots/
+screenshots/
 .yalc
 yalc.lock
 **/storybook-build/

@@ -12,6 +12,17 @@ import playwright, {
 } from 'playwright'
 import config from 'e2e-test-common/config'
 
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace NodeJS {
+    interface Global {
+      evaka?: {
+        takeScreenshots: (namePrefix: string) => Promise<void>
+      }
+    }
+  }
+}
+
 let browser: Browser
 
 const DISABLE_JEST_TIMEOUT = 1_000_000_000 // 0 or Infinity unfortunately don't work
@@ -21,6 +32,7 @@ beforeAll(async () => {
   browser = await playwright[config.playwright.browser].launch({
     headless: config.playwright.headless
   })
+  global.evaka = { takeScreenshots }
 })
 
 afterEach(async () => {
@@ -31,12 +43,30 @@ afterEach(async () => {
 
 afterAll(async () => {
   await browser?.close()
+  delete global.evaka
 })
 
 const injected = fs.readFileSync(
   path.resolve(__dirname, '../e2e-test-common/injected.js'),
   'utf-8'
 )
+
+async function takeScreenshots(namePrefix: string): Promise<void> {
+  if (!browser) return
+  const pages = browser.contexts().flatMap((ctx, ctxIndex) =>
+    ctx.pages().map((page, pageIndex) => ({
+      ctxIndex,
+      pageIndex,
+      page
+    }))
+  )
+  for (const { ctxIndex, pageIndex, page } of pages) {
+    await page.screenshot({
+      type: 'png',
+      path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`
+    })
+  }
+}
 
 export async function newBrowserContext(
   options?: BrowserContextOptions
