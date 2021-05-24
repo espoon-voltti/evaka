@@ -239,6 +239,7 @@ export default React.memo(function AttendanceChildPage() {
         )}
         <BottonButtonWrapper>
           <LinkButtonWithIcon
+            data-qa="mark-absent-beforehand"
             to={`/units/${unitId}/groups/${groupId}/childattendance/${childId}/mark-absent-beforehand`}
           >
             <RoundIcon
