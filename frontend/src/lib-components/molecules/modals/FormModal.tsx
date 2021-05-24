@@ -134,7 +134,7 @@ export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
   justify-content: ${(p) => (p.$singleButton ? `center` : `space-between`)};
 
   @media (max-width: ${tabletMin}) {
-    margin-bottom: 32px;
+    margin-bottom: ${defaultMargins.L};
   }
 `
 
