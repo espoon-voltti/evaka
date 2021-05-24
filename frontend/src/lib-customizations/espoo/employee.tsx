@@ -14,7 +14,15 @@ const customizations: EmployeeCustomizations = {
     src: EspooLogo,
     alt: 'Espoo Logo'
   },
-  featureFlags
+  featureFlags,
+  assistanceMeasures: [
+    'SPECIAL_ASSISTANCE_DECISION',
+    'INTENSIFIED_ASSISTANCE',
+    'EXTENDED_COMPULSORY_EDUCATION',
+    'CHILD_SERVICE',
+    'CHILD_ACCULTURATION_SUPPORT',
+    'TRANSPORT_BENEFIT'
+  ]
 }
 
 export default customizations

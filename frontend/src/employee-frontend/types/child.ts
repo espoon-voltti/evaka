@@ -6,6 +6,7 @@ import { UUID } from '../types/index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ProviderType } from './unit'
+import { AssistanceMeasure } from 'lib-customizations/types'
 
 export type PlacementType =
   | 'CLUB'
@@ -70,13 +71,7 @@ export type AssistanceActionType =
   | 'PERIODICAL_VEO_SUPPORT'
   | 'OTHER'
 
-export type AssistanceMeasure =
-  | 'SPECIAL_ASSISTANCE_DECISION'
-  | 'INTENSIFIED_ASSISTANCE'
-  | 'EXTENDED_COMPULSORY_EDUCATION'
-  | 'CHILD_SERVICE'
-  | 'CHILD_ACCULTURATION_SUPPORT'
-  | 'TRANSPORT_BENEFIT'
+export type { AssistanceMeasure }
 
 export interface AssistanceAction {
   id: UUID
