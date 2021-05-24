@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { addDays, isAfter, isBefore, subDays, differenceInDays } from 'date-fns'
+import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import Loader from 'lib-components/atoms/Loader'
@@ -24,14 +24,13 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label, P } from 'lib-components/typography'
 import InputField from 'lib-components/atoms/form/InputField'
 import LocalDate from 'lib-common/local-date'
-import { Loading, Result, Success } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import { TallContentArea } from '../../../components/mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
-  deleteAbsenceByDate,
   deleteAbsenceRange,
   getDaycareAttendances,
   getFutureAbsencesByChild,
@@ -42,8 +41,8 @@ import { AbsenceType } from '../../../types'
 import AbsenceSelector from '../AbsenceSelector'
 import { CustomTitle, Actions, BackButtonInline } from '../components'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { orderBy } from 'lodash'
 import Title from 'lib-components/atoms/Title'
+import { groupAbsencesByDateRange } from './helpers'
 
 export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()
@@ -57,11 +56,12 @@ export default React.memo(function MarkAbsentBeforehand() {
     AbsenceType | undefined
   >(undefined)
   const [absences, setAbsences] = useState<Result<Absence[]>>(Loading.of())
-  const [absenceRanges, setAbsenceRanges] = useState<LocalDate[][]>([])
   const [uiMode, setUiMode] = useState<
     'default' | 'confirmDelete' | 'confirmExit'
   >('default')
-  const [deleteRange, setDeleteRange] = useState<LocalDate[]>([])
+  const [deleteRange, setDeleteRange] = useState<FiniteDateRange | undefined>(
+    undefined
+  )
 
   const { childId, unitId } = useParams<{
     unitId: string
@@ -86,12 +86,6 @@ export default React.memo(function MarkAbsentBeforehand() {
     loadFutureAbsences(childId)
   }, [loadFutureAbsences, childId])
 
-  useEffect(() => {
-    if (absences.isSuccess && absences.value.length > 1) {
-      setAbsenceRanges(groupAbsencesByDateRange(absences))
-    }
-  }, [absences])
-
   async function postAbsence(absenceType: AbsenceType) {
     return postAbsenceRange(
       unitId,
@@ -103,16 +97,10 @@ export default React.memo(function MarkAbsentBeforehand() {
   }
 
   async function deleteAbsences() {
-    if (deleteRange.length > 1) {
-      await deleteAbsenceRange(
-        unitId,
-        childId,
-        new FiniteDateRange(deleteRange[0], deleteRange[1])
-      )
-    } else {
-      await deleteAbsenceByDate(unitId, childId, deleteRange[0])
+    if (deleteRange) {
+      await deleteAbsenceRange(unitId, childId, deleteRange)
     }
-    setDeleteRange([])
+    setDeleteRange(undefined)
     loadFutureAbsences(childId)
     setUiMode('default')
   }
@@ -125,7 +113,7 @@ export default React.memo(function MarkAbsentBeforehand() {
         icon={faExclamation}
         reject={{
           action: () => {
-            setDeleteRange([])
+            setDeleteRange(undefined)
             setUiMode('default')
           },
           label: i18n.common.doNotRemove
@@ -215,6 +203,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                 <TimeInputWrapper>
                   <Label>{i18n.common.starts}</Label>
                   <TimeInput
+                    data-qa="start-date-input"
                     value={startDate}
                     type="date"
                     onChange={setStartDate}
@@ -238,6 +227,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                 <TimeInputWrapper>
                   <Label>{i18n.common.ends}</Label>
                   <TimeInput
+                    data-qa="end-date-input"
                     value={endDate}
                     type="date"
                     onChange={setEndDate}
@@ -277,40 +267,54 @@ export default React.memo(function MarkAbsentBeforehand() {
             </Actions>
             <HorizontalLine />
 
-            <Title size={2} smaller primary>
-              {i18n.absences.futureAbsence}
-            </Title>
-            <FixedSpaceColumn>
-              {absenceRanges.map((absenceRange) => {
-                if (absenceRange.length > 1) {
-                  return (
-                    <AbsenceRow key={absenceRange[0].format()}>
-                      <AbsenceDate>{`${absenceRange[0].format()} - ${absenceRange[1].format()}`}</AbsenceDate>
-                      <IconButton
-                        icon={faTrash}
-                        onClick={() => {
-                          setDeleteRange(absenceRange)
-                          setUiMode('confirmDelete')
-                        }}
-                      />
-                    </AbsenceRow>
-                  )
-                } else {
-                  return (
-                    <AbsenceRow key={absenceRange[0].format()}>
-                      <AbsenceDate>{`${absenceRange[0].format()}`}</AbsenceDate>
-                      <IconButton
-                        icon={faTrash}
-                        onClick={() => {
-                          setDeleteRange(absenceRange)
-                          setUiMode('confirmDelete')
-                        }}
-                      />
-                    </AbsenceRow>
-                  )
-                }
-              })}
-            </FixedSpaceColumn>
+            {absences.isSuccess && absences.value.length > 0 && (
+              <>
+                <Title size={2} smaller primary>
+                  {i18n.absences.futureAbsence}
+                </Title>
+                <FixedSpaceColumn>
+                  {groupAbsencesByDateRange(absences.value).map(
+                    (absenceRange) => {
+                      if (absenceRange.durationInDays() < -1) {
+                        return (
+                          <AbsenceRow
+                            key={absenceRange.start.format()}
+                            data-qa="absence-row"
+                          >
+                            <AbsenceDate>{`${absenceRange.start.format()} - ${absenceRange.end.format()}`}</AbsenceDate>
+                            <IconButton
+                              icon={faTrash}
+                              onClick={() => {
+                                setDeleteRange(absenceRange)
+                                setUiMode('confirmDelete')
+                              }}
+                              data-qa="delete-absence-period"
+                            />
+                          </AbsenceRow>
+                        )
+                      } else {
+                        return (
+                          <AbsenceRow
+                            key={absenceRange.start.format()}
+                            data-qa="absence-row"
+                          >
+                            <AbsenceDate>{`${absenceRange.start.format()}`}</AbsenceDate>
+                            <IconButton
+                              icon={faTrash}
+                              onClick={() => {
+                                setDeleteRange(absenceRange)
+                                setUiMode('confirmDelete')
+                              }}
+                              data-qa="delete-absence-period"
+                            />
+                          </AbsenceRow>
+                        )
+                      }
+                    }
+                  )}
+                </FixedSpaceColumn>
+              </>
+            )}
           </ContentArea>
         </TallContentArea>
       )}
@@ -351,35 +355,3 @@ const TimeInputWrapper = styled.span`
 const Separator = styled.span`
   padding-bottom: 5px;
 `
-
-function groupAbsencesByDateRange(absences: Success<Absence[]>): LocalDate[][] {
-  const sorted = orderBy(absences.value, ['date'])
-  const absencesGroupedByDate: Absence[][] = [[sorted[0]]]
-  let previousDate: LocalDate = absencesGroupedByDate[0][0].date
-  for (const absence of sorted) {
-    if (
-      differenceInDays(
-        absence.date.toSystemTzDate(),
-        previousDate.toSystemTzDate()
-      ) > 1
-    ) {
-      previousDate = absence.date
-      absencesGroupedByDate.push([absence])
-    } else {
-      previousDate = absence.date
-      absencesGroupedByDate[absencesGroupedByDate.length - 1].push(absence)
-    }
-  }
-
-  const absenceDateRanges: LocalDate[][] = []
-  for (const absence of absencesGroupedByDate) {
-    absence.length > 1
-      ? absenceDateRanges.push([
-          absence[0].date,
-          absence[absence.length - 1].date
-        ])
-      : absenceDateRanges.push([absence[0].date])
-  }
-
-  return absenceDateRanges
-}
