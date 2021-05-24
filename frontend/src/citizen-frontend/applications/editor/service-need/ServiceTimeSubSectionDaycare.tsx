@@ -81,7 +81,14 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
         })
       }
     }
-  }, [serviceNeedOptions])
+  }, [
+    serviceNeedOptions,
+    partTimeOptions,
+    fullTimeOptions,
+    formData.partTime,
+    formData.serviceNeedOption,
+    updateFormData
+  ])
 
   const uploadExtendedCareAttachment = (
     file: File,

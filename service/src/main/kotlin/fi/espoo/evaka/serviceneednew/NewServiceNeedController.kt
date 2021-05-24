@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -123,7 +124,7 @@ class NewServiceNeedController(
     @GetMapping("/public/new-service-needs/options")
     fun getServiceNeedOptionPublicInfos(
         db: Database.Connection,
-        @RequestParam(required = true) placementTypes: List<String>
+        @RequestParam(required = true) placementTypes: List<PlacementType>
     ): ResponseEntity<List<ServiceNeedOptionPublicInfo>> {
         return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
             .let { ResponseEntity.ok(it) }
