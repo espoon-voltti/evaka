@@ -100,6 +100,7 @@ export default React.memo(function MessageEditor({
           onChange={(selected) =>
             selected ? setSelectedAccount(selected as Option) : null
           }
+          data-qa="select-sender"
         />
         <div>
           <Gap size={'xs'} />
@@ -188,7 +189,7 @@ export default React.memo(function MessageEditor({
             text={i18n.messages.messageEditor.send}
             primary
             onClick={() => onSend(selectedAccount.value, messageBody)}
-            data-qa="send-bulletin-btn"
+            data-qa="send-message-btn"
           />
         </BottomRow>
       </FormArea>

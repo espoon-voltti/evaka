@@ -71,6 +71,7 @@ const config = {
   adminExternalId: `espoo-ad:${adminAad}`,
   mobileBaseUrl: browserUrl,
   mobileUrl: `${browserUrl}/employee/mobile`,
+  enduserMessagesUrl: `${browserUrl}/messages`,
   serviceWorkerAad,
   financeAdminAad,
   directorAad,

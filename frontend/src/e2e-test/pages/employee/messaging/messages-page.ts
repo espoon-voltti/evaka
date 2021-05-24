@@ -9,15 +9,14 @@ export default class MessagesPage {
 
   private readonly groupSelector = Selector('[data-qa="group-selector"]')
 
-  async createNewBulletin(sender: string, title: string, content: string) {
-    await t.click(Selector('[data-qa="new-bulletin-btn"]'))
+  async sendNewMessage(title: string, content: string) {
+    await t.click(Selector('[data-qa="new-message-btn"]'))
     await t.typeText(Selector('[data-qa="input-title"]'), title)
     await t.typeText(Selector('[data-qa="input-content"]'), content)
     await t.click(Selector('[data-qa="select-sender"]'))
-    await t.typeText(Selector('[data-qa="select-sender"]'), sender)
     await t.pressKey('enter')
     await t.click(Selector('[data-qa="select-receiver"]'))
     await t.pressKey('enter')
-    await t.click(Selector('[data-qa="send-bulletin-btn"]'))
+    await t.click(Selector('[data-qa="send-message-btn"]'))
   }
 }

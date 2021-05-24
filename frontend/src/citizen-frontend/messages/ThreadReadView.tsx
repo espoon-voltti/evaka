@@ -66,7 +66,7 @@ function Message({
     <MessageContainer>
       {title && type && (
         <TitleRow>
-          <H2>{title}</H2>
+          <H2 data-qa="thread-reader-title">{title}</H2>
           <MessageTypeChip type={type} labels={i18n.messages.types} />
         </TitleRow>
       )}
@@ -74,7 +74,9 @@ function Message({
         <SenderName>{message.senderName}</SenderName>
         <SentDate>{formatDate(message.sentAt)}</SentDate>
       </TitleRow>
-      <MessageContent>{message.content}</MessageContent>
+      <MessageContent data-qa="thread-reader-content">
+        {message.content}
+      </MessageContent>
     </MessageContainer>
   )
 }

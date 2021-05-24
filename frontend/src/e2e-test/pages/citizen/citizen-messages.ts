@@ -5,10 +5,10 @@
 import { Selector } from 'testcafe'
 
 export default class CitizenMessagesPage {
-  readonly bulletins = Selector('[data-qa="bulletin-list-item"]')
-  readonly message = (index: number) => this.bulletins.nth(index)
+  readonly threads = Selector('[data-qa="thread-list-item"]')
+  readonly thread = (index: number) => this.threads.nth(index)
 
-  readonly messageReaderTitle = Selector('[data-qa="message-reader-title"]')
-  readonly messageReaderSender = Selector('[data-qa="message-reader-sender"]')
-  readonly messageReaderContent = Selector('[data-qa="message-reader-content"]')
+  readonly messageReaderTitle = Selector('[data-qa="thread-reader-title"]')
+  readonly messageReaderSender = Selector('[data-qa="thread-reader-sender"]')
+  readonly messageReaderContent = Selector('[data-qa="thread-reader-content"]')
 }

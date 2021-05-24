@@ -552,9 +552,17 @@ RETURNING id
         }
     }
 
+    @DeleteMapping("/message/delete-all")
+    fun deleteMessages(db: Database) {
+        db.transaction { it.execute("DELETE FROM message_recipients") }
+        db.transaction { it.execute("DELETE FROM message") }
+        db.transaction { it.execute("DELETE FROM message_content") }
+    }
+
     @DeleteMapping("/message-account/delete-all")
     fun deleteMessageAccounts(db: Database) {
-        db.transaction { it.execute("DELETE FROM message_account CASCADE") }
+        deleteMessages(db)
+        db.transaction { it.execute("DELETE FROM message_account") }
     }
 
     @PostMapping("/backup-cares")

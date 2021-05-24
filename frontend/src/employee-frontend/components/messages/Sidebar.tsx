@@ -192,6 +192,7 @@ export default React.memo(function Sidebar({
       <Button
         text={i18n.messages.messageBoxes.newBulletin}
         onClick={showEditor}
+        data-qa="new-message-btn"
       />
     </Container>
   )

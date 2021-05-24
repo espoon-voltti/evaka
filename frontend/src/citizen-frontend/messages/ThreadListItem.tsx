@@ -35,7 +35,7 @@ export default React.memo(function ThreadListItem({
       isRead={!hasUnreadMessages(thread)}
       active={active}
       onClick={onClick}
-      data-qa="message-list-item"
+      data-qa="thread-list-item"
     >
       <FixedSpaceColumn>
         <Header>

@@ -4,9 +4,9 @@
 
 import config from 'e2e-test-common/config'
 import {
-  clearBulletins,
   deleteEmployeeFixture,
   deleteMessageAccounts,
+  deleteMessages,
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
@@ -28,12 +28,19 @@ import {
   DaycareGroupPlacement,
   DaycarePlacement
 } from 'e2e-test-common/dev-api/types'
+import MessagesPage from '../../pages/employee/messaging/messages-page'
 import { enduserRole } from '../../config/users'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import EmployeeHome from '../../pages/employee/home'
 import { logConsoleMessages } from '../../utils/fixture'
+import CitizenHomepage from '../../pages/citizen/citizen-homepage'
+import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 
 const home = new EmployeeHome()
+const citizenHome = new CitizenHomepage()
+const messagesPage = new MessagesPage()
+const citizenMessagesPage = new CitizenMessagesPage()
+const childInformationPage = new ChildInformationPage()
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
@@ -73,7 +80,7 @@ fixture('Sending and receiving bulletins')
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
-    await clearBulletins()
+    await deleteMessages()
   })
   .after(async () => {
     await deleteMessageAccounts()
@@ -82,6 +89,8 @@ fixture('Sending and receiving bulletins')
   })
 
 test('Supervisor sends a bulletin and guardian reads it', async (t) => {
+  const title = 'Testiviesti'
+  const content = 'Testiviestin sisältö'
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
@@ -91,14 +100,20 @@ test('Supervisor sends a bulletin and guardian reads it', async (t) => {
     roles: []
   })
   await home.navigateToMessages()
-
-  // TODO test implementation
+  await messagesPage.sendNewMessage(title, content)
+  await t.useRole(enduserRole)
+  await t.click(citizenHome.nav.messages)
+  await t.click(citizenMessagesPage.thread(0))
+  await t.expect(citizenMessagesPage.messageReaderTitle.textContent).eql(title)
+  await t
+    .expect(citizenMessagesPage.messageReaderContent.textContent)
+    .eql(content)
+  await deleteMessages()
 })
 
-const employeeHome = new EmployeeHome()
-const childInformationPage = new ChildInformationPage()
-
 test('Admin sends a bulletin and blocked guardian does not get it', async (t) => {
+  const title = 'Kielletty viesti'
+  const content = 'Tämän ei pitäisi mennä perille'
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
@@ -109,9 +124,7 @@ test('Admin sends a bulletin and blocked guardian does not get it', async (t) =>
   })
   await home.navigateToMessages()
 
-  await employeeHome.navigateToChildInformation(
-    fixtures.enduserChildFixtureJari.id
-  )
+  await home.navigateToChildInformation(fixtures.enduserChildFixtureJari.id)
 
   await childInformationPage.openChildMessageBlocklistCollapsible()
   await childInformationPage.clickBlockListForParent(
@@ -120,6 +133,8 @@ test('Admin sends a bulletin and blocked guardian does not get it', async (t) =>
 
   await t.navigateTo(config.adminUrl)
   await home.navigateToMessages()
-
-  // TODO test implementation
+  await messagesPage.sendNewMessage(title, content)
+  await t.useRole(enduserRole)
+  await t.click(citizenHome.nav.messages)
+  await t.expect(citizenMessagesPage.threads.count).eql(0)
 })
