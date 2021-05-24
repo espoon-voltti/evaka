@@ -5,6 +5,7 @@
     "composite": true,
     "jsx": "react",
     "outDir": "../../dist/employee-mobile-frontend",
+    "types": ["jest"],
     "suppressImplicitAnyIndexErrors": true
   },
   "references": [

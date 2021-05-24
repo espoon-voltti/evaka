@@ -193,6 +193,7 @@
       "./src/citizen-frontend",
       "./src/e2e-playwright",
       "./src/employee-frontend",
+      "./src/employee-mobile-frontend",
       "./src/lib-common"
     ],
     "reporters": [
