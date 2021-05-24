@@ -18,10 +18,10 @@ import {
   updateSelector
 } from 'employee-frontend/components/messages/SelectorNode'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import { postMessage } from './api'
 import Select from 'employee-frontend/components/common/Select'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { UUID } from 'lib-common/types'
 
 const emptyMessageBody: MessageBody = {
   title: '',
@@ -43,6 +43,7 @@ interface Props {
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
+  onSend: (accountId: UUID, messageBody: MessageBody) => void
   hideEditor: () => void
 }
 
@@ -52,6 +53,7 @@ export default React.memo(function MessageEditor({
   selectedReceivers,
   receiverOptions,
   setSelectedReceivers,
+  onSend,
   hideEditor
 }: Props) {
   const { i18n } = useTranslation()
@@ -63,16 +65,6 @@ export default React.memo(function MessageEditor({
     defaultAccountSelection
   )
   const [messageBody, setMessageBody] = useState<MessageBody>(emptyMessageBody)
-
-  const onSend = () =>
-    postMessage(selectedAccount.value, {
-      title: messageBody.title,
-      content: messageBody.content,
-      type: messageBody.type,
-      recipientAccountIds: messageBody.recipientAccountIds
-    }).then(() => {
-      hideEditor()
-    })
 
   useEffect(() => {
     if (selectorChange) {
@@ -195,7 +187,7 @@ export default React.memo(function MessageEditor({
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={onSend}
+            onClick={() => onSend(selectedAccount.value, messageBody)}
             data-qa="send-bulletin-btn"
           />
         </BottomRow>

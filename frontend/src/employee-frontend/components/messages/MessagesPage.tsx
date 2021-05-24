@@ -18,8 +18,10 @@ import { getMessagingAccounts } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
 import Sidebar from './Sidebar'
-import { MessageAccount } from './types'
+import { MessageAccount, MessageBody } from './types'
 import { AccountView } from './types-view'
+import { postMessage } from './api'
+import { UUID } from 'lib-common/types'
 
 const PanelContainer = styled.div`
   display: flex;
@@ -38,6 +40,14 @@ export default React.memo(function MessagesPage() {
     selectedReceivers && setSelectedReceivers(deselectAll(selectedReceivers))
     setShowEditor(false)
   }
+
+  const onSend = (accountId: UUID, messageBody: MessageBody) =>
+    postMessage(accountId, {
+      title: messageBody.title,
+      content: messageBody.content,
+      type: messageBody.type,
+      recipientAccountIds: messageBody.recipientAccountIds
+    }).finally(hideEditor)
 
   useEffect(() => {
     if (accounts.isSuccess && accounts.value[0]) {
@@ -83,6 +93,7 @@ export default React.memo(function MessagesPage() {
               selectedReceivers ? getReceiverOptions(selectedReceivers) : []
             }
             setSelectedReceivers={setSelectedReceivers}
+            onSend={onSend}
             hideEditor={hideEditor}
           />
         )}
