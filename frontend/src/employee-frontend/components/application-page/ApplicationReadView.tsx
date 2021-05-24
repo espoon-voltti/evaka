@@ -535,6 +535,7 @@ function ApplicationReadView({
         applicationId={application.application.id}
         decisions={decisions}
         reloadApplication={reloadApplication}
+        applicationStatus={application.application.status}
       />
 
       <ApplicationStatusSection application={application.application} />

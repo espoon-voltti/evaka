@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
+import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 import { Label } from 'lib-components/typography'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -19,7 +20,8 @@ import {
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { UUID } from '../../types'
 
-const isPending = (decision: Decision) => decision.status === 'PENDING'
+const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
+  decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'
 
 const isBlocked = (decisions: Decision[], decision: Decision) =>
   ['PRESCHOOL_DAYCARE'].includes(decision.type) &&
@@ -37,12 +39,14 @@ type Props = {
   applicationId: UUID
   decisions: Decision[]
   reloadApplication: () => void
+  applicationStatus: ApplicationStatus
 }
 
 export default React.memo(function ApplicationDecisionsSection({
   applicationId,
   decisions,
-  reloadApplication
+  reloadApplication,
+  applicationStatus
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -95,7 +99,7 @@ export default React.memo(function ApplicationDecisionsSection({
                 {decision.unit.name}
               </Link>
 
-              {isPending(decision) && (
+              {isPending(decision, applicationStatus) && (
                 <>
                   <Label>{i18n.application.decisions.response.label}</Label>
 
