@@ -28,14 +28,14 @@ data class UnreadMessagesResponse(val count: Int)
 @RequestMapping("/messages")
 class MessageController(
     private val acl: AccessControlList,
-    private val messageNotificationEmailService: MessageNotificationEmailService
+    messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
     fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
-        authorizeAllowedMessagingRoles(user)
+        requireAuthorizedMessagingRole(user)
         return db.read { it.getAuthorizedMessageAccountsForEmployee(user) }
     }
 
@@ -48,9 +48,7 @@ class MessageController(
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log(targetId = accountId)
-        authorizeAllowedMessagingRoles(user)
-        if (!db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }.contains(accountId))
-            throw Forbidden("User is not authorized to access the account")
+        requireMessageAccountAccess(db, user, accountId)
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
@@ -63,9 +61,7 @@ class MessageController(
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log(targetId = accountId)
-        authorizeAllowedMessagingRoles(user)
-        if (!db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }.contains(accountId))
-            throw Forbidden("User is not authorized to access the account")
+        requireMessageAccountAccess(db, user, accountId)
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
 
@@ -75,7 +71,7 @@ class MessageController(
         user: AuthenticatedUser,
     ): UnreadMessagesResponse {
         Audit.MessagingUnreadMessagesRead.log()
-        authorizeAllowedMessagingRoles(user)
+        requireAuthorizedMessagingRole(user)
         val accountIds = db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }
         val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
         return UnreadMessagesResponse(count)
@@ -96,9 +92,7 @@ class MessageController(
         @RequestBody body: PostMessageBody,
     ): List<UUID> {
         Audit.MessagingNewMessageWrite.log(accountId)
-        authorizeAllowedMessagingRoles(user)
-        val sender = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("User is not authorized to access the account")
+        val sender = requireMessageAccountAccess(db, user, accountId)
 
         // TODO recipient account authorization
 
@@ -123,9 +117,7 @@ class MessageController(
         @PathVariable accountId: UUID,
     ): List<DraftContent> {
         Audit.MessagingDraftsRead.log(accountId)
-        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("User is not authorized to access the account")
-        authorizeAllowedMessagingRoles(user)
+        requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.getDrafts(accountId) }
     }
 
@@ -136,9 +128,7 @@ class MessageController(
         @PathVariable accountId: UUID,
     ): UUID {
         Audit.MessagingCreateDraft.log(accountId)
-        authorizeAllowedMessagingRoles(user)
-        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("User is not authorized to access the account")
+        requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.initDraft(accountId) }
     }
 
@@ -151,9 +141,7 @@ class MessageController(
         @RequestBody content: UpsertableDraftContent,
     ) {
         Audit.MessagingUpdateDraft.log(accountId, draftId)
-        authorizeAllowedMessagingRoles(user)
-        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("User is not authorized to access the account")
+        requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.upsertDraft(accountId, draftId, content) }
     }
 
@@ -165,9 +153,7 @@ class MessageController(
         @PathVariable draftId: UUID,
     ) {
         Audit.MessagingDeleteDraft.log(accountId, draftId)
-        authorizeAllowedMessagingRoles(user)
-        db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("User is not authorized to access the account")
+        requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.deleteDraft(accountId, draftId) }
     }
 
@@ -185,9 +171,7 @@ class MessageController(
         @RequestBody body: ReplyToMessageBody,
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
-        authorizeAllowedMessagingRoles(user)
-        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("Message account not found for user")
+        val account = requireMessageAccountAccess(db, user, accountId)
 
         messageService.replyToThread(
             db = db,
@@ -206,10 +190,7 @@ class MessageController(
         @PathVariable("threadId") threadId: UUID
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
-        authorizeAllowedMessagingRoles(user)
-        val account = db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
-            ?: throw Forbidden("Message account not found for user")
-
+        val account = requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.markThreadRead(account.id, threadId) }
     }
 
@@ -220,13 +201,28 @@ class MessageController(
         @RequestParam unitId: UUID
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(
+            UserRole.ADMIN,
+            UserRole.UNIT_SUPERVISOR,
+            UserRole.STAFF,
+            UserRole.SPECIAL_EDUCATION_TEACHER
+        )
 
         return db.transaction { it.getReceiversForNewMessage(user, unitId) }
     }
 
-    private fun authorizeAllowedMessagingRoles(user: AuthenticatedUser) {
+    private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+    }
+
+    private fun requireMessageAccountAccess(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        accountId: UUID
+    ): MessageAccount {
+        requireAuthorizedMessagingRole(user)
+        return db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+            ?: throw Forbidden("Message account not found for user")
     }
 
     @GetMapping

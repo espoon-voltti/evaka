@@ -22,7 +22,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/citizen/messages")
 class MessageControllerCitizen(
-    private val messageNotificationEmailService: MessageNotificationEmailService
+    messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
 
@@ -32,11 +32,8 @@ class MessageControllerCitizen(
         user: AuthenticatedUser
     ): Int {
         Audit.MessagingUnreadMessagesRead.log()
-        user.requireOneOfRoles(UserRole.END_USER)
-        return db.read {
-            val account = it.getMessageAccountForEndUser(user)
-            it.getUnreadMessagesCount(setOf(account.id))
-        }
+        val account = requireMessageAccountAccess(db, user)
+        return db.read { it.getUnreadMessagesCount(setOf(account.id)) }
     }
 
     @PutMapping("/threads/{threadId}/read")
@@ -46,11 +43,8 @@ class MessageControllerCitizen(
         @PathVariable("threadId") threadId: UUID
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
-        user.requireOneOfRoles(UserRole.END_USER)
-        return db.transaction {
-            val account = it.getMessageAccountForEndUser(user)
-            it.markThreadRead(account.id, threadId)
-        }
+        val account = requireMessageAccountAccess(db, user)
+        return db.transaction { it.markThreadRead(account.id, threadId) }
     }
 
     @GetMapping("/received")
@@ -61,11 +55,8 @@ class MessageControllerCitizen(
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
-        user.requireOneOfRoles(UserRole.END_USER)
-        return db.read {
-            val account = it.getMessageAccountForEndUser(user)
-            it.getMessagesReceivedByAccount(account.id, pageSize, page)
-        }
+        val account = requireMessageAccountAccess(db, user)
+        return db.read { it.getMessagesReceivedByAccount(account.id, pageSize, page) }
     }
 
     @GetMapping("/sent")
@@ -76,11 +67,8 @@ class MessageControllerCitizen(
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log()
-        user.requireOneOfRoles(UserRole.END_USER)
-        return db.read {
-            val account = it.getMessageAccountForEndUser(user)
-            it.getMessagesSentByAccount(account.id, pageSize, page)
-        }
+        val account = requireMessageAccountAccess(db, user)
+        return db.read { it.getMessagesSentByAccount(account.id, pageSize, page) }
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
@@ -93,8 +81,7 @@ class MessageControllerCitizen(
         @RequestBody body: ReplyToMessageBody,
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
-        user.requireOneOfRoles(UserRole.END_USER)
-        val account = db.read { it.getMessageAccountForEndUser(user) }
+        val account = requireMessageAccountAccess(db, user)
 
         messageService.replyToThread(
             db = db,
@@ -108,5 +95,13 @@ class MessageControllerCitizen(
     @GetMapping
     fun getThreadsMock(): Paged<MessageThread> {
         return mockThreadData()
+    }
+
+    private fun requireMessageAccountAccess(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): MessageAccount {
+        user.requireOneOfRoles(UserRole.END_USER)
+        return db.read { it.getMessageAccountForEndUser(user) }
     }
 }
