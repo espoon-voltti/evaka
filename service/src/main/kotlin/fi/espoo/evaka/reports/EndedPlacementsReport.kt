@@ -29,7 +29,7 @@ class EndedPlacementsReportController {
         Audit.EndedPlacementsReportRead.log()
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
-        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.ADMIN, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return db.read { it.getEndedPlacementsRows(from, to) }.let(::ok)
     }
