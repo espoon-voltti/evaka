@@ -368,17 +368,17 @@ fun Database.Transaction.deleteAbsencesByDate(childId: UUID, date: LocalDate) {
         .execute()
 }
 
-fun Database.Transaction.deleteAbsencesByPeriod(childId: UUID, period: FiniteDateRange) {
+fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRange: FiniteDateRange) {
     // language=sql
     val sql =
         """
-        DELETE FROM absence
-        WHERE child_id = :childId AND :period @> date
+        UPDATE absence SET absence_type = 'PRESENCE'
+        WHERE child_id = :childId AND :dateRange @> date
         """.trimIndent()
 
     createUpdate(sql)
         .bind("childId", childId)
-        .bind("period", period)
+        .bind("dateRange", dateRange)
         .execute()
 }
 

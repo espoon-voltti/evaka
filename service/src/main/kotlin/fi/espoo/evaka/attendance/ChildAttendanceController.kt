@@ -28,6 +28,7 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -377,37 +378,18 @@ class ChildAttendanceController(
         }.let { ResponseEntity.ok(it) }
     }
 
-    data class AbsenceRangeDeleteRequest(
-        val period: FiniteDateRange
-    )
-    @PostMapping("/units/{unitId}/children/{childId}/absence-range/delete")
+    @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
     fun deleteAbsenceRange(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
-        @RequestBody body: AbsenceRangeDeleteRequest
+        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ResponseEntity<Unit> {
         Audit.AbsenceDeleteRange.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
         return db.transaction { tx ->
-            tx.deleteAbsencesByPeriod(childId, body.period)
-        }.let { ResponseEntity.ok(it) }
-    }
-
-    data class AbsenceDateDeleteRequest(
-        val date: LocalDate
-    )
-    @PostMapping("/units/{unitId}/children/{childId}/absence")
-    fun deleteAbsence(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable childId: UUID,
-        @RequestBody body: AbsenceDateDeleteRequest
-    ): ResponseEntity<Unit> {
-        Audit.AbsenceDelete.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.MOBILE)
-        return db.transaction { tx ->
-            tx.deleteAbsencesByDate(childId, body.date)
+            tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
         }.let { ResponseEntity.ok(it) }
     }
 }

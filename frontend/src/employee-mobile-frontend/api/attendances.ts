@@ -361,27 +361,14 @@ export async function upsertGroupDaycareDailyNote(
 export async function deleteAbsenceRange(
   unitId: UUID,
   childId: UUID,
-  period: FiniteDateRange
+  dateRange: FiniteDateRange
 ): Promise<Result<void>> {
   return client
-    .post(
-      `/attendances/units/${unitId}/children/${childId}/absence-range/delete`,
-      {
-        period
+    .delete(`/attendances/units/${unitId}/children/${childId}/absence-range`, {
+      params: {
+        from: dateRange.start.formatIso(),
+        to: dateRange.end.formatIso()
       }
-    )
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function deleteAbsenceByDate(
-  unitId: UUID,
-  childId: UUID,
-  date: LocalDate
-): Promise<Result<void>> {
-  return client
-    .post(`/attendances/units/${unitId}/children/${childId}/absence`, {
-      date
     })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
