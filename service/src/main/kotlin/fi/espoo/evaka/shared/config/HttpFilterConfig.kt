@@ -68,6 +68,7 @@ class HttpFilterConfig {
         private fun HttpServletRequest.requiresAuthentication(): Boolean {
             if (isHealthCheck()) return false
             if (requestURI.startsWith("/public/")) return false
+            if (requestURI.startsWith("/varda-dev/")) return false
             if (requestURI.startsWith("/scheduled/")) return false
             if (mockIntegrationEnabled && requestURI.startsWith("/mock-integration/")) return false
             if (devApiEnabled && requestURI.startsWith("/dev-api/")) return false
