@@ -17,13 +17,13 @@ class VardaDevController(
         db: Database.Connection,
         @PathVariable vardaChildId: Long
     ): ResponseEntity<Unit> {
-        if (System.getenv("VOLTTI_ENV") == "prod") {
-            return ResponseEntity.notFound().build()
+        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
+            vardaUpdateService.deleteFeeDataByChild(vardaChildId, db)
+            vardaUpdateService.deletePlacementsByChild(vardaChildId, db)
+            vardaUpdateService.deleteDecisionsByChild(vardaChildId, db)
+            vardaUpdateService.deleteChild(vardaChildId, db)
+            return ResponseEntity.ok().build()
         }
-        vardaUpdateService.deleteFeeDataByChild(vardaChildId, db)
-        vardaUpdateService.deletePlacementsByChild(vardaChildId, db)
-        vardaUpdateService.deleteDecisionsByChild(vardaChildId, db)
-        vardaUpdateService.deleteChild(vardaChildId, db)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.notFound().build()
     }
 }
