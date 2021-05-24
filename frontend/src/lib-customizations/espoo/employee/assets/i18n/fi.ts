@@ -2327,7 +2327,7 @@ export const fi = {
       titles: {
         RECEIVED: 'Saapuneet viestit',
         SENT: 'Lähetetyt viestit',
-        DRAFT: 'Luonnokset'
+        DRAFTS: 'Luonnokset'
       }
     },
     types: {

@@ -27,9 +27,13 @@ const PanelContainer = styled.div`
 `
 
 export default React.memo(function MessagesPage() {
-  const { selectedDraft, setSelectedDraft, view, setView } = useContext(
-    MessagesPageContext
-  )
+  const {
+    selectedDraft,
+    setSelectedDraft,
+    view,
+    setView,
+    refreshMessages
+  } = useContext(MessagesPageContext)
 
   const [accounts, setResult] = useState<Result<MessageAccount[]>>(Loading.of())
   const loadAccounts = useRestApi(getMessagingAccounts, setResult)
@@ -49,21 +53,37 @@ export default React.memo(function MessagesPage() {
     messageBody: MessageBody,
     draftId?: UUID
   ) => {
-    postMessage(accountId, {
+    // TODO state and error handling
+    void postMessage(accountId, {
       title: messageBody.title,
       content: messageBody.content,
       type: messageBody.type,
       recipientAccountIds: messageBody.recipientAccountIds
-    }).finally(hideEditor)
-    if (draftId) {
-      void deleteDraft(accountId, draftId)
-    }
+    })
+      .then(() => {
+        if (draftId) {
+          void deleteDraft(accountId, draftId)
+        }
+      })
+      .finally(() => {
+        refreshMessages(accountId)
+        hideEditor()
+      })
   }
 
   const onDiscard = (accountId: UUID, draftId?: UUID) => {
     hideEditor()
     if (draftId) {
-      void deleteDraft(accountId, draftId)
+      void deleteDraft(accountId, draftId).then(() =>
+        refreshMessages(accountId)
+      )
+    }
+  }
+
+  const onHide = (didChanges: boolean) => {
+    hideEditor()
+    if (didChanges) {
+      refreshMessages()
     }
   }
 
@@ -81,7 +101,7 @@ export default React.memo(function MessagesPage() {
         account: accounts.value[0]
       })
     }
-  }, [accounts])
+  }, [accounts, setView])
 
   return (
     <Container>
@@ -114,13 +134,11 @@ export default React.memo(function MessagesPage() {
               label: name
             }))}
             selectedReceivers={selectedReceivers}
-            receiverOptions={
-              selectedReceivers ? getReceiverOptions(selectedReceivers) : []
-            }
+            receiverOptions={getReceiverOptions(selectedReceivers)}
             setSelectedReceivers={setSelectedReceivers}
             onSend={onSend}
             onDiscard={onDiscard}
-            onClose={hideEditor}
+            onClose={onHide}
             draftContent={selectedDraft}
           />
         )}

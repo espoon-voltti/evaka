@@ -13,7 +13,7 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Select from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
@@ -64,7 +64,7 @@ interface Props {
     messageBody: MessageBody,
     draftId: string | undefined
   ) => void
-  onClose: () => void
+  onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId?: UUID) => void
   draftContent?: DraftContent
 }
@@ -174,11 +174,16 @@ export default React.memo(function MessageEditor({
     messageBody.title ||
     i18n.messages.messageEditor.newMessage
 
+  const onCloseHandler = useCallback(() => onClose(!!draftSaveResult), [
+    draftSaveResult,
+    onClose
+  ])
+
   return (
     <Container>
       <TopBar>
         <span>{title}</span>
-        <IconButton icon={faTimes} onClick={onClose} white />
+        <IconButton icon={faTimes} onClick={onCloseHandler} white />
       </TopBar>
       <FormArea>
         <div>
@@ -187,9 +192,7 @@ export default React.memo(function MessageEditor({
         </div>
         <Select
           options={accountOptions}
-          onChange={(selected) =>
-            selected ? setSelectedAccount(selected as Option) : null
-          }
+          onChange={(selected) => setSelectedAccount(selected as Option)}
           data-qa="select-sender"
         />
         <div>
@@ -275,18 +278,14 @@ export default React.memo(function MessageEditor({
         <Gap size={'s'} />
         <BottomRow>
           <InlineButton
-            onClick={() => {
-              onDiscard(selectedAccount.value, draftId)
-            }}
+            onClick={() => onDiscard(selectedAccount.value, draftId)}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
           />
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={() => {
-              onSend(selectedAccount.value, messageBody, draftId)
-            }}
+            onClick={() => onSend(selectedAccount.value, messageBody, draftId)}
             data-qa="send-message-btn"
           />
         </BottomRow>
