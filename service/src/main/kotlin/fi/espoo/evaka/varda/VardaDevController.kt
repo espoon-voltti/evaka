@@ -17,7 +17,7 @@ class VardaDevController(
         db: Database.Connection,
         @PathVariable vardaChildId: Long
     ): ResponseEntity<Unit> {
-        if (System.getenv("VOLTTI_ENV") != "staging") {
+        if (System.getenv("VOLTTI_ENV") == "prod") {
             return ResponseEntity.notFound().build()
         }
         vardaUpdateService.deleteFeeDataByChild(vardaChildId, db)

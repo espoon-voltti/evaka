@@ -230,6 +230,16 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         ResponseEntity.noContent().build()
     }
 
+    @DeleteMapping("/v1/lapset/{vardaId}/")
+    fun deleteChild(
+        @PathVariable vardaId: Long,
+        @RequestHeader(name = "Authorization") auth: String
+    ): ResponseEntity<String> = lock.withLock {
+        logger.info { "Mock varda integration endpoint DELETE /lapset received id: $vardaId" }
+        this.children.remove(vardaId)
+        ResponseEntity.noContent().build()
+    }
+
     @GetMapping("/v1/lapset/{childId}/varhaiskasvatuspaatokset/")
     fun getChildDecisions(@PathVariable childId: Long): ResponseEntity<VardaClient.PaginatedResponse<VardaClient.DecisionPeriod>> =
         lock.withLock {
