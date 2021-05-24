@@ -25,7 +25,7 @@ import {
   SelectorNode,
   updateSelector
 } from './SelectorNode'
-import { MessageBody } from './types'
+import { DraftContent, MessageBody } from './types'
 
 const emptyMessageBody: MessageBody = {
   title: '',
@@ -33,6 +33,18 @@ const emptyMessageBody: MessageBody = {
   type: 'MESSAGE',
   recipientAccountIds: []
 }
+
+const draftContentToInitialState = (
+  draft: DraftContent | undefined
+): MessageBody =>
+  draft
+    ? {
+        content: draft.content ?? '',
+        recipientAccountIds: draft.recipientAccountIds ?? [],
+        title: draft.title ?? '',
+        type: draft.type ?? 'MESSAGE'
+      }
+    : emptyMessageBody
 
 type Option = {
   label: string
@@ -47,8 +59,14 @@ interface Props {
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
-  onSend: (accountId: UUID, messageBody: MessageBody) => void
-  hideEditor: () => void
+  onSend: (
+    accountId: UUID,
+    messageBody: MessageBody,
+    draftId: string | undefined
+  ) => void
+  onClose: () => void
+  onDiscard: (accountId: UUID, draftId?: UUID) => void
+  draftContent?: DraftContent
 }
 
 export default React.memo(function MessageEditor({
@@ -58,11 +76,13 @@ export default React.memo(function MessageEditor({
   receiverOptions,
   setSelectedReceivers,
   onSend,
-  hideEditor
+  onDiscard,
+  onClose,
+  draftContent
 }: Props) {
   const { i18n } = useTranslation()
   const [newDraftRequested, setNewDraftRequested] = useState<boolean>(false)
-  const [draftId, setDraftId] = useState<UUID>()
+  const [draftId, setDraftId] = useState<UUID | undefined>(draftContent?.id)
   const [draftSaveResult, setDraftSaveResult] = useState<Result<void>>()
   const [selectorChange, setSelectorChange] = useState<SelectorChange>()
   const [selectedReceiverOptions, setSelectedReceiverOptions] = useState<
@@ -71,8 +91,11 @@ export default React.memo(function MessageEditor({
   const [selectedAccount, setSelectedAccount] = useState<Option>(
     defaultAccountSelection
   )
-  const [messageBody, setMessageBody] = useState<MessageBody>(emptyMessageBody)
+  const [messageBody, setMessageBody] = useState<MessageBody>(
+    draftContentToInitialState(draftContent)
+  )
 
+  const [contentTouched, setContentTouched] = useState(false)
   const saveDraft = useRestApi(api.saveDraft, setDraftSaveResult)
   const initDraft = useRestApi(api.initDraft, (res: Result<UUID>) => {
     setNewDraftRequested(false)
@@ -91,7 +114,10 @@ export default React.memo(function MessageEditor({
   // save draft on input change or ask for a new draft to be initialized
   const debouncedMessageBody = useDebounce(messageBody, 2000)
   useEffect(() => {
-    if (!(debouncedMessageBody.title || debouncedMessageBody.content)) {
+    const shouldSaveDraft =
+      contentTouched &&
+      (debouncedMessageBody.title || debouncedMessageBody.content)
+    if (!shouldSaveDraft) {
       return
     }
     if (!draftId) {
@@ -99,7 +125,13 @@ export default React.memo(function MessageEditor({
     } else {
       saveDraft(selectedAccount.value, draftId, debouncedMessageBody)
     }
-  }, [draftId, debouncedMessageBody, saveDraft, selectedAccount.value])
+  }, [
+    draftId,
+    debouncedMessageBody,
+    saveDraft,
+    selectedAccount.value,
+    contentTouched
+  ])
 
   useEffect(() => {
     if (selectorChange) {
@@ -142,18 +174,11 @@ export default React.memo(function MessageEditor({
     messageBody.title ||
     i18n.messages.messageEditor.newMessage
 
-  const onClickSend = () => {
-    onSend(selectedAccount.value, messageBody)
-    if (draftId) {
-      void api.deleteDraft(selectedAccount.value, draftId)
-    }
-  }
-
   return (
     <Container>
       <TopBar>
         <span>{title}</span>
-        <IconButton icon={faTimes} onClick={hideEditor} white />
+        <IconButton icon={faTimes} onClick={onClose} white />
       </TopBar>
       <FormArea>
         <div>
@@ -229,7 +254,10 @@ export default React.memo(function MessageEditor({
         <Gap size={'xs'} />
         <InputField
           value={messageBody.title}
-          onChange={(title) => setMessageBody({ ...messageBody, title: title })}
+          onChange={(title) => {
+            setMessageBody((body) => ({ ...body, title: title }))
+            setContentTouched(true)
+          }}
           data-qa={'input-title'}
         />
         <Gap size={'s'} />
@@ -238,22 +266,27 @@ export default React.memo(function MessageEditor({
         <Gap size={'xs'} />
         <StyledTextArea
           value={messageBody.content}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setMessageBody({ ...messageBody, content: e.target.value })
-          }
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            setMessageBody((body) => ({ ...body, content: e.target.value }))
+            setContentTouched(true)
+          }}
           data-qa={'input-content'}
         />
         <Gap size={'s'} />
         <BottomRow>
           <InlineButton
-            onClick={hideEditor}
+            onClick={() => {
+              onDiscard(selectedAccount.value, draftId)
+            }}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
           />
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={onClickSend}
+            onClick={() => {
+              onSend(selectedAccount.value, messageBody, draftId)
+            }}
             data-qa="send-message-btn"
           />
         </BottomRow>

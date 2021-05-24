@@ -5,7 +5,7 @@
 import { Result } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import React from 'react'
+import React, { useContext } from 'react'
 import {
   MessageRow,
   Participants,
@@ -15,12 +15,18 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
+import { MessagesPageContext } from './MessagesPageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { DraftContent } from './types'
 
-function DraftContent({ draft }: { draft: DraftContent }) {
+interface RowProps {
+  draft: DraftContent
+}
+
+function DraftRow({ draft }: RowProps) {
+  const { setSelectedDraft } = useContext(MessagesPageContext)
   return (
-    <MessageRow>
+    <MessageRow onClick={() => setSelectedDraft(draft)}>
       <ParticipantsAndPreview>
         <Participants>{draft.recipientNames?.join(', ') ?? '–'}</Participants>
         <Truncated>
@@ -53,7 +59,7 @@ export function MessageDrafts({ drafts }: Props) {
       return (
         <>
           {data.map((draft) => (
-            <DraftContent key={draft.id} draft={draft} />
+            <DraftRow key={draft.id} draft={draft} />
           ))}
         </>
       )

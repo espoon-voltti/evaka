@@ -9,29 +9,31 @@ import {
   SelectorNode
 } from 'employee-frontend/components/messages/SelectorNode'
 import { Loading, Result } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { getMessagingAccounts } from './api'
+import { deleteDraft, getMessagingAccounts, postMessage } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
+import { MessagesPageContext } from './MessagesPageContext'
 import Sidebar from './Sidebar'
 import { MessageAccount, MessageBody } from './types'
-import { AccountView } from './types-view'
-import { postMessage } from './api'
-import { UUID } from 'lib-common/types'
 
 const PanelContainer = styled.div`
   display: flex;
 `
 
 export default React.memo(function MessagesPage() {
+  const { selectedDraft, setSelectedDraft, view, setView } = useContext(
+    MessagesPageContext
+  )
+
   const [accounts, setResult] = useState<Result<MessageAccount[]>>(Loading.of())
   const loadAccounts = useRestApi(getMessagingAccounts, setResult)
   useEffect(() => loadAccounts(), [loadAccounts])
-  const [view, setView] = useState<AccountView>()
 
   const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
 
@@ -39,15 +41,38 @@ export default React.memo(function MessagesPage() {
   const hideEditor = () => {
     selectedReceivers && setSelectedReceivers(deselectAll(selectedReceivers))
     setShowEditor(false)
+    setSelectedDraft(undefined)
   }
 
-  const onSend = (accountId: UUID, messageBody: MessageBody) =>
+  const onSend = (
+    accountId: UUID,
+    messageBody: MessageBody,
+    draftId?: UUID
+  ) => {
     postMessage(accountId, {
       title: messageBody.title,
       content: messageBody.content,
       type: messageBody.type,
       recipientAccountIds: messageBody.recipientAccountIds
     }).finally(hideEditor)
+    if (draftId) {
+      void deleteDraft(accountId, draftId)
+    }
+  }
+
+  const onDiscard = (accountId: UUID, draftId?: UUID) => {
+    hideEditor()
+    if (draftId) {
+      void deleteDraft(accountId, draftId)
+    }
+  }
+
+  // open editor when draft is selected
+  useEffect(() => {
+    if (selectedDraft) {
+      setShowEditor(true)
+    }
+  }, [selectedDraft])
 
   useEffect(() => {
     if (accounts.isSuccess && accounts.value[0]) {
@@ -94,7 +119,9 @@ export default React.memo(function MessagesPage() {
             }
             setSelectedReceivers={setSelectedReceivers}
             onSend={onSend}
-            hideEditor={hideEditor}
+            onDiscard={onDiscard}
+            onClose={hideEditor}
+            draftContent={selectedDraft}
           />
         )}
       </PanelContainer>
