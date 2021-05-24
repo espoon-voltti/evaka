@@ -185,9 +185,9 @@ test('Added mobile devices should not be listed in employee selector', async (t)
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
-  await t.expect(unitPage.staffAcl.addInput.exists).ok()
-  await t.click(unitPage.staffAcl.addInput)
-  const employeeCount = await unitPage.employeeOptions.count
+  await t.expect(unitPage.staffAcl.combobox.exists).ok()
+  await t.click(unitPage.staffAcl.combobox)
+  const employeeCount = await unitPage.staffAcl.employeeOptions.count
   await t.pressKey('esc')
 
   const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
@@ -198,6 +198,6 @@ test('Added mobile devices should not be listed in employee selector', async (t)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
 
   await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
-  await t.click(unitPage.staffAcl.addInput)
-  await t.expect(unitPage.employeeOptions.count).eql(employeeCount)
+  await t.click(unitPage.staffAcl.combobox)
+  await t.expect(unitPage.staffAcl.employeeOptions.count).eql(employeeCount)
 })

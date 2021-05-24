@@ -167,8 +167,6 @@ export default class UnitPage {
   )
   readonly mobileDevicePairingDoneBtn = Selector('[data-qa="modal-okBtn"]')
 
-  readonly employeeOptions = Selector('[id^="react-select-2-option"]')
-
   async addMobileDevice(): Promise<{ pairingId: UUID; deviceId: UUID | null }> {
     await t.expect(this.mobileDevicesTableRows.exists).notOk()
     await t.click(this.mobileDevicesStartPairingBtn)
@@ -199,19 +197,19 @@ class AclTable {
 
   readonly table = this.root.find('[data-qa="acl-table"]')
   readonly rows = this.root.find('[data-qa="acl-row"]')
-  readonly addInput = this.root.find('.acl-select')
+  readonly combobox = this.root.find('[data-qa="acl-combobox"]')
   readonly addButton = this.root.find('[data-qa="acl-add-button"]')
   readonly deleteModal = Selector('[data-qa="modal"]')
   readonly deleteModalOk = this.deleteModal.find('[data-qa="modal-okBtn"]')
+  readonly employeeOptions = this.combobox.find('[data-qa^="value-"]')
 
   async waitUntilLoaded() {
     await t.expect(this.table.visible).ok()
   }
   async addEmployeeAcl(employeeId: UUID) {
     await this.waitUntilLoaded()
-    // typing text would be better, but it's buggy with react-select
-    await t.click(this.addInput)
-    await t.click(this.root.find(`[data-qa="value-${employeeId}"]`))
+    await t.click(this.combobox)
+    await t.click(this.combobox.find(`[data-qa="value-${employeeId}"]`))
     await t.click(this.addButton)
     await this.waitUntilLoaded()
   }

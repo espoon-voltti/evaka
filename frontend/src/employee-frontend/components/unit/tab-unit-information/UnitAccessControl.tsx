@@ -12,7 +12,6 @@ import React, {
   useState
 } from 'react'
 import { orderBy } from 'lodash'
-import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
 import { ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
@@ -58,6 +57,7 @@ import { AdRole } from '../../../types'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ExpandableList } from 'lib-components/atoms/ExpandableList'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 type Props = {
   unitId: string
@@ -243,7 +243,7 @@ const AddAclSelectContainer = styled.div`
     width: 400px;
   }
 
-  & button {
+  > button {
     margin-left: 20px;
     flex: 0 0 auto;
   }
@@ -418,29 +418,15 @@ function AddAcl({
     <>
       <AddAclLabel>{i18n.unit.accessControl.addPerson}</AddAclLabel>
       <AddAclSelectContainer>
-        <ReactSelect
-          className="acl-select"
+        <Combobox
+          data-qa="acl-combobox"
           placeholder={i18n.unit.accessControl.choosePerson}
-          value={selectedEmployee}
-          components={{
-            Option: function Option(props) {
-              const { value } = props.data as { value: string }
-              return (
-                <div data-qa={`value-${value}`}>
-                  <components.Option {...props} data-qa={`value-${value}`} />
-                </div>
-              )
-            }
-          }}
-          onChange={(employee) =>
-            setSelectedEmployee(
-              employee && Array.isArray(employee)
-                ? employee[0]
-                : employee ?? null
-            )
-          }
-          options={options}
-          noOptionsMessage={() => i18n.common.noResults}
+          selectedItem={selectedEmployee}
+          onChange={setSelectedEmployee}
+          items={options}
+          menuEmptyLabel={i18n.common.noResults}
+          getItemLabel={(item) => item.label}
+          getItemDataQa={(item) => `value-${item.value}`}
         />
         <Button
           data-qa="acl-add-button"
