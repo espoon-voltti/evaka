@@ -543,6 +543,20 @@ RETURNING id
         ResponseEntity.ok(id)
     }
 
+    @PostMapping("/message-account/upsert-all")
+    fun createMessageAccounts(db: Database) {
+        db.transaction { tx ->
+            tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
+            tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
+            tx.execute("INSERT INTO message_account (employee_id) SELECT id FROM employee ON CONFLICT DO NOTHING")
+        }
+    }
+
+    @DeleteMapping("/message-account/delete-all")
+    fun deleteMessageAccounts(db: Database) {
+        db.transaction { it.execute("DELETE FROM message_account CASCADE") }
+    }
+
     @PostMapping("/backup-cares")
     fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>): ResponseEntity<Unit> {
         db.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } }
