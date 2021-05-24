@@ -1,6 +1,6 @@
 CREATE TABLE varda_service_need(
-    evaka_service_need_id             uuid unique primary key not null REFERENCES new_service_need(id),
-    evaka_service_need_option_id      uuid not null REFERENCES service_need_option(id),
+    evaka_service_need_id             uuid unique primary key not null,
+    evaka_service_need_option_id      uuid not null,
     evaka_service_need_updated        timestamp with time zone not null,
     evaka_service_need_option_updated timestamp with time zone not null,
     evaka_child_id                    uuid not null REFERENCES person(id),

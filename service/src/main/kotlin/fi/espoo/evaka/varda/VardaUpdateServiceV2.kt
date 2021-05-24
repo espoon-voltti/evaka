@@ -47,23 +47,35 @@ class VardaUpdateServiceV2 {
 //    }
 }
 
-/*
-    1. Find out all evaka children with changed Varda related data:
-    - new, modified or deleted evaka service need compared to stored service need history (see below)
-    - TODO: fee decisions
-*/
 fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, startingFrom: HelsinkiDateTime): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
-    val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(startingFrom) }.groupBy { it.evakaChildId }
-    return evakaServiceNeedChangesByChild.entries.associate { evakaServiceNeedChangesForChild ->
+    val evakaServiceNeedDeletionsByChild = calculateDeletedChildServiceNeeds(db)
+    val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(startingFrom) }
+        .groupBy { it.evakaChildId }
+
+    val additionsAndChangesToVardaByChild = evakaServiceNeedChangesByChild.entries.associate { evakaServiceNeedChangesForChild ->
         val vardaServiceNeedsForChild = db.read { it.getChildVardaServiceNeeds(evakaServiceNeedChangesForChild.key) }
 
         evakaServiceNeedChangesForChild.key to VardaChildCalculatedServiceNeedChanges(
             childId = evakaServiceNeedChangesForChild.key,
             additions = calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild.value, vardaServiceNeedsForChild),
             updates = calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild.value, vardaServiceNeedsForChild),
-            deletes = calculateDeletedChildServiceNeeds(db, evakaServiceNeedChangesForChild.key, vardaServiceNeedsForChild)
+            deletes = evakaServiceNeedDeletionsByChild.getOrDefault(evakaServiceNeedChangesForChild.key, emptyList())
         )
     }
+
+    return additionsAndChangesToVardaByChild.plus(
+        evakaServiceNeedDeletionsByChild.filterNot {
+            additionsAndChangesToVardaByChild.containsKey(it.key)
+        }.entries.associate { childServiceNeedDeletions ->
+            childServiceNeedDeletions.key to
+                VardaChildCalculatedServiceNeedChanges(
+                    childId = childServiceNeedDeletions.key,
+                    additions = emptyList(),
+                    updates = emptyList(),
+                    deletes = childServiceNeedDeletions.value
+                )
+        }
+    )
 }
 
 data class VardaChildCalculatedServiceNeedChanges(
@@ -99,20 +111,20 @@ private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: L
     }
 }
 
-private fun calculateDeletedChildServiceNeeds(db: Database.Connection, childId: UUID, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<UUID> {
-    val allChildEvakaServiceNeedsIds = db.read {
+private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<UUID>> {
+    return db.read {
         it.createQuery(
             """
-SELECT sn.id 
-FROM new_service_need sn LEFT JOIN placement p ON sn.placement_id = p.id
-WHERE p.child_id = :childId
-"""
+SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids
+FROM varda_service_need
+WHERE evaka_service_need_id NOT IN (
+    SELECT id FROM new_service_need
+)
+GROUP BY evaka_child_id"""
         )
-            .bind("childId", childId)
-            .mapTo<UUID>()
-            .list()
+            .map { rs, _ -> rs.getObject("child_id", UUID::class.java) to (rs.getArray("service_need_ids").array as Array<*>).map { UUID.fromString(it.toString()) } }
+            .toMap()
     }
-    return vardaServiceNeedsForChild.filter { !allChildEvakaServiceNeedsIds.contains(it.evakaServiceNeedId) }.map { it.evakaServiceNeedId }
 }
 
 data class VardaServiceNeed(
@@ -120,7 +132,9 @@ data class VardaServiceNeed(
     val evakaServiceNeedId: UUID,
     val evakaServiceNeedOptionId: UUID,
     val evakaServiceNeedUpdated: HelsinkiDateTime,
-    val evakaServiceNeedOptionUpdated: HelsinkiDateTime
+    val evakaServiceNeedOptionUpdated: HelsinkiDateTime,
+    val vardaDecisionId: String? = null,
+    val vardaRelationId: String? = null
 ) {
     val evakaLastUpdated = if (evakaServiceNeedUpdated.isAfter(evakaServiceNeedOptionUpdated)) evakaServiceNeedUpdated else evakaServiceNeedOptionUpdated
 }
@@ -155,21 +169,3 @@ WHERE evaka_child_id = :evakaChildId
         .bind("evakaChildId", evakaChildId)
         .mapTo<VardaServiceNeed>()
         .list()
-/*
-fun Database.Transaction.upsertVardaServiceNeedChange(vardaServiceNeed: VardaServiceNeed) =
-    createUpdate(
-            """
-INSERT INTO service_need_change(service_need_id, service_need_option_id, service_need_updated, service_need_option_updated)
-VALUES (:serviceNeedId, :serviceNeedOptionId, :serviceNeedUpdated, :serviceNeedOptionUpdated)
-ON CONFLICT (service_need_id) DO UPDATE 
-    SET service_need_option_id = :serviceNeedOptionId,
-        service_need_updated = :serviceNeedUpdated,
-        service_need_option_updated = :serviceNeedOptionUpdated
-        """
-    )
-            .bind("serviceNeedId", vardaServiceNeed.serviceNeedId)
-            .bind("serviceNeedOptionId", vardaServiceNeed.serviceNeedOptionId)
-            .bind("serviceNeedUpdated", vardaServiceNeed.serviceNeedUpdated)
-            .bind("serviceNeedOptionUpdated", vardaServiceNeed.serviceNeedOptionUpdated)
-            .execute()
-*/

@@ -1033,8 +1033,8 @@ VALUES (:groupId, :employeeId)
 fun Database.Transaction.insertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) = insertTestDataRow(
     vardaServiceNeed,
     """
-INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_relation_id)
-VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaRelationId)
+INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_relation_id)
+VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaRelationId)
 RETURNING evaka_service_need_id
     """
 )
