@@ -29,7 +29,7 @@ class StartingPlacementsReportController {
         @RequestParam("month") month: Int
     ): ResponseEntity<List<StartingPlacementsRow>> {
         Audit.StartingPlacementsReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.DIRECTOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         val rows = db.read { it.getStartingPlacementsRows(year, month) }
         return ResponseEntity.ok(rows)
     }
