@@ -1849,7 +1849,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         careType = CareType.DAYCARE
                     )
                 ),
-                UUID.randomUUID(),
                 testDecisionMaker_1.id
             )
         }
@@ -1906,7 +1905,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         careType = CareType.DAYCARE
                     )
                 ),
-                UUID.randomUUID(),
                 testDecisionMaker_1.id
             )
         }
@@ -1966,7 +1964,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                         )
                     }
                     .toList(),
-                UUID.randomUUID(),
                 testDecisionMaker_1.id
             )
         }
@@ -2234,7 +2231,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                             careType = CareType.DAYCARE
                         )
                     },
-                    groupId, testDecisionMaker_1.id
+                    testDecisionMaker_1.id
                 )
             }
         }

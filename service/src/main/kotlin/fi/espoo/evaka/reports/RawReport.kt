@@ -105,8 +105,8 @@ private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawRe
                 LEFT JOIN daycare bcu on bc.unit_id = bcu.id
                 LEFT JOIN service_need sn on sn.child_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                 LEFT JOIN assistance_need an on an.child_id = p.id AND daterange(an.start_date, an.end_date, '[]') @> t::date
-                LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date and ab1.absence_type != 'PRESENCE' AND ab1.care_type IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
-                LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date and ab2.absence_type != 'PRESENCE' AND ab2.care_type NOT IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
+                LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date AND ab1.care_type IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
+                LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date AND ab2.care_type NOT IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
                 LEFT JOIN holiday ON t = holiday.date AND NOT (u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR bcu.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7])
                 WHERE (date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) = ANY(bcu.operation_days)) AND holiday.date IS NULL
             )
@@ -264,8 +264,8 @@ LEFT JOIN new_service_need sn on sn.placement_id = pl.id AND daterange(sn.start_
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
 LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
 LEFT JOIN assistance_need an on an.child_id = p.id AND daterange(an.start_date, an.end_date, '[]') @> t::date
-LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date and ab1.absence_type != 'PRESENCE' AND ab1.care_type IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
-LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date and ab2.absence_type != 'PRESENCE' AND ab2.care_type NOT IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
+LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date AND ab1.care_type IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
+LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date AND ab2.care_type NOT IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
 LEFT JOIN holiday ON t = holiday.date AND NOT (u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7] OR bcu.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7])
 WHERE (date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) = ANY(bcu.operation_days)) AND holiday.date IS NULL
 ORDER BY p.id, t

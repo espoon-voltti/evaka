@@ -423,7 +423,7 @@ class OccupancyTest : PureJdbiTest() {
     }
 
     @Test
-    fun `realized occupancy does not count absent children unless absence type is PRESENCE`() {
+    fun `realized occupancy does not count absent children`() {
         db.transaction { tx ->
             FixtureBuilder(tx, today)
                 .addChild().withAge(4).saveAnd {
@@ -431,7 +431,7 @@ class OccupancyTest : PureJdbiTest() {
                         addGroupPlacement().toGroup(daycareGroup1).save()
                     }
                     addAbsence().ofType(AbsenceType.SICKLEAVE).onDay(-1).forCareTypes(AbsenceCareType.DAYCARE).save()
-                    addAbsence().ofType(AbsenceType.PRESENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE).save()
+                    addAbsence().ofType(AbsenceType.PLANNED_ABSENCE).onDay(0).forCareTypes(AbsenceCareType.DAYCARE).save()
                 }
 
             FiniteDateRange(today.minusDays(2), today).dates().forEach { date ->
@@ -442,8 +442,11 @@ class OccupancyTest : PureJdbiTest() {
         db.read { tx ->
             getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(2), 1.0)
             getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today.minusDays(1), 0.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today, 0.0)
+
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.minusDays(2), 1.0)
             getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today.minusDays(1), 1.0)
-            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.REALIZED, today, 1.0)
+            getAndAssertOccupancyInUnit(tx, daycareInArea1, OccupancyType.CONFIRMED, today, 1.0)
         }
     }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -73,19 +73,10 @@ class AbsenceService {
         return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays)
     }
 
-    fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, groupId: UUID, userId: UUID) {
+    fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, userId: UUID) {
         try {
             val userName = tx.getEmployeeNameById(userId)
             tx.upsertAbsences(absences, userName)
-        } catch (e: Exception) {
-            logger.error(e) { "Error: Updating absences by user $userId failed" }
-            throw BadRequest("Error: Updating absences failed: ${e.message}")
-        }
-    }
-
-    fun upsertChildAbsence(tx: Database.Transaction, childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID) {
-        try {
-            tx.upsertChildAbsence(childId, absenceType, careType, userId)
         } catch (e: Exception) {
             logger.error(e) { "Error: Updating absences by user $userId failed" }
             throw BadRequest("Error: Updating absences failed: ${e.message}")
@@ -228,8 +219,7 @@ enum class AbsenceType {
     @Deprecated("replaced by backup cares")
     TEMPORARY_VISITOR,
     PARENTLEAVE,
-    FORCE_MAJEURE,
-    PRESENCE;
+    FORCE_MAJEURE;
 }
 
 data class AbsencePlacement(
@@ -267,23 +257,28 @@ private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifie
     batch.execute()
 }
 
-private fun Database.Transaction.upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID) {
+data class AbsenceDelete(
+    val childId: UUID,
+    val date: LocalDate,
+    var careType: CareType
+)
+fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
     //language=SQL
     val sql =
         """
-        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
-        VALUES (:childId, :date, :careType, :absenceType, :modifiedBy)
-        ON CONFLICT (child_id, date, care_type)
-            DO UPDATE SET absence_type = :absenceType, modified_at = now()
+        DELETE FROM absence
+        WHERE care_type = :careType AND date = :date AND child_id = :childId
         """.trimIndent()
 
-    createUpdate(sql)
-        .bind("childId", childId)
-        .bind("absenceType", absenceType)
-        .bind("date", LocalDate.now())
-        .bind("modifiedBy", userId)
-        .bind("careType", careType)
-        .execute()
+    val batch = prepareBatch(sql)
+    deletions.forEach {
+        batch
+            .bind("childId", it.childId)
+            .bind("date", it.date)
+            .bind("careType", it.careType)
+            .add()
+    }
+    batch.execute()
 }
 
 fun Database.Read.getEmployeeNameById(employeeId: UUID): String {
@@ -374,7 +369,7 @@ fun Database.Read.getPlacementsByRange(groupId: UUID, period: FiniteDateRange): 
         FROM all_placements
         JOIN person
         ON child_id = person.id
-        ORDER BY person.last_name ASC, person.first_name ASC;
+        ORDER BY person.last_name, person.first_name;
     """
 
     return createQuery(sql)
@@ -439,7 +434,6 @@ fun Database.Read.getAbsencesByChildByPeriod(childId: UUID, period: DateRange): 
         FROM absence a
         WHERE date <@ :period
         AND a.child_id = :childId
-        AND a.absence_type != 'PRESENCE'
         """.trimIndent()
 
     return createQuery(sql)

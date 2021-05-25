@@ -25,7 +25,6 @@ export type AbsenceType =
   | 'TEMPORARY_VISITOR'
   | 'PARENTLEAVE'
   | 'FORCE_MAJEURE'
-  | 'PRESENCE'
 
 export type AbsenceCareType =
   | 'PRESCHOOL'

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -8,10 +8,12 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.Wrapper
 import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceChildMinimal
+import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -54,7 +56,29 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-        db.transaction { absenceService.upsertAbsences(it, absences.data, groupId, user.id) }
+        absences.data.map { it.childId }.forEach {
+            acl.getRolesForChild(user, it).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        }
+
+        db.transaction { absenceService.upsertAbsences(it, absences.data, user.id) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{groupId}/delete")
+    fun deleteAbsences(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody deletions: List<AbsenceDelete>,
+        @PathVariable groupId: UUID
+    ): ResponseEntity<Unit> {
+        Audit.AbsenceUpdate.log(targetId = groupId)
+        acl.getRolesForUnitGroup(user, groupId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        deletions.map { it.childId }.forEach {
+            acl.getRolesForChild(user, it).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        }
+
+        db.transaction { it.batchDeleteAbsences(deletions) }
         return ResponseEntity.noContent().build()
     }
 
@@ -70,19 +94,6 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         val absences = db.read { absenceService.getAbscencesByChild(it, childId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
-    }
-
-    @PostMapping("/child/{childId}")
-    fun upsertAbsence(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestBody absenceType: AbsenceBody,
-        @PathVariable childId: UUID
-    ): ResponseEntity<Unit> {
-        Audit.ChildAbsenceUpdate.log(targetId = childId)
-        user.requireOneOfRoles(UserRole.ADMIN)
-        db.transaction { absenceService.upsertChildAbsence(it, childId, absenceType.absenceType, absenceType.careType, user.id) }
-        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/by-child/{childId}/future")

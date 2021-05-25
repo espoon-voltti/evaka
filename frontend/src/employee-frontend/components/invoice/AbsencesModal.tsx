@@ -11,17 +11,13 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { faAbacus } from 'lib-icons'
-import { Absence } from 'lib-common/api-types/child/Absences'
+import { Absence, AbsenceType } from 'lib-common/api-types/child/Absences'
 
 import { formatName } from '../../utils'
 import { getAbsencesByChild } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import {
-  AbsenceTypes,
-  AbsenceType,
-  billableCareTypes
-} from '../../types/absence'
+import { AbsenceTypes, billableCareTypes } from '../../types/absence'
 import { UUID } from '../../types'
 import ColourInfoItem from '../../components/common/ColourInfoItem'
 import Tooltip from '../../components/common/Tooltip'
@@ -165,9 +161,7 @@ export default function AbsencesModal({ child, date }: Props) {
               </tr>
             </thead>
             <tbody>
-              {AbsenceTypes.filter(
-                (type: AbsenceType) => type !== 'PRESENCE'
-              ).map((absenceType: AbsenceType) => (
+              {AbsenceTypes.map((absenceType: AbsenceType) => (
                 <tr key={absenceType}>
                   <TableData>
                     <ColourInfoItem

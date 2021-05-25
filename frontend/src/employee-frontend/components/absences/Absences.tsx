@@ -15,7 +15,11 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Loading } from 'lib-common/api'
-import { getGroupAbsences, postGroupAbsences } from '../../api/absences'
+import {
+  deleteGroupAbsences,
+  getGroupAbsences,
+  postGroupAbsences
+} from '../../api/absences'
 import { AbsencesContext, AbsencesState } from '../../state/absence'
 import { useTranslation } from '../../state/i18n'
 import {
@@ -110,21 +114,28 @@ export default function Absences({
       billableCareTypes.includes(part.careType)
     )
 
-    const data: AbsencePayload[] = flatMap(
+    const payload: AbsencePayload[] = flatMap(
       selectedCareTypeCategories,
-      (careTypeCategory) => {
-        return careTypeCategory === 'BILLABLE' ? billableParts : otherParts
-      }
+      (careTypeCategory) =>
+        careTypeCategory === 'BILLABLE' ? billableParts : otherParts
     ).map(({ childId, date, careType }) => {
       return {
         childId,
         date,
-        absenceType: selectedAbsenceType,
         careType
       }
     })
 
-    postGroupAbsences(groupId, data)
+    ;(selectedAbsenceType === null
+      ? deleteGroupAbsences(groupId, payload)
+      : postGroupAbsences(
+          groupId,
+          payload.map((data) => ({
+            ...data,
+            absenceType: selectedAbsenceType
+          }))
+        )
+    )
       .then(loadAbsences)
       .catch((e) => console.error(e))
       .finally(() => {
@@ -164,6 +175,12 @@ export default function Absences({
                 onChange={() => setSelectedAbsenceType(absenceType)}
               />
             ))}
+            <Radio
+              id={'PRESENCE'}
+              label={i18n.absences.modal.absenceTypes.PRESENCE}
+              checked={selectedAbsenceType === null}
+              onChange={() => setSelectedAbsenceType(null)}
+            />
           </FixedSpaceColumn>
 
           <Label>
@@ -412,7 +429,6 @@ const AbsencesPage = styled.div`
     &-FORCE_MAJEURE {
       border-top-color: ${colors.accents.red};
     }
-    &-PRESENCE,
     &-weekend {
       border-top-color: ${colors.greyscale.lightest};
     }
@@ -448,7 +464,6 @@ const AbsencesPage = styled.div`
     &-FORCE_MAJEURE {
       border-bottom-color: ${colors.accents.red};
     }
-    &-PRESENCE,
     &-weekend {
       border-bottom-color: ${colors.greyscale.lightest};
     }
