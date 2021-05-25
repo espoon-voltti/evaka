@@ -18,7 +18,10 @@ import styled from 'styled-components'
 import { deleteDraft, getMessagingAccounts, postMessage } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
-import { MessagesPageContext } from './MessagesPageContext'
+import {
+  MessagesPageContext,
+  MessagesPageContextProvider
+} from './MessagesPageContext'
 import Sidebar from './Sidebar'
 import { MessageAccount, MessageBody } from './types'
 
@@ -26,7 +29,7 @@ const PanelContainer = styled.div`
   display: flex;
 `
 
-export default React.memo(function MessagesPage() {
+function MessagesPage() {
   const {
     selectedDraft,
     setSelectedDraft,
@@ -145,4 +148,12 @@ export default React.memo(function MessagesPage() {
       </PanelContainer>
     </Container>
   )
-})
+}
+
+export default function MessagesPageWrapper() {
+  return (
+    <MessagesPageContextProvider>
+      <MessagesPage />
+    </MessagesPageContextProvider>
+  )
+}
