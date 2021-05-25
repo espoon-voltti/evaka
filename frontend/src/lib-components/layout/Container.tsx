@@ -9,8 +9,9 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 import classNames from 'classnames'
 
-export const Container = styled.div`
-  margin: 0 auto;
+export const Container = styled.div<{ verticalMargin?: string }>`
+  margin: ${({ verticalMargin }) => (verticalMargin ? verticalMargin : '0')}
+    auto;
   position: relative;
 
   @media screen and (min-width: 1024px) {

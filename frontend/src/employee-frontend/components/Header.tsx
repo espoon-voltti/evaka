@@ -228,6 +228,15 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     {i18n.employees.title}
                   </Link>
                 </RequireRole>
+                <RequireRole oneOf={['FINANCE_ADMIN']}>
+                  <Link
+                    to="/finance/basics"
+                    onClick={() => setPopupVisible(false)}
+                    data-qa="user-popup-finance-basics"
+                  >
+                    {i18n.financeBasics.title}
+                  </Link>
+                </RequireRole>
                 <Link
                   to={`/pin-code`}
                   onClick={() => setPopupVisible(false)}

@@ -21,6 +21,7 @@ import ensureAuthenticated from './components/ensureAuthenticated'
 import LoginPage from './components/LoginPage'
 import Units from './components/Units'
 import ApplicationsPage from './components/applications/ApplicationsPage'
+import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import FinancePage from './components/FinancePage'
 import InvoicePage from './components/invoice/InvoicePage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
@@ -182,6 +183,11 @@ export default function App() {
               path="/applications/:id/decisions"
               component={ensureAuthenticated(DecisionPage)}
               title={i18n.titles.decision}
+            />
+            <Route
+              exact
+              path="/finance/basics"
+              component={ensureAuthenticated(FinanceBasicsPage)}
             />
             <Route
               exact

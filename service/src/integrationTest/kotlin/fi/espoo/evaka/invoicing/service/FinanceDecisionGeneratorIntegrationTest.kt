@@ -349,9 +349,9 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read { it.getPricing(from) }
 
         assertEquals(1, result.size)
-        result[0].let { (period, pricing) ->
-            assertEquals(from, period.start)
-            assertEquals(null, period.end)
+        result[0].let { pricing ->
+            assertEquals(from, pricing.validDuring.start)
+            assertEquals(null, pricing.validDuring.end)
             assertEquals(BigDecimal("0.1070"), pricing.multiplier)
         }
     }
@@ -362,9 +362,9 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         val result = db.read { it.getPricing(from) }
 
         assertEquals(1, result.size)
-        result[0].let { (period, pricing) ->
-            assertEquals(LocalDate.of(2000, 1, 1), period.start)
-            assertEquals(null, period.end)
+        result[0].let { pricing ->
+            assertEquals(LocalDate.of(2000, 1, 1), pricing.validDuring.start)
+            assertEquals(null, pricing.validDuring.end)
             assertEquals(BigDecimal("0.1070"), pricing.multiplier)
         }
     }

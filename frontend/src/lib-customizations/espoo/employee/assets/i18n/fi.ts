@@ -136,7 +136,8 @@ export const fi = {
       modalHeader: 'Tiedoston käsittely on kesken',
       modalMessage:
         'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
-    }
+    },
+    openExpandingInfo: 'Avaa lisätietokenttä'
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -2390,6 +2391,21 @@ export const fi = {
     name: 'Nimi',
     rights: 'Oikeudet',
     findByName: 'Etsi nimellä'
+  },
+  financeBasics: {
+    title: 'Talouden maksuasetukset',
+    fees: {
+      title: 'Asiakasmaksut',
+      validDuring: 'Asiakasmaksut ajalle',
+      familySize: 'Perheen koko',
+      minThreshold: 'Vähimmäisbruttotulo €/kk',
+      maxThreshold: 'Korkeimman maksun bruttotuloraja €/kk',
+      thresholdIncrease: 'Tulorajan korotussumma, kun perhekoko > 6',
+      thresholdIncreaseInfo:
+        'Jos perheen koko on suurempi kuin 6, korotetaan maksun määräämisen perusteena olevaa tulorajaa korotussumman verran kustakin seuraavasta perheen alaikäisestä lapsesta.',
+      multiplier: 'Maksu %',
+      maxFee: 'Enimmäismaksu'
+    }
   },
   roles: {
     adRoles: {
