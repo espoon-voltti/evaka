@@ -19,7 +19,7 @@ describe('absences date range', () => {
         careType: 'PRESCHOOL'
       }
       const absences = [absence]
-      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(-1)
+      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(1)
     })
 
     it('two dates', () => {
@@ -38,7 +38,7 @@ describe('absences date range', () => {
         careType: 'PRESCHOOL'
       }
       const absences = [absence, absence2]
-      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(-2)
+      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
     })
 
     it('two ranges', () => {
@@ -72,8 +72,8 @@ describe('absences date range', () => {
         careType: 'PRESCHOOL'
       }
       const absences = [absence3, absence2, absence, absence4]
-      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(-2)
-      expect(groupAbsencesByDateRange(absences)[1].durationInDays()).toBe(-2)
+      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
+      expect(groupAbsencesByDateRange(absences)[1].durationInDays()).toBe(2)
     })
 
     it('a range and a single date', () => {
@@ -100,8 +100,8 @@ describe('absences date range', () => {
         careType: 'PRESCHOOL'
       }
       const absences = [absence, absence2, absence3]
-      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(-2)
-      expect(groupAbsencesByDateRange(absences)[1].durationInDays()).toBe(-1)
+      expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(2)
+      expect(groupAbsencesByDateRange(absences)[1].durationInDays()).toBe(1)
     })
 
     it('with no dates', () => {

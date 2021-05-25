@@ -275,7 +275,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                 <FixedSpaceColumn>
                   {groupAbsencesByDateRange(absences.value).map(
                     (absenceRange) => {
-                      if (absenceRange.durationInDays() < -1) {
+                      if (absenceRange.durationInDays() > 1) {
                         return (
                           <AbsenceRow
                             key={absenceRange.start.format()}

@@ -18,7 +18,7 @@ export const getAge = (dateOfBirth: LocalDate): number => {
  */
 export function groupDatesToRanges(dates: LocalDate[]): FiniteDateRange[] {
   if (dates.length > 0) {
-    const sorted = dates.sort()
+    const sorted = [...dates].sort()
     const groupedDates: LocalDate[][] = [[sorted[0]]]
     let previousDate: LocalDate = sorted[0]
     for (const date of sorted) {
@@ -30,13 +30,13 @@ export function groupDatesToRanges(dates: LocalDate[]): FiniteDateRange[] {
       previousDate = date
     }
 
-    const absenceDateRanges: FiniteDateRange[] = []
+    const dateRanges: FiniteDateRange[] = []
     for (const dateGroup of groupedDates) {
-      absenceDateRanges.push(
+      dateRanges.push(
         new FiniteDateRange(dateGroup[0], dateGroup[dateGroup.length - 1])
       )
     }
-    return absenceDateRanges
+    return dateRanges
   } else {
     return []
   }
