@@ -65,7 +65,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
         val employeeAccount = db.read { it.getMessageAccountsForEmployee(employee).first() }
         val personAccounts = db.read { tx ->
             testPersons.map {
-                tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = it.id))
+                tx.getMessageAccountForEndUser(it.id)
             }
         }
 

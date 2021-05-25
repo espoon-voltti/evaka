@@ -24,6 +24,9 @@ WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
 }
 
 fun Database.Read.getMessageAccountForEndUser(user: AuthenticatedUser): MessageAccount {
+    return getMessageAccountForEndUser(user.id)
+}
+fun Database.Read.getMessageAccountForEndUser(userId: UUID): MessageAccount {
     // language=SQL
     val sql = """
 SELECT acc.id, name_view.account_name AS name
@@ -32,7 +35,7 @@ FROM message_account acc
 WHERE acc.person_id = :userId AND acc.active = true
     """.trimIndent()
     return this.createQuery(sql)
-        .bind("userId", user.id)
+        .bind("userId", userId)
         .mapTo<MessageAccount>()
         .one()
 }

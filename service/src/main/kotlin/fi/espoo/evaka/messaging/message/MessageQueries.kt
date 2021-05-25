@@ -296,25 +296,28 @@ fun Database.Read.getReceiversForNewMessage(
             FROM daycare_group dg
             JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
             JOIN placement pl ON gpl.daycare_placement_id = pl.id
-            WHERE pl.unit_id = :unitId
+            WHERE pl.unit_id = :unitId AND EXISTS (
+                SELECT 1 FROM child_acl_view a
+                WHERE a.employee_id = :employeeId AND a.child_id = pl.child_id
+            )
         ), receivers AS (
             SELECT c.child_id, c.group_id, c.group_name, g.guardian_id AS receiver_id
             FROM children c
             JOIN guardian g ON g.child_id = c.child_id
             WHERE NOT EXISTS (
-                SELECT 1 FROM messaging_blocklist bl 
-                WHERE bl.child_id = c.child_id 
+                SELECT 1 FROM messaging_blocklist bl
+                WHERE bl.child_id = c.child_id
                 AND bl.blocked_recipient = g.guardian_id
             )
 
             UNION DISTINCT
-            
+
             SELECT c.child_id, c.group_id, c.group_name, fc.head_of_child AS receiver_id
             FROM children c
             JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
             WHERE NOT EXISTS (
-                SELECT 1 FROM messaging_blocklist bl 
-                WHERE bl.child_id = c.child_id 
+                SELECT 1 FROM messaging_blocklist bl
+                WHERE bl.child_id = c.child_id
                 AND bl.blocked_recipient = fc.head_of_child
             )
         )
@@ -335,8 +338,8 @@ fun Database.Read.getReceiversForNewMessage(
     """.trimIndent()
 
     return this.createQuery(sql)
+        .bind("employeeId", user.id)
         .bind("date", HelsinkiDateTime.now().toLocalDate())
-        .bind("userId", user.id)
         .bind("unitId", unitId)
         .mapTo<MessageReceiversResult>()
         .toList()
@@ -363,6 +366,49 @@ fun Database.Read.getReceiversForNewMessage(
                     }
             )
         }
+}
+
+fun Database.Read.isUserAuthorizedToSendTo(user: AuthenticatedUser, accountIds: Set<UUID>): Boolean {
+    // language=SQL
+    val sql = """
+        WITH children AS (
+            SELECT child_id
+            FROM child_acl_view
+            WHERE employee_id = :employeeId
+        ), receivers AS (
+            SELECT g.guardian_id AS receiver_id
+            FROM children c
+            JOIN guardian g ON g.child_id = c.child_id
+            WHERE NOT EXISTS (
+                SELECT 1 FROM messaging_blocklist bl
+                WHERE bl.child_id = c.child_id
+                AND bl.blocked_recipient = g.guardian_id
+            )
+
+            UNION DISTINCT
+
+            SELECT fc.head_of_child AS receiver_id
+            FROM children c
+            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+            WHERE NOT EXISTS (
+                SELECT 1 FROM messaging_blocklist bl
+                WHERE bl.child_id = c.child_id
+                AND bl.blocked_recipient = fc.head_of_child
+            )
+        )
+        SELECT COUNT(*)
+        FROM receivers r
+        JOIN message_account acc ON acc.person_id = r.receiver_id AND acc.id = ANY(:accountIds)
+    """.trimIndent()
+
+    val numAccounts = createQuery(sql)
+        .bind("employeeId", user.id)
+        .bind("date", LocalDate.now())
+        .bind("accountIds", accountIds.toTypedArray())
+        .mapTo<Int>()
+        .one()
+
+    return numAccounts == accountIds.size
 }
 
 fun Database.Transaction.markNotificationAsSent(messageRecipientId: UUID) {
