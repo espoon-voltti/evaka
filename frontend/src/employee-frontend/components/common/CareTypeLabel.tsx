@@ -7,8 +7,8 @@ import styled from 'styled-components'
 
 import { useTranslation } from '../../state/i18n'
 import { CareTypeLabel } from '../../types'
-import { PlacementType } from '../../types/child'
 import colors from 'lib-customizations/common'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 export interface Props {
   type?: CareTypeLabel

@@ -6,6 +6,7 @@ import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/api-types/application/enums'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -29,6 +30,7 @@ export type ServiceNeedSectionProps = {
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
   terms?: Term[]
+  serviceNeedOptions?: ServiceNeedOptionPublicInfo[]
 }
 
 export default React.memo(function ServiceNeedSection(

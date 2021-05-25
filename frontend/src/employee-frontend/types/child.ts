@@ -7,19 +7,10 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { ProviderType } from './unit'
 import { AssistanceMeasure } from 'lib-customizations/types'
-
-export type PlacementType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'DAYCARE_FIVE_YEAR_OLDS'
-  | 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY'
-  | 'PREPARATORY_DAYCARE'
-  | 'TEMPORARY_DAYCARE'
-  | 'TEMPORARY_DAYCARE_PART_DAY'
+import {
+  ServiceNeedOptionSummary,
+  PlacementType
+} from 'lib-common/api-types/serviceNeed/common'
 
 export interface ServiceNeed {
   id: UUID
@@ -102,11 +93,6 @@ export interface ServiceNeedOption {
   daycareHoursPerWeek: number
   partDay: boolean
   partWeek: boolean
-}
-
-interface ServiceNeedOptionSummary {
-  id: UUID
-  name: string
 }
 
 export interface NewServiceNeed {

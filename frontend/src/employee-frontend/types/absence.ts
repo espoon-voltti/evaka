@@ -11,8 +11,8 @@ import {
 } from 'lib-common/api-types/child/Absences'
 
 import { UUID } from '../types'
-import { PlacementType } from './child'
 import { Translations } from '../state/i18n'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 export type TableMode = 'MONTH'
 

@@ -11,6 +11,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 data class ApplicationFormUpdate(
     val child: ChildDetailsUpdate,
@@ -153,7 +154,11 @@ data class ApplicationForm(
                         endTime = v0.serviceEnd?.format(DateTimeFormatter.ofPattern("HH:mm"))
                             ?: "",
                         shiftCare = v0.extendedCare,
-                        partTime = v0.partTime
+                        partTime = v0.partTime,
+                        serviceNeedOption = if (v0.serviceNeedOption != null) ServiceNeedOption(
+                            id = v0.serviceNeedOption.id,
+                            name = v0.serviceNeedOption.name
+                        ) else null
                     ).takeIf { v0.type == ApplicationType.DAYCARE || v0.connectedDaycare == true },
                     siblingBasis = SiblingBasis(
                         siblingName = v0.apply.siblingName,
@@ -294,7 +299,8 @@ data class ApplicationForm(
                         startTime = "",
                         endTime = "",
                         partTime = false,
-                        shiftCare = false
+                        shiftCare = false,
+                        serviceNeedOption = null
                     ) else null,
                     siblingBasis = null,
                     preparatory = false,
@@ -412,7 +418,8 @@ data class ServiceNeed(
     val startTime: String,
     val endTime: String,
     val shiftCare: Boolean,
-    val partTime: Boolean
+    val partTime: Boolean,
+    val serviceNeedOption: ServiceNeedOption?
 )
 
 data class SiblingBasis(
@@ -423,4 +430,9 @@ data class SiblingBasis(
 data class ClubDetails(
     val wasOnDaycare: Boolean,
     val wasOnClubCare: Boolean
+)
+
+data class ServiceNeedOption(
+    val id: UUID,
+    val name: String
 )

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.serviceneednew
 
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -238,5 +239,20 @@ fun Database.Read.getOverlappingServiceNeeds(
 fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
     return createQuery("SELECT * FROM service_need_option")
         .mapTo<ServiceNeedOption>()
+        .list()
+}
+
+fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<PlacementType>): List<ServiceNeedOptionPublicInfo> {
+    val sql = """
+        SELECT
+            id,
+            name,
+            valid_placement_type
+        FROM service_need_option
+        WHERE default_option IS FALSE AND valid_placement_type = ANY(:placementTypes::placement_type[])
+    """.trimIndent()
+    return createQuery(sql)
+        .bind("placementTypes", placementTypes.toTypedArray())
+        .mapTo<ServiceNeedOptionPublicInfo>()
         .list()
 }

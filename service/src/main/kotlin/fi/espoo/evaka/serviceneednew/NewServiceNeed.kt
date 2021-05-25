@@ -40,6 +40,12 @@ data class ServiceNeedConfirmation(
     val at: HelsinkiDateTime
 )
 
+data class ServiceNeedOptionPublicInfo(
+    val id: UUID,
+    val name: String,
+    val validPlacementType: PlacementType
+)
+
 data class ServiceNeedOption(
     val id: UUID,
     val name: String,

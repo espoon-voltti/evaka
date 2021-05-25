@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export default {
+  daycareApplicationServiceNeedOptionsEnabled: false,
   urgencyAttachmentsEnabled: true,
   preschoolEnabled: true
 }

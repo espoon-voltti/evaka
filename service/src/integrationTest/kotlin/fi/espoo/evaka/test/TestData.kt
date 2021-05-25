@@ -112,7 +112,8 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                 startTime = "08:00",
                 endTime = "17:00",
                 shiftCare = shiftCare,
-                partTime = false
+                partTime = false,
+                serviceNeedOption = null
             ),
             siblingBasis = null,
             preparatory = false,
@@ -198,7 +199,8 @@ val validPreschoolApplication = ApplicationDetails(
                 startTime = "08:00",
                 endTime = "17:00",
                 shiftCare = false,
-                partTime = false
+                partTime = false,
+                serviceNeedOption = null
             ),
             siblingBasis = null,
             preparatory = false,

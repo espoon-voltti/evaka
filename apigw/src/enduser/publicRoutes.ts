@@ -12,5 +12,6 @@ router.get('/units', proxy)
 router.get('/public/units/*', proxy)
 router.get('/public/club-terms', proxy)
 router.get('/public/preschool-terms', proxy)
+router.get('/public/new-service-needs/options', proxy)
 
 export default router

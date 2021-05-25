@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
@@ -117,5 +119,14 @@ class NewServiceNeedController(
         user.requireAnyEmployee()
 
         return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
+    }
+
+    @GetMapping("/public/new-service-needs/options")
+    fun getServiceNeedOptionPublicInfos(
+        db: Database.Connection,
+        @RequestParam(required = true) placementTypes: List<PlacementType>
+    ): ResponseEntity<List<ServiceNeedOptionPublicInfo>> {
+        return db.read { it.getServiceNeedOptionPublicInfos(placementTypes) }
+            .let { ResponseEntity.ok(it) }
     }
 }

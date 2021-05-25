@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.OtherGuardianAgreementStatus
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import java.time.LocalDate
 import java.util.UUID
@@ -24,6 +25,7 @@ data class DaycareFormV0(
     val apply: Apply = Apply(),
     val urgent: Boolean = false,
     val partTime: Boolean = false,
+    val serviceNeedOption: ServiceNeedOption? = null,
     val connectedDaycare: Boolean? = false.takeIf { type == ApplicationType.PRESCHOOL },
     val preferredStartDate: LocalDate? = null,
     val serviceStart: String? = null,
@@ -133,6 +135,7 @@ data class DaycareFormV0(
             ),
             urgent = form.preferences.urgent,
             partTime = form.preferences.serviceNeed?.partTime ?: false,
+            serviceNeedOption = form.preferences.serviceNeed?.serviceNeedOption,
             connectedDaycare = (form.preferences.serviceNeed != null).takeIf { type == ApplicationType.PRESCHOOL },
             preferredStartDate = form.preferences.preferredStartDate,
             serviceStart = form.preferences.serviceNeed?.startTime,

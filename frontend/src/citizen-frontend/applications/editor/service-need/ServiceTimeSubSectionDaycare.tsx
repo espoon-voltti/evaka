@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
@@ -22,6 +22,8 @@ import styled from 'styled-components'
 import { errorToInputInfo } from '../../../form-validation'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { featureFlags } from 'lib-customizations/citizen'
+import { defaultMargins } from 'lib-components/white-space'
 
 const Hyphenbox = styled.div`
   display: flex;
@@ -37,10 +39,45 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
   formData,
   updateFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
   const t = useTranslation()
   const { applicationId } = useParams<{ applicationId: string }>()
+
+  const fullTimeOptions = useMemo(
+    () =>
+      serviceNeedOptions?.filter(
+        (opt) => opt.validPlacementType === 'DAYCARE'
+      ) ?? [],
+    [serviceNeedOptions]
+  )
+  const partTimeOptions = useMemo(
+    () =>
+      serviceNeedOptions?.filter(
+        (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
+      ) ?? [],
+    [serviceNeedOptions]
+  )
+
+  useEffect(() => {
+    if (
+      featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+      formData.serviceNeedOption === null
+    ) {
+      updateFormData({
+        serviceNeedOption: formData.partTime
+          ? partTimeOptions[0] ?? null
+          : fullTimeOptions[0] ?? null
+      })
+    }
+  }, [
+    partTimeOptions,
+    fullTimeOptions,
+    formData.serviceNeedOption,
+    formData.partTime,
+    updateFormData
+  ])
 
   const uploadExtendedCareAttachment = (
     file: File,
@@ -77,14 +114,8 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       return result
     })
 
-  return (
-    <>
-      <H3>
-        {t.applications.editor.serviceNeed.dailyTime.label[applicationType]}
-      </H3>
-
-      <Gap size={'s'} />
-
+  function renderServiceNeedSelection() {
+    return (
       <FixedSpaceColumn>
         <Radio
           id={`service-need-part-time-true`}
@@ -93,10 +124,26 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           data-qa={'partTime-input-true'}
           onChange={() =>
             updateFormData({
-              partTime: true
+              partTime: true,
+              serviceNeedOption: partTimeOptions[0] ?? null
             })
           }
         />
+        {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+          formData.partTime && (
+            <SubRadios>
+              <FixedSpaceColumn spacing={'xs'}>
+                {partTimeOptions.map((opt) => (
+                  <Radio
+                    key={opt.id}
+                    label={opt.name}
+                    checked={formData.serviceNeedOption?.id === opt.id}
+                    onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  />
+                ))}
+              </FixedSpaceColumn>
+            </SubRadios>
+          )}
         <Radio
           id={`service-need-part-time-false`}
           label={t.applications.editor.serviceNeed.partTime.false}
@@ -104,11 +151,39 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
           data-qa={'partTime-input-false'}
           onChange={() =>
             updateFormData({
-              partTime: false
+              partTime: false,
+              serviceNeedOption: fullTimeOptions[0] ?? null
             })
           }
         />
+        {featureFlags.daycareApplicationServiceNeedOptionsEnabled &&
+          !formData.partTime && (
+            <SubRadios>
+              <FixedSpaceColumn spacing={'xs'}>
+                {fullTimeOptions.map((opt) => (
+                  <Radio
+                    key={opt.id}
+                    label={opt.name}
+                    checked={formData.serviceNeedOption?.id === opt.id}
+                    onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  />
+                ))}
+              </FixedSpaceColumn>
+            </SubRadios>
+          )}
       </FixedSpaceColumn>
+    )
+  }
+
+  return (
+    <>
+      <H3>
+        {t.applications.editor.serviceNeed.dailyTime.label[applicationType]}
+      </H3>
+
+      <Gap size={'s'} />
+
+      {renderServiceNeedSelection()}
 
       <Gap size={'m'} />
 
@@ -217,3 +292,8 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     </>
   )
 })
+
+const SubRadios = styled.div`
+  margin-bottom: ${defaultMargins.s};
+  margin-left: ${defaultMargins.XL};
+`

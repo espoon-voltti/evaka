@@ -708,7 +708,8 @@ fun Database.Transaction.insertApplication(
                     startTime = "09:00",
                     endTime = "15:00",
                     shiftCare = false,
-                    partTime = appliedType == PlacementType.DAYCARE_PART_TIME
+                    partTime = appliedType == PlacementType.DAYCARE_PART_TIME,
+                    serviceNeedOption = null
                 ),
                 siblingBasis = null,
                 preparatory = appliedType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE),
