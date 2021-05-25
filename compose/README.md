@@ -66,10 +66,13 @@ it using your package manager. (E.g. on Ubuntu, run `sudo apt-get install netcat
 A configuration file for PM2 is provided in this repository. Thus,
 you can start all projects in development mode easily.
 
-**Please note** The projects need to be first set up correctly
-for this to work. For example, `.npmrc` files for private dependencies
-need to be in place, Spring Boot services need the local deployment
-files, etc…).
+*Please note** The sub-projects may need additional configuration before
+local development can **fully** be done. For example, `.npmrc` files for
+private dependencies like professional icons used in frontend need to be
+in place, Spring Boot services need the local deployment files, etc…).
+See sub-projects' README files for more information. At the time of writing,
+you can skip this, if you just want to see if you can get everything running
+locally.
 
 First, start the third-party dependencies using `docker-compose`:
 
