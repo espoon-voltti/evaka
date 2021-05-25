@@ -6,7 +6,6 @@ import React, { useContext } from 'react'
 import { AuthContext } from '../auth/state'
 import { RouteComponentProps } from 'react-router'
 import { Redirect } from 'react-router-dom'
-import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { getWeakLoginUri, getLoginUri } from 'citizen-frontend/header/const'
 
 function refreshRedirect(uri: string) {
@@ -19,7 +18,7 @@ export default function requireAuth<T>(
   requireStrong = true
 ) {
   return function WithRequireAuth(props: RouteComponentProps<T>) {
-    const { user, loading } = useContext(AuthContext)
+    const { user } = useContext(AuthContext)
 
     return user ? (
       requireStrong && user.userType === 'CITIZEN_WEAK' ? (
@@ -27,8 +26,6 @@ export default function requireAuth<T>(
       ) : (
         <WrappedComponent {...props} />
       )
-    ) : loading ? (
-      <SpinnerSegment />
     ) : requireStrong ? (
       <Redirect to={'/'} />
     ) : (

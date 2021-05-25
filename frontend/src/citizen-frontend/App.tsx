@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode, useContext } from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import { Localization } from './localization'
 import Header from './header/Header'
@@ -23,6 +23,8 @@ import { featureFlags } from './config'
 import { HeaderContextProvider } from './messages/state'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
+import { AuthContext } from 'citizen-frontend/auth/state'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 
 export default function App() {
   return (
@@ -33,7 +35,7 @@ export default function App() {
             <OverlayContextProvider>
               <HeaderContextProvider>
                 <Header />
-                <main>
+                <Main>
                   <Switch>
                     <Route exact path="/" component={MapView} />
                     <Route
@@ -75,7 +77,7 @@ export default function App() {
                     )}
                     <Route path="/" component={RedirectToMap} />
                   </Switch>
-                </main>
+                </Main>
                 <GlobalInfoDialog />
                 <GlobalErrorDialog />
               </HeaderContextProvider>
@@ -85,6 +87,11 @@ export default function App() {
       </ThemeProvider>
     </BrowserRouter>
   )
+}
+
+function Main({ children }: { children: ReactNode }) {
+  const { loading: authStatusLoading } = useContext(AuthContext)
+  return <main>{authStatusLoading ? <SpinnerSegment /> : children}</main>
 }
 
 function RedirectToMap() {
