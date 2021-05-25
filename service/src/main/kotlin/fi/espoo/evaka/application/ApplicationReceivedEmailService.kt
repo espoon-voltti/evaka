@@ -40,17 +40,15 @@ class ApplicationReceivedEmailService(private val emailClient: IEmailClient, env
         }
 
         logger.info { "Sending application email (personId: $personId)" }
-        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, getSubject(language), html, text)
+        emailClient.sendEmail(personId.toString(), toAddress, fromAddress, getSubject(), html, text)
     }
 
-    private fun getSubject(language: Language): String {
+    private fun getSubject(): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
 
-        return when (language) {
-            Language.sv -> "Vi har tagit emot din ansökan$postfix"
-            else -> "Olemme vastaanottaneet hakemuksenne$postfix"
-        }
+        return "Olemme vastaanottaneet hakemuksenne$postfix / Vi har tagit emot din ansökan$postfix / We have received your child’s application$postfix"
     }
+
     private fun getHtmlForPreschool(withinApplicationPeriod: Boolean): String {
         return if (withinApplicationPeriod) """
                 <p>Hyvä(t) huoltaja(t),</p>                
