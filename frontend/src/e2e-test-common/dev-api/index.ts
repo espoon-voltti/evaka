@@ -358,6 +358,14 @@ export async function insertParentshipFixtures(
   }
 }
 
+export async function deleteMessages(): Promise<void> {
+  try {
+    await devClient.delete(`/message/delete-all`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function deleteMessageAccounts(): Promise<void> {
   try {
     await devClient.delete(`/message-account/delete-all`)
@@ -848,14 +856,6 @@ export async function postDaycareDailyNote(
 ): Promise<void> {
   try {
     await devClient.post<PairingResponse>(`/messaging/daycare-daily-note`, note)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function clearBulletins(): Promise<void> {
-  try {
-    await devClient.delete(`/bulletins`)
   } catch (e) {
     throw new DevApiError(e)
   }
