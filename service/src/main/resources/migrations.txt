@@ -88,3 +88,4 @@ V87__drop_service_need_option_id_from_fee_decision.sql
 V88__draft_type_and_recipients.sql
 V89__message_account_null_foreign_keys.sql
 V90__message_recipients_notification_sent_at.sql
+V91__message_draft_non_nullable.sql

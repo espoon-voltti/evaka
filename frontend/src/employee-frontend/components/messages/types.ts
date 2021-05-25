@@ -90,8 +90,12 @@ export interface MessageBody {
   recipientAccountIds: UUID[]
 }
 
-export type UpsertableDraftContent = Partial<MessageBody> & {
-  recipientNames?: string[]
+export interface UpsertableDraftContent {
+  title: string
+  content: string
+  type: MessageType
+  recipientIds: UUID[]
+  recipientNames: string[]
 }
 export interface DraftContent extends UpsertableDraftContent {
   id: UUID

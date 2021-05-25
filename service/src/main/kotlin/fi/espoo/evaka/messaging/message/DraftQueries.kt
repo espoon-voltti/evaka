@@ -5,7 +5,6 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -30,7 +29,7 @@ fun Database.Transaction.initDraft(accountId: UUID): UUID {
 fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: UpsertableDraftContent) {
     this.createUpdate(
         """
-        INSERT INTO message_draft (id, account_id, title, content, type, recipient_account_ids, recipient_names)
+        INSERT INTO message_draft (id, account_id, title, content, type, recipient_ids, recipient_names)
         VALUES (:id, :accountId, :title, :content, :type, :recipientIds, :recipientNames)
         ON CONFLICT (id)
         DO UPDATE SET
@@ -38,17 +37,20 @@ fun Database.Transaction.upsertDraft(accountId: UUID, id: UUID, draft: Upsertabl
              title = excluded.title,
              content = excluded.content,
              type = excluded.type,
-             recipient_account_ids = excluded.recipient_account_ids,
+             recipient_ids = excluded.recipient_ids,
              recipient_names = excluded.recipient_names
         """.trimIndent()
+    ).bindMap(
+        mapOf(
+            "id" to id,
+            "accountId" to accountId,
+            "type" to draft.type,
+            "title" to draft.title,
+            "content" to draft.content,
+            "recipientIds" to draft.recipientIds.toTypedArray(),
+            "recipientNames" to draft.recipientNames.toTypedArray()
+        )
     )
-        .bind("id", id)
-        .bind("accountId", accountId)
-        .bindNullable("type", draft.type)
-        .bindNullable("title", draft.title)
-        .bindNullable("content", draft.content)
-        .bindNullable("recipientIds", draft.recipientAccountIds?.toTypedArray())
-        .bindNullable("recipientNames", draft.recipientNames?.toTypedArray())
         .execute()
 }
 

@@ -2,12 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import ReceiverSelection from 'employee-frontend/components/messages/ReceiverSelection'
-import {
-  deselectAll,
-  getReceiverOptions,
-  SelectorNode
-} from 'employee-frontend/components/messages/SelectorNode'
 import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -22,6 +16,8 @@ import {
   MessagesPageContext,
   MessagesPageContextProvider
 } from './MessagesPageContext'
+import ReceiverSelection from './ReceiverSelection'
+import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
 import { MessageAccount, MessageBody } from './types'
 
@@ -46,7 +42,7 @@ function MessagesPage() {
 
   const [showEditor, setShowEditor] = useState<boolean>(false)
   const hideEditor = () => {
-    selectedReceivers && setSelectedReceivers(deselectAll(selectedReceivers))
+    setSelectedReceivers((old) => (old ? deselectAll(old) : old))
     setShowEditor(false)
     setSelectedDraft(undefined)
   }
@@ -133,9 +129,7 @@ function MessagesPage() {
               value: id,
               label: name
             }))}
-            selectedReceivers={selectedReceivers}
-            receiverOptions={getReceiverOptions(selectedReceivers)}
-            setSelectedReceivers={setSelectedReceivers}
+            availableReceivers={selectedReceivers}
             onSend={onSend}
             onDiscard={onDiscard}
             onClose={onHide}

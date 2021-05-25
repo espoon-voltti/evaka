@@ -1,4 +1,5 @@
 import { Result } from 'lib-common/api'
+import { UpdateStateFn } from 'lib-common/form-state'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -13,38 +14,47 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import Select from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import * as api from './api'
 import {
+  deselectAll,
+  getReceiverOptions,
   getSelected,
   getSelectedBottomElements,
-  SelectorChange,
   SelectorNode,
   updateSelector
 } from './SelectorNode'
-import { DraftContent, MessageBody } from './types'
+import { DraftContent, MessageBody, UpsertableDraftContent } from './types'
 
-const emptyMessageBody: MessageBody = {
-  title: '',
-  content: '',
-  type: 'MESSAGE',
-  recipientAccountIds: []
+type Message = UpsertableDraftContent & {
+  senderId: UUID
+  recipientAccountIds: UUID[]
 }
 
-const draftContentToInitialState = (
-  draft: DraftContent | undefined
-): MessageBody =>
-  draft
-    ? {
-        content: draft.content ?? '',
-        recipientAccountIds: draft.recipientAccountIds ?? [],
-        title: draft.title ?? '',
-        type: draft.type ?? 'MESSAGE'
-      }
-    : emptyMessageBody
+const getInitialMessage = (
+  draft: DraftContent | undefined,
+  senderId: UUID
+): Message => ({
+  senderId,
+  content: draft?.content ?? '',
+  recipientIds: draft?.recipientIds ?? [],
+  recipientNames: draft?.recipientNames ?? [],
+  recipientAccountIds: [],
+  title: draft?.title ?? '',
+  type: draft?.type ?? 'MESSAGE'
+})
+
+const areRequiredFieldsFilledForMessage = (msg: Message): boolean =>
+  !!(msg.recipientAccountIds?.length && msg.type && msg.content && msg.title)
+
+const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
+  selectedIds.reduce(
+    (acc, next) => updateSelector(acc, { selectorId: next, selected: true }),
+    deselectAll(tree)
+  )
 
 type Option = {
   label: string
@@ -54,11 +64,7 @@ type Option = {
 interface Props {
   defaultSender: Option
   senderOptions: Option[]
-  selectedReceivers: SelectorNode
-  receiverOptions: Option[]
-  setSelectedReceivers: React.Dispatch<
-    React.SetStateAction<SelectorNode | undefined>
-  >
+  availableReceivers: SelectorNode
   onSend: (
     accountId: UUID,
     messageBody: MessageBody,
@@ -72,9 +78,7 @@ interface Props {
 export default React.memo(function MessageEditor({
   defaultSender,
   senderOptions,
-  selectedReceivers,
-  receiverOptions,
-  setSelectedReceivers,
+  availableReceivers,
   onSend,
   onDiscard,
   onClose,
@@ -84,15 +88,23 @@ export default React.memo(function MessageEditor({
   const [newDraftRequested, setNewDraftRequested] = useState<boolean>(false)
   const [draftId, setDraftId] = useState<UUID | undefined>(draftContent?.id)
   const [draftSaveResult, setDraftSaveResult] = useState<Result<void>>()
-  const [selectorChange, setSelectorChange] = useState<SelectorChange>()
-  const [selectedReceiverOptions, setSelectedReceiverOptions] = useState<
-    Option[]
-  >(getSelected(selectedReceivers))
-  const [sender, setSender] = useState<Option>(defaultSender)
-  const [messageBody, setMessageBody] = useState<MessageBody>(
-    draftContentToInitialState(draftContent)
-  )
 
+  const [receiverTree, setReceiverTree] = useState<SelectorNode>(
+    draftContent
+      ? createReceiverTree(availableReceivers, draftContent.recipientIds)
+      : availableReceivers
+  )
+  const selectedReceivers = useMemo(() => getSelected(receiverTree), [
+    receiverTree
+  ])
+  const receiverOptions = useMemo(() => getReceiverOptions(receiverTree), [
+    receiverTree
+  ])
+
+  const [sender, setSender] = useState<Option>(defaultSender)
+  const [message, setMessage] = useState<Message>(
+    getInitialMessage(draftContent, sender.value)
+  )
   const [contentTouched, setContentTouched] = useState(false)
   const saveDraft = useRestApi(api.saveDraft, setDraftSaveResult)
   const initDraft = useRestApi(api.initDraft, (res: Result<UUID>) => {
@@ -102,6 +114,13 @@ export default React.memo(function MessageEditor({
     }
   })
 
+  // request for a new draft to be initialized if needed
+  useEffect(() => {
+    if (contentTouched && !draftId) {
+      setNewDraftRequested(true)
+    }
+  }, [draftId, contentTouched])
+
   // initialize draft when requested
   useEffect(() => {
     if (newDraftRequested && !draftId) {
@@ -109,39 +128,42 @@ export default React.memo(function MessageEditor({
     }
   }, [draftId, newDraftRequested, initDraft, sender.value])
 
-  // save draft on input change or ask for a new draft to be initialized
-  const debouncedMessageBody = useDebounce(messageBody, 2000)
+  // save draft with debounce
+  const [draftToSave, setDraftToSave] = useState<Message>()
   useEffect(() => {
-    const shouldSaveDraft =
-      contentTouched &&
-      (debouncedMessageBody.title || debouncedMessageBody.content)
-    if (!shouldSaveDraft) {
-      return
+    contentTouched && setDraftToSave(message)
+  }, [contentTouched, message])
+  const debouncedDraft = useDebounce(draftToSave, 2000)
+  useEffect(() => {
+    if (draftId && debouncedDraft) {
+      const { senderId, recipientAccountIds: _, ...rest } = debouncedDraft
+      saveDraft(senderId, draftId, rest)
+      setDraftToSave(undefined)
     }
-    if (!draftId) {
-      setNewDraftRequested(true)
-    } else {
-      saveDraft(sender.value, draftId, debouncedMessageBody)
-    }
-  }, [draftId, debouncedMessageBody, saveDraft, sender.value, contentTouched])
+  }, [draftId, debouncedDraft, saveDraft])
 
-  useEffect(() => {
-    if (selectorChange) {
-      setSelectedReceivers((selectedReceivers: SelectorNode | undefined) =>
-        selectedReceivers
-          ? updateSelector(selectedReceivers, selectorChange)
-          : undefined
+  // update receiver tree on selector changes
+  const updateReceivers = useCallback((newSelection: Option[]) => {
+    setReceiverTree((old) =>
+      createReceiverTree(
+        old,
+        newSelection.map((s) => s.value)
       )
-    }
-  }, [selectorChange, setSelectedReceivers])
+    )
+    setContentTouched(true)
+  }, [])
 
+  // update selected receivers on receiver tree changes
   useEffect(() => {
-    setSelectedReceiverOptions(getSelected(selectedReceivers))
-    setMessageBody((oldMessage) => ({
-      ...oldMessage,
-      recipientAccountIds: getSelectedBottomElements(selectedReceivers)
+    const selected = getSelected(receiverTree)
+    const recipientAccountIds = getSelectedBottomElements(receiverTree)
+    setMessage((old) => ({
+      ...old,
+      recipientAccountIds,
+      recipientIds: selected.map((s) => s.value),
+      recipientNames: selected.map((s) => s.label)
     }))
-  }, [selectedReceivers])
+  }, [receiverTree])
 
   // update saving/saved/error status in title with debounce
   const [titleStatus, setTitleStatus] = useState<string>()
@@ -163,19 +185,35 @@ export default React.memo(function MessageEditor({
 
   const title =
     debouncedTitleStatus ||
-    messageBody.title ||
+    message.title ||
     i18n.messages.messageEditor.newMessage
 
-  const onCloseHandler = useCallback(() => onClose(!!draftSaveResult), [
-    draftSaveResult,
-    onClose
-  ])
+  const updateMessage: UpdateStateFn<Message> = useCallback((changes) => {
+    setMessage((old) => ({ ...old, ...changes }))
+    setContentTouched(true)
+  }, [])
+
+  const sendEnabled = areRequiredFieldsFilledForMessage(message)
+  const sendHandler = useCallback(() => {
+    const { senderId, content, title, type, recipientAccountIds } = message
+    onSend(senderId, { content, title, type, recipientAccountIds }, draftId)
+  }, [onSend, message, draftId])
+
+  const closeEnabled = !draftToSave
+  const onCloseHandler = useCallback(() => {
+    onClose(!!draftSaveResult)
+  }, [draftSaveResult, onClose])
 
   return (
     <Container>
       <TopBar>
         <span>{title}</span>
-        <IconButton icon={faTimes} onClick={onCloseHandler} white />
+        <IconButton
+          icon={faTimes}
+          onClick={onCloseHandler}
+          white
+          disabled={!closeEnabled}
+        />
       </TopBar>
       <FormArea>
         <div>
@@ -184,7 +222,10 @@ export default React.memo(function MessageEditor({
         </div>
         <Select
           options={senderOptions}
-          onChange={(selected) => setSender(selected as Option)}
+          onChange={(selected) => {
+            setSender(selected as Option)
+            setContentTouched(true)
+          }}
           value={sender}
           data-qa="select-sender"
         />
@@ -194,35 +235,9 @@ export default React.memo(function MessageEditor({
         </div>
         <MultiSelect
           placeholder={i18n.common.search}
-          value={selectedReceiverOptions}
+          value={selectedReceivers}
           options={receiverOptions}
-          onChange={(newSelection: Option[]) => {
-            if (newSelection.length < selectedReceiverOptions.length) {
-              const values = newSelection.map((option) => option.value)
-              const deselected = selectedReceiverOptions.find(
-                (option) => !values.includes(option.value)
-              )
-              if (deselected) {
-                setSelectorChange({
-                  selectorId: deselected.value,
-                  selected: false
-                })
-              }
-            } else {
-              const values = selectedReceiverOptions.map(
-                (option) => option.value
-              )
-              const newlySelected = newSelection.find(
-                (option) => !values.includes(option.value)
-              )
-              if (newlySelected) {
-                setSelectorChange({
-                  selectorId: newlySelected.value,
-                  selected: true
-                })
-              }
-            }
-          }}
+          onChange={updateReceivers}
           noOptionsMessage={i18n.common.noResults}
           getOptionId={({ value }) => value}
           getOptionLabel={({ label }) => label}
@@ -234,26 +249,21 @@ export default React.memo(function MessageEditor({
         <FixedSpaceRow>
           <Radio
             label={i18n.messages.messageEditor.type.message}
-            checked={messageBody.type === 'MESSAGE'}
-            onChange={() => setMessageBody({ ...messageBody, type: 'MESSAGE' })}
+            checked={message.type === 'MESSAGE'}
+            onChange={() => updateMessage({ type: 'MESSAGE' })}
           />
           <Radio
             label={i18n.messages.messageEditor.type.bulletin}
-            checked={messageBody.type === 'BULLETIN'}
-            onChange={() =>
-              setMessageBody({ ...messageBody, type: 'BULLETIN' })
-            }
+            checked={message.type === 'BULLETIN'}
+            onChange={() => updateMessage({ type: 'BULLETIN' })}
           />
         </FixedSpaceRow>
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.title}</div>
         <Gap size={'xs'} />
         <InputField
-          value={messageBody.title}
-          onChange={(title) => {
-            setMessageBody((body) => ({ ...body, title: title }))
-            setContentTouched(true)
-          }}
+          value={message.title ?? ''}
+          onChange={(title) => updateMessage({ title })}
           data-qa={'input-title'}
         />
         <Gap size={'s'} />
@@ -261,11 +271,8 @@ export default React.memo(function MessageEditor({
         <Label>{i18n.messages.messageEditor.message}</Label>
         <Gap size={'xs'} />
         <StyledTextArea
-          value={messageBody.content}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            setMessageBody((body) => ({ ...body, content: e.target.value }))
-            setContentTouched(true)
-          }}
+          value={message.content}
+          onChange={(e) => updateMessage({ content: e.target.value })}
           data-qa={'input-content'}
         />
         <Gap size={'s'} />
@@ -278,7 +285,8 @@ export default React.memo(function MessageEditor({
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={() => onSend(sender.value, messageBody, draftId)}
+            disabled={!sendEnabled}
+            onClick={sendHandler}
             data-qa="send-message-btn"
           />
         </BottomRow>
