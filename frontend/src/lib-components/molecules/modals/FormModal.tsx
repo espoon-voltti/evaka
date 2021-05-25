@@ -240,7 +240,7 @@ export default React.memo(function FormModal({
   return (
     <ModalBase {...props} resolve={resolve} onSubmit={resolve.action}>
       {children}
-      <ModalButtons>
+      <ModalButtons $singleButton={!reject}>
         {reject && (
           <>
             <Button
@@ -292,7 +292,7 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
   return (
     <ModalBase {...props} resolve={resolve}>
       {children}
-      <ModalButtons>
+      <ModalButtons $singleButton={!reject}>
         {reject && (
           <>
             <Button

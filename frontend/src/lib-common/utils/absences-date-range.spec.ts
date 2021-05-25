@@ -71,7 +71,7 @@ describe('absences date range', () => {
         absenceType: 'SICKLEAVE',
         careType: 'PRESCHOOL'
       }
-      const absences = [absence, absence2, absence3, absence4]
+      const absences = [absence3, absence2, absence, absence4]
       expect(groupAbsencesByDateRange(absences)[0].durationInDays()).toBe(-2)
       expect(groupAbsencesByDateRange(absences)[1].durationInDays()).toBe(-2)
     })
