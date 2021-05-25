@@ -110,7 +110,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employee1Account.id,
-            recipients = setOf(person1Account.id, person2Account.id),
+            recipients = listOf(person1Account, person2Account),
             user = employee1,
         )
 
@@ -266,12 +266,13 @@ class MessageIntegrationTest : FullApplicationTest() {
         // when a new thread is created to several recipients who do not all have common children
         val title = "Thread splitting"
         val content = "This message is sent to several participants and split to threads"
+        val recipients = listOf(person1Account, person2Account, person3Account, person4Account)
         postNewThread(
             title = title,
             message = content,
             messageType = MessageType.MESSAGE,
             sender = employee1Account.id,
-            recipients = listOf(person1Account, person2Account, person3Account, person4Account).map { it.id }.toSet(),
+            recipients = recipients,
             user = employee1
         )
 
@@ -353,7 +354,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             message = "Juhannus tulee pian",
             messageType = MessageType.BULLETIN,
             sender = employee1Account.id,
-            recipients = setOf(person1Account.id),
+            recipients = listOf(person1Account),
             user = employee1,
         )
 
@@ -413,7 +414,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             message = "m1",
             messageType = MessageType.MESSAGE,
             sender = employee1Account.id,
-            recipients = setOf(person1Account.id, person2Account.id),
+            recipients = listOf(person1Account, person2Account),
             user = employee1,
         )
 
@@ -450,16 +451,17 @@ class MessageIntegrationTest : FullApplicationTest() {
         message: String,
         messageType: MessageType,
         sender: UUID,
-        recipients: Set<UUID>,
+        recipients: List<MessageAccount>,
         user: AuthenticatedUser.Employee,
     ) = http.post("/messages/$sender")
         .jsonBody(
             objectMapper.writeValueAsString(
                 MessageController.PostMessageBody(
-                    title,
-                    message,
-                    messageType,
-                    recipientAccountIds = recipients
+                    title = title,
+                    content = message,
+                    type = messageType,
+                    recipientNames = recipients.map { it.name },
+                    recipientAccountIds = recipients.map { it.id }.toSet()
                 )
             )
         )

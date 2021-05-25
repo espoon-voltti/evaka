@@ -78,7 +78,8 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
                 sender = groupAccount,
-                recipientGroups = setOf(setOf(receiverAccount.id))
+                recipientGroups = setOf(setOf(receiverAccount.id)),
+                recipientNames = listOf(receiverAccount.name)
             )
         }
         assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount.id))
@@ -116,7 +117,8 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
                 sender = senderAccount,
-                recipientGroups = setOf(setOf(groupAccount.id))
+                recipientGroups = setOf(setOf(groupAccount.id)),
+                recipientNames = listOf(groupAccount.name)
             )
         }
         assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount.id))

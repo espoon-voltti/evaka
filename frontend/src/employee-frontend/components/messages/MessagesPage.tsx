@@ -69,12 +69,7 @@ function MessagesPage() {
     draftId?: UUID
   ) => {
     // TODO state and error handling
-    void postMessage(accountId, {
-      title: messageBody.title,
-      content: messageBody.content,
-      type: messageBody.type,
-      recipientAccountIds: messageBody.recipientAccountIds
-    })
+    void postMessage(accountId, messageBody)
       .then(() => {
         if (draftId) {
           void deleteDraft(accountId, draftId)

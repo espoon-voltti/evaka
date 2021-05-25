@@ -123,12 +123,12 @@ class MessageAccountQueriesTest : PureJdbiTest() {
 
         val employeeAccount = MessageAccount(accounts.first().id, "foo")
         db.transaction { tx ->
-            val allAccounts = tx.createQuery("SELECT id from message_account").mapTo<UUID>().toSet()
+            val allAccounts = tx.createQuery("SELECT id, account_name as name from message_account_name_view").mapTo<MessageAccount>().list()
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title")
-            val messageId = tx.insertMessage(contentId, threadId, employeeAccount)
-            tx.insertRecipients(allAccounts, messageId)
+            val messageId = tx.insertMessage(contentId, threadId, employeeAccount, allAccounts.map { it.name })
+            tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
         }
 
         assertEquals(2, db.read { it.getUnreadMessagesCount(accounts.map { acc -> acc.id }.toSet()) })

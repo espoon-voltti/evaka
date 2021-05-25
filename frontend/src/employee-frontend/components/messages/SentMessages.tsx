@@ -33,9 +33,7 @@ function SentMessage({ message: message }: { message: SentMessage }) {
   return (
     <MessageRow onClick={() => setExpanded(!expanded)}>
       <ParticipantsAndPreview>
-        <Participants>
-          {message.recipients.map(({ name }) => name).join(', ')}
-        </Participants>
+        <Participants>{message.recipientNames.join(', ')}</Participants>
         <MessageContent expanded={expanded}>
           <Title>{message.threadTitle}</Title>
           {' - '}

@@ -178,8 +178,19 @@ export default React.memo(function MessageEditor({
 
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
   const sendHandler = useCallback(() => {
-    const { senderId, content, title, type, recipientAccountIds } = message
-    onSend(senderId, { content, title, type, recipientAccountIds }, draftId)
+    const {
+      senderId,
+      content,
+      title,
+      type,
+      recipientAccountIds,
+      recipientNames
+    } = message
+    onSend(
+      senderId,
+      { content, title, type, recipientAccountIds, recipientNames },
+      draftId
+    )
   }, [onSend, message, draftId])
 
   const onCloseHandler = useCallback(() => {

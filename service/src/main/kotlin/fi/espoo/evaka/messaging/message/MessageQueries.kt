@@ -67,13 +67,14 @@ fun Database.Transaction.insertMessage(
     contentId: UUID,
     threadId: UUID,
     sender: MessageAccount,
+    recipientNames: List<String>,
     repliesToMessageId: UUID? = null,
     sentAt: HelsinkiDateTime? = HelsinkiDateTime.now()
 ): UUID {
     // language=SQL
     val insertMessageSql = """
-        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at)
-        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId, :sentAt)        
+        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId, :sentAt, :recipientNames)
         RETURNING id
     """.trimIndent()
     return createQuery(insertMessageSql)
@@ -83,6 +84,7 @@ fun Database.Transaction.insertMessage(
         .bind("senderId", sender.id)
         .bind("senderName", sender.name)
         .bind("sentAt", sentAt)
+        .bind("recipientNames", recipientNames.toTypedArray())
         .mapTo<UUID>()
         .one()
 }
@@ -169,7 +171,6 @@ messages AS (
         EXISTS(SELECT 1
             FROM message_recipients rec
             WHERE rec.message_id = m.id AND rec.recipient_id = :accountId)
-    ORDER BY m.sent_at
 )
 
 SELECT
@@ -184,7 +185,7 @@ SELECT
         'senderName', msg.sender_name,
         'senderId', msg.sender_id,
         'readAt', msg.read_at
-    ))) AS messages
+    ) ORDER BY sent_at)) AS messages
     FROM threads t
           JOIN messages msg ON msg.thread_id = t.id
     GROUP BY t.count, t.id, t.type, t.title, t.last_message
@@ -207,7 +208,7 @@ fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page:
     // language=SQL
     val sql = """
 WITH pageable_messages AS (
-    SELECT id, content_id, thread_id, sent_at, COUNT(*) OVER () AS count
+    SELECT id, content_id, thread_id, sent_at, recipient_names, COUNT(*) OVER () AS count
     FROM message m
     WHERE sender_id = :accountId
     ORDER BY sent_at DESC
@@ -223,6 +224,7 @@ SELECT
     msg.count,
     msg.id,
     msg.sent_at,
+    msg.recipient_names,
     mc.content,
     t.id AS threadId,
     t.title AS threadTitle,
@@ -235,7 +237,7 @@ FROM pageable_messages msg
 JOIN recipients rec ON msg.id = rec.message_id
 JOIN message_content mc ON msg.content_id = mc.id
 JOIN message_thread t ON msg.thread_id = t.id
-GROUP BY msg.count, msg.id, msg.sent_at, mc.content, t.id, t.title, t.message_type
+GROUP BY msg.count, msg.id, msg.sent_at, msg.recipient_names, mc.content, t.id, t.title, t.message_type
 ORDER BY msg.sent_at DESC
     """.trimIndent()
 
