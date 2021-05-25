@@ -13,13 +13,11 @@ import { isActiveDateRange } from '../../../utils/date'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import LabelValueList from '../../../components/common/LabelValueList'
-import {
-  ASSISTANCE_ACTION_TYPE_LIST,
-  ASSISTANCE_MEASURE_LIST
-} from '../../../constants'
+import { ASSISTANCE_ACTION_TYPE_LIST } from '../../../constants'
 import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceAction } from '../../../api/child/assistance-actions'
+import { assistanceMeasures } from 'lib-customizations/employee'
 
 export interface Props {
   assistanceAction: AssistanceAction
@@ -139,7 +137,7 @@ function AssistanceActionRow({
                 label: i18n.childInformation.assistanceAction.fields.measures,
                 value: (
                   <ul>
-                    {ASSISTANCE_MEASURE_LIST.map(
+                    {assistanceMeasures.map(
                       (measure) =>
                         assistanceAction.measures.has(measure) && (
                           <li key={measure}>

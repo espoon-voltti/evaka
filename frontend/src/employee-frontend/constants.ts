@@ -3,13 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import { assistanceMeasures } from 'lib-customizations/employee'
 import { UUID } from './types'
-import {
-  AssistanceActionType,
-  AssistanceBasis,
-  AssistanceMeasure
-} from './types/child'
+import { AssistanceActionType, AssistanceBasis } from './types/child'
 
 export const DATE_FORMAT_DEFAULT = 'dd.MM.yyyy'
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
@@ -102,5 +97,3 @@ export const ASSISTANCE_ACTION_TYPE_LIST: AssistanceActionType[] = [
   'PERIODICAL_VEO_SUPPORT',
   'OTHER'
 ]
-
-export const ASSISTANCE_MEASURE_LIST: AssistanceMeasure[] = assistanceMeasures
