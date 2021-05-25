@@ -10,8 +10,12 @@ import { fi } from './espoo/employee/assets/i18n/fi'
 import { merge } from 'lodash'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const { cityLogo, featureFlags }: EmployeeCustomizations = customizations
-export { cityLogo, featureFlags }
+const {
+  cityLogo,
+  featureFlags,
+  assistanceMeasures
+}: EmployeeCustomizations = customizations
+export { cityLogo, featureFlags, assistanceMeasures }
 
 export type Lang = 'fi'
 

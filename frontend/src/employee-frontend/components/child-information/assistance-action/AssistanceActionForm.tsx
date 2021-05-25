@@ -26,10 +26,7 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import LabelValueList from '../../../components/common/LabelValueList'
-import {
-  ASSISTANCE_ACTION_TYPE_LIST,
-  ASSISTANCE_MEASURE_LIST
-} from '../../../constants'
+import { ASSISTANCE_ACTION_TYPE_LIST } from '../../../constants'
 import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
@@ -40,6 +37,7 @@ import {
   createAssistanceAction,
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
+import { assistanceMeasures } from 'lib-customizations/employee'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -292,7 +290,7 @@ function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.measures,
             value: (
               <div>
-                {ASSISTANCE_MEASURE_LIST.map((measure) => (
+                {assistanceMeasures.map((measure) => (
                   <CheckboxRow key={measure}>
                     <Checkbox
                       label={

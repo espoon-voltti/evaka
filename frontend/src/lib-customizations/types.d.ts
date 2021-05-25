@@ -21,6 +21,14 @@ type DeepPartial<T> = {
     : DeepPartial<T[P]>
 }
 
+export type AssistanceMeasure =
+  | 'SPECIAL_ASSISTANCE_DECISION'
+  | 'INTENSIFIED_ASSISTANCE'
+  | 'EXTENDED_COMPULSORY_EDUCATION'
+  | 'CHILD_SERVICE'
+  | 'CHILD_ACCULTURATION_SUPPORT'
+  | 'TRANSPORT_BENEFIT'
+
 export interface CommonCustomizations {
   theme: Theme
 }
@@ -60,4 +68,5 @@ export interface EmployeeCustomizations {
     alt: string
   }
   featureFlags: FeatureFlags
+  assistanceMeasures: AssistanceMeasure[]
 }

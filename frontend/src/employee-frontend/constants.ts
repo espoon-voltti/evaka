@@ -4,11 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 import { UUID } from './types'
-import {
-  AssistanceActionType,
-  AssistanceBasis,
-  AssistanceMeasure
-} from './types/child'
+import { AssistanceActionType, AssistanceBasis } from './types/child'
 
 export const DATE_FORMAT_DEFAULT = 'dd.MM.yyyy'
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
@@ -100,13 +96,4 @@ export const ASSISTANCE_ACTION_TYPE_LIST: AssistanceActionType[] = [
   'RATIO_DECREASE',
   'PERIODICAL_VEO_SUPPORT',
   'OTHER'
-]
-
-export const ASSISTANCE_MEASURE_LIST: AssistanceMeasure[] = [
-  'SPECIAL_ASSISTANCE_DECISION',
-  'INTENSIFIED_ASSISTANCE',
-  'EXTENDED_COMPULSORY_EDUCATION',
-  'CHILD_SERVICE',
-  'CHILD_ACCULTURATION_SUPPORT',
-  'TRANSPORT_BENEFIT'
 ]
