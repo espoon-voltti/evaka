@@ -12,7 +12,6 @@ import {
 } from 'react-router-dom'
 import ChildInformation from './/components/ChildInformation'
 import StateProvider from './/state/StateProvider'
-import { MessagesPageContextProvider } from './components/messages/MessagesPageContext'
 import PersonProfile from './components/PersonProfile'
 import ErrorMessage from './components/common/ErrorMessage'
 import UnitPage from './components/UnitPage'
@@ -327,14 +326,12 @@ export default function App() {
               />
             )}
             {featureFlags.messaging && (
-              <MessagesPageContextProvider>
-                <RouteWithTitle
-                  exact
-                  path="/messages"
-                  component={ensureAuthenticated(MessagesPage)}
-                  title={i18n.titles.messages}
-                />
-              </MessagesPageContextProvider>
+              <RouteWithTitle
+                exact
+                path="/messages"
+                component={ensureAuthenticated(MessagesPage)}
+                title={i18n.titles.messages}
+              />
             )}
             <RouteWithTitle
               exact
