@@ -35,7 +35,7 @@ Please note that all the dependencies should be installed as
 current user. Do not use elevated privileges, e.g. sudo to install
 packages.
 
-- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version  14.15+
+- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version 14.15+
   - Install correct version automatically with [nvm](https://github.com/nvm-sh/nvm): `nvm install` (see [`.nvmrc`](../.nvmrc))
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
 - [JDK](https://openjdk.java.net/projects/jdk/11/) – Java Development
@@ -59,17 +59,20 @@ npm install -g pm2
 
 You will also need the `nc/netcat` (Arbitrary TCP and UDP connections and listens) utility.
 If your operating system does not have this utility installed, please install
-it using your package manager. (E.g. on Ubuntu, run  `sudo apt-get install netcat`).
+it using your package manager. (E.g. on Ubuntu, run `sudo apt-get install netcat`).
 
 ## Starting all sub-projects in development mode
 
 A configuration file for PM2 is provided in this repository. Thus,
 you can start all projects in development mode easily.
 
-**Please note** The projects need to be first set up correctly
-for this to work. For example, `.npmrc` files for private dependencies
-need to be in place, Spring Boot services need the local deployment
-files, etc…).
+*Please note** The sub-projects may need additional configuration before
+local development can **fully** be done. For example, `.npmrc` files for
+private dependencies like professional icons used in frontend need to be
+in place, Spring Boot services need the local deployment files, etc…).
+See sub-projects' README files for more information. At the time of writing,
+you can skip this, if you just want to see if you can get everything running
+locally.
 
 First, start the third-party dependencies using `docker-compose`:
 
@@ -140,6 +143,11 @@ Access the frontends at
 ## Troubleshooting
 
 ### Database
+
+**Please note** Ensure you do not have another PostgreSQL server listening
+on the default port. If you do, eVaka service might fail to start trying to
+connect to a wrong database causing errors like
+`FATAL: role "evaka_migration_local" does not exist` appear on service log.
 
 Sometimes, the shared database can get into an inconsistent state and
 the stack won't start properly. Or, the applications are unable to use
