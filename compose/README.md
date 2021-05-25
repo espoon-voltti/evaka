@@ -144,6 +144,11 @@ Access the frontends at
 
 ### Database
 
+**Please note** Ensure you do not have another PostgreSQL server listening
+on the default port. If you do, eVaka service might fail to start trying to
+connect to a wrong database causing errors like
+`FATAL: role "evaka_migration_local" does not exist` appear on service log.
+
 Sometimes, the shared database can get into an inconsistent state and
 the stack won't start properly. Or, the applications are unable to use
 it properly. This might be caused by the way the database stores
