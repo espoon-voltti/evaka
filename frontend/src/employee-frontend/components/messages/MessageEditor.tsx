@@ -52,8 +52,8 @@ type Option = {
 }
 
 interface Props {
-  defaultAccountSelection: Option
-  accountOptions: Option[]
+  defaultSender: Option
+  senderOptions: Option[]
   selectedReceivers: SelectorNode
   receiverOptions: Option[]
   setSelectedReceivers: React.Dispatch<
@@ -70,8 +70,8 @@ interface Props {
 }
 
 export default React.memo(function MessageEditor({
-  defaultAccountSelection,
-  accountOptions,
+  defaultSender,
+  senderOptions,
   selectedReceivers,
   receiverOptions,
   setSelectedReceivers,
@@ -88,9 +88,7 @@ export default React.memo(function MessageEditor({
   const [selectedReceiverOptions, setSelectedReceiverOptions] = useState<
     Option[]
   >(getSelected(selectedReceivers))
-  const [selectedAccount, setSelectedAccount] = useState<Option>(
-    defaultAccountSelection
-  )
+  const [sender, setSender] = useState<Option>(defaultSender)
   const [messageBody, setMessageBody] = useState<MessageBody>(
     draftContentToInitialState(draftContent)
   )
@@ -107,9 +105,9 @@ export default React.memo(function MessageEditor({
   // initialize draft when requested
   useEffect(() => {
     if (newDraftRequested && !draftId) {
-      initDraft(selectedAccount.value)
+      initDraft(sender.value)
     }
-  }, [draftId, newDraftRequested, initDraft, selectedAccount.value])
+  }, [draftId, newDraftRequested, initDraft, sender.value])
 
   // save draft on input change or ask for a new draft to be initialized
   const debouncedMessageBody = useDebounce(messageBody, 2000)
@@ -123,15 +121,9 @@ export default React.memo(function MessageEditor({
     if (!draftId) {
       setNewDraftRequested(true)
     } else {
-      saveDraft(selectedAccount.value, draftId, debouncedMessageBody)
+      saveDraft(sender.value, draftId, debouncedMessageBody)
     }
-  }, [
-    draftId,
-    debouncedMessageBody,
-    saveDraft,
-    selectedAccount.value,
-    contentTouched
-  ])
+  }, [draftId, debouncedMessageBody, saveDraft, sender.value, contentTouched])
 
   useEffect(() => {
     if (selectorChange) {
@@ -191,8 +183,9 @@ export default React.memo(function MessageEditor({
           <div>{i18n.messages.messageEditor.sender}</div>
         </div>
         <Select
-          options={accountOptions}
-          onChange={(selected) => setSelectedAccount(selected as Option)}
+          options={senderOptions}
+          onChange={(selected) => setSender(selected as Option)}
+          value={sender}
           data-qa="select-sender"
         />
         <div>
@@ -278,14 +271,14 @@ export default React.memo(function MessageEditor({
         <Gap size={'s'} />
         <BottomRow>
           <InlineButton
-            onClick={() => onDiscard(selectedAccount.value, draftId)}
+            onClick={() => onDiscard(sender.value, draftId)}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
           />
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={() => onSend(selectedAccount.value, messageBody, draftId)}
+            onClick={() => onSend(sender.value, messageBody, draftId)}
             data-qa="send-message-btn"
           />
         </BottomRow>

@@ -128,11 +128,8 @@ function MessagesPage() {
         )}
         {showEditor && accounts.isSuccess && selectedReceivers && view && (
           <MessageEditor
-            defaultAccountSelection={{
-              value: view.account.id,
-              label: view.account.id
-            }}
-            accountOptions={accounts.value.map(({ name, id }) => ({
+            defaultSender={{ value: view.account.id, label: view.account.name }}
+            senderOptions={accounts.value.map(({ name, id }) => ({
               value: id,
               label: name
             }))}
