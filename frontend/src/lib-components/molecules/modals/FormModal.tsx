@@ -14,6 +14,7 @@ import Title from '../../atoms/Title'
 import { P } from '../../typography'
 import { defaultMargins, Gap } from '../../white-space'
 import { modalZIndex } from '../../layout/z-helpers'
+import { tabletMin } from 'lib-components/breakpoints'
 
 export const DimmedModal = styled.div``
 
@@ -66,6 +67,13 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   margin-left: ${defaultMargins.xxs};
   margin-right: ${defaultMargins.xxs};
   overflow-y: scroll;
+
+  @media (max-width: ${tabletMin}) {
+    padding-left: ${defaultMargins.XL};
+    padding-right: ${defaultMargins.XL};
+    margin-left: ${defaultMargins.s};
+    margin-right: ${defaultMargins.s};
+  }
 `
 
 export const ModalWrapper = styled.div<zIndexProps>`
@@ -117,12 +125,17 @@ export const ModalBackground = styled.div`
   background: rgba(15, 15, 15, 0.86);
 `
 
-export const ModalButtons = styled.div`
+export const ModalButtons = styled.div<{ $singleButton?: boolean }>`
   display: flex;
   flex-direction: row;
   justify-content: center;
   margin-top: ${defaultMargins.XXL};
   margin-bottom: ${defaultMargins.X3L};
+  justify-content: ${(p) => (p.$singleButton ? `center` : `space-between`)};
+
+  @media (max-width: ${tabletMin}) {
+    margin-bottom: ${defaultMargins.L};
+  }
 `
 
 export const ModalTitle = styled.div`
@@ -227,7 +240,7 @@ export default React.memo(function FormModal({
   return (
     <ModalBase {...props} resolve={resolve} onSubmit={resolve.action}>
       {children}
-      <ModalButtons>
+      <ModalButtons $singleButton={!reject}>
         {reject && (
           <>
             <Button
@@ -279,7 +292,7 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
   return (
     <ModalBase {...props} resolve={resolve}>
       {children}
-      <ModalButtons>
+      <ModalButtons $singleButton={!reject}>
         {reject && (
           <>
             <Button

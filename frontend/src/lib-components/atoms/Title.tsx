@@ -14,6 +14,7 @@ interface Props extends BaseProps {
   noMargin?: boolean
   smaller?: boolean
   bold?: boolean
+  primary?: boolean
 }
 
 export default function Title({
@@ -24,7 +25,8 @@ export default function Title({
   className,
   noMargin,
   smaller,
-  bold
+  bold,
+  primary
 }: Props) {
   switch (size) {
     case 1:
@@ -37,6 +39,7 @@ export default function Title({
           noMargin={noMargin}
           smaller={smaller}
           bold={bold}
+          primary={primary}
         >
           {children}
         </H1>
@@ -51,6 +54,7 @@ export default function Title({
           noMargin={noMargin}
           smaller={smaller}
           bold={bold}
+          primary={primary}
         >
           {children}
         </H2>
@@ -65,6 +69,7 @@ export default function Title({
           noMargin={noMargin}
           smaller={smaller}
           bold={bold}
+          primary={primary}
         >
           {children}
         </H3>
@@ -79,6 +84,7 @@ export default function Title({
           noMargin={noMargin}
           smaller={smaller}
           bold={bold}
+          primary={primary}
         >
           {children}
         </H4>
@@ -93,6 +99,7 @@ export default function Title({
           noMargin={noMargin}
           smaller={smaller}
           bold={bold}
+          primary={primary}
         >
           {children}
         </H1>

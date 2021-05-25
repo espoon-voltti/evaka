@@ -33,7 +33,7 @@ export default class ChildPage {
   readonly returnToPresentBtn = Selector('[data-qa="return-to-present-btn"]')
   readonly createDailyNoteBtn = Selector('[data-qa="create-daily-note-btn"]')
   readonly openDeleteDialogBtn = Selector('[data-qa="open-delete-dialog-btn"]')
-  readonly deleteDailyNoteBtn = Selector('[data-qa="delete-daily-note-btn"]')
+  readonly deleteDailyNoteBtn = Selector('[data-qa="modal-okBtn"]')
   readonly backBtn = Selector('[data-qa="back-btn"]')
 
   readonly dailyNoteNoteInput = Selector('[data-qa="daily-note-note-input"]')

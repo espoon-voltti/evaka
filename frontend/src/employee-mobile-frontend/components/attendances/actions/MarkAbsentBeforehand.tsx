@@ -5,8 +5,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { addDays, isAfter, isBefore, subDays } from 'date-fns'
 
-import { faArrowLeft } from 'lib-icons'
+import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { Gap } from 'lib-components/white-space'
@@ -19,10 +20,18 @@ import {
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Absence } from 'lib-common/api-types/child/Absences'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { Label, P } from 'lib-components/typography'
+import InputField from 'lib-components/atoms/form/InputField'
+import LocalDate from 'lib-common/local-date'
+import { Loading, Result } from 'lib-common/api'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import { TallContentArea } from '../../../components/mobile/components'
 import { AttendanceUIContext } from '../../../state/attendance-ui'
 import {
+  deleteAbsenceRange,
   getDaycareAttendances,
   getFutureAbsencesByChild,
   postAbsenceRange
@@ -31,12 +40,9 @@ import { useTranslation } from '../../../state/i18n'
 import { AbsenceType } from '../../../types'
 import AbsenceSelector from '../AbsenceSelector'
 import { CustomTitle, Actions, BackButtonInline } from '../components'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { Label, P } from 'lib-components/typography'
-import InputField from 'lib-components/atoms/form/InputField'
-import LocalDate from 'lib-common/local-date'
-import { addDays, isAfter, isBefore, subDays } from 'date-fns'
-import { Loading, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import Title from 'lib-components/atoms/Title'
+import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 
 export default React.memo(function MarkAbsentBeforehand() {
   const history = useHistory()
@@ -49,7 +55,13 @@ export default React.memo(function MarkAbsentBeforehand() {
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
   >(undefined)
-  const [, setAbsences] = useState<Result<Absence[]>>(Loading.of())
+  const [absences, setAbsences] = useState<Result<Absence[]>>(Loading.of())
+  const [uiMode, setUiMode] = useState<
+    'default' | 'confirmDelete' | 'confirmExit'
+  >('default')
+  const [deleteRange, setDeleteRange] = useState<FiniteDateRange | undefined>(
+    undefined
+  )
 
   const { childId, unitId } = useParams<{
     unitId: string
@@ -84,6 +96,71 @@ export default React.memo(function MarkAbsentBeforehand() {
     )
   }
 
+  async function deleteAbsences() {
+    if (deleteRange) {
+      await deleteAbsenceRange(unitId, childId, deleteRange)
+    }
+    setDeleteRange(undefined)
+    loadFutureAbsences(childId)
+    setUiMode('default')
+  }
+
+  function DeleteAbsencesModal() {
+    return (
+      <InfoModal
+        iconColour={'orange'}
+        title={i18n.absences.confirmDelete}
+        icon={faExclamation}
+        reject={{
+          action: () => {
+            setDeleteRange(undefined)
+            setUiMode('default')
+          },
+          label: i18n.common.doNotRemove
+        }}
+        resolve={{
+          action: () => {
+            void deleteAbsences()
+          },
+          label: i18n.common.remove
+        }}
+      />
+    )
+  }
+
+  function ConfirmExitModal() {
+    return (
+      <InfoModal
+        iconColour={'orange'}
+        title={i18n.common.saveBeforeClosing}
+        icon={faExclamation}
+        reject={{
+          action: () => {
+            history.goBack()
+          },
+          label: i18n.common.doNotSave
+        }}
+        resolve={
+          selectedAbsenceType && {
+            action: () => {
+              void postAbsence(selectedAbsenceType).then(() => {
+                history.goBack()
+              })
+            },
+            label: i18n.common.save
+          }
+        }
+      />
+    )
+  }
+
+  function canSave() {
+    return (
+      isAfter(new Date(startDate), subDays(new Date(), 1)) &&
+      isBefore(new Date(startDate), addDays(new Date(endDate), 1))
+    )
+  }
+
   const child =
     attendanceResponse.isSuccess &&
     attendanceResponse.value.children.find((ac) => ac.id === childId)
@@ -99,7 +176,13 @@ export default React.memo(function MarkAbsentBeforehand() {
           paddingVertical={'zero'}
         >
           <BackButtonInline
-            onClick={() => history.goBack()}
+            onClick={() => {
+              if (selectedAbsenceType && canSave()) {
+                setUiMode('confirmExit')
+              } else {
+                history.goBack()
+              }
+            }}
             icon={faArrowLeft}
             text={
               child ? `${child.firstName} ${child.lastName}` : i18n.common.back
@@ -120,6 +203,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                 <TimeInputWrapper>
                   <Label>{i18n.common.starts}</Label>
                   <TimeInput
+                    data-qa="start-date-input"
                     value={startDate}
                     type="date"
                     onChange={setStartDate}
@@ -143,6 +227,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                 <TimeInputWrapper>
                   <Label>{i18n.common.ends}</Label>
                   <TimeInput
+                    data-qa="end-date-input"
                     value={endDate}
                     type="date"
                     onChange={setEndDate}
@@ -167,9 +252,7 @@ export default React.memo(function MarkAbsentBeforehand() {
                   text={i18n.common.cancel}
                   onClick={() => history.goBack()}
                 />
-                {selectedAbsenceType &&
-                isAfter(new Date(startDate), subDays(new Date(), 1)) &&
-                isBefore(new Date(startDate), addDays(new Date(endDate), 1)) ? (
+                {selectedAbsenceType && canSave() ? (
                   <AsyncButton
                     primary
                     text={i18n.common.confirm}
@@ -183,12 +266,75 @@ export default React.memo(function MarkAbsentBeforehand() {
               </FixedSpaceRow>
             </Actions>
             <HorizontalLine />
+
+            {absences.isSuccess && absences.value.length > 0 && (
+              <>
+                <Title size={2} smaller primary>
+                  {i18n.absences.futureAbsence}
+                </Title>
+                <FixedSpaceColumn>
+                  {groupAbsencesByDateRange(absences.value).map(
+                    (absenceRange) => {
+                      if (absenceRange.durationInDays() > 1) {
+                        return (
+                          <AbsenceRow
+                            key={absenceRange.start.format()}
+                            data-qa="absence-row"
+                          >
+                            <AbsenceDate>{`${absenceRange.start.format()} - ${absenceRange.end.format()}`}</AbsenceDate>
+                            <IconButton
+                              icon={faTrash}
+                              onClick={() => {
+                                setDeleteRange(absenceRange)
+                                setUiMode('confirmDelete')
+                              }}
+                              data-qa="delete-absence-period"
+                            />
+                          </AbsenceRow>
+                        )
+                      } else {
+                        return (
+                          <AbsenceRow
+                            key={absenceRange.start.format()}
+                            data-qa="absence-row"
+                          >
+                            <AbsenceDate>{`${absenceRange.start.format()}`}</AbsenceDate>
+                            <IconButton
+                              icon={faTrash}
+                              onClick={() => {
+                                setDeleteRange(absenceRange)
+                                setUiMode('confirmDelete')
+                              }}
+                              data-qa="delete-absence-period"
+                            />
+                          </AbsenceRow>
+                        )
+                      }
+                    }
+                  )}
+                </FixedSpaceColumn>
+              </>
+            )}
           </ContentArea>
         </TallContentArea>
       )}
+      {uiMode === `confirmDelete` && <DeleteAbsencesModal />}
+      {uiMode === `confirmExit` && <ConfirmExitModal />}
     </>
   )
 })
+
+const AbsenceRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`
+
+const AbsenceDate = styled.span`
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+`
 
 const AbsenceWrapper = styled.div`
   display: flex;

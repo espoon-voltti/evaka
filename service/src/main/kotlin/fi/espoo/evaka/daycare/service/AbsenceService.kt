@@ -438,7 +438,8 @@ fun Database.Read.getAbsencesByChildByPeriod(childId: UUID, period: DateRange): 
         SELECT a.id, a.child_id, a.date, a.care_type, a.absence_type, a.modified_at, a.modified_by
         FROM absence a
         WHERE date <@ :period
-        AND a.child_id = :childId 
+        AND a.child_id = :childId
+        AND a.absence_type != 'PRESENCE'
         """.trimIndent()
 
     return createQuery(sql)

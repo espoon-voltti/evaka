@@ -5,13 +5,11 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { animated, useSpring } from 'react-spring'
 
 import Loader from 'lib-components/atoms/Loader'
 import { faArrowLeft, faExclamation, faTrash } from 'lib-icons'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import colors from 'lib-customizations/common'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Title from 'lib-components/atoms/Title'
 import {
@@ -24,7 +22,6 @@ import LocalDate from 'lib-common/local-date'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Result } from 'lib-common/api'
@@ -44,6 +41,8 @@ import { AttendanceUIContext } from '../../../state/attendance-ui'
 import { TallContentArea, ChipWrapper } from '../../mobile/components'
 import { UserContext } from '../../../state/user'
 import { User } from '../../../types/index'
+import { BackButtonInline } from '../components'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 interface DailyNoteEdited {
   id: string | undefined
@@ -63,8 +62,9 @@ export default React.memo(function DailyNoteEditor() {
   const history = useHistory()
   const { user } = useContext(UserContext)
 
-  const [showDialog, setShowDialog] = useState<boolean>(false)
-  const dialogSpring = useSpring<{ x: number }>({ x: showDialog ? 1 : 0 })
+  const [uiMode, setUiMode] = useState<
+    'default' | 'confirmExit' | 'confirmDelete'
+  >('default')
 
   const { childId, unitId, groupId } = useParams<{
     unitId: string
@@ -107,7 +107,6 @@ export default React.memo(function DailyNoteEditor() {
   })
 
   const [deleteType, setDeleteType] = useState<'NOTE' | 'GROUP_NOTE'>('NOTE')
-  const [dialogType, setDialogType] = useState<'CONFIRM' | 'DELETE'>('CONFIRM')
 
   const loadDaycareAttendances = useRestApi(
     getDaycareAttendances,
@@ -133,7 +132,7 @@ export default React.memo(function DailyNoteEditor() {
         setGroupNote(gNote)
       }
     }
-  }, [attendanceResponse]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [attendanceResponse, childId, groupId])
 
   const child =
     attendanceResponse.isSuccess &&
@@ -193,72 +192,68 @@ export default React.memo(function DailyNoteEditor() {
     setDirty(true)
   }
 
+  function DeleteAbsencesModal() {
+    return (
+      <InfoModal
+        iconColour={'orange'}
+        title={i18n.attendances.notes.clearTitle}
+        icon={faExclamation}
+        reject={{
+          action: () => {
+            setUiMode('default')
+          },
+          label: i18n.common.cancel
+        }}
+        resolve={{
+          action: () => {
+            void deleteNote()
+          },
+          label: i18n.common.clear
+        }}
+      />
+    )
+  }
+
+  function ConfirmExitModal() {
+    return (
+      <InfoModal
+        iconColour={'orange'}
+        title={i18n.attendances.notes.confirmTitle}
+        icon={faExclamation}
+        reject={{
+          action: () => {
+            history.goBack()
+          },
+          label: i18n.attendances.notes.closeWithoutSaving
+        }}
+        resolve={{
+          action: () => {
+            void saveNotes().then(() => {
+              history.goBack()
+            })
+          },
+          label: i18n.common.save
+        }}
+      />
+    )
+  }
+
   return (
     <>
       {attendanceResponse.isLoading && <Loader />}
       {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && child && (
         <>
-          <ConfirmDialog
-            style={{
-              height: dialogSpring.x.interpolate((x) => `${300 * x}px`)
-            }}
-          >
-            <Center>
-              <RoundIcon content={faExclamation} color={'orange'} size="XL" />
-              {dialogType === 'DELETE' && (
-                <>
-                  <DialogTitle>{i18n.attendances.notes.clearTitle}</DialogTitle>
-                  <Buttons>
-                    <InlineButton
-                      text={i18n.common.cancel}
-                      onClick={() => setShowDialog(false)}
-                    />
-                    <InlineButton
-                      text={i18n.common.clear}
-                      onClick={deleteNote}
-                      data-qa="delete-daily-note-btn"
-                    />
-                  </Buttons>
-                </>
-              )}
-
-              {dialogType === 'CONFIRM' && (
-                <>
-                  <DialogTitle>
-                    {i18n.attendances.notes.confirmTitle}
-                  </DialogTitle>
-                  <Buttons>
-                    <InlineButton
-                      text={i18n.attendances.notes.closeWithoutSaving}
-                      onClick={() => history.goBack()}
-                      data-qa="confirm-go-back-btn"
-                    />
-                    <InlineButton
-                      text={i18n.common.save}
-                      onClick={() => {
-                        void saveNotes().then(() => {
-                          history.goBack()
-                        })
-                      }}
-                    />
-                  </Buttons>
-                </>
-              )}
-            </Center>
-          </ConfirmDialog>
-
           <TallContentArea
             opaque={false}
             paddingHorizontal={'zero'}
             paddingVertical={'zero'}
           >
             <TopRow>
-              <BackButton
+              <BackButtonInline
                 onClick={() => {
                   if (dirty) {
-                    setDialogType('CONFIRM')
-                    setShowDialog(!showDialog)
+                    setUiMode('confirmExit')
                   } else {
                     history.goBack()
                   }
@@ -303,8 +298,7 @@ export default React.memo(function DailyNoteEditor() {
                           icon={faTrash}
                           onClick={() => {
                             setDeleteType('GROUP_NOTE')
-                            setDialogType('DELETE')
-                            setShowDialog(!showDialog)
+                            setUiMode('confirmDelete')
                           }}
                           data-qa="open-delete-groupnote-dialog-btn"
                           gray
@@ -347,8 +341,7 @@ export default React.memo(function DailyNoteEditor() {
                         icon={faTrash}
                         onClick={() => {
                           setDeleteType('NOTE')
-                          setDialogType('DELETE')
-                          setShowDialog(!showDialog)
+                          setUiMode('confirmDelete')
                         }}
                         data-qa="open-delete-dialog-btn"
                         gray
@@ -489,6 +482,8 @@ export default React.memo(function DailyNoteEditor() {
           </TallContentArea>
         </>
       )}
+      {uiMode === `confirmDelete` && <DeleteAbsencesModal />}
+      {uiMode === `confirmExit` && <ConfirmExitModal />}
     </>
   )
 })
@@ -577,13 +572,6 @@ function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
   return false
 }
 
-const BackButton = styled(InlineButton)`
-  color: ${colors.blues.dark};
-  margin-top: ${defaultMargins.s};
-  margin-left: ${defaultMargins.s};
-  margin-bottom: ${defaultMargins.s};
-`
-
 const Time = styled.div`
   display: flex;
   align-items: center;
@@ -591,41 +579,6 @@ const Time = styled.div`
   span {
     margin-left: ${defaultMargins.xs};
   }
-`
-
-const ConfirmDialog = animated(styled.div`
-  position: absolute;
-  background: ${colors.greyscale.white};
-  width: 100vw;
-  overflow: hidden;
-  z-index: 2;
-  box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter};
-`)
-
-const Center = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  padding: 32px 40px;
-`
-
-const Buttons = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-`
-
-const DialogTitle = styled.h2`
-  font-family: Montserrat, sans-serif;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 27px;
-  text-align: center;
-  color: ${colors.blues.dark};
-  margin-top: 32px;
-  margin-bottom: 40px;
 `
 
 const TitleArea = styled(ContentArea)`

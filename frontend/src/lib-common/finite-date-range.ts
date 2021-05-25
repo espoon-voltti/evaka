@@ -108,7 +108,7 @@ export default class FiniteDateRange {
    * Returns the total duration of this date range counted in days.
    */
   durationInDays(): number {
-    return this.start.differenceInDays(this.end.addDays(1)) // adjust to exclusive range
+    return this.end.addDays(1).differenceInDays(this.start) // adjust to exclusive range
   }
 
   format(datePattern?: string): string {
