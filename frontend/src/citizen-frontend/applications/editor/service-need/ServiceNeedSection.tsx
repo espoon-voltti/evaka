@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
 import {
   ApplicationStatus,
   ApplicationType
@@ -31,7 +30,7 @@ export type ServiceNeedSectionProps = {
   errors: ApplicationFormDataErrors['serviceNeed']
   verificationRequested: boolean
   terms?: Term[]
-  serviceNeedOptions?: Result<ServiceNeedOptionPublicInfo[]>
+  serviceNeedOptions?: ServiceNeedOptionPublicInfo[]
 }
 
 export default React.memo(function ServiceNeedSection(

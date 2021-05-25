@@ -87,7 +87,7 @@ export default React.memo(function ApplicationFormDaycare({
             }
             errors={errors.serviceNeed}
             verificationRequested={verificationRequested}
-            serviceNeedOptions={serviceNeedOptions}
+            serviceNeedOptions={serviceNeedOptions.value}
           />
 
           <UnitPreferenceSection
