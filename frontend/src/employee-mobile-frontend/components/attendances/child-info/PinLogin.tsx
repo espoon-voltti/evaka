@@ -26,7 +26,7 @@ import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
 
 import { TallContentArea } from '../../mobile/components'
@@ -149,7 +149,7 @@ export default React.memo(function PinLogin() {
           paddingVertical={'zero'}
         >
           <TopBarContainer>
-            <BackButtonWrapper>
+            <TopRow>
               <BackButtonInline
                 onClick={() => history.goBack()}
                 icon={faArrowLeft}
@@ -159,8 +159,6 @@ export default React.memo(function PinLogin() {
                     : i18n.common.back
                 }
               />
-            </BackButtonWrapper>
-            <LogoutButtonWrapper>
               {childResult && (
                 <IconButton
                   size={'L'}
@@ -171,7 +169,7 @@ export default React.memo(function PinLogin() {
                   }}
                 />
               )}
-            </LogoutButtonWrapper>
+            </TopRow>
           </TopBarContainer>
           {childResult &&
           childResult.isSuccess &&
@@ -250,10 +248,6 @@ const TopBarContainer = styled.div`
   grid-template-columns: auto 50px;
 `
 
-const BackButtonWrapper = styled.div`
-  width: calc(100% - 50px);
-`
-
 const TallContentAreaNoOverflow = styled(TallContentArea)`
   overflow-x: hidden;
 `
@@ -264,10 +258,12 @@ const Key = styled.span`
   margin-bottom: 4px;
 `
 
-const LogoutButtonWrapper = styled.div`
-  width: 40px;
-  margin-left: auto;
-  margin-right: 40px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+const TopRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  max-width: 100vw;
+
+  button {
+    margin-right: ${defaultMargins.s};
+  }
 `
