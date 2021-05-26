@@ -6,7 +6,7 @@ import { UUID } from '../../types'
 import { Failure, Result, Success } from 'lib-common/api'
 import {
   AssistanceAction,
-  AssistanceActionType,
+  AssistanceActionOption,
   AssistanceMeasure
 } from '../../types/child'
 import { client } from '../../api/client'
@@ -16,7 +16,7 @@ import LocalDate from 'lib-common/local-date'
 export interface AssistanceActionRequest {
   startDate: LocalDate
   endDate: LocalDate
-  actions: AssistanceActionType[]
+  actions: string[]
   otherAction: string
   measures: AssistanceMeasure[]
 }
@@ -92,5 +92,14 @@ export async function removeAssistanceAction(
   return client
     .delete(`/assistance-actions/${assistanceActionId}`)
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getAssistanceActionOptions(): Promise<
+  Result<AssistanceActionOption[]>
+> {
+  return client
+    .get<JsonOf<AssistanceActionOption[]>>('/assistance-action-options')
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

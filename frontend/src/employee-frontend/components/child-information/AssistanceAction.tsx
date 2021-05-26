@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../state/i18n'
-import { Loading } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import { ChildContext } from '../../state/child'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
@@ -15,7 +15,12 @@ import { UIContext } from '../../state/ui'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import styled from 'styled-components'
 import { scrollToRef } from '../../utils'
-import { getAssistanceActions } from '../../api/child/assistance-actions'
+import {
+  getAssistanceActionOptions,
+  getAssistanceActions
+} from '../../api/child/assistance-actions'
+import { AssistanceActionOption } from 'employee-frontend/types/child'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 
 const TitleRow = styled.div`
   display: flex;
@@ -45,10 +50,24 @@ function AssistanceAction({ id }: Props) {
 
   useEffect(loadData, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [assistanceActionOptions, setAssistanceActionOptions] = useState<
+    Result<AssistanceActionOption[]>
+  >(Success.of([]))
+  const loadAssistanceActionOptions = useRestApi(
+    getAssistanceActionOptions,
+    setAssistanceActionOptions
+  )
+  useEffect(() => {
+    loadAssistanceActionOptions()
+  }, [loadAssistanceActionOptions])
+
   function renderAssistanceActions() {
-    if (assistanceActions.isLoading) {
+    if (assistanceActions.isLoading || assistanceActionOptions.isLoading) {
       return <Loader />
-    } else if (assistanceActions.isFailure) {
+    } else if (
+      assistanceActions.isFailure ||
+      assistanceActionOptions.isFailure
+    ) {
       return <div>{i18n.common.loadingFailed}</div>
     } else {
       return assistanceActions.value.map((assistanceAction) => (
@@ -56,6 +75,7 @@ function AssistanceAction({ id }: Props) {
           key={assistanceAction.id}
           assistanceAction={assistanceAction}
           onReload={loadData}
+          assistanceActionOptions={assistanceActionOptions.value}
           refSectionTop={refSectionTop}
         />
       ))
@@ -68,6 +88,13 @@ function AssistanceAction({ id }: Props) {
     assistanceActions
       .map((actions) => actions.find((an) => an.id == uiMode.split('_').pop()))
       .getOrElse(undefined)
+
+  if (assistanceActionOptions.isLoading) {
+    return <Loader />
+  }
+  if (assistanceActionOptions.isFailure) {
+    return <div>{i18n.common.loadingFailed}</div>
+  }
 
   return (
     <div ref={refSectionTop}>
@@ -86,7 +113,11 @@ function AssistanceAction({ id }: Props) {
       </TitleRow>
       {uiMode === 'create-new-assistance-action' && (
         <>
-          <AssistanceActionForm childId={id} onReload={loadData} />
+          <AssistanceActionForm
+            childId={id}
+            onReload={loadData}
+            assistanceActionOptions={assistanceActionOptions.value}
+          />
           <div className="separator" />
         </>
       )}
@@ -96,6 +127,7 @@ function AssistanceAction({ id }: Props) {
             childId={id}
             assistanceAction={duplicate}
             onReload={loadData}
+            assistanceActionOptions={assistanceActionOptions.value}
           />
           <div className="separator" />
         </>
