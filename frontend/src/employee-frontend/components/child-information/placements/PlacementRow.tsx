@@ -32,7 +32,6 @@ import { InputWarning } from '../../../components/common/InputWarning'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import NewServiceNeeds from './NewServiceNeeds'
-import { RequireRole } from '../../../utils/roles'
 import { featureFlags } from '../../../config'
 
 interface Props {
@@ -315,11 +314,11 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
         )}
 
         {featureFlags.showNewServiceNeedsList && (
-          <RequireRole oneOf={['ADMIN']}>
+          <>
             <Gap size="s" />
 
             <NewServiceNeeds placement={placement} reload={onRefreshNeeded} />
-          </RequireRole>
+          </>
         )}
       </ToolbarAccordion>
       {confirmingDelete && (

@@ -16,6 +16,7 @@ import { NewServiceNeed, Placement } from '../../../types/child'
 import { ChildContext } from '../../../state'
 import { deleteNewServiceNeed } from '../../../api/child/new-service-needs'
 import { DateRange, getGaps } from '../../../utils/date'
+import { RequireRole } from '../../../utils/roles'
 import NewServiceNeedEditorRow from './new-service-needs/NewServiceNeedEditorRow'
 import NewServiceNeedReadRow from './new-service-needs/NewServiceNeedReadRow'
 import MissingServiceNeedRow from './new-service-needs/MissingServiceNeedRow'
@@ -70,12 +71,14 @@ function NewServiceNeeds({ placement, reload }: Props) {
     <div>
       <HeaderRow>
         <H4 noMargin>{t.title}</H4>
-        <InlineButton
-          onClick={() => setCreatingNew(true)}
-          text={t.createNewBtn}
-          icon={faPlus}
-          disabled={creatingNew !== false || editingId !== null}
-        />
+        <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+          <InlineButton
+            onClick={() => setCreatingNew(true)}
+            text={t.createNewBtn}
+            icon={faPlus}
+            disabled={creatingNew !== false || editingId !== null}
+          />
+        </RequireRole>
       </HeaderRow>
 
       <Table>

@@ -759,7 +759,7 @@ export const fi = {
         ghostUnit: 'Yksikkö on merkitty haamuyksiköksi.'
       },
       serviceNeeds: {
-        title: 'Sijoituksen palveluntarpeet (alpha-testaus)',
+        title: 'Sijoituksen palveluntarpeet (beta-testaus)',
         period: 'Aikaväli',
         description: 'Kuvaus',
         shiftCare: 'Ilta/Vuoro',

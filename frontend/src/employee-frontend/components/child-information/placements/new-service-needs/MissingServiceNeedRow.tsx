@@ -12,6 +12,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import colors from 'lib-customizations/common'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { useTranslation } from '../../../../state/i18n'
+import { RequireRole } from '../../../../utils/roles'
 
 interface MissingServiceNeedRowProps {
   startDate: LocalDate
@@ -42,12 +43,14 @@ function MissingServiceNeedRow({
       <Td />
       <Td />
       <Td align="right">
-        <InlineButton
-          onClick={onEdit}
-          text={t.addNewBtn}
-          icon={faPlus}
-          disabled={disabled}
-        />
+        <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+          <InlineButton
+            onClick={onEdit}
+            text={t.addNewBtn}
+            icon={faPlus}
+            disabled={disabled}
+          />
+        </RequireRole>
       </Td>
     </Tr>
   )
