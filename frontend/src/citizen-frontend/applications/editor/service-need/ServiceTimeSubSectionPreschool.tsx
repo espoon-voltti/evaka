@@ -156,6 +156,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.shiftCare.instructions}
             ariaLabel={t.common.openExpandingInfo}
+            margin="xs"
           >
             <Checkbox
               checked={formData.shiftCare}

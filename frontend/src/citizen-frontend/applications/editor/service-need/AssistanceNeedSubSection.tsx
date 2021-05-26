@@ -30,8 +30,8 @@ export default React.memo(function AssistanceNeedSubSection({
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.preparatoryInfo}
             ariaLabel={t.common.openExpandingInfo}
+            margin="xs"
           >
-            {' '}
             <Checkbox
               checked={formData.preparatory}
               data-qa={'preparatory-input'}
@@ -52,8 +52,8 @@ export default React.memo(function AssistanceNeedSubSection({
           t.applications.editor.serviceNeed.assistanceNeedInstructions[type]
         }
         ariaLabel={t.common.openExpandingInfo}
+        margin="xs"
       >
-        {' '}
         <Checkbox
           checked={formData.assistanceNeeded}
           data-qa={'assistanceNeeded-input'}
