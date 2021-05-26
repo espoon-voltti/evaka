@@ -5,6 +5,7 @@
 import LocalDate from './local-date'
 import DateRange from './date-range'
 import { JsonOf } from './json'
+import { groupDatesToRanges } from './utils/local-date'
 
 function maxOf(a: LocalDate, b: LocalDate) {
   return a.isAfter(b) ? a : b
@@ -121,6 +122,13 @@ export default class FiniteDateRange {
 
   isEqual(other: FiniteDateRange): boolean {
     return this.start.isEqual(other.start) && this.end.isEqual(other.end)
+  }
+
+  getGaps(childRanges: FiniteDateRange[]): FiniteDateRange[] {
+    const gapDates = [...this.dates()].filter(
+      (date) => childRanges.find((range) => range.includes(date)) === undefined
+    )
+    return groupDatesToRanges(gapDates)
   }
 
   static parseJson(json: JsonOf<FiniteDateRange>): FiniteDateRange {
