@@ -22,11 +22,11 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import {
   isGroupMessageAccount,
+  isPersonalMessageAccount,
   MessageAccount,
-  messageBoxes,
   ReceiverGroup
 } from './types'
-import { AccountView } from './types-view'
+import { AccountView, messageBoxes } from './types-view'
 
 const AccountSection = styled.section`
   padding: 12px 0;
@@ -64,7 +64,7 @@ function Accounts({
   accountView
 }: AccountsParams) {
   const { i18n } = useTranslation()
-  const personalAccount = accounts.find((a) => a.personal)
+  const personalAccount = accounts.find(isPersonalMessageAccount)
   const groupAccounts = accounts.filter(isGroupMessageAccount)
 
   const unitOptions = sortBy(

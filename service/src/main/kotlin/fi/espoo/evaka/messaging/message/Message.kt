@@ -67,12 +67,17 @@ data class Group(
     val unitName: String,
 )
 
+enum class AccountType {
+    PERSONAL,
+    GROUP
+}
+
 data class AuthorizedMessageAccount(
     val id: UUID,
     val name: String,
     @Nested("group_")
     val daycareGroup: Group?,
-    val personal: Boolean,
+    val type: AccountType,
     val unreadCount: Int
 )
 

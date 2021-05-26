@@ -10,3 +10,5 @@ export interface AccountView {
   account: MessageAccount
   view: View
 }
+
+export const messageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
