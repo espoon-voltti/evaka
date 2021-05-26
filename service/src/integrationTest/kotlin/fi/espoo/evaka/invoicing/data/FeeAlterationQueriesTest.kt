@@ -9,6 +9,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -35,7 +36,7 @@ class FeeAlterationQueriesTest : PureJdbiTest() {
         }
     }
 
-    private val personId = UUID.randomUUID()
+    private val personId = testChild_1.id
     private val testFeeAlteration = FeeAlteration(
         id = UUID.randomUUID(),
         personId = personId,
