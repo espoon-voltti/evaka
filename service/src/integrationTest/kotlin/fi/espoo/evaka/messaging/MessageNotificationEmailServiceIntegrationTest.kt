@@ -82,9 +82,9 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
             testAddresses.toSet(),
             MockEmailClient.emails.map { it.toAddress }.toSet()
         )
-        assertEquals("Uusi viesti eVakassa [null]", getEmailFor(testPersonFi).subject)
-        assertEquals("Ny meddelande i eVaka [null]", getEmailFor(testPersonSv).subject)
-        assertEquals("New message in eVaka [null]", getEmailFor(testPersonEn).subject)
+        assertEquals("Uusi viesti eVakassa [null] / Ny meddelande i eVaka [null] / New message in eVaka [null]", getEmailFor(testPersonFi).subject)
+        assertEquals("Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>", getEmailFor(testPersonSv).fromAddress)
+        assertEquals("Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>", getEmailFor(testPersonEn).fromAddress)
     }
 
     private fun postNewThread(
