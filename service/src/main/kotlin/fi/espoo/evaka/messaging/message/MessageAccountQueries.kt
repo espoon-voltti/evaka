@@ -61,9 +61,9 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(user: AuthenticatedUse
 SELECT acc.id,
        name_view.account_name AS name,
        CASE
-           WHEN acc.daycare_group_id IS NOT NULL THEN FALSE
-           ELSE TRUE
-       END                    AS personal,
+           WHEN acc.daycare_group_id IS NOT NULL THEN 'group'
+           ELSE 'personal'
+       END                    AS type,
        dg.id                  AS group_id,
        dg.name                AS group_name,
        dc.id                  AS group_unitId,
@@ -77,7 +77,7 @@ FROM message_account acc
     LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
 WHERE acc.employee_id = :userId
    OR acl.employee_id = :userId
-GROUP BY acc.id, account_name, personal, group_id, group_name, group_unitId, group_unitName
+GROUP BY acc.id, account_name, type, group_id, group_name, group_unitId, group_unitName
     """.trimIndent()
 
     return this.createQuery(employeeSql)

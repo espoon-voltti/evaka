@@ -10,17 +10,17 @@ import java.util.UUID
 data class DraftContent(
     val id: UUID,
     val created: HelsinkiDateTime,
-    val type: MessageType? = null,
-    val title: String? = null,
-    val content: String? = null,
-    val recipientAccountIds: Set<UUID>? = null,
-    val recipientNames: List<String>? = null,
+    val type: MessageType,
+    val title: String,
+    val content: String,
+    val recipientIds: Set<UUID>,
+    val recipientNames: List<String>,
 )
 
 data class UpsertableDraftContent(
-    val type: MessageType? = null,
-    val title: String? = null,
-    val content: String? = null,
-    val recipientAccountIds: Set<UUID>? = null,
-    val recipientNames: List<String>? = null,
+    val type: MessageType,
+    val title: String,
+    val content: String,
+    val recipientIds: Set<UUID>,
+    val recipientNames: List<String>,
 )

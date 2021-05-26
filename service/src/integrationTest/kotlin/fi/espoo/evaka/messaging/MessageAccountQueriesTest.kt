@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.messaging.message.AccountType
 import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
@@ -92,13 +93,13 @@ class MessageAccountQueriesTest : PureJdbiTest() {
 
         val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee) }
         assertEquals(2, accounts2.size)
-        val personalAccount = accounts2.find { it.personal } ?: throw Error("Personal account not found")
+        val personalAccount = accounts2.find { it.type === AccountType.PERSONAL } ?: throw Error("Personal account not found")
         assertEquals(personalAccountName, personalAccount.name)
-        assertEquals(true, personalAccount.personal)
+        assertEquals(AccountType.PERSONAL, personalAccount.type)
         assertNull(personalAccount.daycareGroup)
         val groupAccount = accounts2.find { it.daycareGroup != null } ?: throw Error("Group account not found")
         assertEquals(groupAccountName, groupAccount.name)
-        assertEquals(false, groupAccount.personal)
+        assertEquals(AccountType.GROUP, groupAccount.type)
         assertEquals("Test Daycare", groupAccount.daycareGroup?.unitName)
         assertEquals("Testiläiset", groupAccount.daycareGroup?.name)
     }

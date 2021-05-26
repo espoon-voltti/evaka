@@ -1,34 +1,72 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { faTimes, faTrash } from 'lib-icons'
-import colors from 'lib-customizations/common'
-import InputField from 'lib-components/atoms/form/InputField'
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import { UpdateStateFn } from 'lib-common/form-state'
+import { UUID } from 'lib-common/types'
+import { useDebounce } from 'lib-common/utils/useDebounce'
+import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
-import Button from 'lib-components/atoms/buttons/Button'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { Label } from 'lib-components/typography'
-import { useTranslation } from '../../state/i18n'
-import { MessageBody } from './types'
-import {
-  getSelected,
-  getSelectedBottomElements,
-  SelectorChange,
-  SelectorNode,
-  updateSelector
-} from 'employee-frontend/components/messages/SelectorNode'
+import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import Select from 'employee-frontend/components/common/Select'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { UUID } from 'lib-common/types'
+import { Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faTimes, faTrash } from 'lib-icons'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
+import Select from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
+import {
+  deselectAll,
+  getReceiverOptions,
+  getSelected,
+  getSelectedBottomElements,
+  SelectorNode,
+  updateSelector
+} from './SelectorNode'
+import { DraftContent, MessageBody, UpsertableDraftContent } from './types'
+import { Draft, useDraft } from './useDraft'
 
-const emptyMessageBody: MessageBody = {
-  title: '',
-  content: '',
-  type: 'MESSAGE',
-  recipientAccountIds: []
+type Message = UpsertableDraftContent & {
+  senderId: UUID
+  recipientAccountIds: UUID[]
 }
+
+const messageToUpsertableDraftWithAccount = ({
+  senderId: accountId,
+  recipientAccountIds: _,
+  ...rest
+}: Message): Draft => ({ ...rest, accountId })
+
+const emptyMessage = {
+  content: '',
+  recipientIds: [],
+  recipientNames: [],
+  recipientAccountIds: [],
+  title: '',
+  type: 'MESSAGE' as const
+}
+
+const getInitialMessage = (
+  draft: DraftContent | undefined,
+  senderId: UUID
+): Message =>
+  draft
+    ? { ...draft, senderId, recipientAccountIds: [] }
+    : { senderId, ...emptyMessage }
+
+const areRequiredFieldsFilledForMessage = (msg: Message): boolean =>
+  !!(msg.recipientAccountIds?.length && msg.type && msg.content && msg.title)
+
+const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
+  selectedIds.reduce(
+    (acc, next) => updateSelector(acc, { selectorId: next, selected: true }),
+    deselectAll(tree)
+  )
 
 type Option = {
   label: string
@@ -36,59 +74,126 @@ type Option = {
 }
 
 interface Props {
-  defaultAccountSelection: Option
-  accountOptions: Option[]
-  selectedReceivers: SelectorNode
-  receiverOptions: Option[]
-  setSelectedReceivers: React.Dispatch<
-    React.SetStateAction<SelectorNode | undefined>
-  >
-  onSend: (accountId: UUID, messageBody: MessageBody) => void
-  hideEditor: () => void
+  defaultSender: Option
+  senderOptions: Option[]
+  availableReceivers: SelectorNode
+  onSend: (
+    accountId: UUID,
+    messageBody: MessageBody,
+    draftId: string | undefined
+  ) => void
+  onClose: (didChanges: boolean) => void
+  onDiscard: (accountId: UUID, draftId?: UUID) => void
+  draftContent?: DraftContent
 }
 
 export default React.memo(function MessageEditor({
-  defaultAccountSelection,
-  accountOptions,
-  selectedReceivers,
-  receiverOptions,
-  setSelectedReceivers,
+  defaultSender,
+  senderOptions,
+  availableReceivers,
   onSend,
-  hideEditor
+  onDiscard,
+  onClose,
+  draftContent
 }: Props) {
   const { i18n } = useTranslation()
-  const [selectorChange, setSelectorChange] = useState<SelectorChange>()
-  const [selectedReceiverOptions, setSelectedReceiverOptions] = useState<
-    Option[]
-  >(getSelected(selectedReceivers))
-  const [selectedAccount, setSelectedAccount] = useState<Option>(
-    defaultAccountSelection
+
+  const [receiverTree, setReceiverTree] = useState<SelectorNode>(
+    draftContent
+      ? createReceiverTree(availableReceivers, draftContent.recipientIds)
+      : availableReceivers
   )
-  const [messageBody, setMessageBody] = useState<MessageBody>(emptyMessageBody)
+  const selectedReceivers = useMemo(() => getSelected(receiverTree), [
+    receiverTree
+  ])
+  const receiverOptions = useMemo(() => getReceiverOptions(receiverTree), [
+    receiverTree
+  ])
+
+  const [sender, setSender] = useState<Option>(defaultSender)
+  const [message, setMessage] = useState<Message>(
+    getInitialMessage(draftContent, sender.value)
+  )
+  const [contentTouched, setContentTouched] = useState(false)
+  const {
+    draftId,
+    setDraft,
+    saveDraft,
+    state: draftState,
+    wasModified: draftWasModified
+  } = useDraft(draftContent?.id)
 
   useEffect(() => {
-    if (selectorChange) {
-      setSelectedReceivers((selectedReceivers: SelectorNode | undefined) =>
-        selectedReceivers
-          ? updateSelector(selectedReceivers, selectorChange)
-          : undefined
+    contentTouched && setDraft(messageToUpsertableDraftWithAccount(message))
+  }, [contentTouched, message, setDraft])
+
+  // update receiver tree on selector changes
+  const updateReceivers = useCallback((newSelection: Option[]) => {
+    setReceiverTree((old) =>
+      createReceiverTree(
+        old,
+        newSelection.map((s) => s.value)
       )
-    }
-  }, [selectorChange, setSelectedReceivers])
+    )
+    setContentTouched(true)
+  }, [])
 
+  // update selected receivers on receiver tree changes
   useEffect(() => {
-    setSelectedReceiverOptions(getSelected(selectedReceivers))
-    setMessageBody((oldMessage) => ({
-      ...oldMessage,
-      recipientAccountIds: getSelectedBottomElements(selectedReceivers)
+    const selected = getSelected(receiverTree)
+    const recipientAccountIds = getSelectedBottomElements(receiverTree)
+    setMessage((old) => ({
+      ...old,
+      recipientAccountIds,
+      recipientIds: selected.map((s) => s.value),
+      recipientNames: selected.map((s) => s.label)
     }))
-  }, [selectedReceivers])
+  }, [receiverTree])
+
+  // update saving/saved/error status in title with debounce
+  const [saveStatus, setSaveStatus] = useState<string>()
+  useEffect(() => {
+    if (draftState === 'saving') {
+      setSaveStatus(`${i18n.common.saving}...`)
+    } else if (draftState === 'clean' && draftWasModified) {
+      setSaveStatus(i18n.common.saved)
+    } else {
+      return
+    }
+    const clearStatus = () => setSaveStatus(undefined)
+    const timeoutHandle = setTimeout(clearStatus, 1500)
+    return () => clearTimeout(timeoutHandle)
+  }, [i18n, draftState, draftWasModified])
+
+  const debouncedSaveStatus = useDebounce(saveStatus, 250)
+  const title =
+    debouncedSaveStatus ||
+    message.title ||
+    i18n.messages.messageEditor.newMessage
+
+  const updateMessage: UpdateStateFn<Message> = useCallback((changes) => {
+    setMessage((old) => ({ ...old, ...changes }))
+    setContentTouched(true)
+  }, [])
+
+  const sendEnabled = areRequiredFieldsFilledForMessage(message)
+  const sendHandler = useCallback(() => {
+    const { senderId, content, title, type, recipientAccountIds } = message
+    onSend(senderId, { content, title, type, recipientAccountIds }, draftId)
+  }, [onSend, message, draftId])
+
+  const onCloseHandler = useCallback(() => {
+    if (draftWasModified && draftState === 'dirty') {
+      saveDraft()
+    }
+    onClose(draftWasModified)
+  }, [draftState, draftWasModified, onClose, saveDraft])
 
   return (
     <Container>
       <TopBar>
-        <span>{i18n.messages.messageEditor.newBulletin}</span>
-        <IconButton icon={faTimes} onClick={hideEditor} white />
+        <span>{title}</span>
+        <IconButton icon={faTimes} onClick={onCloseHandler} white />
       </TopBar>
       <FormArea>
         <div>
@@ -96,10 +201,12 @@ export default React.memo(function MessageEditor({
           <div>{i18n.messages.messageEditor.sender}</div>
         </div>
         <Select
-          options={accountOptions}
-          onChange={(selected) =>
-            selected ? setSelectedAccount(selected as Option) : null
-          }
+          options={senderOptions}
+          onChange={(selected) => {
+            setSender(selected as Option)
+            setContentTouched(true)
+          }}
+          value={sender}
           data-qa="select-sender"
         />
         <div>
@@ -108,35 +215,9 @@ export default React.memo(function MessageEditor({
         </div>
         <MultiSelect
           placeholder={i18n.common.search}
-          value={selectedReceiverOptions}
+          value={selectedReceivers}
           options={receiverOptions}
-          onChange={(newSelection: Option[]) => {
-            if (newSelection.length < selectedReceiverOptions.length) {
-              const values = newSelection.map((option) => option.value)
-              const deselected = selectedReceiverOptions.find(
-                (option) => !values.includes(option.value)
-              )
-              if (deselected) {
-                setSelectorChange({
-                  selectorId: deselected.value,
-                  selected: false
-                })
-              }
-            } else {
-              const values = selectedReceiverOptions.map(
-                (option) => option.value
-              )
-              const newlySelected = newSelection.find(
-                (option) => !values.includes(option.value)
-              )
-              if (newlySelected) {
-                setSelectorChange({
-                  selectorId: newlySelected.value,
-                  selected: true
-                })
-              }
-            }
-          }}
+          onChange={updateReceivers}
           noOptionsMessage={i18n.common.noResults}
           getOptionId={({ value }) => value}
           getOptionLabel={({ label }) => label}
@@ -148,23 +229,21 @@ export default React.memo(function MessageEditor({
         <FixedSpaceRow>
           <Radio
             label={i18n.messages.messageEditor.type.message}
-            checked={messageBody.type === 'MESSAGE'}
-            onChange={() => setMessageBody({ ...messageBody, type: 'MESSAGE' })}
+            checked={message.type === 'MESSAGE'}
+            onChange={() => updateMessage({ type: 'MESSAGE' })}
           />
           <Radio
             label={i18n.messages.messageEditor.type.bulletin}
-            checked={messageBody.type === 'BULLETIN'}
-            onChange={() =>
-              setMessageBody({ ...messageBody, type: 'BULLETIN' })
-            }
+            checked={message.type === 'BULLETIN'}
+            onChange={() => updateMessage({ type: 'BULLETIN' })}
           />
         </FixedSpaceRow>
         <Gap size={'xs'} />
         <div>{i18n.messages.messageEditor.title}</div>
         <Gap size={'xs'} />
         <InputField
-          value={messageBody.title}
-          onChange={(title) => setMessageBody({ ...messageBody, title: title })}
+          value={message.title ?? ''}
+          onChange={(title) => updateMessage({ title })}
           data-qa={'input-title'}
         />
         <Gap size={'s'} />
@@ -172,23 +251,22 @@ export default React.memo(function MessageEditor({
         <Label>{i18n.messages.messageEditor.message}</Label>
         <Gap size={'xs'} />
         <StyledTextArea
-          value={messageBody.content}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setMessageBody({ ...messageBody, content: e.target.value })
-          }
+          value={message.content}
+          onChange={(e) => updateMessage({ content: e.target.value })}
           data-qa={'input-content'}
         />
         <Gap size={'s'} />
         <BottomRow>
           <InlineButton
-            onClick={hideEditor}
+            onClick={() => onDiscard(sender.value, draftId)}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
           />
           <Button
             text={i18n.messages.messageEditor.send}
             primary
-            onClick={() => onSend(selectedAccount.value, messageBody)}
+            disabled={!sendEnabled}
+            onClick={sendHandler}
             data-qa="send-message-btn"
           />
         </BottomRow>

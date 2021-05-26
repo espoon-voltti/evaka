@@ -2,102 +2,154 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import ReceiverSelection from 'employee-frontend/components/messages/ReceiverSelection'
-import {
-  deselectAll,
-  getReceiverOptions,
-  SelectorNode
-} from 'employee-frontend/components/messages/SelectorNode'
-import { Loading, Result } from 'lib-common/api'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { UUID } from 'lib-common/types'
 import Container from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { getMessagingAccounts } from './api'
+import { deleteDraft, postMessage } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
+import {
+  MessagesPageContext,
+  MessagesPageContextProvider
+} from './MessagesPageContext'
+import ReceiverSelection from './ReceiverSelection'
+import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
-import { MessageAccount, MessageBody } from './types'
-import { AccountView } from './types-view'
-import { postMessage } from './api'
-import { UUID } from 'lib-common/types'
+import { MessageBody } from './types'
 
 const PanelContainer = styled.div`
   display: flex;
 `
 
-export default React.memo(function MessagesPage() {
-  const [accounts, setResult] = useState<Result<MessageAccount[]>>(Loading.of())
-  const loadAccounts = useRestApi(getMessagingAccounts, setResult)
+function MessagesPage() {
+  const {
+    accounts,
+    loadAccounts,
+    selectedDraft,
+    setSelectedDraft,
+    selectedAccount,
+    setSelectedAccount,
+    refreshMessages
+  } = useContext(MessagesPageContext)
+
   useEffect(() => loadAccounts(), [loadAccounts])
-  const [view, setView] = useState<AccountView>()
 
-  const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
-
-  const [showEditor, setShowEditor] = useState<boolean>(false)
-  const hideEditor = () => {
-    selectedReceivers && setSelectedReceivers(deselectAll(selectedReceivers))
-    setShowEditor(false)
-  }
-
-  const onSend = (accountId: UUID, messageBody: MessageBody) =>
-    postMessage(accountId, {
-      title: messageBody.title,
-      content: messageBody.content,
-      type: messageBody.type,
-      recipientAccountIds: messageBody.recipientAccountIds
-    }).finally(hideEditor)
-
+  // pre-select first account
   useEffect(() => {
-    if (accounts.isSuccess && accounts.value[0]) {
-      setView({
+    if (!selectedAccount && accounts.isSuccess && accounts.value[0]) {
+      setSelectedAccount({
         view: 'RECEIVED',
         account: accounts.value[0]
       })
     }
-  }, [accounts])
+  }, [accounts, setSelectedAccount, selectedAccount])
+
+  const [showEditor, setShowEditor] = useState<boolean>(false)
+
+  // open editor when draft is selected
+  useEffect(() => {
+    if (selectedDraft) {
+      setShowEditor(true)
+    }
+  }, [selectedDraft])
+
+  const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
+
+  const hideEditor = () => {
+    setSelectedReceivers((old) => (old ? deselectAll(old) : old))
+    setShowEditor(false)
+    setSelectedDraft(undefined)
+  }
+
+  const onSend = (
+    accountId: UUID,
+    messageBody: MessageBody,
+    draftId?: UUID
+  ) => {
+    // TODO state and error handling
+    void postMessage(accountId, {
+      title: messageBody.title,
+      content: messageBody.content,
+      type: messageBody.type,
+      recipientAccountIds: messageBody.recipientAccountIds
+    })
+      .then(() => {
+        if (draftId) {
+          void deleteDraft(accountId, draftId)
+        }
+      })
+      .finally(() => {
+        refreshMessages(accountId)
+        hideEditor()
+      })
+  }
+
+  const onDiscard = (accountId: UUID, draftId?: UUID) => {
+    hideEditor()
+    if (draftId) {
+      void deleteDraft(accountId, draftId).then(() =>
+        refreshMessages(accountId)
+      )
+    }
+  }
+
+  const onHide = (didChanges: boolean) => {
+    hideEditor()
+    if (didChanges) {
+      refreshMessages()
+    }
+  }
 
   return (
     <Container>
       <Gap size="L" />
       <PanelContainer>
         <Sidebar
-          accounts={accounts}
-          view={view}
-          setView={setView}
           setSelectedReceivers={setSelectedReceivers}
           showEditor={() => setShowEditor(true)}
         />
-        {(view?.view === 'RECEIVED' ||
-          view?.view === 'SENT' ||
-          view?.view === 'DRAFTS') && <MessageList {...view} />}
-        {view?.view === 'RECEIVERS' && selectedReceivers && (
+        {(selectedAccount?.view === 'RECEIVED' ||
+          selectedAccount?.view === 'SENT' ||
+          selectedAccount?.view === 'DRAFTS') && (
+          <MessageList {...selectedAccount} />
+        )}
+        {selectedAccount?.view === 'RECEIVERS' && selectedReceivers && (
           <ReceiverSelection
             selectedReceivers={selectedReceivers}
             setSelectedReceivers={setSelectedReceivers}
           />
         )}
-        {showEditor && accounts.isSuccess && selectedReceivers && view && (
-          <MessageEditor
-            defaultAccountSelection={{
-              value: view.account.id,
-              label: view.account.id
-            }}
-            accountOptions={accounts.value.map(({ name, id }) => ({
-              value: id,
-              label: name
-            }))}
-            selectedReceivers={selectedReceivers}
-            receiverOptions={
-              selectedReceivers ? getReceiverOptions(selectedReceivers) : []
-            }
-            setSelectedReceivers={setSelectedReceivers}
-            onSend={onSend}
-            hideEditor={hideEditor}
-          />
-        )}
+        {showEditor &&
+          accounts.isSuccess &&
+          selectedReceivers &&
+          selectedAccount && (
+            <MessageEditor
+              defaultSender={{
+                value: selectedAccount.account.id,
+                label: selectedAccount.account.name
+              }}
+              senderOptions={accounts.value.map(({ name, id }) => ({
+                value: id,
+                label: name
+              }))}
+              availableReceivers={selectedReceivers}
+              onSend={onSend}
+              onDiscard={onDiscard}
+              onClose={onHide}
+              draftContent={selectedDraft}
+            />
+          )}
       </PanelContainer>
     </Container>
   )
-})
+}
+
+export default function MessagesPageWrapper() {
+  return (
+    <MessagesPageContextProvider>
+      <MessagesPage />
+    </MessagesPageContextProvider>
+  )
+}

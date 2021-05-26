@@ -9,8 +9,8 @@ import { defaultMargins } from '../../../lib-components/white-space'
 import colors from '../../../lib-customizations/common'
 import { faChevronDown, faChevronUp } from '../../../lib-icons'
 import MessageBox, { MessageBoxRow } from './MessageBox'
-import { GroupMessageAccount, messageBoxes } from './types'
-import { AccountView } from './types-view'
+import { GroupMessageAccount } from './types'
+import { AccountView, messageBoxes } from './types-view'
 
 const AccountContainer = styled.div`
   margin: 12px 0;

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import {
   ApiFunction,
   ApiResultOf,
@@ -17,11 +17,13 @@ export function useRestApi<F extends ApiFunction>(
   setState: (result: Result<ApiResultOf<F>>) => void
 ): (...args: Parameters<F>) => void {
   const [api] = useState(() => withStaleCancellation(f))
+  const mountedRef = useRef(true)
+
   return useCallback(
     (...args: Parameters<F>) => {
       setState(Loading.of())
       void api(...args).then((result) => {
-        if (isCancelled(result)) return
+        if (!mountedRef.current || isCancelled(result)) return
         setState(result)
       })
     },

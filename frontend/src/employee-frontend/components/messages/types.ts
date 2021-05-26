@@ -5,7 +5,6 @@
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
-import { View } from './types-view'
 
 export type Recipient = {
   personId: string
@@ -14,11 +13,6 @@ export type Recipient = {
   guardian: boolean
   headOfChild: boolean
   blocklisted: boolean
-}
-
-export type IdAndName = {
-  id: UUID
-  name: string
 }
 
 export interface ReceiverChild {
@@ -45,32 +39,35 @@ export const deserializeReceiverChild = (
   ...json,
   childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
 })
-export interface ReceiverTriplet {
-  unitId: UUID
-  groupId?: UUID
-  personId?: UUID
-}
-
-export const messageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
 
 export interface BaseMessageAccount {
   id: UUID
   name: string
 }
-export interface MessageAccount extends BaseMessageAccount {
-  personal: boolean
-  daycareGroup?: {
+interface AccountWithUnreadCount extends BaseMessageAccount {
+  unreadCount: number
+}
+export interface PersonalMessageAccount extends AccountWithUnreadCount {
+  type: 'PERSONAL'
+}
+export interface GroupMessageAccount extends AccountWithUnreadCount {
+  type: 'GROUP'
+  daycareGroup: {
     id: UUID
     name: string
     unitId: UUID
     unitName: string
   }
-  unreadCount: number
 }
-export type GroupMessageAccount = Required<MessageAccount>
+export type MessageAccount = PersonalMessageAccount | GroupMessageAccount
+
 export const isGroupMessageAccount = (
   acc: MessageAccount
-): acc is GroupMessageAccount => !!acc.daycareGroup
+): acc is GroupMessageAccount => acc.type === 'GROUP'
+
+export const isPersonalMessageAccount = (
+  acc: MessageAccount
+): acc is PersonalMessageAccount => acc.type === 'PERSONAL'
 
 export interface Message {
   id: UUID
@@ -90,8 +87,12 @@ export interface MessageBody {
   recipientAccountIds: UUID[]
 }
 
-export type UpsertableDraftContent = Partial<MessageBody> & {
-  recipientNames?: string[]
+export interface UpsertableDraftContent {
+  title: string
+  content: string
+  type: MessageType
+  recipientIds: UUID[]
+  recipientNames: string[]
 }
 export interface DraftContent extends UpsertableDraftContent {
   id: UUID
