@@ -184,11 +184,13 @@ export default function App() {
               component={ensureAuthenticated(DecisionPage)}
               title={i18n.titles.decision}
             />
-            <Route
-              exact
-              path="/finance/basics"
-              component={ensureAuthenticated(FinanceBasicsPage)}
-            />
+            {featureFlags.financeBasicsPage ? (
+              <Route
+                exact
+                path="/finance/basics"
+                component={ensureAuthenticated(FinanceBasicsPage)}
+              />
+            ) : null}
             <Route
               exact
               path="/finance/fee-decisions/:id"
