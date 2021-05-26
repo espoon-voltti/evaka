@@ -34,18 +34,22 @@ type Message = UpsertableDraftContent & {
   recipientAccountIds: UUID[]
 }
 
+const emptyMessage = {
+  content: '',
+  recipientIds: [],
+  recipientNames: [],
+  recipientAccountIds: [],
+  title: '',
+  type: 'MESSAGE' as const
+}
+
 const getInitialMessage = (
   draft: DraftContent | undefined,
   senderId: UUID
-): Message => ({
-  senderId,
-  content: draft?.content ?? '',
-  recipientIds: draft?.recipientIds ?? [],
-  recipientNames: draft?.recipientNames ?? [],
-  recipientAccountIds: [],
-  title: draft?.title ?? '',
-  type: draft?.type ?? 'MESSAGE'
-})
+): Message =>
+  draft
+    ? { ...draft, senderId, recipientAccountIds: [] }
+    : { senderId, ...emptyMessage }
 
 const areRequiredFieldsFilledForMessage = (msg: Message): boolean =>
   !!(msg.recipientAccountIds?.length && msg.type && msg.content && msg.title)
