@@ -14,7 +14,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import InfoBall from '../../../components/common/InfoBall'
 import {
   AssistanceAction,
-  AssistanceActionType,
+  AssistanceActionOption,
   AssistanceMeasure
 } from '../../../types/child'
 import { UUID } from '../../../types'
@@ -26,7 +26,6 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import LabelValueList from '../../../components/common/LabelValueList'
-import { ASSISTANCE_ACTION_TYPE_LIST } from '../../../constants'
 import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
@@ -48,13 +47,14 @@ const CheckboxRow = styled.div`
 interface FormState {
   startDate: LocalDate
   endDate: LocalDate
-  actions: Set<AssistanceActionType>
+  actions: Set<string>
   otherAction: string
   measures: Set<AssistanceMeasure>
 }
 
 interface CommonProps {
   onReload: () => undefined | void
+  assistanceActionOptions: AssistanceActionOption[]
 }
 
 interface CreateProps extends CommonProps {
@@ -243,34 +243,23 @@ function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.actions,
             value: (
               <div>
-                {ASSISTANCE_ACTION_TYPE_LIST.map((action) => (
-                  <CheckboxRow key={action}>
+                {props.assistanceActionOptions.map((option) => (
+                  <CheckboxRow key={option.value}>
                     <Checkbox
-                      label={
-                        i18n.childInformation.assistanceAction.fields
-                          .actionTypes[action]
-                      }
-                      checked={form.actions.has(action)}
+                      label={option.nameFi}
+                      checked={form.actions.has(option.value)}
                       onChange={(value) => {
                         const actions = new Set([...form.actions])
-                        if (value) actions.add(action)
-                        else actions.delete(action)
+                        if (value) actions.add(option.value)
+                        else actions.delete(option.value)
                         updateFormState({ actions: actions })
                       }}
                     />
-                    {i18n.childInformation.assistanceAction.fields.actionTypes[
-                      `${action}_INFO`
-                    ] && (
-                      <InfoBall
-                        text={String(
-                          i18n.childInformation.assistanceAction.fields
-                            .actionTypes[`${action}_INFO`]
-                        )}
-                      />
-                    )}
                   </CheckboxRow>
                 ))}
-                {form.actions.has('OTHER') && (
+                {props.assistanceActionOptions.some(
+                  (option) => option.isOther && form.actions.has(option.value)
+                ) && (
                   <InputField
                     value={form.otherAction}
                     onChange={(value) =>

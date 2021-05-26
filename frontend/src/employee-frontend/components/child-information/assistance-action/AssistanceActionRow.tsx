@@ -4,7 +4,7 @@
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
 import { useTranslation } from '../../../state/i18n'
-import { AssistanceAction } from '../../../types/child'
+import { AssistanceAction, AssistanceActionOption } from '../../../types/child'
 import { UIContext } from '../../../state/ui'
 import AssistanceActionForm from '../../../components/child-information/assistance-action/AssistanceActionForm'
 import { faQuestion } from 'lib-icons'
@@ -13,7 +13,6 @@ import { isActiveDateRange } from '../../../utils/date'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import LabelValueList from '../../../components/common/LabelValueList'
-import { ASSISTANCE_ACTION_TYPE_LIST } from '../../../constants'
 import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceAction } from '../../../api/child/assistance-actions'
@@ -22,12 +21,14 @@ import { assistanceMeasures } from 'lib-customizations/employee'
 export interface Props {
   assistanceAction: AssistanceAction
   onReload: () => undefined | void
+  assistanceActionOptions: AssistanceActionOption[]
   refSectionTop: MutableRefObject<HTMLElement | null>
 }
 
 function AssistanceActionRow({
   assistanceAction,
   onReload,
+  assistanceActionOptions,
   refSectionTop
 }: Props) {
   const { i18n } = useTranslation()
@@ -94,6 +95,7 @@ function AssistanceActionRow({
             <AssistanceActionForm
               assistanceAction={assistanceAction}
               onReload={onReload}
+              assistanceActionOptions={assistanceActionOptions}
             />
           </div>
         ) : (
@@ -108,27 +110,16 @@ function AssistanceActionRow({
                 label: i18n.childInformation.assistanceAction.fields.actions,
                 value: (
                   <ul>
-                    {ASSISTANCE_ACTION_TYPE_LIST.filter(
-                      (action) => action != 'OTHER'
-                    ).map(
-                      (action) =>
-                        assistanceAction.actions.has(action) && (
-                          <li key={action}>
-                            {
-                              i18n.childInformation.assistanceAction.fields
-                                .actionTypes[action]
-                            }
+                    {assistanceActionOptions.map(
+                      (option) =>
+                        assistanceAction.actions.has(option.value) && (
+                          <li key={option.value}>
+                            {option.nameFi}
+                            {option.isOther
+                              ? `: ${assistanceAction.otherAction}`
+                              : null}
                           </li>
                         )
-                    )}
-                    {assistanceAction.actions.has('OTHER') && (
-                      <li>
-                        {
-                          i18n.childInformation.assistanceAction.fields
-                            .actionTypes.OTHER
-                        }
-                        : {assistanceAction.otherAction}
-                      </li>
                     )}
                   </ul>
                 )
