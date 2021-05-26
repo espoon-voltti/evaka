@@ -100,7 +100,7 @@ class MessageNotificationEmailService(
     private fun getSubject(): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
-        return "Uusi viesti eVakassa$postfix / Ny meddelande i eVaka$postfix / New message in eVaka$postfix"
+        return "Uusi viesti eVakassa / Ny meddelande i eVaka / New message in eVaka$postfix"
     }
 
     private fun getCitizenMessagesUrl(lang: Language): String {
@@ -117,8 +117,12 @@ class MessageNotificationEmailService(
                 <p>Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
             
+                <hr>
+                
                 <p>Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
+                
+                <hr>
                 
                 <p>You have received a new eVaka bulletin/message. Read the message here: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       

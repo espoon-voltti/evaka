@@ -46,7 +46,7 @@ class ApplicationReceivedEmailService(private val emailClient: IEmailClient, env
     private fun getSubject(): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
 
-        return "Olemme vastaanottaneet hakemuksenne$postfix / Vi har tagit emot din ansökan$postfix / We have received your child’s application$postfix"
+        return "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application$postfix"
     }
 
     private fun getHtmlForPreschool(withinApplicationPeriod: Boolean): String {
