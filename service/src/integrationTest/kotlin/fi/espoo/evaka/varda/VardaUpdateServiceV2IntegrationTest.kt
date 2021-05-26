@@ -223,6 +223,11 @@ class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
         assertEquals(deletedSnId, diffs.get(childId)?.deletes?.get(0))
     }
 
+    @Test
+    fun `getEvakaFeeDataChangesByServiceNeed returns empty set when there are no changes`() {
+        db.read { assertEquals(0, it.calculateEvakaFeeDataChangesByServiceNeed(HelsinkiDateTime.now()).size) }
+    }
+
     private fun assertServiceNeedDiffSizes(diff: VardaChildCalculatedServiceNeedChanges?, expectedAdditions: Int, expectedUpdates: Int, expectedDeletes: Int) {
         assertNotNull(diff)
         if (diff != null) {

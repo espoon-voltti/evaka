@@ -16,35 +16,8 @@ class VardaUpdateServiceV2 {
         updateOrganizer(db, client, organizer)
         updateUnits(db, client, organizer)
 
-        //       updateAllChildVardaData(db, client, organizer)
+        // updateChildData(db, client, organizer)
     }
-
-    /*
-        1. Find out all evaka children with changed Varda related data:
-            - new, modified or deleted evaka service need compared to stored service need history (see below)
-            - TODO: fee decisions
-        2. For each of these children:
-            - first check if there is enough info to do the update
-                - must have any service need AND
-                - must have any fee decision
-
-                (if not, switch to next child)
-
-                then
-
-            - create a varda henkilo and lapsi if missing
-            - since given lastUpdated:
-                - if existing evaka service need is changed compared to stored service need history timestamp (see below)
-                    - delete correspoding varda varhaiskasvatuspaatos from varda and add a new one
-                    - store the evaka service need id - service need option - MAX(update) value - varda varhaiskasvatuspaatos id
-                - if there is a new evaka service need
-                    - create correspoding varda varhaiskasvatuspaatos
-                    - create a new varda varhaiskasvatussuhde
-                    - store the evaka service need id - service need option - MAX(update) value - varda varhaiskasvatuspaatos id
-                - do the same for evaka fee decisions -> varda maksutiedot (TODO more specific design)
-     */
-//    fun updateAllChildVardaData(db: Database.Connection, client: VardaClient, organizer: String) {
-//    }
 }
 
 fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, startingFrom: HelsinkiDateTime): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
@@ -169,3 +142,88 @@ WHERE evaka_child_id = :evakaChildId
         .bind("evakaChildId", evakaChildId)
         .mapTo<VardaServiceNeed>()
         .list()
+
+fun Database.Read.getEvakaFeeDataChangesByChild(startingFrom: HelsinkiDateTime): List<EvakaFeeDataChangesByChild> =
+    createQuery(
+        """
+WITH child_new_fee_decisions AS (
+SELECT
+    fdc.child_id AS child_id,
+    array_agg(fdc.id::uuid) AS fee_decision_child_ids,
+    true AS is_fee_decision
+FROM new_fee_decision fd
+    LEFT JOIN new_fee_decision_child fdc ON fd.id = fdc.fee_decision_id
+    WHERE fd.sent_at >= :startingFrom
+GROUP BY fdc.child_id),
+child_new_voucher_value_decisions AS (
+SELECT
+    vvd.child_id AS child_id,
+    array_agg(vvd.id) AS voucher_value_decision_ids,
+    false AS is_fee_decision
+FROM voucher_value_decision vvd
+WHERE vvd.sent_at >= :startingFrom
+GROUP BY vvd.child_id)
+SELECT
+    COALESCE(fd.child_id, vvd.child_id) AS child_id,
+    fee_decision_child_ids,
+    voucher_value_decision_ids
+FROM child_new_fee_decisions fd FULL OUTER JOIN child_new_voucher_value_decisions vvd
+    ON fd.child_id = vvd.child_id;            
+        """
+    )
+        .bind("startingFrom", startingFrom)
+        .mapTo<EvakaFeeDataChangesByChild>()
+        .list()
+
+data class EvakaFeeDataChangesByChild(
+    val childId: UUID,
+    val feeDecisionChildIds: List<UUID> = emptyList(),
+    val voucherValueDecisionIds: List<UUID> = emptyList()
+)
+
+fun Database.Read.calculateEvakaFeeDataChangesByServiceNeed(startingFrom: HelsinkiDateTime): List<EvakaFeeDataChangesByServiceNeed> =
+    createQuery(
+        """
+WITH changed_fees AS (
+  SELECT
+    fdc.id AS fee_decision_child_id,
+    fdc.child_id,
+    fd.valid_during
+  FROM new_fee_decision fd LEFT JOIN new_fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
+  WHERE fd.sent_at >= :startingFrom
+), service_need_fees AS (
+  SELECT
+    sn.id AS service_need_id,
+    array_agg(changed_fees.fee_decision_child_id) AS fee_decision_ids
+  FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
+    JOIN changed_fees ON p.child_id = changed_fees.child_id 
+      AND changed_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
+  GROUP BY service_need_id
+), service_need_vouchers AS (
+SELECT
+    sn.id AS service_need_id,
+    array_agg(vvd.id) AS voucher_value_decision_ids
+FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
+  JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
+    AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+  WHERE vvd.sent_at >= :startingFrom  
+GROUP BY service_need_id
+)
+SELECT
+    COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) AS service_need_id,
+    service_need_fees.fee_decision_ids,
+    service_need_vouchers.voucher_value_decision_ids
+FROM service_need_fees 
+    FULL OUTER JOIN service_need_vouchers ON 
+        service_need_fees.service_need_id = service_need_vouchers.service_need_id;        
+        """
+    )
+        .bind("startingFrom", startingFrom)
+        .mapTo<EvakaFeeDataChangesByServiceNeed>()
+        .list()
+
+data class EvakaFeeDataChangesByServiceNeed(
+    val serviceNeedId: UUID,
+    val feeDecisionIds: List<UUID> = emptyList(),
+    val voucherValueDecisionIds: List<UUID> = emptyList()
+)
