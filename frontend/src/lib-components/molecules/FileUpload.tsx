@@ -23,6 +23,7 @@ import { UUID } from 'lib-common/types'
 import { Result, Success } from 'lib-common/api'
 import { Attachment } from 'lib-common/api-types/application/ApplicationDetails'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 type FileUploadError = 'FILE_TOO_LARGE' | 'SERVER_ERROR'
 
@@ -240,7 +241,7 @@ export default React.memo(function FileUpload({
   onDownloadFile,
   'data-qa': dataQa
 }: FileUploadProps) {
-  const ariaId = Math.random().toString(36).substring(2, 15)
+  const ariaId = useUniqueId('file-upload')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [modalVisible, setModalVisible] = useState<boolean>(false)

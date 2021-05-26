@@ -5,8 +5,6 @@
 import { MutableRefObject } from 'react'
 import { Translations } from 'lib-customizations/employee'
 
-export const key = Math.random().toString(36).substring(7)
-
 export const formatName = (
   maybeFirstName: string | null,
   maybeLastName: string | null,

@@ -21,6 +21,7 @@ import { deleteAttachment, getAttachmentBlob, saveAttachment } from '../../api'
 import { isValidPreferredStartDate } from '../validations'
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,
@@ -34,7 +35,7 @@ export default React.memo(function PreferredStartSubSection({
   const { applicationId } = useParams<{ applicationId: string }>()
   const t = useTranslation()
   const [lang] = useLang()
-  const labelId = Math.random().toString(36).substring(2, 15)
+  const labelId = useUniqueId()
 
   const uploadUrgencyAttachment = (
     file: File,

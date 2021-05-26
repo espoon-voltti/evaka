@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import InputField, { InputInfo } from '../../atoms/form/InputField'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 interface Props {
   date: string
@@ -39,7 +40,7 @@ function DatePickerInput({
   locale,
   ...props
 }: Props) {
-  const ariaId = Math.random().toString(36).substring(2, 15)
+  const ariaId = useUniqueId('date-picker-input')
 
   function changeHandler(e: string) {
     // clean up any invalid characters
