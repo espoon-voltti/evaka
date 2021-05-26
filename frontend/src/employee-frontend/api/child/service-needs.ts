@@ -8,6 +8,10 @@ import { client } from '../../api/client'
 import { ServiceNeed } from '../../types/child'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
+import {
+  PlacementType,
+  ServiceNeedOptionPublicInfo
+} from 'lib-common/api-types/serviceNeed/common'
 
 export interface ServiceNeedRequest {
   startDate: LocalDate
@@ -77,5 +81,17 @@ export async function removeServiceNeed(id: UUID): Promise<Result<null>> {
   return client
     .delete(`/service-needs/${id}`)
     .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getServiceNeedOptionPublicInfos(
+  placementTypes: PlacementType[]
+): Promise<Result<ServiceNeedOptionPublicInfo[]>> {
+  return client
+    .get<JsonOf<ServiceNeedOptionPublicInfo[]>>(
+      '/public/new-service-needs/options',
+      { params: { placementTypes: placementTypes.join() } }
+    )
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
