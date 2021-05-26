@@ -7,11 +7,10 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faArrowLeft, farStickyNote } from 'lib-icons'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import colors from 'lib-customizations/common'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { Gap } from 'lib-components/white-space'
 import InputField from 'lib-components/atoms/form/InputField'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -30,7 +29,7 @@ import {
 import { useTranslation } from '../../../state/i18n'
 import { getCurrentTime } from '../child-info/ChildInfo'
 import DailyNote from '../notes/DailyNote'
-import { Actions } from '../components'
+import { Actions, BackButtonInline } from '../components'
 
 export default React.memo(function MarkPresent() {
   const history = useHistory()
@@ -80,13 +79,17 @@ export default React.memo(function MarkPresent() {
           paddingHorizontal={'zero'}
           paddingVertical={'zero'}
         >
-          <BackButton
-            onClick={() => history.goBack()}
-            icon={faArrowLeft}
-            text={
-              child ? `${child.firstName} ${child.lastName}` : i18n.common.back
-            }
-          />
+          <div>
+            <BackButtonInline
+              onClick={() => history.goBack()}
+              icon={faArrowLeft}
+              text={
+                child
+                  ? `${child.firstName} ${child.lastName}`
+                  : i18n.common.back
+              }
+            />
+          </div>
           <ContentArea
             shadow
             opaque={true}
@@ -147,13 +150,6 @@ export default React.memo(function MarkPresent() {
     </>
   )
 })
-
-const BackButton = styled(InlineButton)`
-  color: ${colors.blues.dark};
-  margin-top: ${defaultMargins.s};
-  margin-left: ${defaultMargins.s};
-  margin-bottom: ${defaultMargins.s};
-`
 
 const TimeWrapper = styled.div`
   display: flex;

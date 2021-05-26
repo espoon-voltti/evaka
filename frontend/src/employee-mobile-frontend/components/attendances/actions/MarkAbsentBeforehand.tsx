@@ -175,19 +175,23 @@ export default React.memo(function MarkAbsentBeforehand() {
           paddingHorizontal={'zero'}
           paddingVertical={'zero'}
         >
-          <BackButtonInline
-            onClick={() => {
-              if (selectedAbsenceType && canSave()) {
-                setUiMode('confirmExit')
-              } else {
-                history.goBack()
+          <div>
+            <BackButtonInline
+              onClick={() => {
+                if (selectedAbsenceType && canSave()) {
+                  setUiMode('confirmExit')
+                } else {
+                  history.goBack()
+                }
+              }}
+              icon={faArrowLeft}
+              text={
+                child
+                  ? `${child.firstName} ${child.lastName}`
+                  : i18n.common.back
               }
-            }}
-            icon={faArrowLeft}
-            text={
-              child ? `${child.firstName} ${child.lastName}` : i18n.common.back
-            }
-          />
+            />
+          </div>
           <ContentArea
             shadow
             opaque={true}

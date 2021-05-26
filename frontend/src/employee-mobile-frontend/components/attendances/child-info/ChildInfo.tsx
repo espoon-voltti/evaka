@@ -114,7 +114,7 @@ const Shadow = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  min-height: calc(100vh - 74px);
 `
 
 export default React.memo(function AttendanceChildPage() {
