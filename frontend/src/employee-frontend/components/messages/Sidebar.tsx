@@ -79,11 +79,14 @@ function Accounts({
   )
   const unitSelectionEnabled = unitOptions.length > 1
 
-  const [selectedUnit, setSelectedUnit] = useState<SelectOptionProps>(
-    unitOptions[0]
-  )
+  const [selectedUnit, setSelectedUnit] = useState<
+    SelectOptionProps | undefined
+  >(unitOptions[0])
 
   useEffect(() => {
+    if (!selectedUnit) {
+      return
+    }
     const { label: unitName, value: unitId } = selectedUnit
     void getReceivers(unitId).then((result: Result<ReceiverGroup[]>) => {
       if (result.isSuccess)
@@ -93,12 +96,14 @@ function Accounts({
     })
   }, [selectedUnit, setSelectedReceivers])
 
-  const visibleGroupAccounts = sortBy(
-    groupAccounts.filter(
-      (acc) => acc.daycareGroup.unitId === selectedUnit.value
-    ),
-    (val) => val.daycareGroup.name
-  )
+  const visibleGroupAccounts = selectedUnit
+    ? sortBy(
+        groupAccounts.filter(
+          (acc) => acc.daycareGroup.unitId === selectedUnit.value
+        ),
+        (val) => val.daycareGroup.name
+      )
+    : []
 
   return (
     <>
