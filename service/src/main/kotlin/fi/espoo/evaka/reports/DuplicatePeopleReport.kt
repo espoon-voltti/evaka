@@ -92,6 +92,11 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
                     'table', 'message_recipients',
                     'column', 'recipient_id',
                     'count', (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = p.id))
+                ),
+                json_build_object(
+                    'table', 'message_draft',
+                    'column', 'account_id',
+                    'count', (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = p.id))
                 )
             ) AS reference_counts
         FROM duplicate_ids dups

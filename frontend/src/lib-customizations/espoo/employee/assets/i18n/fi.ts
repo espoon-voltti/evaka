@@ -2001,7 +2001,8 @@ export const fi = {
         'voucher_value_decision.partner_id': 'Arvo- päätöksiä (puoliso)',
         'message.sender_id': 'Lähetettyjä viestejä',
         'message_content.author_id': 'Kirjoitettuja viesti- sisältöjä',
-        'message_recipients.recipient_id': 'Saatuja viestejä'
+        'message_recipients.recipient_id': 'Saatuja viestejä',
+        'message_draft.account_id': 'Viesti- luonnoksia'
       }
     },
     familyConflicts: {
