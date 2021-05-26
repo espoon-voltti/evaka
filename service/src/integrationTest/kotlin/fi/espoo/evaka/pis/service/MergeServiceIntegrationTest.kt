@@ -38,8 +38,8 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.testDaycare
-import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -98,7 +98,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
             )
         }
 
-        assertThrows<UnableToExecuteStatementException> { db.transaction { mergeService.deleteEmptyPerson(it, id) } }
+        assertThrows<Conflict> { db.transaction { mergeService.deleteEmptyPerson(it, id) } }
     }
 
     @Test

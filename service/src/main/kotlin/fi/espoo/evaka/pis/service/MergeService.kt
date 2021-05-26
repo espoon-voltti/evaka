@@ -4,10 +4,13 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.getTransferablePersonReferences
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.domain.Conflict
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -28,8 +31,6 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
                 SELECT min(valid_from) AS min_date, max(coalesce(valid_to, 'infinity'::date)) AS max_date FROM fee_alteration WHERE person_id = :id_duplicate
                 UNION
                 SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM placement SET WHERE child_id = :id_duplicate
-                UNION
-                SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM service_need SET WHERE child_id = :id_duplicate
             )
             SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING min(min_date) IS NOT NULL;
             """.trimIndent()
@@ -43,6 +44,8 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
                 )
             }
             .firstOrNull()
+
+        val personReferences = tx.getTransferablePersonReferences()
 
         // language=sql
         val updateSQL =
@@ -59,25 +62,11 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
                 
             UPDATE child SET allergies = '', diet = '', additionalinfo = '' WHERE id = :id_duplicate;
             
-            UPDATE application SET guardian_id = :id_master WHERE guardian_id = :id_duplicate;
-            UPDATE fridge_partner SET person_id = :id_master WHERE person_id = :id_duplicate;
-            UPDATE fridge_child SET head_of_child = :id_master WHERE head_of_child = :id_duplicate;
-            UPDATE fee_decision SET head_of_family = :id_master WHERE head_of_family = :id_duplicate;
-            UPDATE fee_decision SET partner = :id_master WHERE partner = :id_duplicate;
-            UPDATE income SET person_id = :id_master WHERE person_id = :id_duplicate;
-            UPDATE invoice SET head_of_family = :id_master WHERE head_of_family = :id_duplicate;
-            
-            UPDATE absence SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE application SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE assistance_need SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE assistance_action SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE backup_care SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE fee_alteration SET person_id = :id_master WHERE person_id = :id_duplicate;
-            UPDATE fee_decision_part SET child = :id_master WHERE child = :id_duplicate;
-            UPDATE fridge_child SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE invoice_row SET child = :id_master WHERE child = :id_duplicate;
-            UPDATE placement SET child_id = :id_master WHERE child_id = :id_duplicate;
-            UPDATE service_need SET child_id = :id_master WHERE child_id = :id_duplicate;
+            ${personReferences.joinToString(separator = "") { (table, column) ->
+                """
+                UPDATE $table SET $column = :id_master WHERE $column = :id_duplicate;
+            """
+            }}
             
             UPDATE message SET sender_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE sender_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_content SET author_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
@@ -106,18 +95,32 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     fun deleteEmptyPerson(tx: Database.Transaction, id: UUID) {
+        val personReferences = tx.getTransferablePersonReferences()
+
         // language=sql
         val sql1 =
             """
-            SELECT ensure_empty_person(:id);
+            SELECT 
+                ${personReferences.joinToString(separator = " + ") { (table, column) ->
+                """
+                    (SELECT count(*) FROM $table WHERE $column = :id)
+                """.trimIndent()
+            }} +
+                (SELECT count(*) FROM message WHERE sender_id = (SELECT id FROM message_account WHERE person_id = :id)) +
+                (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id)) +
+                (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id)) AS count;
             """.trimIndent()
 
-        tx.createUpdate(sql1).bind("id", id).execute()
+        val referenceCount = tx.createQuery(sql1).bind("id", id).mapTo<Int>().first()
+        if (referenceCount > 0) {
+            throw Conflict("Person is still referenced from somewhere and cannot be deleted")
+        }
 
         // language=sql
         val sql2 =
             """
             DELETE FROM message_account WHERE person_id = :id;
+            DELETE FROM guardian WHERE guardian_id = :id OR child_id = :id;
             DELETE FROM child WHERE id = :id;
             DELETE FROM person WHERE id = :id;
             """.trimIndent()

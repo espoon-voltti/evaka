@@ -339,3 +339,24 @@ WHERE id = :id
     """.trimIndent()
 ).bind("id", id)
     .execute()
+
+data class PersonReference(
+    val table: String,
+    val column: String
+)
+
+fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
+    // language=sql
+    val sql = """
+        select source.relname as "table", attr.attname as "column"
+        from pg_constraint const
+            join pg_class source on source.oid = const.conrelid
+            join pg_class target on target.oid = const.confrelid
+            join pg_attribute attr on attr.attrelid = source.oid and attr.attnum = ANY(const.conkey)
+        where const.contype = 'f' 
+            and target.relname in ('person', 'child') 
+            and source.relname not in ('person', 'child', 'guardian', 'message_account')
+        order by source.relname, attr.attname
+    """.trimIndent()
+    return createQuery(sql).mapTo<PersonReference>().list()
+}
