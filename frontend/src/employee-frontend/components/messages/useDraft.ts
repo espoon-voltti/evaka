@@ -11,7 +11,6 @@ import { SaveDraftParams } from './api'
 import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
 import { UpsertableDraftContent } from './types'
 
-type InitState = 'uninitialized' | 'initializing' | 'initialized'
 type SaveState = 'clean' | 'dirty' | 'saving'
 
 export type Draft = UpsertableDraftContent & { accountId: UUID }
@@ -31,9 +30,6 @@ export function useDraft(
   state: 'clean' | 'dirty' | 'saving'
   setDraft: (draft: Draft) => void
 } {
-  const [initState, setInitState] = useState<InitState>(
-    initialId ? 'initialized' : 'uninitialized'
-  )
   const [saveState, setSaveState] = useState<SaveState>('clean')
   const [id, setId] = useState<UUID | undefined>(initialId)
   const [draft, setDraft] = useState<Draft>()
@@ -41,17 +37,18 @@ export function useDraft(
 
   const initDraft = useRestApi(api.initDraft, (res: Result<UUID>) => {
     if (res.isSuccess) {
-      setInitState('initialized')
       setId(res.value)
+      setInitializing(false)
     }
   })
   // initialize draft when needed
+  const [initializing, setInitializing] = useState<boolean>(false)
   useEffect(() => {
-    if (!id && saveState === 'dirty' && initState !== 'initializing' && draft) {
+    if (!id && saveState === 'dirty' && !initializing && draft) {
+      setInitializing(true)
       initDraft(draft.accountId)
-      setInitState('initializing')
     }
-  }, [id, initDraft, draft, saveState, initState])
+  }, [id, initDraft, draft, saveState, initializing])
 
   const save = useRestApi(api.saveDraft, (res: Result<void>) => {
     if (res.isSuccess) {
