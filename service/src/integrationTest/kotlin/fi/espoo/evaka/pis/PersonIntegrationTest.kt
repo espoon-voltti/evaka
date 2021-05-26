@@ -63,7 +63,7 @@ class PersonIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `getPersonReferences returns references to person and child tables excluding self-references and message_account`() {
+    fun `getTransferablePersonReferences returns references to person and child tables`() {
         /*
         This should exclude tables where data is always deleted with person and not transferred:
         - child
