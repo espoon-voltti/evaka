@@ -21,6 +21,7 @@ import ensureAuthenticated from './components/ensureAuthenticated'
 import LoginPage from './components/LoginPage'
 import Units from './components/Units'
 import ApplicationsPage from './components/applications/ApplicationsPage'
+import FinanceBasicsPage from './components/finance-basics/FinanceBasicsPage'
 import FinancePage from './components/FinancePage'
 import InvoicePage from './components/invoice/InvoicePage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
@@ -183,6 +184,13 @@ export default function App() {
               component={ensureAuthenticated(DecisionPage)}
               title={i18n.titles.decision}
             />
+            {featureFlags.financeBasicsPage ? (
+              <Route
+                exact
+                path="/finance/basics"
+                component={ensureAuthenticated(FinanceBasicsPage)}
+              />
+            ) : null}
             <Route
               exact
               path="/finance/fee-decisions/:id"

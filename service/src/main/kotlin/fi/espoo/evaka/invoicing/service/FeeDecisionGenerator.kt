@@ -22,7 +22,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
-import fi.espoo.evaka.invoicing.domain.Pricing
+import fi.espoo.evaka.invoicing.domain.PricingWithValidity
 import fi.espoo.evaka.invoicing.domain.ServiceNeedValue
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
@@ -95,13 +95,13 @@ private fun generateNewFeeDecisions2(
     partner: PersonData.JustId?,
     familySize: Int,
     allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
-    prices: List<Pair<DateRange, Pricing>>,
+    prices: List<PricingWithValidity>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     invoicedUnits: List<UUID>
 ): List<FeeDecision2> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
-        prices.map { it.first } +
+        prices.map { it.validDuring } +
         allPlacements.flatMap { (_, placements) ->
             placements.map { it.first }
         } +
@@ -109,7 +109,7 @@ private fun generateNewFeeDecisions2(
 
     return asDistinctPeriods(periods, DateRange(from, null))
         .map { period ->
-            val price = prices.find { it.first.contains(period) }?.second
+            val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate fee decision")
 
             val income = incomes
@@ -136,7 +136,7 @@ private fun generateNewFeeDecisions2(
             val children = if (validPlacements.isNotEmpty()) {
                 val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
 
-                val baseFee = calculateBaseFee(price, familySize, familyIncomes)
+                val baseFee = calculateBaseFee(price.withoutDates(), familySize, familyIncomes)
                 validPlacements
                     .sortedByDescending { (child, _) -> child.dateOfBirth }
                     .mapIndexed { index, (child, placement) ->
@@ -188,7 +188,7 @@ private fun generateNewFeeDecisions2(
                 headOfFamilyIncome = income,
                 partnerIncome = partnerIncome,
                 familySize = familySize,
-                pricing = price,
+                pricing = price.withoutDates(),
                 children = children.sortedBy { it.siblingDiscount }
             )
         }

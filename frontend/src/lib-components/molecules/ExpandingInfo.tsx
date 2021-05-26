@@ -8,7 +8,7 @@ import styled, { useTheme } from 'styled-components'
 import RoundIcon from '../atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { defaultMargins } from '../white-space'
+import { defaultMargins, SpacingSize } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import IconButton from '../atoms/buttons/IconButton'
 
@@ -43,20 +43,22 @@ const InfoContainer = styled.div`
   padding: 0 ${defaultMargins.s};
 `
 
-const RoundIconWithMargin = styled(RoundIcon)`
-  margin-top: ${defaultMargins.xs};
+const RoundIconWithMargin = styled(RoundIcon)<{ margin: SpacingSize }>`
+  margin-top: ${({ margin }) => defaultMargins[margin]};
 `
 
 type ExpandingInfoProps = {
   children: React.ReactNode
   info: ReactNode
   ariaLabel: string
+  margin?: SpacingSize
 }
 
 export default function ExpandingInfo({
   children,
   info,
-  ariaLabel
+  ariaLabel,
+  margin
 }: ExpandingInfoProps) {
   const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
@@ -66,6 +68,7 @@ export default function ExpandingInfo({
       <FixedSpaceRow spacing="xs">
         <div>{children}</div>
         <RoundIconWithMargin
+          margin={margin ?? 'zero'}
           content={fasInfo}
           color={colors.brand.secondary}
           size="s"

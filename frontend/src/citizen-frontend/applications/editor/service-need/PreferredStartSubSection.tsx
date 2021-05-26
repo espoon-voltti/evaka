@@ -197,6 +197,7 @@ export default React.memo(function PreferredStartSubSection({
                 t.applications.editor.serviceNeed.clubDetails.wasOnDaycareInfo
               }
               ariaLabel={t.common.openExpandingInfo}
+              margin="xs"
             >
               <Checkbox
                 checked={formData.wasOnDaycare}
@@ -217,6 +218,7 @@ export default React.memo(function PreferredStartSubSection({
                 t.applications.editor.serviceNeed.clubDetails.wasOnClubCareInfo
               }
               ariaLabel={t.common.openExpandingInfo}
+              margin="xs"
             >
               <Checkbox
                 checked={formData.wasOnClubCare}

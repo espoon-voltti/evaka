@@ -16,7 +16,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
-import fi.espoo.evaka.invoicing.domain.Pricing
+import fi.espoo.evaka.invoicing.domain.PricingWithValidity
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -98,14 +98,14 @@ private fun generateNewValueDecisions(
     partner: PersonData.JustId?,
     familySize: Int,
     allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
-    prices: List<Pair<DateRange, Pricing>>,
+    prices: List<PricingWithValidity>,
     voucherValues: List<Pair<DateRange, Int>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<UUID>
 ): List<VoucherValueDecision> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
-        prices.map { it.first } +
+        prices.map { it.validDuring } +
         allPlacements.flatMap { (child, placements) ->
             placements.map { it.first } + listOf(
                 DateRange(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
@@ -116,7 +116,7 @@ private fun generateNewValueDecisions(
 
     return asDistinctPeriods(periods, DateRange(from, null))
         .mapNotNull { period ->
-            val price = prices.find { it.first.contains(period) }?.second
+            val price = prices.find { it.validDuring.contains(period) }
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val baseValue = voucherValues.find { it.first.contains(period) }?.second
@@ -150,7 +150,7 @@ private fun generateNewValueDecisions(
                 ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unitId } }
                 ?.let { placement ->
                     val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                    val baseCoPayment = calculateBaseFee(price, familySize, familyIncomes)
+                    val baseCoPayment = calculateBaseFee(price.withoutDates(), familySize, familyIncomes)
 
                     val siblingIndex = periodPlacements
                         .sortedByDescending { (child, _) -> child.dateOfBirth }
@@ -177,7 +177,7 @@ private fun generateNewValueDecisions(
                         headOfFamilyIncome = income,
                         partnerIncome = partnerIncome,
                         familySize = familySize,
-                        pricing = price,
+                        pricing = price.withoutDates(),
                         validFrom = period.start,
                         validTo = period.end,
                         child = voucherChild,

@@ -59,6 +59,7 @@ export default React.memo(function ChildSubSection({
       <ExpandingInfo
         info={t.applications.editor.contactInfo.futureAddressInfo}
         ariaLabel={t.common.openExpandingInfo}
+        margin="xs"
       >
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
