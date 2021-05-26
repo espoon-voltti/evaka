@@ -100,11 +100,17 @@ export async function initDraft(accountId: UUID): Promise<Result<UUID>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export async function saveDraft(
-  accountId: UUID,
-  draftId: UUID,
+export interface SaveDraftParams {
+  accountId: UUID
+  draftId: UUID
   content: UpsertableDraftContent
-): Promise<Result<void>> {
+}
+
+export async function saveDraft({
+  accountId,
+  draftId,
+  content
+}: SaveDraftParams): Promise<Result<void>> {
   return client
     .put(`/messages/${accountId}/drafts/${draftId}`, content)
     .then(() => Success.of(undefined))

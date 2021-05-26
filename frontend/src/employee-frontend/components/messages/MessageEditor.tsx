@@ -1,8 +1,10 @@
-import { Result } from 'lib-common/api'
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { UpdateStateFn } from 'lib-common/form-state'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -18,7 +20,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import Select from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
-import * as api from './api'
 import {
   deselectAll,
   getReceiverOptions,
@@ -28,11 +29,18 @@ import {
   updateSelector
 } from './SelectorNode'
 import { DraftContent, MessageBody, UpsertableDraftContent } from './types'
+import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
   senderId: UUID
   recipientAccountIds: UUID[]
 }
+
+const messageToUpsertableDraftWithAccount = ({
+  senderId: accountId,
+  recipientAccountIds: _,
+  ...rest
+}: Message): Draft => ({ ...rest, accountId })
 
 const emptyMessage = {
   content: '',
@@ -89,9 +97,6 @@ export default React.memo(function MessageEditor({
   draftContent
 }: Props) {
   const { i18n } = useTranslation()
-  const [newDraftRequested, setNewDraftRequested] = useState<boolean>(false)
-  const [draftId, setDraftId] = useState<UUID | undefined>(draftContent?.id)
-  const [draftSaveResult, setDraftSaveResult] = useState<Result<void>>()
 
   const [receiverTree, setReceiverTree] = useState<SelectorNode>(
     draftContent
@@ -110,41 +115,17 @@ export default React.memo(function MessageEditor({
     getInitialMessage(draftContent, sender.value)
   )
   const [contentTouched, setContentTouched] = useState(false)
-  const saveDraft = useRestApi(api.saveDraft, setDraftSaveResult)
-  const initDraft = useRestApi(api.initDraft, (res: Result<UUID>) => {
-    setNewDraftRequested(false)
-    if (res.isSuccess) {
-      setDraftId(res.value)
-    }
-  })
+  const {
+    draftId,
+    setDraft,
+    saveDraft,
+    state: draftState,
+    wasModified: draftWasModified
+  } = useDraft(draftContent?.id)
 
-  // request for a new draft to be initialized if needed
   useEffect(() => {
-    if (contentTouched && !draftId) {
-      setNewDraftRequested(true)
-    }
-  }, [draftId, contentTouched])
-
-  // initialize draft when requested
-  useEffect(() => {
-    if (newDraftRequested && !draftId) {
-      initDraft(sender.value)
-    }
-  }, [draftId, newDraftRequested, initDraft, sender.value])
-
-  // save draft with debounce
-  const [draftToSave, setDraftToSave] = useState<Message>()
-  useEffect(() => {
-    contentTouched && setDraftToSave(message)
-  }, [contentTouched, message])
-  const debouncedDraft = useDebounce(draftToSave, 2000)
-  useEffect(() => {
-    if (draftId && debouncedDraft) {
-      const { senderId, recipientAccountIds: _, ...rest } = debouncedDraft
-      saveDraft(senderId, draftId, rest)
-      setDraftToSave(undefined)
-    }
-  }, [draftId, debouncedDraft, saveDraft])
+    contentTouched && setDraft(messageToUpsertableDraftWithAccount(message))
+  }, [contentTouched, message, setDraft])
 
   // update receiver tree on selector changes
   const updateReceivers = useCallback((newSelection: Option[]) => {
@@ -170,25 +151,23 @@ export default React.memo(function MessageEditor({
   }, [receiverTree])
 
   // update saving/saved/error status in title with debounce
-  const [titleStatus, setTitleStatus] = useState<string>()
-  const debouncedTitleStatus = useDebounce(titleStatus, 250)
+  const [saveStatus, setSaveStatus] = useState<string>()
   useEffect(() => {
-    if (!draftSaveResult) return
-    setTitleStatus(
-      draftSaveResult.isLoading
-        ? `${i18n.common.saving}...`
-        : draftSaveResult.isSuccess
-        ? i18n.common.saved
-        : i18n.common.error.unknown
-    )
-
-    const clearStatus = () => setTitleStatus(undefined)
+    if (draftState === 'saving') {
+      setSaveStatus(`${i18n.common.saving}...`)
+    } else if (draftState === 'clean' && draftWasModified) {
+      setSaveStatus(i18n.common.saved)
+    } else {
+      return
+    }
+    const clearStatus = () => setSaveStatus(undefined)
     const timeoutHandle = setTimeout(clearStatus, 1500)
     return () => clearTimeout(timeoutHandle)
-  }, [i18n, draftSaveResult])
+  }, [i18n, draftState, draftWasModified])
 
+  const debouncedSaveStatus = useDebounce(saveStatus, 250)
   const title =
-    debouncedTitleStatus ||
+    debouncedSaveStatus ||
     message.title ||
     i18n.messages.messageEditor.newMessage
 
@@ -203,21 +182,18 @@ export default React.memo(function MessageEditor({
     onSend(senderId, { content, title, type, recipientAccountIds }, draftId)
   }, [onSend, message, draftId])
 
-  const closeEnabled = !draftToSave
   const onCloseHandler = useCallback(() => {
-    onClose(!!draftSaveResult)
-  }, [draftSaveResult, onClose])
+    if (draftWasModified && draftState === 'dirty') {
+      saveDraft()
+    }
+    onClose(draftWasModified)
+  }, [draftState, draftWasModified, onClose, saveDraft])
 
   return (
     <Container>
       <TopBar>
         <span>{title}</span>
-        <IconButton
-          icon={faTimes}
-          onClick={onCloseHandler}
-          white
-          disabled={!closeEnabled}
-        />
+        <IconButton icon={faTimes} onClick={onCloseHandler} white />
       </TopBar>
       <FormArea>
         <div>
