@@ -13,20 +13,21 @@ import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../../../lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import Select, { SelectOptionProps } from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
+import { MessagesPageContext } from './MessagesPageContext'
 import {
   isGroupMessageAccount,
   isPersonalMessageAccount,
   MessageAccount,
   ReceiverGroup
 } from './types'
-import { AccountView, messageBoxes } from './types-view'
+import { messageBoxes } from './types-view'
 
 const AccountSection = styled.section`
   padding: 12px 0;
@@ -50,20 +51,17 @@ const UnitSelection = styled.div`
 
 interface AccountsParams {
   accounts: MessageAccount[]
-  setView: (view: AccountView) => void
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
-  accountView: AccountView | undefined
 }
 
-function Accounts({
-  accounts,
-  setView,
-  setSelectedReceivers,
-  accountView
-}: AccountsParams) {
+function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
+  const { setSelectedAccount, selectedAccount: accountView } = useContext(
+    MessagesPageContext
+  )
+
   const personalAccount = accounts.find(isPersonalMessageAccount)
   const groupAccounts = accounts.filter(isGroupMessageAccount)
 
@@ -116,7 +114,7 @@ function Accounts({
               view={view}
               account={personalAccount}
               activeView={accountView}
-              setView={setView}
+              setView={setSelectedAccount}
             />
           ))}
         </AccountSection>
@@ -141,7 +139,7 @@ function Accounts({
           <GroupMessageAccountList
             accounts={visibleGroupAccounts}
             activeView={accountView}
-            setView={setView}
+            setView={setSelectedAccount}
           />
         </AccountSection>
       )}
@@ -150,9 +148,6 @@ function Accounts({
 }
 
 interface Props {
-  accounts: Result<MessageAccount[]>
-  view: AccountView | undefined
-  setView: (view: AccountView) => void
   setSelectedReceivers: React.Dispatch<
     React.SetStateAction<SelectorNode | undefined>
   >
@@ -160,13 +155,13 @@ interface Props {
 }
 
 export default React.memo(function Sidebar({
-  accounts,
-  setView,
   setSelectedReceivers,
-  showEditor,
-  view
+  showEditor
 }: Props) {
   const { i18n } = useTranslation()
+  const { accounts, selectedAccount, setSelectedAccount } = useContext(
+    MessagesPageContext
+  )
 
   return (
     <Container>
@@ -181,16 +176,17 @@ export default React.memo(function Sidebar({
           return (
             <Accounts
               accounts={accounts}
-              accountView={view}
-              setView={setView}
               setSelectedReceivers={setSelectedReceivers}
             />
           )
         }
       })}
       <Received
-        active={!!view && view.view === 'RECEIVERS'}
-        onClick={() => view && setView({ ...view, view: 'RECEIVERS' })}
+        active={selectedAccount?.view === 'RECEIVERS'}
+        onClick={() =>
+          selectedAccount &&
+          setSelectedAccount({ ...selectedAccount, view: 'RECEIVERS' })
+        }
       >
         {i18n.messages.receiverSelection.title}
       </Received>

@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Loading, Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { deleteDraft, getMessagingAccounts, postMessage } from './api'
+import { deleteDraft, postMessage } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
 import {
@@ -19,7 +17,7 @@ import {
 import ReceiverSelection from './ReceiverSelection'
 import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
-import { MessageAccount, MessageBody } from './types'
+import { MessageBody } from './types'
 
 const PanelContainer = styled.div`
   display: flex;
@@ -27,20 +25,38 @@ const PanelContainer = styled.div`
 
 function MessagesPage() {
   const {
+    accounts,
+    loadAccounts,
     selectedDraft,
     setSelectedDraft,
-    view,
-    setView,
+    selectedAccount,
+    setSelectedAccount,
     refreshMessages
   } = useContext(MessagesPageContext)
 
-  const [accounts, setResult] = useState<Result<MessageAccount[]>>(Loading.of())
-  const loadAccounts = useRestApi(getMessagingAccounts, setResult)
   useEffect(() => loadAccounts(), [loadAccounts])
+
+  // pre-select first account
+  useEffect(() => {
+    if (!selectedAccount && accounts.isSuccess && accounts.value[0]) {
+      setSelectedAccount({
+        view: 'RECEIVED',
+        account: accounts.value[0]
+      })
+    }
+  }, [accounts, setSelectedAccount, selectedAccount])
+
+  const [showEditor, setShowEditor] = useState<boolean>(false)
+
+  // open editor when draft is selected
+  useEffect(() => {
+    if (selectedDraft) {
+      setShowEditor(true)
+    }
+  }, [selectedDraft])
 
   const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
 
-  const [showEditor, setShowEditor] = useState<boolean>(false)
   const hideEditor = () => {
     setSelectedReceivers((old) => (old ? deselectAll(old) : old))
     setShowEditor(false)
@@ -86,56 +102,45 @@ function MessagesPage() {
     }
   }
 
-  // open editor when draft is selected
-  useEffect(() => {
-    if (selectedDraft) {
-      setShowEditor(true)
-    }
-  }, [selectedDraft])
-
-  useEffect(() => {
-    if (accounts.isSuccess && accounts.value[0]) {
-      setView({
-        view: 'RECEIVED',
-        account: accounts.value[0]
-      })
-    }
-  }, [accounts, setView])
-
   return (
     <Container>
       <Gap size="L" />
       <PanelContainer>
         <Sidebar
-          accounts={accounts}
-          view={view}
-          setView={setView}
           setSelectedReceivers={setSelectedReceivers}
           showEditor={() => setShowEditor(true)}
         />
-        {(view?.view === 'RECEIVED' ||
-          view?.view === 'SENT' ||
-          view?.view === 'DRAFTS') && <MessageList {...view} />}
-        {view?.view === 'RECEIVERS' && selectedReceivers && (
+        {(selectedAccount?.view === 'RECEIVED' ||
+          selectedAccount?.view === 'SENT' ||
+          selectedAccount?.view === 'DRAFTS') && (
+          <MessageList {...selectedAccount} />
+        )}
+        {selectedAccount?.view === 'RECEIVERS' && selectedReceivers && (
           <ReceiverSelection
             selectedReceivers={selectedReceivers}
             setSelectedReceivers={setSelectedReceivers}
           />
         )}
-        {showEditor && accounts.isSuccess && selectedReceivers && view && (
-          <MessageEditor
-            defaultSender={{ value: view.account.id, label: view.account.name }}
-            senderOptions={accounts.value.map(({ name, id }) => ({
-              value: id,
-              label: name
-            }))}
-            availableReceivers={selectedReceivers}
-            onSend={onSend}
-            onDiscard={onDiscard}
-            onClose={onHide}
-            draftContent={selectedDraft}
-          />
-        )}
+        {showEditor &&
+          accounts.isSuccess &&
+          selectedReceivers &&
+          selectedAccount && (
+            <MessageEditor
+              defaultSender={{
+                value: selectedAccount.account.id,
+                label: selectedAccount.account.name
+              }}
+              senderOptions={accounts.value.map(({ name, id }) => ({
+                value: id,
+                label: name
+              }))}
+              availableReceivers={selectedReceivers}
+              onSend={onSend}
+              onDiscard={onDiscard}
+              onClose={onHide}
+              draftContent={selectedDraft}
+            />
+          )}
       </PanelContainer>
     </Container>
   )

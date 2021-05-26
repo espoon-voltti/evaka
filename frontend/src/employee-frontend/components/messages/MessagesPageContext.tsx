@@ -8,17 +8,29 @@ import React, {
 import { Loading, Paged, Result } from '../../../lib-common/api'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import { UUID } from '../../types'
-import { getMessageDrafts, getReceivedMessages, getSentMessages } from './api'
-import { DraftContent, MessageThread, SentMessage } from './types'
+import {
+  getMessageDrafts,
+  getMessagingAccounts,
+  getReceivedMessages,
+  getSentMessages
+} from './api'
+import {
+  DraftContent,
+  MessageAccount,
+  MessageThread,
+  SentMessage
+} from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
 
 export interface MessagesPageState {
+  accounts: Result<MessageAccount[]>
+  loadAccounts: () => void
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
-  view: AccountView | undefined
-  setView: (view: AccountView) => void
+  selectedAccount: AccountView | undefined
+  setSelectedAccount: (view: AccountView) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -32,10 +44,12 @@ export interface MessagesPageState {
 }
 
 const defaultState: MessagesPageState = {
+  accounts: Loading.of(),
+  loadAccounts: () => undefined,
   selectedDraft: undefined,
   setSelectedDraft: () => undefined,
-  view: undefined,
-  setView: () => undefined,
+  selectedAccount: undefined,
+  setSelectedAccount: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -58,10 +72,16 @@ export const MessagesPageContextProvider = React.memo(
   }: {
     children: JSX.Element
   }) {
+    const [selectedAccount, setSelectedAccount] = useState<AccountView>()
+
+    const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
+      Loading.of()
+    )
+    const loadAccounts = useRestApi(getMessagingAccounts, setAccounts)
+
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
     )
-    const [view, setView] = useState<AccountView>()
 
     const [selectedThread, setSelectedThread] = useState<MessageThread>()
 
@@ -106,38 +126,46 @@ export const MessagesPageContextProvider = React.memo(
 
     // load messages if account, view or page changes
     const loadMessages = useCallback(() => {
-      if (!view) {
+      if (!selectedAccount) {
         return
       }
-      switch (view.view) {
+      switch (selectedAccount.view) {
         case 'RECEIVED':
-          loadReceivedMessages(view.account.id, page, PAGE_SIZE)
+          loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
           break
         case 'SENT':
-          loadSentMessages(view.account.id, page, PAGE_SIZE)
+          loadSentMessages(selectedAccount.account.id, page, PAGE_SIZE)
           break
         case 'DRAFTS':
-          loadMessageDrafts(view.account.id)
+          loadMessageDrafts(selectedAccount.account.id)
       }
-    }, [loadMessageDrafts, loadReceivedMessages, loadSentMessages, page, view])
+    }, [
+      loadMessageDrafts,
+      loadReceivedMessages,
+      loadSentMessages,
+      page,
+      selectedAccount
+    ])
 
     useEffect(loadMessages, [loadMessages])
 
-    const refreshMessages = useMemo(
-      () => (accountId?: UUID) => {
-        if (!accountId || view?.account.id === accountId) {
+    const refreshMessages = useCallback(
+      (accountId?: UUID) => {
+        if (!accountId || selectedAccount?.account.id === accountId) {
           loadMessages()
         }
       },
-      [loadMessages, view]
+      [loadMessages, selectedAccount]
     )
 
     const value = useMemo(
       () => ({
+        accounts,
+        loadAccounts,
         selectedDraft,
         setSelectedDraft,
-        view,
-        setView,
+        selectedAccount,
+        setSelectedAccount,
         page,
         setPage,
         pages,
@@ -150,6 +178,8 @@ export const MessagesPageContextProvider = React.memo(
         refreshMessages
       }),
       [
+        accounts,
+        loadAccounts,
         messageDrafts,
         page,
         pages,
@@ -158,7 +188,7 @@ export const MessagesPageContextProvider = React.memo(
         selectedDraft,
         selectedThread,
         sentMessages,
-        view
+        selectedAccount
       ]
     )
 
