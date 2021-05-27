@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageControllerCitizen
@@ -23,25 +24,39 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
+import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
+import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.util.UUID
 
 class MessageIntegrationTest : FullApplicationTest() {
@@ -51,16 +66,62 @@ class MessageIntegrationTest : FullApplicationTest() {
     private val person3Id: UUID = testAdult_3.id
     private val person4Id: UUID = testAdult_4.id
     private val employee1Id: UUID = UUID.randomUUID()
-    private val employee2Id: UUID = UUID.randomUUID()
     private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
     private val person1 = AuthenticatedUser.Citizen(id = person1Id)
     private val person2 = AuthenticatedUser.Citizen(id = person2Id)
     private val person3 = AuthenticatedUser.Citizen(id = person3Id)
     private val person4 = AuthenticatedUser.Citizen(id = person4Id)
+    private val groupId = UUID.randomUUID()
+    private val placementStart = LocalDate.now().minusDays(30)
+    private val placementEnd = LocalDate.now().plusDays(30)
+
+    private fun insertChild(tx: Database.Transaction, child: PersonData.Detailed) {
+        tx.insertTestPerson(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
+        tx.insertTestChild(DevChild(id = child.id))
+
+        val placementId = UUID.randomUUID()
+        tx.insertTestPlacement(
+            DevPlacement(
+                id = placementId,
+                childId = child.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+        )
+        tx.insertTestDaycareGroupPlacement(
+            placementId,
+            groupId,
+            startDate = placementStart,
+            endDate = placementEnd
+        )
+    }
 
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
+            tx.resetDatabase()
+
+            tx.insertTestCareArea(
+                DevCareArea(
+                    id = testAreaId,
+                )
+            )
+            tx.insertTestDaycare(
+                DevDaycare(
+                    areaId = testAreaId,
+                    id = testDaycare.id,
+                    name = testDaycare.name,
+                )
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = groupId,
+                    daycareId = testDaycare.id,
+                    startDate = placementStart
+                )
+            )
+
             listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).forEach {
                 tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
                 tx.createMessageAccountForPerson(it.id)
@@ -68,29 +129,27 @@ class MessageIntegrationTest : FullApplicationTest() {
 
             // person 1 and 2 are guardians of child 1
             testChild_1.let {
-                tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
-                tx.insertTestChild(DevChild(id = it.id))
+                insertChild(tx, it)
                 tx.insertGuardian(person1Id, it.id)
                 tx.insertGuardian(person2Id, it.id)
             }
 
             // person 2 and 3 are guardian of child 3
             testChild_3.let {
-                tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
-                tx.insertTestChild(DevChild(id = it.id))
+                insertChild(tx, it)
                 tx.insertGuardian(person2Id, it.id)
                 tx.insertGuardian(person3Id, it.id)
             }
 
-            tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
-            tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee Two"))
-            listOf(employee1Id, employee2Id).forEach { tx.upsertMessageAccountForEmployee(it) }
-        }
-    }
+            testChild_4.let {
+                insertChild(tx, it)
+                tx.insertGuardian(person4Id, it.id)
+            }
 
-    @AfterEach
-    internal fun tearDown() {
-        db.transaction { it.resetDatabase() }
+            tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
+            tx.upsertMessageAccountForEmployee(employee1Id)
+            tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
+        }
     }
 
     @Test
@@ -425,7 +484,12 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertEquals(0, getUnreadMessages(employee1Account, employee1).size)
 
         // when a person replies to the thread
-        replyAsCitizen(person1, person1UnreadMessages.first().id, setOf(employee1Account.id, person2Account.id), "reply")
+        replyAsCitizen(
+            person1,
+            person1UnreadMessages.first().id,
+            setOf(employee1Account.id, person2Account.id),
+            "reply"
+        )
 
         // then
         assertEquals(1, getUnreadMessages(employee1Account, employee1).size)
@@ -444,7 +508,10 @@ class MessageIntegrationTest : FullApplicationTest() {
     private fun getUnreadMessages(
         account: MessageAccount,
         user: AuthenticatedUser
-    ) = getMessageThreads(account, user).flatMap { it.messages.filter { m -> m.senderId != account.id && m.readAt == null } }
+    ) = getMessageThreads(
+        account,
+        user
+    ).flatMap { it.messages.filter { m -> m.senderId != account.id && m.readAt == null } }
 
     private fun postNewThread(
         title: String,
