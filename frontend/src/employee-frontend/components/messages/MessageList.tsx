@@ -18,7 +18,7 @@ import { MessageThread } from './types'
 import { AccountView } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
-  overflow: hidden;
+  overflow-y: auto;
   flex-grow: 1;
 `
 

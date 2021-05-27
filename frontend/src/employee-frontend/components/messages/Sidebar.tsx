@@ -29,6 +29,25 @@ import {
 } from './types'
 import { messageBoxes } from './types-view'
 
+const Container = styled.div`
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  margin-right: ${defaultMargins.m};
+  & > div {
+    background-color: ${colors.greyscale.white};
+  }
+`
+const AccountContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+`
+const ButtonContainer = styled.div`
+  flex: 0 1 auto;
+  margin-top: ${defaultMargins.s};
+  padding: 12px ${defaultMargins.m};
+`
+
 const AccountSection = styled.section`
   padding: 12px 0;
 
@@ -47,6 +66,14 @@ const AccountHeader = styled.div`
 
 const UnitSelection = styled.div`
   padding: 0 ${defaultMargins.s};
+`
+
+const Receivers = styled.div<{ active: boolean }>`
+  cursor: pointer;
+  padding: 12px ${defaultMargins.m};
+  font-weight: ${(p) => (p.active ? '600;' : 'unset')}
+  background-color: ${(p) =>
+    p.active ? colors.brandEspoo.espooTurquoiseLight : 'unset'}
 `
 
 interface AccountsParams {
@@ -165,54 +192,41 @@ export default React.memo(function Sidebar({
 
   return (
     <Container>
-      {accounts.mapAll({
-        loading() {
-          return <Loader />
-        },
-        failure() {
-          return <ErrorSegment />
-        },
-        success(accounts) {
-          return (
-            <Accounts
-              accounts={accounts}
-              setSelectedReceivers={setSelectedReceivers}
-            />
-          )
-        }
-      })}
-      <Received
-        active={selectedAccount?.view === 'RECEIVERS'}
-        onClick={() =>
-          selectedAccount &&
-          setSelectedAccount({ ...selectedAccount, view: 'RECEIVERS' })
-        }
-      >
-        {i18n.messages.receiverSelection.title}
-      </Received>
-      <Button
-        text={i18n.messages.messageBoxes.newBulletin}
-        onClick={showEditor}
-        data-qa="new-message-btn"
-      />
+      <AccountContainer>
+        {accounts.mapAll({
+          loading() {
+            return <Loader />
+          },
+          failure() {
+            return <ErrorSegment />
+          },
+          success(accounts) {
+            return (
+              <Accounts
+                accounts={accounts}
+                setSelectedReceivers={setSelectedReceivers}
+              />
+            )
+          }
+        })}
+        <Receivers
+          active={selectedAccount?.view === 'RECEIVERS'}
+          onClick={() =>
+            selectedAccount &&
+            setSelectedAccount({ ...selectedAccount, view: 'RECEIVERS' })
+          }
+        >
+          {i18n.messages.receiverSelection.title}
+        </Receivers>
+      </AccountContainer>
+      <ButtonContainer>
+        <Button
+          primary
+          text={i18n.messages.messageBoxes.newMessage}
+          onClick={showEditor}
+          data-qa="new-message-btn"
+        />
+      </ButtonContainer>
     </Container>
   )
 })
-
-export const Received = styled.div<{ active: boolean }>`
-  cursor: pointer;
-  padding: 12px ${defaultMargins.m};
-  font-weight: ${(p) => (p.active ? '600;' : 'unset')}
-  background-color: ${(p) =>
-    p.active ? colors.brandEspoo.espooTurquoiseLight : 'unset'}
-`
-
-const Container = styled.div`
-  width: 20%;
-  min-width: 20%;
-  max-width: 20%;
-  min-height: 500px;
-  background-color: ${colors.greyscale.white};
-  overflow-y: auto;
-  margin-right: ${defaultMargins.m};
-`
