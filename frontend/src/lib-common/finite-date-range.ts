@@ -125,8 +125,8 @@ export default class FiniteDateRange {
   }
 
   getGaps(childRanges: FiniteDateRange[]): FiniteDateRange[] {
-    const gapDates = [...this.dates()].filter(
-      (date) => childRanges.find((range) => range.includes(date)) === undefined
+    const gapDates = [...this.dates()].filter((date) =>
+      childRanges.every((range) => !range.includes(date))
     )
     return groupDatesToRanges(gapDates)
   }
