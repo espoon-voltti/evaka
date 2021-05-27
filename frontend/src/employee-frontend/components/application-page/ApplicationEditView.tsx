@@ -243,7 +243,7 @@ export default React.memo(function ApplicationEditView({
               {serviceNeed !== null && (
                 <>
                   <Label>{i18n.application.serviceNeed.partTimeLabel}</Label>
-                  <div>
+                  <FixedSpaceColumn>
                     <Radio
                       label={i18n.application.serviceNeed.partTime}
                       checked={serviceNeed.partTime === true}
@@ -284,7 +284,6 @@ export default React.memo(function ApplicationEditView({
                           </FixedSpaceColumn>
                         </SubRadios>
                       )}
-                    <Gap size="xs" />
                     <Radio
                       label={i18n.application.serviceNeed.fullTime}
                       checked={serviceNeed.partTime === false}
@@ -325,7 +324,7 @@ export default React.memo(function ApplicationEditView({
                           </FixedSpaceColumn>
                         </SubRadios>
                       )}
-                  </div>
+                  </FixedSpaceColumn>
                 </>
               )}
             </>
@@ -356,57 +355,69 @@ export default React.memo(function ApplicationEditView({
 
           {serviceNeed !== null && (
             <>
-              <Label>{i18n.application.serviceNeed.dailyTime}</Label>
-              <div>
-                <HorizontalContainer>
-                  <InputField
-                    width="m"
-                    placeholder={
-                      i18n.application.serviceNeed.startTimePlaceholder
-                    }
-                    value={serviceNeed.startTime}
-                    onChange={(value) =>
-                      setApplication(
-                        set('form.preferences.serviceNeed.startTime', value)
-                      )
-                    }
-                    info={
-                      errors['form.preferences.serviceNeed.startTime']
-                        ? {
-                            text:
-                              errors['form.preferences.serviceNeed.startTime'],
-                            status: 'warning'
+              {type !== 'DAYCARE' ||
+                (featureFlags.daycareApplication.dailyTimesEnabled && (
+                  <>
+                    <Label>{i18n.application.serviceNeed.dailyTime}</Label>
+                    <div>
+                      <HorizontalContainer>
+                        <InputField
+                          width="m"
+                          placeholder={
+                            i18n.application.serviceNeed.startTimePlaceholder
                           }
-                        : undefined
-                    }
-                    data-qa="start-time"
-                  />
-                  <Gap size="s" horizontal />
-                  <InputField
-                    width="m"
-                    placeholder={
-                      i18n.application.serviceNeed.endTimePlaceholder
-                    }
-                    value={serviceNeed.endTime}
-                    onChange={(value) =>
-                      setApplication(
-                        set('form.preferences.serviceNeed.endTime', value)
-                      )
-                    }
-                    info={
-                      errors['form.preferences.serviceNeed.endTime']
-                        ? {
-                            text:
-                              errors['form.preferences.serviceNeed.endTime'],
-                            status: 'warning'
+                          value={serviceNeed.startTime}
+                          onChange={(value) =>
+                            setApplication(
+                              set(
+                                'form.preferences.serviceNeed.startTime',
+                                value
+                              )
+                            )
                           }
-                        : undefined
-                    }
-                    data-qa="end-time"
-                  />
-                </HorizontalContainer>
-                <Gap size="m" />
-              </div>
+                          info={
+                            errors['form.preferences.serviceNeed.startTime']
+                              ? {
+                                  text:
+                                    errors[
+                                      'form.preferences.serviceNeed.startTime'
+                                    ],
+                                  status: 'warning'
+                                }
+                              : undefined
+                          }
+                          data-qa="start-time"
+                        />
+                        <Gap size="s" horizontal />
+                        <InputField
+                          width="m"
+                          placeholder={
+                            i18n.application.serviceNeed.endTimePlaceholder
+                          }
+                          value={serviceNeed.endTime}
+                          onChange={(value) =>
+                            setApplication(
+                              set('form.preferences.serviceNeed.endTime', value)
+                            )
+                          }
+                          info={
+                            errors['form.preferences.serviceNeed.endTime']
+                              ? {
+                                  text:
+                                    errors[
+                                      'form.preferences.serviceNeed.endTime'
+                                    ],
+                                  status: 'warning'
+                                }
+                              : undefined
+                          }
+                          data-qa="end-time"
+                        />
+                      </HorizontalContainer>
+                      <Gap size="m" />
+                    </div>
+                  </>
+                ))}
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               <Checkbox

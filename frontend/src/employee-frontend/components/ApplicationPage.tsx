@@ -245,7 +245,11 @@ function validateApplication(
       i18n.application.preferences.unitMismatch
   }
 
-  if (preferences.serviceNeed) {
+  if (
+    (application.type !== 'DAYCARE' ||
+      featureFlags.daycareApplication.dailyTimesEnabled) &&
+    preferences.serviceNeed
+  ) {
     if (!preferences.serviceNeed.startTime) {
       errors['form.preferences.serviceNeed.startTime'] =
         i18n.validationError.mandatoryField
