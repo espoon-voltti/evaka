@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from 'lib-common/local-date'
-import {
-  rangesOverlap,
-  formatDate,
-  autoComplete,
-  getGaps,
-  DateRange
-} from '../utils/date'
+import { rangesOverlap, formatDate, autoComplete } from './date'
 
 describe('utils/date', () => {
   describe('rangesOverlap', () => {
@@ -228,49 +222,6 @@ describe('utils/date', () => {
       expect(autoComplete('01.01.2')).toBe('01.01.20')
       expect(autoComplete('01.10.2')).toBe('01.10.20')
       expect(autoComplete('01.11.2')).toBe('01.11.20')
-    })
-  })
-
-  describe('getGaps', () => {
-    const range = (startDay: number, endDay: number): DateRange => ({
-      startDate: LocalDate.of(2000, 1, startDay),
-      endDate: LocalDate.of(2000, 1, endDay)
-    })
-    const parent = range(1, 30)
-
-    it('should return parent range when no child ranges exists', () => {
-      expect(getGaps([], parent)).toEqual([parent])
-    })
-
-    it('should return empty array when child range covers the entire parent', () => {
-      expect(getGaps([range(1, 30)], parent)).toEqual([])
-    })
-
-    it('should return empty array when child ranges cover the entire parent', () => {
-      expect(getGaps([range(1, 15), range(16, 30)], parent)).toEqual([])
-    })
-
-    it('should return gap when it is at the start', () => {
-      expect(getGaps([range(16, 30)], parent)).toEqual([range(1, 15)])
-    })
-
-    it('should return gap when it is at the end', () => {
-      expect(getGaps([range(1, 15)], parent)).toEqual([range(16, 30)])
-    })
-
-    it('should return gap when it is in between', () => {
-      expect(getGaps([range(1, 10), range(20, 30)], parent)).toEqual([
-        range(11, 19)
-      ])
-    })
-
-    it('should return gaps in complex case', () => {
-      expect(
-        getGaps(
-          [range(3, 5), range(8, 12), range(13, 15), range(20, 25)],
-          parent
-        )
-      ).toEqual([range(1, 2), range(6, 7), range(16, 19), range(26, 30)])
     })
   })
 })

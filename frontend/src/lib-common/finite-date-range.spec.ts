@@ -111,4 +111,60 @@ describe('FiniteDateRange', () => {
       expectOverlap(c, d, y)
     })
   })
+
+  describe('getGaps', () => {
+    const range = (startDay: number, endDay: number) =>
+      new FiniteDateRange(
+        LocalDate.of(2000, 1, startDay),
+        LocalDate.of(2000, 1, endDay)
+      )
+    const parent = range(1, 30)
+
+    it('should return parent range when no child ranges exists', () => {
+      expect(parent.getGaps([])).toEqual([parent])
+    })
+
+    it('should return parent range when no child ranges exists - one day', () => {
+      expect(range(1, 1).getGaps([])).toEqual([range(1, 1)])
+    })
+
+    it('should return empty array when child range covers the entire parent', () => {
+      expect(parent.getGaps([range(1, 30)])).toEqual([])
+    })
+
+    it('should return empty array when child ranges cover the entire parent', () => {
+      expect(parent.getGaps([range(1, 15), range(16, 30)])).toEqual([])
+    })
+
+    it('should return gap when it is at the start', () => {
+      expect(parent.getGaps([range(16, 30)])).toEqual([range(1, 15)])
+    })
+
+    it('should return gap when it is at the end', () => {
+      expect(parent.getGaps([range(1, 15)])).toEqual([range(16, 30)])
+    })
+
+    it('should return gap when it is in between', () => {
+      expect(parent.getGaps([range(1, 10), range(20, 30)])).toEqual([
+        range(11, 19)
+      ])
+    })
+
+    it('should work when gap is one day long', () => {
+      expect(parent.getGaps([range(1, 15), range(17, 30)])).toEqual([
+        range(16, 16)
+      ])
+    })
+
+    it('should return gaps in complex case', () => {
+      expect(
+        parent.getGaps([
+          range(3, 5),
+          range(8, 12),
+          range(13, 15),
+          range(20, 25)
+        ])
+      ).toEqual([range(1, 2), range(6, 7), range(16, 19), range(26, 30)])
+    })
+  })
 })

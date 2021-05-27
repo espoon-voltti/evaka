@@ -15,11 +15,12 @@ import { useTranslation } from '../../../state/i18n'
 import { NewServiceNeed, Placement } from '../../../types/child'
 import { ChildContext } from '../../../state'
 import { deleteNewServiceNeed } from '../../../api/child/new-service-needs'
-import { DateRange, getGaps } from '../../../utils/date'
+import { DateRange } from '../../../utils/date'
 import { RequireRole } from '../../../utils/roles'
 import NewServiceNeedEditorRow from './new-service-needs/NewServiceNeedEditorRow'
 import NewServiceNeedReadRow from './new-service-needs/NewServiceNeedReadRow'
 import MissingServiceNeedRow from './new-service-needs/MissingServiceNeedRow'
+import FiniteDateRange from '../../../../lib-common/finite-date-range'
 
 interface Props {
   placement: Placement
@@ -38,9 +39,17 @@ function NewServiceNeeds({ placement, reload }: Props) {
 
   const { serviceNeedOptions } = useContext(ChildContext)
 
-  const gaps = useMemo(() => getGaps(placement.serviceNeeds, placement), [
-    placement
-  ])
+  const gaps: DateRange[] = useMemo(
+    () =>
+      new FiniteDateRange(placement.startDate, placement.endDate)
+        .getGaps(
+          placement.serviceNeeds.map(
+            (sn) => new FiniteDateRange(sn.startDate, sn.endDate)
+          )
+        )
+        .map((gap) => ({ startDate: gap.start, endDate: gap.end })),
+    [placement]
+  )
 
   const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
 
