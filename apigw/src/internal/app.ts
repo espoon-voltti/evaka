@@ -120,10 +120,7 @@ function internalApiRouter() {
     '/attachments/applications/:applicationId',
     createProxy({ multipart: true })
   )
-  router.put(
-    '/children/:childId/image',
-    createProxy({ multipart: true })
-  )
+  router.put('/children/:childId/image', createProxy({ multipart: true }))
   router.use(createProxy())
   return router
 }

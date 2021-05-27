@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { faArrowLeft, faCalendarTimes, farUser } from 'lib-icons'
-import colors from 'lib-components/colors'
+import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import Loader from 'lib-components/atoms/Loader'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -30,6 +29,14 @@ import { FlexColumn } from '../components'
 import AttendanceChildAbsent from '../AttendanceChildAbsent'
 import { BackButton, TallContentArea } from '../../mobile/components'
 import ChildButtons from './ChildButtons'
+import ImageEditor from './ImageEditor'
+import BottomModalMenu from '../../common/BottomModalMenu'
+import Button from '../../../../lib-components/atoms/buttons/Button'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import InfoModal from '../../../../lib-components/molecules/modals/InfoModal'
+import colors from '../../../../lib-customizations/common'
+import { deleteChildImage } from '../../../api/childImages'
+import { IconBox } from '../ChildListItem'
 
 const ChildStatus = styled.div`
   color: ${colors.greyscale.medium};
@@ -75,7 +82,7 @@ const ChildBackground = styled.div<{ status: AttendanceStatus }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 0% 0% 50% 50%;
+  border-radius: 0 0 50% 50%;
   padding-top: ${defaultMargins.s};
 `
 
@@ -85,7 +92,7 @@ const BackButtonMargin = styled(BackButton)`
   z-index: 2;
 `
 
-const TallContentAreaNoOverflow = styled(TallContentArea)`
+export const TallContentAreaNoOverflow = styled(TallContentArea)`
   overflow-x: hidden;
 `
 
@@ -114,7 +121,7 @@ const LinkButtonText = styled.span`
 `
 
 const Shadow = styled.div`
-  box-shadow: 0px 4px 4px 0px ${colors.greyscale.lighter};
+  box-shadow: 0 4px 4px 0 ${colors.greyscale.lighter};
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -137,6 +144,11 @@ export default React.memo(function AttendanceChildPage() {
   const { attendanceResponse, setAttendanceResponse } = useContext(
     AttendanceUIContext
   )
+  const [uiMode, setUiMode] = useState<
+    'default' | 'img-modal' | 'img-crop' | 'img-delete'
+  >('default')
+  const [rawImage, setRawImage] = useState<string | null>(null)
+  const uploadInputRef = useRef<HTMLInputElement>(null)
 
   const loadDaycareAttendances = useRestApi(
     getDaycareAttendances,
@@ -164,6 +176,20 @@ export default React.memo(function AttendanceChildPage() {
   const loading = attendanceResponse.isLoading
   const groupNote = group?.dailyNote
 
+  if (uiMode === 'img-crop' && rawImage) {
+    return (
+      <ImageEditor
+        image={rawImage}
+        childId={childId}
+        onReturn={() => {
+          loadDaycareAttendances(unitId)
+          setRawImage(null)
+          setUiMode('default')
+        }}
+      />
+    )
+  }
+
   return (
     <Fragment>
       <TallContentAreaNoOverflow
@@ -182,15 +208,20 @@ export default React.memo(function AttendanceChildPage() {
             <Zindex>
               <ChildBackground status={child.status}>
                 <Center>
-                  { child.imageUrl ? (
-                    <RoundImage src={child.imageUrl} />
-                  ) : (
-                    <RoundIcon
-                      content={farUser}
-                      color={getColorByStatus(child.status)}
-                      size="XXL"
-                    />
-                  ) }
+                  <IconBox
+                    type={child.status}
+                    onClick={() => setUiMode('img-modal')}
+                  >
+                    {child.imageUrl ? (
+                      <RoundImage src={child.imageUrl} />
+                    ) : (
+                      <RoundIcon
+                        content={farUser}
+                        color={getColorByStatus(child.status)}
+                        size="XXL"
+                      />
+                    )}
+                  </IconBox>
 
                   <Gap size={'s'} />
 
@@ -262,6 +293,77 @@ export default React.memo(function AttendanceChildPage() {
           </LinkButtonWithIcon>
         </BottonButtonWrapper>
       </TallContentAreaNoOverflow>
+      {uiMode === 'img-modal' && (
+        <>
+          <BottomModalMenu
+            title={'Lapsen profiilikuva'}
+            onClose={() => setUiMode('default')}
+          >
+            <FixedSpaceColumn>
+              <Button
+                text={'Valitse kuva'}
+                primary
+                onClick={() => {
+                  if (uploadInputRef.current) uploadInputRef.current.click()
+                }}
+              />
+              {child?.imageUrl && (
+                <Button
+                  text={'Poista kuva'}
+                  onClick={() => setUiMode('img-delete')}
+                />
+              )}
+            </FixedSpaceColumn>
+          </BottomModalMenu>
+          <input
+            ref={uploadInputRef}
+            style={{ display: 'hidden' }}
+            type="file"
+            accept="image/jpeg, image/png"
+            capture="environment"
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              if (
+                event.target &&
+                event.target.files &&
+                event.target.files.length > 0
+              ) {
+                const reader = new FileReader()
+                reader.addEventListener('load', () => {
+                  if (typeof reader.result === 'string') {
+                    setRawImage(reader.result)
+                    setUiMode('img-crop')
+                  }
+                })
+                reader.readAsDataURL(event.target.files[0])
+              }
+            }}
+          />
+        </>
+      )}
+      {uiMode == 'img-delete' && (
+        <InfoModal
+          icon={faQuestion}
+          iconColour="orange"
+          title={'Haluatko varmasti poistaa lapsen kuvan?'}
+          resolve={{
+            label: 'Poista kuva',
+            action: () => {
+              void deleteChildImage(childId).then((res) => {
+                if (res.isFailure) {
+                  console.error('Deleting image failed', res.message)
+                } else {
+                  loadDaycareAttendances(unitId)
+                  setUiMode('default')
+                }
+              })
+            }
+          }}
+          reject={{
+            label: 'Älä poista',
+            action: () => setUiMode('default')
+          }}
+        />
+      )}
     </Fragment>
   )
 })
