@@ -204,7 +204,12 @@ export default React.memo(function MessageEditor({
     <Container>
       <TopBar>
         <Title>{title}</Title>
-        <IconButton icon={faTimes} onClick={onCloseHandler} white />
+        <IconButton
+          icon={faTimes}
+          onClick={onCloseHandler}
+          white
+          data-qa="close-message-editor-btn"
+        />
       </TopBar>
       <FormArea>
         <div>
@@ -272,6 +277,7 @@ export default React.memo(function MessageEditor({
             onClick={() => onDiscard(sender.value, draftId)}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
+            data-qa="discard-draft-btn"
           />
           <Button
             text={i18n.messages.messageEditor.send}

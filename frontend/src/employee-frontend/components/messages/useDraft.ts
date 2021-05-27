@@ -10,6 +10,7 @@ import * as api from './api'
 import { SaveDraftParams } from './api'
 import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
 import { UpsertableDraftContent } from './types'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 
 type SaveState = 'clean' | 'dirty' | 'saving'
 
@@ -63,7 +64,8 @@ export function useDraft(
     },
     [save]
   )
-  const debouncedSave = useDebouncedCallback(saveNow, 2000)
+  const debounceInterval = isAutomatedTest ? 200 : 2000
+  const debouncedSave = useDebouncedCallback(saveNow, debounceInterval)
 
   // save dirty draft with debounce
   useEffect(() => {
