@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   getSelectorStatus,
+  isChildSelectorNode,
   SelectorChange,
   SelectorNode,
   updateSelector
@@ -77,7 +78,7 @@ export default React.memo(function ReceiverSelection({
             </Th>
           </Tr>
         </Thead>
-        {selectedReceivers.childNodes?.map((receiverGroup: SelectorNode) => (
+        {selectedReceivers.childNodes.map((receiverGroup: SelectorNode) => (
           <Tbody key={receiverGroup.selectorId}>
             <Tr>
               <Td
@@ -111,29 +112,38 @@ export default React.memo(function ReceiverSelection({
                 />
               </Td>
             </Tr>
-            {receiverGroup.childNodes &&
-              !isCollapsed(receiverGroup.selectorId) &&
-              receiverGroup?.childNodes.map((receiverChild: SelectorNode) => (
-                <Tr key={receiverChild.selectorId}>
-                  <Td>{receiverChild.name}</Td>
-                  <Td>
-                    <Checkbox
-                      label={''}
-                      checked={getSelectorStatus(
-                        receiverChild.selectorId,
-                        selectedReceivers
-                      )}
-                      onChange={(checked: boolean) =>
-                        setSelectorChange({
-                          selectorId: receiverChild.selectorId,
-                          selected: checked
-                        })
-                      }
-                      data-qa={`check-receiver-${receiverChild.selectorId}`}
-                    />
-                  </Td>
-                </Tr>
-              ))}
+            {!isCollapsed(receiverGroup.selectorId) &&
+              receiverGroup.childNodes.map((receiverChild: SelectorNode) => {
+                if (!isChildSelectorNode(receiverChild))
+                  throw new Error('data mapping error: missing child data')
+                return (
+                  <Tr key={receiverChild.selectorId}>
+                    <Td>{receiverChild.name}</Td>
+                    <Td>{receiverChild.dateOfBirth.format()}</Td>
+                    <Td>
+                      {receiverChild.childNodes.map(({ name, selectorId }) => (
+                        <div key={selectorId}>{name}</div>
+                      ))}
+                    </Td>
+                    <Td>
+                      <Checkbox
+                        label={''}
+                        checked={getSelectorStatus(
+                          receiverChild.selectorId,
+                          selectedReceivers
+                        )}
+                        onChange={(checked: boolean) =>
+                          setSelectorChange({
+                            selectorId: receiverChild.selectorId,
+                            selected: checked
+                          })
+                        }
+                        data-qa={`check-receiver-${receiverChild.selectorId}`}
+                      />
+                    </Td>
+                  </Tr>
+                )
+              })}
           </Tbody>
         ))}
       </Table>

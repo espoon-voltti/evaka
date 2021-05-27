@@ -4,6 +4,7 @@
 
 import { ReceiverGroup } from 'employee-frontend/components/messages/types'
 import { UUID } from 'employee-frontend/types'
+import LocalDate from '../../../lib-common/local-date'
 
 /*
     SelectorNode is a recursive type for storing a selectorId, the corresponding selected
@@ -18,7 +19,7 @@ export interface SelectorNode {
   selectorId: UUID
   selected: boolean
   name: string
-  childNodes?: SelectorNode[]
+  childNodes: SelectorNode[]
 }
 
 export interface SelectorChange {
@@ -34,9 +35,7 @@ interface ReactSelectOption {
 export const getSelectorStatus = (id: UUID, selector: SelectorNode): boolean =>
   id === selector.selectorId
     ? selector.selected
-    : !!selector.childNodes?.some((childNode) =>
-        getSelectorStatus(id, childNode)
-      )
+    : selector.childNodes.some((childNode) => getSelectorStatus(id, childNode))
 
 export const getSelectorName = (
   id: UUID,
@@ -45,7 +44,7 @@ export const getSelectorName = (
   id === selector.selectorId
     ? selector.name
     : selector.childNodes
-        ?.map((childNode) => getSelectorName(id, childNode))
+        .map((childNode) => getSelectorName(id, childNode))
         .find((x) => x)
 
 export const updateSelector = (
@@ -54,16 +53,16 @@ export const updateSelector = (
 ): SelectorNode => {
   if (selector.selectorId === selectorChange.selectorId) {
     return {
-      ...selectorChange,
-      name: selector.name,
-      childNodes: selector.childNodes?.map((childNode) =>
+      ...selector,
+      selected: selectorChange.selected,
+      childNodes: selector.childNodes.map((childNode) =>
         updateSelector(childNode, {
           selectorId: childNode.selectorId,
           selected: selectorChange.selected
         })
       )
     }
-  } else if (selector.childNodes) {
+  } else if (selector.childNodes.length > 0) {
     const updatedChildNodes = selector.childNodes.map((childNode) =>
       updateSelector(childNode, selectorChange)
     )
@@ -71,9 +70,8 @@ export const updateSelector = (
       ({ selected }) => selected
     )
     return {
-      selectorId: selector.selectorId,
+      ...selector,
       selected: allChildNodesSelected,
-      name: selector.name,
       childNodes: updatedChildNodes
     }
   } else {
@@ -84,11 +82,11 @@ export const updateSelector = (
 export const getReceiverOptions = (
   selectorNode: SelectorNode
 ): ReactSelectOption[] => {
-  return (selectorNode.childNodes
+  return (selectorNode.childNodes.length > 0
     ? [{ label: selectorNode.name, value: selectorNode.selectorId }]
     : []
   ).concat(
-    selectorNode.childNodes && !selectorNode.selected
+    !selectorNode.selected
       ? selectorNode.childNodes.flatMap((childNode) =>
           getReceiverOptions(childNode)
         )
@@ -100,11 +98,18 @@ export const deselectAll = (selectorNode: SelectorNode): SelectorNode => {
   return {
     ...selectorNode,
     selected: false,
-    childNodes: selectorNode.childNodes?.map((childNode) =>
+    childNodes: selectorNode.childNodes.map((childNode) =>
       deselectAll(childNode)
     )
   }
 }
+
+export interface ChildSelectorNode extends SelectorNode {
+  dateOfBirth: LocalDate
+}
+export const isChildSelectorNode = (
+  node: SelectorNode
+): node is ChildSelectorNode => 'dateOfBirth' in node
 
 export const unitAsSelectorNode = (
   { id, name }: { id: UUID; name: string },
@@ -117,16 +122,24 @@ export const unitAsSelectorNode = (
     selectorId: group.groupId,
     selected: false,
     name: group.groupName,
-    childNodes: group.receivers.map(
-      ({ childId, childFirstName, childLastName, receiverPersons }) => ({
+    childNodes: group.receivers.map<ChildSelectorNode>(
+      ({
+        childId,
+        childFirstName,
+        childLastName,
+        childDateOfBirth,
+        receiverPersons
+      }) => ({
         selectorId: childId,
         selected: false,
         name: `${childFirstName} ${childLastName}`,
+        dateOfBirth: childDateOfBirth,
         childNodes: receiverPersons.map(
           ({ accountId, receiverFirstName, receiverLastName }) => ({
             selectorId: accountId,
             selected: false,
-            name: `${receiverFirstName} ${receiverLastName}`
+            name: `${receiverFirstName} ${receiverLastName}`,
+            childNodes: []
           })
         )
       })
@@ -135,7 +148,7 @@ export const unitAsSelectorNode = (
 })
 
 export const getSelectedBottomElements = (selector: SelectorNode): UUID[] => {
-  if (selector.childNodes) {
+  if (selector.childNodes.length > 0) {
     return [...new Set(selector.childNodes.flatMap(getSelectedBottomElements))]
   } else {
     return selector.selected ? [selector.selectorId] : []
