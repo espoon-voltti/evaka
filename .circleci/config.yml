@@ -337,6 +337,9 @@ commands:
       - store_artifacts:
           path: /tmp/docker-compose-logs.txt
           destination: docker-compose-logs.txt
+      - store_artifacts:
+          path: frontend/screenshots
+          destination: screenshots
       - store_test_results:
           path: frontend/test-results
 
