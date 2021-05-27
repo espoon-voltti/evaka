@@ -73,7 +73,8 @@ data class ChildBasics(
     val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
     val groupId: UUID,
-    val backup: Boolean
+    val backup: Boolean,
+    val imageUrl: String?
 )
 
 data class Child(
@@ -88,7 +89,8 @@ data class Child(
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimes?,
-    val dailyNote: DaycareDailyNote?
+    val dailyNote: DaycareDailyNote?,
+    val imageUrl: String?
 )
 
 enum class AttendanceStatus {

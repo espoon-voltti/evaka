@@ -37,6 +37,12 @@ const ChildStatus = styled.div`
   position: relative;
 `
 
+const RoundImage = styled.img`
+  border-radius: 100%;
+  width: 128px;
+  height: 128px;
+`
+
 const CustomTitle = styled.h1`
   font-style: normal;
   font-weight: 600;
@@ -176,11 +182,15 @@ export default React.memo(function AttendanceChildPage() {
             <Zindex>
               <ChildBackground status={child.status}>
                 <Center>
-                  <RoundIcon
-                    content={farUser}
-                    color={getColorByStatus(child.status)}
-                    size="XXL"
-                  />
+                  { child.imageUrl ? (
+                    <RoundImage src={child.imageUrl} />
+                  ) : (
+                    <RoundIcon
+                      content={farUser}
+                      color={getColorByStatus(child.status)}
+                      size="XXL"
+                    />
+                  ) }
 
                   <Gap size={'s'} />
 

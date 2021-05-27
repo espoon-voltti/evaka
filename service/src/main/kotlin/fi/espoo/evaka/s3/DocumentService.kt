@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.s3
 
+import java.io.InputStream
 import java.net.URI
 
 interface Document {
@@ -31,6 +32,11 @@ interface DocumentService {
      * Get attachment by URI. Subclasses can set add more restrictions to path value.
      */
     fun get(uri: URI): Document
+
+    /**
+     * Get InputStream of the file by path.
+     */
+    fun stream(bucketName: String, key: String): InputStream
 
     /**
      * Upload a document to S3. [DocumentLocation] is returned in response

@@ -3519,6 +3519,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-image-crop@npm:^8.1.2":
+  version: 8.1.2
+  resolution: "@types/react-image-crop@npm:8.1.2"
+  dependencies:
+    "@types/react": "*"
+  checksum: 68e12aca41c24b56e7d915731c8b9f20d025e9f1f52c4e615d4429ee7cfbddc694855d27928662561c40411a7e1a8c2ea84566395788fd97d746d77de261896e
+  languageName: node
+  linkType: hard
+
 "@types/react-router-dom@npm:^5.1.7":
   version: 5.1.7
   resolution: "@types/react-router-dom@npm:5.1.7"
@@ -6511,6 +6520,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"clsx@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "clsx@npm:1.1.1"
+  checksum: d8ae10ac0546da19fe8c9516886f6582a64a382cf4d09ea7d36d5287cafbdab1192ab249adc2cdf0310e0b0aeac4f4142cf7c738c98d9cb68c19ba24b6f673d5
+  languageName: node
+  linkType: hard
+
 "co@npm:^4.6.0":
   version: 4.6.0
   resolution: "co@npm:4.6.0"
@@ -6859,6 +6875,13 @@ __metadata:
   version: 3.12.1
   resolution: "core-js@npm:3.12.1"
   checksum: 8b1d05579e7ddeafcd390001cc893540275fa3e658a00ae57f88954411a25bdfe583debb1929c6a50e40631cc07f2092490ea2284b35ffb922b23d7677060f28
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.11.0":
+  version: 3.13.0
+  resolution: "core-js@npm:3.13.0"
+  checksum: ec1fb8ee6692353c1c4eec0ac6cf58010e927458a373a33f1a4a9cc89391130dd378de4ad6e4e51b68ee6ea9bc622ae7ed82eeac6cea6076f2115e7ec632c6e5
   languageName: node
   linkType: hard
 
@@ -8741,6 +8764,7 @@ __metadata:
     "@types/react-csv": ^1.1.1
     "@types/react-datepicker": 2.11.0
     "@types/react-dom": ^17.0.5
+    "@types/react-image-crop": ^8.1.2
     "@types/react-router-dom": ^5.1.7
     "@types/react-select": 3.0.22
     "@types/react-tooltip": ^4.2.4
@@ -8800,6 +8824,7 @@ __metadata:
     react-day-picker: 7.4.10
     react-dom: ^17.0.2
     react-focus-lock: 2.5.1
+    react-image-crop: ^8.6.9
     react-leaflet: ^3.2.0
     react-meta-tags: 1.0.1
     react-router-dom: ^5.2.0
@@ -16313,6 +16338,19 @@ fsevents@^1.2.7:
   peerDependencies:
     react: ">= 0.14.0"
   checksum: 265054ddd45ac37a0ee110af9f282bd6a54f54bb4a47d111d738051432ce5b975b810c7a8ef51fbcdc293dfc57b96ceaf57a9be8c6bc6e65e5045d7320e553d7
+  languageName: node
+  linkType: hard
+
+"react-image-crop@npm:^8.6.9":
+  version: 8.6.9
+  resolution: "react-image-crop@npm:8.6.9"
+  dependencies:
+    clsx: ^1.1.1
+    core-js: ^3.11.0
+    prop-types: ^15.7.2
+  peerDependencies:
+    react: ">=16.13.1"
+  checksum: 18d2a3873cc285e6e183fd998527a477befad01c9743abb874c7fcf1778090df8bceb46cf53752b1618e3b1ce28d5da0609c33c006cc141656dd78118a3eb94c
   languageName: node
   linkType: hard
 
