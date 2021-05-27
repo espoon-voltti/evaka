@@ -192,7 +192,7 @@ export default React.memo(function MessageEditor({
   return (
     <Container>
       <TopBar>
-        <span>{title}</span>
+        <Title>{title}</Title>
         <IconButton icon={faTimes} onClick={onCloseHandler} white />
       </TopBar>
       <FormArea>
@@ -298,6 +298,13 @@ const TopBar = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.m};
+`
+
+const Title = styled.span`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: ${defaultMargins.s};
 `
 
 const FormArea = styled.div`
