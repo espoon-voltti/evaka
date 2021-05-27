@@ -113,7 +113,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
                 (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id)) AS count;
             """.trimIndent()
 
-        val referenceCount = tx.createQuery(sql1).bind("id", id).mapTo<Int>().first()
+        val referenceCount = tx.createQuery(sql1).bind("id", id).mapTo<Int>().one()
         if (referenceCount > 0) {
             throw Conflict("Person is still referenced from somewhere and cannot be deleted")
         }
