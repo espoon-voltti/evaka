@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   getSelectorStatus,
+  isChildSelectorNode,
   SelectorChange,
   SelectorNode,
   updateSelector
@@ -14,6 +15,16 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faAngleUp, faAngleDown } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { ContentArea } from '../../../lib-components/layout/Container'
+
+const Container = styled(ContentArea)`
+  overflow-y: auto;
+  flex: 1;
+`
+
+const IconWrapper = styled.span`
+  margin-right: ${defaultMargins.s};
+`
 
 interface Props {
   selectedReceivers: SelectorNode
@@ -57,8 +68,8 @@ export default React.memo(function ReceiverSelection({
   const { name: unitName, selectorId: unitId } = selectedReceivers
 
   return (
-    <Container>
-      <H1 noMargin>{i18n.messages.receiverSelection.title}</H1>
+    <Container opaque>
+      <H1>{i18n.messages.receiverSelection.title}</H1>
       <H2>{unitName}</H2>
       <Table>
         <Thead>
@@ -77,7 +88,7 @@ export default React.memo(function ReceiverSelection({
             </Th>
           </Tr>
         </Thead>
-        {selectedReceivers.childNodes?.map((receiverGroup: SelectorNode) => (
+        {selectedReceivers.childNodes.map((receiverGroup: SelectorNode) => (
           <Tbody key={receiverGroup.selectorId}>
             <Tr>
               <Td
@@ -111,45 +122,41 @@ export default React.memo(function ReceiverSelection({
                 />
               </Td>
             </Tr>
-            {receiverGroup.childNodes &&
-              !isCollapsed(receiverGroup.selectorId) &&
-              receiverGroup?.childNodes.map((receiverChild: SelectorNode) => (
-                <Tr key={receiverChild.selectorId}>
-                  <Td>{receiverChild.name}</Td>
-                  <Td>
-                    <Checkbox
-                      label={''}
-                      checked={getSelectorStatus(
-                        receiverChild.selectorId,
-                        selectedReceivers
-                      )}
-                      onChange={(checked: boolean) =>
-                        setSelectorChange({
-                          selectorId: receiverChild.selectorId,
-                          selected: checked
-                        })
-                      }
-                      data-qa={`check-receiver-${receiverChild.selectorId}`}
-                    />
-                  </Td>
-                </Tr>
-              ))}
+            {!isCollapsed(receiverGroup.selectorId) &&
+              receiverGroup.childNodes.map((receiverChild: SelectorNode) => {
+                if (!isChildSelectorNode(receiverChild))
+                  throw new Error('data mapping error: missing child data')
+                return (
+                  <Tr key={receiverChild.selectorId}>
+                    <Td>{receiverChild.name}</Td>
+                    <Td>{receiverChild.dateOfBirth.format()}</Td>
+                    <Td>
+                      {receiverChild.childNodes.map(({ name, selectorId }) => (
+                        <div key={selectorId}>{name}</div>
+                      ))}
+                    </Td>
+                    <Td>
+                      <Checkbox
+                        label={''}
+                        checked={getSelectorStatus(
+                          receiverChild.selectorId,
+                          selectedReceivers
+                        )}
+                        onChange={(checked: boolean) =>
+                          setSelectorChange({
+                            selectorId: receiverChild.selectorId,
+                            selected: checked
+                          })
+                        }
+                        data-qa={`check-receiver-${receiverChild.selectorId}`}
+                      />
+                    </Td>
+                  </Tr>
+                )
+              })}
           </Tbody>
         ))}
       </Table>
     </Container>
   )
 })
-
-const Container = styled.div`
-  flex-grow: 1;
-  min-height: 500px;
-  overflow-y: auto;
-  padding: ${defaultMargins.m};
-  display: flex;
-  flex-direction: column;
-`
-
-const IconWrapper = styled.span`
-  margin-right: ${defaultMargins.s};
-`
