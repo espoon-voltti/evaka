@@ -15,6 +15,16 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faAngleUp, faAngleDown } from 'lib-icons'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { ContentArea } from '../../../lib-components/layout/Container'
+
+const Container = styled(ContentArea)`
+  overflow-y: auto;
+  flex: 1;
+`
+
+const IconWrapper = styled.span`
+  margin-right: ${defaultMargins.s};
+`
 
 interface Props {
   selectedReceivers: SelectorNode
@@ -58,8 +68,8 @@ export default React.memo(function ReceiverSelection({
   const { name: unitName, selectorId: unitId } = selectedReceivers
 
   return (
-    <Container>
-      <H1 noMargin>{i18n.messages.receiverSelection.title}</H1>
+    <Container opaque>
+      <H1>{i18n.messages.receiverSelection.title}</H1>
       <H2>{unitName}</H2>
       <Table>
         <Thead>
@@ -150,16 +160,3 @@ export default React.memo(function ReceiverSelection({
     </Container>
   )
 })
-
-const Container = styled.div`
-  flex-grow: 1;
-  min-height: 500px;
-  overflow-y: auto;
-  padding: ${defaultMargins.m};
-  display: flex;
-  flex-direction: column;
-`
-
-const IconWrapper = styled.span`
-  margin-right: ${defaultMargins.s};
-`
