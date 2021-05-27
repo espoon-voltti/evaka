@@ -95,7 +95,7 @@ class MessageController(
         Audit.MessagingNewMessageWrite.log(accountId)
         val sender = requireMessageAccountAccess(db, user, accountId)
 
-        // TODO recipient account authorization
+        checkAuthorizedRecipients(db, user, body.recipientAccountIds)
 
         val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
 
@@ -210,7 +210,12 @@ class MessageController(
             UserRole.SPECIAL_EDUCATION_TEACHER
         )
 
-        return db.transaction { it.getReceiversForNewMessage(user, unitId) }
+        return db.read { it.getReceiversForNewMessage(user, unitId) }
+    }
+
+    @GetMapping
+    fun getThreadsMock(): Paged<MessageThread> {
+        return mockThreadData()
     }
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
@@ -227,8 +232,16 @@ class MessageController(
             ?: throw Forbidden("Message account not found for user")
     }
 
-    @GetMapping
-    fun getThreadsMock(): Paged<MessageThread> {
-        return mockThreadData()
+    private fun checkAuthorizedRecipients(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        recipientAccountIds: Set<UUID>
+    ) {
+        db.read {
+            it.isUserAuthorizedToSendTo(
+                user,
+                recipientAccountIds
+            )
+        } || throw Forbidden("Not authorized to send to the given recipients")
     }
 }

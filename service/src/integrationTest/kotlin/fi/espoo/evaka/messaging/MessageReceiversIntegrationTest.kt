@@ -4,12 +4,19 @@
 
 package fi.espoo.evaka.messaging
 
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageReceiversResponse
+import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
+import fi.espoo.evaka.messaging.message.getMessageAccountForDaycareGroup
+import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
+import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
@@ -30,10 +37,12 @@ import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,8 +56,9 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     private val secondUnitId = testDaycare2.id
 
     private val supervisorId = UUID.randomUUID()
-    private val supervisor = AuthenticatedUser.Employee(supervisorId, emptySet())
-    private val staffId = UUID.randomUUID()
+    private val supervisor1 = AuthenticatedUser.Employee(supervisorId, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisor2Id = UUID.randomUUID()
+    private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
     private val guardianPerson = testAdult_6
     private val groupId = UUID.randomUUID()
     private val groupName = "Testaajat"
@@ -57,14 +67,14 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
 
-    private fun insertChildToGroup(
+    private fun insertChildToUnit(
         tx: Database.Transaction,
         childId: UUID,
         guardianId: UUID,
-        groupId: UUID,
         unitId: UUID
-    ) {
-        val daycarePlacementId = tx.insertTestPlacement(
+    ): UUID {
+        tx.insertGuardian(guardianId, childId)
+        return tx.insertTestPlacement(
             DevPlacement(
                 childId = childId,
                 unitId = unitId,
@@ -72,13 +82,22 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
                 endDate = placementEnd
             )
         )
+    }
+
+    private fun insertChildToGroup(
+        tx: Database.Transaction,
+        childId: UUID,
+        guardianId: UUID,
+        groupId: UUID,
+        unitId: UUID
+    ) {
+        val daycarePlacementId = insertChildToUnit(tx, childId, guardianId, unitId)
         tx.insertTestDaycareGroupPlacement(
             daycarePlacementId = daycarePlacementId,
             groupId = groupId,
             startDate = placementStart,
             endDate = placementEnd
         )
-        tx.insertGuardian(guardianId, childId)
     }
 
     @BeforeEach
@@ -87,7 +106,15 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = groupId,
+                    daycareId = testDaycare.id,
+                    name = groupName
+                )
+            )
+            tx.createMessageAccountForDaycareGroup(groupId)
+
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = secondGroupId,
@@ -100,26 +127,21 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             insertChildToGroup(tx, testChild_3.id, testAdult_3.id, secondGroupId, secondUnitId)
             insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
 
+            // Child 2 has a placement but is not in any group => should not
+            // (currently) show up in receivers list
+            insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unitId)
+
             listOf(guardianPerson.id, testAdult_2.id, testAdult_3.id, testAdult_4.id)
                 .forEach { tx.createMessageAccountForPerson(it) }
 
             tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
-            tx.insertTestEmployee(
-                DevEmployee(
-                    id = supervisorId,
-                    firstName = "Elina",
-                    lastName = "Esimies"
-                )
-            )
-            tx.insertTestEmployee(
-                DevEmployee(
-                    id = staffId
-                )
-            )
+            tx.insertTestEmployee(DevEmployee(id = supervisorId))
+            tx.upsertMessageAccountForEmployee(supervisorId)
+            tx.insertTestEmployee(DevEmployee(id = supervisor2Id))
+            tx.upsertMessageAccountForEmployee(supervisor2Id)
             tx.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareAclRow(unitId, staffId, UserRole.STAFF)
-            tx.insertDaycareAclRow(secondUnitId, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(secondUnitId, supervisor2Id, UserRole.UNIT_SUPERVISOR)
         }
         MockEmailClient.emails.clear()
     }
@@ -127,7 +149,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
     @Test
     fun `message receiver endpoint works for unit 1`() {
         val (_, res, result) = http.get("/messages/receivers?unitId=$unitId")
-            .asUser(supervisor)
+            .asUser(supervisor1)
             .responseObject<List<MessageReceiversResponse>>(objectMapper)
 
         Assertions.assertEquals(200, res.statusCode)
@@ -138,12 +160,15 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
 
         val groupTestaajat = receivers.find { it.groupName == groupName }!!
         Assertions.assertEquals(1, groupTestaajat.receivers.size)
+
+        val receiverChild = groupTestaajat.receivers[0]
+        Assertions.assertEquals(childId, receiverChild.childId)
     }
 
     @Test
     fun `message receiver endpoint works for unit 2`() {
         val (_, res, result) = http.get("/messages/receivers?unitId=$secondUnitId")
-            .asUser(supervisor)
+            .asUser(supervisor2)
             .responseObject<List<MessageReceiversResponse>>(objectMapper)
 
         Assertions.assertEquals(200, res.statusCode)
@@ -154,7 +179,112 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
 
         val groupKoekaniinit = receivers.find { it.groupName == secondGroupName }!!
         Assertions.assertEquals(2, groupKoekaniinit.receivers.size)
+        Assertions.assertEquals(
+            setOf(testChild_3.id, testChild_4.id),
+            groupKoekaniinit.receivers.map { it.childId }.toSet()
+        )
         val childWithTwoReceiverPersons = groupKoekaniinit.receivers.find { it.childId == testChild_3.id }!!
         Assertions.assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
+    }
+
+    @Test
+    fun `allowed to send to own unit's parents`() {
+        // supervisor of unit 1
+        val sender = getEmployeeOwnMessageAccount(supervisor1)
+
+        // parent of unit 1
+        val recipient = db.read { it.getMessageAccountForEndUser(guardianPerson.id) }
+
+        val (_, response) = postNewThread(
+            sender = sender,
+            recipients = setOf(recipient.id),
+            user = supervisor1
+        )
+
+        Assertions.assertEquals(200, response.statusCode)
+    }
+
+    @Test
+    fun `not allowed to send to another unit's parents`() {
+        // supervisor of unit 1
+        val sender = getEmployeeOwnMessageAccount(supervisor1)
+
+        // parent of unit 2
+        val recipient = db.read { it.getMessageAccountForEndUser(testAdult_3.id) }
+
+        val (_, response) = postNewThread(
+            sender = sender,
+            recipients = setOf(recipient.id),
+            user = supervisor1
+        )
+
+        Assertions.assertEquals(403, response.statusCode)
+    }
+
+    @Test
+    fun `not allowed to send to employee`() {
+        // supervisor of unit 1
+        val sender = getEmployeeOwnMessageAccount(supervisor1)
+
+        // supervisor of unit 2
+        val recipient = getEmployeeOwnMessageAccount(supervisor2)
+
+        val (_, response) = postNewThread(
+            sender = sender,
+            recipients = setOf(recipient),
+            user = supervisor1
+        )
+
+        Assertions.assertEquals(403, response.statusCode)
+    }
+
+    @Test
+    fun `not allowed to send to daycare group`() {
+        // supervisor of unit 1
+        val sender = getEmployeeOwnMessageAccount(supervisor1)
+
+        // daycare group of unit 1
+        val recipient = db.read { it.getMessageAccountForDaycareGroup(groupId) }!!
+
+        val (_, response) = postNewThread(
+            sender = sender,
+            recipients = setOf(recipient.id),
+            user = supervisor1
+        )
+
+        Assertions.assertEquals(403, response.statusCode)
+    }
+
+    private fun postNewThread(
+        sender: UUID,
+        recipients: Set<UUID>,
+        user: AuthenticatedUser.Employee,
+    ) = http.post("/messages/$sender")
+        .jsonBody(
+            objectMapper.writeValueAsString(
+                MessageController.PostMessageBody(
+                    "Juhannus",
+                    "Juhannus tulee pian",
+                    MessageType.MESSAGE,
+                    recipientAccountIds = recipients,
+                    recipientNames = listOf("Nimi")
+                )
+            )
+        )
+        .asUser(user)
+        .response()
+
+    private fun getEmployeeOwnMessageAccount(user: AuthenticatedUser): UUID {
+        // language=SQL
+        val sql = """
+SELECT acc.id FROM message_account acc
+WHERE acc.employee_id = :userId AND acc.active = true
+        """.trimIndent()
+        return db.read {
+            it.createQuery(sql)
+                .bind("userId", user.id)
+                .mapTo<UUID>()
+                .one()
+        }
     }
 }

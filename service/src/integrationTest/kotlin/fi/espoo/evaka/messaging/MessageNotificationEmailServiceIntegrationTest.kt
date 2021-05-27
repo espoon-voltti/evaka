@@ -5,6 +5,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageType
@@ -12,20 +13,30 @@ import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
 import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
 import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
 import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 import java.util.UUID
 
 class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
@@ -45,16 +56,48 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+
         db.transaction { tx ->
             tx.resetDatabase()
+            tx.insertGeneralTestFixtures()
+
+            val groupId = UUID.randomUUID()
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(
+                    id = groupId,
+                    daycareId = testDaycare.id,
+                    startDate = placementStart
+                )
+            )
+
+            val placementId = UUID.randomUUID()
+            tx.insertTestPlacement(
+                DevPlacement(
+                    id = placementId,
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+            tx.insertTestDaycareGroupPlacement(
+                placementId,
+                groupId,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
 
             testPersons.forEach {
                 tx.insertTestPerson(it)
+                tx.insertGuardian(it.id, testChild_1.id)
                 tx.createMessageAccountForPerson(it.id)
             }
 
             tx.insertTestEmployee(DevEmployee(id = employeeId))
             tx.upsertMessageAccountForEmployee(employeeId)
+            tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
 
         MockEmailClient.emails.clear()
@@ -65,7 +108,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
         val employeeAccount = db.read { it.getMessageAccountsForEmployee(employee).first() }
         val personAccounts = db.read { tx ->
             testPersons.map {
-                tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = it.id))
+                tx.getMessageAccountForEndUser(it.id)
             }
         }
 
