@@ -15,6 +15,7 @@ import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
 import { tabletMin } from '../../breakpoints'
 
 const Wrapper = styled.div`
+  display: inline-block;
   min-width: 0; // needed for correct overflow behavior
 `
 
