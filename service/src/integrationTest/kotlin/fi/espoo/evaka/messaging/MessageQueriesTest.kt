@@ -25,11 +25,16 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.UUID
 
 class MessageQueriesTest : PureJdbiTest() {
@@ -117,6 +122,30 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals(thread2Id, thread.id)
         assertEquals("Newest thread", thread.title)
 
+        // when the thread is marked read for person 1
+        db.transaction { it.markThreadRead(person1Account.id, thread1Id) }
+
+        // then the message has correct readAt
+        val person1Threads = db.read {
+            it.getMessagesReceivedByAccount(person1Account.id, 10, 1)
+        }
+        assertEquals(2, person1Threads.data.size)
+        val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
+        assertEquals(1, readMessages.size)
+        assertTrue(HelsinkiDateTime.now().durationSince(readMessages[0]) < Duration.ofSeconds(5))
+
+        // then person 2 threads are not affected
+        assertEquals(
+            0,
+            db.read {
+                it.getMessagesReceivedByAccount(
+                    person2Account.id,
+                    10,
+                    1
+                )
+            }.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }.size
+        )
+
         // when employee gets a reply
         db.transaction {
             val recipients = listOf(employee1Account)
@@ -152,11 +181,14 @@ class MessageQueriesTest : PureJdbiTest() {
 
         val oldestThread = person1Result.data[1]
         assertEquals(thread1Id, oldestThread.id)
+        assertNotNull(oldestThread.messages.find { it.content == "Content" }?.readAt)
+        assertNull(oldestThread.messages.find { it.content == "Just replying here" }?.readAt)
 
         // person 2 is recipient in the oldest thread only
         val person2Result = db.read { it.getMessagesReceivedByAccount(person2Account, 10, 1) }
         assertEquals(1, person2Result.data.size)
-        assertEquals(oldestThread, person2Result.data[0])
+        assertEquals(oldestThread.id, person2Result.data[0].id)
+        assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
 
         // employee 2 is participating with himself
         val employee2Result = db.read { it.getMessagesReceivedByAccount(employee2Account, 10, 1) }

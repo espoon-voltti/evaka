@@ -212,11 +212,6 @@ class MessageController(
         return db.read { it.getReceiversForNewMessage(user.id, unitId) }
     }
 
-    @GetMapping
-    fun getThreadsMock(): Paged<MessageThread> {
-        return mockThreadData()
-    }
-
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
         user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
