@@ -5,7 +5,6 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { lighten } from 'polished'
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { faArrowLeft, faCalendarTimes, farUser } from 'lib-icons'
@@ -66,7 +65,7 @@ const Zindex = styled.div`
 `
 
 const ChildBackground = styled.div<{ status: AttendanceStatus }>`
-  background: ${(p) => p.status && lighten(0.2, getColorByStatus(p.status))};
+  background: ${(p) => p.status && getBackgroundColorByStatus(p.status)};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,7 +113,7 @@ const Shadow = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  min-height: calc(100vh - 74px);
 `
 
 export default React.memo(function AttendanceChildPage() {
@@ -280,5 +279,17 @@ function getColorByStatus(status: AttendanceStatus) {
     ? colors.accents.green
     : status === 'COMING'
     ? colors.accents.water
+    : colors.blues.medium
+}
+
+function getBackgroundColorByStatus(status: AttendanceStatus) {
+  return status === 'ABSENT'
+    ? '#E8E8E8'
+    : status === 'DEPARTED'
+    ? '#B3C5DD'
+    : status === 'PRESENT'
+    ? '#EEF4B3'
+    : status === 'COMING'
+    ? '#E2ECF2'
     : colors.blues.medium
 }

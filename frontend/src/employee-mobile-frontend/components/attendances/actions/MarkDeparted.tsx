@@ -121,13 +121,17 @@ export default React.memo(function MarkDeparted() {
           paddingHorizontal={'zero'}
           paddingVertical={'zero'}
         >
-          <BackButtonInline
-            onClick={() => history.goBack()}
-            icon={faArrowLeft}
-            text={
-              child ? `${child.firstName} ${child.lastName}` : i18n.common.back
-            }
-          />
+          <div>
+            <BackButtonInline
+              onClick={() => history.goBack()}
+              icon={faArrowLeft}
+              text={
+                child
+                  ? `${child.firstName} ${child.lastName}`
+                  : i18n.common.back
+              }
+            />
+          </div>
           <ContentArea
             shadow
             opaque={true}

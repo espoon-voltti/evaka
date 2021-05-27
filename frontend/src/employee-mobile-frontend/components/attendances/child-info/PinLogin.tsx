@@ -14,6 +14,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import ReactSelect from 'react-select'
 import { sortBy } from 'lodash'
+
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -23,13 +24,12 @@ import { Result } from '../../../../lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { TallContentArea } from '../../mobile/components'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Title from 'lib-components/atoms/Title'
-import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faArrowLeft, faArrowRight, faUserUnlock } from '../../../../lib-icons'
+
+import { TallContentArea } from '../../mobile/components'
 
 import {
   ChildResult,
@@ -41,6 +41,7 @@ import { AttendanceUIContext } from '../../../state/attendance-ui'
 import ChildSensitiveInfo from './ChildSensitiveInfo'
 import PinLogout from './PinLogout'
 import useInactivityTimeout from './InactivityTimeout'
+import { BackButtonInline } from '../components'
 
 export default React.memo(function PinLogin() {
   const { i18n } = useTranslation()
@@ -142,14 +143,14 @@ export default React.memo(function PinLogin() {
       {attendanceResponse.isLoading && <Loader />}
       {attendanceResponse.isFailure && <ErrorSegment />}
       {attendanceResponse.isSuccess && (
-        <TallContentArea
+        <TallContentAreaNoOverflow
           opaque={false}
           paddingHorizontal={'zero'}
           paddingVertical={'zero'}
         >
           <TopBarContainer>
-            <BackButtonWrapper>
-              <BackButton
+            <TopRow>
+              <BackButtonInline
                 onClick={() => history.goBack()}
                 icon={faArrowLeft}
                 text={
@@ -158,8 +159,6 @@ export default React.memo(function PinLogin() {
                     : i18n.common.back
                 }
               />
-            </BackButtonWrapper>
-            <LogoutButtonWrapper>
               {childResult && (
                 <IconButton
                   size={'L'}
@@ -170,7 +169,7 @@ export default React.memo(function PinLogin() {
                   }}
                 />
               )}
-            </LogoutButtonWrapper>
+            </TopRow>
           </TopBarContainer>
           {childResult &&
           childResult.isSuccess &&
@@ -238,7 +237,7 @@ export default React.memo(function PinLogin() {
               </FixedSpaceColumn>
             </ContentArea>
           )}
-        </TallContentArea>
+        </TallContentAreaNoOverflow>
       )}
     </>
   )
@@ -249,20 +248,8 @@ const TopBarContainer = styled.div`
   grid-template-columns: auto 50px;
 `
 
-const BackButtonWrapper = styled.div`
-  width: calc(100% - 50px);
-`
-
-const BackButton = styled(InlineButton)`
-  color: ${colors.blues.dark};
-  margin-top: ${defaultMargins.s};
-  margin-left: ${defaultMargins.s};
-  margin-bottom: ${defaultMargins.s};
-  text-overflow: ellipsis;
-
-  & span {
-    white-space: normal;
-  }
+const TallContentAreaNoOverflow = styled(TallContentArea)`
+  overflow-x: hidden;
 `
 
 const Key = styled.span`
@@ -271,10 +258,12 @@ const Key = styled.span`
   margin-bottom: 4px;
 `
 
-const LogoutButtonWrapper = styled.div`
-  width: 40px;
-  margin-left: auto;
-  margin-right: 40px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+const TopRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  max-width: 100vw;
+
+  button {
+    margin-right: ${defaultMargins.s};
+  }
 `
