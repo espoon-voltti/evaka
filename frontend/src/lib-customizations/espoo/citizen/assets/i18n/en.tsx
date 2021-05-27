@@ -129,6 +129,9 @@ const en: Translations = {
   messages: {
     inboxTitle: 'Inbox',
     noMessages: 'No messages',
+    recipients: 'Recipients',
+    send: 'Send',
+    sending: 'Sending',
     types: {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -12,46 +11,46 @@ import { H1 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
+import { UUID } from '../../lib-common/types'
 import { useTranslation } from '../localization'
+import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
-import { MessageThread } from './types'
+import { MessageAccount, MessageThread } from './types'
 
-type Props = {
-  threads: MessageThread[]
-  nextPage: Result<void>
-  activeThread: MessageThread | undefined
-  onClickThread: (target: MessageThread) => void
-  onReturn: () => void
-  loadNextPage: () => void
+const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
+  thread.messages.some((m) => !m.readAt && m.senderId !== accountId)
+
+interface Props {
+  account: MessageAccount
 }
 
-export default React.memo(function ThreadList({
-  threads,
-  nextPage,
-  activeThread,
-  onClickThread,
-  onReturn,
-  loadNextPage
-}: Props) {
+export default React.memo(function ThreadList({ account }: Props) {
   const t = useTranslation()
+  const {
+    selectedThread,
+    selectThread,
+    threads,
+    threadLoadingResult,
+    loadMoreThreads
+  } = useContext(MessageContext)
 
   return (
     <>
-      {activeThread && (
+      {selectedThread && (
         <MobileOnly>
           <Return
             icon={faArrowLeft}
-            onClick={onReturn}
+            onClick={() => selectThread(undefined)}
             altText={t.common.return}
           />
         </MobileOnly>
       )}
-      <Container className={activeThread ? 'desktop-only' : undefined}>
+      <Container className={selectedThread ? 'desktop-only' : undefined}>
         <HeaderContainer>
           <H1 noMargin>{t.messages.inboxTitle}</H1>
-          {nextPage.isSuccess && threads.length === 0 && (
+          {threadLoadingResult.isSuccess && threads.length === 0 && (
             <span>{t.messages.noMessages}</span>
           )}
         </HeaderContainer>
@@ -60,15 +59,22 @@ export default React.memo(function ThreadList({
           <ThreadListItem
             key={thread.id}
             thread={thread}
-            onClick={() => onClickThread(thread)}
-            active={activeThread?.id === thread.id}
+            onClick={() => selectThread(thread)}
+            active={selectedThread?.id === thread.id}
+            hasUnreadMessages={hasUnreadMessages(thread, account.id)}
           />
         ))}
-        {nextPage.isFailure && (
-          <ErrorSegment title={t.common.errors.genericGetError} />
-        )}
-        {nextPage.isLoading && <SpinnerSegment />}
-        {nextPage.isSuccess && <OnEnterView onEnter={loadNextPage} />}
+        {threadLoadingResult.mapAll({
+          failure() {
+            return <ErrorSegment title={t.common.errors.genericGetError} />
+          },
+          loading() {
+            return <SpinnerSegment />
+          },
+          success() {
+            return <OnEnterView onEnter={loadMoreThreads} />
+          }
+        })}
       </Container>
     </>
   )

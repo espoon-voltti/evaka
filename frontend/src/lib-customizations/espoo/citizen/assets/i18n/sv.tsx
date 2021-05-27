@@ -129,6 +129,9 @@ const sv: Translations = {
   messages: {
     inboxTitle: 'Inkorg',
     noMessages: 'Inga meddelanden',
+    recipients: 'Mottagare',
+    send: 'Skicka',
+    sending: 'Skickas',
     types: {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'

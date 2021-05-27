@@ -240,6 +240,50 @@ SELECT
         .let(mapToPaged(pageSize))
 }
 
+data class MessageResultItem(
+    val id: UUID,
+    val senderId: UUID,
+    val senderName: String,
+    val recipient_id: UUID,
+    val recipient_name: String,
+    val sentAt: HelsinkiDateTime,
+    val content: String,
+)
+
+fun Database.Read.getMessage(id: UUID): Message {
+    val sql = """
+        SELECT 
+            m.id,
+            m.sender_id,
+            m.sender_name,
+            m.sent_at,
+            c.content,
+            rec.recipient_id,
+            acc.account_name recipient_name
+        FROM message m
+        JOIN message_content c ON m.content_id = c.id
+        JOIN message_recipients rec ON m.id = rec.message_id
+        JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+        WHERE m.id = :id
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("id", id)
+        .mapTo<MessageResultItem>()
+        .groupBy { it.id }
+        .map { (id, messages) ->
+            Message(
+                id = id,
+                content = messages[0].content,
+                sentAt = messages[0].sentAt,
+                senderId = messages[0].senderId,
+                senderName = messages[0].senderName,
+                recipients = messages.map { MessageAccount(it.recipient_id, it.recipient_name) }.toSet()
+            )
+        }
+        .single()
+}
+
 fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<SentMessage> {
     val params = mapOf(
         "accountId" to accountId,

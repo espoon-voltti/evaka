@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { desktopMin } from 'lib-components/breakpoints'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -10,25 +9,10 @@ import React from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import { formatDate } from '../util'
+import { InlineReplyEditor } from './InlineReplyEditor'
+import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
-import { Message, MessageThread, MessageType } from './types'
-
-const MessageContainer = styled.div`
-  background-color: ${colors.greyscale.white};
-  padding: ${defaultMargins.s};
-
-  @media (min-width: ${desktopMin}) {
-    padding: ${defaultMargins.L};
-  }
-
-  & + & {
-    margin-top: ${defaultMargins.s};
-  }
-
-  h2 {
-    margin: 0;
-  }
-`
+import { Message, MessageAccount, MessageThread, MessageType } from './types'
 
 const TitleRow = styled.div`
   display: flex;
@@ -74,6 +58,7 @@ function Message({
         <SenderName>{message.senderName}</SenderName>
         <SentDate>{formatDate(message.sentAt)}</SentDate>
       </TitleRow>
+      <span>{message.recipients.map((r) => r.name).join(', ')}</span>
       <MessageContent data-qa="thread-reader-content">
         {message.content}
       </MessageContent>
@@ -91,20 +76,28 @@ const ThreadContainer = styled.div`
 `
 
 interface Props {
+  account: MessageAccount
   thread: MessageThread
 }
 
-export default React.memo(function ThreadReadView({ thread }: Props) {
+export default React.memo(function ThreadView({
+  account,
+  thread: { messages, title, type }
+}: Props) {
   return (
     <ThreadContainer>
-      {thread.messages.map((message, idx) => (
+      {messages.map((message, idx) => (
         <Message
           key={message.id}
           message={message}
-          title={idx === 0 ? thread.title : undefined}
-          type={idx === 0 ? thread.type : undefined}
+          title={idx === 0 ? title : undefined}
+          type={idx === 0 ? type : undefined}
         />
       ))}
+
+      {type === 'MESSAGE' && messages.length > 0 && (
+        <InlineReplyEditor account={account} message={messages.slice(-1)[0]} />
+      )}
     </ThreadContainer>
   )
 })

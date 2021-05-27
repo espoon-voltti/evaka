@@ -12,7 +12,7 @@ import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeight } from './const'
 import { useUser } from '../auth'
-import { HeaderContext, HeaderState } from '../messages/state'
+import { MessageContext, MessagePageState } from '../messages/state'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -21,7 +21,7 @@ export default React.memo(function Header() {
   const {
     unreadMessagesCount,
     refreshUnreadMessagesCount
-  } = useContext<HeaderState>(HeaderContext)
+  } = useContext<MessagePageState>(MessageContext)
 
   useEffect(() => {
     if (user) refreshUnreadMessagesCount()
