@@ -7,6 +7,7 @@ package fi.espoo.evaka
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import fi.espoo.evaka.shared.db.Database
@@ -42,6 +43,7 @@ class FixtureBuilder(
         private val fixtureBuilder: FixtureBuilder
     ) {
         private var dateOfBirth: LocalDate? = null
+        private var person: PersonData.Detailed? = null
 
         fun withDateOfBirth(dateOfBirth: LocalDate) = this.apply {
             this.dateOfBirth = dateOfBirth
@@ -50,6 +52,8 @@ class FixtureBuilder(
         fun withAge(years: Int, months: Int = 0, days: Int = 0) = this.apply {
             this.dateOfBirth = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
         }
+
+        fun usePerson(person: PersonData.Detailed) = this.apply { this.person = person }
 
         fun save(): FixtureBuilder {
             doInsert()
@@ -65,12 +69,12 @@ class FixtureBuilder(
         }
 
         private fun doInsert(): UUID {
-            val childId = tx.insertTestPerson(
+            val childId = person?.id ?: tx.insertTestPerson(
                 DevPerson(
                     dateOfBirth = dateOfBirth ?: throw IllegalStateException("date of birth not set")
                 )
             )
-            tx.insertTestChild(DevChild(childId))
+            if (person == null) tx.insertTestChild(DevChild(childId))
             return childId
         }
     }

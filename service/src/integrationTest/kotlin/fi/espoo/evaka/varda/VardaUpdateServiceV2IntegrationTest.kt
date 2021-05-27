@@ -1,67 +1,55 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.FixtureBuilder
-import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.createFeeDecision2Fixture
+import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
+import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
+import fi.espoo.evaka.invoicing.data.upsertFeeDecisions2
+import fi.espoo.evaka.invoicing.data.upsertValueDecisions
+import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.PersonData
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevDaycareGroup
-import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestCaretakers
-import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertVardaServiceNeed
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultPartDayDaycare
+import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
-class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
-    val today = HelsinkiDateTime.of(LocalDateTime.of(2021, 5, 19, 12, 0))
-
-    val careArea1: UUID = UUID.randomUUID()
-    val daycareInArea1: UUID = UUID.randomUUID()
-    val daycareGroup1: UUID = UUID.randomUUID()
-    val employeeId: UUID = UUID.randomUUID()
-
+class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @BeforeEach
-    internal fun setUp() {
-        db.transaction {
-            it.resetDatabase()
+    fun beforeEach() {
+        db.transaction { it.insertGeneralTestFixtures() }
+        insertVardaUnit(db)
+    }
 
-            it.insertTestEmployee(
-                DevEmployee(
-                    id = employeeId
-                )
-            )
-
-            it.insertTestCareArea(DevCareArea(id = careArea1, name = "1", shortName = "1"))
-            it.insertTestDaycare(
-                DevDaycare(
-                    id = daycareInArea1,
-                    areaId = careArea1,
-                    type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION)
-                )
-            )
-            it.insertTestDaycareGroup(DevDaycareGroup(id = daycareGroup1, daycareId = daycareInArea1))
-            it.insertTestCaretakers(groupId = daycareGroup1, amount = 3.0)
-        }
-
-        insertTestVardaUnit(db, daycareInArea1)
+    @AfterEach
+    fun afterEach() {
+        db.transaction { it.resetDatabase() }
     }
 
     @Test
@@ -73,13 +61,15 @@ class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
             db, shouldBeIncluded,
             snDefaultDaycare.copy(
                 updated = shouldBeIncluded
-            )
+            ),
+            testChild_1, -20, -10
         )
         createServiceNeed(
             db, shouldBeExcluded,
             snDefaultPartDayDaycare.copy(
                 updated = shouldBeExcluded
-            )
+            ),
+            testChild_1, -9
         )
 
         db.read {
@@ -99,13 +89,15 @@ class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
             db, shouldBeExcluded,
             snDefaultDaycare.copy(
                 updated = shouldBeIncluded
-            )
+            ),
+            testChild_1, -20, -10
         )
         createServiceNeed(
             db, shouldBeExcluded,
             snDefaultPartDayDaycare.copy(
                 updated = shouldBeExcluded
-            )
+            ),
+            testChild_1, -9
         )
 
         db.read {
@@ -224,8 +216,53 @@ class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `getEvakaFeeDataChangesByServiceNeed returns empty set when there are no changes`() {
-        db.read { assertEquals(0, it.calculateEvakaFeeDataChangesByServiceNeed(HelsinkiDateTime.now()).size) }
+    fun `calculateEvakaFeeDataChangesByServiceNeed sees only a changed fee decision`() {
+        val since = HelsinkiDateTime.now()
+        val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -100)
+
+        val includedFdId = createFeeDecision(db, testChild_1, DateRange(since.minusDays(99).toLocalDate(), since.minusDays(90).toLocalDate()), since.toInstant())
+        val includedFeeDecisionChildIds = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(includedFdId) }
+        createFeeDecision(db, testChild_1, DateRange(since.minusDays(89).toLocalDate(), since.minusDays(80).toLocalDate()), since.minusDays(1).toInstant())
+
+        val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
+        assertEquals(1, snFeeDiff.size)
+        assertEquals(snId, snFeeDiff.get(0).serviceNeedId)
+        assertEquals(testChild_1.id, snFeeDiff.get(0).evakaChildId)
+        assertEquals(1, snFeeDiff.get(0).feeDecisionIds.size)
+        assertEquals(includedFeeDecisionChildIds.get(0), snFeeDiff.get(0).feeDecisionIds.get(0))
+        assertEquals(0, snFeeDiff.get(0).voucherValueDecisionIds.size)
+    }
+
+    @Test
+    fun `calculateEvakaFeeDataChangesByServiceNeed matches fee decisions correctly to service needs`() {
+        val since = HelsinkiDateTime.now()
+        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -100, -90)
+        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -89)
+
+        val fdId1 = createFeeDecision(db, testChild_1, DateRange(since.minusDays(100).toLocalDate(), since.minusDays(90).toLocalDate()), since.toInstant())
+        val includedFeeDecisionChildIds1 = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(fdId1) }
+
+        val fdId2 = createFeeDecision(db, testChild_1, DateRange(since.minusDays(89).toLocalDate(), null), since.toInstant())
+        val includedFeeDecisionChildIds2 = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(fdId2) }
+
+        val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
+        assertEquals(2, snFeeDiff.size)
+        assertEquals(includedFeeDecisionChildIds1.get(0), snFeeDiff.find { it.serviceNeedId == snId1 }?.feeDecisionIds?.get(0))
+        assertEquals(includedFeeDecisionChildIds2.get(0), snFeeDiff.find { it.serviceNeedId == snId2 }?.feeDecisionIds?.get(0))
+    }
+
+    @Test
+    fun `calculateEvakaFeeDataChangesByServiceNeed matches voucher value decisions correctly to service needs`() {
+        val since = HelsinkiDateTime.now()
+        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -100, -90)
+        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -89)
+        val vd1 = createVoucherDecision(db, since.minusDays(100).toLocalDate(), since.minusDays(100).toLocalDate(), testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
+        val vd2 = createVoucherDecision(db, since.minusDays(89).toLocalDate(), null, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
+
+        val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
+        assertEquals(2, snFeeDiff.size)
+        assertEquals(vd1.id, snFeeDiff.find { it.serviceNeedId == snId1 }?.voucherValueDecisionIds?.get(0))
+        assertEquals(vd2.id, snFeeDiff.find { it.serviceNeedId == snId2 }?.voucherValueDecisionIds?.get(0))
     }
 
     private fun assertServiceNeedDiffSizes(diff: VardaChildCalculatedServiceNeedChanges?, expectedAdditions: Int, expectedUpdates: Int, expectedDeletes: Int) {
@@ -237,16 +274,16 @@ class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
         }
     }
 
-    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption): UUID {
+    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: Int = -100, toDays: Int = 0): UUID {
         var serviceNeedId = UUID.randomUUID()
         db.transaction { tx ->
-            FixtureBuilder(tx, today.toLocalDate())
-                .addChild().withAge(3, 0).saveAnd {
-                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(daycareInArea1).fromDay(-100).saveAnd {
+            FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
+                .addChild().usePerson(child).saveAnd {
+                    addPlacement().ofType(PlacementType.DAYCARE).toUnit(testDaycare.id).fromDay(fromDays).toDay(toDays).saveAnd {
                         addServiceNeed()
                             .withId(serviceNeedId)
                             .withUpdated(updated)
-                            .createdBy(employeeId)
+                            .createdBy(testDecisionMaker_1.id)
                             .withOption(option)
                             .save()
                     }
@@ -254,25 +291,66 @@ class VardaUpdateServiceV2IntegrationTest : PureJdbiTest() {
         }
         return serviceNeedId
     }
-}
 
-private fun insertTestVardaUnit(db: Database.Connection, id: UUID) = db.transaction {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
-        VALUES (:id, 123222, now())
-        """.trimIndent()
-    it.createUpdate(sql)
-        .bind("id", id)
-        .execute()
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, period: DateRange, sentAt: Instant): UUID {
+        val fd = createFeeDecision2Fixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    child.id,
+                    child.dateOfBirth,
+                    testDaycare.id,
+                    PlacementType.DAYCARE,
+                    snDefaultDaycare.toFeeDecisionServiceNeed()
+                )
+            ),
+            sentAt = sentAt
+        )
+        db.transaction { tx -> tx.upsertFeeDecisions2(listOf(fd)) }
 
-    val sql2 = "UPDATE daycare SET oph_unit_oid = :ophUnitOid WHERE daycare.id = :id;"
+        return fd.id
+    }
 
-    it.createUpdate(sql2)
-        .bind("id", id)
-        .bind("ophUnitOid", "1.2.3332211")
-        .execute()
+    private fun createVoucherDecision(
+        db: Database.Connection,
+        validFrom: LocalDate,
+        validTo: LocalDate?,
+        unitId: UUID,
+        value: Int,
+        coPayment: Int,
+        adultId: UUID,
+        child: PersonData.Detailed,
+        sentAt: Instant
+    ): VoucherValueDecision {
+        return db.transaction {
+            val decision = createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = validFrom,
+                validTo = validTo,
+                headOfFamilyId = adultId,
+                childId = child.id,
+                dateOfBirth = child.dateOfBirth,
+                unitId = unitId,
+                value = value,
+                coPayment = coPayment,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = VoucherValueDecisionServiceNeed(
+                    snDefaultDaycare.feeCoefficient,
+                    snDefaultDaycare.voucherValueCoefficient,
+                    snDefaultDaycare.feeDescriptionFi,
+                    snDefaultDaycare.feeDescriptionSv,
+                    snDefaultDaycare.voucherValueDescriptionFi,
+                    snDefaultDaycare.voucherValueDescriptionSv
+                ),
+                sentAt = sentAt
+            )
+            it.upsertValueDecisions(listOf(decision))
+            decision
+        }
+    }
 }
 
 private fun Database.Read.getChidIdByServiceNeedId(serviceNeedId: UUID): UUID? = createQuery(
@@ -283,3 +361,18 @@ WHERE sn.id = :serviceNeedId
 ).bind("serviceNeedId", serviceNeedId)
     .mapTo<UUID>()
     .first()
+
+private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
+    feeCoefficient = this.feeCoefficient,
+    descriptionFi = this.feeDescriptionFi,
+    descriptionSv = this.feeDescriptionSv
+)
+
+private fun Database.Read.getFeeDecisionChildIdsByFeeDecisionId(fdId: UUID) = createQuery(
+    """
+SELECT c.id
+FROM new_fee_decision as d
+LEFT JOIN new_fee_decision_child c ON d.id = c.fee_decision_id
+WHERE d.id = :fdId
+        """
+).bind("fdId", fdId).mapTo<UUID>().list()

@@ -59,7 +59,8 @@ INSERT INTO voucher_value_decision (
     final_co_payment,
     base_value,
     age_coefficient,
-    voucher_value
+    voucher_value,
+    sent_at
 ) VALUES (
     :id,
     :status::voucher_value_decision_status,
@@ -89,7 +90,8 @@ INSERT INTO voucher_value_decision (
     :finalCoPayment,
     :baseValue,
     :ageCoefficient,
-    :voucherValue
+    :voucherValue,
+    :sentAt
 ) ON CONFLICT (id) DO UPDATE SET
     status = :status::voucher_value_decision_status,
     decision_number = :decisionNumber,
@@ -137,6 +139,7 @@ INSERT INTO voucher_value_decision (
             .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed.feeDescriptionFi)
             .bind("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed.voucherValueDescriptionFi)
             .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed.voucherValueDescriptionFi)
+            .bind("sentAt", decision.sentAt)
             .add()
     }
     batch.execute()
