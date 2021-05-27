@@ -53,6 +53,7 @@ interface DailyNoteEdited {
   feedingNote: DaycareDailyNoteLevelInfo | undefined
   sleepingNote: DaycareDailyNoteLevelInfo | undefined
   sleepingHours: number | undefined
+  sleepingMinutes: number | undefined
   reminders: DaycareDailyNoteReminder[]
   reminderNote: string
 }
@@ -87,6 +88,7 @@ export default React.memo(function DailyNoteEditor() {
     feedingNote: undefined,
     sleepingNote: undefined,
     sleepingHours: undefined,
+    sleepingMinutes: undefined,
     reminders: [],
     reminderNote: ''
   })
@@ -428,14 +430,30 @@ export default React.memo(function DailyNoteEditor() {
                           sleepingHours: parseFloat(value)
                         })
                       }
-                      placeholder={
-                        i18n.attendances.notes.placeholders.sleepingTime
-                      }
+                      placeholder={i18n.attendances.notes.placeholders.hours}
                       data-qa="sleeping-time-input"
                       width={'s'}
                       type={'number'}
                     />
-                    <span>{i18n.common.hours}</span>
+                    <span>{i18n.common.hourShort}</span>
+                    <InputField
+                      value={
+                        dailyNote.sleepingMinutes
+                          ? dailyNote.sleepingMinutes.toString()
+                          : ''
+                      }
+                      onChange={(value) =>
+                        editNote({
+                          ...dailyNote,
+                          sleepingMinutes: parseFloat(value)
+                        })
+                      }
+                      placeholder={i18n.attendances.notes.placeholders.minutes}
+                      data-qa="sleeping-time-input"
+                      width={'s'}
+                      type={'number'}
+                    />
+                    <span>{i18n.common.minuteShort}</span>
                   </Time>
                   <FixedSpaceColumn spacing={'s'}>
                     <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
@@ -503,9 +521,11 @@ function dailyNoteEditedToDailyNote(
     sleepingNote: dailyNoteEdited.sleepingNote
       ? dailyNoteEdited.sleepingNote
       : null,
-    sleepingHours: dailyNoteEdited.sleepingHours
-      ? dailyNoteEdited.sleepingHours
-      : null,
+    sleepingHours:
+      dailyNoteEdited.sleepingHours || dailyNoteEdited.sleepingMinutes
+        ? (dailyNoteEdited.sleepingHours ?? 0) +
+          (dailyNoteEdited.sleepingMinutes ?? 0) / 60
+        : null,
     modifiedBy: user?.id ?? 'unknown user',
     modifiedAt: null
   }
@@ -521,7 +541,12 @@ function dailyNoteToDailyNoteEdited(dailyNote: DailyNote): DailyNoteEdited {
     reminderNote: dailyNote.reminderNote ? dailyNote.reminderNote : '',
     feedingNote: dailyNote.feedingNote ? dailyNote.feedingNote : undefined,
     sleepingNote: dailyNote.sleepingNote ? dailyNote.sleepingNote : undefined,
-    sleepingHours: dailyNote.sleepingHours ? dailyNote.sleepingHours : undefined
+    sleepingHours: dailyNote.sleepingHours
+      ? Math.floor(dailyNote.sleepingHours)
+      : undefined,
+    sleepingMinutes: dailyNote.sleepingHours
+      ? Math.round((dailyNote.sleepingHours % 1) * 60)
+      : undefined
   }
 }
 
@@ -566,6 +591,7 @@ function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
     dailyNote.reminderNote === '' &&
     dailyNote.reminders.length === 0 &&
     dailyNote.sleepingHours === undefined &&
+    dailyNote.sleepingMinutes === undefined &&
     dailyNote.sleepingNote === undefined
   )
     return true

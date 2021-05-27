@@ -56,7 +56,9 @@ export const fi = {
     ends: 'Päättyy',
     information: 'Tiedot',
     dailyNotes: 'Muikkarit',
-    saveBeforeClosing: 'Tallennetaanko ennen sulkemista'
+    saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
+    hourShort: 't',
+    minuteShort: 'min'
   },
   absences: {
     title: 'Poissaolomerkinnät',
@@ -152,7 +154,8 @@ export const fi = {
         note: 'Mitä tänään opin, leikin, oivalsin.',
         groupNote: 'Kirjoita muistiinpano ja ajankohta',
         reminderNote: 'Muuta muistutettavaa esim. Aurinkovoide.',
-        sleepingTime: 'Esim 1,5'
+        hours: 'tunnit',
+        minutes: 'minuutit'
       },
       noNotes: 'Ei merkintöjä tälle päivälle',
       clearTitle: 'Haluatko tyhjentää merkinnät tältä päivältä?',
