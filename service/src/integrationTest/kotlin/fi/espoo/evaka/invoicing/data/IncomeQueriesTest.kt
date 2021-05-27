@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -14,11 +15,13 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.testAdult_1
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
@@ -28,6 +31,13 @@ import java.util.UUID
 class IncomeQueriesTest : PureJdbiTest() {
     private val mapper = defaultObjectMapper()
 
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+        }
+    }
+
     @AfterEach
     fun afterEach() {
         db.transaction { tx ->
@@ -35,7 +45,7 @@ class IncomeQueriesTest : PureJdbiTest() {
         }
     }
 
-    private val personId = UUID.randomUUID()
+    private val personId = testAdult_1.id
     private val userId = UUID.randomUUID()
     private val testIncome = Income(
         id = UUID.randomUUID(),

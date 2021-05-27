@@ -285,6 +285,12 @@ export interface EndedPlacementsReportRow {
   nextPlacementStart: LocalDate | null
 }
 
+export interface ReferenceCount {
+  table: string
+  column: string
+  count: number
+}
+
 export interface DuplicatePeopleReportRow {
   groupIndex: number
   duplicateNumber: number
@@ -294,26 +300,7 @@ export interface DuplicatePeopleReportRow {
   socialSecurityNumber: string | null
   dateOfBirth: LocalDate
   streetAddress: string | null
-
-  applicationsGuardian: number
-  feeDecisionsHead: number
-  feeDecisionsPartner: number
-  fridgeChildren: number
-  fridgePartners: number
-  incomes: number
-  invoices: number
-
-  absences: number
-  applicationsChild: number
-  assistanceNeeds: number
-  assistanceActions: number
-  backups: number
-  feeAlterations: number
-  feeDecisionParts: number
-  fridgeParents: number
-  invoiceRows: number
-  placements: number
-  serviceNeeds: number
+  referenceCounts: ReferenceCount[]
 }
 
 export interface StartingPlacementsRow {

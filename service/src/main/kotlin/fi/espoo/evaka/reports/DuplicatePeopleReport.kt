@@ -6,10 +6,12 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.pis.getTransferablePersonReferences
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
+import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.json.Json
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -27,6 +29,8 @@ class DuplicatePeopleReportController {
 }
 
 private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
+    val personReferences = getTransferablePersonReferences()
+
     // language=sql
     val sql =
         """
@@ -64,63 +68,50 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
             p.date_of_birth,
             p.street_address,
         
-            (SELECT count(*) FROM application WHERE guardian_id = p.id) AS applications_guardian,
-            (SELECT count(*) FROM fee_decision WHERE head_of_family = p.id) AS fee_decisions_head,
-            (SELECT count(*) FROM fee_decision WHERE partner = p.id) AS fee_decisions_partner,
-            (SELECT count(*) FROM fridge_child WHERE head_of_child = p.id) AS fridge_children,
-            (SELECT count(*) FROM fridge_partner WHERE person_id = p.id) AS fridge_partners,
-            (SELECT count(*) FROM income WHERE person_id = p.id) AS incomes,
-            (SELECT count(*) FROM invoice WHERE head_of_family = p.id) AS invoices,
-        
-            (SELECT count(*) FROM absence WHERE child_id = p.id) AS absences,
-            (SELECT count(*) FROM application WHERE child_id = p.id) AS applications_child,
-            (SELECT count(*) FROM assistance_need WHERE child_id = p.id) AS assistance_needs,
-            (SELECT count(*) FROM assistance_action WHERE child_id = p.id) AS assistance_actions,
-            (SELECT count(*) FROM backup_care WHERE child_id = p.id) AS backups,
-            (SELECT count(*) FROM fee_alteration WHERE person_id = p.id) AS fee_alterations,
-            (SELECT count(*) FROM fee_decision_part WHERE child = p.id) AS fee_decision_parts,
-            (SELECT count(*) FROM fridge_child WHERE child_id = p.id) AS fridge_parents,
-            (SELECT count(*) FROM invoice_row WHERE child = p.id) AS invoice_rows,
-            (SELECT count(*) FROM placement WHERE child_id = p.id) AS placements,
-            (SELECT count(*) FROM service_need WHERE child_id = p.id) AS service_needs
+            jsonb_build_array(
+                ${personReferences.joinToString(separator = ", ") { (table, column) ->
+            """
+                    json_build_object(
+                        'table', '$table',
+                        'column', '$column',
+                        'count', (SELECT count(*) FROM $table WHERE $column = p.id)
+                    )
+            """.trimIndent()
+        }},
+                json_build_object(
+                    'table', 'message',
+                    'column', 'sender_id',
+                    'count', (SELECT count(*) FROM message WHERE sender_id = (SELECT id FROM message_account WHERE person_id = p.id))
+                ),
+                json_build_object(
+                    'table', 'message_content',
+                    'column', 'author_id',
+                    'count', (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = p.id))
+                ),
+                json_build_object(
+                    'table', 'message_recipients',
+                    'column', 'recipient_id',
+                    'count', (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = p.id))
+                ),
+                json_build_object(
+                    'table', 'message_draft',
+                    'column', 'account_id',
+                    'count', (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = p.id))
+                )
+            ) AS reference_counts
         FROM duplicate_ids dups
         JOIN person p ON p.id = dups.id
-        ORDER BY key, social_security_number, p.id;
+            ORDER BY key, social_security_number, p.id;
         """.trimIndent()
 
-    return createQuery(sql).map { rs, _ ->
-        DuplicatePeopleReportRow(
-            groupIndex = rs.getInt("group_index"),
-            duplicateNumber = rs.getInt("duplicate_number"),
-            id = rs.getUUID("id"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            socialSecurityNumber = rs.getString("social_security_number"),
-            dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-            streetAddress = rs.getString("street_address"),
-
-            applicationsGuardian = rs.getInt("applications_guardian"),
-            feeDecisionsHead = rs.getInt("fee_decisions_head"),
-            feeDecisionsPartner = rs.getInt("fee_decisions_partner"),
-            fridgeChildren = rs.getInt("fridge_children"),
-            fridgePartners = rs.getInt("fridge_partners"),
-            incomes = rs.getInt("incomes"),
-            invoices = rs.getInt("invoices"),
-
-            absences = rs.getInt("absences"),
-            applicationsChild = rs.getInt("applications_child"),
-            assistanceNeeds = rs.getInt("assistance_needs"),
-            assistanceActions = rs.getInt("assistance_actions"),
-            backups = rs.getInt("backups"),
-            feeAlterations = rs.getInt("fee_alterations"),
-            feeDecisionParts = rs.getInt("fee_decision_parts"),
-            fridgeParents = rs.getInt("fridge_parents"),
-            invoiceRows = rs.getInt("invoice_rows"),
-            placements = rs.getInt("placements"),
-            serviceNeeds = rs.getInt("service_needs")
-        )
-    }.toList()
+    return createQuery(sql).mapTo<DuplicatePeopleReportRow>().toList()
 }
+
+data class ReferenceCount(
+    val table: String,
+    val column: String,
+    val count: Int
+)
 
 data class DuplicatePeopleReportRow(
     val groupIndex: Int,
@@ -132,23 +123,6 @@ data class DuplicatePeopleReportRow(
     val dateOfBirth: LocalDate,
     val streetAddress: String?,
 
-    val applicationsGuardian: Int,
-    val feeDecisionsHead: Int,
-    val feeDecisionsPartner: Int,
-    val fridgeChildren: Int,
-    val fridgePartners: Int,
-    val incomes: Int,
-    val invoices: Int,
-
-    val absences: Int,
-    val applicationsChild: Int,
-    val assistanceNeeds: Int,
-    val assistanceActions: Int,
-    val backups: Int,
-    val feeAlterations: Int,
-    val feeDecisionParts: Int,
-    val fridgeParents: Int,
-    val invoiceRows: Int,
-    val placements: Int,
-    val serviceNeeds: Int
+    @Json
+    val referenceCounts: List<ReferenceCount>
 )

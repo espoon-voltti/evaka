@@ -15,6 +15,7 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,7 +51,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     }
 
     private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
-    private val personId = UUID.randomUUID()
+    private val personId = testChild_1.id
 
     private val testFeeAlteration = FeeAlteration(
         id = UUID.randomUUID(),

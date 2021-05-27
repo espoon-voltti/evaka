@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -22,7 +22,7 @@ import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
 import { CHILD_AGE } from '../../constants'
 import LocalDate from 'lib-common/local-date'
-import { TableScrollable } from '../../components/reports/common'
+import { TableScrollable } from './common'
 
 interface RowProps {
   odd: boolean
@@ -41,26 +41,7 @@ interface Selection {
 }
 
 const hasReferences = (row: DuplicatePeopleReportRow) =>
-  !(
-    row.applicationsGuardian == 0 &&
-    row.feeDecisionsHead == 0 &&
-    row.feeDecisionsPartner == 0 &&
-    row.fridgeChildren == 0 &&
-    row.fridgePartners == 0 &&
-    row.incomes == 0 &&
-    row.invoices == 0 &&
-    row.absences == 0 &&
-    row.applicationsChild == 0 &&
-    row.assistanceNeeds == 0 &&
-    row.assistanceActions == 0 &&
-    row.backups == 0 &&
-    row.feeAlterations == 0 &&
-    row.feeDecisionParts == 0 &&
-    row.fridgeParents == 0 &&
-    row.invoiceRows == 0 &&
-    row.placements == 0 &&
-    row.serviceNeeds == 0
-  )
+  row.referenceCounts.find(({ count }) => count > 0) !== undefined
 
 const isChild = (dateOfBirth: LocalDate) => {
   const age = LocalDate.today().differenceInYears(dateOfBirth)
@@ -105,25 +86,15 @@ function DuplicatePeople() {
                   <Th />
                   <Th />
 
-                  <Th>Hakemuksia (huoltajana)</Th>
-                  <Th>Jääkaappi- puolisoja</Th>
-                  <Th>Jääkaappi- lapsia</Th>
-                  <Th>Tulo- tietoja</Th>
-                  <Th>Maksu- päätöksiä (päämies)</Th>
-                  <Th>Maksu- päätöksiä (puoliso)</Th>
-                  <Th>Laskuja</Th>
-
-                  <Th>Hakemuksia (lapsena)</Th>
-                  <Th>Sijoituksia</Th>
-                  <Th>Päämiehiä</Th>
-                  <Th>Palvelun tarpeita</Th>
-                  <Th>Tuen tarpeita</Th>
-                  <Th>Tuki- toimia</Th>
-                  <Th>Maksu- muutoksia</Th>
-                  <Th>Poissa- oloja</Th>
-                  <Th>Vara- sijoituksia</Th>
-                  <Th>Maksu- päätös- osia</Th>
-                  <Th>Lasku- rivejä</Th>
+                  {rows.isSuccess && rows.value.length > 0
+                    ? rows.value[0].referenceCounts
+                        .map(({ table, column }) => `${table}.${column}`)
+                        .map((key) => (
+                          <Th key={key}>
+                            {i18n.reports.duplicatePeople.columns[key] ?? key}
+                          </Th>
+                        ))
+                    : null}
                 </Tr>
               </Thead>
               <Tbody>
@@ -187,25 +158,9 @@ function DuplicatePeople() {
                         text={i18n.common.remove}
                       />
                     </NoWrapTd>
-                    <NoWrapTd>{row.applicationsGuardian}</NoWrapTd>
-                    <NoWrapTd>{row.fridgePartners}</NoWrapTd>
-                    <NoWrapTd>{row.fridgeChildren}</NoWrapTd>
-                    <NoWrapTd>{row.incomes}</NoWrapTd>
-                    <NoWrapTd>{row.feeDecisionsHead}</NoWrapTd>
-                    <NoWrapTd>{row.feeDecisionsPartner}</NoWrapTd>
-                    <NoWrapTd>{row.invoices}</NoWrapTd>
-
-                    <NoWrapTd>{row.applicationsChild}</NoWrapTd>
-                    <NoWrapTd>{row.placements}</NoWrapTd>
-                    <NoWrapTd>{row.fridgeParents}</NoWrapTd>
-                    <NoWrapTd>{row.serviceNeeds}</NoWrapTd>
-                    <NoWrapTd>{row.assistanceNeeds}</NoWrapTd>
-                    <NoWrapTd>{row.assistanceActions}</NoWrapTd>
-                    <NoWrapTd>{row.feeAlterations}</NoWrapTd>
-                    <NoWrapTd>{row.absences}</NoWrapTd>
-                    <NoWrapTd>{row.backups}</NoWrapTd>
-                    <NoWrapTd>{row.feeDecisionParts}</NoWrapTd>
-                    <NoWrapTd>{row.invoiceRows}</NoWrapTd>
+                    {row.referenceCounts.map(({ table, column, count }) => (
+                      <NoWrapTd key={`${table}.${column}`}>{count}</NoWrapTd>
+                    ))}
                   </StyledRow>
                 ))}
               </Tbody>
