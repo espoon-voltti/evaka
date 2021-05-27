@@ -4,9 +4,9 @@
 
 import { UUID } from 'lib-common/types'
 import Container from 'lib-components/layout/Container'
-import { Gap } from 'lib-components/white-space'
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
+import { defaultMargins } from '../../../lib-components/white-space'
 import { deleteDraft, postMessage } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
@@ -19,7 +19,19 @@ import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
 import { MessageBody } from './types'
 
+// TODO is fixed header height possible?
+// If not, replace with a stretching flex container with scrollable children
+const approximatedHeaderHeight = `164px`
+const MessagesPageContainer = styled(Container)`
+  height: calc(100vh - ${approximatedHeaderHeight});
+`
+
 const PanelContainer = styled.div`
+  position: absolute;
+  top: ${defaultMargins.L};
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
 `
 
@@ -98,8 +110,7 @@ function MessagesPage() {
   }
 
   return (
-    <Container>
-      <Gap size="L" />
+    <MessagesPageContainer>
       <PanelContainer>
         <Sidebar
           setSelectedReceivers={setSelectedReceivers}
@@ -137,7 +148,7 @@ function MessagesPage() {
             />
           )}
       </PanelContainer>
-    </Container>
+    </MessagesPageContainer>
   )
 }
 

@@ -18,8 +18,8 @@ import { MessageThread } from './types'
 import { AccountView } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
-  overflow: hidden;
-  flex-grow: 1;
+  overflow-y: auto;
+  flex: 1;
 `
 
 export default React.memo(function MessagesList({

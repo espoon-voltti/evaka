@@ -2367,7 +2367,7 @@ export const fi = {
         DRAFTS: 'Luonnokset'
       },
       receivers: 'Vastaanottajat',
-      newBulletin: 'Uusi viesti'
+      newMessage: 'Uusi viesti'
     },
     messageList: {
       titles: {
