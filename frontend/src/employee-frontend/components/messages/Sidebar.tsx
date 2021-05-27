@@ -30,7 +30,7 @@ import {
 import { messageBoxes } from './types-view'
 
 const Container = styled.div`
-  width: 260px;
+  flex: 0 1 260px;
   display: flex;
   flex-direction: column;
   margin-right: ${defaultMargins.m};

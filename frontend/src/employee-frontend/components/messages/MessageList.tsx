@@ -19,7 +19,7 @@ import { AccountView } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
   overflow-y: auto;
-  flex-grow: 1;
+  flex: 1;
 `
 
 export default React.memo(function MessagesList({
