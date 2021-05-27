@@ -39,6 +39,10 @@ export interface CitizenCustomizations {
     src: string
     alt: string
   }
+  footerLogo?: {
+    src: string
+    alt: string
+  }
   routeLinkRootUrl: string
   mapConfig: MapConfig
   featureFlags: FeatureFlags

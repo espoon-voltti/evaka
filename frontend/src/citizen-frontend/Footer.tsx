@@ -6,6 +6,9 @@ import React from 'react'
 import { useTranslation } from './localization'
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
+import { footerLogo } from 'lib-customizations/citizen'
+import { desktopMin } from 'lib-components/breakpoints'
+import Container from 'lib-components/layout/Container'
 
 export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()
@@ -28,25 +31,46 @@ export const FooterContent = React.memo(function FooterContent() {
 
 export default React.memo(function Footer() {
   return (
-    <FooterContainer>
+    <FooterContainer as="footer">
       <FooterContent />
+      {footerLogo ? (
+        <LogoItem>
+          <img src={footerLogo.src} alt={footerLogo.alt} />
+        </LogoItem>
+      ) : null}
     </FooterContainer>
   )
 })
 
-const FooterContainer = styled.footer`
-  display: flex;
-  flex-direction: row;
+const FooterItem = styled.div`
+  display: inline-block;
+  margin: auto;
+`
+
+const LogoItem = styled.div`
+  margin-left: auto;
+`
+
+const FooterContainer = styled(Container)`
+  position: static;
+  display: grid;
+  grid-template-columns: 1fr repeat(3, auto) 1fr;
+  grid-column-gap: 80px;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
   padding: 20px 0 20px 0;
   font-size: 12px;
   font-weight: 400;
-`
-
-const FooterItem = styled.div`
-  display: inline-block;
-  margin: 0 40px 0 40px;
+  ${FooterItem}:nth-child(1) {
+    grid-column-start: 2;
+    @media (max-width: ${desktopMin}) {
+      grid-column-start: 1;
+    }
+  }
+  @media (max-width: ${desktopMin}) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 `
 
 const FooterLink = styled.a`
