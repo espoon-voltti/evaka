@@ -90,3 +90,4 @@ V89__message_account_null_foreign_keys.sql
 V90__message_recipients_notification_sent_at.sql
 V91__message_draft_non_nullable.sql
 V92__add_missing_foreign_keys_referencing_person.sql
+V93__message_recipient_names.sql

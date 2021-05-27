@@ -33,6 +33,7 @@ data class SentMessage(
     val type: MessageType,
     @Json
     val recipients: Set<MessageAccount>,
+    val recipientNames: List<String>,
 )
 
 enum class MessageType {

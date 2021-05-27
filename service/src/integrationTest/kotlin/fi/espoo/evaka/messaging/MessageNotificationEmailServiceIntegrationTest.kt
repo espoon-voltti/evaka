@@ -5,6 +5,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
@@ -73,7 +74,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employeeAccount.id,
-            recipients = personAccounts.map { it.id }.toSet(),
+            recipients = personAccounts,
             user = employee,
         )
         asyncJobRunner.runPendingJobsSync()
@@ -92,7 +93,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
         message: String,
         messageType: MessageType,
         sender: UUID,
-        recipients: Set<UUID>,
+        recipients: List<MessageAccount>,
         user: AuthenticatedUser.Employee,
     ) {
         val (_, response) = http.post("/messages/$sender")
@@ -102,7 +103,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
                         title,
                         message,
                         messageType,
-                        recipientAccountIds = recipients
+                        recipientAccountIds = recipients.map { it.id }.toSet(),
+                        recipientNames = recipients.map { it.name },
                     )
                 )
             )

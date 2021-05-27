@@ -86,6 +86,19 @@ GROUP BY acc.id, account_name, type, group_id, group_name, group_unitId, group_u
         .toSet()
 }
 
+fun Database.Read.getAccountNames(ids: Set<UUID>): List<String> {
+    val sql = """
+        SELECT account_name
+        FROM message_account_name_view
+        WHERE id = ANY(:ids)
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("ids", ids.toTypedArray())
+        .mapTo<String>()
+        .list()
+}
+
 fun Database.Transaction.createMessageAccountForDaycareGroup(daycareGroupId: UUID) {
     // language=SQL
     val sql = """

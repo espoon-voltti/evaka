@@ -69,22 +69,14 @@ export const isPersonalMessageAccount = (
   acc: MessageAccount
 ): acc is PersonalMessageAccount => acc.type === 'PERSONAL'
 
-export interface Message {
-  id: UUID
-  senderId: UUID
-  senderName: string
-  sentAt: Date
-  readAt: Date | null
-  title: string
-  content: string
-  receivers: UUID[]
-}
+export type MessageType = 'MESSAGE' | 'BULLETIN'
 
 export interface MessageBody {
   title: string
   content: string
   type: MessageType
   recipientAccountIds: UUID[]
+  recipientNames: string[]
 }
 
 export interface UpsertableDraftContent {
@@ -106,14 +98,13 @@ export const deserializeDraftContent = ({
   created: new Date(created)
 })
 
-export type MessageType = 'MESSAGE' | 'BULLETIN'
-
 export interface SentMessage {
   id: UUID
   type: MessageType
   threadTitle: string
   content: string
   recipients: BaseMessageAccount[]
+  recipientNames: string[]
   sentAt: Date
 }
 export const deserializeSentMessage = ({
@@ -124,6 +115,14 @@ export const deserializeSentMessage = ({
   sentAt: new Date(sentAt)
 })
 
+export interface Message {
+  id: UUID
+  senderId: UUID
+  senderName: string
+  sentAt: Date
+  readAt: Date | null
+  content: string
+}
 export interface MessageThread {
   id: UUID
   type: MessageType

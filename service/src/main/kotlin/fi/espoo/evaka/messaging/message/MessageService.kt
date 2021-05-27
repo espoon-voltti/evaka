@@ -20,6 +20,7 @@ class MessageService(
         type: MessageType,
         sender: MessageAccount,
         recipientGroups: Set<Set<UUID>>,
+        recipientNames: List<String>,
     ): List<UUID> {
         // for each recipient group, create a thread, message and message_recipients while re-using content
         val contentId = tx.insertMessageContent(content, sender)
@@ -27,7 +28,13 @@ class MessageService(
         return recipientGroups.map {
             val threadId = tx.insertThread(type, title)
             val messageId =
-                tx.insertMessage(contentId = contentId, threadId = threadId, sender = sender, sentAt = sentAt)
+                tx.insertMessage(
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = sender,
+                    sentAt = sentAt,
+                    recipientNames = recipientNames
+                )
             tx.insertRecipients(it, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
             threadId
@@ -51,8 +58,9 @@ class MessageService(
         if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
 
         return db.transaction { tx ->
+            val recipientNames = tx.getAccountNames(recipientAccountIds)
             val contentId = tx.insertMessageContent(content, senderAccount)
-            val messageId = tx.insertMessage(contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId)
+            val messageId = tx.insertMessage(contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
             tx.insertRecipients(recipientAccountIds, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
             messageId

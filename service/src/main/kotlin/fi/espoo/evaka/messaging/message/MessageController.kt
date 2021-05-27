@@ -82,6 +82,7 @@ class MessageController(
         val content: String,
         val type: MessageType,
         val recipientAccountIds: Set<UUID>,
+        val recipientNames: List<String>,
     )
 
     @PostMapping("/{accountId}")
@@ -105,7 +106,8 @@ class MessageController(
                 content = body.content,
                 sender = sender,
                 type = body.type,
-                recipientGroups = groupedRecipients
+                recipientNames = body.recipientNames,
+                recipientGroups = groupedRecipients,
             )
         }
     }
