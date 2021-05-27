@@ -58,7 +58,10 @@ export const fi = {
     dailyNotes: 'Muikkarit',
     saveBeforeClosing: 'Tallennetaanko ennen sulkemista',
     hourShort: 't',
-    minuteShort: 'min'
+    minuteShort: 'min',
+    errors: {
+      minutes: 'Korkeintaan 59 minuuttia'
+    }
   },
   absences: {
     title: 'Poissaolomerkinnät',

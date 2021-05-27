@@ -238,7 +238,13 @@ function Group({
       childNote.sleepingNote
         ? i18n.unit.groups.daycareDailyNote.level[childNote.sleepingNote]
         : null,
-      childNote.sleepingHours ? `${childNote.sleepingHours}h` : null
+      childNote.sleepingHours
+        ? Number(childNote.sleepingHours) % 1 > 0
+          ? `${Math.floor(Number(childNote.sleepingHours))}h ${Math.round(
+              (Number(childNote.sleepingHours) % 1) * 60
+            )}min`
+          : `${Math.floor(Number(childNote.sleepingHours))}h`
+        : null
     ]
       .filter((s) => s !== null)
       .join(',')

@@ -48,7 +48,17 @@ const initialFormData = (
   groupId: string | null
 ): DaycareDailyNoteFormData => {
   return note != null
-    ? { ...note, childId, groupId }
+    ? {
+        ...note,
+        childId,
+        groupId,
+        sleepingHours: note.sleepingHours
+          ? Math.floor(Number(note.sleepingHours)).toString()
+          : '',
+        sleepingMinutes: note.sleepingHours
+          ? Math.round((Number(note.sleepingHours) % 1) * 60).toString()
+          : ''
+      }
     : {
         childId,
         groupId,
@@ -170,7 +180,8 @@ export default React.memo(function DaycareDailyNoteModal({
           submit()
           onClose()
         },
-        label: i18n.common.confirm
+        label: i18n.common.confirm,
+        disabled: Number(form.sleepingMinutes) > 59
       }}
       reject={{
         action: () => {
@@ -269,6 +280,22 @@ export default React.memo(function DaycareDailyNoteModal({
               data-qa="sleeping-hours-input"
             />
             <span>{i18n.unit.groups.daycareDailyNote.sleepingHours}</span>
+            <InputField
+              type={'number'}
+              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHint}
+              value={form.sleepingMinutes || ''}
+              onChange={(value) => updateForm({ sleepingMinutes: value })}
+              data-qa="sleeping-hours-input"
+              info={
+                Number(form.sleepingMinutes) > 59
+                  ? {
+                      text: i18n.common.error.minutes,
+                      status: 'warning'
+                    }
+                  : undefined
+              }
+            />
+            <span>{i18n.unit.groups.daycareDailyNote.sleepingMinutes}</span>
           </FixedSpaceRow>
 
           <FixedSpaceColumn>

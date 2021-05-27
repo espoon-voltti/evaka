@@ -223,7 +223,7 @@ test('User can create a daily note for a backup care child', async (t) => {
     .expect(childPage.dailyNoteNoteInput.textContent)
     .eql(daycareDailyNote.note)
   await t
-    .expect(childPage.dailyNoteSleepingTimeInput.value)
+    .expect(childPage.dailyNoteSleepingTimeHoursInput.value)
     .eql(daycareDailyNote.sleepingHours.toString())
   await t
     .expect(childPage.dailyNoteReminderNoteInput.textContent)

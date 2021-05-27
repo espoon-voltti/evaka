@@ -117,7 +117,8 @@ export const fi = {
     error: {
       unknown: 'Hups, jotain meni pieleen!',
       forbidden: 'Oikeudet tähän toimintoon puuttuvat',
-      saveFailed: 'Muutosten tallentaminen ei onnistunut, yritä uudelleen.'
+      saveFailed: 'Muutosten tallentaminen ei onnistunut, yritä uudelleen.',
+      minutes: 'Korkeintaan 59 minuuttia'
     },
     days: 'päivää',
     day: 'päivä',
@@ -1291,7 +1292,8 @@ export const fi = {
         feedingHeader: 'Lapsi söi tänään',
         sleepingHeader: 'Lapsi nukkui tänään',
         sleepingHint: 'esim 1,5h',
-        sleepingHours: 'tuntia',
+        sleepingHours: 't',
+        sleepingMinutes: 'min',
         reminderHeader: 'Muistettavia asioita',
         otherThingsToRememberHeader: 'Muuta muistettavaa (esim aurinkovoide)',
         groupNoteModalAddLink: 'Päivän muistiinpano koko ryhmälle',

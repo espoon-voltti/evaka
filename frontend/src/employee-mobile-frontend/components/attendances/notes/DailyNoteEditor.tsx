@@ -236,6 +236,11 @@ export default React.memo(function DailyNoteEditor() {
           },
           label: i18n.common.save
         }}
+        resolveDisabled={
+          dailyNote.sleepingMinutes === undefined
+            ? false
+            : dailyNote.sleepingMinutes > 59
+        }
       />
     )
   }
@@ -275,6 +280,11 @@ export default React.memo(function DailyNoteEditor() {
                 }
                 text={i18n.common.save}
                 data-qa="create-daily-note-btn"
+                disabled={
+                  dailyNote.sleepingMinutes === undefined
+                    ? false
+                    : dailyNote.sleepingMinutes > 59
+                }
               />
             </TopRow>
             <FixedSpaceColumn>
@@ -431,7 +441,7 @@ export default React.memo(function DailyNoteEditor() {
                         })
                       }
                       placeholder={i18n.attendances.notes.placeholders.hours}
-                      data-qa="sleeping-time-input"
+                      data-qa="sleeping-time-hours-input"
                       width={'s'}
                       type={'number'}
                     />
@@ -449,9 +459,18 @@ export default React.memo(function DailyNoteEditor() {
                         })
                       }
                       placeholder={i18n.attendances.notes.placeholders.minutes}
-                      data-qa="sleeping-time-input"
+                      data-qa="sleeping-time-minutes-input"
                       width={'s'}
                       type={'number'}
+                      info={
+                        dailyNote.sleepingMinutes &&
+                        dailyNote.sleepingMinutes > 59
+                          ? {
+                              text: i18n.common.errors.minutes,
+                              status: 'warning'
+                            }
+                          : undefined
+                      }
                     />
                     <span>{i18n.common.minuteShort}</span>
                   </Time>
@@ -604,6 +623,13 @@ const Time = styled.div`
 
   span {
     margin-left: ${defaultMargins.xs};
+  }
+
+  div:nth-child(2) {
+    position: absolute;
+    div:nth-child(2) {
+      position: relative;
+    }
   }
 `
 
