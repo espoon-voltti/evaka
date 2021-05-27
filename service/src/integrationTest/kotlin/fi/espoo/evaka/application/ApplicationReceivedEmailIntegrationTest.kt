@@ -110,11 +110,11 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         val sentMail = sentMails[0]
         assertEquals(guardian.email, sentMail.toAddress)
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
+        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
     }
 
     @Test
-    fun `swedish email is sent after end user sends application to svebi daycare`() {
+    fun `swedish email from address is used after end user sends application to svebi daycare`() {
         val applicationId = db.transaction { tx ->
             tx.insertTestApplication(
                 childId = testChild_1.id,
@@ -146,9 +146,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         assertEquals(1, sentMails.size)
 
         val sentMail = sentMails[0]
+        assertEquals("Test email sender sv <testemail_sv@test.com>", sentMail.fromAddress)
         assertEquals(guardian.email, sentMail.toAddress)
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Vi har tagit emot din ansökan", sentMail.subject)
+        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
     }
 
     @Test
@@ -221,7 +222,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
         val sentMail = sentMails.first()
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
+        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
     }
 
     @Test
@@ -252,7 +253,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
         val sentMail = sentMails.first()
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
+        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
     }
 
     @Test
@@ -389,7 +390,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             MockEmailClient.getEmail("working@test.fi"),
             "working@test.fi",
             "Test email sender fi <testemail_fi@test.com>",
-            "Olemme vastaanottaneet hakemuksenne",
+            "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
             "Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika",
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika"
         )
@@ -399,7 +400,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
             MockEmailClient.getEmail("Working.Email@Test.Com"),
             "Working.Email@Test.Com",
             "Test email sender sv <testemail_sv@test.com>",
-            "Vi har tagit emot din ansökan",
+            "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
             "Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader",
             "Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader"
         )

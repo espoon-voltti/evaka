@@ -89,7 +89,7 @@ class MessageNotificationEmailService(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
                 fromAddress = getFromAddress(language),
-                subject = getSubject(language),
+                subject = getSubject(),
                 htmlBody = getHtml(language),
                 textBody = getText(language)
             )
@@ -97,14 +97,10 @@ class MessageNotificationEmailService(
         }
     }
 
-    private fun getSubject(language: Language): String {
+    private fun getSubject(): String {
         val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
-        return when (language) {
-            Language.en -> "New message in eVaka$postfix"
-            Language.sv -> "Ny meddelande i eVaka$postfix"
-            else -> "Uusi viesti eVakassa$postfix"
-        }
+        return "Uusi viesti eVakassa / Ny meddelande i eVaka / New message in eVaka$postfix"
     }
 
     private fun getCitizenMessagesUrl(lang: Language): String {
@@ -117,40 +113,40 @@ class MessageNotificationEmailService(
 
     private fun getHtml(language: Language): String {
         val messagesUrl = getCitizenMessagesUrl(language)
-        return when (language) {
-            Language.en -> """
-                <p>You have received a new eVaka bulletin/message. Read the message here: <a href="$messagesUrl">$messagesUrl</a></p>
-                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p> 
-            """.trimIndent()
-            Language.sv -> """
+        return """
+                <p>Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
+            
+                <hr>
+                
                 <p>Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: <a href="$messagesUrl">$messagesUrl</a></p>
-                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>                
-            """.trimIndent()
-            else -> """
-               <p>Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: <a href="$messagesUrl">$messagesUrl</a></p>
-               <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
-            """.trimIndent()
-        }
+                <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>          
+                
+                <hr>
+                
+                <p>You have received a new eVaka bulletin/message. Read the message here: <a href="$messagesUrl">$messagesUrl</a></p>
+                <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
+        """.trimIndent()
     }
 
     private fun getText(language: Language): String {
         val messagesUrl = getCitizenMessagesUrl(language)
-        return when (language) {
-            Language.en -> """
-                You have received a new eVaka bulletin/message. Read the message here: $messagesUrl
+        return """
+                Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: $messagesUrl
                 
-                This is an automatic message from the eVaka system. Do not reply to this message. 
-            """.trimIndent()
-            Language.sv -> """
+                Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
+                
+                -----
+       
                 Du har fått ett nytt allmänt/personligt meddelande i eVaka. Läs meddelandet här: $messagesUrl
                 
-                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.  
-            """.trimIndent()
-            else -> """
-               Sinulle on saapunut uusi tiedote/viesti eVakaan. Lue viesti täältä: $messagesUrl
-               
-               Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.
-            """.trimIndent()
-        }
+                Detta besked skickas automatiskt av eVaka. Svara inte på detta besked. 
+                
+                -----
+                
+                You have received a new eVaka bulletin/message. Read the message here: $messagesUrl
+                
+                This is an automatic message from the eVaka system. Do not reply to this message.  
+        """.trimIndent()
     }
 }
