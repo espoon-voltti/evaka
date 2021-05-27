@@ -13,6 +13,7 @@ import { useSingleAndDoubleClick } from 'lib-common/utils/useSingleAndDoubleClic
 
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
@@ -51,7 +52,7 @@ export const SelectionChip = React.memo(function SelectionChip({
   'data-qa': dataQa,
   showIcon = true
 }: SelectionChipProps) {
-  const ariaId = Math.random().toString(36).substring(2, 15)
+  const ariaId = useUniqueId('selection-chip')
   const { handleClick, handleDoubleClick } = useSingleAndDoubleClick(
     onClick,
     onDoubleClick
