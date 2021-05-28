@@ -9,6 +9,7 @@ import java.math.BigDecimal
 import java.util.UUID
 
 data class PricingWithValidity(
+    val id: UUID,
     val validDuring: DateRange,
     val multiplier: BigDecimal,
     val maxThresholdDifference: Int,
@@ -60,7 +61,7 @@ data class FeeThresholdsWithValidity(
     val maxIncomeThreshold4: Int,
     val maxIncomeThreshold5: Int,
     val maxIncomeThreshold6: Int,
-    val thresholdIncrease6Plus: Int,
+    val incomeThresholdIncrease6Plus: Int,
     val siblingDiscount2: BigDecimal,
     val siblingDiscount2Plus: BigDecimal,
     val maxFee: Int,
@@ -83,7 +84,7 @@ data class FeeThresholdsWithValidity(
         maxIncomeThreshold4 = maxIncomeThreshold4,
         maxIncomeThreshold5 = maxIncomeThreshold5,
         maxIncomeThreshold6 = maxIncomeThreshold6,
-        thresholdIncrease6Plus = thresholdIncrease6Plus,
+        incomeThresholdIncrease6Plus = incomeThresholdIncrease6Plus,
         siblingDiscount2 = siblingDiscount2,
         siblingDiscount2Plus = siblingDiscount2Plus,
         maxFee = maxFee,
@@ -108,7 +109,7 @@ data class FeeThresholds(
     val maxIncomeThreshold4: Int,
     val maxIncomeThreshold5: Int,
     val maxIncomeThreshold6: Int,
-    val thresholdIncrease6Plus: Int,
+    val incomeThresholdIncrease6Plus: Int,
     val siblingDiscount2: BigDecimal,
     val siblingDiscount2Plus: BigDecimal,
     val maxFee: Int,
@@ -133,7 +134,7 @@ data class FeeThresholds(
             4 -> minIncomeThreshold2
             5 -> minIncomeThreshold5
             6 -> minIncomeThreshold6
-            else -> minIncomeThreshold6 + ((familySize - 6) * thresholdIncrease6Plus)
+            else -> minIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
         }
 
     fun maxIncomeThreshold(familySize: Int): Int =
@@ -144,6 +145,6 @@ data class FeeThresholds(
             4 -> maxIncomeThreshold2
             5 -> maxIncomeThreshold5
             6 -> maxIncomeThreshold6
-            else -> maxIncomeThreshold6 + ((familySize - 6) * thresholdIncrease6Plus)
+            else -> maxIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
         }
 }

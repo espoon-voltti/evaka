@@ -2450,7 +2450,8 @@ export const fi = {
       thresholdIncreaseInfo:
         'Jos perheen koko on suurempi kuin 6, korotetaan maksun määräämisen perusteena olevaa tulorajaa korotussumman verran kustakin seuraavasta perheen alaikäisestä lapsesta.',
       multiplier: 'Maksu %',
-      maxFee: 'Enimmäismaksu'
+      maxFee: 'Enimmäismaksu',
+      minFee: 'Pienin perittävä lapsikohtainen maksu'
     }
   },
   roles: {
