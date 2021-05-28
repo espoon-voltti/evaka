@@ -29,10 +29,6 @@ import { isAutomatedTest } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { mapConfig } from 'lib-customizations/citizen'
 
-import MarkerClusterGroup from 'react-leaflet-markercluster'
-import 'leaflet.markercluster/dist/MarkerCluster.css'
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
   selectedUnit: PublicUnit | null
@@ -111,17 +107,15 @@ function MapContents({
         detectRetina={true}
       />
       {selectedAddress && <AddressMarker address={selectedAddress} />}
-      <MarkerClusterGroup maxClusterRadius={25}>
-        {units.map((unit) => (
-          <UnitMarker
-            key={unit.id}
-            unit={unit}
-            isSelected={selectedUnit?.id === unit.id}
-            selectedUnit={selectedUnit}
-            setSelectedUnit={setSelectedUnit}
-          />
-        ))}
-      </MarkerClusterGroup>
+      {units.map((unit) => (
+        <UnitMarker
+          key={unit.id}
+          unit={unit}
+          isSelected={selectedUnit?.id === unit.id}
+          selectedUnit={selectedUnit}
+          setSelectedUnit={setSelectedUnit}
+        />
+      ))}
     </>
   )
 }
@@ -161,6 +155,13 @@ function UnitMarker({
 }) {
   const t = useTranslation()
   const markerRef = useRef<leaflet.Marker>(null)
+
+  useEffect(() => {
+    const element = markerRef.current?.getElement()
+    if (element) {
+      element.setAttribute('data-qa', `map-marker-${unit.id}`)
+    }
+  }, [markerRef, unit])
 
   if (unit.location?.lat == null || unit.location?.lon == null) return null
   const { lat, lon } = unit.location
