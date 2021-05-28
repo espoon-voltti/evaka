@@ -97,6 +97,7 @@ const Container = styled.div`
   max-width: 400px;
   min-height: 500px;
   background-color: ${colors.greyscale.white};
+  overflow-y: auto;
 
   @media (max-width: 750px) {
     min-width: 50%;
