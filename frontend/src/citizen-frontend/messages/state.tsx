@@ -49,6 +49,8 @@ export interface MessagePageState {
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
   replyState: Result<void> | undefined
+  setReplyContent: (threadId: UUID, content: string) => void
+  getReplyContent: (threadId: UUID) => string
   unreadMessagesCount: number | undefined
   refreshUnreadMessagesCount: () => void
 }
@@ -63,6 +65,8 @@ const defaultState: MessagePageState = {
   selectThread: () => undefined,
   sendReply: () => undefined,
   replyState: undefined,
+  getReplyContent: () => '',
+  setReplyContent: () => undefined,
   unreadMessagesCount: undefined,
   refreshUnreadMessagesCount: () => undefined
 }
@@ -164,10 +168,21 @@ export const MessageContextProvider = React.memo(
             ]
           }
         })
+        setReplyContents((state) => ({ ...state, [threadId]: '' }))
       }
     }, [])
     const reply = useRestApi(replyToThread, setReplyResponse)
     const sendReply = useCallback(reply, [reply])
+
+    const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
+
+    const getReplyContent = useCallback(
+      (threadId: UUID) => replyContents[threadId] ?? '',
+      [replyContents]
+    )
+    const setReplyContent = useCallback((threadId: UUID, content: string) => {
+      setReplyContents((state) => ({ ...state, [threadId]: content }))
+    }, [])
 
     const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>()
     const setUnreadResult = useCallback((res: Result<number>) => {
@@ -226,6 +241,8 @@ export const MessageContextProvider = React.memo(
         loadAccount,
         threads: threads.threads,
         threadLoadingResult: threads.loadingResult,
+        getReplyContent,
+        setReplyContent,
         loadMoreThreads,
         selectedThread,
         selectThread,
@@ -239,8 +256,10 @@ export const MessageContextProvider = React.memo(
         loadAccount,
         threads.threads,
         threads.loadingResult,
-        selectedThread,
+        getReplyContent,
+        setReplyContent,
         loadMoreThreads,
+        selectedThread,
         selectThread,
         replyState,
         sendReply,

@@ -2,17 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UUID } from 'lib-common/types'
 import Button from 'lib-components/atoms/buttons/Button'
 import { TextArea } from 'lib-components/atoms/form/InputField'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import { defaultMargins } from 'lib-components/white-space'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import { MessageContainer } from './MessageComponents'
@@ -42,11 +37,17 @@ const Label = styled.span`
 interface Props {
   account: MessageAccount
   message: Message
+  threadId: UUID
 }
 
-export function InlineReplyEditor({ account, message }: Props) {
+export function InlineReplyEditor({ threadId, account, message }: Props) {
   const i18n = useTranslation()
-  const { sendReply, replyState } = useContext(MessageContext)
+  const {
+    sendReply,
+    replyState,
+    setReplyContent,
+    getReplyContent
+  } = useContext(MessageContext)
 
   // TODO toggleable recipients when UX is ready
   const recipients = useMemo(
@@ -59,21 +60,15 @@ export function InlineReplyEditor({ account, message }: Props) {
     [account, message]
   )
 
-  const [content, setContent] = useState('')
+  const replyContent = getReplyContent(threadId)
 
   const onSend = useCallback(() => {
     sendReply({
-      content,
+      content: replyContent,
       messageId: message.id,
       recipientAccountIds: recipients.map((r) => r.id)
     })
-  }, [message.id, recipients, content, sendReply])
-
-  useEffect(() => {
-    if (replyState?.isSuccess) {
-      setContent('')
-    }
-  }, [replyState])
+  }, [message.id, recipients, replyContent, sendReply])
 
   return (
     <MessageContainer>
@@ -85,9 +80,9 @@ export function InlineReplyEditor({ account, message }: Props) {
         <Label>{i18n.messages.types.MESSAGE}</Label>
         <MultiRowTextArea
           rows={4}
-          value={content}
+          value={replyContent}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setContent(e.target.value)
+            setReplyContent(threadId, e.target.value)
           }
         />
       </EditorRow>

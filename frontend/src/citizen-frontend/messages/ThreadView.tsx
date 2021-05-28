@@ -82,7 +82,7 @@ interface Props {
 
 export default React.memo(function ThreadView({
   account,
-  thread: { messages, title, type }
+  thread: { id, messages, title, type }
 }: Props) {
   return (
     <ThreadContainer>
@@ -96,7 +96,11 @@ export default React.memo(function ThreadView({
       ))}
 
       {type === 'MESSAGE' && messages.length > 0 && (
-        <InlineReplyEditor account={account} message={messages.slice(-1)[0]} />
+        <InlineReplyEditor
+          account={account}
+          message={messages.slice(-1)[0]}
+          threadId={id}
+        />
       )}
     </ThreadContainer>
   )
