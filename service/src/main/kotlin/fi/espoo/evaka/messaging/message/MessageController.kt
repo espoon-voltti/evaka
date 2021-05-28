@@ -33,10 +33,10 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
+    fun getAccountsByUser(db: Database.Connection, user: AuthenticatedUser): Set<DetailedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         requireAuthorizedMessagingRole(user)
-        return db.read { it.getAuthorizedMessageAccountsForEmployee(user) }
+        return db.read { it.getEmployeeDetailedMessageAccounts(user.id) }
     }
 
     @GetMapping("/{accountId}/received")
@@ -72,8 +72,8 @@ class MessageController(
     ): UnreadMessagesResponse {
         Audit.MessagingUnreadMessagesRead.log()
         requireAuthorizedMessagingRole(user)
-        val accountIds = db.read { it.getMessageAccountsForEmployee(user) }.map { it.id }
-        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds.toSet()) }
+        val accountIds = db.read { it.getEmployeeMessageAccounts(user.id) }
+        val count = if (accountIds.isEmpty()) 0 else db.read { it.getUnreadMessagesCount(accountIds) }
         return UnreadMessagesResponse(count)
     }
 
@@ -93,10 +93,9 @@ class MessageController(
         @RequestBody body: PostMessageBody,
     ): List<UUID> {
         Audit.MessagingNewMessageWrite.log(accountId)
-        val sender = requireMessageAccountAccess(db, user, accountId)
+        requireMessageAccountAccess(db, user, accountId)
 
         checkAuthorizedRecipients(db, user, body.recipientAccountIds)
-
         val groupedRecipients = db.read { it.groupRecipientAccountsByGuardianship(body.recipientAccountIds) }
 
         return db.transaction {
@@ -104,7 +103,7 @@ class MessageController(
                 it,
                 title = body.title,
                 content = body.content,
-                sender = sender,
+                sender = accountId,
                 type = body.type,
                 recipientNames = body.recipientNames,
                 recipientGroups = groupedRecipients,
@@ -173,12 +172,12 @@ class MessageController(
         @RequestBody body: ReplyToMessageBody,
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
-        val account = requireMessageAccountAccess(db, user, accountId)
+        requireMessageAccountAccess(db, user, accountId)
 
         messageService.replyToThread(
             db = db,
             replyToMessageId = messageId,
-            senderAccount = account,
+            senderAccount = accountId,
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
@@ -192,8 +191,8 @@ class MessageController(
         @PathVariable("threadId") threadId: UUID
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
-        val account = requireMessageAccountAccess(db, user, accountId)
-        return db.transaction { it.markThreadRead(account.id, threadId) }
+        requireMessageAccountAccess(db, user, accountId)
+        return db.transaction { it.markThreadRead(accountId, threadId) }
     }
 
     @GetMapping("/receivers")
@@ -210,7 +209,7 @@ class MessageController(
             UserRole.SPECIAL_EDUCATION_TEACHER
         )
 
-        return db.read { it.getReceiversForNewMessage(user, unitId) }
+        return db.read { it.getReceiversForNewMessage(user.id, unitId) }
     }
 
     @GetMapping
@@ -226,9 +225,9 @@ class MessageController(
         db: Database.Connection,
         user: AuthenticatedUser,
         accountId: UUID
-    ): MessageAccount {
+    ) {
         requireAuthorizedMessagingRole(user)
-        return db.read { it.getMessageAccountsForEmployee(user) }.find { it.id == accountId }
+        db.read { it.getEmployeeMessageAccounts(user.id) }.find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 
@@ -238,8 +237,8 @@ class MessageController(
         recipientAccountIds: Set<UUID>
     ) {
         db.read {
-            it.isUserAuthorizedToSendTo(
-                user,
+            it.isEmployeeAuthorizedToSendTo(
+                user.id,
                 recipientAccountIds
             )
         } || throw Forbidden("Not authorized to send to the given recipients")

@@ -32,8 +32,8 @@ class MessageControllerCitizen(
         user: AuthenticatedUser
     ): Int {
         Audit.MessagingUnreadMessagesRead.log()
-        val account = requireMessageAccountAccess(db, user)
-        return db.read { it.getUnreadMessagesCount(setOf(account.id)) }
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.read { it.getUnreadMessagesCount(setOf(accountId)) }
     }
 
     @PutMapping("/threads/{threadId}/read")
@@ -43,8 +43,8 @@ class MessageControllerCitizen(
         @PathVariable("threadId") threadId: UUID
     ) {
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
-        val account = requireMessageAccountAccess(db, user)
-        return db.transaction { it.markThreadRead(account.id, threadId) }
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.transaction { it.markThreadRead(accountId, threadId) }
     }
 
     @GetMapping("/received")
@@ -55,8 +55,8 @@ class MessageControllerCitizen(
         @RequestParam page: Int,
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
-        val account = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesReceivedByAccount(account.id, pageSize, page) }
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
 
     @GetMapping("/sent")
@@ -67,8 +67,8 @@ class MessageControllerCitizen(
         @RequestParam page: Int,
     ): Paged<SentMessage> {
         Audit.MessagingSentMessagesRead.log()
-        val account = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesSentByAccount(account.id, pageSize, page) }
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
@@ -81,12 +81,12 @@ class MessageControllerCitizen(
         @RequestBody body: ReplyToMessageBody,
     ) {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
-        val account = requireMessageAccountAccess(db, user)
+        val accountId = requireMessageAccountAccess(db, user)
 
         messageService.replyToThread(
             db = db,
             replyToMessageId = messageId,
-            senderAccount = account,
+            senderAccount = accountId,
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
@@ -100,8 +100,8 @@ class MessageControllerCitizen(
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): MessageAccount {
+    ): UUID {
         user.requireOneOfRoles(UserRole.END_USER)
-        return db.read { it.getMessageAccountForEndUser(user) }
+        return db.read { it.getCitizenMessageAccount(user.id) }
     }
 }

@@ -11,7 +11,7 @@ import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
-import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
+import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.deleteOrDeactivateDaycareGroupMessageAccount
 import fi.espoo.evaka.placement.getDaycareGroupPlacements
 import fi.espoo.evaka.shared.db.Database
@@ -47,7 +47,7 @@ class DaycareService {
         initialCaretakers: Double
     ): DaycareGroup = tx.createDaycareGroup(daycareId, name, startDate).also {
         tx.initCaretakers(it.id, it.startDate, initialCaretakers)
-        tx.createMessageAccountForDaycareGroup(it.id)
+        tx.createDaycareGroupMessageAccount(it.id)
     }
 
     fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {

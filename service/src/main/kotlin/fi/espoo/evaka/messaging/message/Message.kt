@@ -73,7 +73,7 @@ enum class AccountType {
     GROUP
 }
 
-data class AuthorizedMessageAccount(
+data class DetailedMessageAccount(
     val id: UUID,
     val name: String,
     @Nested("group_")

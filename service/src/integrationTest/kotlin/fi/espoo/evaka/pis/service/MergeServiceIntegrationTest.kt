@@ -11,22 +11,17 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageNotificationEmailService
 import fi.espoo.evaka.messaging.message.MessageService
 import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
-import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
+import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
-import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
+import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.defaultObjectMapper
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -142,7 +137,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, countAfter)
 
         verify(asyncJobRunnerMock).plan(
-            any<Database.Transaction>(),
+            any(),
             eq(listOf(NotifyFamilyUpdated(adultId, validFrom, validTo))),
             any(),
             any(),
@@ -198,17 +193,14 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val employeeId = UUID.randomUUID()
         val receiverAccount = db.transaction {
             it.insertTestEmployee(DevEmployee(id = employeeId))
-            it.upsertMessageAccountForEmployee(employeeId)
-            it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employeeId, roles = setOf())).first()
+            it.upsertEmployeeMessageAccount(employeeId)
         }
-
         val senderId = UUID.randomUUID()
         val senderIdDuplicate = UUID.randomUUID()
         val (senderAccount, senderDuplicateAccount) = db.transaction { tx ->
             listOf(senderId, senderIdDuplicate).map {
                 tx.insertTestPerson(DevPerson(id = it))
-                tx.createMessageAccountForPerson(it)
-                tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = it))
+                tx.createPersonMessageAccount(it)
             }
         }
 
@@ -219,7 +211,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
                 sender = senderDuplicateAccount,
-                recipientGroups = setOf(setOf(receiverAccount.id)),
+                recipientGroups = setOf(setOf(receiverAccount)),
                 recipientNames = listOf()
             )
         }
@@ -239,8 +231,8 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         )
     }
 
-    private fun sentMessageCounts(vararg accounts: MessageAccount): List<Int> = db.read { tx ->
-        accounts.map { tx.getMessagesSentByAccount(it.id, 10, 1).total }
+    private fun sentMessageCounts(vararg accountIds: UUID): List<Int> = db.read { tx ->
+        accountIds.map { tx.getMessagesSentByAccount(it, 10, 1).total }
     }
 
     @Test
@@ -248,8 +240,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val employeeId = UUID.randomUUID()
         val senderAccount = db.transaction {
             it.insertTestEmployee(DevEmployee(id = employeeId))
-            it.upsertMessageAccountForEmployee(employeeId)
-            it.getMessageAccountsForEmployee(AuthenticatedUser.Employee(id = employeeId, roles = setOf())).first()
+            it.upsertEmployeeMessageAccount(employeeId)
         }
 
         val receiverId = UUID.randomUUID()
@@ -257,8 +248,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val (receiverAccount, receiverDuplicateAccount) = db.transaction { tx ->
             listOf(receiverId, receiverIdDuplicate).map {
                 tx.insertTestPerson(DevPerson(id = it))
-                tx.createMessageAccountForPerson(it)
-                tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = it))
+                tx.createPersonMessageAccount(it)
             }
         }
         db.transaction { tx ->
@@ -268,7 +258,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
                 sender = senderAccount,
-                recipientGroups = setOf(setOf(receiverDuplicateAccount.id)),
+                recipientGroups = setOf(setOf(receiverDuplicateAccount)),
                 recipientNames = listOf()
             )
         }
@@ -288,8 +278,8 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         )
     }
 
-    private fun receivedMessageCounts(vararg accounts: MessageAccount): List<Int> = db.read { tx ->
-        accounts.map { tx.getMessagesReceivedByAccount(it.id, 10, 1).total }
+    private fun receivedMessageCounts(vararg accountIds: UUID): List<Int> = db.read { tx ->
+        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1).total }
     }
 
     @Test
@@ -328,7 +318,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         }
 
         verify(asyncJobRunnerMock).plan(
-            any<Database.Transaction>(),
+            any(),
             eq(listOf(NotifyFamilyUpdated(adultId, placementStart, placementEnd))), any(), any(), any()
         )
     }
