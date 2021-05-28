@@ -15,6 +15,17 @@ const customizations: EmployeeCustomizations = {
     alt: 'Espoo Logo'
   },
   featureFlags,
+  placementTypes: [
+    'PRESCHOOL',
+    'PRESCHOOL_DAYCARE',
+    'DAYCARE',
+    'DAYCARE_PART_TIME',
+    'PREPARATORY',
+    'PREPARATORY_DAYCARE',
+    'CLUB',
+    'TEMPORARY_DAYCARE',
+    'TEMPORARY_DAYCARE_PART_DAY'
+  ],
   assistanceMeasures: [
     'SPECIAL_ASSISTANCE_DECISION',
     'INTENSIFIED_ASSISTANCE',

@@ -8,7 +8,7 @@ import { Placement } from '../../types/child'
 import { UUID } from '../../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-customizations/types'
 
 export interface PlacementCreate {
   childId: UUID

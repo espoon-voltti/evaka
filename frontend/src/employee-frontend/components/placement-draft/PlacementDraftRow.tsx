@@ -18,7 +18,7 @@ import {
 } from '../../types/placementdraft'
 import colors from 'lib-customizations/common'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-customizations/types'
 
 const DateRow = styled.div`
   display: flex;

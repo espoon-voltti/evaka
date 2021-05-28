@@ -31,10 +31,8 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'
-import {
-  PlacementType,
-  ServiceNeedOptionSummary
-} from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-customizations/types'
+import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {

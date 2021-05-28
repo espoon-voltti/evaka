@@ -7,7 +7,6 @@ import { Failure, Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { DailyServiceTimes } from 'lib-common/api-types/child/common'
 import { AbsenceType, CareType } from '../types'
-import { PlacementType } from '../types'
 import { client } from './client'
 import { UUID } from 'lib-common/types'
 import {
@@ -15,6 +14,7 @@ import {
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { PlacementType } from 'lib-customizations/types'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]

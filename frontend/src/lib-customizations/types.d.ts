@@ -35,6 +35,19 @@ export type PlacementPlanRejectReason =
   | 'REASON_2'
   | 'REASON_3'
 
+export type PlacementType =
+  | 'CLUB'
+  | 'DAYCARE'
+  | 'DAYCARE_PART_TIME'
+  | 'DAYCARE_FIVE_YEAR_OLDS'
+  | 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
+  | 'PRESCHOOL'
+  | 'PRESCHOOL_DAYCARE'
+  | 'PREPARATORY'
+  | 'PREPARATORY_DAYCARE'
+  | 'TEMPORARY_DAYCARE'
+  | 'TEMPORARY_DAYCARE_PART_DAY'
+
 export interface CommonCustomizations {
   theme: Theme
 }
@@ -84,6 +97,7 @@ export interface EmployeeCustomizations {
     alt: string
   }
   featureFlags: FeatureFlags
+  placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
 }

@@ -6,12 +6,9 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { client } from '../client'
 import { ServiceNeedOption } from '../../types/child'
 import { JsonOf } from 'lib-common/json'
-import LocalDate from '../../../lib-common/local-date'
-import { UUID } from '../../types'
-import {
-  PlacementType,
-  ServiceNeedOptionPublicInfo
-} from '../../../lib-common/api-types/serviceNeed/common'
+import LocalDate from 'lib-common/local-date'
+import { PlacementType } from 'lib-customizations/types'
+import { UUID } from 'lib-common/types'
 
 export interface ServiceNeedCreateRequest {
   placementId: UUID
@@ -61,6 +58,12 @@ export async function getServiceNeedOptions(): Promise<
     .get<JsonOf<ServiceNeedOption[]>>('/service-needs/options')
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
+}
+
+export interface ServiceNeedOptionPublicInfo {
+  id: UUID
+  name: string
+  validPlacementType: PlacementType
 }
 
 export async function getServiceNeedOptionPublicInfos(

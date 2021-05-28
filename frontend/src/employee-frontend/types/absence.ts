@@ -13,7 +13,7 @@ import {
 
 import { UUID } from '../types'
 import { Translations } from '../state/i18n'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-customizations/types'
 
 export type TableMode = 'MONTH'
 

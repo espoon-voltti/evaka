@@ -5,7 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../types/index'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementType } from 'lib-customizations/types'
 
 interface Unit {
   id: UUID

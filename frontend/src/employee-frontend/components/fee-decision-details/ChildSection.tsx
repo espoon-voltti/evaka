@@ -5,12 +5,12 @@
 import { faUserFriends } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { PersonDetailed, UnitDetailed } from '../../types/invoicing'
 import { formatName } from '../../utils'
+import { PlacementType } from 'lib-customizations/types'
 
 interface Props {
   child: PersonDetailed

@@ -6,8 +6,10 @@ import { DayOfWeek, UUID } from '../types'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
-import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import {
+  PlacementPlanRejectReason,
+  PlacementType
+} from 'lib-customizations/types'
 
 export interface CareArea {
   id: UUID

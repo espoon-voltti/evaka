@@ -29,9 +29,11 @@ import { hasRole, RequireRole } from '../utils/roles'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { featureFlags } from 'lib-customizations/employee'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { getServiceNeedOptionPublicInfos } from 'employee-frontend/api/child/service-needs'
+import {
+  getServiceNeedOptionPublicInfos,
+  ServiceNeedOptionPublicInfo
+} from 'employee-frontend/api/child/service-needs'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
