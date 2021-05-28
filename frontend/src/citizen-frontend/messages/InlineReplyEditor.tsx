@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import Button from 'lib-components/atoms/buttons/Button'
 import { TextArea } from 'lib-components/atoms/form/InputField'
+import ButtonContainer from 'lib-components/layout/ButtonContainer'
+import { defaultMargins } from 'lib-components/white-space'
 import React, {
   useCallback,
   useContext,
@@ -11,8 +14,6 @@ import React, {
   useState
 } from 'react'
 import styled from 'styled-components'
-import Button from '../../lib-components/atoms/buttons/Button'
-import ButtonContainer from '../../lib-components/layout/ButtonContainer'
 import { useTranslation } from '../localization'
 import { MessageContainer } from './MessageComponents'
 import { MessageContext } from './state'
@@ -20,6 +21,22 @@ import { Message, MessageAccount } from './types'
 
 const MultiRowTextArea = styled(TextArea)`
   height: unset;
+  margin-top: ${defaultMargins.xs};
+  border: 1px solid ${({ theme: { colors } }) => colors.greyscale.medium};
+
+  &:focus {
+    border: 1px solid ${({ theme: { colors } }) => colors.greyscale.medium};
+  }
+`
+
+const EditorRow = styled.div`
+  & + & {
+    margin-top: ${defaultMargins.s};
+  }
+`
+
+const Label = styled.span`
+  font-weight: 600;
 `
 
 interface Props {
@@ -60,12 +77,12 @@ export function InlineReplyEditor({ account, message }: Props) {
 
   return (
     <MessageContainer>
-      <div>
-        <strong>{i18n.messages.recipients}</strong>:{' '}
+      <EditorRow>
+        <Label>{i18n.messages.recipients}:</Label>{' '}
         {recipients.map((r) => r.name).join(', ')}
-      </div>
-      <div>
-        <strong>{i18n.messages.types.MESSAGE}</strong>
+      </EditorRow>
+      <EditorRow>
+        <Label>{i18n.messages.types.MESSAGE}</Label>
         <MultiRowTextArea
           rows={4}
           value={content}
@@ -73,20 +90,22 @@ export function InlineReplyEditor({ account, message }: Props) {
             setContent(e.target.value)
           }
         />
-      </div>
-      <ButtonContainer justify="flex-start">
-        <Button
-          text={
-            replyState?.isLoading
-              ? `${i18n.messages.sending}...`
-              : i18n.messages.send
-          }
-          primary
-          data-qa="message-send-btn"
-          onClick={onSend}
-          disabled={replyState && !replyState.isSuccess}
-        />
-      </ButtonContainer>
+      </EditorRow>
+      <EditorRow>
+        <ButtonContainer justify="flex-start">
+          <Button
+            text={
+              replyState?.isLoading
+                ? `${i18n.messages.sending}...`
+                : i18n.messages.send
+            }
+            primary
+            data-qa="message-send-btn"
+            onClick={onSend}
+            disabled={replyState && !replyState.isSuccess}
+          />
+        </ButtonContainer>
+      </EditorRow>
     </MessageContainer>
   )
 }
