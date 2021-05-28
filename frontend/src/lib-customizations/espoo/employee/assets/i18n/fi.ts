@@ -170,7 +170,9 @@ export const fi = {
     email: 'Sähköposti on väärässä muodossa',
     phone: 'Puhelinnumero on väärässä muodossa',
     ssn: 'Henkilötunnus on väärässä muodossa',
-    time: 'Aika on väärässä muodossa'
+    time: 'Aika on väärässä muodossa',
+    cents: 'Euromäärä on väärässä muodossa',
+    decimal: 'Desimaaliluku on väärässä muodossa'
   },
   login: {
     title: 'Varhaiskasvatus',
@@ -2442,6 +2444,7 @@ export const fi = {
     title: 'Talouden maksuasetukset',
     fees: {
       title: 'Asiakasmaksut',
+      add: 'Luo uudet asiakasmaksut',
       validDuring: 'Asiakasmaksut ajalle',
       familySize: 'Perheen koko',
       minThreshold: 'Vähimmäisbruttotulo €/kk',

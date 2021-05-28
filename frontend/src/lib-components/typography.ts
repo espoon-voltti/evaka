@@ -124,6 +124,19 @@ export const Label = styled.label<LabelProps>`
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
 `
 
+export const H3LikeLabel = styled.label`
+  color: ${({ theme: { colors } }) => colors.greyscale.dark};
+  font-size: 20px;
+  font-family: Montserrat, sans-serif;
+  font-weight: ${({ theme: { typography } }) => typography.h3.weight};
+
+  @media (max-width: 600px) {
+    ${({ theme: { typography } }) =>
+      typography.h3.mobile?.weight &&
+      `font-weight: ${typography.h3.mobile?.weight};`}
+  }
+`
+
 type ParagraphProps = {
   fitted?: boolean
   centered?: boolean

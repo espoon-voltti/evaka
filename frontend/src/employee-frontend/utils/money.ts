@@ -33,3 +33,11 @@ export function parseCents(value: string): number | undefined {
 
   return Math.round(Number(value.replace(',', '.')) * 100)
 }
+
+export function parseCentsOrThrow(value: string): number {
+  if (!isValidCents(value)) {
+    throw Error(`Invalid cents value: ${value}`)
+  }
+
+  return Math.round(Number(value.replace(',', '.')) * 100)
+}

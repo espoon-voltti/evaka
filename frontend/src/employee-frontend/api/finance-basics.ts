@@ -17,3 +17,17 @@ export async function getFeeThresholds(): Promise<Result<FeeThresholds[]>> {
     )
     .catch((e) => Failure.fromError(e))
 }
+
+export async function createFeeThresholds(
+  payload: Omit<FeeThresholds, 'id'>
+): Promise<Result<void>> {
+  try {
+    const response = await client.post(
+      '/finance-basics/fee-thresholds',
+      payload
+    )
+    return Success.of(response.data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
