@@ -16,7 +16,11 @@ import ThreadView from './ThreadView'
 
 export default React.memo(function MessagesPage() {
   const { account, loadAccount, selectedThread } = useContext(MessageContext)
-  useEffect(() => loadAccount(), [loadAccount])
+  useEffect(() => {
+    if (!account.isSuccess) {
+      loadAccount()
+    }
+  }, [account, loadAccount])
 
   return (
     <Container>
