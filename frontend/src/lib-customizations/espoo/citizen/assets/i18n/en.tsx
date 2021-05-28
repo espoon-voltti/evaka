@@ -132,6 +132,8 @@ const en: Translations = {
     recipients: 'Recipients',
     send: 'Send',
     sending: 'Sending',
+    messagePlaceholder:
+      'Content... Note! Do not enter sensitive information here.',
     types: {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'

@@ -132,6 +132,8 @@ const sv: Translations = {
     recipients: 'Mottagare',
     send: 'Skicka',
     sending: 'Skickas',
+    messagePlaceholder:
+      'Meddelandeinnehåll... Obs! Ange inte känslig information här.',
     types: {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'

@@ -131,6 +131,8 @@ export default {
     recipients: 'Vastaanottajat',
     send: 'Lähetä',
     sending: 'Lähetetään',
+    messagePlaceholder:
+      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'

@@ -80,6 +80,7 @@ export function InlineReplyEditor({ threadId, account, message }: Props) {
         <Label>{i18n.messages.types.MESSAGE}</Label>
         <MultiRowTextArea
           rows={4}
+          placeholder={i18n.messages.messagePlaceholder}
           value={replyContent}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             setReplyContent(threadId, e.target.value)
