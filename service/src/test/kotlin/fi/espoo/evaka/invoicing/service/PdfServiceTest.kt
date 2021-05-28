@@ -7,10 +7,10 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
@@ -31,16 +31,7 @@ import java.util.UUID
 class PdfServiceTest {
     private val service: PDFService = PDFService(PDFConfig.templateEngine())
 
-    val testPricing = Pricing(
-        multiplier = BigDecimal(0.1070),
-        maxThresholdDifference = 269700,
-        minThreshold2 = 210200,
-        minThreshold3 = 271300,
-        minThreshold4 = 308000,
-        minThreshold5 = 344700,
-        minThreshold6 = 381300,
-        thresholdIncrease6Plus = 14200
-    )
+    val testPricing: FeeThresholds = fi.espoo.evaka.invoicing.testPricing.withoutDates()
 
     private val normalDecision = FeeDecisionDetailed(
         id = testDecision1.id,

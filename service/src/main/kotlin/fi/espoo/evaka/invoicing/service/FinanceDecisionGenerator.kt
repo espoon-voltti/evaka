@@ -17,20 +17,19 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
-import fi.espoo.evaka.invoicing.domain.PricingWithValidity
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateServiceNeed
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
-import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
@@ -211,7 +210,7 @@ private fun generateNewFeeDecisions(
     partner: PersonData.JustId?,
     familySize: Int,
     allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PermanentPlacementWithHours>>>>,
-    prices: List<PricingWithValidity>,
+    prices: List<FeeThresholdsWithValidity>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     invoicedUnits: List<UUID>
@@ -266,8 +265,8 @@ private fun generateNewFeeDecisions(
                             return@mapIndexed null
                         }
 
-                        val siblingDiscount = getSiblingDiscountPercent(index + 1)
-                        val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.withoutHours(), siblingDiscount)
+                        val siblingDiscount = price.withoutDates().siblingDiscountPercent(index + 1)
+                        val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.withoutHours(), siblingDiscount, price.minFee)
                         val relevantFeeAlterations = feeAlterations.filter {
                             it.personId == child.id && DateRange(it.validFrom, it.validTo).contains(period)
                         }

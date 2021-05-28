@@ -26,7 +26,7 @@ import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
-import fi.espoo.evaka.invoicing.oldTestPricing
+import fi.espoo.evaka.invoicing.oldTestPricingAsThresholds
 import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
@@ -352,7 +352,8 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         result[0].let { pricing ->
             assertEquals(from, pricing.validDuring.start)
             assertEquals(null, pricing.validDuring.end)
-            assertEquals(BigDecimal("0.1070"), pricing.multiplier)
+            assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier2)
+            assertEquals(BigDecimal("0.1070"), pricing.withoutDates().incomeMultiplier(2))
         }
     }
 
@@ -365,7 +366,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         result[0].let { pricing ->
             assertEquals(LocalDate.of(2000, 1, 1), pricing.validDuring.start)
             assertEquals(null, pricing.validDuring.end)
-            assertEquals(BigDecimal("0.1070"), pricing.multiplier)
+            assertEquals(BigDecimal("0.1070"), pricing.withoutDates().incomeMultiplier2)
         }
     }
 
@@ -1693,7 +1694,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
             period = period,
-            pricing = oldTestPricing,
+            pricing = oldTestPricingAsThresholds.withoutDates(),
             headOfFamilyIncome = DecisionIncome(
                 effect = IncomeEffect.INCOME,
                 data = mapOf(IncomeType.MAIN_INCOME to 0),
@@ -1728,14 +1729,14 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(FeeDecisionStatus.SENT, sent.status)
         assertEquals(period.start, sent.validFrom)
         assertEquals(period.end, sent.validTo)
-        assertEquals(oldTestPricing, sent.pricing)
+        assertEquals(oldTestPricingAsThresholds.withoutDates(), sent.pricing)
         assertEquals(0, sent.totalFee())
 
         val draft = decisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         assertEquals(FeeDecisionStatus.DRAFT, draft.status)
         assertEquals(period.start, draft.validFrom)
         assertEquals(period.end, draft.validTo)
-        assertEquals(testPricing, draft.pricing)
+        assertEquals(testPricing.withoutDates(), draft.pricing)
         assertEquals(0, draft.totalFee())
     }
 

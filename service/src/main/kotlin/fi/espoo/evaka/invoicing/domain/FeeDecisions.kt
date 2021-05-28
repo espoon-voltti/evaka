@@ -29,7 +29,7 @@ data class FeeDecision(
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
-    val pricing: Pricing,
+    val pricing: FeeThresholds,
     val documentKey: String? = null,
     val approvedBy: PersonData.JustId? = null,
     val approvedAt: Instant? = null,
@@ -114,7 +114,7 @@ data class FeeDecisionDetailed(
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
-    val pricing: Pricing,
+    val pricing: FeeThresholds,
     val documentKey: String? = null,
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
@@ -163,10 +163,10 @@ data class FeeDecisionDetailed(
     }
 
     @JsonProperty("minThreshold")
-    fun minThreshold(): Int = getMinThreshold(pricing, familySize)
+    fun minThreshold(): Int = pricing.minIncomeThreshold(familySize)
 
     @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = pricing.multiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
+    fun feePercent(): BigDecimal = pricing.incomeMultiplier(familySize).multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
 }
 
 fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {
@@ -239,19 +239,22 @@ fun useMaxFee(incomes: List<DecisionIncome?>): Boolean = incomes.filterNotNull()
 }
 
 fun calculateBaseFee(
-    pricing: Pricing,
+    pricing: FeeThresholds,
     familySize: Int,
     incomes: List<DecisionIncome?>
 ): Int {
     check(familySize > 1) { "Family size should not be less than 2" }
 
+    val multiplier = pricing.incomeMultiplier(familySize)
+
     val feeInCents = if (useMaxFee(incomes)) {
-        pricing.multiplier * BigDecimal(pricing.maxThresholdDifference)
+        multiplier * BigDecimal(pricing.maxIncomeThreshold(familySize) - pricing.minIncomeThreshold(familySize))
     } else {
-        val minThreshold = getMinThreshold(pricing, familySize)
+        val minThreshold = pricing.minIncomeThreshold(familySize)
+        val maxThreshold = pricing.maxIncomeThreshold(familySize)
         val totalIncome = incomes.filterNotNull().map { it.total }.sum()
-        val totalSurplus = minOf(maxOf(totalIncome - minThreshold, 0), pricing.maxThresholdDifference)
-        pricing.multiplier * BigDecimal(totalSurplus)
+        val totalSurplus = minOf(maxOf(totalIncome - minThreshold, 0), maxThreshold - minThreshold)
+        multiplier * BigDecimal(totalSurplus)
     }
 
     // round the fee to whole euros, but keep the value in cents
@@ -285,29 +288,7 @@ fun getTotalIncome(
     else -> null
 }
 
-fun getMinThreshold(pricing: Pricing, familySize: Int): Int = when (familySize) {
-    2 -> pricing.minThreshold2
-    3 -> pricing.minThreshold3
-    4 -> pricing.minThreshold4
-    5 -> pricing.minThreshold5
-    6 -> pricing.minThreshold6
-    else -> pricing.minThreshold6 + ((familySize - 6) * pricing.thresholdIncrease6Plus)
-}
-
-fun getSiblingDiscountPercent(siblingOrdinal: Int): Int {
-    if (siblingOrdinal <= 0) error("Sibling ordinal must be > 0 (was $siblingOrdinal)")
-
-    return when (siblingOrdinal) {
-        1 -> 0
-        2 -> 50
-        else -> 80
-    }
-}
-
-// Current minimum fee, if a fee drops below this threshold it goes down to zero
-const val minFee = 2700
-
-fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement, siblingDiscount: Int): Int {
+fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement, siblingDiscount: Int, minFee: Int): Int {
     val siblingDiscountMultiplier =
         BigDecimal(1) - BigDecimal(siblingDiscount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
@@ -320,7 +301,7 @@ fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement
     }
 }
 
-fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscount: Int): Int {
+fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscount: Int, minFee: Int): Int {
     val siblingDiscountMultiplier =
         BigDecimal(1) - BigDecimal(siblingDiscount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)

@@ -21,7 +21,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.merge
-import fi.espoo.evaka.invoicing.oldTestPricing
+import fi.espoo.evaka.invoicing.oldTestPricingAsThresholds
 import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
@@ -1649,7 +1649,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
             period = period,
-            pricing = oldTestPricing,
+            pricing = oldTestPricingAsThresholds.withoutDates(),
             headOfFamilyIncome = DecisionIncome(
                 effect = IncomeEffect.INCOME,
                 data = mapOf(IncomeType.MAIN_INCOME to 0),
@@ -1682,14 +1682,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(FeeDecisionStatus.SENT, sent.status)
         assertEquals(period.start, sent.validFrom)
         assertEquals(period.end, sent.validTo)
-        assertEquals(oldTestPricing, sent.pricing)
+        assertEquals(oldTestPricingAsThresholds.withoutDates(), sent.pricing)
         assertEquals(0, sent.totalFee())
 
         val draft = decisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         assertEquals(FeeDecisionStatus.DRAFT, draft.status)
         assertEquals(period.start, draft.validFrom)
         assertEquals(period.end, draft.validTo)
-        assertEquals(testPricing, draft.pricing)
+        assertEquals(testPricing.withoutDates(), draft.pricing)
         assertEquals(0, draft.totalFee())
     }
 

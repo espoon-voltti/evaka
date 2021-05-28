@@ -32,7 +32,7 @@ data class VoucherValueDecision(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: Pricing,
+    val pricing: FeeThresholds,
     @Nested("child")
     val child: PersonData.WithDateOfBirth,
     @Nested("placement")
@@ -113,7 +113,7 @@ data class VoucherValueDecisionDetailed(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: Pricing,
+    val pricing: FeeThresholds,
     @Nested("child")
     val child: PersonData.Detailed,
     @Nested("placement")
@@ -167,10 +167,10 @@ data class VoucherValueDecisionDetailed(
     }
 
     @JsonProperty("minThreshold")
-    fun minThreshold(): Int = getMinThreshold(pricing, familySize)
+    fun minThreshold(): Int = pricing.minIncomeThreshold(familySize)
 
     @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = pricing.multiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
+    fun feePercent(): BigDecimal = pricing.incomeMultiplier(familySize).multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
 }
 
 data class VoucherValueDecisionSummary(
