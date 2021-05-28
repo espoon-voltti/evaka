@@ -26,7 +26,10 @@ interface RowProps {
 function DraftRow({ draft }: RowProps) {
   const { setSelectedDraft } = useContext(MessagesPageContext)
   return (
-    <MessageRow onClick={() => setSelectedDraft(draft)}>
+    <MessageRow
+      onClick={() => setSelectedDraft(draft)}
+      data-qa="draft-message-row"
+    >
       <ParticipantsAndPreview>
         <Participants>{draft.recipientNames?.join(', ') ?? '–'}</Participants>
         <Truncated>

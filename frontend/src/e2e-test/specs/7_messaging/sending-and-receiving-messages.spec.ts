@@ -88,7 +88,7 @@ fixture('Sending and receiving bulletins')
     await cleanUp()
   })
 
-test('Supervisor sends a bulletin and guardian reads it', async (t) => {
+test('Supervisor sends a message and guardian reads it', async (t) => {
   const title = 'Testiviesti'
   const content = 'Testiviestin sisältö'
   // login as a citizen first to init data in guardian table
@@ -111,7 +111,7 @@ test('Supervisor sends a bulletin and guardian reads it', async (t) => {
   await deleteMessages()
 })
 
-test('Admin sends a bulletin and blocked guardian does not get it', async (t) => {
+test('Admin sends a message and blocked guardian does not get it', async (t) => {
   const title = 'Kielletty viesti'
   const content = 'Tämän ei pitäisi mennä perille'
   // login as a citizen first to init data in guardian table
@@ -137,4 +137,60 @@ test('Admin sends a bulletin and blocked guardian does not get it', async (t) =>
   await t.useRole(enduserRole)
   await t.click(citizenHome.nav.messages)
   await t.expect(citizenMessagesPage.threads.count).eql(0)
+})
+
+test('A draft is saved correctly', async (t) => {
+  const title = 'Luonnos'
+  const content = 'Tässä luonnostellaan'
+  // login as a citizen first to init data in guardian table
+  await t.useRole(enduserRole)
+
+  await t.navigateTo(config.adminUrl)
+  await home.login({
+    aad: config.supervisorAad,
+    roles: []
+  })
+  await home.navigateToMessages()
+  await messagesPage.draftNewMessage(title, content)
+  await t.click(messagesPage.closeEditorBtn)
+  await t.click(messagesPage.draftBox(1))
+  await t.click(messagesPage.draftMessageRow(0))
+  await t.expect(messagesPage.messageEditorTitle.value).eql(title)
+  await t.expect(messagesPage.messageEditorContent.value).eql(content)
+})
+
+test('A draft is not saved when a message is sent', async (t) => {
+  const title = 'Viesti'
+  const content = 'Tämä ei tallennu, koska viesti lähetetään'
+  // login as a citizen first to init data in guardian table
+  await t.useRole(enduserRole)
+
+  await t.navigateTo(config.adminUrl)
+  await home.login({
+    aad: config.supervisorAad,
+    roles: []
+  })
+  await home.navigateToMessages()
+  await messagesPage.draftNewMessage(title, content)
+  await t.click(messagesPage.sendMessageBtn)
+  await t.click(messagesPage.draftBox(1))
+  await t.expect(messagesPage.draftMessageRows.count).eql(0)
+})
+
+test('A draft is not saved when its discarded', async (t) => {
+  const title = 'Luonnos'
+  const content = 'Tämä ei tallennu, koska luonnos hylätään'
+  // login as a citizen first to init data in guardian table
+  await t.useRole(enduserRole)
+
+  await t.navigateTo(config.adminUrl)
+  await home.login({
+    aad: config.supervisorAad,
+    roles: []
+  })
+  await home.navigateToMessages()
+  await messagesPage.draftNewMessage(title, content)
+  await t.click(messagesPage.discardDraftBtn)
+  await t.click(messagesPage.draftBox(1))
+  await t.expect(messagesPage.draftMessageRows.count).eql(0)
 })

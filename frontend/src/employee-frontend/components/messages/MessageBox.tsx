@@ -41,7 +41,11 @@ export default function MessageBox({
   const { i18n } = useTranslation()
   const active = view == activeView?.view && account.id == activeView.account.id
   return (
-    <MessageBoxRow onClick={() => setView({ account, view })} active={active}>
+    <MessageBoxRow
+      onClick={() => setView({ account, view })}
+      active={active}
+      data-qa={`message-box-row-${view}`}
+    >
       {i18n.messages.messageBoxes.names[view]}{' '}
       {view === 'RECEIVED' && account.unreadCount > 0 && (
         <UnreadCount>{account.unreadCount}</UnreadCount>

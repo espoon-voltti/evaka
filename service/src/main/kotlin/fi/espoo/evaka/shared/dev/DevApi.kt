@@ -554,9 +554,12 @@ RETURNING id
 
     @DeleteMapping("/message/delete-all")
     fun deleteMessages(db: Database) {
-        db.transaction { it.execute("DELETE FROM message_recipients") }
-        db.transaction { it.execute("DELETE FROM message") }
-        db.transaction { it.execute("DELETE FROM message_content") }
+        db.transaction { tx ->
+            tx.execute("DELETE FROM message_draft")
+            tx.execute("DELETE FROM message_recipients")
+            tx.execute("DELETE FROM message")
+            tx.execute("DELETE FROM message_content")
+        }
     }
 
     @DeleteMapping("/message-account/delete-all")
