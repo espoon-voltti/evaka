@@ -54,20 +54,6 @@ const privateDaycareWithoutPeriods: Daycare = {
   providerType: 'PRIVATE'
 }
 
-const nearbyClusteredDaycare: Daycare = {
-  ...daycare2Fixture,
-  name: 'Nearby daycare',
-  id: '9db9e8f7-2091-4be1-b091-fe10790e4be1',
-  location: { lat: 60.16018, lon: 24.8 }
-}
-
-const nearbyClusteredDaycare2: Daycare = {
-  ...daycare2Fixture,
-  name: 'Nearby daycare 2',
-  id: '9db9e8f7-2091-4be1-b091-fe10790e2091',
-  location: { lat: 60.16019, lon: 24.801 }
-}
-
 let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
@@ -79,11 +65,6 @@ beforeAll(async () => {
   await Fixture.daycare().with(swedishDaycare).careArea(careArea).save()
   await Fixture.daycare()
     .with(privateDaycareWithoutPeriods)
-    .careArea(careArea)
-    .save()
-  await Fixture.daycare().with(nearbyClusteredDaycare).careArea(careArea).save()
-  await Fixture.daycare()
-    .with(nearbyClusteredDaycare2)
     .careArea(careArea)
     .save()
 })
@@ -146,26 +127,6 @@ describe('Citizen map page', () => {
       swedishDaycare.name
     )
   })
-  // Bug in the leaflet marker group library. Should work after it has been resolved.
-  // test('Viewing unit details automatically pans the map to the right marker', async () => {
-  //   const daycare2Marker = mapPage.map.markerFor(daycare2Fixture)
-  //   const swedishMarker = mapPage.map.markerFor(swedishDaycare)
-  //   await waitUntilTrue(() => daycare2Marker.visible)
-  //   await waitUntilTrue(() => swedishMarker.visible)
-
-  //   // Zoom in fully to make sure we start without either marker visible.
-  //   await mapPage.map.zoomInFully()
-  //   await waitUntilFalse(() => daycare2Marker.visible)
-  //   await waitUntilFalse(() => swedishMarker.visible)
-
-  //   await mapPage.listItemFor(daycare2Fixture).click()
-  //   await waitUntilTrue(() => daycare2Marker.visible)
-
-  //   await mapPage.unitDetailsPanel.backButton.click()
-  //   await mapPage.listItemFor(swedishDaycare).click()
-  //   await delay(500)
-  //   await waitUntilTrue(() => swedishMarker.visible)
-  // })
   test('Units can be searched', async () => {
     await mapPage.searchInput.type('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
@@ -194,11 +155,5 @@ describe('Citizen map page', () => {
       () => mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying,
       'Ei hakua eVakan kautta, ota yhteys yksikköön'
     )
-  })
-  test('Nearby units will be clustered', async () => {
-    const nearbyClusteredMarker = mapPage.map.markerFor(nearbyClusteredDaycare)
-
-    await waitUntilFalse(() => nearbyClusteredMarker.visible)
-    await waitUntilTrue(() => mapPage.map.markerCluster.visible)
   })
 })
