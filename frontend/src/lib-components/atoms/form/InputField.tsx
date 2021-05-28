@@ -283,9 +283,8 @@ export const TextArea = styled(TextareaAutosize)`
   resize: none;
 
   background-color: transparent;
-  border-style: solid;
-  border-width: 0 0 1px;
-  border-color: ${({ theme: { colors } }) => colors.greyscale.medium};
+  border: 2px solid transparent;
+  border-bottom: 1px solid ${({ theme: { colors } }) => colors.greyscale.medium};
   border-radius: 0;
   box-shadow: none;
 
@@ -294,9 +293,6 @@ export const TextArea = styled(TextareaAutosize)`
     border-width: 2px;
     border-style: solid;
     border-color: ${({ theme: { colors } }) => colors.accents.petrol};
-    margin-top: -2px;
-    margin-bottom: -1px;
-    padding-left: 10px;
   }
 `
 
