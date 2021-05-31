@@ -4,7 +4,7 @@
 
 # Run a simple config test with all the supported configs set.
 # Intended to catch configuration issues in CI.
-FROM nginx:1.19-alpine as smoketest
+FROM nginx:1.21.0-alpine as smoketest
 
 ENV BASIC_AUTH_CREDENTIALS 'smoketest:$apr1$m0p2wy4c$OcpUTIZ4za1mRVxt6DuEs/'
 ENV BASIC_AUTH_ENABLED true
