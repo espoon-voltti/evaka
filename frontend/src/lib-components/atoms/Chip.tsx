@@ -9,7 +9,6 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faCheck } from 'lib-icons'
-import { useSingleAndDoubleClick } from 'lib-common/utils/useSingleAndDoubleClick'
 
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
@@ -53,10 +52,6 @@ export const SelectionChip = React.memo(function SelectionChip({
   showIcon = true
 }: SelectionChipProps) {
   const ariaId = useUniqueId('selection-chip')
-  const { handleClick, handleDoubleClick } = useSingleAndDoubleClick(
-    onClick,
-    onDoubleClick
-  )
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
     e.preventDefault()
@@ -69,10 +64,7 @@ export const SelectionChip = React.memo(function SelectionChip({
 
   return (
     <div data-qa={dataQa}>
-      <SelectionChipWrapper
-        onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
-      >
+      <SelectionChipWrapper onClick={onClick} onDoubleClick={onDoubleClick}>
         <SelectionChipInnerWrapper
           className={classNames({ checked: selected })}
         >
