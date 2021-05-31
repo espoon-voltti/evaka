@@ -6,13 +6,14 @@ import { UUID } from 'lib-common/types'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import React from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
+import { MessageReplyEditor } from '../../lib-components/molecules/MessageReplyEditor'
 import { useTranslation } from '../localization'
 import { formatDate } from '../util'
-import { InlineReplyEditor } from './InlineReplyEditor'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
+import { MessageContext } from './state'
 import { Message, MessageThread, MessageType } from './types'
 
 const TitleRow = styled.div`
@@ -83,8 +84,53 @@ interface Props {
 
 export default React.memo(function ThreadView({
   accountId,
-  thread: { id, messages, title, type }
+  thread: { id: threadId, messages, title, type }
 }: Props) {
+  const i18n = useTranslation()
+  const {
+    sendReply,
+    replyState,
+    setReplyContent,
+    getReplyContent
+  } = useContext(MessageContext)
+
+  // TODO toggleable recipients when UX is ready
+  const [messageId, recipients] = useMemo(() => {
+    const message = messages.slice(-1)[0]
+    return [
+      message.id,
+      [
+        ...message.recipients.filter((r) => r.id !== accountId),
+        ...(message.senderId !== accountId
+          ? [{ id: message.senderId, name: message.senderName }]
+          : [])
+      ]
+    ]
+  }, [accountId, messages])
+
+  const onUpdateContent = useCallback(
+    (content) => setReplyContent(threadId, content),
+    [setReplyContent, threadId]
+  )
+
+  const replyContent = getReplyContent(threadId)
+  const onSubmit = () =>
+    sendReply({
+      content: replyContent,
+      messageId,
+      recipientAccountIds: recipients.map((r) => r.id)
+    })
+
+  const editorLabels = useMemo(
+    () => ({
+      message: i18n.messages.types.MESSAGE,
+      messagePlaceholder: i18n.messages.messagePlaceholder,
+      recipients: i18n.messages.recipients,
+      send: i18n.messages.send,
+      sending: `${i18n.messages.sending}...`
+    }),
+    [i18n]
+  )
   return (
     <ThreadContainer>
       {messages.map((message, idx) => (
@@ -97,11 +143,16 @@ export default React.memo(function ThreadView({
       ))}
 
       {type === 'MESSAGE' && messages.length > 0 && (
-        <InlineReplyEditor
-          accountId={accountId}
-          message={messages.slice(-1)[0]}
-          threadId={id}
-        />
+        <MessageContainer>
+          <MessageReplyEditor
+            replyState={replyState}
+            onSubmit={onSubmit}
+            onUpdateContent={onUpdateContent}
+            recipients={recipients}
+            replyContent={replyContent}
+            i18n={editorLabels}
+          />
+        </MessageContainer>
       )}
     </ThreadContainer>
   )
