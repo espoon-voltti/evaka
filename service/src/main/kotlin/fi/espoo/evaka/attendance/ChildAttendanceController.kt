@@ -508,6 +508,8 @@ private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<
 
 private fun getCareTypes(placementType: PlacementType): List<CareType> =
     when (placementType) {
+        PlacementType.SCHOOL_SHIFT_CARE ->
+            listOf(CareType.SCHOOL_SHIFT_CARE)
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
             listOf(CareType.PRESCHOOL)
         PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->

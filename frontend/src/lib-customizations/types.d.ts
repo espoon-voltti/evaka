@@ -47,6 +47,7 @@ export type PlacementType =
   | 'PREPARATORY_DAYCARE'
   | 'TEMPORARY_DAYCARE'
   | 'TEMPORARY_DAYCARE_PART_DAY'
+  | 'SCHOOL_SHIFT_CARE'
 
 export interface CommonCustomizations {
   theme: Theme

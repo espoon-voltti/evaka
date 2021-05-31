@@ -32,6 +32,7 @@ export type PlacementType =
   | 'PREPARATORY_DAYCARE'
   | 'TEMPORARY_DAYCARE'
   | 'TEMPORARY_DAYCARE_PART_DAY'
+  | 'SCHOOL_SHIFT_CARE'
 
 export type AbsenceType =
   | 'OTHER_ABSENCE'
@@ -55,6 +56,7 @@ export const AbsenceTypes: AbsenceType[] = [
 ]
 
 export type CareType =
+  | 'SCHOOL_SHIFT_CARE'
   | 'PRESCHOOL'
   | 'PRESCHOOL_DAYCARE'
   | 'DAYCARE_5YO_FREE'

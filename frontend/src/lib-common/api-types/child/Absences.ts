@@ -27,6 +27,7 @@ export type AbsenceType =
   | 'FORCE_MAJEURE'
 
 export type AbsenceCareType =
+  | 'SCHOOL_SHIFT_CARE'
   | 'PRESCHOOL'
   | 'PRESCHOOL_DAYCARE'
   | 'DAYCARE_5YO_FREE'
