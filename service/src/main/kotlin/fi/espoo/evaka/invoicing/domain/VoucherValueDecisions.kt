@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -32,7 +31,7 @@ data class VoucherValueDecision(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: FeeThresholds,
+    val pricing: FeeDecisionThresholds,
     @Nested("child")
     val child: PersonData.WithDateOfBirth,
     @Nested("placement")
@@ -113,7 +112,7 @@ data class VoucherValueDecisionDetailed(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: FeeThresholds,
+    val pricing: FeeDecisionThresholds,
     @Nested("child")
     val child: PersonData.Detailed,
     @Nested("placement")
@@ -167,10 +166,10 @@ data class VoucherValueDecisionDetailed(
     }
 
     @JsonProperty("minThreshold")
-    fun minThreshold(): Int = pricing.minIncomeThreshold(familySize)
+    fun minThreshold(): Int = pricing.minIncomeThreshold
 
     @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = pricing.incomeMultiplier(familySize).multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
+    fun feePercent(): BigDecimal = pricing.incomeMultiplier
 }
 
 data class VoucherValueDecisionSummary(

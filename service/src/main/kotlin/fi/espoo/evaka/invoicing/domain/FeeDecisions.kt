@@ -29,7 +29,7 @@ data class FeeDecision(
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
-    val pricing: FeeThresholds,
+    val pricing: FeeDecisionThresholds,
     val documentKey: String? = null,
     val approvedBy: PersonData.JustId? = null,
     val approvedAt: Instant? = null,
@@ -114,7 +114,7 @@ data class FeeDecisionDetailed(
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
-    val pricing: FeeThresholds,
+    val pricing: FeeDecisionThresholds,
     val documentKey: String? = null,
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
@@ -163,10 +163,10 @@ data class FeeDecisionDetailed(
     }
 
     @JsonProperty("minThreshold")
-    fun minThreshold(): Int = pricing.minIncomeThreshold(familySize)
+    fun minThreshold(): Int = pricing.minIncomeThreshold
 
     @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = pricing.incomeMultiplier(familySize).multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
+    fun feePercent(): BigDecimal = pricing.incomeMultiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
 }
 
 fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {

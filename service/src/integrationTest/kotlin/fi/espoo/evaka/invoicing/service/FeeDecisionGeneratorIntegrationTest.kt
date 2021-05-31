@@ -1682,14 +1682,16 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(FeeDecisionStatus.SENT, sent.status)
         assertEquals(period.start, sent.validFrom)
         assertEquals(period.end, sent.validTo)
-        assertEquals(oldTestPricingAsThresholds.withoutDates(), sent.pricing)
+        assertEquals(1, sent.children.size)
+        assertEquals(oldTestPricingAsThresholds.getFeeDecisionThresholds(2), sent.pricing)
         assertEquals(0, sent.totalFee())
 
         val draft = decisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         assertEquals(FeeDecisionStatus.DRAFT, draft.status)
         assertEquals(period.start, draft.validFrom)
         assertEquals(period.end, draft.validTo)
-        assertEquals(testPricing.withoutDates(), draft.pricing)
+        assertEquals(0, draft.children.size)
+        assertEquals(testPricing.getFeeDecisionThresholds(1), draft.pricing)
         assertEquals(0, draft.totalFee())
     }
 

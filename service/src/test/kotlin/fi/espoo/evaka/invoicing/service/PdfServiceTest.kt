@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.placement.PlacementType
@@ -63,7 +64,7 @@ class PdfServiceTest {
         headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
         partnerIncome = testDecisionIncome.copy(total = 413195),
         familySize = 3,
-        pricing = testPricing,
+        pricing = getFeeDecisionThresholds(testPricing, 3),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),
@@ -108,7 +109,6 @@ class PdfServiceTest {
         ),
         decisionNumber = testDecision1.decisionNumber,
         status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
-        familySize = 3,
         headOfFamily = PersonData.Detailed(
             id = UUID.randomUUID(),
             dateOfBirth = LocalDate.of(1980, 1, 1),
@@ -133,7 +133,8 @@ class PdfServiceTest {
         validTo = null,
         financeDecisionHandlerFirstName = null,
         financeDecisionHandlerLastName = null,
-        pricing = testPricing,
+        familySize = 3,
+        pricing = getFeeDecisionThresholds(testPricing, 3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
         child = PersonData.Detailed(

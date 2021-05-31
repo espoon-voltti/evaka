@@ -293,7 +293,7 @@ private fun generateNewFeeDecisions(
                 headOfFamilyIncome = income,
                 partnerIncome = partnerIncome,
                 familySize = familySize,
-                pricing = price.withoutDates(),
+                pricing = price.getFeeDecisionThresholds(familySize),
                 parts = parts.sortedBy { it.siblingDiscount },
                 validFrom = period.start,
                 validTo = period.end

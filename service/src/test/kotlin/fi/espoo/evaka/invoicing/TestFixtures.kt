@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
@@ -34,6 +35,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.service.DaycareCodes
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
@@ -144,7 +146,7 @@ val testDecision1 = FeeDecision(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 3,
-    pricing = testPricing.withoutDates(),
+    pricing = testPricing.getFeeDecisionThresholds(3),
     parts = listOf(testDecisionPart1, testDecisionPart2.copy(siblingDiscount = 50, fee = 14500)),
     createdAt = Instant.now()
 )
@@ -161,7 +163,7 @@ val testDecision2 = FeeDecision(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 2,
-    pricing = testPricing.withoutDates(),
+    pricing = testPricing.getFeeDecisionThresholds(2),
     parts = listOf(testDecisionPart2),
     createdAt = Instant.now()
 )
@@ -329,7 +331,7 @@ fun createFeeDecisionFixture(
     period: DateRange,
     headOfFamilyId: UUID,
     parts: List<FeeDecisionPart>,
-    pricing: FeeThresholds = testPricing.withoutDates(),
+    pricing: FeeDecisionThresholds = testPricing.getFeeDecisionThresholds(parts.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
     id = UUID.randomUUID(),
@@ -354,19 +356,21 @@ fun createFeeDecision2Fixture(
     children: List<FeeDecisionChild>,
     pricing: FeeThresholds = testPricing.withoutDates(),
     headOfFamilyIncome: DecisionIncome? = null
-) = FeeDecision2(
-    id = UUID.randomUUID(),
-    status = status,
-    decisionType = decisionType,
-    validDuring = period,
-    headOfFamily = PersonData.JustId(headOfFamilyId),
-    partner = null,
-    headOfFamilyIncome = headOfFamilyIncome,
-    partnerIncome = null,
-    familySize = children.size + 1,
-    pricing = pricing,
-    children = children
-)
+) = (children.size + 1).let { familySize ->
+    FeeDecision2(
+        id = UUID.randomUUID(),
+        status = status,
+        decisionType = decisionType,
+        validDuring = period,
+        headOfFamily = PersonData.JustId(headOfFamilyId),
+        partner = null,
+        headOfFamilyIncome = headOfFamilyIncome,
+        partnerIncome = null,
+        familySize = familySize,
+        pricing = getFeeDecisionThresholds(pricing, familySize),
+        children = children
+    )
+}
 
 fun createVoucherValueDecisionFixture(
     status: VoucherValueDecisionStatus,
@@ -396,7 +400,7 @@ fun createVoucherValueDecisionFixture(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = familySize,
-    pricing = testPricing.withoutDates(),
+    pricing = testPricing.getFeeDecisionThresholds(familySize),
     child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
     placement = VoucherValueDecisionPlacement(UnitData.JustId(unitId), placementType),
     serviceNeed = serviceNeed,

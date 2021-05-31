@@ -55,6 +55,8 @@ data class FeeThresholdsWithValidity(
         maxFee = maxFee,
         minFee = minFee
     )
+
+    fun getFeeDecisionThresholds(familySize: Int) = getFeeDecisionThresholds(this.withoutDates(), familySize)
 }
 
 data class FeeThresholds(
@@ -123,3 +125,25 @@ data class FeeThresholds(
 
     fun siblingDiscountPercent(siblingOrdinal: Int): Int = ((BigDecimal(1) - siblingDiscountMultiplier(siblingOrdinal)) * BigDecimal(100)).toInt()
 }
+
+data class FeeDecisionThresholds(
+    val minIncomeThreshold: Int,
+    val maxIncomeThreshold: Int,
+    val incomeMultiplier: BigDecimal,
+    val maxFee: Int,
+    val minFee: Int
+)
+
+fun getFeeDecisionThresholds(feeThresholds: FeeThresholds, familySize: Int): FeeDecisionThresholds = if (familySize > 1) FeeDecisionThresholds(
+    feeThresholds.minIncomeThreshold(familySize),
+    feeThresholds.maxIncomeThreshold(familySize),
+    feeThresholds.incomeMultiplier(familySize),
+    feeThresholds.maxFee,
+    feeThresholds.minFee
+) else FeeDecisionThresholds(
+    0,
+    0,
+    BigDecimal(0),
+    feeThresholds.maxFee,
+    feeThresholds.minFee
+)

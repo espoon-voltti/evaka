@@ -1694,7 +1694,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
             period = period,
-            pricing = oldTestPricingAsThresholds.withoutDates(),
+            pricing = oldTestPricingAsThresholds.getFeeDecisionThresholds(2),
             headOfFamilyIncome = DecisionIncome(
                 effect = IncomeEffect.INCOME,
                 data = mapOf(IncomeType.MAIN_INCOME to 0),
@@ -1729,14 +1729,16 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(FeeDecisionStatus.SENT, sent.status)
         assertEquals(period.start, sent.validFrom)
         assertEquals(period.end, sent.validTo)
-        assertEquals(oldTestPricingAsThresholds.withoutDates(), sent.pricing)
+        assertEquals(1, sent.parts.size)
+        assertEquals(oldTestPricingAsThresholds.getFeeDecisionThresholds(2), sent.pricing)
         assertEquals(0, sent.totalFee())
 
         val draft = decisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         assertEquals(FeeDecisionStatus.DRAFT, draft.status)
         assertEquals(period.start, draft.validFrom)
         assertEquals(period.end, draft.validTo)
-        assertEquals(testPricing.withoutDates(), draft.pricing)
+        assertEquals(0, draft.parts.size)
+        assertEquals(testPricing.getFeeDecisionThresholds(1), draft.pricing)
         assertEquals(0, draft.totalFee())
     }
 

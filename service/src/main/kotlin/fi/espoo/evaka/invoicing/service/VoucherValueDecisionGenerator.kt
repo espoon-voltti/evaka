@@ -28,6 +28,7 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
+import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -176,7 +177,7 @@ private fun generateNewValueDecisions(
                         headOfFamilyIncome = income,
                         partnerIncome = partnerIncome,
                         familySize = familySize,
-                        pricing = price.withoutDates(),
+                        pricing = price.getFeeDecisionThresholds(familySize),
                         validFrom = period.start,
                         validTo = period.end,
                         child = voucherChild,
