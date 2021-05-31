@@ -146,7 +146,7 @@ test('Daycare daily note is shown for backupcare child', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '',
+    sleepingMinutes: '',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
@@ -187,12 +187,20 @@ test('User can create a daily note for a backup care child', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '3',
+    sleepingMinutes: '140',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei saa pähkinöitä antaa',
     modifiedBy: 'e2e-test'
   }
+  const hours =
+    Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60) > 0
+      ? Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60).toString()
+      : ''
+  const minutes =
+    Number(daycareDailyNote.sleepingMinutes) % 60 > 0
+      ? (Number(daycareDailyNote.sleepingMinutes) % 60).toString()
+      : ''
 
   await t
     .expect(
@@ -222,9 +230,8 @@ test('User can create a daily note for a backup care child', async (t) => {
   await t
     .expect(childPage.dailyNoteNoteInput.textContent)
     .eql(daycareDailyNote.note)
-  await t
-    .expect(childPage.dailyNoteSleepingTimeHoursInput.value)
-    .eql(daycareDailyNote.sleepingHours.toString())
+  await t.expect(childPage.dailyNoteSleepingTimeHoursInput.value).eql(hours)
+  await t.expect(childPage.dailyNoteSleepingTimeMinutesInput.value).eql(minutes)
   await t
     .expect(childPage.dailyNoteReminderNoteInput.textContent)
     .eql(daycareDailyNote.reminderNote)
@@ -238,7 +245,7 @@ test('User can delete a daily note for a backup care child', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '',
+    sleepingMinutes: '',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
@@ -269,7 +276,7 @@ test('User can see group daily note for a backup care child in the group', async
     date: LocalDate.today(),
     note: 'Testi ryhmäviesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '3',
+    sleepingMinutes: '3',
     sleepingNote: 'NONE',
     reminders: [],
     reminderNote: '',

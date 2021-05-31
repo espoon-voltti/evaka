@@ -122,7 +122,7 @@ test('Daycare groups are shown', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '',
+    sleepingMinutes: '',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
@@ -174,21 +174,20 @@ test('User can create a daily note for a child', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '3',
+    sleepingMinutes: '13',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
     modifiedBy: 'e2e-test'
   }
-
-  await t
-    .expect(
-      mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
-        .textContent
-    )
-    .eql(
-      `${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
-    )
+  const hours =
+    Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60) > 0
+      ? Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60).toString()
+      : ''
+  const minutes =
+    Number(daycareDailyNote.sleepingMinutes) % 60 > 0
+      ? (Number(daycareDailyNote.sleepingMinutes) % 60).toString()
+      : ''
 
   await t
     .expect(
@@ -209,9 +208,8 @@ test('User can create a daily note for a child', async (t) => {
   await t
     .expect(childPage.dailyNoteNoteInput.textContent)
     .eql(daycareDailyNote.note)
-  await t
-    .expect(childPage.dailyNoteSleepingTimeHoursInput.value)
-    .eql(daycareDailyNote.sleepingHours.toString())
+  await t.expect(childPage.dailyNoteSleepingTimeHoursInput.value).eql(hours)
+  await t.expect(childPage.dailyNoteSleepingTimeMinutesInput.value).eql(minutes)
   await t
     .expect(childPage.dailyNoteReminderNoteInput.textContent)
     .eql(daycareDailyNote.reminderNote)
@@ -225,7 +223,7 @@ test('User can delete a daily note for a child', async (t) => {
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '',
+    sleepingMinutes: '',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
@@ -256,7 +254,7 @@ test('User can see group daily note', async (t) => {
     date: LocalDate.today(),
     note: 'Testi ryhmäviesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '3',
+    sleepingMinutes: '213',
     sleepingNote: 'NONE',
     reminders: [],
     reminderNote: '',

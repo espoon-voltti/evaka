@@ -545,7 +545,7 @@ export interface DaycareDailyNote {
   note?: string | null
   feedingNote: DaycareDailyNoteLevel | null
   sleepingNote: DaycareDailyNoteLevel | null
-  sleepingHours: string
+  sleepingMinutes: string
   reminders: DaycareDailyNoteReminder[]
   reminderNote: string | null
   modifiedAt?: Date | null

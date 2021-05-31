@@ -288,7 +288,7 @@ export default React.memo(function DaycareDailyNoteModal({
               }
               value={form.sleepingMinutes || ''}
               onChange={(value) => updateForm({ sleepingMinutes: value })}
-              data-qa="sleeping-hours-input"
+              data-qa="sleeping-minutes-input"
               info={
                 Number(form.sleepingMinutes) > 59
                   ? {

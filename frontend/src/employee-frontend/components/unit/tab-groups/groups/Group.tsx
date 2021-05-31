@@ -243,7 +243,7 @@ function Group({
           ? `${Math.floor(
               Number(childNote.sleepingMinutes) / 60
             )}h ${Math.round(Number(childNote.sleepingMinutes) % 60)}min`
-          : `${Math.floor(Number(childNote.sleepingMinutes) / 60)}h`
+          : `${Math.floor(Number(childNote.sleepingMinutes) / 60)}min`
         : null
     ]
       .filter((s) => s !== null)

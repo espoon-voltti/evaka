@@ -121,12 +121,20 @@ test('Child daycare daily note indicators are shown on group view and can be edi
     date: LocalDate.today(),
     note: 'Testi viesti',
     feedingNote: 'MEDIUM',
-    sleepingHours: '2',
+    sleepingMinutes: '130',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Ei enää pähkinöitä antaa saa',
     modifiedBy: 'e2e-test'
   }
+  const hours =
+    Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60) > 0
+      ? Math.floor(Number(daycareDailyNote.sleepingMinutes) / 60).toString()
+      : ''
+  const minutes =
+    Number(daycareDailyNote.sleepingMinutes) % 60 > 0
+      ? (Number(daycareDailyNote.sleepingMinutes) % 60).toString()
+      : ''
 
   await postDaycareDailyNote(daycareDailyNote)
 
@@ -157,7 +165,9 @@ test('Child daycare daily note indicators are shown on group view and can be edi
     .expect(unitPage.daycareDailyNoteModal.noteInput.value)
     .eql(daycareDailyNote.note)
     .expect(unitPage.daycareDailyNoteModal.sleepingHoursInput.value)
-    .eql(daycareDailyNote.sleepingHours)
+    .eql(hours)
+    .expect(unitPage.daycareDailyNoteModal.sleepingMinutesInput.value)
+    .eql(minutes)
     .expect(unitPage.daycareDailyNoteModal.reminderNoteInput.value)
     .eql(daycareDailyNote.reminderNote)
 
@@ -182,7 +192,7 @@ test('Group daycare daily notes can be written and are shown on child notes', as
     date: LocalDate.today(),
     note: 'Toinen viesti',
     feedingNote: 'NONE',
-    sleepingHours: '',
+    sleepingMinutes: '',
     sleepingNote: 'NONE',
     reminders: ['DIAPERS'],
     reminderNote: 'Muistakaa muistakaa!',
