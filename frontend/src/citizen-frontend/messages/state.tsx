@@ -21,7 +21,7 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { MessageAccount, MessageThread, ReplyResponse } from './types'
+import { MessageThread, ReplyResponse } from './types'
 
 const initialThreadState: ThreadsState = {
   threads: [],
@@ -40,7 +40,7 @@ interface ThreadsState {
 }
 
 export interface MessagePageState {
-  account: Result<MessageAccount>
+  accountId: Result<UUID>
   loadAccount: () => void
   threads: MessageThread[]
   threadLoadingResult: Result<void>
@@ -56,7 +56,7 @@ export interface MessagePageState {
 }
 
 const defaultState: MessagePageState = {
-  account: Loading.of(),
+  accountId: Loading.of(),
   loadAccount: () => undefined,
   threads: [],
   threadLoadingResult: Loading.of(),
@@ -91,8 +91,8 @@ const markMatchingThreadRead = (
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
-    const [account, setAccount] = useState<Result<MessageAccount>>(Loading.of())
-    const loadAccount = useRestApi(getMessageAccount, setAccount)
+    const [accountId, setAccountId] = useState<Result<UUID>>(Loading.of())
+    const loadAccount = useRestApi(getMessageAccount, setAccountId)
 
     const [threads, setThreads] = useState<ThreadsState>(initialThreadState)
 
@@ -140,10 +140,10 @@ export const MessageContextProvider = React.memo(
     }, [threads.currentPage, threads.pages])
 
     useEffect(() => {
-      if (account.isSuccess) {
+      if (accountId.isSuccess) {
         setThreads((state) => ({ ...state, currentPage: 1 }))
       }
-    }, [account])
+    }, [accountId])
 
     const [replyState, setReplyState] = useState<Result<void>>()
     const setReplyResponse = useCallback((res: Result<ReplyResponse>) => {
@@ -205,9 +205,9 @@ export const MessageContextProvider = React.memo(
         }
 
         const hasUnreadMessages =
-          !!account?.isSuccess &&
+          !!accountId?.isSuccess &&
           thread.messages.some(
-            (m) => !m.readAt && m.senderId !== account.value.id
+            (m) => !m.readAt && m.senderId !== accountId.value
           )
 
         setThreads((state) => {
@@ -224,7 +224,7 @@ export const MessageContextProvider = React.memo(
           })
         }
       },
-      [account, refreshUnreadMessagesCount]
+      [accountId, refreshUnreadMessagesCount]
     )
 
     const selectedThread = useMemo(
@@ -237,7 +237,7 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        account,
+        accountId,
         loadAccount,
         threads: threads.threads,
         threadLoadingResult: threads.loadingResult,
@@ -252,7 +252,7 @@ export const MessageContextProvider = React.memo(
         refreshUnreadMessagesCount
       }),
       [
-        account,
+        accountId,
         loadAccount,
         threads.threads,
         threads.loadingResult,

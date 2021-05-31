@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UUID } from 'lib-common/types'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -12,7 +13,7 @@ import { formatDate } from '../util'
 import { InlineReplyEditor } from './InlineReplyEditor'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
-import { Message, MessageAccount, MessageThread, MessageType } from './types'
+import { Message, MessageThread, MessageType } from './types'
 
 const TitleRow = styled.div`
   display: flex;
@@ -76,12 +77,12 @@ const ThreadContainer = styled.div`
 `
 
 interface Props {
-  account: MessageAccount
+  accountId: UUID
   thread: MessageThread
 }
 
 export default React.memo(function ThreadView({
-  account,
+  accountId,
   thread: { id, messages, title, type }
 }: Props) {
   return (
@@ -97,7 +98,7 @@ export default React.memo(function ThreadView({
 
       {type === 'MESSAGE' && messages.length > 0 && (
         <InlineReplyEditor
-          account={account}
+          accountId={accountId}
           message={messages.slice(-1)[0]}
           threadId={id}
         />

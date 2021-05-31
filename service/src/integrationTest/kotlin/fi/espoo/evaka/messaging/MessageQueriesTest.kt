@@ -123,11 +123,11 @@ class MessageQueriesTest : PureJdbiTest() {
         assertEquals("Newest thread", thread.title)
 
         // when the thread is marked read for person 1
-        db.transaction { it.markThreadRead(person1Account.id, thread1Id) }
+        db.transaction { it.markThreadRead(person1Account, thread1Id) }
 
         // then the message has correct readAt
         val person1Threads = db.read {
-            it.getMessagesReceivedByAccount(person1Account.id, 10, 1)
+            it.getMessagesReceivedByAccount(person1Account, 10, 1)
         }
         assertEquals(2, person1Threads.data.size)
         val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
@@ -139,7 +139,7 @@ class MessageQueriesTest : PureJdbiTest() {
             0,
             db.read {
                 it.getMessagesReceivedByAccount(
-                    person2Account.id,
+                    person2Account,
                     10,
                     1
                 )

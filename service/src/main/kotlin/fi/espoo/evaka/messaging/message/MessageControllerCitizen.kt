@@ -30,7 +30,7 @@ class MessageControllerCitizen(
     fun getMyAccount(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): MessageAccount {
+    ): UUID {
         Audit.MessagingMyAccountsRead.log()
         return requireMessageAccountAccess(db, user)
     }

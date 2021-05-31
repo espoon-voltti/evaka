@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -13,20 +14,19 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { UUID } from '../../lib-common/types'
 import { useTranslation } from '../localization'
 import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
-import { MessageAccount, MessageThread } from './types'
+import { MessageThread } from './types'
 
 const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
   thread.messages.some((m) => !m.readAt && m.senderId !== accountId)
 
 interface Props {
-  account: MessageAccount
+  accountId: UUID
 }
 
-export default React.memo(function ThreadList({ account }: Props) {
+export default React.memo(function ThreadList({ accountId }: Props) {
   const t = useTranslation()
   const {
     selectedThread,
@@ -61,7 +61,7 @@ export default React.memo(function ThreadList({ account }: Props) {
             thread={thread}
             onClick={() => selectThread(thread)}
             active={selectedThread?.id === thread.id}
-            hasUnreadMessages={hasUnreadMessages(thread, account.id)}
+            hasUnreadMessages={hasUnreadMessages(thread, accountId)}
           />
         ))}
         {threadLoadingResult.mapAll({

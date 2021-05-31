@@ -12,7 +12,7 @@ import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import { MessageContainer } from './MessageComponents'
 import { MessageContext } from './state'
-import { Message, MessageAccount } from './types'
+import { Message } from './types'
 
 const MultiRowTextArea = styled(TextArea)`
   height: unset;
@@ -35,12 +35,12 @@ const Label = styled.span`
 `
 
 interface Props {
-  account: MessageAccount
+  accountId: UUID
   message: Message
   threadId: UUID
 }
 
-export function InlineReplyEditor({ threadId, account, message }: Props) {
+export function InlineReplyEditor({ threadId, accountId, message }: Props) {
   const i18n = useTranslation()
   const {
     sendReply,
@@ -52,12 +52,12 @@ export function InlineReplyEditor({ threadId, account, message }: Props) {
   // TODO toggleable recipients when UX is ready
   const recipients = useMemo(
     () => [
-      ...message.recipients.filter((r) => r.id !== account?.id),
-      ...(message.senderId !== account?.id
+      ...message.recipients.filter((r) => r.id !== accountId),
+      ...(message.senderId !== accountId
         ? [{ id: message.senderId, name: message.senderName }]
         : [])
     ],
-    [account, message]
+    [accountId, message]
   )
 
   const replyContent = getReplyContent(threadId)

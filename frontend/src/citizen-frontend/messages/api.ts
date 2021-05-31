@@ -9,7 +9,6 @@ import { client } from '../api-client'
 import {
   deserializeMessage,
   deserializeMessageThread,
-  MessageAccount,
   MessageThread,
   ReplyResponse
 } from './types'
@@ -31,9 +30,9 @@ export async function getReceivedMessages(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getMessageAccount(): Promise<Result<MessageAccount>> {
+export async function getMessageAccount(): Promise<Result<UUID>> {
   return client
-    .get<MessageAccount>(`/citizen/messages/my-account`)
+    .get<UUID>(`/citizen/messages/my-account`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

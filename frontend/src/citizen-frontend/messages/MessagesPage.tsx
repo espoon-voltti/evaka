@@ -29,29 +29,29 @@ const StyledFlex = styled(AdaptiveFlex)`
 `
 
 export default React.memo(function MessagesPage() {
-  const { account, loadAccount, selectedThread } = useContext(MessageContext)
+  const { accountId, loadAccount, selectedThread } = useContext(MessageContext)
   useEffect(() => {
-    if (!account.isSuccess) {
+    if (!accountId.isSuccess) {
       loadAccount()
     }
-  }, [account, loadAccount])
+  }, [accountId, loadAccount])
 
   return (
     <FullHeightContainer>
       <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
-        {account.mapAll({
+        {accountId.mapAll({
           failure() {
             return <ErrorSegment />
           },
           loading() {
             return <SpinnerSegment />
           },
-          success(acc) {
+          success(id) {
             return (
               <>
-                <ThreadList account={acc} />
+                <ThreadList accountId={id} />
                 {selectedThread && (
-                  <ThreadView account={acc} thread={selectedThread} />
+                  <ThreadView accountId={id} thread={selectedThread} />
                 )}
               </>
             )
