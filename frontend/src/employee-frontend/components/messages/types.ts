@@ -124,6 +124,12 @@ export interface Message {
   readAt: Date | null
   content: string
 }
+export const deserializeMessage = (m: JsonOf<Message>): Message => ({
+  ...m,
+  sentAt: new Date(m.sentAt),
+  readAt: m.readAt ? new Date(m.readAt) : null
+})
+
 export interface MessageThread {
   id: UUID
   type: MessageType
@@ -134,9 +140,5 @@ export const deserializeMessageThread = (
   json: JsonOf<MessageThread>
 ): MessageThread => ({
   ...json,
-  messages: json.messages.map((m) => ({
-    ...m,
-    sentAt: new Date(m.sentAt),
-    readAt: m.readAt ? new Date(m.readAt) : null
-  }))
+  messages: json.messages.map(deserializeMessage)
 })

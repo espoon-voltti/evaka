@@ -94,7 +94,6 @@ export default React.memo(function ThreadView({
     getReplyContent
   } = useContext(MessageContext)
 
-  // TODO toggleable recipients when UX is ready
   const [messageId, recipients] = useMemo(() => {
     const message = messages.slice(-1)[0]
     return [

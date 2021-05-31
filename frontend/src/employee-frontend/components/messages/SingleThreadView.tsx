@@ -2,17 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { ContentArea } from 'lib-components/layout/Container'
+import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { H2 } from 'lib-components/typography'
-import React from 'react'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
+import { faAngleLeft } from 'lib-icons'
+import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
-import colors, { greyscale } from '../../../lib-components/colors'
-import { ContentArea } from '../../../lib-components/layout/Container'
-import { defaultMargins, Gap } from '../../../lib-components/white-space'
-import { faAngleLeft } from '../../../lib-icons'
 import { DATE_FORMAT_DATE_TIME } from '../../constants'
 import { useTranslation } from '../../state/i18n'
+import { UUID } from '../../types'
 import { formatDate } from '../../utils/date'
+import { MessagesPageContext } from './MessagesPageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { Message, MessageThread, MessageType } from './types'
 
@@ -44,7 +47,7 @@ const SenderName = styled.div`
 const SentDate = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: ${greyscale.dark};
+  color: ${colors.greyscale.dark};
 `
 const MessageContent = styled.div`
   padding-top: ${defaultMargins.s};
@@ -86,15 +89,61 @@ const ScrollContainer = styled.div`
 `
 
 interface Props {
+  accountId: UUID
   goBack: () => void
   thread: MessageThread
 }
 
 export function SingleThreadView({
+  accountId,
   goBack,
-  thread: { messages, title, type }
+  thread: { id: threadId, messages, title, type }
 }: Props) {
   const { i18n } = useTranslation()
+  const {
+    getReplyContent,
+    sendReply,
+    replyState,
+    setReplyContent
+  } = useContext(MessagesPageContext)
+
+  const replyContent = getReplyContent(threadId)
+  const onUpdateContent = useCallback(
+    (content) => setReplyContent(threadId, content),
+    [setReplyContent, threadId]
+  )
+
+  const [messageId, recipients] = useMemo(() => {
+    const message = messages.slice(-1)[0]
+    return [
+      message.id,
+      [
+        ...message.recipients.filter((r) => r.id !== accountId),
+        ...(message.senderId !== accountId
+          ? [{ id: message.senderId, name: message.senderName }]
+          : [])
+      ]
+    ]
+  }, [accountId, messages])
+
+  const onSubmitReply = () =>
+    sendReply({
+      content: replyContent,
+      messageId,
+      recipientAccountIds: recipients.map((r) => r.id),
+      accountId
+    })
+
+  const canReply = type === 'MESSAGE' || messages[0].senderId === accountId
+  const editorLabels = useMemo(
+    () => ({
+      message: i18n.messages.messageEditor.message,
+      recipients: i18n.messages.messageEditor.receivers,
+      send: i18n.messages.messageEditor.send,
+      sending: i18n.messages.messageEditor.sending
+    }),
+    [i18n]
+  )
   return (
     <ThreadContainer>
       <ContentArea opaque>
@@ -115,6 +164,18 @@ export function SingleThreadView({
             type={idx === 0 ? type : undefined}
           />
         ))}
+        {canReply && (
+          <MessageContainer>
+            <MessageReplyEditor
+              recipients={recipients}
+              replyContent={replyContent}
+              onUpdateContent={onUpdateContent}
+              i18n={editorLabels}
+              onSubmit={onSubmitReply}
+              replyState={replyState}
+            />
+          </MessageContainer>
+        )}
       </ScrollContainer>
     </ThreadContainer>
   )

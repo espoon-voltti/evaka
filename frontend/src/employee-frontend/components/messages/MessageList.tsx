@@ -62,6 +62,7 @@ export default React.memo(function MessagesList({
       <SingleThreadView
         goBack={() => setSelectedThread(undefined)}
         thread={selectedThread}
+        accountId={account.id}
       />
     )
   }
