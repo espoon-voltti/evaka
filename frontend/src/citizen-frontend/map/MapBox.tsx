@@ -209,6 +209,7 @@ function UnitMarker({
               <ExternalLink
                 text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
                 href={t.map.serviceVoucherLink}
+                newTab
               />
             </>
           )}
