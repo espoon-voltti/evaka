@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import java.math.BigDecimal
@@ -406,4 +408,19 @@ val serviceNeedTestFixtures = listOf(
     snPreparatoryDaycarePartDay40to50,
     snPreparatoryDaycarePartDay40,
     snDaycareFiveYearOldsFullDayPartWeek25
+)
+
+fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
+    feeCoefficient = this.feeCoefficient,
+    descriptionFi = this.feeDescriptionFi,
+    descriptionSv = this.feeDescriptionSv
+)
+
+fun ServiceNeedOption.toValueDecisionServiceNeed() = VoucherValueDecisionServiceNeed(
+    feeCoefficient = this.feeCoefficient,
+    voucherValueCoefficient = this.voucherValueCoefficient,
+    feeDescriptionFi = this.feeDescriptionFi,
+    feeDescriptionSv = this.feeDescriptionSv,
+    voucherValueDescriptionFi = this.voucherValueDescriptionFi,
+    voucherValueDescriptionSv = this.voucherValueDescriptionSv,
 )

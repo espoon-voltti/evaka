@@ -7,8 +7,8 @@ package fi.espoo.evaka.varda
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
-import fi.espoo.evaka.invoicing.createFeeDecisionPartFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
@@ -45,6 +45,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.testVoucherDaycare
+import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
@@ -97,7 +98,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(feeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(feeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(feeDecision.familySize, it.perheen_koko)
             assertEquals(testPeriod.start, it.alkamis_pvm)
             assertEquals(testPeriod.end, it.paattymis_pvm)
@@ -134,7 +135,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             db,
             listOf(testChild_1),
             testPeriod,
-            placementType = fi.espoo.evaka.invoicing.domain.PlacementType.FIVE_YEARS_OLD_DAYCARE
+            placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS
         ).send()
 
         updateAll()
@@ -234,7 +235,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(feeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(feeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(feeDecision.familySize, it.perheen_koko)
             assertEquals(periodFirstHalf.start, it.alkamis_pvm)
             assertEquals(periodFirstHalf.end, it.paattymis_pvm)
@@ -243,7 +244,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(feeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(feeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(feeDecision.familySize, it.perheen_koko)
             assertEquals(periodSecondHalf.start, it.alkamis_pvm)
             assertEquals(periodSecondHalf.end, it.paattymis_pvm)
@@ -270,7 +271,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(firstFeeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(firstFeeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(firstFeeDecision.familySize, it.perheen_koko)
             assertEquals(periodFirstHalf.start, it.alkamis_pvm)
             assertEquals(periodFirstHalf.end, it.paattymis_pvm)
@@ -279,7 +280,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1, it.huoltajat)
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(secondFeeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(secondFeeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(secondFeeDecision.familySize, it.perheen_koko)
             assertEquals(periodSecondHalf.start, it.alkamis_pvm)
             assertEquals(periodSecondHalf.end, it.paattymis_pvm)
@@ -313,7 +314,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1.toSet(), it.huoltajat.toSet())
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(firstFeeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(firstFeeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(firstFeeDecision.familySize, it.perheen_koko)
             assertEquals(periodFirstHalf.start, it.alkamis_pvm)
             assertEquals(periodFirstHalf.end, it.paattymis_pvm)
@@ -322,7 +323,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(guardiansTestChild1.toSet(), it.huoltajat.toSet())
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
-            assertEquals(secondFeeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
+            assertEquals(secondFeeDecision.children.first().finalFee / 100.0, it.asiakasmaksu)
             assertEquals(secondFeeDecision.familySize, it.perheen_koko)
             assertEquals(periodSecondHalf.start, it.alkamis_pvm)
             assertEquals(periodSecondHalf.end, it.paattymis_pvm)
@@ -367,7 +368,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
         db.transaction {
             it.execute(
-                "UPDATE fee_decision SET status = ? WHERE id = ?",
+                "UPDATE new_fee_decision SET status = ? WHERE id = ?",
                 FeeDecisionStatus.ANNULLED,
                 feeDecision.id
             )
@@ -710,7 +711,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         db: Database.Connection,
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
-        placementType: fi.espoo.evaka.invoicing.domain.PlacementType = fi.espoo.evaka.invoicing.domain.PlacementType.DAYCARE,
+        placementType: PlacementType = PlacementType.DAYCARE,
         daycareId: UUID = testVoucherDaycare.id,
         guardian: UUID = testAdult_1.id
     ): FeeDecision = db.transaction {
@@ -719,16 +720,17 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = guardian,
             period = DateRange(period.start, period.end),
-            parts = children.map { child ->
-                createFeeDecisionPartFixture(
+            children = children.map { child ->
+                createFeeDecisionChildFixture(
                     childId = child.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    daycareId = daycareId,
-                    placementType = placementType
+                    placementUnitId = daycareId,
+                    placementType = placementType,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                 )
             }
         )
-        it.upsertFeeDecisions(objectMapper, listOf(feeDecision))
+        it.upsertFeeDecisions(listOf(feeDecision))
         feeDecision
     }
 
@@ -773,7 +775,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             .response()
         assertEquals(204, response.statusCode)
         asyncJobRunner.runPendingJobsSync()
-        return db.read { it.getFeeDecisionsByIds(objectMapper, listOf(this.id)) }.first()
+        return db.read { it.getFeeDecisionsByIds(listOf(this.id)) }.first()
     }
 
     private fun VoucherValueDecision.send(): VoucherValueDecision {

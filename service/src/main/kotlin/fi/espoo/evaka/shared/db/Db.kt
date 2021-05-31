@@ -9,7 +9,9 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
-import fi.espoo.evaka.invoicing.domain.FeeDecision2
+import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.generic.GenericType
 import org.jdbi.v3.core.kotlin.KotlinPlugin
@@ -55,7 +57,9 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.register(externalIdColumnMapper)
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
-    jdbi.registerRowMapper(FeeDecision2::class.java, feeDecisionRowMapper(objectMapper))
+    jdbi.registerRowMapper(FeeDecision::class.java, feeDecisionRowMapper(objectMapper))
+    jdbi.registerRowMapper(FeeDecisionDetailed::class.java, feeDecisionDetailedRowMapper(objectMapper))
+    jdbi.registerRowMapper(FeeDecisionSummary::class.java, feeDecisionSummaryRowMapper)
     return jdbi
 }
 
@@ -113,3 +117,10 @@ inline fun <reified T> RowView.mapColumn(name: String, type: QualifiedType<T> = 
  */
 inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T =
     mapColumn(name, QualifiedType.of(object : GenericType<T>() {}).with(Json::class.java))
+
+/**
+ * Maps a row to a value.
+ *
+ * This function works with Kotlin better than row.getRow().
+ */
+inline fun <reified T> RowView.mapRow(type: Class<T> = T::class.java): T = getRow(type)

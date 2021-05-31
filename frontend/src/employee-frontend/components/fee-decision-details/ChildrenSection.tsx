@@ -15,27 +15,28 @@ interface Props {
   decision: FeeDecisionDetailed
 }
 
-export default React.memo(function PartsSection({ decision }: Props) {
+export default React.memo(function ChildrenSection({ decision }: Props) {
   const { i18n } = useTranslation()
 
   return (
     <section>
       <H3>{i18n.feeDecision.form.summary.parts.title}</H3>
-      {decision.parts.map(
+      {decision.children.map(
         ({
           child,
-          placement,
-          fee: price,
+          placementType,
+          serviceNeedFeeCoefficient,
+          serviceNeedDescriptionFi,
+          fee,
           siblingDiscount,
-          serviceNeedMultiplier,
           feeAlterations,
-          finalFee: finalPrice
+          finalFee
         }) => {
           const mainDescription = `${
-            i18n.placement.type[placement.type]
-          }, ${i18n.placement.serviceNeed[
-            placement.serviceNeed
-          ].toLowerCase()} (${serviceNeedMultiplier} %)${
+            i18n.placement.type[placementType]
+          }, ${serviceNeedDescriptionFi.toLowerCase()} (${
+            serviceNeedFeeCoefficient * 100
+          } %)${
             siblingDiscount
               ? `, ${i18n.feeDecision.form.summary.parts.siblingDiscount} ${siblingDiscount}%`
               : ''
@@ -49,7 +50,7 @@ export default React.memo(function PartsSection({ decision }: Props) {
               <Gap size="xs" />
               <PartRow>
                 <span>{mainDescription}</span>
-                <b>{`${formatCents(price) ?? ''} €`}</b>
+                <b>{`${formatCents(fee) ?? ''} €`}</b>
               </PartRow>
               <Gap size="xs" />
               {feeAlterations.map((feeAlteration, index) => (
@@ -65,7 +66,7 @@ export default React.memo(function PartsSection({ decision }: Props) {
               ))}
               <PartRow>
                 <b>{i18n.feeDecision.form.summary.parts.sum}</b>
-                <b>{formatCents(finalPrice)} €</b>
+                <b>{formatCents(finalFee)} €</b>
               </PartRow>
             </Part>
           )

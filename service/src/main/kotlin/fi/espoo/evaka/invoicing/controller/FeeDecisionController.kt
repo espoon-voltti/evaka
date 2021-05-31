@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
@@ -64,7 +63,6 @@ enum class DistinctiveParams {
 @RestController
 @RequestMapping(path = ["/fee-decisions", "/decisions"])
 class FeeDecisionController(
-    private val objectMapper: ObjectMapper,
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,
     private val asyncJobRunner: AsyncJobRunner
@@ -149,7 +147,7 @@ class FeeDecisionController(
     fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        val res = db.read { it.getFeeDecision(objectMapper, uuid) }
+        val res = db.read { it.getFeeDecision(uuid) }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -164,7 +162,6 @@ class FeeDecisionController(
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read {
             it.findFeeDecisionsForHeadOfFamily(
-                objectMapper,
                 uuid,
                 null,
                 null

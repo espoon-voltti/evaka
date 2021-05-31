@@ -84,14 +84,22 @@ export default React.memo(function FeeDecisionDetailsPage() {
               changeDecisionType={changeDecisionType}
               newDecisionType={newDecisionType}
             />
-            {decision.value.parts.map(({ child, placement, placementUnit }) => (
-              <ChildSection
-                key={child.id}
-                child={child}
-                placement={placement}
-                placementUnit={placementUnit}
-              />
-            ))}
+            {decision.value.children.map(
+              ({
+                child,
+                placementType,
+                placementUnit,
+                serviceNeedDescriptionFi
+              }) => (
+                <ChildSection
+                  key={child.id}
+                  child={child}
+                  placementType={placementType}
+                  placementUnit={placementUnit}
+                  serviceNeedDescription={serviceNeedDescriptionFi}
+                />
+              )
+            )}
             <Summary decision={decision.value} />
             <Actions
               decision={decision.value}

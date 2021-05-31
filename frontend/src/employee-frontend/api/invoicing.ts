@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { JsonOf } from 'lib-common/json'
+import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import { Failure, Paged, Response, Result, Success } from 'lib-common/api'
 import { API_URL, client } from '../api/client'
@@ -144,8 +145,7 @@ export async function getFeeDecision(
     .then(({ data: { data: json } }) =>
       Success.of({
         ...json,
-        validFrom: LocalDate.parseIso(json.validFrom),
-        validTo: LocalDate.parseNullableIso(json.validTo),
+        validDuring: DateRange.parseJson(json.validDuring),
         headOfFamily: deserializePersonDetailed(json.headOfFamily),
         partner: json.partner ? deserializePersonDetailed(json.partner) : null,
         headOfFamilyIncome: json.headOfFamilyIncome
@@ -154,11 +154,10 @@ export async function getFeeDecision(
         partnerIncome: json.partnerIncome
           ? deserializeIncome(json.partnerIncome)
           : null,
-        parts: json.parts.map((partJson) => ({
-          ...partJson,
-          child: deserializePersonDetailed(partJson.child)
+        children: json.children.map((childJson) => ({
+          ...childJson,
+          child: deserializePersonDetailed(childJson.child)
         })),
-        createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         financeDecisionHandlerFirstName: json.financeDecisionHandlerFirstName
           ? json.financeDecisionHandlerFirstName
@@ -166,7 +165,8 @@ export async function getFeeDecision(
         financeDecisionHandlerLastName: json.financeDecisionHandlerLastName
           ? json.financeDecisionHandlerLastName
           : null,
-        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
+        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null,
+        created: new Date(json.created)
       })
     )
     .catch((e) => Failure.fromError(e))
@@ -245,16 +245,13 @@ export async function getFeeDecisions(
       ...data,
       data: data.data.map((json) => ({
         ...json,
-        validFrom: LocalDate.parseIso(json.validFrom),
-        validTo: LocalDate.parseNullableIso(json.validTo),
+        validDuring: DateRange.parseJson(json.validDuring),
         headOfFamily: deserializePersonBasic(json.headOfFamily),
-        parts: json.parts.map((partJson) => ({
-          child: {
-            ...partJson.child,
-            dateOfBirth: LocalDate.parseIso(partJson.child.dateOfBirth)
-          }
+        children: json.children.map((childJson) => ({
+          ...childJson,
+          dateOfBirth: LocalDate.parseIso(childJson.dateOfBirth)
         })),
-        createdAt: new Date(json.createdAt),
+        created: new Date(json.created),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       }))
@@ -272,10 +269,9 @@ export async function getPersonFeeDecisions(
       Success.of(
         res.data.data.map((json) => ({
           ...json,
-          validFrom: LocalDate.parseIso(json.validFrom),
-          validTo: LocalDate.parseNullableIso(json.validTo),
-          createdAt: new Date(json.createdAt),
-          sentAt: json.sentAt ? new Date(json.sentAt) : null
+          validDuring: DateRange.parseJson(json.validDuring),
+          sentAt: json.sentAt ? new Date(json.sentAt) : null,
+          created: new Date(json.created)
         }))
       )
     )

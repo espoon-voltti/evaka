@@ -4,277 +4,236 @@
 
 package fi.espoo.evaka.invoicing.data
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
-import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
-import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionPartSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.PermanentPlacement
-import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.PlacementType
-import fi.espoo.evaka.invoicing.domain.ServiceNeed
-import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.db.getEnum
+import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.splitSearchText
-import org.jdbi.v3.core.statement.StatementContext
-import org.postgresql.util.PGobject
-import java.sql.ResultSet
+import org.jdbi.v3.core.kotlin.bindKotlin
+import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.UUID
 
 val feeDecisionQueryBase =
     """
-    SELECT
-        decision.*,
-        part.child,
-        part.date_of_birth,
-        part.placement_unit,
-        part.placement_type,
-        part.service_need,
-        part.base_fee,
-        part.sibling_discount,
-        part.fee,
-        part.fee_alterations
-    FROM fee_decision as decision
-        LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
-    """.trimIndent()
+SELECT
+    decision.*,
+    part.child_id,
+    part.child_date_of_birth,
+    part.sibling_discount,
+    part.placement_unit_id,
+    part.placement_type,
+    part.service_need_fee_coefficient,
+    part.service_need_description_fi,
+    part.service_need_description_sv,
+    part.base_fee,
+    part.fee,
+    part.fee_alterations,
+    part.final_fee
+FROM new_fee_decision as decision
+LEFT JOIN new_fee_decision_child as part ON decision.id = part.fee_decision_id
+"""
 
 val feeDecisionDetailedQueryBase =
     """
-    SELECT
-        decision.*,
-        part.child,
-        part.date_of_birth,
-        part.placement_unit,
-        part.placement_type,
-        part.service_need,
-        part.base_fee,
-        part.sibling_discount,
-        part.fee,
-        part.fee_alterations,
-        head.date_of_birth as head_date_of_birth,
-        head.first_name as head_first_name,
-        head.last_name as head_last_name,
-        head.social_security_number as head_ssn,
-        head.street_address as head_street_address,
-        head.postal_code as head_postal_code,
-        head.post_office as head_post_office,
-        head.language as head_language,
-        head.restricted_details_enabled as head_restricted_details_enabled,
-        head.force_manual_fee_decisions as head_force_manual_fee_decisions,
-        partner.date_of_birth as partner_date_of_birth,
-        partner.first_name as partner_first_name,
-        partner.last_name as partner_last_name,
-        partner.social_security_number as partner_ssn,
-        partner.street_address as partner_street_address,
-        partner.postal_code as partner_postal_code,
-        partner.post_office as partner_post_office,
-        partner.restricted_details_enabled as partner_restricted_details_enabled,
-        approved_by.first_name as approved_by_first_name,
-        approved_by.last_name as approved_by_last_name,
-        child.first_name as child_first_name,
-        child.last_name as child_last_name,
-        child.social_security_number as child_ssn,
-        child.street_address as child_address,
-        child.postal_code as child_postal_code,
-        child.post_office as child_post_office,
-        child.restricted_details_enabled as child_restricted_details_enabled,
-        daycare.name as placement_unit_name,
-        daycare.language as placement_unit_lang,
-        care_area.id as placement_unit_area_id,
-        care_area.name as placement_unit_area_name,
-        finance_decision_handler.first_name AS finance_decision_handler_first_name,
-        finance_decision_handler.last_name AS finance_decision_handler_last_name
-    FROM fee_decision as decision
-        LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
-        LEFT JOIN person as head ON decision.head_of_family = head.id
-        LEFT JOIN person as partner ON decision.partner = partner.id
-        LEFT JOIN person as child ON part.child = child.id
-        LEFT JOIN daycare ON part.placement_unit = daycare.id
-        LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-        LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
-        LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
-    """.trimIndent()
+SELECT
+    decision.*,
+    part.child_id,
+    part.child_date_of_birth,
+    part.placement_unit_id,
+    part.placement_type,
+    part.service_need_fee_coefficient,
+    part.service_need_description_fi,
+    part.service_need_description_sv,
+    part.base_fee,
+    part.sibling_discount,
+    part.fee,
+    part.fee_alterations,
+    part.final_fee,
+    head.date_of_birth as head_date_of_birth,
+    head.first_name as head_first_name,
+    head.last_name as head_last_name,
+    head.social_security_number as head_ssn,
+    head.street_address as head_street_address,
+    head.postal_code as head_postal_code,
+    head.post_office as head_post_office,
+    head.language as head_language,
+    head.restricted_details_enabled as head_restricted_details_enabled,
+    head.force_manual_fee_decisions as head_force_manual_fee_decisions,
+    partner.date_of_birth as partner_date_of_birth,
+    partner.first_name as partner_first_name,
+    partner.last_name as partner_last_name,
+    partner.social_security_number as partner_ssn,
+    partner.street_address as partner_street_address,
+    partner.postal_code as partner_postal_code,
+    partner.post_office as partner_post_office,
+    partner.restricted_details_enabled as partner_restricted_details_enabled,
+    approved_by.first_name as approved_by_first_name,
+    approved_by.last_name as approved_by_last_name,
+    child.first_name as child_first_name,
+    child.last_name as child_last_name,
+    child.social_security_number as child_ssn,
+    child.street_address as child_address,
+    child.postal_code as child_postal_code,
+    child.post_office as child_post_office,
+    child.restricted_details_enabled as child_restricted_details_enabled,
+    daycare.name as placement_unit_name,
+    daycare.language as placement_unit_lang,
+    care_area.id as placement_unit_area_id,
+    care_area.name as placement_unit_area_name,
+    finance_decision_handler.first_name AS finance_decision_handler_first_name,
+    finance_decision_handler.last_name AS finance_decision_handler_last_name
+FROM new_fee_decision as decision
+LEFT JOIN new_fee_decision_child as part ON decision.id = part.fee_decision_id
+LEFT JOIN person as head ON decision.head_of_family_id = head.id
+LEFT JOIN person as partner ON decision.partner_id = partner.id
+LEFT JOIN person as child ON part.child_id = child.id
+LEFT JOIN daycare ON part.placement_unit_id = daycare.id
+LEFT JOIN care_area ON daycare.care_area_id = care_area.id
+LEFT JOIN employee as approved_by ON decision.approved_by_id = approved_by.id
+LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler_id
+"""
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
 
-fun Database.Transaction.upsertFeeDecisions(mapper: ObjectMapper, decisions: List<FeeDecision>) {
-    upsertDecisions(mapper, decisions)
-    replaceParts(mapper, decisions)
+fun Database.Transaction.upsertFeeDecisions(decisions: List<FeeDecision>) {
+    upsertDecisions(decisions)
+    replaceChildren(decisions)
 }
 
-private fun Database.Transaction.upsertDecisions(mapper: ObjectMapper, decisions: List<FeeDecision>) {
+private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
     val sql =
         """
-        INSERT INTO fee_decision (
+        INSERT INTO new_fee_decision (
             id,
             status,
             decision_number,
             decision_type,
-            valid_from,
-            valid_to,
-            head_of_family,
-            partner,
+            valid_during,
+            head_of_family_id,
+            partner_id,
             head_of_family_income,
             partner_income,
             family_size,
-            pricing,
-            created_at
+            pricing
         ) VALUES (
             :id,
             :status::fee_decision_status,
-            :decision_number,
-            :decision_type::fee_decision_type,
-            :valid_from,
-            :valid_to,
-            :head_of_family,
-            :partner,
-            :head_of_family_income,
-            :partner_income,
-            :family_size,
-            :pricing,
-            :created_at
+            :decisionNumber,
+            :decisionType::fee_decision_type,
+            :validDuring,
+            :headOfFamilyId,
+            :partnerId,
+            :headOfFamilyIncome,
+            :partnerIncome,
+            :familySize,
+            :pricing
         ) ON CONFLICT (id) DO UPDATE SET
             status = :status::fee_decision_status,
-            decision_number = :decision_number,
-            decision_type = :decision_type::fee_decision_type,
-            valid_from = :valid_from,
-            valid_to = :valid_to,
-            head_of_family = :head_of_family,
-            partner = :partner,
-            head_of_family_income = :head_of_family_income,
-            partner_income = :partner_income,
-            family_size = :family_size,
+            decision_number = :decisionNumber,
+            decision_type = :decisionType::fee_decision_type,
+            valid_during = :validDuring,
+            head_of_family_id = :headOfFamilyId,
+            partner_id = :partnerId,
+            head_of_family_income = :headOfFamilyIncome,
+            partner_income = :partnerIncome,
+            family_size = :familySize,
             pricing = :pricing
     """
 
     val batch = prepareBatch(sql)
     decisions.forEach { decision ->
         batch
-            .bindMap(
-                mapOf(
-                    "id" to decision.id,
-                    "status" to decision.status.toString(),
-                    "decision_number" to decision.decisionNumber,
-                    "decision_type" to decision.decisionType.toString(),
-                    "valid_from" to decision.validFrom,
-                    "valid_to" to decision.validTo,
-                    "head_of_family" to decision.headOfFamily.id,
-                    "partner" to decision.partner?.id,
-                    "family_size" to decision.familySize,
-                    "pricing" to decision.pricing.let {
-                        PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(it)
-                        }
-                    },
-                    "head_of_family_income" to decision.headOfFamilyIncome?.let {
-                        PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(it)
-                        }
-                    },
-                    "partner_income" to decision.partnerIncome?.let {
-                        PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(it)
-                        }
-                    },
-                    "created_at" to decision.createdAt.atOffset(ZoneOffset.UTC)
-                )
-            )
+            .bindKotlin(decision)
+            .bind("headOfFamilyId", decision.headOfFamily.id)
+            .bind("partnerId", decision.partner?.id)
             .add()
     }
     batch.execute()
 }
 
-private fun Database.Transaction.replaceParts(mapper: ObjectMapper, decisions: List<FeeDecision>) {
-    val partsWithDecisionIds = decisions.map { it.id to it.parts }
-    deleteParts(partsWithDecisionIds.map { it.first })
-    insertParts(mapper, partsWithDecisionIds)
+private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
+    val partsWithDecisionIds = decisions.map { it.id to it.children }
+    deleteChildren(partsWithDecisionIds.map { it.first })
+    insertChildren(partsWithDecisionIds)
 }
 
-private fun Database.Transaction.insertParts(mapper: ObjectMapper, decisions: List<Pair<UUID, List<FeeDecisionPart>>>) {
+private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<FeeDecisionChild>>>) {
     val sql =
         """
-        INSERT INTO fee_decision_part (
+        INSERT INTO new_fee_decision_child (
             id,
             fee_decision_id,
-            child,
-            date_of_birth,
-            placement_unit,
+            child_id,
+            child_date_of_birth,
+            placement_unit_id,
             placement_type,
-            service_need,
+            service_need_fee_coefficient,
+            service_need_description_fi,
+            service_need_description_sv,
             base_fee,
             sibling_discount,
             fee,
-            fee_alterations
+            fee_alterations,
+            final_fee
         ) VALUES (
             :id,
-            :fee_decision_id,
-            :child,
-            :date_of_birth,
-            :placement_unit,
-            :placement_type,
-            :service_need,
-            :base_fee,
-            :sibling_discount,
+            :feeDecisionId,
+            :childId,
+            :childDateOfBirth,
+            :placementUnitId,
+            :placementType,
+            :serviceNeedFeeCoefficient,
+            :serviceNeedDescriptionFi,
+            :serviceNeedDescriptionSv,
+            :baseFee,
+            :siblingDiscount,
             :fee,
-            :fee_alterations
+            :feeAlterations,
+            :finalFee
         )
     """
 
     val batch = prepareBatch(sql)
-    decisions.forEach { (decisionId, parts) ->
-        parts.forEach { part ->
+    decisions.forEach { (decisionId, children) ->
+        children.forEach { child ->
             batch
-                .bindMap(
-                    mapOf(
-                        "id" to UUID.randomUUID(),
-                        "fee_decision_id" to decisionId,
-                        "child" to part.child.id,
-                        "date_of_birth" to part.child.dateOfBirth,
-                        "placement_unit" to part.placement.unit,
-                        "placement_type" to part.placement.type.toString(),
-                        "service_need" to part.placement.serviceNeed.toString(),
-                        "base_fee" to part.baseFee,
-                        "sibling_discount" to part.siblingDiscount,
-                        "fee" to part.fee,
-                        "fee_alterations" to PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(part.feeAlterations)
-                        }
-                    )
-                )
+                .bindKotlin(child)
+                .bind("id", UUID.randomUUID())
+                .bind("feeDecisionId", decisionId)
+                .bind("childId", child.child.id)
+                .bind("childDateOfBirth", child.child.dateOfBirth)
+                .bind("placementUnitId", child.placement.unit.id)
+                .bind("placementType", child.placement.type)
+                .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
+                .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)
+                .bind("serviceNeedDescriptionSv", child.serviceNeed.descriptionSv)
                 .add()
         }
     }
     batch.execute()
 }
 
-private fun Database.Transaction.deleteParts(decisionIds: List<UUID>) {
+private fun Database.Transaction.deleteChildren(decisionIds: List<UUID>) {
     if (decisionIds.isEmpty()) return
 
-    createUpdate("DELETE FROM fee_decision_part WHERE fee_decision_id = ANY(:decisionIds)")
+    createUpdate("DELETE FROM new_fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
         .bind("decisionIds", decisionIds.toTypedArray())
         .execute()
 }
@@ -282,7 +241,7 @@ private fun Database.Transaction.deleteParts(decisionIds: List<UUID>) {
 fun Database.Transaction.deleteFeeDecisions(ids: List<UUID>) {
     if (ids.isEmpty()) return
 
-    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
+    createUpdate("DELETE FROM new_fee_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .execute()
 }
@@ -304,9 +263,9 @@ fun Database.Read.searchFeeDecisions(
 ): Paged<FeeDecisionSummary> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
-        FeeDecisionSortParam.VALIDITY -> "decision.valid_from"
+        FeeDecisionSortParam.VALIDITY -> "lower(decision.valid_during)"
         FeeDecisionSortParam.NUMBER -> "decision.decision_number"
-        FeeDecisionSortParam.CREATED -> "decision.created_at"
+        FeeDecisionSortParam.CREATED -> "decision.created"
         FeeDecisionSortParam.SENT -> "decision.sent_at"
         FeeDecisionSortParam.STATUS -> "decision.status"
         FeeDecisionSortParam.FINAL_PRICE -> "sum"
@@ -318,7 +277,6 @@ fun Database.Read.searchFeeDecisions(
         "status" to statuses.map { it.toString() }.toTypedArray(),
         "area" to areas.toTypedArray(),
         "unit" to unit,
-        "missingServiceNeed" to ServiceNeed.MISSING.toString(),
         "espooPostOffice" to "ESPOO",
         "start_date" to startDate,
         "end_date" to endDate,
@@ -341,14 +299,14 @@ fun Database.Read.searchFeeDecisions(
     val conditions = listOfNotNull(
         if (statuses.isNotEmpty()) "status = ANY(:status::fee_decision_status[])" else null,
         if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
-        if (unit != null) "part.placement_unit = :unit" else null,
-        if (withNullHours) "part.service_need = :missingServiceNeed" else null,
+        if (unit != null) "part.placement_unit_id = :unit" else null,
+        if (withNullHours) "part.service_need" else null,
         if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice" else null,
-        if (retroactiveOnly) "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, now()))" else null,
+        if (retroactiveOnly) "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, now()))" else null,
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
-        if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
-        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
+        if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
+        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> lower(valid_during)" else null,
         if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null
     )
 
@@ -356,12 +314,12 @@ fun Database.Read.searchFeeDecisions(
         """
         WITH youngest_child AS (
             SELECT
-                fee_decision_part.fee_decision_id AS decision_id,
+                new_fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
                 daycare.finance_decision_handler AS finance_decision_handler,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
-            FROM fee_decision_part
-            LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC) AS rownum
+            FROM new_fee_decision_child
+            LEFT JOIN daycare ON new_fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         )
         """.trimIndent()
@@ -373,25 +331,17 @@ fun Database.Read.searchFeeDecisions(
         WITH decision_ids AS (
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
-            FROM fee_decision AS decision
-            LEFT JOIN fee_decision_part AS part ON decision.id = part.fee_decision_id
-            LEFT JOIN person AS head ON decision.head_of_family = head.id
-            LEFT JOIN person AS partner ON decision.head_of_family = partner.id
-            LEFT JOIN person AS child ON part.child = child.id
-            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
+            FROM new_fee_decision AS decision
+            LEFT JOIN new_fee_decision_child AS part ON decision.id = part.fee_decision_id
+            LEFT JOIN person AS head ON decision.head_of_family_id = head.id
+            LEFT JOIN person AS partner ON decision.partner_id = partner.id
+            LEFT JOIN person AS child ON part.child_id = child.id
+            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
             LEFT JOIN (
-                SELECT final_prices.id, sum(final_prices.final_price) sum
-                FROM (
-                    SELECT fd.id, coalesce(fee + coalesce(sum(effects.effect), 0), 0) AS final_price
-                    FROM fee_decision fd
-                    LEFT JOIN fee_decision_part fdp ON fd.id = fdp.fee_decision_id
-                    LEFT JOIN (
-                        SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
-                        FROM fee_decision_part
-                    ) effects ON fdp.id = effects.id
-                    GROUP BY fd.id, fdp.id
-                ) final_prices
-                GROUP BY final_prices.id
+                SELECT new_fee_decision.id, sum(new_fee_decision_child.final_fee) sum
+                FROM new_fee_decision
+                LEFT JOIN new_fee_decision_child ON new_fee_decision.id = new_fee_decision_child.fee_decision_id
+                GROUP BY new_fee_decision.id
             ) sums ON decision.id = sums.id
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
             ${if (conditions.isNotEmpty()) """
@@ -406,10 +356,11 @@ fun Database.Read.searchFeeDecisions(
             decision_ids.count,
             decision_ids.sum,
             decision.*,
-            part.child,
-            part.date_of_birth,
+            part.child_id,
+            part.child_date_of_birth,
             part.fee,
             part.fee_alterations,
+            part.final_fee,
             head.date_of_birth AS head_date_of_birth,
             head.first_name AS head_first_name,
             head.last_name AS head_last_name,
@@ -419,70 +370,67 @@ fun Database.Read.searchFeeDecisions(
             child.last_name AS child_last_name,
             child.social_security_number AS child_ssn
         FROM decision_ids
-            LEFT JOIN fee_decision AS decision ON decision_ids.id = decision.id
-            LEFT JOIN fee_decision_part AS part ON decision.id = part.fee_decision_id
-            LEFT JOIN person AS head ON decision.head_of_family = head.id
-            LEFT JOIN person AS child ON part.child = child.id
-        ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.date_of_birth DESC
+        LEFT JOIN new_fee_decision AS decision ON decision_ids.id = decision.id
+        LEFT JOIN new_fee_decision_child AS part ON decision.id = part.fee_decision_id
+        LEFT JOIN person AS head ON decision.head_of_family_id = head.id
+        LEFT JOIN person AS child ON part.child_id = child.id
+        ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.child_date_of_birth DESC
         """.trimIndent()
 
     return createQuery(sql)
         .bindMap(params + freeTextParams + numberParams)
-        .map { rs, ctx ->
-            WithCount(rs.getInt("count"), toFeeDecisionSummary(rs, ctx))
-        }
+        .map { row -> WithCount(row.mapColumn("count"), row.mapRow<FeeDecisionSummary>()) }
         .let(mapToPaged(pageSize))
         .let { it.copy(data = it.data.merge()) }
 }
 
-fun Database.Read.getFeeDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<FeeDecision> {
+fun Database.Read.getFeeDecisionsByIds(ids: List<UUID>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
         """
-        $feeDecisionQueryBase
-        WHERE decision.id = ANY(:ids)
-    """
+$feeDecisionQueryBase
+WHERE decision.id = ANY(:ids)
+"""
 
     return createQuery(sql)
         .bind("ids", ids.toTypedArray())
-        .map(toFeeDecision(mapper))
+        .mapTo<FeeDecision>()
         .let { it.merge() }
 }
 
-fun Database.Read.getDetailedFeeDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<FeeDecisionDetailed> {
+fun Database.Read.getDetailedFeeDecisionsByIds(ids: List<UUID>): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
         """
-        $feeDecisionDetailedQueryBase
-        WHERE decision.id = ANY(:ids)
-        ORDER BY part.date_of_birth DESC
-    """
+$feeDecisionDetailedQueryBase
+WHERE decision.id = ANY(:ids)
+ORDER BY part.child_date_of_birth DESC
+"""
 
     return createQuery(sql)
         .bind("ids", ids.toTypedArray())
-        .map(toFeeDecisionDetailed(mapper))
+        .mapTo<FeeDecisionDetailed>()
         .let { it.merge() }
 }
 
-fun Database.Read.getFeeDecision(mapper: ObjectMapper, uuid: UUID): FeeDecisionDetailed? {
+fun Database.Read.getFeeDecision(uuid: UUID): FeeDecisionDetailed? {
     val sql =
         """
         $feeDecisionDetailedQueryBase
         WHERE decision.id = :id
-        ORDER BY part.date_of_birth DESC
+        ORDER BY part.child_date_of_birth DESC
     """
 
     return createQuery(sql)
         .bind("id", uuid)
-        .map(toFeeDecisionDetailed(mapper))
+        .mapTo<FeeDecisionDetailed>()
         .let { it.merge() }
         .firstOrNull()
 }
 
 fun Database.Read.findFeeDecisionsForHeadOfFamily(
-    mapper: ObjectMapper,
     headOfFamilyId: UUID,
     period: DateRange?,
     status: List<FeeDecisionStatus>?
@@ -491,20 +439,20 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
         """
         $feeDecisionQueryBase
         WHERE
-            decision.head_of_family = :headOfFamilyId
-            ${period?.let { "AND daterange(decision.valid_from, decision.valid_to, '[]') && daterange(:periodStart, :periodEnd, '[]')" } ?: ""}
+            decision.head_of_family_id = :headOfFamilyId
+            ${period?.let { "AND decision.valid_during && :period" } ?: ""}
             ${status?.let { "AND decision.status = ANY(:status::fee_decision_status[])" } ?: ""}
     """
 
     return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyId)
         .let { query ->
-            if (period != null) query.bind("periodStart", period.start).bind("periodEnd", period.end)
+            if (period != null) query.bind("period", period)
             else query
         }
         .let { query -> if (status != null) query.bind("status", status.map { it.name }.toTypedArray()) else query }
-        .map(toFeeDecision(mapper))
-        .let { it.merge() }
+        .mapTo<FeeDecision>()
+        .merge()
 }
 
 fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID, approvedAt: Instant, isRetroactive: Boolean = false) {
@@ -512,27 +460,27 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, app
         """
         WITH youngest_child AS (
             SELECT
-                fee_decision_part.fee_decision_id AS decision_id,
+                new_fee_decision_child.fee_decision_id AS decision_id,
                 daycare.finance_decision_handler AS finance_decision_handler_id,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
-            FROM fee_decision_part
-            LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC) AS rownum
+            FROM new_fee_decision_child
+            LEFT JOIN daycare ON new_fee_decision_child.placement_unit_id = daycare.id
         )
-        UPDATE fee_decision
+        UPDATE new_fee_decision
         SET
             status = :status::fee_decision_status,
             decision_number = nextval('fee_decision_number_sequence'),
-            approved_by = :approvedBy,
-            decision_handler = CASE
+            approved_by_id = :approvedBy,
+            decision_handler_id = CASE
                 WHEN :isRetroactive = true THEN :approvedBy
                 WHEN youngest_child.finance_decision_handler_id IS NOT NULL AND fd.decision_type = 'NORMAL'
                     THEN youngest_child.finance_decision_handler_id
                 ELSE :approvedBy
             END,
             approved_at = :approvedAt
-        FROM fee_decision AS fd
+        FROM new_fee_decision AS fd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
-        WHERE fd.id = :id AND fee_decision.id = fd.id
+        WHERE fd.id = :id AND new_fee_decision.id = fd.id
         """.trimIndent()
 
     val batch = prepareBatch(sql)
@@ -551,7 +499,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, app
 fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
     val sql =
         """
-        UPDATE fee_decision
+        UPDATE new_fee_decision
         SET
             status = :status::fee_decision_status
         WHERE id = :id
@@ -568,7 +516,7 @@ fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
 fun Database.Transaction.setFeeDecisionSent(ids: List<UUID>) {
     val sql =
         """
-        UPDATE fee_decision
+        UPDATE new_fee_decision
         SET
             status = :status::fee_decision_status,
             sent_at = NOW()
@@ -586,14 +534,13 @@ fun Database.Transaction.setFeeDecisionSent(ids: List<UUID>) {
 }
 
 fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<FeeDecision>) {
-    prepareBatch("UPDATE fee_decision SET status = :status::fee_decision_status, valid_from = :validFrom, valid_to = :validTo WHERE id = :id")
+    prepareBatch("UPDATE new_fee_decision SET status = :status::fee_decision_status, valid_during = :validDuring WHERE id = :id")
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
                     .bind("id", decision.id)
                     .bind("status", decision.status)
-                    .bind("validFrom", decision.validFrom)
-                    .bind("validTo", decision.validTo)
+                    .bind("validDuring", decision.validDuring)
                     .add()
             }
         }
@@ -603,7 +550,7 @@ fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<
 fun Database.Transaction.updateFeeDecisionDocumentKey(id: UUID, key: String) {
     val sql =
         """
-        UPDATE fee_decision
+        UPDATE new_fee_decision
         SET document_key = :key
         WHERE id = :id
     """
@@ -618,7 +565,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: UUID): String? {
     val sql =
         """
         SELECT document_key 
-        FROM fee_decision
+        FROM new_fee_decision
         WHERE id = :id
     """
 
@@ -632,7 +579,7 @@ fun Database.Transaction.setFeeDecisionType(id: UUID, type: FeeDecisionType) {
     //language=SQL
     val sql =
         """
-        UPDATE fee_decision
+        UPDATE new_fee_decision
         SET decision_type = :type::fee_decision_type
         WHERE id = :id
             AND status = :requiredStatus::fee_decision_status
@@ -646,180 +593,13 @@ fun Database.Transaction.setFeeDecisionType(id: UUID, type: FeeDecisionType) {
 }
 
 fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
-    createUpdate("SELECT id FROM fee_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
+    createUpdate("SELECT id FROM new_fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()
 }
 
 fun Database.Transaction.lockFeeDecisions(ids: List<UUID>) {
-    createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
+    createUpdate("SELECT id FROM new_fee_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()
-}
-
-fun toFeeDecision(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
-    FeeDecision(
-        id = UUID.fromString(rs.getString("id")),
-        status = FeeDecisionStatus.valueOf(rs.getString("status")),
-        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
-        decisionType = rs.getEnum("decision_type"),
-        validFrom = rs.getDate("valid_from").toLocalDate(),
-        validTo = rs.getDate("valid_to")?.toLocalDate(),
-        headOfFamily = PersonData.JustId(UUID.fromString(rs.getString("head_of_family"))),
-        partner = rs.getString("partner")?.let { PersonData.JustId(UUID.fromString(it)) },
-        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        familySize = rs.getInt("family_size"),
-        pricing = mapper.readValue(rs.getString("pricing")),
-        // child is not nullable so if it's missing there was nothing to join to the decision
-        parts = rs.getString("child")?.let {
-            listOf(
-                FeeDecisionPart(
-                    child = PersonData.WithDateOfBirth(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
-                    ),
-                    placement = PermanentPlacement(
-                        unit = UUID.fromString(rs.getString("placement_unit")),
-                        type = PlacementType.valueOf(rs.getString("placement_type")),
-                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need"))
-                    ),
-                    baseFee = rs.getInt("base_fee"),
-                    siblingDiscount = rs.getInt("sibling_discount"),
-                    fee = rs.getInt("fee"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations"))
-                )
-            )
-        } ?: emptyList(),
-        documentKey = rs.getString("document_key"),
-        approvedBy = rs.getString("approved_by")?.let { PersonData.JustId(UUID.fromString(it)) },
-        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
-        decisionHandler = rs.getString("decision_handler")?.let { PersonData.JustId(UUID.fromString(it)) },
-        createdAt = rs.getTimestamp("created_at").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
-    )
-}
-
-fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
-    FeeDecisionDetailed(
-        id = UUID.fromString(rs.getString("id")),
-        status = FeeDecisionStatus.valueOf(rs.getString("status")),
-        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
-        decisionType = FeeDecisionType.valueOf(rs.getString("decision_type")),
-        validFrom = rs.getDate("valid_from").toLocalDate(),
-        validTo = rs.getDate("valid_to")?.toLocalDate(),
-        headOfFamily = PersonData.Detailed(
-            id = UUID.fromString(rs.getString("head_of_family")),
-            dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
-            firstName = rs.getString("head_first_name"),
-            lastName = rs.getString("head_last_name"),
-            ssn = rs.getString("head_ssn"),
-            streetAddress = rs.getString("head_street_address"),
-            postalCode = rs.getString("head_postal_code"),
-            postOffice = rs.getString("head_post_office"),
-            language = rs.getString("head_language"),
-            restrictedDetailsEnabled = rs.getBoolean("head_restricted_details_enabled"),
-            forceManualFeeDecisions = rs.getBoolean("head_force_manual_fee_decisions")
-        ),
-        partner = rs.getString("partner")?.let { id ->
-            PersonData.Detailed(
-                id = UUID.fromString(id),
-                dateOfBirth = rs.getDate("partner_date_of_birth").toLocalDate(),
-                firstName = rs.getString("partner_first_name"),
-                lastName = rs.getString("partner_last_name"),
-                ssn = rs.getString("partner_ssn"),
-                streetAddress = rs.getString("partner_street_address"),
-                postalCode = rs.getString("partner_postal_code"),
-                postOffice = rs.getString("partner_post_office"),
-                restrictedDetailsEnabled = rs.getBoolean("partner_restricted_details_enabled")
-            )
-        },
-        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
-        familySize = rs.getInt("family_size"),
-        pricing = mapper.readValue(rs.getString("pricing")),
-        // child is not nullable so if it's missing there was nothing to join to the decision
-        parts = rs.getString("child")?.let {
-            listOf(
-                FeeDecisionPartDetailed(
-                    child = PersonData.Detailed(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn"),
-                        streetAddress = rs.getString("child_address"),
-                        postalCode = rs.getString("child_postal_code"),
-                        postOffice = rs.getString("child_post_office"),
-                        restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
-                    ),
-                    placement = PermanentPlacement(
-                        unit = UUID.fromString(rs.getString("placement_unit")),
-                        type = PlacementType.valueOf(rs.getString("placement_type")),
-                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need"))
-                    ),
-                    placementUnit = UnitData.Detailed(
-                        id = UUID.fromString(rs.getString("placement_unit")),
-                        name = rs.getString("placement_unit_name"),
-                        language = rs.getString("placement_unit_lang"),
-                        areaId = UUID.fromString(rs.getString("placement_unit_area_id")),
-                        areaName = rs.getString("placement_unit_area_name")
-                    ),
-                    baseFee = rs.getInt("base_fee"),
-                    siblingDiscount = rs.getInt("sibling_discount"),
-                    fee = rs.getInt("fee"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations"))
-                )
-            )
-        } ?: emptyList(),
-        documentKey = rs.getString("document_key"),
-        approvedBy = rs.getString("approved_by")?.let { id ->
-            PersonData.WithName(
-                id = UUID.fromString(id),
-                firstName = rs.getString("approved_by_first_name"),
-                lastName = rs.getString("approved_by_last_name")
-            )
-        },
-        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
-        createdAt = rs.getTimestamp("created_at").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        financeDecisionHandlerFirstName = rs.getString("finance_decision_handler_first_name"),
-        financeDecisionHandlerLastName = rs.getString("finance_decision_handler_last_name")
-    )
-}
-
-val toFeeDecisionSummary = { rs: ResultSet, _: StatementContext ->
-    FeeDecisionSummary(
-        id = UUID.fromString(rs.getString("id")),
-        status = FeeDecisionStatus.valueOf(rs.getString("status")),
-        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
-        validFrom = rs.getDate("valid_from").toLocalDate(),
-        validTo = rs.getDate("valid_to")?.toLocalDate(),
-        headOfFamily = PersonData.Basic(
-            id = UUID.fromString(rs.getString("head_of_family")),
-            dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
-            firstName = rs.getString("head_first_name"),
-            lastName = rs.getString("head_last_name"),
-            ssn = rs.getString("head_ssn")
-        ),
-        // child is not nullable so if it's missing there was nothing to join to the decision
-        parts = rs.getString("child")?.let {
-            listOf(
-                FeeDecisionPartSummary(
-                    child = PersonData.Basic(
-                        id = UUID.fromString(rs.getString("child")),
-                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-                        firstName = rs.getString("child_first_name"),
-                        lastName = rs.getString("child_last_name"),
-                        ssn = rs.getString("child_ssn")
-                    )
-                )
-            )
-        } ?: emptyList(),
-        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
-        createdAt = rs.getTimestamp("created_at").toInstant(),
-
-        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        finalPrice = rs.getInt("sum")
-    )
 }

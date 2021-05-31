@@ -38,33 +38,28 @@ export interface FeeDecision {
     | 'RELIEF_ACCEPTED'
     | 'RELIEF_PARTLY_ACCEPTED'
     | 'RELIEF_REJECTED'
-  validFrom: ISODate
-  validTo: ISODate
+  validDuring: DateRange
   headOfFamily: { id: UUID }
   familySize: number
   pricing: FeeDecisionThresholds
-  parts: [
+  children: [
     {
       child: {
         id: UUID
         dateOfBirth: string
       }
       placement: {
-        unit: UUID
+        unit: { id: UUID }
         type:
           | 'DAYCARE'
           | 'PRESCHOOL_WITH_DAYCARE'
           | 'PREPARATORY_WITH_DAYCARE'
           | 'FIVE_YEARS_OLD_DAYCARE'
-        serviceNeed:
-          | 'MISSING'
-          | 'GTE_35'
-          | 'GT_25_LT_35'
-          | 'LTE_25'
-          | 'GTE_25'
-          | 'GT_15_LT_25'
-          | 'LTE_15'
-          | 'LTE_0'
+      }
+      serviceNeed: {
+        feeCoefficient: number
+        descriptionFi: string
+        descriptionSv: string
       }
       baseFee: number
       siblingDiscount: number
@@ -75,6 +70,7 @@ export interface FeeDecision {
         isAbsolute: boolean
         effect: number
       }>
+      finalFee: number
     }
   ]
 }

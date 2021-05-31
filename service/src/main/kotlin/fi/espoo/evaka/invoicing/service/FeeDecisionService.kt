@@ -55,7 +55,7 @@ class FeeDecisionService(
 ) {
     fun confirmDrafts(tx: Database.Transaction, user: AuthenticatedUser, ids: List<UUID>, now: Instant): List<UUID> {
         tx.lockFeeDecisions(ids)
-        val decisions = tx.getFeeDecisionsByIds(objectMapper, ids)
+        val decisions = tx.getFeeDecisionsByIds(ids)
         if (decisions.isEmpty()) return listOf()
 
         val notDrafts = decisions.filterNot { it.status == FeeDecisionStatus.DRAFT }
@@ -73,7 +73,6 @@ class FeeDecisionService(
             .flatMap {
                 tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
                 tx.findFeeDecisionsForHeadOfFamily(
-                    objectMapper,
                     it.headOfFamily.id,
                     DateRange(it.validFrom, it.validTo),
                     listOf(FeeDecisionStatus.SENT)
@@ -86,7 +85,7 @@ class FeeDecisionService(
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
         val (emptyDecisions, validDecisions) = decisions
-            .partition { it.parts.isEmpty() }
+            .partition { it.children.isEmpty() }
 
         tx.deleteFeeDecisions(emptyDecisions.map { it.id })
 
@@ -104,13 +103,13 @@ class FeeDecisionService(
         val defaultLanguage = if (decision.headOfFamily.language == "sv") "sv" else "fi"
 
         val youngestChildUnitLanguage =
-            decision.parts.maxByOrNull { it.child.dateOfBirth }?.placementUnit?.language
+            decision.children.maxByOrNull { it.child.dateOfBirth }?.placementUnit?.language
 
         return if (youngestChildUnitLanguage == "sv") "sv" else defaultLanguage
     }
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: UUID) {
-        val decision = tx.getFeeDecision(objectMapper, id)
+        val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with ID ($id)")
         if (!decision.documentKey.isNullOrBlank()) {
             throw Conflict("Fee decision $id has document key already!")
@@ -124,7 +123,7 @@ class FeeDecisionService(
     }
 
     fun sendDecision(tx: Database.Transaction, id: UUID) {
-        val decision = tx.getFeeDecision(objectMapper, id)
+        val decision = tx.getFeeDecision(id)
             ?: throw NotFound("No fee decision found with given ID ($id)")
 
         if (decision.status != FeeDecisionStatus.WAITING_FOR_SENDING) {
@@ -172,7 +171,7 @@ class FeeDecisionService(
     }
 
     fun setSent(tx: Database.Transaction, ids: List<UUID>) {
-        val decisions = tx.getDetailedFeeDecisionsByIds(objectMapper, ids)
+        val decisions = tx.getDetailedFeeDecisionsByIds(ids)
         if (decisions.any { it.status != FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
@@ -191,7 +190,7 @@ class FeeDecisionService(
     }
 
     fun setType(tx: Database.Transaction, decisionId: UUID, type: FeeDecisionType) {
-        val decision = tx.getFeeDecision(objectMapper, decisionId)
+        val decision = tx.getFeeDecision(decisionId)
             ?: throw BadRequest("Decision not found with id $decisionId")
         if (decision.status != FeeDecisionStatus.DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")

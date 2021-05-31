@@ -10,9 +10,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
-import fi.espoo.evaka.invoicing.domain.PlacementType
-import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.placement.PlacementType
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
@@ -182,7 +181,7 @@ class PDFService(
         data class FeeDecisionPdfPart(
             val childName: String,
             val placementType: PlacementType,
-            val serviceNeed: ServiceNeed,
+            val serviceNeedDescription: String,
             val feeAlterations: List<Pair<FeeAlteration.Type, String>>,
             val finalFeeFormatted: String,
             val feeFormatted: String
@@ -211,13 +210,13 @@ class PDFService(
             "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
             "partnerIncomeEffect" to (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
-            "parts" to decision.parts.map {
+            "parts" to decision.children.map {
                 FeeDecisionPdfPart(
                     "${it.child.firstName} ${it.child.lastName}",
-                    it.placement.type,
-                    it.placement.serviceNeed,
+                    it.placementType,
+                    if (lang == "sv") it.serviceNeedDescriptionSv else it.serviceNeedDescriptionFi,
                     it.feeAlterations.map { fa -> fa.type to formatCents(fa.effect)!! },
-                    formatCents(it.finalFee())!!,
+                    formatCents(it.finalFee)!!,
                     formatCents(it.fee)!!
                 )
             },
@@ -225,12 +224,12 @@ class PDFService(
             "totalFee" to formatCents(decision.totalFee()),
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
-            "validFor" to with(decision) { "${dateFmt(validFrom)} - ${dateFmt(validTo)}" },
-            "validFrom" to dateFmt(decision.validFrom),
+            "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },
+            "validFrom" to dateFmt(decision.validDuring.start),
             "feePercent" to decision.feePercent().toDecimalString(),
             "pricingMinThreshold" to formatCents(-1 * decision.minThreshold()),
             "familySize" to decision.familySize,
-            "showValidTo" to (decision.validTo?.isBefore(LocalDate.now()) ?: false),
+            "showValidTo" to (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false),
             "approverFirstName" to (
                 decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
                 ),

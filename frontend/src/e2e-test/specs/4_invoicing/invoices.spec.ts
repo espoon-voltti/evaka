@@ -65,8 +65,8 @@ fixture('Invoicing - invoices')
         uuidv4(),
         fixtures.enduserChildFixtureKaarina.id,
         fixtures.daycareFixture.id,
-        feeDecision.validFrom,
-        feeDecision.validTo
+        feeDecision.validDuring.start.formatIso(),
+        feeDecision.validDuring.end.formatIso()
       )
     ])
     await t.useRole(seppoAdminRole)

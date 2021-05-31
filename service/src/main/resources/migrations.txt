@@ -102,3 +102,4 @@ V101__update_fee_decision_pricing.sql
 V102__service_need_option_display_order.sql
 V103__add_variable_time_to_daily_service_time_type.sql
 V104__fee_thresholds_constraints.sql
+V105__new_fee_decision_fixes.sql

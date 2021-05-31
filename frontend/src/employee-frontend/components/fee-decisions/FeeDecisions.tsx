@@ -110,14 +110,12 @@ const FeeDecisions = React.memo(function FeeDecisions({
               <NameWithSsn {...item.headOfFamily} i18n={i18n} />
             </Td>
             <Td>
-              <ChildrenCell people={item.parts.map(({ child }) => child)} />
+              <ChildrenCell people={item.children} />
             </Td>
-            <Td>{`${item.validFrom.format()} - ${
-              item.validTo?.format() ?? ''
-            }`}</Td>
+            <Td>{item.validDuring.format()}</Td>
             <Td>{formatCents(item.finalPrice)}</Td>
             <Td>{item.decisionNumber}</Td>
-            <Td>{formatDate(item.createdAt)}</Td>
+            <Td>{formatDate(item.created)}</Td>
             <Td>{formatDate(item.sentAt)}</Td>
             <Td>{i18n.feeDecision.status[item.status]}</Td>
             {showCheckboxes ? (

@@ -342,7 +342,7 @@ class DevApi(
 
     @PostMapping("/fee-decisions")
     fun createFeeDecisions(db: Database, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
-        db.transaction { tx -> tx.upsertFeeDecisions(objectMapper, decisions) }
+        db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
         return ResponseEntity.noContent().build()
     }
 

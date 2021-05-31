@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import LocalDate from 'lib-common/local-date'
+import DateRange from 'lib-common/date-range'
 import { Gap } from 'lib-components/white-space'
 import { H1 } from 'lib-components/typography'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
@@ -14,7 +14,6 @@ import WarningLabel from '../../components/common/WarningLabel'
 import { getFeeDecisionPdfUrl } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
 import {
-  FeeDecisionPartDetailed,
   FeeDecisionStatus,
   FeeDecisionType,
   PersonDetailed
@@ -61,14 +60,12 @@ interface Props {
   status: FeeDecisionStatus
   headOfFamily: PersonDetailed
   decisionNumber: number | null
-  validFrom: LocalDate
-  validTo: LocalDate | null
+  validDuring: DateRange
   sentAt: Date | null
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
   approvedBy: { firstName: string; lastName: string } | null
   documentKey: string | null
-  parts: FeeDecisionPartDetailed[]
   decisionType: FeeDecisionType
   changeDecisionType: (type: string) => void
   newDecisionType: string
@@ -83,8 +80,7 @@ export default React.memo(function Heading({
   status,
   headOfFamily,
   decisionNumber,
-  validFrom,
-  validTo,
+  validDuring,
   sentAt,
   financeDecisionHandlerFirstName,
   financeDecisionHandlerLastName,
@@ -117,7 +113,7 @@ export default React.memo(function Heading({
   )
 
   function contents() {
-    const decisionNUmberExists: {
+    const decisionNumberExists: {
       label: React.ReactNode
       value: React.ReactNode
       valueWidth?: string
@@ -125,7 +121,7 @@ export default React.memo(function Heading({
     }[] = decisionNumber
       ? [
           {
-            label: i18n.feeDecision.decisionNUmber,
+            label: i18n.feeDecision.decisionNumber,
             value: displayDecisionNumber(decisionNumber)
           }
         ]
@@ -162,7 +158,7 @@ export default React.memo(function Heading({
       },
       {
         label: i18n.feeDecision.validPeriod,
-        value: `${validFrom.format()} - ${validTo?.format() ?? ''}`
+        value: validDuring.format()
       },
       {
         label: i18n.feeDecision.sentAt,
@@ -171,10 +167,6 @@ export default React.memo(function Heading({
       {
         label: i18n.feeDecision.relief,
         value: reliefValue
-      },
-      {
-        label: i18n.feeDecision.sentAt,
-        value: formatDate(sentAt)
       }
     ].concat(
       financeDecisionHandlerFirstName && financeDecisionHandlerLastName
@@ -187,7 +179,7 @@ export default React.memo(function Heading({
         : []
     )
 
-    return decisionNUmberExists.concat(notDraft).concat(always)
+    return decisionNumberExists.concat(notDraft).concat(always)
   }
 
   return (

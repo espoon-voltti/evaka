@@ -79,23 +79,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <td th:text="${part.childName}"></td>
             <td th:switch="${part.placementType.name}">
                 <span th:case="'DAYCARE'" th:text="#{text.placementType.daycare}"></span>
-                <span th:case="'PRESCHOOL_WITH_DAYCARE'" th:text="#{text.placementType.preschool}"></span>
-                <span th:case="'PREPARATORY_WITH_DAYCARE'"
-                      th:text="#{text.placementType.preparatory}"></span>
-                <span th:case="'FIVE_YEARS_OLD_DAYCARE'" th:text="#{text.placementType.fiveyears}"></span>
+                <span th:case="'DAYCARE_PART_TIME'" th:text="#{text.placementType.daycarePartTime}"></span>
+                <span th:case="'PRESCHOOL_DAYCARE'" th:text="#{text.placementType.preschool}"></span>
+                <span th:case="'PREPARATORY_DAYCARE'" th:text="#{text.placementType.preparatory}"></span>
+                <span th:case="'DAYCARE_FIVE_YEAR_OLDS'" th:text="#{text.placementType.fiveyears}"></span>
+                <span th:case="'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'" th:text="#{text.placementType.fiveyears}"></span>
             </td>
             <td></td>
         </tr>
         <tr>
             <td></td>
-            <td th:switch="${part.serviceNeed.name}">
-                <span th:case="'GTE_35'" th:text="#{text.serviceNeed.GTE_35}"></span>
-                <span th:case="'GTE_25'" th:text="#{text.serviceNeed.GTE_25}"></span>
-                <span th:case="'GT_25_LT_35'" th:text="#{text.serviceNeed.GT_25_LT_35}"></span>
-                <span th:case="'GT_15_LT_25'" th:text="#{text.serviceNeed.GT_15_LT_25}"></span>
-                <span th:case="'LTE_25'" th:text="#{text.serviceNeed.LTE_25}"></span>
-                <span th:case="'LTE_15'" th:text="#{text.serviceNeed.LTE_15}"></span>
-            </td>
+            <td th:text="${part.serviceNeedDescription}"></td>
             <td class="text-right" th:text="${part.feeFormatted}"></td>
         </tr>
         <tr th:each="alteration: ${part.feeAlterations}">
