@@ -5,7 +5,6 @@
 import { Loading, Paged, Result, Success } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import _ from 'lodash'
 import React, {
   createContext,
   useCallback,
@@ -100,23 +99,17 @@ export const MessageContextProvider = React.memo(
       (result: Result<Paged<MessageThread>>) =>
         setThreads((state) =>
           result.mapAll({
-            loading() {
-              return state
-            },
-            failure() {
-              return {
-                ...state,
-                loadingResult: result.map(() => undefined)
-              }
-            },
-            success({ data, pages }) {
-              return {
-                ...state,
-                threads: [...state.threads, ...data],
-                loadingResult: Success.of(undefined),
-                pages
-              }
-            }
+            loading: () => state,
+            failure: () => ({
+              ...state,
+              loadingResult: result.map(() => undefined)
+            }),
+            success: ({ data, pages }) => ({
+              ...state,
+              threads: [...state.threads, ...data],
+              loadingResult: Success.of(undefined),
+              pages
+            })
           })
         ),
       []
@@ -152,19 +145,18 @@ export const MessageContextProvider = React.memo(
         const {
           value: { message, threadId }
         } = res
-        setThreads((state) => {
-          const [[old], rest] = _.partition(
-            state.threads,
-            (t) => t.id === threadId
-          )
+        setThreads(function appendMessageAndMoveThreadToTopOfList(state) {
+          const thread = state.threads.find((t) => t.id === threadId)
+          if (!thread) return state
+          const otherThreads = state.threads.filter((t) => t.id !== threadId)
           return {
             ...state,
             threads: [
               {
-                ...old,
-                messages: [...old.messages, message]
+                ...thread,
+                messages: [...thread.messages, message]
               },
-              ...rest
+              ...otherThreads
             ]
           }
         })

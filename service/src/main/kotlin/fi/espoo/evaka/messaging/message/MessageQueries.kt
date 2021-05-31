@@ -163,15 +163,15 @@ participated_messages AS (
         rec.read_at,
         rec.recipient_id,
         acc.account_name recipient_name
-            FROM message_recipients rec
-            JOIN message m ON rec.message_id = m.id
-            JOIN message_content c ON m.content_id = c.id
-            JOIN message_account_name_view acc ON rec.recipient_id = acc.id
-            WHERE m.sender_id = :accountId OR EXISTS (
-                SELECT 1
-                    FROM message_recipients rec2
-                    WHERE rec2.message_id = m.id AND rec2.recipient_id = :accountId
-            )
+    FROM message_recipients rec
+    JOIN message m ON rec.message_id = m.id
+    JOIN message_content c ON m.content_id = c.id
+    JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+    WHERE m.sender_id = :accountId OR EXISTS (
+        SELECT 1
+            FROM message_recipients rec2
+            WHERE rec2.message_id = m.id AND rec2.recipient_id = :accountId
+    )
 ),
 threads AS (
     SELECT id, message_type AS type, title, last_message, COUNT(*) OVER () AS count
