@@ -101,7 +101,8 @@ class PdfServiceTest {
                 fee = it.fee
             )
         },
-        financeDecisionHandlerName = null
+        financeDecisionHandlerFirstName = null,
+        financeDecisionHandlerLastName = null
     )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
@@ -139,7 +140,7 @@ class PdfServiceTest {
         ),
         validFrom = LocalDate.of(2020, 1, 1),
         validTo = null,
-        financeDecisionHandlerName = null,
+        financeDecisionHandlerFirstName = null,
         pricing = testPricing,
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),

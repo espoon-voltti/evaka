@@ -50,8 +50,10 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
     approvedBy = allWorkers.find { it.id == feeDecision.approvedBy?.id },
     approvedAt = feeDecision.approvedAt,
     createdAt = feeDecision.createdAt,
-    financeDecisionHandlerName = allWorkers.find { it.id == feeDecision.decisionHandler?.id }
-        ?.let { "${it.firstName} ${it.lastName}" }
+    financeDecisionHandlerFirstName = allWorkers.find { it.id == feeDecision.decisionHandler?.id }
+        ?.let { "${it.firstName}" },
+    financeDecisionHandlerLastName = allWorkers.find { it.id == feeDecision.decisionHandler?.id }
+        ?.let { "${it.lastName}" }
 )
 
 fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary(
