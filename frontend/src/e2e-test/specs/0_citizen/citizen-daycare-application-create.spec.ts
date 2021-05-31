@@ -84,7 +84,7 @@ test('Sending invalid daycare application gives validation error', async (t) => 
 
   await t
     .expect(citizenApplicationEditor.applicationTypeTitle.textContent)
-    .eql('Varhaiskasvatushakemus')
+    .eql('Varhaiskasvatus- ja palvelusetelihakemus')
   await t
     .expect(citizenApplicationEditor.applicationChildNameTitle.textContent)
     .eql(

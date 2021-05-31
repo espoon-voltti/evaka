@@ -153,7 +153,7 @@ const en: Translations = {
     deleteUnprocessedApplicationError: 'Failed to remove the application',
     creation: {
       title: 'Selection of application type',
-      daycareLabel: 'Application for early childhood education',
+      daycareLabel: 'Early childhood education and service voucher application',
       daycareInfo:
         'The application for early childhood education is used to apply for a municipal early childhood education place at a day-care centre, family day-care provider and group family day-care provider. You can also use the same application to apply for a service voucher for early childhood education. Under Preferred units, select the service voucher unit to which you want to apply.',
       preschoolLabel:
@@ -195,7 +195,8 @@ const en: Translations = {
     editor: {
       heading: {
         title: {
-          DAYCARE: 'Application for early childhood education',
+          DAYCARE:
+            'Application for early childhood education and service voucher',
           PRESCHOOL: 'Registration for pre-school education',
           CLUB: 'Application for club'
         },
@@ -1156,10 +1157,12 @@ const en: Translations = {
       return (
         <P width="800px">
           A child’s guardian can submit an application for early childhood
-          education or a club and enrol the child to pre-primary education.
-          Information on the guardian’s children is automatically retrieved from
-          the Digital and Population Data Services Agency and displayed in this
-          view.
+          education or a club and enroll the child to pre-primary education. You
+          can also use the same application to apply for a service voucher for
+          early childhood education. To do this, you have to apply for a place
+          in early childhood education at a service voucher unit. Information on
+          the guardian’s children is automatically retrieved from the Digital
+          and Population Data Services Agency and displayed in this view.
         </P>
       )
     },

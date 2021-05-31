@@ -100,6 +100,8 @@ export const FixedSpaceFlexWrap = styled.div<FixedSpaceFlexWrapProps>`
   display: flex;
   flex-direction: row;
   flex-wrap: ${(p) => (p.reverse ? 'wrap-reverse' : 'wrap')};
+  justify-content: flex-start;
+  align-items: flex-start;
 
   margin-bottom: -${(p) => (p.verticalSpacing ? defaultMargins[p.verticalSpacing] : defaultMargins.s)};
   margin-right: -${(p) => (p.horizontalSpacing ? defaultMargins[p.horizontalSpacing] : defaultMargins.s)};
