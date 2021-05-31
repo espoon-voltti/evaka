@@ -16,7 +16,7 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { getFeeThresholds } from '../../api/finance-basics'
-import { FeeThresholds } from '../../types/finance-basics'
+import { familySizes, FeeThresholds } from '../../types/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
 import FeeThresholdsItemEditor from './FeeThresholdsItemEditor'
@@ -124,7 +124,7 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           </Tr>
         </Thead>
         <Tbody>
-          {(['2', '3', '4', '5', '6'] as const).map((n) => {
+          {familySizes.map((n) => {
             return (
               <Tr key={n}>
                 <Td>{n}</Td>

@@ -2449,6 +2449,7 @@ export const fi = {
       familySize: 'Perheen koko',
       minThreshold: 'Vähimmäisbruttotulo €/kk',
       maxThreshold: 'Korkeimman maksun bruttotuloraja €/kk',
+      maxFeeError: 'Enimmäismaksu ei täsmää',
       thresholdIncrease: 'Tulorajan korotussumma, kun perhekoko > 6',
       thresholdIncreaseInfo:
         'Jos perheen koko on suurempi kuin 6, korotetaan maksun määräämisen perusteena olevaa tulorajaa korotussumman verran kustakin seuraavasta perheen alaikäisestä lapsesta.',

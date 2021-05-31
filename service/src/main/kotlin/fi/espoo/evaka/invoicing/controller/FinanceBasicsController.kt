@@ -2,6 +2,7 @@ package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -37,6 +38,7 @@ class FinanceBasicsController {
         Audit.FinanceBasicsPricingRead.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
+        validateFeeThresholds(body)
         db.transaction {
             val latestThreshold = it.getFeeThresholds().maxByOrNull { it.validDuring.start }
 
@@ -79,6 +81,42 @@ data class CreateFeeThresholdsBody(
     val maxFee: Int,
     val minFee: Int
 )
+
+private fun validateFeeThresholds(thresholds: CreateFeeThresholdsBody) {
+    val allMaxFeesMatch = listOf(
+        calculateMaxFeeFromThresholds(
+            thresholds.minIncomeThreshold2,
+            thresholds.maxIncomeThreshold2,
+            thresholds.incomeMultiplier2
+        ),
+        calculateMaxFeeFromThresholds(
+            thresholds.minIncomeThreshold3,
+            thresholds.maxIncomeThreshold3,
+            thresholds.incomeMultiplier3
+        ),
+        calculateMaxFeeFromThresholds(
+            thresholds.minIncomeThreshold4,
+            thresholds.maxIncomeThreshold4,
+            thresholds.incomeMultiplier4
+        ),
+        calculateMaxFeeFromThresholds(
+            thresholds.minIncomeThreshold5,
+            thresholds.maxIncomeThreshold5,
+            thresholds.incomeMultiplier5
+        ),
+        calculateMaxFeeFromThresholds(
+            thresholds.minIncomeThreshold6,
+            thresholds.maxIncomeThreshold6,
+            thresholds.incomeMultiplier6
+        )
+    ).all { it == thresholds.maxFee }
+
+    if (!allMaxFeesMatch) throw BadRequest("Inconsistent max fees from income thresholds")
+}
+
+private fun calculateMaxFeeFromThresholds(minThreshold: Int, maxThreshold: Int, multiplier: BigDecimal): Int {
+    return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
+}
 
 fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithValidity> =
     createQuery("SELECT * FROM fee_thresholds")

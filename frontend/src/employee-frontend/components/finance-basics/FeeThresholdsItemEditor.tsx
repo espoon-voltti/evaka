@@ -15,10 +15,15 @@ import InputField from 'lib-components/atoms/form/InputField'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { Translations } from '../../state/i18n'
-import { FeeThresholds } from '../../types/finance-basics'
-import { isValidCents, parseCentsOrThrow } from '../../utils/money'
+import {
+  familySizes,
+  FamilySize,
+  FeeThresholds
+} from '../../types/finance-basics'
+import { isValidCents, parseCents, parseCentsOrThrow } from '../../utils/money'
 import { FormState } from './FeesSection'
 import { createFeeThresholds } from 'employee-frontend/api/finance-basics'
+import colors from 'lib-customizations/common'
 
 export default React.memo(function FeeThresholdsItemEditor({
   i18n,
@@ -74,7 +79,7 @@ export default React.memo(function FeeThresholdsItemEditor({
           info={validationErrorInfo('validTo')}
           hideErrorsBeforeTouched
         />
-      </FixedSpaceRow>
+      </RowWithMargin>
       <RowWithMargin spacing="XL">
         <FixedSpaceColumn spacing="xxs">
           <Label htmlFor="maxFee">{i18n.financeBasics.fees.maxFee}</Label>
@@ -123,7 +128,17 @@ export default React.memo(function FeeThresholdsItemEditor({
           </Tr>
         </Thead>
         <Tbody>
-          {(['2', '3', '4', '5', '6'] as const).map((n) => {
+          {familySizes.map((n) => {
+            const maxFeeError =
+              'errors' in validationResult &&
+              validationResult.errors[`maxFee${n}`]
+                ? validationResult.errors[`maxFee${n}` as `maxFee${typeof n}`]
+                : undefined
+
+            const maxFeeErrorInputInfo = maxFeeError
+              ? ({ status: 'warning', text: '' } as const)
+              : undefined
+
             return (
               <Tr key={n}>
                 <Td>{n}</Td>
@@ -142,9 +157,11 @@ export default React.memo(function FeeThresholdsItemEditor({
                       }))
                     }
                     symbol={'€'}
-                    info={validationErrorInfo(
-                      `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
-                    )}
+                    info={
+                      validationErrorInfo(
+                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+                      ) ?? maxFeeErrorInputInfo
+                    }
                     hideErrorsBeforeTouched
                   />
                 </Td>
@@ -163,9 +180,11 @@ export default React.memo(function FeeThresholdsItemEditor({
                       }))
                     }
                     symbol={'%'}
-                    info={validationErrorInfo(
-                      `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
-                    )}
+                    info={
+                      validationErrorInfo(
+                        `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
+                      ) ?? maxFeeErrorInputInfo
+                    }
                     hideErrorsBeforeTouched
                   />
                 </Td>
@@ -184,11 +203,18 @@ export default React.memo(function FeeThresholdsItemEditor({
                       }))
                     }
                     symbol={'€'}
-                    info={validationErrorInfo(
-                      `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
-                    )}
+                    info={
+                      validationErrorInfo(
+                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+                      ) ?? maxFeeErrorInputInfo
+                    }
                     hideErrorsBeforeTouched
                   />
+                  <MaxFeeError>
+                    {maxFeeError
+                      ? `${i18n.financeBasics.fees.maxFeeError} (${maxFeeError} €)`
+                      : null}
+                  </MaxFeeError>
                 </Td>
               </Tr>
             )
@@ -257,7 +283,14 @@ const ButtonRow = styled(FixedSpaceRow)`
   margin: ${defaultMargins.L} 0;
 `
 
-type ValidationErrors = Partial<Record<keyof FormState, string>>
+const MaxFeeError = styled.span`
+  color: ${colors.greyscale.dark};
+  font-style: italic;
+  margin-left: ${defaultMargins.s};
+`
+
+type ValidationErrors = Partial<Record<keyof FormState, string>> &
+  Partial<Record<`maxFee${FamilySize}`, number>>
 type FeeThresholdsPayload = Omit<FeeThresholds, 'id'>
 
 const centProps: readonly (keyof FormState)[] = [
@@ -301,6 +334,31 @@ function validateForm(
     validationErrors.validTo = i18n.validationError.dateRange
   }
 
+  familySizes.forEach((n) => {
+    const maxFee = parseCents(form.maxFee)
+    const minThreshold = parseCents(form[`minIncomeThreshold${n}`])
+    const maxThreshold = parseCents(form[`maxIncomeThreshold${n}`])
+    const multiplier = parseMultiplier(form[`incomeMultiplier${n}`])
+
+    if (
+      maxFee &&
+      minThreshold &&
+      maxThreshold &&
+      multiplier &&
+      minThreshold < maxThreshold
+    ) {
+      const computedMaxFee = calculateMaxFeeFromThresholds(
+        minThreshold,
+        maxThreshold,
+        multiplier
+      )
+
+      if (maxFee !== computedMaxFee) {
+        validationErrors[`maxFee${n}`] = computedMaxFee / 100
+      }
+    }
+  })
+
   return Object.keys(validationErrors).length === 0
     ? { payload: parseFormOrThrow(form) }
     : { errors: validationErrors }
@@ -339,4 +397,12 @@ function parseFormOrThrow(form: FormState): FeeThresholdsPayload {
     siblingDiscount2: 0.5,
     siblingDiscount2Plus: 0.8
   }
+}
+
+function calculateMaxFeeFromThresholds(
+  minThreshold: number,
+  maxThreshold: number,
+  multiplier: number
+) {
+  return Math.round(((maxThreshold - minThreshold) * multiplier) / 100) * 100
 }
