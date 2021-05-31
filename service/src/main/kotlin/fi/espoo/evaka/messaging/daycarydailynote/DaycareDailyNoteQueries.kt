@@ -98,8 +98,8 @@ WHERE child_id IN (
 fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): UUID {
     return createUpdate(
         """
-INSERT INTO daycare_daily_note (id, child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_hours, reminders, reminder_note, modified_by, modified_at)
-VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :sleepingHours, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy, COALESCE(:modifiedAt, now()))
+INSERT INTO daycare_daily_note (id, child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note, modified_by, modified_at)
+VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :sleepingMinutes, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy, COALESCE(:modifiedAt, now()))
 RETURNING id
         """.trimIndent()
     )
@@ -110,7 +110,7 @@ RETURNING id
         .bind("note", note.note)
         .bind("feedingNote", note.feedingNote)
         .bind("sleepingNote", note.sleepingNote)
-        .bind("sleepingHours", note.sleepingHours)
+        .bind("sleepingMinutes", note.sleepingMinutes)
         .bind("reminders", note.reminders.map { it.name }.toTypedArray())
         .bind("reminderNote", note.reminderNote)
         .bind("modifiedBy", note.modifiedBy)
@@ -130,7 +130,7 @@ UPDATE daycare_daily_note SET
     note = :note, 
     feeding_note = :feedingNote, 
     sleeping_note = :sleepingNote,
-    sleeping_hours = :sleepingHours,
+    sleeping_minutes = :sleepingMinutes,
     reminders = :reminders::daycare_daily_note_reminder[],
     reminder_note = :reminderNote,
     modified_by = :modifiedBy,
@@ -145,7 +145,7 @@ RETURNING *
         .bind("note", note.note)
         .bind("feedingNote", note.feedingNote)
         .bind("sleepingNote", note.sleepingNote)
-        .bind("sleepingHours", note.sleepingHours)
+        .bind("sleepingMinutes", note.sleepingMinutes)
         .bind("reminders", note.reminders.map { it.name }.toTypedArray())
         .bind("reminderNote", note.reminderNote)
         .bind("modifiedBy", note.modifiedBy)

@@ -7,6 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useState } from 'react'
+
 import { useTranslation } from '../../../../state/i18n'
 import { faExclamation, faTrash } from 'lib-icons'
 import {
@@ -52,11 +53,11 @@ const initialFormData = (
         ...note,
         childId,
         groupId,
-        sleepingHours: note.sleepingHours
-          ? Math.floor(Number(note.sleepingHours)).toString()
+        sleepingHours: note.sleepingMinutes
+          ? Math.floor(Number(note.sleepingMinutes) / 60).toString()
           : '',
-        sleepingMinutes: note.sleepingHours
-          ? Math.round((Number(note.sleepingHours) % 1) * 60).toString()
+        sleepingMinutes: note.sleepingMinutes
+          ? Math.round(Number(note.sleepingMinutes) % 60).toString()
           : ''
       }
     : {
@@ -274,7 +275,7 @@ export default React.memo(function DaycareDailyNoteModal({
           >
             <InputField
               type={'number'}
-              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHint}
+              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHoursHint}
               value={form.sleepingHours || ''}
               onChange={(value) => updateForm({ sleepingHours: value })}
               data-qa="sleeping-hours-input"
@@ -282,7 +283,9 @@ export default React.memo(function DaycareDailyNoteModal({
             <span>{i18n.unit.groups.daycareDailyNote.sleepingHours}</span>
             <InputField
               type={'number'}
-              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHint}
+              placeholder={
+                i18n.unit.groups.daycareDailyNote.sleepingMinutesHint
+              }
               value={form.sleepingMinutes || ''}
               onChange={(value) => updateForm({ sleepingMinutes: value })}
               data-qa="sleeping-hours-input"

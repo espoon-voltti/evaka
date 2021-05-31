@@ -101,7 +101,7 @@ export default React.memo(function DailyNoteEditor() {
     id: null,
     feedingNote: null,
     sleepingNote: null,
-    sleepingHours: null,
+    sleepingMinutes: null,
     reminders: [],
     reminderNote: null,
     modifiedAt: null,
@@ -540,10 +540,10 @@ function dailyNoteEditedToDailyNote(
     sleepingNote: dailyNoteEdited.sleepingNote
       ? dailyNoteEdited.sleepingNote
       : null,
-    sleepingHours:
+    sleepingMinutes:
       dailyNoteEdited.sleepingHours || dailyNoteEdited.sleepingMinutes
-        ? (dailyNoteEdited.sleepingHours ?? 0) +
-          (dailyNoteEdited.sleepingMinutes ?? 0) / 60
+        ? (dailyNoteEdited.sleepingHours ?? 0) * 60 +
+          ((dailyNoteEdited.sleepingMinutes ?? 0) % 60)
         : null,
     modifiedBy: user?.id ?? 'unknown user',
     modifiedAt: null
@@ -560,11 +560,11 @@ function dailyNoteToDailyNoteEdited(dailyNote: DailyNote): DailyNoteEdited {
     reminderNote: dailyNote.reminderNote ? dailyNote.reminderNote : '',
     feedingNote: dailyNote.feedingNote ? dailyNote.feedingNote : undefined,
     sleepingNote: dailyNote.sleepingNote ? dailyNote.sleepingNote : undefined,
-    sleepingHours: dailyNote.sleepingHours
-      ? Math.floor(dailyNote.sleepingHours)
+    sleepingHours: dailyNote.sleepingMinutes
+      ? Math.floor(dailyNote.sleepingMinutes / 60)
       : undefined,
-    sleepingMinutes: dailyNote.sleepingHours
-      ? Math.round((dailyNote.sleepingHours % 1) * 60)
+    sleepingMinutes: dailyNote.sleepingMinutes
+      ? dailyNote.sleepingMinutes % 60
       : undefined
   }
 }
