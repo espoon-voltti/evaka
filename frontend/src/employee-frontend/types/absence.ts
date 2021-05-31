@@ -7,6 +7,7 @@ import { JsonOf } from 'lib-common/json'
 import {
   Absence,
   AbsenceCareType,
+  AbsenceType,
   deserializeAbsence
 } from 'lib-common/api-types/child/Absences'
 
@@ -16,25 +17,13 @@ import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 export type TableMode = 'MONTH'
 
-export type AbsenceType =
-  | 'OTHER_ABSENCE'
-  | 'SICKLEAVE'
-  | 'UNKNOWN_ABSENCE'
-  | 'PLANNED_ABSENCE'
-  | 'TEMPORARY_RELOCATION'
-  | 'TEMPORARY_VISITOR'
-  | 'PARENTLEAVE'
-  | 'FORCE_MAJEURE'
-  | 'PRESENCE'
-
 export const AbsenceTypes: AbsenceType[] = [
   'OTHER_ABSENCE',
   'SICKLEAVE',
   'UNKNOWN_ABSENCE',
   'PLANNED_ABSENCE',
   'PARENTLEAVE',
-  'FORCE_MAJEURE',
-  'PRESENCE'
+  'FORCE_MAJEURE'
 ]
 
 export const defaultAbsenceType = 'SICKLEAVE'
@@ -93,10 +82,13 @@ export interface CellPart {
 }
 
 export interface AbsencePayload {
-  absenceType: AbsenceType
   childId: UUID
   date: LocalDate
   careType: AbsenceCareType
+}
+
+export interface AbsenceUpdatePayload extends AbsencePayload {
+  absenceType: AbsenceType
 }
 
 // Response

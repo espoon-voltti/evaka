@@ -528,9 +528,8 @@ data class AbsenceStub(
     val absenceType: AbsenceType
 )
 
-// PRESENCE is used to "remove" an absence leaving a mark when the absence was removed in the database
 // PLANNED_ABSENCE is used to indicate when a child is not even supposed to be present, it's not an actual absence
-private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PRESENCE, AbsenceType.PLANNED_ABSENCE)
+private val absenceTypesWithNoEffectOnInvoices = arrayOf(AbsenceType.PLANNED_ABSENCE)
 
 fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
     val sql =

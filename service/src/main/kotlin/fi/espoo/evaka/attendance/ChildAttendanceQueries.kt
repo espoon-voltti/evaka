@@ -284,7 +284,7 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
             ab.child_id,
             ab.care_type
         FROM absence ab
-        WHERE ab.date = :today AND ab.absence_type != 'PRESENCE' AND ab.child_id IN ($placedChildrenSql)
+        WHERE ab.date = :today AND ab.child_id IN ($placedChildrenSql)
         """.trimIndent()
 
     return createQuery(sql)
@@ -372,7 +372,7 @@ fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: UUID, dateRang
     // language=sql
     val sql =
         """
-        UPDATE absence SET absence_type = 'PRESENCE'
+        DELETE FROM absence
         WHERE child_id = :childId AND :dateRange @> date
         """.trimIndent()
 

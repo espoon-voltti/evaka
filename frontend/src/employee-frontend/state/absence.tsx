@@ -8,7 +8,6 @@ import { Loading, Result } from 'lib-common/api'
 import {
   TableMode,
   Group,
-  AbsenceType,
   defaultAbsenceType,
   defaultCareTypeCategory,
   Cell,
@@ -16,6 +15,7 @@ import {
   CareTypeCategory
 } from '../types/absence'
 import { UUID } from '../types'
+import { AbsenceType } from '../../lib-common/api-types/child/Absences'
 
 export interface AbsencesState {
   absences: Result<Group>
@@ -28,8 +28,8 @@ export interface AbsencesState {
   setSelectedDate: (date: LocalDate) => void
   selectedCells: Cell[]
   setSelectedCells: (cells: Cell[]) => void
-  selectedAbsenceType: AbsenceType
-  setSelectedAbsenceType: (type: AbsenceType) => void
+  selectedAbsenceType: AbsenceType | null
+  setSelectedAbsenceType: (type: AbsenceType | null) => void
   selectedCareTypeCategories: CareTypeCategory[]
   setSelectedCareTypeCategories: (type: CareTypeCategory[]) => void
   toggleCellSelection: (id: UUID) => (cellParts: CellPart[]) => void

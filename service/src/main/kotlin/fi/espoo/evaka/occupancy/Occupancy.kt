@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.occupancy
 
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
@@ -114,7 +113,7 @@ private fun coefficientParameters(realized: Boolean, includeGroups: Boolean) =
         ${if (realized) """,
             EXISTS (
                 SELECT 1 FROM absence ab
-                WHERE ab.child_id = c.id AND ab.date = t::date AND ab.absence_type != 'PRESENCE'
+                WHERE ab.child_id = c.id AND ab.date = t::date
             ) AS absent
         """ else ""}
     FROM locations loc
@@ -742,10 +741,9 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val absences =
         if (type == OccupancyType.REALIZED)
-            this.createQuery("SELECT child_id, date, care_type FROM absence WHERE child_id = ANY(:childIds) AND :period @> date AND NOT absence_type = :presence")
+            this.createQuery("SELECT child_id, date, care_type FROM absence WHERE child_id = ANY(:childIds) AND :period @> date")
                 .bind("childIds", childIds)
                 .bind("period", period)
-                .bind("presence", AbsenceType.PRESENCE)
                 .mapTo<Absence>()
                 .groupBy { it.childId }
         else

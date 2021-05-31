@@ -181,22 +181,6 @@ class RealizedOccupancyTest : FullApplicationTest() {
     }
 
     @Test
-    fun `occupancy for a child with absence of type PRESENCE is counted normally`() {
-        val childId = UUID.randomUUID()
-        db.transaction { tx ->
-            tx.createOccupancyTestFixture(childId, testDaycare.id, defaultPeriod, LocalDate.of(2017, 1, 1), PlacementType.DAYCARE)
-            tx.insertTestAbsence(childId = childId, date = LocalDate.of(2019, 1, 2), careType = CareType.DAYCARE, absenceType = AbsenceType.PRESENCE)
-        }
-
-        val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
-
-        assertEquals(
-            listOf(OccupancyPeriod(defaultPeriod, 1.75, 1)),
-            result
-        )
-    }
-
-    @Test
     fun `caretaker count is based on attendance`() {
         db.transaction { tx ->
             tx.insertTestStaffAttendance(groupId = groupId, date = LocalDate.of(2019, 1, 1), count = 2.0)

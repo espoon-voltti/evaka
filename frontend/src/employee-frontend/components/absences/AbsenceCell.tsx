@@ -5,7 +5,6 @@
 import React, { useContext, useCallback, memo } from 'react'
 import LocalDate from 'lib-common/local-date'
 import {
-  AbsenceType,
   CellPart,
   billableCareTypes,
   AbsenceBackupCare
@@ -14,7 +13,11 @@ import { UUID } from '../../types'
 import { AbsencesState, AbsencesContext } from '../../state/absence'
 import Tooltip from '../../components/common/Tooltip'
 import { useTranslation } from '../../state/i18n'
-import { Absence, AbsenceCareType } from 'lib-common/api-types/child/Absences'
+import {
+  Absence,
+  AbsenceCareType,
+  AbsenceType
+} from 'lib-common/api-types/child/Absences'
 
 interface AbsenceCellPartProps {
   position: string

@@ -52,7 +52,7 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
             daycare.id AS daycare_id,
             p.social_security_number,
             dg.name,
-            NOT EXISTS (SELECT 1 FROM absence a WHERE t = a.date AND a.child_id = p.id AND a.absence_type <> 'PRESENCE') AS present
+            NOT EXISTS (SELECT 1 FROM absence a WHERE t = a.date AND a.child_id = p.id) AS present
         FROM days
         LEFT JOIN daycare_group_placement dgp ON daterange(dgp.start_date, dgp.end_date, '[]') @> t::date
         LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id

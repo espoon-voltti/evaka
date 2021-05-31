@@ -12,12 +12,11 @@ import {
   Group,
   AbsencePayload,
   deserializeChild,
-  AbsenceType
+  AbsenceUpdatePayload
 } from '../types/absence'
 import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import { AbsenceCareType } from 'lib-common/api-types/child/Absences'
 
 interface SearchParams {
   year: number
@@ -53,10 +52,20 @@ export async function getGroupAbsences(
 
 export async function postGroupAbsences(
   groupId: UUID,
-  absences: AbsencePayload[]
+  absences: AbsenceUpdatePayload[]
 ): Promise<Result<void>> {
   return client
     .post<void>(`/absences/${groupId}`, { data: absences })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function deleteGroupAbsences(
+  groupId: UUID,
+  deletions: AbsencePayload[]
+): Promise<Result<void>> {
+  return client
+    .post<void>(`/absences/${groupId}/delete`, deletions)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -97,17 +106,6 @@ export async function postStaffAttendance(
 ): Promise<Result<void>> {
   return client
     .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function postChildAbsence(
-  absenceType: AbsenceType,
-  careType: AbsenceCareType,
-  childId: UUID
-): Promise<Result<void>> {
-  return client
-    .post<void>(`/absences/child/${childId}`, { absenceType, careType })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
