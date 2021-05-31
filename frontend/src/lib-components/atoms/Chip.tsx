@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { readableColor } from 'polished'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faCheck } from 'lib-icons'
-
 import { defaultMargins } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -44,6 +43,10 @@ type SelectionChipProps = {
   showIcon?: boolean
 }
 
+function preventDefault(e: React.UIEvent<unknown>) {
+  e.preventDefault()
+}
+
 export const SelectionChip = React.memo(function SelectionChip({
   text,
   selected,
@@ -53,24 +56,24 @@ export const SelectionChip = React.memo(function SelectionChip({
 }: SelectionChipProps) {
   const ariaId = useUniqueId('selection-chip')
 
-  function onClick(e: React.MouseEvent<HTMLDivElement>) {
-    e.preventDefault()
-    onChange(!selected)
-  }
-
-  function onDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
-    e.preventDefault()
-  }
+  const onClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      e.preventDefault()
+      onChange(!selected)
+    },
+    [onChange, selected]
+  )
 
   return (
-    <div data-qa={dataQa}>
-      <SelectionChipWrapper onClick={onClick} onDoubleClick={onDoubleClick}>
+    <div data-qa={dataQa} onClick={onClick}>
+      <SelectionChipWrapper>
         <SelectionChipInnerWrapper
           className={classNames({ checked: selected })}
         >
           <HiddenInput
             type="checkbox"
             onChange={() => onChange(!selected)}
+            onClick={preventDefault}
             checked={selected}
             id={ariaId}
           />
@@ -82,6 +85,7 @@ export const SelectionChip = React.memo(function SelectionChip({
           <StyledLabel
             className={classNames({ checked: showIcon && selected })}
             htmlFor={ariaId}
+            onClick={preventDefault}
           >
             {text}
           </StyledLabel>
