@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: UUID): UUID? {
+fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
     val sql = """
 SELECT acc.id FROM message_account acc
 WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
@@ -16,7 +16,7 @@ WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
     return this.createQuery(sql)
         .bind("daycareGroupId", daycareGroupId)
         .mapTo<UUID>()
-        .firstOrNull()
+        .one()
 }
 
 fun Database.Read.getCitizenMessageAccount(personId: UUID): UUID {
@@ -89,9 +89,6 @@ fun Database.Read.getAccountNames(accountIds: Set<UUID>): List<String> {
         .list()
 }
 
-fun Database.Read.getAccountName(accountId: UUID): String =
-    getAccountNames(setOf(accountId)).first()
-
 fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
     // language=SQL
     val sql = """
@@ -108,23 +105,6 @@ fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) 
     // language=SQL
     val sql = """
         DELETE FROM message_account WHERE daycare_group_id = :daycareGroupId
-    """.trimIndent()
-    createUpdate(sql)
-        .bind("daycareGroupId", daycareGroupId)
-        .execute()
-}
-
-fun Database.Transaction.deactivateDaycareGroupMessageAccount(daycareGroupId: UUID) {
-    // language=SQL
-    val sql = """
-        UPDATE message_account acc
-        SET daycare_group_id = NULL,
-            active = false,
-            -- The daycare group is going to be deleted, so save its name
-            deleted_owner_name = (
-                SELECT account_name FROM message_account_name_view n WHERE n.id = acc.id
-            )
-        WHERE daycare_group_id = :daycareGroupId
     """.trimIndent()
     createUpdate(sql)
         .bind("daycareGroupId", daycareGroupId)

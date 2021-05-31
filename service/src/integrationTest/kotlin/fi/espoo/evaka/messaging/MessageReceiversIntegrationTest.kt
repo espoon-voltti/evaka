@@ -244,7 +244,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         val sender = getEmployeeOwnMessageAccount(supervisor1)
 
         // daycare group of unit 1
-        val recipient = db.read { it.getDaycareGroupMessageAccount(groupId)!! }
+        val recipient = db.read { it.getDaycareGroupMessageAccount(groupId) }
 
         val (_, response) = postNewThread(
             sender = sender,

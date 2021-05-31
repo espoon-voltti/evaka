@@ -12,7 +12,7 @@ import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.deleteOrDeactivateDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.message.deleteDaycareGroupMessageAccount
 import fi.espoo.evaka.placement.getDaycareGroupPlacements
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -60,7 +60,7 @@ class DaycareService {
 
         if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
 
-        deleteOrDeactivateDaycareGroupMessageAccount(tx, groupId)
+        tx.deleteDaycareGroupMessageAccount(groupId)
         tx.deleteDaycareGroup(groupId)
     } catch (e: UnableToExecuteStatementException) {
         throw e.psqlCause()?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
