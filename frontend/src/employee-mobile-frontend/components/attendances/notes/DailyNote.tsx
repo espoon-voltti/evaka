@@ -55,8 +55,12 @@ export default React.memo(function DailyNote({ child, groupNote }: Props) {
                     child.dailyNote.sleepingNote
                   ]
                 }
-                {child.dailyNote.sleepingHours &&
-                  `. ${child.dailyNote.sleepingHours} ${i18n.common.hours}.`}
+                {child.dailyNote.sleepingMinutes &&
+                child.dailyNote.sleepingMinutes / 60 >= 1
+                  ? `. ${Math.floor(
+                      child.dailyNote.sleepingMinutes / 60
+                    )}h ${Math.round(child.dailyNote.sleepingMinutes % 60)}min.`
+                  : ''}
               </span>
             </FixedSpaceColumn>
           )}

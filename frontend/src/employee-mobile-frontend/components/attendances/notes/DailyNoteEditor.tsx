@@ -586,7 +586,7 @@ function genNewGroupNote(
     id: null,
     feedingNote: null,
     sleepingNote: null,
-    sleepingHours: null,
+    sleepingMinutes: null,
     reminders: [],
     reminderNote: null,
     modifiedAt: null,
