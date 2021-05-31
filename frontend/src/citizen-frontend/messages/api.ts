@@ -4,12 +4,18 @@
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
+import { UUID } from 'lib-common/types'
 import { client } from '../api-client'
-import { deserializeMessageThread, MessageThread } from './types'
+import {
+  deserializeMessage,
+  deserializeMessageThread,
+  MessageThread,
+  ReplyResponse
+} from './types'
 
 export async function getReceivedMessages(
   page: number,
-  pageSize = 20
+  pageSize = 10
 ): Promise<Result<Paged<MessageThread>>> {
   return client
     .get<JsonOf<Paged<MessageThread>>>('/citizen/messages/received', {
@@ -24,13 +30,45 @@ export async function getReceivedMessages(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function getMessageAccount(): Promise<Result<UUID>> {
+  return client
+    .get<UUID>(`/citizen/messages/my-account`)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function markThreadRead(id: string): Promise<void> {
   return client.put(`/citizen/messages/threads/${id}/read`)
 }
 
 export async function getUnreadMessagesCount(): Promise<Result<number>> {
   return client
-    .get(`/citizen/messages/unread-count`)
+    .get<number>(`/citizen/messages/unread-count`)
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface ReplyToThreadParams {
+  messageId: UUID
+  content: string
+  recipientAccountIds: UUID[]
+}
+
+export async function replyToThread({
+  messageId,
+  content,
+  recipientAccountIds
+}: ReplyToThreadParams): Promise<Result<ReplyResponse>> {
+  return client
+    .post<JsonOf<ReplyResponse>>(`/citizen/messages/${messageId}/reply`, {
+      content,
+      recipientAccountIds
+    })
+    .then(({ data: { message, threadId } }) =>
+      Success.of({
+        threadId: threadId,
+        message: deserializeMessage(message)
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }

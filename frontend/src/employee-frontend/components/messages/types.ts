@@ -119,6 +119,7 @@ export interface Message {
   id: UUID
   senderId: UUID
   senderName: string
+  recipients: BaseMessageAccount[]
   sentAt: Date
   readAt: Date | null
   content: string

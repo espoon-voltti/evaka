@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -126,6 +127,21 @@ fun Database.Transaction.insertThread(
         .one()
 }
 
+data class ReceivedMessageResultItem(
+    val count: Int,
+    val id: UUID,
+    val title: String,
+    val type: MessageType,
+    val messageId: UUID,
+    val sentAt: HelsinkiDateTime,
+    val content: String,
+    val senderId: UUID,
+    val senderName: String,
+    val readAt: HelsinkiDateTime? = null,
+    val recipientId: UUID,
+    val recipientName: String,
+)
+
 fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<MessageThread> {
     val params = mapOf(
         "accountId" to accountId,
@@ -136,6 +152,27 @@ fun Database.Read.getMessagesReceivedByAccount(accountId: UUID, pageSize: Int, p
     // language=SQL
     val sql = """
 WITH
+participated_messages AS (
+    SELECT 
+        rec.message_id,
+        m.thread_id,
+        m.sent_at, 
+        m.sender_name,
+        m.sender_id,
+        c.content,
+        rec.read_at,
+        rec.recipient_id,
+        acc.account_name recipient_name
+    FROM message_recipients rec
+    JOIN message m ON rec.message_id = m.id
+    JOIN message_content c ON m.content_id = c.id
+    JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+    WHERE m.sender_id = :accountId OR EXISTS (
+        SELECT 1
+            FROM message_recipients rec2
+            WHERE rec2.message_id = m.id AND rec2.recipient_id = :accountId
+    )
+),
 threads AS (
     SELECT id, message_type AS type, title, last_message, COUNT(*) OVER () AS count
     FROM message_thread t
@@ -144,31 +181,11 @@ threads AS (
     ) last_msg ON true
     WHERE EXISTS(
             SELECT 1
-            FROM message_recipients rec
-            JOIN message m ON rec.message_id = m.id
-            WHERE rec.recipient_id = :accountId AND m.thread_id = t.id)
+            FROM participated_messages rec
+            WHERE rec.thread_id = t.id AND rec.recipient_id = :accountId)
     GROUP BY id, message_type, title, last_message
     ORDER BY last_message DESC
     LIMIT :pageSize OFFSET :offset
-),
-messages AS (
-    SELECT
-        m.thread_id,
-        m.id,
-        c.content,
-        rec.read_at,
-        m.sent_at,
-        m.sender_id,
-        m.sender_name
-    FROM threads t
-    JOIN message m ON m.thread_id = t.id
-    JOIN message_content c ON m.content_id = c.id
-    LEFT JOIN message_recipients rec ON m.id = rec.message_id AND rec.recipient_id = :accountId
-    WHERE
-        m.sender_id = :accountId OR
-        EXISTS(SELECT 1
-            FROM message_recipients rec
-            WHERE rec.message_id = m.id AND rec.recipient_id = :accountId)
 )
 
 SELECT
@@ -176,24 +193,95 @@ SELECT
     t.id,
     t.title,
     t.type,
-    (SELECT jsonb_agg(json_build_object(
-        'id', msg.id,
-        'sentAt', msg.sent_at,
-        'content', msg.content,
-        'senderName', msg.sender_name,
-        'senderId', msg.sender_id,
-        'readAt', msg.read_at
-    ) ORDER BY sent_at)) AS messages
+    msg.message_id,
+    msg.sent_at,
+    msg.content,
+    msg.sender_name,
+    msg.sender_id,
+    msg.read_at,
+    msg.recipient_id,
+    msg.recipient_name
     FROM threads t
-          JOIN messages msg ON msg.thread_id = t.id
-    GROUP BY t.count, t.id, t.type, t.title, t.last_message
-    ORDER BY t.last_message DESC
+          JOIN participated_messages msg ON msg.thread_id = t.id
+    ORDER BY t.last_message DESC, msg.sent_at ASC
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bindMap(params)
+        .mapTo<ReceivedMessageResultItem>()
+        .groupBy { it.id }
+        .map { (threadId, threads) ->
+            WithCount(
+                threads[0].count,
+                MessageThread(
+                    id = threadId,
+                    type = threads[0].type,
+                    title = threads[0].title,
+                    messages = threads
+                        .groupBy { it.messageId }
+                        .map { (messageId, messages) ->
+                            Message(
+                                id = messageId,
+                                content = messages[0].content,
+                                senderId = messages[0].senderId,
+                                senderName = messages[0].senderName,
+                                sentAt = messages[0].sentAt,
+                                readAt = messages.find { it.recipientId == accountId }?.readAt,
+                                recipients = messages
+                                    .groupBy { it.recipientId }
+                                    .map { (recipientId, recipients) ->
+                                        MessageAccount(recipientId, recipients[0].recipientName)
+                                    }.toSet()
+                            )
+                        }
+                )
+            )
+        }
+        .let(mapToPaged(pageSize))
+}
+
+data class MessageResultItem(
+    val id: UUID,
+    val senderId: UUID,
+    val senderName: String,
+    val recipient_id: UUID,
+    val recipient_name: String,
+    val sentAt: HelsinkiDateTime,
+    val content: String,
+)
+
+fun Database.Read.getMessage(id: UUID): Message {
+    val sql = """
+        SELECT 
+            m.id,
+            m.sender_id,
+            m.sender_name,
+            m.sent_at,
+            c.content,
+            rec.recipient_id,
+            acc.account_name recipient_name
+        FROM message m
+        JOIN message_content c ON m.content_id = c.id
+        JOIN message_recipients rec ON m.id = rec.message_id
+        JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+        WHERE m.id = :id
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bindMap(params)
-        .map(withCountMapper<MessageThread>())
-        .let(mapToPaged(pageSize))
+        .bind("id", id)
+        .mapTo<MessageResultItem>()
+        .groupBy { it.id }
+        .map { (id, messages) ->
+            Message(
+                id = id,
+                content = messages[0].content,
+                sentAt = messages[0].sentAt,
+                senderId = messages[0].senderId,
+                senderName = messages[0].senderName,
+                recipients = messages.map { MessageAccount(it.recipient_id, it.recipient_name) }.toSet()
+            )
+        }
+        .single()
 }
 
 fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page: Int): Paged<SentMessage> {

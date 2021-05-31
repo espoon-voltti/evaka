@@ -20,7 +20,7 @@ import { Authentication } from './auth'
 import requireAuth from './auth/requireAuth'
 import MessagesPage from './messages/MessagesPage'
 import { featureFlags } from './config'
-import { HeaderContextProvider } from './messages/state'
+import { MessageContextProvider } from './messages/state'
 import { ThemeProvider } from 'styled-components'
 import { theme } from 'lib-customizations/common'
 import { AuthContext } from 'citizen-frontend/auth/state'
@@ -33,7 +33,7 @@ export default function App() {
         <Authentication>
           <Localization>
             <OverlayContextProvider>
-              <HeaderContextProvider>
+              <MessageContextProvider>
                 <Header />
                 <Main>
                   <Switch>
@@ -80,7 +80,7 @@ export default function App() {
                 </Main>
                 <GlobalInfoDialog />
                 <GlobalErrorDialog />
-              </HeaderContextProvider>
+              </MessageContextProvider>
             </OverlayContextProvider>
           </Localization>
         </Authentication>

@@ -11,6 +11,7 @@ data class Message(
     val id: UUID,
     val senderId: UUID,
     val senderName: String,
+    val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
     val content: String,
     val readAt: HelsinkiDateTime? = null

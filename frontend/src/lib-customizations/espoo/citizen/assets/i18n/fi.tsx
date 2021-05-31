@@ -128,6 +128,11 @@ export default {
   messages: {
     inboxTitle: 'Saapuneet viestit',
     noMessages: 'Ei saapuneita viestejä',
+    recipients: 'Vastaanottajat',
+    send: 'Lähetä',
+    sending: 'Lähetetään',
+    messagePlaceholder:
+      'Viestin sisältö... Huom! Älä kirjoita tähän arkaluontoisia asioita.',
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'

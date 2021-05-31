@@ -26,6 +26,14 @@ class MessageControllerCitizen(
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
 
+    @GetMapping("/my-account")
+    fun getMyAccount(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): UUID {
+        Audit.MessagingMyAccountsRead.log()
+        return requireMessageAccountAccess(db, user)
+    }
     @GetMapping("/unread-count")
     fun getUnreadMessages(
         db: Database.Connection,
@@ -72,6 +80,7 @@ class MessageControllerCitizen(
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
+    data class ReplyResponse(val threadId: UUID, val message: Message)
 
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
@@ -79,22 +88,18 @@ class MessageControllerCitizen(
         user: AuthenticatedUser,
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
-    ) {
+    ): ReplyResponse {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         val accountId = requireMessageAccountAccess(db, user)
 
-        messageService.replyToThread(
+        val (threadId, message) = messageService.replyToThread(
             db = db,
             replyToMessageId = messageId,
             senderAccount = accountId,
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
-    }
-
-    @GetMapping
-    fun getThreadsMock(): Paged<MessageThread> {
-        return mockThreadData()
+        return ReplyResponse(threadId = threadId, message = message)
     }
 
     private fun requireMessageAccountAccess(

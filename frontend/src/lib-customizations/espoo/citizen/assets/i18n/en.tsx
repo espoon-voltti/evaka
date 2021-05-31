@@ -129,6 +129,11 @@ const en: Translations = {
   messages: {
     inboxTitle: 'Inbox',
     noMessages: 'No messages',
+    recipients: 'Recipients',
+    send: 'Send',
+    sending: 'Sending',
+    messagePlaceholder:
+      'Content... Note! Do not enter sensitive information here.',
     types: {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'

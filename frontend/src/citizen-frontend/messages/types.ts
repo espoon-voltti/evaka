@@ -14,10 +14,16 @@ export interface Message {
   id: UUID
   senderId: UUID
   senderName: string
+  recipients: MessageAccount[]
   sentAt: Date
   readAt: Date | null
   content: string
 }
+export const deserializeMessage = (json: JsonOf<Message>): Message => ({
+  ...json,
+  sentAt: new Date(json.sentAt),
+  readAt: json.readAt ? new Date(json.readAt) : null
+})
 
 export type MessageType = 'MESSAGE' | 'BULLETIN'
 
@@ -31,9 +37,10 @@ export const deserializeMessageThread = (
   json: JsonOf<MessageThread>
 ): MessageThread => ({
   ...json,
-  messages: json.messages.map((m) => ({
-    ...m,
-    sentAt: new Date(m.sentAt),
-    readAt: m.readAt ? new Date(m.readAt) : null
-  }))
+  messages: json.messages.map(deserializeMessage)
 })
+
+export interface ReplyResponse {
+  threadId: UUID
+  message: Message
+}

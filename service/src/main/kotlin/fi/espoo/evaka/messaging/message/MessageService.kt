@@ -47,7 +47,7 @@ class MessageService(
         senderAccount: UUID,
         recipientAccountIds: Set<UUID>,
         content: String,
-    ): UUID {
+    ): Pair<UUID, Message> {
         val (threadId, type, sender, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
             ?: throw NotFound("Message not found")
 
@@ -57,13 +57,14 @@ class MessageService(
         if (!previousParticipants.contains(senderAccount)) throw Forbidden("Not authorized to post to message")
         if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
 
-        return db.transaction { tx ->
+        val message = db.transaction { tx ->
             val recipientNames = tx.getAccountNames(recipientAccountIds)
             val contentId = tx.insertMessageContent(content, senderAccount)
             val messageId = tx.insertMessage(contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
             tx.insertRecipients(recipientAccountIds, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
-            messageId
+            tx.getMessage(messageId)
         }
+        return Pair(threadId, message)
     }
 }

@@ -16,30 +16,31 @@ import { MessageThread } from './types'
 interface Props {
   thread: MessageThread
   active: boolean
+  hasUnreadMessages: boolean
   onClick: () => void
 }
-
-const hasUnreadMessages = (thread: MessageThread) =>
-  thread.messages.some((m) => !m.readAt)
 
 export default React.memo(function ThreadListItem({
   thread,
   active,
+  hasUnreadMessages,
   onClick
 }: Props) {
   const i18n = useTranslation()
   const lastMessage = thread.messages[thread.messages.length - 1]
-  const participants = thread.messages.map((t) => t.senderName).join(', ')
+  const participants = [...new Set(thread.messages.map((t) => t.senderName))]
   return (
     <Container
-      isRead={!hasUnreadMessages(thread)}
+      isRead={!hasUnreadMessages}
       active={active}
       onClick={onClick}
       data-qa="thread-list-item"
     >
       <FixedSpaceColumn>
         <Header>
-          <Truncated data-qa="message-participants">{participants}</Truncated>
+          <Truncated data-qa="message-participants">
+            {participants.join(', ')}
+          </Truncated>
           <MessageTypeChip type={thread.type} labels={i18n.messages.types} />
         </Header>
         <TitleAndDate>

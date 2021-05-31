@@ -23,6 +23,17 @@ interface Props {
   onSelectThread: (thread: MessageThread) => void
 }
 
+const getUniqueParticipants: (t: MessageThread) => string[] = (
+  t: MessageThread
+) =>
+  Object.values(
+    t.messages.reduce((acc, msg) => {
+      acc[msg.senderId] = msg.senderName
+      msg.recipients.forEach((rec) => (acc[rec.id] = rec.name))
+      return acc
+    }, {})
+  )
+
 export function ReceivedMessages({ messages, onSelectThread }: Props) {
   if (messages.isFailure) return <ErrorSegment />
   if (messages.isLoading) return <Loader />
@@ -39,8 +50,7 @@ export function ReceivedMessages({ messages, onSelectThread }: Props) {
           >
             <ParticipantsAndPreview>
               <Participants unread={unread}>
-                {t.messages.map((m) => m.senderName).join(', ')}{' '}
-                {t.messages.length}
+                {getUniqueParticipants(t).join(', ')} {t.messages.length}
               </Participants>
               <Truncated>
                 <Title unread={unread}>{t.title}</Title>
