@@ -288,9 +288,7 @@ fun getTotalIncome(
     else -> null
 }
 
-fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement, siblingDiscount: Int, minFee: Int): Int {
-    val siblingDiscountMultiplier =
-        BigDecimal(1) - BigDecimal(siblingDiscount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement, siblingDiscountMultiplier: BigDecimal, minFee: Int): Int {
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
     val serviceNeedMultiplier =
         BigDecimal(getServiceNeedPercentage(placement)).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
@@ -301,9 +299,7 @@ fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement
     }
 }
 
-fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscount: Int, minFee: Int): Int {
-    val siblingDiscountMultiplier =
-        BigDecimal(1) - BigDecimal(siblingDiscount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscountMultiplier: BigDecimal, minFee: Int): Int {
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
     val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedCoefficient).toInt()
     return feeBeforeRounding.let { fee ->

@@ -149,8 +149,8 @@ private fun generateNewFeeDecisions2(
                             return@mapIndexed null
                         }
 
-                        val siblingDiscount = price.withoutDates().siblingDiscountPercent(index + 1)
-                        val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.serviceNeed.feeCoefficient, siblingDiscount, price.minFee)
+                        val siblingDiscountMultiplier = price.withoutDates().siblingDiscountMultiplier(index + 1)
+                        val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
                         val relevantFeeAlterations = feeAlterations.filter {
                             it.personId == child.id && DateRange(it.validFrom, it.validTo).contains(period)
                         }
@@ -167,7 +167,7 @@ private fun generateNewFeeDecisions2(
                                 placement.serviceNeed.feeDescriptionSv
                             ),
                             baseFee,
-                            siblingDiscount,
+                            price.withoutDates().siblingDiscountPercent(index + 1),
                             feeBeforeAlterations,
                             feeAlterationsWithEffects,
                             finalFee

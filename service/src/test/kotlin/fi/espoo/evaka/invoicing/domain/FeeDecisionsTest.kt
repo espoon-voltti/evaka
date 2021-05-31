@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.testFeeAlteration
 import fi.espoo.evaka.invoicing.testPricing
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.util.UUID
 
 class FeeDecisionsTest {
@@ -55,21 +56,21 @@ class FeeDecisionsTest {
 
     @Test
     fun `calculateFeeBeforeFeeAlterations with max service need`() {
-        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), 0, minFee)
+        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), BigDecimal(1), minFee)
 
         assertEquals(28900, result)
     }
 
     @Test
     fun `calculateFeeBeforeFeeAlterations with max service need and discount 50 percent`() {
-        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), 50, minFee)
+        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), BigDecimal("0.5"), minFee)
 
         assertEquals(14500, result)
     }
 
     @Test
     fun `calculateFeeBeforeFeeAlterations with max service need and discount 80 percent`() {
-        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), 80, minFee)
+        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), BigDecimal("0.2"), minFee)
 
         assertEquals(5800, result)
     }
@@ -77,7 +78,7 @@ class FeeDecisionsTest {
     @Test
     fun `calculateFeeBeforeFeeAlterations with over 25h under 35h service need`() {
         val result =
-            calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GT_25_LT_35), 0, minFee)
+            calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GT_25_LT_35), BigDecimal(1), minFee)
 
         assertEquals(23100, result)
     }
@@ -87,7 +88,7 @@ class FeeDecisionsTest {
         val result = calculateFeeBeforeFeeAlterations(
             28900,
             placement(PlacementType.PRESCHOOL_WITH_DAYCARE, ServiceNeed.GTE_25),
-            0,
+            BigDecimal(1),
             minFee
         )
 
@@ -99,7 +100,7 @@ class FeeDecisionsTest {
         val result = calculateFeeBeforeFeeAlterations(
             28900,
             placement(PlacementType.PRESCHOOL_WITH_DAYCARE, ServiceNeed.GT_15_LT_25),
-            0,
+            BigDecimal(1),
             minFee
         )
 
@@ -108,7 +109,7 @@ class FeeDecisionsTest {
 
     @Test
     fun `calculateFeeBeforeFeeAlterations with under 25h service need`() {
-        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.LTE_25), 0, minFee)
+        val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.LTE_25), BigDecimal(1), minFee)
 
         assertEquals(17300, result)
     }
@@ -118,7 +119,7 @@ class FeeDecisionsTest {
         val result = calculateFeeBeforeFeeAlterations(
             28900,
             placement(PlacementType.PRESCHOOL_WITH_DAYCARE, ServiceNeed.LTE_15),
-            0,
+            BigDecimal(1),
             minFee
         )
 
@@ -130,7 +131,7 @@ class FeeDecisionsTest {
         val result = calculateFeeBeforeFeeAlterations(
             28900,
             placement(PlacementType.PRESCHOOL_WITH_DAYCARE, ServiceNeed.LTE_0),
-            0,
+            BigDecimal(1),
             minFee
         )
 
@@ -142,7 +143,7 @@ class FeeDecisionsTest {
         val result = calculateFeeBeforeFeeAlterations(
             2600,
             placement(PlacementType.DAYCARE, ServiceNeed.GTE_35),
-            0,
+            BigDecimal(1),
             minFee
         )
 

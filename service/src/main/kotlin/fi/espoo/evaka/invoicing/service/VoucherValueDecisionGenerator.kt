@@ -155,9 +155,9 @@ private fun generateNewValueDecisions(
                         .sortedByDescending { (child, _) -> child.dateOfBirth }
                         .indexOfFirst { (child, _) -> child == voucherChild }
 
-                    val siblingDiscount = price.withoutDates().siblingDiscountPercent(siblingIndex + 1)
+                    val siblingDiscountMultiplier = price.withoutDates().siblingDiscountMultiplier(siblingIndex + 1)
                     val coPaymentBeforeAlterations =
-                        calculateFeeBeforeFeeAlterations(baseCoPayment, placement.serviceNeed.feeCoefficient, siblingDiscount, price.minFee)
+                        calculateFeeBeforeFeeAlterations(baseCoPayment, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
                     val relevantFeeAlterations = feeAlterations.filter {
                         DateRange(it.validFrom, it.validTo).contains(period)
                     }
@@ -190,7 +190,7 @@ private fun generateNewValueDecisions(
                             placement.serviceNeed.voucherValueDescriptionSv
                         ),
                         baseCoPayment = baseCoPayment,
-                        siblingDiscount = siblingDiscount,
+                        siblingDiscount = price.withoutDates().siblingDiscountPercent(siblingIndex + 1),
                         coPayment = coPaymentBeforeAlterations,
                         feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
                         finalCoPayment = finalCoPayment,

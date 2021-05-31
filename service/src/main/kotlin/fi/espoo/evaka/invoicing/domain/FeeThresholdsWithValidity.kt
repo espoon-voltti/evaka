@@ -113,11 +113,13 @@ data class FeeThresholds(
             else -> maxIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
         }
 
-    fun siblingDiscountPercent(siblingOrdinal: Int): Int =
+    fun siblingDiscountMultiplier(siblingOrdinal: Int): BigDecimal =
         if (siblingOrdinal <= 0) error("Sibling ordinal must be > 0 (was $siblingOrdinal)")
         else when (siblingOrdinal) {
-            1 -> 0
-            2 -> (siblingDiscount2 * BigDecimal(100)).toInt()
-            else -> (siblingDiscount2Plus * BigDecimal(100)).toInt()
+            1 -> BigDecimal(1)
+            2 -> siblingDiscount2
+            else -> BigDecimal(1) - siblingDiscount2Plus
         }
+
+    fun siblingDiscountPercent(siblingOrdinal: Int): Int = ((BigDecimal(1) - siblingDiscountMultiplier(siblingOrdinal)) * BigDecimal(100)).toInt()
 }
