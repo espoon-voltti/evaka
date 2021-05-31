@@ -51,7 +51,10 @@ export function formatPercent(amount?: number): string | undefined {
 
 export function scrollToRef(ref: MutableRefObject<HTMLElement | null>) {
   window.setTimeout(() => {
-    const offset = ref.current?.offsetTop ?? 0
+    let offset = 0
+    if (ref.current) {
+      offset = getDocumentOffsetPosition(ref.current)
+    }
     if (offset > 0) {
       window.scrollTo({
         top: offset,
@@ -59,4 +62,15 @@ export function scrollToRef(ref: MutableRefObject<HTMLElement | null>) {
       })
     }
   }, 100)
+}
+
+function getDocumentOffsetPosition(elem: HTMLElement): number {
+  let elemTop = elem.offsetTop
+  if (elem.offsetParent) {
+    const parentOffsetTop = getDocumentOffsetPosition(
+      elem.offsetParent as HTMLElement
+    )
+    elemTop = elemTop + parentOffsetTop
+  }
+  return elemTop
 }
