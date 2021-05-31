@@ -4,67 +4,56 @@
 
 package fi.espoo.evaka.messaging.message
 
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getMessageAccountForDaycareGroup(daycareGroupId: UUID): MessageAccount? {
-    // language=SQL
+fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: UUID): UUID? {
     val sql = """
-SELECT acc.id, name_view.account_name AS name
-FROM message_account acc
-    JOIN message_account_name_view name_view ON name_view.id = acc.id
+SELECT acc.id FROM message_account acc
 WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
-    """.trimIndent()
+"""
     return this.createQuery(sql)
         .bind("daycareGroupId", daycareGroupId)
-        .mapTo<MessageAccount>()
+        .mapTo<UUID>()
         .firstOrNull()
 }
 
-fun Database.Read.getMessageAccountForEndUser(user: AuthenticatedUser): MessageAccount {
-    return getMessageAccountForEndUser(user.id)
-}
-fun Database.Read.getMessageAccountForEndUser(userId: UUID): MessageAccount {
-    // language=SQL
+fun Database.Read.getCitizenMessageAccount(personId: UUID): UUID {
     val sql = """
-SELECT acc.id, name_view.account_name AS name
-FROM message_account acc
-    JOIN message_account_name_view name_view ON name_view.id = acc.id
-WHERE acc.person_id = :userId AND acc.active = true
-    """.trimIndent()
+SELECT acc.id FROM message_account acc
+WHERE acc.person_id = :personId AND acc.active = true
+"""
     return this.createQuery(sql)
-        .bind("userId", userId)
-        .mapTo<MessageAccount>()
+        .bind("personId", personId)
+        .mapTo<UUID>()
         .one()
 }
 
-fun Database.Read.getMessageAccountsForEmployee(user: AuthenticatedUser): Set<MessageAccount> {
-    // language=SQL
+fun Database.Read.getEmployeeMessageAccounts(employeeId: UUID): Set<UUID> {
     val sql = """
-SELECT acc.id, name_view.account_name AS name
+SELECT acc.id
 FROM message_account acc
-    JOIN message_account_name_view name_view ON name_view.id = acc.id
-    LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
     LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
-WHERE (acc.employee_id = :userId OR acl.employee_id = :userId)
+WHERE (acc.employee_id = :employeeId OR acl.employee_id = :employeeId)
     AND acc.active = true
-    """.trimIndent()
-
+"""
     return this.createQuery(sql)
-        .bind("userId", user.id)
-        .mapTo<MessageAccount>()
+        .bind("employeeId", employeeId)
+        .mapTo<UUID>()
         .toSet()
 }
 
-fun Database.Read.getAuthorizedMessageAccountsForEmployee(user: AuthenticatedUser): Set<AuthorizedMessageAccount> {
-    val employeeSql = """
+fun Database.Read.getEmployeeDetailedMessageAccounts(employeeId: UUID): Set<DetailedMessageAccount> {
+    val accountIds = getEmployeeMessageAccounts(employeeId)
+
+    val sql = """
 SELECT acc.id,
        name_view.account_name AS name,
        CASE
-           WHEN acc.daycare_group_id IS NOT NULL THEN 'group'
+           WHEN dg.id IS NOT NULL THEN 'group'
            ELSE 'personal'
        END                    AS type,
        dg.id                  AS group_id,
@@ -78,18 +67,16 @@ FROM message_account acc
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
     LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
-WHERE acc.employee_id = :userId
-   OR acl.employee_id = :userId
+WHERE acc.id = ANY(:accountIds)
 GROUP BY acc.id, account_name, type, group_id, group_name, group_unitId, group_unitName
-    """.trimIndent()
-
-    return this.createQuery(employeeSql)
-        .bind("userId", user.id)
-        .mapTo<AuthorizedMessageAccount>()
+"""
+    return this.createQuery(sql)
+        .bind("accountIds", accountIds.toTypedArray())
+        .mapTo<DetailedMessageAccount>()
         .toSet()
 }
 
-fun Database.Read.getAccountNames(ids: Set<UUID>): List<String> {
+fun Database.Read.getAccountNames(accountIds: Set<UUID>): List<String> {
     val sql = """
         SELECT account_name
         FROM message_account_name_view
@@ -97,19 +84,24 @@ fun Database.Read.getAccountNames(ids: Set<UUID>): List<String> {
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("ids", ids.toTypedArray())
+        .bind("ids", accountIds.toTypedArray())
         .mapTo<String>()
         .list()
 }
 
-fun Database.Transaction.createMessageAccountForDaycareGroup(daycareGroupId: UUID) {
+fun Database.Read.getAccountName(accountId: UUID): String =
+    getAccountNames(setOf(accountId)).first()
+
+fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
     // language=SQL
     val sql = """
         INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
+        RETURNING id
     """.trimIndent()
-    createUpdate(sql)
+    return createQuery(sql)
         .bind("daycareGroupId", daycareGroupId)
-        .execute()
+        .mapTo<UUID>()
+        .one()
 }
 
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) {
@@ -139,25 +131,29 @@ fun Database.Transaction.deactivateDaycareGroupMessageAccount(daycareGroupId: UU
         .execute()
 }
 
-fun Database.Transaction.createMessageAccountForPerson(personId: UUID) {
+fun Database.Transaction.createPersonMessageAccount(personId: UUID): UUID {
     // language=SQL
     val sql = """
         INSERT INTO message_account (person_id) VALUES (:personId)
+        RETURNING id
     """.trimIndent()
-    createUpdate(sql)
+    return createQuery(sql)
         .bind("personId", personId)
-        .execute()
+        .mapTo<UUID>()
+        .one()
 }
 
-fun Database.Transaction.upsertMessageAccountForEmployee(employeeId: UUID) {
+fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: UUID): UUID {
     // language=SQL
     val sql = """
         INSERT INTO message_account (employee_id) VALUES (:employeeId)
         ON CONFLICT (employee_id) DO UPDATE SET active = true
+        RETURNING id
     """.trimIndent()
-    createUpdate(sql)
+    return createQuery(sql)
         .bind("employeeId", employeeId)
-        .execute()
+        .mapTo<UUID>()
+        .one()
 }
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: UUID) {

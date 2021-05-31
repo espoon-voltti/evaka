@@ -12,11 +12,11 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageReceiversResponse
 import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
-import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.getMessageAccountForDaycareGroup
-import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
-import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
+import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.message.createPersonMessageAccount
+import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
+import fi.espoo.evaka.messaging.message.getDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
@@ -113,7 +113,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
                     name = groupName
                 )
             )
-            tx.createMessageAccountForDaycareGroup(groupId)
+            tx.createDaycareGroupMessageAccount(groupId)
 
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
@@ -132,14 +132,14 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unitId)
 
             listOf(guardianPerson.id, testAdult_2.id, testAdult_3.id, testAdult_4.id)
-                .forEach { tx.createMessageAccountForPerson(it) }
+                .forEach { tx.createPersonMessageAccount(it) }
 
             tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
             tx.insertTestEmployee(DevEmployee(id = supervisorId))
-            tx.upsertMessageAccountForEmployee(supervisorId)
+            tx.upsertEmployeeMessageAccount(supervisorId)
             tx.insertTestEmployee(DevEmployee(id = supervisor2Id))
-            tx.upsertMessageAccountForEmployee(supervisor2Id)
+            tx.upsertEmployeeMessageAccount(supervisor2Id)
             tx.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareAclRow(secondUnitId, supervisor2Id, UserRole.UNIT_SUPERVISOR)
         }
@@ -193,11 +193,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         val sender = getEmployeeOwnMessageAccount(supervisor1)
 
         // parent of unit 1
-        val recipient = db.read { it.getMessageAccountForEndUser(guardianPerson.id) }
+        val recipient = db.read { it.getCitizenMessageAccount(guardianPerson.id) }
 
         val (_, response) = postNewThread(
             sender = sender,
-            recipients = setOf(recipient.id),
+            recipients = setOf(recipient),
             user = supervisor1
         )
 
@@ -210,11 +210,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         val sender = getEmployeeOwnMessageAccount(supervisor1)
 
         // parent of unit 2
-        val recipient = db.read { it.getMessageAccountForEndUser(testAdult_3.id) }
+        val recipient = db.read { it.getCitizenMessageAccount(testAdult_3.id) }
 
         val (_, response) = postNewThread(
             sender = sender,
-            recipients = setOf(recipient.id),
+            recipients = setOf(recipient),
             user = supervisor1
         )
 
@@ -244,11 +244,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         val sender = getEmployeeOwnMessageAccount(supervisor1)
 
         // daycare group of unit 1
-        val recipient = db.read { it.getMessageAccountForDaycareGroup(groupId) }!!
+        val recipient = db.read { it.getDaycareGroupMessageAccount(groupId)!! }
 
         val (_, response) = postNewThread(
             sender = sender,
-            recipients = setOf(recipient.id),
+            recipients = setOf(recipient),
             user = supervisor1
         )
 
@@ -267,7 +267,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
                     "Juhannus tulee pian",
                     MessageType.MESSAGE,
                     recipientAccountIds = recipients,
-                    recipientNames = listOf("Nimi")
+                    recipientNames = listOf()
                 )
             )
         )

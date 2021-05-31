@@ -6,13 +6,11 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.MessageNotificationEmailService
 import fi.espoo.evaka.messaging.message.MessageService
 import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createMessageAccountForDaycareGroup
-import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
+import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.deleteOrDeactivateDaycareGroupMessageAccount
-import fi.espoo.evaka.messaging.message.getMessageAccountForDaycareGroup
-import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
+import fi.espoo.evaka.messaging.message.getAccountName
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -40,18 +38,17 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
     @Test
     fun `account is deleted if group has no messages`() {
         val groupId = UUID.randomUUID()
-        val groupAccount = db.transaction {
+        val groupAccountId = db.transaction {
             it.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
-            it.createMessageAccountForDaycareGroup(groupId)
-            it.getMessageAccountForDaycareGroup(groupId)!!
+            it.createDaycareGroupMessageAccount(groupId)
         }
-        assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount.id))
+        assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccountId))
 
         db.transaction {
             deleteOrDeactivateDaycareGroupMessageAccount(it, groupId)
         }
 
-        assertEquals(MessageAccountState.NO_ACCOUNT, getMessageAccountState(groupAccount.id))
+        assertEquals(MessageAccountState.NO_ACCOUNT, getMessageAccountState(groupAccountId))
     }
 
     @Test
@@ -60,15 +57,13 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
         val groupId = UUID.randomUUID()
         val groupAccount = db.transaction {
             it.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
-            it.createMessageAccountForDaycareGroup(groupId)
-            it.getMessageAccountForDaycareGroup(groupId)!!
+            it.createDaycareGroupMessageAccount(groupId)
         }
 
         val receiverId = UUID.randomUUID()
         val receiverAccount = db.transaction { tx ->
             tx.insertTestPerson(DevPerson(id = receiverId))
-            tx.createMessageAccountForPerson(receiverId)
-            tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = receiverId))
+            tx.createPersonMessageAccount(receiverId)
         }
 
         db.transaction { tx ->
@@ -78,11 +73,11 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
                 sender = groupAccount,
-                recipientGroups = setOf(setOf(receiverAccount.id)),
-                recipientNames = listOf(receiverAccount.name)
+                recipientGroups = setOf(setOf(receiverAccount)),
+                recipientNames = listOf(tx.getAccountName(receiverAccount))
             )
         }
-        assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount.id))
+        assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount))
 
         // when deleting the daycare message account
         db.transaction {
@@ -90,7 +85,7 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
         }
 
         // the account should actually stay
-        assertEquals(MessageAccountState.INACTIVE, getMessageAccountState(groupAccount.id))
+        assertEquals(MessageAccountState.INACTIVE, getMessageAccountState(groupAccount))
     }
 
     @Test
@@ -99,15 +94,13 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
         val groupId = UUID.randomUUID()
         val groupAccount = db.transaction {
             it.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
-            it.createMessageAccountForDaycareGroup(groupId)
-            it.getMessageAccountForDaycareGroup(groupId)!!
+            it.createDaycareGroupMessageAccount(groupId)
         }
 
         val senderId = UUID.randomUUID()
         val senderAccount = db.transaction { tx ->
             tx.insertTestPerson(DevPerson(id = senderId))
-            tx.createMessageAccountForPerson(senderId)
-            tx.getMessageAccountForEndUser(AuthenticatedUser.Citizen(id = senderId))
+            tx.createPersonMessageAccount(senderId)
         }
 
         db.transaction { tx ->
@@ -117,12 +110,12 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
                 sender = senderAccount,
-                recipientGroups = setOf(setOf(groupAccount.id)),
-                recipientNames = listOf(groupAccount.name)
+                recipientGroups = setOf(setOf(groupAccount)),
+                recipientNames = listOf(tx.getAccountName(groupAccount))
             )
         }
-        assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount.id))
-        assertEquals("Test Daycare - Testiläiset", getMessageAccountName(groupAccount.id))
+        assertEquals(MessageAccountState.ACTIVE, getMessageAccountState(groupAccount))
+        assertEquals("Test Daycare - Testiläiset", db.read { it.getAccountName(groupAccount) })
 
         // when deleting the daycare message account
         db.transaction {
@@ -131,10 +124,10 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
         }
 
         // the account should actually stay
-        assertEquals(MessageAccountState.INACTIVE, getMessageAccountState(groupAccount.id))
+        assertEquals(MessageAccountState.INACTIVE, getMessageAccountState(groupAccount))
 
         // account name should be available even though the group has been deleted
-        assertEquals("Test Daycare - Testiläiset", getMessageAccountName(groupAccount.id))
+        assertEquals("Test Daycare - Testiläiset", db.read { it.getAccountName(groupAccount) })
     }
 
     private enum class MessageAccountState {
@@ -161,18 +154,6 @@ class MessageAccountIntegrationTest : PureJdbiTest() {
                 }
             } else if (accounts.isEmpty()) MessageAccountState.NO_ACCOUNT
             else throw RuntimeException("Employee has more than one account")
-        }
-    }
-
-    private fun getMessageAccountName(accountId: UUID): String {
-        // language=SQL
-        val sql = """
-            SELECT account_name
-            FROM message_account_name_view acc
-            WHERE acc.id = :accountId
-        """.trimIndent()
-        return db.read {
-            it.createQuery(sql).bind("accountId", accountId).mapTo<String>().one()
         }
     }
 }

@@ -5,7 +5,7 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.messaging.message.deactivateEmployeeMessageAccount
-import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
+import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.clearDaycareGroupAcl
@@ -24,7 +24,7 @@ fun addUnitSupervisor(db: Database.Connection, daycareId: UUID, employeeId: UUID
     db.transaction {
         it.clearDaycareGroupAcl(daycareId, employeeId)
         it.insertDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
-        it.upsertMessageAccountForEmployee(employeeId)
+        it.upsertEmployeeMessageAccount(employeeId)
     }
 }
 

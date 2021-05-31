@@ -8,16 +8,15 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageControllerCitizen
 import fi.espoo.evaka.messaging.message.MessageThread
 import fi.espoo.evaka.messaging.message.MessageType
 import fi.espoo.evaka.messaging.message.SentMessage
-import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
-import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
-import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
+import fi.espoo.evaka.messaging.message.createPersonMessageAccount
+import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
@@ -122,9 +121,9 @@ class MessageIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).forEach {
+            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).map {
                 tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
-                tx.createMessageAccountForPerson(it.id)
+                tx.createPersonMessageAccount(it.id)
             }
 
             // person 1 and 2 are guardians of child 1
@@ -147,7 +146,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             }
 
             tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
-            tx.upsertMessageAccountForEmployee(employee1Id)
+            tx.upsertEmployeeMessageAccount(employee1Id)
             tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
         }
     }
@@ -157,9 +156,9 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForEmployee(employee1).first(),
-                it.getMessageAccountForEndUser(person1),
-                it.getMessageAccountForEndUser(person2)
+                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getCitizenMessageAccount(person1Id),
+                it.getCitizenMessageAccount(person2Id)
             )
         }
 
@@ -168,7 +167,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             title = "Juhannus",
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
-            sender = employee1Account.id,
+            sender = employee1Account,
             recipients = listOf(person1Account, person2Account),
             user = employee1,
         )
@@ -184,7 +183,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertEquals("Juhannus", threadWithOneReply.title)
         assertEquals(MessageType.MESSAGE, threadWithOneReply.type)
         assertEquals(
-            listOf(Pair(employee1Account.id, "Juhannus tulee pian")),
+            listOf(Pair(employee1Account, "Juhannus tulee pian")),
             threadWithOneReply.toSenderContentPairs()
         )
 
@@ -192,7 +191,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         replyAsCitizen(
             person1,
             threadWithOneReply.messages[0].id,
-            setOf(employee1Account.id, person2Account.id),
+            setOf(employee1Account, person2Account),
             "No niinpä näyttää tulevan"
         )
 
@@ -213,8 +212,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertEquals("Juhannus", person2Thread.title)
         assertEquals(
             listOf(
-                Pair(employee1Account.id, "Juhannus tulee pian"),
-                Pair(person1Account.id, "No niinpä näyttää tulevan")
+                Pair(employee1Account, "Juhannus tulee pian"),
+                Pair(person1Account, "No niinpä näyttää tulevan")
             ),
             person2Thread.toSenderContentPairs()
         )
@@ -223,15 +222,15 @@ class MessageIntegrationTest : FullApplicationTest() {
         replyAsCitizen(
             person1,
             person2Thread.messages.last().id,
-            setOf(employee1Account.id),
+            setOf(employee1Account),
             "person 2 does not see this"
         )
 
         // then person one and employee see the new message
         val threadContentWithTwoReplies = listOf(
-            Pair(employee1Account.id, "Juhannus tulee pian"),
-            Pair(person1Account.id, "No niinpä näyttää tulevan"),
-            Pair(person1Account.id, "person 2 does not see this"),
+            Pair(employee1Account, "Juhannus tulee pian"),
+            Pair(person1Account, "No niinpä näyttää tulevan"),
+            Pair(person1Account, "person 2 does not see this"),
         )
         assertEquals(
             threadContentWithTwoReplies,
@@ -245,8 +244,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         // then person two does not see the message
         assertEquals(
             listOf(
-                Pair(employee1Account.id, "Juhannus tulee pian"),
-                Pair(person1Account.id, "No niinpä näyttää tulevan")
+                Pair(employee1Account, "Juhannus tulee pian"),
+                Pair(person1Account, "No niinpä näyttää tulevan")
             ),
             getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
         )
@@ -254,18 +253,18 @@ class MessageIntegrationTest : FullApplicationTest() {
         // when author replies to person two
         replyAsEmployee(
             user = employee1,
-            account = employee1Account,
+            sender = employee1Account,
             messageId = threadWithOneReply.messages.last().id,
-            recipientAccountIds = setOf(person2Account.id),
+            recipientAccountIds = setOf(person2Account),
             content = "person 1 does not see this"
         )
 
         // then person two sees that
         assertEquals(
             listOf(
-                Pair(employee1Account.id, "Juhannus tulee pian"),
-                Pair(person1Account.id, "No niinpä näyttää tulevan"),
-                Pair(employee1Account.id, "person 1 does not see this"),
+                Pair(employee1Account, "Juhannus tulee pian"),
+                Pair(person1Account, "No niinpä näyttää tulevan"),
+                Pair(employee1Account, "person 1 does not see this"),
             ),
             getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
         )
@@ -279,10 +278,10 @@ class MessageIntegrationTest : FullApplicationTest() {
         // then employee sees all the messages
         assertEquals(
             listOf(
-                Pair(employee1Account.id, "Juhannus tulee pian"),
-                Pair(person1Account.id, "No niinpä näyttää tulevan"),
-                Pair(person1Account.id, "person 2 does not see this"),
-                Pair(employee1Account.id, "person 1 does not see this"),
+                Pair(employee1Account, "Juhannus tulee pian"),
+                Pair(person1Account, "No niinpä näyttää tulevan"),
+                Pair(person1Account, "person 2 does not see this"),
+                Pair(employee1Account, "person 1 does not see this"),
             ),
             getMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
         )
@@ -290,8 +289,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         // then employee can see all sent messages
         assertEquals(
             listOf(
-                Pair("person 1 does not see this", setOf(person2Account.id)),
-                Pair("Juhannus tulee pian", setOf(person1Account.id, person2Account.id))
+                Pair("person 1 does not see this", setOf(person2Account)),
+                Pair("Juhannus tulee pian", setOf(person1Account, person2Account))
             ),
             getSentMessages(employee1Account, employee1).map { it.toContentRecipientsPair() }
         )
@@ -299,8 +298,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         // then person one can see all sent messages
         assertEquals(
             listOf(
-                Pair("person 2 does not see this", setOf(employee1Account.id)),
-                Pair("No niinpä näyttää tulevan", setOf(employee1Account.id, person2Account.id))
+                Pair("person 2 does not see this", setOf(employee1Account)),
+                Pair("No niinpä näyttää tulevan", setOf(employee1Account, person2Account))
             ),
             getSentMessages(person1Account, person1).map { it.toContentRecipientsPair() }
         )
@@ -314,11 +313,11 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
             listOf(
-                it.getMessageAccountsForEmployee(employee1).first(),
-                it.getMessageAccountForEndUser(person1),
-                it.getMessageAccountForEndUser(person2),
-                it.getMessageAccountForEndUser(person3),
-                it.getMessageAccountForEndUser(person4)
+                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getCitizenMessageAccount(person1Id),
+                it.getCitizenMessageAccount(person2Id),
+                it.getCitizenMessageAccount(person3Id),
+                it.getCitizenMessageAccount(person4Id)
             )
         }
 
@@ -330,7 +329,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             title = title,
             message = content,
             messageType = MessageType.MESSAGE,
-            sender = employee1Account.id,
+            sender = employee1Account,
             recipients = recipients,
             user = employee1
         )
@@ -368,7 +367,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         replyAsCitizen(
             person1,
             person1Threads.first().messages.first().id,
-            setOf(employee1Account.id, person2Account.id),
+            setOf(employee1Account, person2Account),
             "Hello"
         )
 
@@ -376,8 +375,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         val employeeThreads = getMessageThreads(employee1Account, employee1)
         assertEquals(
             listOf(
-                Pair(employee1Account.id, content),
-                Pair(person1Account.id, "Hello")
+                Pair(employee1Account, content),
+                Pair(person1Account, "Hello")
             ),
             employeeThreads.map { it.toSenderContentPairs() }.flatten()
         )
@@ -385,10 +384,10 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertEquals(
             listOf(
                 listOf(
-                    Pair(employee1Account.id, content),
-                    Pair(person1Account.id, "Hello")
+                    Pair(employee1Account, content),
+                    Pair(person1Account, "Hello")
                 ),
-                listOf(Pair(employee1Account.id, content)),
+                listOf(Pair(employee1Account, content)),
             ),
             getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }
         )
@@ -402,8 +401,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account) = db.read {
             listOf(
-                it.getMessageAccountsForEmployee(employee1).first(),
-                it.getMessageAccountForEndUser(person1),
+                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getCitizenMessageAccount(person1Id),
             )
         }
 
@@ -412,7 +411,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             title = "Tiedote",
             message = "Juhannus tulee pian",
             messageType = MessageType.BULLETIN,
-            sender = employee1Account.id,
+            sender = employee1Account,
             recipients = listOf(person1Account),
             user = employee1,
         )
@@ -421,7 +420,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         val thread = getMessageThreads(person1Account, person1).first()
         assertEquals("Tiedote", thread.title)
         assertEquals(MessageType.BULLETIN, thread.type)
-        assertEquals(listOf(Pair(employee1Account.id, "Juhannus tulee pian")), thread.toSenderContentPairs())
+        assertEquals(listOf(Pair(employee1Account, "Juhannus tulee pian")), thread.toSenderContentPairs())
 
         // when the recipient tries to reply to the bulletin, it is denied
         assertEquals(
@@ -438,10 +437,10 @@ class MessageIntegrationTest : FullApplicationTest() {
         assertEquals(
             200,
             replyAsEmployee(
-                account = employee1Account,
+                sender = employee1Account,
                 user = employee1,
                 messageId = thread.messages.last().id,
-                recipientAccountIds = setOf(person1Account.id),
+                recipientAccountIds = setOf(person1Account),
                 content = "Nauttikaa siitä"
             ).second.statusCode
         )
@@ -449,8 +448,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         // then the recipient can see it
         assertEquals(
             listOf(
-                Pair(employee1Account.id, "Juhannus tulee pian"),
-                Pair(employee1Account.id, "Nauttikaa siitä")
+                Pair(employee1Account, "Juhannus tulee pian"),
+                Pair(employee1Account, "Nauttikaa siitä")
             ),
             getMessageThreads(person1Account, person1).first().toSenderContentPairs()
         )
@@ -461,9 +460,9 @@ class MessageIntegrationTest : FullApplicationTest() {
         // given
         val (employee1Account, person1Account, person2Account) = db.read {
             listOf(
-                it.getMessageAccountsForEmployee(employee1).first(),
-                it.getMessageAccountForEndUser(person1),
-                it.getMessageAccountForEndUser(person2)
+                it.getEmployeeMessageAccounts(employee1Id).first(),
+                it.getCitizenMessageAccount(person1Id),
+                it.getCitizenMessageAccount(person2Id)
             )
         }
 
@@ -472,7 +471,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             title = "t1",
             message = "m1",
             messageType = MessageType.MESSAGE,
-            sender = employee1Account.id,
+            sender = employee1Account,
             recipients = listOf(person1Account, person2Account),
             user = employee1,
         )
@@ -487,7 +486,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         replyAsCitizen(
             person1,
             person1UnreadMessages.first().id,
-            setOf(employee1Account.id, person2Account.id),
+            setOf(employee1Account, person2Account),
             "reply"
         )
 
@@ -506,19 +505,19 @@ class MessageIntegrationTest : FullApplicationTest() {
     }
 
     private fun getUnreadMessages(
-        account: MessageAccount,
+        accountId: UUID,
         user: AuthenticatedUser
     ) = getMessageThreads(
-        account,
+        accountId,
         user
-    ).flatMap { it.messages.filter { m -> m.senderId != account.id && m.readAt == null } }
+    ).flatMap { it.messages.filter { m -> m.senderId != accountId && m.readAt == null } }
 
     private fun postNewThread(
         title: String,
         message: String,
         messageType: MessageType,
         sender: UUID,
-        recipients: List<MessageAccount>,
+        recipients: List<UUID>,
         user: AuthenticatedUser.Employee,
     ) = http.post("/messages/$sender")
         .jsonBody(
@@ -527,8 +526,8 @@ class MessageIntegrationTest : FullApplicationTest() {
                     title = title,
                     content = message,
                     type = messageType,
-                    recipientNames = recipients.map { it.name },
-                    recipientAccountIds = recipients.map { it.id }.toSet()
+                    recipientNames = listOf(),
+                    recipientAccountIds = recipients.toSet()
                 )
             )
         )
@@ -557,13 +556,13 @@ class MessageIntegrationTest : FullApplicationTest() {
 
     private fun replyAsEmployee(
         user: AuthenticatedUser.Employee,
-        account: MessageAccount,
+        sender: UUID,
         messageId: UUID,
         recipientAccountIds: Set<UUID>,
         content: String,
     ) =
         http.post(
-            "/messages/${account.id}/$messageId/reply",
+            "/messages/$sender/$messageId/reply",
         )
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -578,24 +577,24 @@ class MessageIntegrationTest : FullApplicationTest() {
 
     private fun markThreadRead(
         user: AuthenticatedUser,
-        account: MessageAccount,
+        accountId: UUID,
         threadId: UUID
     ) =
         http.put(
-            if (user.isEndUser) "/citizen/messages/threads/$threadId/read" else "/messages/${account.id}/threads/$threadId/read"
+            if (user.isEndUser) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
         )
             .asUser(user)
             .response()
 
-    private fun getMessageThreads(account: MessageAccount, user: AuthenticatedUser): List<MessageThread> = http.get(
-        if (user.isEndUser) "/citizen/messages/received" else "/messages/${account.id}/received",
+    private fun getMessageThreads(accountId: UUID, user: AuthenticatedUser): List<MessageThread> = http.get(
+        if (user.isEndUser) "/citizen/messages/received" else "/messages/$accountId/received",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)
         .responseObject<Paged<MessageThread>>(objectMapper).third.get().data
 
-    private fun getSentMessages(account: MessageAccount, user: AuthenticatedUser): List<SentMessage> = http.get(
-        if (user.isEndUser) "/citizen/messages/sent" else "/messages/${account.id}/sent",
+    private fun getSentMessages(accountId: UUID, user: AuthenticatedUser): List<SentMessage> = http.get(
+        if (user.isEndUser) "/citizen/messages/sent" else "/messages/$accountId/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)

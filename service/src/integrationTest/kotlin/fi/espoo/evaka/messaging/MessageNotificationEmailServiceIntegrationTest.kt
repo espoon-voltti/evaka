@@ -6,13 +6,12 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.message.MessageAccount
 import fi.espoo.evaka.messaging.message.MessageController
 import fi.espoo.evaka.messaging.message.MessageType
-import fi.espoo.evaka.messaging.message.createMessageAccountForPerson
-import fi.espoo.evaka.messaging.message.getMessageAccountForEndUser
-import fi.espoo.evaka.messaging.message.getMessageAccountsForEmployee
-import fi.espoo.evaka.messaging.message.upsertMessageAccountForEmployee
+import fi.espoo.evaka.messaging.message.createPersonMessageAccount
+import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
+import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -92,11 +91,11 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
             testPersons.forEach {
                 tx.insertTestPerson(it)
                 tx.insertGuardian(it.id, testChild_1.id)
-                tx.createMessageAccountForPerson(it.id)
+                tx.createPersonMessageAccount(it.id)
             }
 
             tx.insertTestEmployee(DevEmployee(id = employeeId))
-            tx.upsertMessageAccountForEmployee(employeeId)
+            tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
 
@@ -105,18 +104,15 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `notifications are sent to citizens`() {
-        val employeeAccount = db.read { it.getMessageAccountsForEmployee(employee).first() }
+        val employeeAccount = db.read { it.getEmployeeMessageAccounts(employeeId).first() }
         val personAccounts = db.read { tx ->
             testPersons.map {
-                tx.getMessageAccountForEndUser(it.id)
+                tx.getCitizenMessageAccount(it.id)
             }
         }
 
         postNewThread(
-            title = "Juhannus",
-            message = "Juhannus tulee pian",
-            messageType = MessageType.MESSAGE,
-            sender = employeeAccount.id,
+            sender = employeeAccount,
             recipients = personAccounts,
             user = employee,
         )
@@ -132,22 +128,19 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun postNewThread(
-        title: String,
-        message: String,
-        messageType: MessageType,
         sender: UUID,
-        recipients: List<MessageAccount>,
+        recipients: List<UUID>,
         user: AuthenticatedUser.Employee,
     ) {
         val (_, response) = http.post("/messages/$sender")
             .jsonBody(
                 objectMapper.writeValueAsString(
                     MessageController.PostMessageBody(
-                        title,
-                        message,
-                        messageType,
-                        recipientAccountIds = recipients.map { it.id }.toSet(),
-                        recipientNames = recipients.map { it.name },
+                        title = "Juhannus",
+                        content = "Juhannus tulee pian",
+                        type = MessageType.MESSAGE,
+                        recipientAccountIds = recipients.toSet(),
+                        recipientNames = listOf()
                     )
                 )
             )

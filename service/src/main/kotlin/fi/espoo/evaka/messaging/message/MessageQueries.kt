@@ -5,7 +5,6 @@
 package fi.espoo.evaka.messaging.message
 
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -15,9 +14,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getUnreadMessagesCount(
-    accountIds: Set<UUID>
-): Int {
+fun Database.Read.getUnreadMessagesCount(accountIds: Set<UUID>): Int {
     // language=SQL
     val sql = """
         SELECT COUNT(DISTINCT m.id) AS count
@@ -66,7 +63,7 @@ WHERE rec.message_id = msg.id
 fun Database.Transaction.insertMessage(
     contentId: UUID,
     threadId: UUID,
-    sender: MessageAccount,
+    sender: UUID,
     recipientNames: List<String>,
     repliesToMessageId: UUID? = null,
     sentAt: HelsinkiDateTime? = HelsinkiDateTime.now()
@@ -74,15 +71,16 @@ fun Database.Transaction.insertMessage(
     // language=SQL
     val insertMessageSql = """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
-        VALUES (:contentId, :threadId, :senderId, :senderName, :repliesToId, :sentAt, :recipientNames)
+        SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, :sentAt, :recipientNames
+        FROM message_account_name_view name_view
+        WHERE name_view.id = :senderId
         RETURNING id
     """.trimIndent()
     return createQuery(insertMessageSql)
         .bind("contentId", contentId)
         .bind("threadId", threadId)
         .bindNullable("repliesToId", repliesToMessageId)
-        .bind("senderId", sender.id)
-        .bind("senderName", sender.name)
+        .bind("senderId", sender)
         .bind("sentAt", sentAt)
         .bind("recipientNames", recipientNames.toTypedArray())
         .mapTo<UUID>()
@@ -91,13 +89,13 @@ fun Database.Transaction.insertMessage(
 
 fun Database.Transaction.insertMessageContent(
     content: String,
-    sender: MessageAccount,
+    sender: UUID
 ): UUID {
     // language=SQL
     val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
     return createQuery(messageContentSql)
         .bind("content", content)
-        .bind("authorId", sender.id)
+        .bind("authorId", sender)
         .mapTo<UUID>()
         .one()
 }
@@ -286,7 +284,7 @@ data class MessageReceiversResult(
 )
 
 fun Database.Read.getReceiversForNewMessage(
-    user: AuthenticatedUser,
+    employeeId: UUID,
     unitId: UUID
 ): List<MessageReceiversResponse> {
     // language=sql
@@ -338,7 +336,7 @@ fun Database.Read.getReceiversForNewMessage(
     """.trimIndent()
 
     return this.createQuery(sql)
-        .bind("employeeId", user.id)
+        .bind("employeeId", employeeId)
         .bind("date", HelsinkiDateTime.now().toLocalDate())
         .bind("unitId", unitId)
         .mapTo<MessageReceiversResult>()
@@ -368,7 +366,7 @@ fun Database.Read.getReceiversForNewMessage(
         }
 }
 
-fun Database.Read.isUserAuthorizedToSendTo(user: AuthenticatedUser, accountIds: Set<UUID>): Boolean {
+fun Database.Read.isEmployeeAuthorizedToSendTo(employeeId: UUID, accountIds: Set<UUID>): Boolean {
     // language=SQL
     val sql = """
         WITH children AS (
@@ -402,7 +400,7 @@ fun Database.Read.isUserAuthorizedToSendTo(user: AuthenticatedUser, accountIds: 
     """.trimIndent()
 
     val numAccounts = createQuery(sql)
-        .bind("employeeId", user.id)
+        .bind("employeeId", employeeId)
         .bind("date", LocalDate.now())
         .bind("accountIds", accountIds.toTypedArray())
         .mapTo<Int>()

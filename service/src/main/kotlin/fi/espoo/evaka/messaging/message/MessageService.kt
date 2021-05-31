@@ -18,7 +18,7 @@ class MessageService(
         title: String,
         content: String,
         type: MessageType,
-        sender: MessageAccount,
+        sender: UUID,
         recipientGroups: Set<Set<UUID>>,
         recipientNames: List<String>,
     ): List<UUID> {
@@ -44,17 +44,17 @@ class MessageService(
     fun replyToThread(
         db: Database.Connection,
         replyToMessageId: UUID,
-        senderAccount: MessageAccount,
+        senderAccount: UUID,
         recipientAccountIds: Set<UUID>,
         content: String,
     ): UUID {
         val (threadId, type, sender, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
             ?: throw NotFound("Message not found")
 
-        if (type == MessageType.BULLETIN && sender != senderAccount.id) throw Forbidden("Only the author can reply to bulletin")
+        if (type == MessageType.BULLETIN && sender != senderAccount) throw Forbidden("Only the author can reply to bulletin")
 
         val previousParticipants = recipients + sender
-        if (!previousParticipants.contains(senderAccount.id)) throw Forbidden("Not authorized to post to message")
+        if (!previousParticipants.contains(senderAccount)) throw Forbidden("Not authorized to post to message")
         if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
 
         return db.transaction { tx ->
