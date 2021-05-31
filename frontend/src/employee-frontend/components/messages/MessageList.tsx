@@ -73,6 +73,7 @@ export default React.memo(function MessagesList({
       {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}
       {view === 'RECEIVED' && (
         <ReceivedMessages
+          accountId={account.id}
           messages={receivedMessages}
           onSelectThread={onSelectThread}
         />
