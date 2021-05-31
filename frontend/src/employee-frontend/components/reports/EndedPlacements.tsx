@@ -3,14 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
 
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { reactSelectStyles } from '../../components/common/Select'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { EndedPlacementsReportRow } from '../../types/reports'
@@ -31,6 +29,7 @@ import {
 import { Link } from 'react-router-dom'
 import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -93,29 +92,39 @@ function EndedPlacements() {
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
             <Wrapper>
-              <ReactSelect
-                options={monthOptions()}
+              <Combobox
+                items={monthOptions()}
+                selectedItem={
+                  monthOptions().find(
+                    ({ value }) => Number(value) === filters.month
+                  ) ?? null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const month = parseInt(value.value)
                     setFilters({ ...filters, month })
                   }
                 }}
-                styles={reactSelectStyles}
                 placeholder={i18n.common.month}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
             <Wrapper>
-              <ReactSelect
-                options={yearOptions()}
+              <Combobox
+                items={yearOptions()}
+                selectedItem={
+                  yearOptions().find(
+                    ({ value }) => Number(value) === filters.year
+                  ) ?? null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const year = parseInt(value.value)
                     setFilters({ ...filters, year })
                   }
                 }}
-                styles={reactSelectStyles}
                 placeholder={i18n.common.year}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>

@@ -31,14 +31,14 @@ const InputWrapper = styled.div`
 
 const MenuWrapper = styled.div`
   margin: 0 -2px;
-  z-index: 1;
+  z-index: 10;
   height: 0;
 `
 
 const Menu = styled.div`
   position: relative;
   width: 100%;
-  z-index: 1;
+  z-index: 10;
   top: 10px;
   margin: 0;
   padding: 0;

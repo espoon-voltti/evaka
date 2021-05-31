@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 
@@ -11,7 +10,6 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { reactSelectStyles } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { ApplicationsReportRow } from '../../types/reports'
@@ -28,6 +26,7 @@ import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 interface DisplayFilters {
   careArea: string
@@ -100,8 +99,8 @@ function Applications() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper data-qa="select-area">
-            <ReactSelect
-              options={[
+            <Combobox
+              items={[
                 { label: i18n.common.all, value: '' },
                 ...rows
                   .map((rs) =>
@@ -112,15 +111,7 @@ function Applications() {
                   )
                   .getOrElse([])
               ]}
-              onChange={(option) =>
-                option && 'value' in option
-                  ? setDisplayFilters({
-                      ...displayFilters,
-                      careArea: option.value
-                    })
-                  : undefined
-              }
-              value={
+              selectedItem={
                 displayFilters.careArea !== ''
                   ? {
                       label: displayFilters.careArea,
@@ -131,8 +122,14 @@ function Applications() {
                       value: ''
                     }
               }
-              styles={reactSelectStyles}
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+              onChange={(item) =>
+                setDisplayFilters({
+                  ...displayFilters,
+                  careArea: item?.value ?? ''
+                })
+              }
+              getItemLabel={(item) => item.label}
             />
           </Wrapper>
         </FilterRow>

@@ -4,7 +4,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { range, sortBy } from 'lodash'
 import { fi } from 'date-fns/locale'
@@ -12,12 +11,12 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import {
-  Th,
-  Tr,
-  Td,
-  Thead,
+  SortableTh,
   Tbody,
-  SortableTh
+  Td,
+  Th,
+  Thead,
+  Tr
 } from 'lib-components/layout/Table'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
@@ -38,10 +37,7 @@ import {
   TableScrollable
 } from '../../components/reports/common'
 import { UUID } from '../../types'
-import {
-  reactSelectStyles,
-  SelectOptionProps
-} from '../../components/common/Select'
+import { SelectOptionProps } from '../../components/common/Select'
 
 import { defaultMargins } from 'lib-components/white-space'
 
@@ -58,6 +54,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLockAlt, fasArrowDown, fasArrowUp } from 'lib-icons'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 const FilterWrapper = styled.div`
   width: 400px;
@@ -175,37 +172,41 @@ function VoucherServiceProviderUnit() {
             {i18n.reports.voucherServiceProviderUnit.month}
           </FilterLabel>
           <FilterWrapper>
-            <ReactSelect
-              options={monthOptions}
-              value={monthOptions.find(
-                ({ value }) => Number(value) === filters.month
-              )}
+            <Combobox
+              items={monthOptions}
+              selectedItem={
+                monthOptions.find(
+                  ({ value }) => Number(value) === filters.month
+                ) ?? null
+              }
               onChange={(option) =>
-                option && 'value' in option
+                option
                   ? setFilters({
                       ...filters,
                       month: Number(option.value)
                     })
                   : undefined
               }
-              styles={reactSelectStyles}
+              getItemLabel={(item) => item.label}
             />
           </FilterWrapper>
           <FilterWrapper>
-            <ReactSelect
-              options={yearOptions}
-              value={yearOptions.find(
-                ({ value }) => Number(value) === filters.year
-              )}
+            <Combobox
+              items={yearOptions}
+              selectedItem={
+                yearOptions.find(
+                  ({ value }) => Number(value) === filters.year
+                ) ?? null
+              }
               onChange={(option) =>
-                option && 'value' in option
+                option
                   ? setFilters({
                       ...filters,
                       year: Number(option.value)
                     })
                   : undefined
               }
-              styles={reactSelectStyles}
+              getItemLabel={(item) => item.label}
             />
           </FilterWrapper>
         </FilterRow>
