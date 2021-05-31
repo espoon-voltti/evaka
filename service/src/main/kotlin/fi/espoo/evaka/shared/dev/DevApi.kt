@@ -37,6 +37,7 @@ import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
@@ -361,27 +362,35 @@ class DevApi(
     }
 
     @PostMapping("/pricing")
-    fun createPricing(db: Database, @RequestBody pricing: DevPricing): ResponseEntity<UUID> = db.transaction {
+    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholdsWithValidity): ResponseEntity<UUID> = db.transaction {
         ResponseEntity.ok(
             it.createUpdate(
                 """
-INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus)
-VALUES (:id, :validFrom, :validTo, :multiplier, :maxThresholdDifference, :minThreshold2, :minThreshold3, :minThreshold4, :minThreshold5, :minThreshold6, :thresholdIncrease6Plus)
+INSERT INTO fee_thresholds (id, valid_during,
+    income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6,
+    min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6,
+    max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6,
+    income_threshold_increase_6_plus, min_fee, max_fee, sibling_discount_2, sibling_discount_2_plus)
+VALUES (:id, :validDuring,
+    :incomeMultiplier2, :incomeMultiplier3, :incomeMultiplier4, :incomeMultiplier5, :incomeMultiplier6,
+    :minIncomeThreshold2, :minIncomeThreshold3, :minIncomeThreshold4, :minIncomeThreshold5, :minIncomeThreshold6,
+    :maxIncomeThreshold2, :maxIncomeThreshold3, :maxIncomeThreshold4, :maxIncomeThreshold5, :maxIncomeThreshold6,
+    :incomeThresholdIncrease6Plus, :minFee, :maxFee, :siblingDiscount2, :siblingDiscount2Plus)
 RETURNING id
 """
-            ).bindKotlin(pricing).executeAndReturnGeneratedKeys().mapTo<UUID>().single()
+            ).bindKotlin(feeThresholds).executeAndReturnGeneratedKeys().mapTo<UUID>().single()
         )
     }
 
     @PostMapping("/pricing/clean-up")
-    fun clearPricing(db: Database): ResponseEntity<Unit> {
-        db.transaction { it.execute("DELETE FROM pricing") }
+    fun clearFeeThresholds(db: Database): ResponseEntity<Unit> {
+        db.transaction { it.execute("DELETE FROM fee_thresholds") }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/pricing/{id}")
-    fun deletePricing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deletePricing(id) }
+    fun deleteFeeThresholdsRow(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.deleteFeeThresholdsRow(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -1088,7 +1097,7 @@ fun Database.Transaction.deleteChild(id: UUID) {
 }
 
 fun Database.Transaction.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)
-fun Database.Transaction.deletePricing(id: UUID) = execute("DELETE FROM pricing WHERE id = ?", id)
+fun Database.Transaction.deleteFeeThresholdsRow(id: UUID) = execute("DELETE FROM fee_thresholds WHERE id = ?", id)
 
 fun Database.Transaction.deleteDecision(id: UUID) = execute("DELETE FROM decision WHERE id = ?", id)
 
@@ -1322,20 +1331,6 @@ data class ApplicationForm(
     val revision: Int,
     val document: DaycareFormV0,
     val updated: OffsetDateTime? = OffsetDateTime.now()
-)
-
-data class DevPricing(
-    val id: UUID? = UUID.randomUUID(),
-    val validFrom: LocalDate,
-    val validTo: LocalDate?,
-    val multiplier: Double,
-    val maxThresholdDifference: Int,
-    val minThreshold2: Int,
-    val minThreshold3: Int,
-    val minThreshold4: Int,
-    val minThreshold5: Int,
-    val minThreshold6: Int,
-    val thresholdIncrease6Plus: Int
 )
 
 data class DevDaycareGroupAcl(val groupId: UUID, val employeeId: UUID)

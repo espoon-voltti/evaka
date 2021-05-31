@@ -526,15 +526,6 @@ fun Database.Transaction.insertTestFeeAlteration(
     return id
 }
 
-fun Database.Transaction.insertTestPricingOld(pricing: DevPricing) = insertTestDataRow(
-    pricing,
-    """
-INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus)
-VALUES (:id, :validFrom, :validTo, :multiplier, :maxThresholdDifference, :minThreshold2, :minThreshold3, :minThreshold4, :minThreshold5, :minThreshold6, :thresholdIncrease6Plus)
-RETURNING id
-    """.trimIndent()
-)
-
 fun Database.Transaction.insertTestPricing(pricing: FeeThresholdsWithValidity) = insertTestDataRow(
     pricing,
     """
