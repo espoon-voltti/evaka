@@ -32,12 +32,12 @@ import { DraftContent, MessageBody, UpsertableDraftContent } from './types'
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
-  senderId: UUID
+  sender: Option
   recipientAccountIds: UUID[]
 }
 
 const messageToUpsertableDraftWithAccount = ({
-  senderId: accountId,
+  sender: { value: accountId },
   recipientAccountIds: _,
   ...rest
 }: Message): Draft => ({ ...rest, accountId })
@@ -53,11 +53,11 @@ const emptyMessage = {
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  senderId: UUID
+  sender: Option
 ): Message =>
   draft
-    ? { ...draft, senderId, recipientAccountIds: [] }
-    : { senderId, ...emptyMessage }
+    ? { ...draft, sender, recipientAccountIds: [] }
+    : { sender, ...emptyMessage }
 
 const areRequiredFieldsFilledForMessage = (msg: Message): boolean =>
   !!(msg.recipientAccountIds?.length && msg.type && msg.content && msg.title)
@@ -68,7 +68,7 @@ const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
     deselectAll(tree)
   )
 
-type Option = {
+interface Option {
   label: string
   value: string
 }
@@ -110,9 +110,8 @@ export default React.memo(function MessageEditor({
     receiverTree
   ])
 
-  const [sender, setSender] = useState<Option>(defaultSender)
   const [message, setMessage] = useState<Message>(
-    getInitialMessage(draftContent, sender.value)
+    getInitialMessage(draftContent, defaultSender)
   )
   const [contentTouched, setContentTouched] = useState(false)
   const {
@@ -123,12 +122,14 @@ export default React.memo(function MessageEditor({
     wasModified: draftWasModified
   } = useDraft(draftContent?.id)
 
-  useEffect(() => {
-    contentTouched && setDraft(messageToUpsertableDraftWithAccount(message))
-  }, [contentTouched, message, setDraft])
+  useEffect(
+    function syncDraftContentOnMessageChanges() {
+      contentTouched && setDraft(messageToUpsertableDraftWithAccount(message))
+    },
+    [contentTouched, message, setDraft]
+  )
 
-  // update receiver tree on selector changes
-  const updateReceivers = useCallback((newSelection: Option[]) => {
+  const updateReceiverTree = useCallback((newSelection: Option[]) => {
     setReceiverTree((old) =>
       createReceiverTree(
         old,
@@ -138,32 +139,36 @@ export default React.memo(function MessageEditor({
     setContentTouched(true)
   }, [])
 
-  // update selected receivers on receiver tree changes
-  useEffect(() => {
-    const selected = getSelected(receiverTree)
-    const recipientAccountIds = getSelectedBottomElements(receiverTree)
-    setMessage((old) => ({
-      ...old,
-      recipientAccountIds,
-      recipientIds: selected.map((s) => s.value),
-      recipientNames: selected.map((s) => s.label)
-    }))
-  }, [receiverTree])
+  useEffect(
+    function updateSelectedReceiversOnReceiverTreeChanges() {
+      const selected = getSelected(receiverTree)
+      const recipientAccountIds = getSelectedBottomElements(receiverTree)
+      setMessage((old) => ({
+        ...old,
+        recipientAccountIds,
+        recipientIds: selected.map((s) => s.value),
+        recipientNames: selected.map((s) => s.label)
+      }))
+    },
+    [receiverTree]
+  )
 
-  // update saving/saved/error status in title with debounce
   const [saveStatus, setSaveStatus] = useState<string>()
-  useEffect(() => {
-    if (draftState === 'saving') {
-      setSaveStatus(`${i18n.common.saving}...`)
-    } else if (draftState === 'clean' && draftWasModified) {
-      setSaveStatus(i18n.common.saved)
-    } else {
-      return
-    }
-    const clearStatus = () => setSaveStatus(undefined)
-    const timeoutHandle = setTimeout(clearStatus, 1500)
-    return () => clearTimeout(timeoutHandle)
-  }, [i18n, draftState, draftWasModified])
+  useEffect(
+    function updateTextualSaveStatusOnDraftStateChange() {
+      if (draftState === 'saving') {
+        setSaveStatus(`${i18n.common.saving}...`)
+      } else if (draftState === 'clean' && draftWasModified) {
+        setSaveStatus(i18n.common.saved)
+      } else {
+        return
+      }
+      const clearStatus = () => setSaveStatus(undefined)
+      const timeoutHandle = setTimeout(clearStatus, 1500)
+      return () => clearTimeout(timeoutHandle)
+    },
+    [i18n, draftState, draftWasModified]
+  )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
   const title =
@@ -171,7 +176,7 @@ export default React.memo(function MessageEditor({
     message.title ||
     i18n.messages.messageEditor.newMessage
 
-  const updateMessage: UpdateStateFn<Message> = useCallback((changes) => {
+  const updateMessage = useCallback<UpdateStateFn<Message>>((changes) => {
     setMessage((old) => ({ ...old, ...changes }))
     setContentTouched(true)
   }, [])
@@ -179,7 +184,7 @@ export default React.memo(function MessageEditor({
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
   const sendHandler = useCallback(() => {
     const {
-      senderId,
+      sender: { value: senderId },
       content,
       title,
       type,
@@ -218,11 +223,10 @@ export default React.memo(function MessageEditor({
         </div>
         <Select
           options={senderOptions}
-          onChange={(selected) => {
-            setSender(selected as Option)
-            setContentTouched(true)
+          onChange={(sender) => {
+            sender && 'value' in sender && updateMessage({ sender })
           }}
-          value={sender}
+          value={message.sender}
           data-qa="select-sender"
         />
         <div>
@@ -233,7 +237,7 @@ export default React.memo(function MessageEditor({
           placeholder={i18n.common.search}
           value={selectedReceivers}
           options={receiverOptions}
-          onChange={updateReceivers}
+          onChange={updateReceiverTree}
           noOptionsMessage={i18n.common.noResults}
           getOptionId={({ value }) => value}
           getOptionLabel={({ label }) => label}
@@ -274,7 +278,7 @@ export default React.memo(function MessageEditor({
         <Gap size={'s'} />
         <BottomRow>
           <InlineButton
-            onClick={() => onDiscard(sender.value, draftId)}
+            onClick={() => onDiscard(message.sender.value, draftId)}
             text={i18n.messages.messageEditor.deleteDraft}
             icon={faTrash}
             data-qa="discard-draft-btn"
