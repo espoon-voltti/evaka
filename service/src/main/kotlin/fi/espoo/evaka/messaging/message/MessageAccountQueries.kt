@@ -36,8 +36,9 @@ SELECT acc.id
 FROM message_account acc
 LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
-    LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
-WHERE (acc.employee_id = :employeeId OR acl.employee_id = :employeeId)
+    LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND acl.role = 'UNIT_SUPERVISOR'
+    LEFT JOIN daycare_group_acl gacl on gacl.daycare_group_id = dg.id
+WHERE (acc.employee_id = :employeeId OR acl.employee_id = :employeeId OR gacl.employee_id = :employeeId)
     AND acc.active = true
 """
     return this.createQuery(sql)
@@ -66,7 +67,6 @@ FROM message_account acc
     LEFT JOIN message_recipients rec ON acc.id = rec.recipient_id AND rec.read_at IS NULL
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
-    LEFT JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
 WHERE acc.id = ANY(:accountIds)
 GROUP BY acc.id, account_name, type, group_id, group_name, group_unitId, group_unitName
 """
