@@ -292,7 +292,8 @@ SELECT
     daycare.language as placement_unit_language,
     care_area.id as placement_unit_area_id,
     care_area.name as placement_unit_area_name,
-    finance_decision_handler.first_name || ', ' || finance_decision_handler.last_name AS finance_decision_handler_name
+    finance_decision_handler.first_name as finance_decision_handler_first_name,
+    finance_decision_handler.last_name AS finance_decision_handler_last_name
 FROM voucher_value_decision as decision
 JOIN person as head ON decision.head_of_family_id = head.id
 LEFT JOIN person as partner ON decision.partner_id = partner.id
