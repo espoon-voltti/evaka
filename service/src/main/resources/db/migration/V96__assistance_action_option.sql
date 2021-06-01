@@ -4,15 +4,13 @@ CREATE TABLE assistance_action_option (
     updated timestamp with time zone DEFAULT now() NOT NULL,
     value text NOT NULL,
     name_fi text NOT NULL,
-    is_other boolean NOT NULL DEFAULT FALSE,
     priority int
 );
 
 CREATE UNIQUE INDEX uniq$assistance_action_option_value ON assistance_action_option (value);
-CREATE UNIQUE INDEX uniq$assistance_action_option_is_other ON assistance_action_option (is_other) WHERE is_other;
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_action_option FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 
-INSERT INTO assistance_action_option (value, name_fi, is_other, priority)
+INSERT INTO assistance_action_option (value, name_fi, priority)
 SELECT action, CASE action
     WHEN 'ASSISTANCE_SERVICE_CHILD'::assistance_action_type THEN 'Avustamispalvelut yhdelle lapselle'
     WHEN 'ASSISTANCE_SERVICE_UNIT'::assistance_action_type THEN 'Avustamispalvelut yksikköön'
@@ -22,10 +20,6 @@ SELECT action, CASE action
     WHEN 'RESOURCE_PERSON'::assistance_action_type THEN 'Resurssihenkilö'
     WHEN 'RATIO_DECREASE'::assistance_action_type THEN 'Suhdeluvun väljennys'
     WHEN 'PERIODICAL_VEO_SUPPORT'::assistance_action_type THEN 'Jaksottainen veon tuki (2–6 kk)'
-    WHEN 'OTHER'::assistance_action_type THEN 'Muu tukitoimi'
-END, CASE action
-    WHEN 'OTHER'::assistance_action_type THEN TRUE
-    ELSE FALSE
 END, CASE action
     WHEN 'ASSISTANCE_SERVICE_CHILD'::assistance_action_type THEN 10
     WHEN 'ASSISTANCE_SERVICE_UNIT'::assistance_action_type THEN 20
@@ -35,9 +29,8 @@ END, CASE action
     WHEN 'RESOURCE_PERSON'::assistance_action_type THEN 60
     WHEN 'RATIO_DECREASE'::assistance_action_type THEN 70
     WHEN 'PERIODICAL_VEO_SUPPORT'::assistance_action_type THEN 80
-    WHEN 'OTHER'::assistance_action_type THEN 99
 END
-FROM (SELECT DISTINCT unnest(actions) AS action FROM assistance_action) aa;
+FROM (SELECT DISTINCT unnest(actions) AS action FROM assistance_action) aa WHERE action <> 'OTHER';
 
 CREATE TABLE assistance_action_option_ref (
     action_id uuid NOT NULL REFERENCES assistance_action ON DELETE CASCADE,
@@ -50,6 +43,7 @@ INSERT INTO assistance_action_option_ref (action_id, option_id, created)
 SELECT aa.id, aao.id, aa.updated
 FROM (SELECT id, updated, unnest(actions) AS action FROM assistance_action) aa
 LEFT JOIN assistance_action_option aao ON aao.value::assistance_action_type = aa.action
+WHERE action <> 'OTHER'
 ON CONFLICT DO NOTHING;
 
 ALTER TABLE assistance_action DROP COLUMN actions;
