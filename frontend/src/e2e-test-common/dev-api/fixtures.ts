@@ -735,8 +735,8 @@ export function createDaycarePlacementFixture(
   id: string,
   childId: string,
   unitId: string,
-  startDate = '2020-05-01',
-  endDate = '2021-08-31'
+  startDate = '2021-05-01',
+  endDate = '2022-08-31'
 ): DaycarePlacement {
   return {
     id,
@@ -752,8 +752,8 @@ export function createPreschoolDaycarePlacementFixture(
   id: string,
   childId: string,
   unitId: string,
-  startDate = '2020-05-01',
-  endDate = '2021-08-31'
+  startDate = '2021-05-01',
+  endDate = '2022-08-31'
 ): DaycarePlacement {
   return {
     id,
@@ -768,8 +768,8 @@ export function createPreschoolDaycarePlacementFixture(
 export function createDaycareGroupPlacementFixture(
   placementId: string,
   groupId: string,
-  startDate = '2020-05-01',
-  endDate = '2021-08-31'
+  startDate = '2021-05-01',
+  endDate = '2022-08-31'
 ): DaycareGroupPlacement {
   return {
     id: '2e19e400-ca0c-4059-b872-cce8b5282a72',
