@@ -83,19 +83,13 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { accounts } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
-  const unreadIndicator = useMemo(
+  const unreadCount = useMemo<number>(
     () =>
       accounts.mapAll({
-        failure() {
-          return null
-        },
-        loading() {
-          return null
-        },
-        success(v) {
-          const count = v.reduce((sum, { unreadCount }) => sum + unreadCount, 0)
-          return count > 0 && <UnreadCount>{count}</UnreadCount>
-        }
+        failure: () => 0,
+        loading: () => 0,
+        success: (value) =>
+          value.reduce((sum, { unreadCount }) => sum + unreadCount, 0)
       }),
     [accounts]
   )
@@ -222,7 +216,10 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     to="/messages"
                     data-qa="messages-nav"
                   >
-                    {i18n.header.messages} {unreadIndicator}
+                    {i18n.header.messages}
+                    {unreadCount > 0 && (
+                      <UnreadCount>{unreadCount}</UnreadCount>
+                    )}
                   </NavbarLink>
                 </RequireRole>
               )}
