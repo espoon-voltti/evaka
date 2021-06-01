@@ -164,6 +164,6 @@ fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(actionId: UU
 
 fun Database.Transaction.getAssistanceActionOptions(): List<AssistanceActionOption> {
     //language=sql
-    val sql = "SELECT value, name_fi FROM assistance_action_option ORDER BY priority"
+    val sql = "SELECT value, name_fi FROM assistance_action_option ORDER BY display_order"
     return createQuery(sql).mapTo(AssistanceActionOption::class.java).list()
 }

@@ -4,13 +4,13 @@ CREATE TABLE assistance_action_option (
     updated timestamp with time zone DEFAULT now() NOT NULL,
     value text NOT NULL,
     name_fi text NOT NULL,
-    priority int
+    display_order int
 );
 
 CREATE UNIQUE INDEX uniq$assistance_action_option_value ON assistance_action_option (value);
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON assistance_action_option FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 
-INSERT INTO assistance_action_option (value, name_fi, priority)
+INSERT INTO assistance_action_option (value, name_fi, display_order)
 SELECT action, CASE action
     WHEN 'ASSISTANCE_SERVICE_CHILD'::assistance_action_type THEN 'Avustamispalvelut yhdelle lapselle'
     WHEN 'ASSISTANCE_SERVICE_UNIT'::assistance_action_type THEN 'Avustamispalvelut yksikköön'

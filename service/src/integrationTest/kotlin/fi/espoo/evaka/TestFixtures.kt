@@ -621,7 +621,7 @@ VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :vouch
 fun Database.Transaction.insertAssistanceActionOptions() {
     // language=sql
     val sql = """
-INSERT INTO assistance_action_option (value, name_fi, priority) VALUES
+INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
     ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
     ('SMALLER_GROUP', 'Pienennetty ryhmä', 30),
