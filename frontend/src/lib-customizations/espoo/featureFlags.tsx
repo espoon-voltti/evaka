@@ -5,5 +5,6 @@
 export default {
   daycareApplicationServiceNeedOptionsEnabled: false,
   urgencyAttachmentsEnabled: true,
-  preschoolEnabled: true
+  preschoolEnabled: true,
+  assistanceActionOtherEnabled: true
 }

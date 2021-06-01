@@ -14,7 +14,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import InfoBall from '../../../components/common/InfoBall'
 import {
   AssistanceAction,
-  AssistanceActionType,
+  AssistanceActionOption,
   AssistanceMeasure
 } from '../../../types/child'
 import { UUID } from '../../../types'
@@ -26,7 +26,6 @@ import {
   isDateRangeInverted
 } from '../../../utils/validation/validations'
 import LabelValueList from '../../../components/common/LabelValueList'
-import { ASSISTANCE_ACTION_TYPE_LIST } from '../../../constants'
 import FormActions from '../../../components/common/FormActions'
 import { ChildContext } from '../../../state'
 import { DateRange, rangeContainsDate } from '../../../utils/date'
@@ -37,7 +36,7 @@ import {
   createAssistanceAction,
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
-import { assistanceMeasures } from 'lib-customizations/employee'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -48,13 +47,15 @@ const CheckboxRow = styled.div`
 interface FormState {
   startDate: LocalDate
   endDate: LocalDate
-  actions: Set<AssistanceActionType>
+  actions: Set<string>
+  otherSelected: boolean
   otherAction: string
   measures: Set<AssistanceMeasure>
 }
 
 interface CommonProps {
   onReload: () => undefined | void
+  assistanceActionOptions: AssistanceActionOption[]
 }
 
 interface CreateProps extends CommonProps {
@@ -106,11 +107,13 @@ function AssistanceActionForm(props: Props) {
           startDate: LocalDate.today(),
           endDate: LocalDate.today(),
           actions: new Set(),
+          otherSelected: false,
           otherAction: '',
           measures: new Set()
         }
       : {
-          ...props.assistanceAction
+          ...props.assistanceAction,
+          otherSelected: props.assistanceAction.otherAction !== ''
         }
   const [form, setForm] = useState<FormState>(initialFormState)
 
@@ -243,45 +246,51 @@ function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.actions,
             value: (
               <div>
-                {ASSISTANCE_ACTION_TYPE_LIST.map((action) => (
-                  <CheckboxRow key={action}>
+                {props.assistanceActionOptions.map((option) => (
+                  <CheckboxRow key={option.value}>
                     <Checkbox
-                      label={
-                        i18n.childInformation.assistanceAction.fields
-                          .actionTypes[action]
-                      }
-                      checked={form.actions.has(action)}
+                      label={option.nameFi}
+                      checked={form.actions.has(option.value)}
                       onChange={(value) => {
                         const actions = new Set([...form.actions])
-                        if (value) actions.add(action)
-                        else actions.delete(action)
+                        if (value) actions.add(option.value)
+                        else actions.delete(option.value)
                         updateFormState({ actions: actions })
                       }}
                     />
-                    {i18n.childInformation.assistanceAction.fields.actionTypes[
-                      `${action}_INFO`
-                    ] && (
-                      <InfoBall
-                        text={String(
-                          i18n.childInformation.assistanceAction.fields
-                            .actionTypes[`${action}_INFO`]
-                        )}
-                      />
-                    )}
                   </CheckboxRow>
                 ))}
-                {form.actions.has('OTHER') && (
-                  <InputField
-                    value={form.otherAction}
-                    onChange={(value) =>
-                      updateFormState({ otherAction: value })
-                    }
-                    placeholder={
-                      i18n.childInformation.assistanceAction.fields
-                        .otherActionPlaceholder
-                    }
-                  />
-                )}
+                {featureFlags.assistanceActionOtherEnabled ? (
+                  <>
+                    <CheckboxRow>
+                      <Checkbox
+                        label={
+                          i18n.childInformation.assistanceAction.fields
+                            .actionTypes.OTHER
+                        }
+                        checked={form.otherSelected}
+                        onChange={(value) => {
+                          updateFormState({
+                            otherSelected: value,
+                            otherAction: ''
+                          })
+                        }}
+                      />
+                    </CheckboxRow>
+                    {form.otherSelected && (
+                      <InputField
+                        value={form.otherAction}
+                        onChange={(value) =>
+                          updateFormState({ otherAction: value })
+                        }
+                        placeholder={
+                          i18n.childInformation.assistanceAction.fields
+                            .otherActionPlaceholder
+                        }
+                      />
+                    )}
+                  </>
+                ) : null}
               </div>
             ),
             valueWidth: '100%'

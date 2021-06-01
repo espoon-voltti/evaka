@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.objectMapper
+import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.decision.DecisionStatus
@@ -642,14 +643,19 @@ RETURNING id
 """
 )
 
-fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction) = insertTestDataRow(
-    assistanceAction,
-    """
-INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, actions, other_action, measures)
-VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :actions::assistance_action_type[], :otherAction, :measures::assistance_measure[])
+fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction): UUID {
+    val id = insertTestDataRow(
+        assistanceAction,
+        """
+INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, other_action, measures)
+VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction, :measures::assistance_measure[])
 RETURNING id
 """
-)
+    )
+    val counts = insertAssistanceActionOptionRefs(id, assistanceAction.actions)
+    assert(counts.size == assistanceAction.actions.size)
+    return id
+}
 
 fun Database.Transaction.insertTestCaretakers(
     groupId: UUID,

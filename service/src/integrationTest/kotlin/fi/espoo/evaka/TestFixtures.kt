@@ -542,6 +542,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insertClubTerms()
 
     insertServiceNeedOptions()
+    insertAssistanceActionOptions()
 }
 
 fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
@@ -615,6 +616,23 @@ VALUES (:id, :name, :validPlacementType, :defaultOption, :feeCoefficient, :vouch
         batch.bindKotlin(fixture).add()
     }
     batch.execute()
+}
+
+fun Database.Transaction.insertAssistanceActionOptions() {
+    // language=sql
+    val sql = """
+INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
+    ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
+    ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
+    ('SMALLER_GROUP', 'Pienennetty ryhmä', 30),
+    ('SPECIAL_GROUP', 'Erityisryhmä', 40),
+    ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50),
+    ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
+    ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
+    ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', 80);
+"""
+
+    createUpdate(sql).execute()
 }
 
 fun Database.Transaction.insertTestVardaOrganizer() {

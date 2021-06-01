@@ -12,7 +12,7 @@ data class AssistanceAction(
     val childId: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val actions: Set<AssistanceActionType>,
+    val actions: Set<String>,
     val otherAction: String,
     val measures: Set<AssistanceMeasure>
 )
@@ -20,22 +20,15 @@ data class AssistanceAction(
 data class AssistanceActionRequest(
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val actions: Set<AssistanceActionType> = emptySet(),
+    val actions: Set<String> = emptySet(),
     val otherAction: String = "",
     val measures: Set<AssistanceMeasure> = emptySet()
 )
 
-enum class AssistanceActionType {
-    ASSISTANCE_SERVICE_CHILD,
-    ASSISTANCE_SERVICE_UNIT,
-    SMALLER_GROUP,
-    SPECIAL_GROUP,
-    PERVASIVE_VEO_SUPPORT,
-    RESOURCE_PERSON,
-    RATIO_DECREASE,
-    PERIODICAL_VEO_SUPPORT,
-    OTHER
-}
+data class AssistanceActionOption(
+    val value: String,
+    val nameFi: String
+)
 
 enum class AssistanceMeasure {
     SPECIAL_ASSISTANCE_DECISION,

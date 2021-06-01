@@ -51,17 +51,6 @@ export interface AssistanceNeed {
   otherBasis: string
 }
 
-export type AssistanceActionType =
-  | 'ASSISTANCE_SERVICE_CHILD'
-  | 'ASSISTANCE_SERVICE_UNIT'
-  | 'SMALLER_GROUP'
-  | 'SPECIAL_GROUP'
-  | 'PERVASIVE_VEO_SUPPORT'
-  | 'RESOURCE_PERSON'
-  | 'RATIO_DECREASE'
-  | 'PERIODICAL_VEO_SUPPORT'
-  | 'OTHER'
-
 export type { AssistanceMeasure }
 
 export interface AssistanceAction {
@@ -69,9 +58,14 @@ export interface AssistanceAction {
   childId: UUID
   startDate: LocalDate
   endDate: LocalDate
-  actions: Set<AssistanceActionType>
+  actions: Set<string>
   otherAction: string
   measures: Set<AssistanceMeasure>
+}
+
+export interface AssistanceActionOption {
+  value: string
+  nameFi: string
 }
 
 export interface AdditionalInformation {
