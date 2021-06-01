@@ -25,7 +25,7 @@ class ChildImageController(
     private val documentClient: DocumentService,
     env: Environment
 ) {
-    private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.childimages")
+    private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.data")
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun putImage(
@@ -70,7 +70,7 @@ class ChildImageController(
         acl.getRolesForChild(user, image.childId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF, UserRole.MOBILE)
 
-        val stream = documentClient.stream(bucket, imageId.toString())
+        val stream = documentClient.stream(bucket, "$childImagesBucketPrefix$imageId")
 
         return ResponseEntity.ok()
             .contentType(MediaType.IMAGE_JPEG)

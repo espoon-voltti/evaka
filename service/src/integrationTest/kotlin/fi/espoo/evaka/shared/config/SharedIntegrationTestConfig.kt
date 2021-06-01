@@ -143,6 +143,7 @@ class SharedIntegrationTestConfig {
         client.createBucket("evaka-paymentdecisions-it")
         client.createBucket("evaka-vouchervaluedecisions-it")
         client.createBucket("evaka-attachments-it")
+        client.createBucket("evaka-data-it")
         return client
     }
 

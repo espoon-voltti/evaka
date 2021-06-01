@@ -13,6 +13,8 @@ data class ChildImage(
     val childId: UUID
 )
 
+const val childImagesBucketPrefix = "child-images/"
+
 fun replaceImage(
     db: Database,
     documentClient: DocumentService,
@@ -34,15 +36,14 @@ fun replaceImage(
         documentClient.upload(
             bucket,
             DocumentWrapper(
-                name = imageId.toString(),
-                path = "/",
+                name = "$childImagesBucketPrefix$imageId",
                 bytes = file.bytes
             ),
             contentType
         )
     }
     if (deletedId != null) {
-        documentClient.delete(bucket, deletedId.toString())
+        documentClient.delete(bucket, "$childImagesBucketPrefix$deletedId")
     }
 }
 
@@ -54,6 +55,6 @@ fun removeImage(
 ) {
     db.transaction { tx ->
         tx.deleteChildImage(childId)
-            ?.let { imageId -> documentClient.delete(bucket, imageId.toString()) }
+            ?.let { imageId -> documentClient.delete(bucket, "$childImagesBucketPrefix$imageId") }
     }
 }

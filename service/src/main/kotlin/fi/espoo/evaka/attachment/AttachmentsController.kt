@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
-const val attachmentsPath = "/"
-
 @RestController
 @RequestMapping("/attachments")
 class AttachmentsController(
@@ -106,7 +104,6 @@ class AttachmentsController(
                 filesBucket,
                 DocumentWrapper(
                     name = id.toString(),
-                    path = attachmentsPath,
                     bytes = file.bytes
                 ),
                 contentType

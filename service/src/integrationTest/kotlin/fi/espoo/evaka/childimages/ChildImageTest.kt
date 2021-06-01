@@ -57,10 +57,9 @@ class ChildImageTest : FullApplicationTest() {
 
         assertEquals(1, images.size)
         verify(documentService).upload(
-            bucketName = "evaka-childimages-it",
+            bucketName = "evaka-data-it",
             document = DocumentWrapper(
-                name = images.first().id.toString(),
-                path = "/",
+                name = "child-images/${images.first().id}",
                 bytes = file.bytes
             ),
             contentType = "image/jpeg"
@@ -93,14 +92,13 @@ class ChildImageTest : FullApplicationTest() {
         assertFalse(oldImageId == images.first().id)
 
         verify(documentService).delete(
-            bucketName = "evaka-childimages-it",
-            key = oldImageId.toString()
+            bucketName = "evaka-data-it",
+            key = "child-images/$oldImageId"
         )
         verify(documentService).upload(
-            bucketName = "evaka-childimages-it",
+            bucketName = "evaka-data-it",
             document = DocumentWrapper(
-                name = images.first().id.toString(),
-                path = "/",
+                name = "child-images/${images.first().id}",
                 bytes = file.bytes
             ),
             contentType = "image/jpeg"
@@ -124,8 +122,8 @@ class ChildImageTest : FullApplicationTest() {
         )
 
         verify(documentService).delete(
-            bucketName = "evaka-childimages-it",
-            key = oldImageId.toString()
+            bucketName = "evaka-data-it",
+            key = "child-images/$oldImageId"
         )
     }
 
@@ -139,7 +137,7 @@ class ChildImageTest : FullApplicationTest() {
                 .mapTo<UUID>()
                 .one()
         }
-        whenever(documentService.stream("evaka-childimages-it", oldImageId.toString()))
+        whenever(documentService.stream("evaka-data-it", "$childImagesBucketPrefix$oldImageId"))
             .thenReturn(file.inputStream)
 
         val response = controller.getImage(
@@ -152,8 +150,8 @@ class ChildImageTest : FullApplicationTest() {
         assertEquals(MediaType.IMAGE_JPEG, response.headers.contentType)
 
         verify(documentService).stream(
-            bucketName = "evaka-childimages-it",
-            key = oldImageId.toString()
+            bucketName = "evaka-data-it",
+            key = "child-images/$oldImageId"
         )
     }
 }

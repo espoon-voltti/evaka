@@ -19,7 +19,6 @@ class S3DocumentClient(private val s3Client: AmazonS3) : DocumentService {
         val s3object = s3Client.getObject(bucketName, key)
         return DocumentWrapper(
             name = key,
-            path = "/",
             bytes = s3object.objectContent.readBytes()
         )
     }

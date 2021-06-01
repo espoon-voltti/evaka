@@ -9,14 +9,11 @@ import java.net.URI
 
 interface Document {
     fun getName(): String
-    fun getPath(): String
     fun getBytes(): ByteArray
 }
 
-data class DocumentWrapper(private val name: String, private val path: String, private val bytes: ByteArray) :
-    Document {
+data class DocumentWrapper(private val name: String, private val bytes: ByteArray) : Document {
     override fun getName() = name
-    override fun getPath() = path
     override fun getBytes() = bytes
 }
 
