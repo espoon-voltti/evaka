@@ -141,6 +141,7 @@ class PdfServiceTest {
         validFrom = LocalDate.of(2020, 1, 1),
         validTo = null,
         financeDecisionHandlerFirstName = null,
+        financeDecisionHandlerLastName = null,
         pricing = testPricing,
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),

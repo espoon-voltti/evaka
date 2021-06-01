@@ -163,7 +163,8 @@ class PDFService(
                     ?: decision.approvedBy?.firstName
                 ),
             "approverLastName" to (
-                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName),
+                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
+                ),
 
         )
     }
@@ -236,7 +237,8 @@ class PDFService(
                     ?: decision.approvedBy?.firstName
                 ),
             "approverLastName" to (
-                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName),
+                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
+                ),
         ).mapValues {
             it.value ?: ""
         }
