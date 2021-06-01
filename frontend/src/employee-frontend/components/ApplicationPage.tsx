@@ -140,7 +140,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   )
 
   useEffect(() => {
-    if (!editing && editedApplication?.type === 'DAYCARE') {
+    if (!editing || editedApplication?.type !== 'DAYCARE') {
       return
     }
     if (featureFlags.daycareApplication.serviceNeedOptionsEnabled) {

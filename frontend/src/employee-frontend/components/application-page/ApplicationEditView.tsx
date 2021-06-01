@@ -36,7 +36,7 @@ import {
   faUserFriends,
   faUsers
 } from 'lib-icons'
-import { set } from 'lodash/fp'
+import { flow, set } from 'lodash/fp'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import ReactSelect from 'react-select'
@@ -249,12 +249,12 @@ export default React.memo(function ApplicationEditView({
                       checked={serviceNeed.partTime === true}
                       onChange={() => {
                         setApplication(
-                          set('form.preferences.serviceNeed.partTime', true)
-                        )
-                        setApplication(
-                          set(
-                            'form.preferences.serviceNeed.serviceNeedOption',
-                            partTimeOptions[0] ?? null
+                          flow(
+                            set('form.preferences.serviceNeed.partTime', true),
+                            set(
+                              'form.preferences.serviceNeed.serviceNeedOption',
+                              partTimeOptions[0] ?? null
+                            )
                           )
                         )
                       }}
@@ -289,12 +289,12 @@ export default React.memo(function ApplicationEditView({
                       checked={serviceNeed.partTime === false}
                       onChange={() => {
                         setApplication(
-                          set('form.preferences.serviceNeed.partTime', false)
-                        )
-                        setApplication(
-                          set(
-                            'form.preferences.serviceNeed.serviceNeedOption',
-                            fullTimeOptions[0] ?? null
+                          flow(
+                            set('form.preferences.serviceNeed.partTime', false),
+                            set(
+                              'form.preferences.serviceNeed.serviceNeedOption',
+                              fullTimeOptions[0] ?? null
+                            )
                           )
                         )
                       }}
