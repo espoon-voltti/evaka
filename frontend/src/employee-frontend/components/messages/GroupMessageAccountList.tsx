@@ -73,7 +73,7 @@ export default function GroupMessageAccountList({
       {accounts.map((acc, i) => (
         <CollapsibleRow
           key={acc.id}
-          startCollapsed={i > 0}
+          startCollapsed={i > 0 && !acc.unreadCount}
           title={acc.daycareGroup.name}
         >
           {messageBoxes.map((view) => (
