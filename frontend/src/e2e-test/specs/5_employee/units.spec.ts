@@ -133,10 +133,10 @@ test('daycare has one child missing group', async (t) => {
     )
   await t
     .expect(row.placementDuration.textContent)
-    .eql('01.05.2020 - 31.08.2021')
+    .eql('01.05.2021 - 31.08.2022')
   await t
     .expect(row.groupMissingDuration.textContent)
-    .eql('01.05.2020 - 31.08.2021')
+    .eql('01.05.2021 - 31.08.2022')
   await t.expect(row.addToGroupBtn.visible).ok()
 })
 
@@ -169,7 +169,7 @@ test('child can be placed into a group and removed from it', async (t) => {
     )
   await t
     .expect(groupPlacement.placementDuration.textContent)
-    .eql('01.05.2020- 31.08.2021')
+    .eql('01.05.2021- 31.08.2022')
 
   // after removing the child is again visible at missing groups and no longer at the group
   await groupPlacement.remove()
@@ -184,10 +184,10 @@ test('child can be placed into a group and removed from it', async (t) => {
     )
   await t
     .expect(missingPlacement2.placementDuration.textContent)
-    .eql('01.05.2020 - 31.08.2021')
+    .eql('01.05.2021 - 31.08.2022')
   await t
     .expect(missingPlacement2.groupMissingDuration.textContent)
-    .eql('01.05.2020 - 31.08.2021')
+    .eql('01.05.2021 - 31.08.2022')
   await t.expect(group.groupPlacementRows.count).eql(0)
   await t.expect(group.noChildrenPlaceholder.visible).ok()
 })
