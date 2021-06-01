@@ -14,6 +14,8 @@ import fi.espoo.evaka.daycare.service.DaycareCapacityStats
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
+import fi.espoo.evaka.messaging.message.insertMessageContent
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -115,6 +117,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         db.transaction {
             it.insertTestPlacement(placement)
             it.insertTestDaycareGroup(group)
+            it.createDaycareGroupMessageAccount(group.id)
             it.insertTestDaycareGroupPlacement(placement.id, group.id)
         }
 
@@ -128,6 +131,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         val group = DevDaycareGroup(daycareId = daycareId)
         db.transaction {
             it.insertTestDaycareGroup(group)
+            it.createDaycareGroupMessageAccount(group.id)
             it.insertTestBackupCare(
                 DevBackupCare(
                     childId = childId,
@@ -136,6 +140,20 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
                     period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
                 )
             )
+        }
+
+        deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)
+
+        db.read { assertNotNull(it.getDaycareGroup(group.id)) }
+    }
+
+    @Test
+    fun `cannot delete a group when it has messages`() {
+        val group = DevDaycareGroup(daycareId = daycareId)
+        db.transaction {
+            it.insertTestDaycareGroup(group)
+            val accountId = it.createDaycareGroupMessageAccount(group.id)
+            it.insertMessageContent("Juhannus tulee pian", accountId)
         }
 
         deleteDaycareGroup(daycareId, group.id, expectedStatus = 409)

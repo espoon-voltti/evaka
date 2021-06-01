@@ -93,3 +93,4 @@ V92__add_missing_foreign_keys_referencing_person.sql
 V93__message_recipient_names.sql
 V94__create_fee_thresholds.sql
 V95__remove_absence_soft_delete.sql
+V96__message_account_foreign_keys.sql
