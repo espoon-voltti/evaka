@@ -80,7 +80,6 @@ class MessageControllerCitizen(
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
-    data class ReplyResponse(val threadId: UUID, val message: Message)
 
     @PostMapping("/{messageId}/reply")
     fun replyToThread(
@@ -88,18 +87,17 @@ class MessageControllerCitizen(
         user: AuthenticatedUser,
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
-    ): ReplyResponse {
+    ): MessageService.ThreadReply {
         Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         val accountId = requireMessageAccountAccess(db, user)
 
-        val (threadId, message) = messageService.replyToThread(
+        return messageService.replyToThread(
             db = db,
             replyToMessageId = messageId,
             senderAccount = accountId,
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
-        return ReplyResponse(threadId = threadId, message = message)
     }
 
     private fun requireMessageAccountAccess(

@@ -8,10 +8,12 @@ import { client } from '../../api/client'
 import { UUID } from '../../types'
 import {
   deserializeDraftContent,
+  deserializeMessage,
   deserializeMessageThread,
   deserializeReceiverChild,
   deserializeSentMessage,
   DraftContent,
+  Message,
   MessageAccount,
   MessageBody,
   MessageThread,
@@ -146,18 +148,32 @@ export async function createNewMessage(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function replyToThread(
-  messageId: UUID,
-  content: string,
-  senderAccountId: UUID,
-  recipientAccountIds: Set<UUID>
-): Promise<Result<void>> {
+export interface ReplyToThreadParams {
+  messageId: UUID
+  content: string
+  accountId: UUID
+  recipientAccountIds: UUID[]
+}
+export interface ReplyResponse {
+  threadId: string
+  message: Message
+}
+const deserializeReplyResponse = (data: JsonOf<ReplyResponse>) => ({
+  threadId: data.threadId,
+  message: deserializeMessage(data.message)
+})
+export async function replyToThread({
+  messageId,
+  content,
+  accountId,
+  recipientAccountIds
+}: ReplyToThreadParams): Promise<Result<ReplyResponse>> {
   return client
-    .post(`/messages/${senderAccountId}/${messageId}/reply`, {
+    .post<JsonOf<ReplyResponse>>(`/messages/${accountId}/${messageId}/reply`, {
       content,
       recipientAccountIds
     })
-    .then(() => Success.of(undefined))
+    .then(({ data }) => Success.of(deserializeReplyResponse(data)))
     .catch((e) => Failure.fromError(e))
 }
 

@@ -12,10 +12,14 @@ import {
   getMessageDrafts,
   getMessagingAccounts,
   getReceivedMessages,
-  getSentMessages
+  getSentMessages,
+  ReplyResponse,
+  replyToThread,
+  ReplyToThreadParams
 } from './api'
 import {
   DraftContent,
+  Message,
   MessageAccount,
   MessageThread,
   SentMessage
@@ -40,6 +44,10 @@ export interface MessagesPageState {
   messageDrafts: Result<DraftContent[]>
   selectedThread: MessageThread | undefined
   setSelectedThread: (thread: MessageThread | undefined) => void
+  sendReply: (params: ReplyToThreadParams) => void
+  replyState: Result<void> | undefined
+  setReplyContent: (threadId: UUID, content: string) => void
+  getReplyContent: (threadId: UUID) => string
   refreshMessages: (account?: UUID) => void
 }
 
@@ -59,12 +67,33 @@ const defaultState: MessagesPageState = {
   messageDrafts: Loading.of(),
   selectedThread: undefined,
   setSelectedThread: () => undefined,
+  sendReply: () => undefined,
+  replyState: undefined,
+  getReplyContent: () => '',
+  setReplyContent: () => undefined,
   refreshMessages: () => undefined
 }
 
 export const MessagesPageContext = createContext<MessagesPageState>(
   defaultState
 )
+
+const appendMessageAndMoveThreadToTopOfList = (
+  threadId: UUID,
+  message: Message
+) => (state: Result<MessageThread[]>) =>
+  state.map((threads) => {
+    const thread = threads.find((t) => t.id === threadId)
+    if (!thread) return threads
+    const otherThreads = threads.filter((t) => t.id !== threadId)
+    return [
+      {
+        ...thread,
+        messages: [...thread.messages, message]
+      },
+      ...otherThreads
+    ]
+  })
 
 export const MessagesPageContextProvider = React.memo(
   function MessagesPageContextProvider({
@@ -149,6 +178,37 @@ export const MessagesPageContextProvider = React.memo(
 
     useEffect(loadMessages, [loadMessages])
 
+    const [replyState, setReplyState] = useState<Result<void>>()
+    const setReplyResponse = useCallback((res: Result<ReplyResponse>) => {
+      setReplyState(res.map(() => undefined))
+      if (res.isSuccess) {
+        const {
+          value: { message, threadId }
+        } = res
+        setReceivedMessages(
+          appendMessageAndMoveThreadToTopOfList(threadId, message)
+        )
+        setSelectedThread((thread) =>
+          thread?.id === threadId
+            ? { ...thread, messages: [...thread.messages, message] }
+            : thread
+        )
+        setReplyContents((state) => ({ ...state, [threadId]: '' }))
+      }
+    }, [])
+    const reply = useRestApi(replyToThread, setReplyResponse)
+    const sendReply = useCallback(reply, [reply])
+
+    const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
+
+    const getReplyContent = useCallback(
+      (threadId: UUID) => replyContents[threadId] ?? '',
+      [replyContents]
+    )
+    const setReplyContent = useCallback((threadId: UUID, content: string) => {
+      setReplyContents((state) => ({ ...state, [threadId]: content }))
+    }, [])
+
     const refreshMessages = useCallback(
       (accountId?: UUID) => {
         if (!accountId || selectedAccount?.account.id === accountId) {
@@ -175,20 +235,28 @@ export const MessagesPageContextProvider = React.memo(
         messageDrafts,
         selectedThread,
         setSelectedThread,
+        replyState,
+        sendReply,
+        getReplyContent,
+        setReplyContent,
         refreshMessages
       }),
       [
         accounts,
         loadAccounts,
-        messageDrafts,
+        selectedDraft,
+        selectedAccount,
         page,
         pages,
         receivedMessages,
-        refreshMessages,
-        selectedDraft,
-        selectedThread,
         sentMessages,
-        selectedAccount
+        messageDrafts,
+        selectedThread,
+        replyState,
+        sendReply,
+        getReplyContent,
+        setReplyContent,
+        refreshMessages
       ]
     )
 

@@ -47,7 +47,7 @@ class MessageController(
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
-        Audit.MessagingReceivedMessagesRead.log(targetId = accountId)
+        Audit.MessagingReceivedMessagesRead.log(accountId)
         requireMessageAccountAccess(db, user, accountId)
         return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
     }
@@ -60,7 +60,7 @@ class MessageController(
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
-        Audit.MessagingSentMessagesRead.log(targetId = accountId)
+        Audit.MessagingSentMessagesRead.log(accountId)
         requireMessageAccountAccess(db, user, accountId)
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
     }
@@ -170,11 +170,11 @@ class MessageController(
         @PathVariable accountId: UUID,
         @PathVariable messageId: UUID,
         @RequestBody body: ReplyToMessageBody,
-    ) {
-        Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
+    ): MessageService.ThreadReply {
+        Audit.MessagingReplyToMessageWrite.log(accountId, messageId)
         requireMessageAccountAccess(db, user, accountId)
 
-        messageService.replyToThread(
+        return messageService.replyToThread(
             db = db,
             replyToMessageId = messageId,
             senderAccount = accountId,
@@ -187,10 +187,10 @@ class MessageController(
     fun markThreadRead(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("accountId") accountId: UUID,
-        @PathVariable("threadId") threadId: UUID
+        @PathVariable accountId: UUID,
+        @PathVariable threadId: UUID,
     ) {
-        Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
+        Audit.MessagingMarkMessagesReadWrite.log(accountId, threadId)
         requireMessageAccountAccess(db, user, accountId)
         return db.transaction { it.markThreadRead(accountId, threadId) }
     }

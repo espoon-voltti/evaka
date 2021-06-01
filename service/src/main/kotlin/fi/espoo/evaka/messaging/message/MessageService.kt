@@ -41,13 +41,15 @@ class MessageService(
         }
     }
 
+    data class ThreadReply(val threadId: UUID, val message: Message)
+
     fun replyToThread(
         db: Database.Connection,
         replyToMessageId: UUID,
         senderAccount: UUID,
         recipientAccountIds: Set<UUID>,
         content: String,
-    ): Pair<UUID, Message> {
+    ): ThreadReply {
         val (threadId, type, sender, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
             ?: throw NotFound("Message not found")
 
@@ -65,6 +67,6 @@ class MessageService(
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
             tx.getMessage(messageId)
         }
-        return Pair(threadId, message)
+        return ThreadReply(threadId, message)
     }
 }

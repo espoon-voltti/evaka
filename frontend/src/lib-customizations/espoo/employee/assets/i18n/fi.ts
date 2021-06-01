@@ -2404,7 +2404,8 @@ export const fi = {
       title: 'Otsikko',
       message: 'Viesti',
       deleteDraft: 'Hylkää luonnos',
-      send: 'Lähetä'
+      send: 'Lähetä',
+      sending: 'Lähetetään'
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',
