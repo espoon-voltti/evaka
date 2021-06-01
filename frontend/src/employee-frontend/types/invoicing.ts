@@ -257,7 +257,8 @@ export interface FeeDecisionDetailed {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
-  financeDecisionHandlerName: string | null
+  financeDecisionHandlerFirstName: string | null
+  financeDecisionHandlerLastName: string | null
   approvedBy: { firstName: string; lastName: string } | null
   minThreshold: number
   feePercent: number
@@ -309,7 +310,8 @@ export interface VoucherValueDecisionDetailed {
   approvedAt: Date | null
   sentAt: Date | null
   created: Date
-  financeDecisionHandlerName: string | null
+  financeDecisionHandlerFirstName: string | null
+  financeDecisionHandlerLastName: string | null
   minThreshold: number
   feePercent: number
   incomeEffect: IncomeEffect | 'NOT_AVAILABLE'

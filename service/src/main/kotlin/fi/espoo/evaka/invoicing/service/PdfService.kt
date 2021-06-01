@@ -159,13 +159,11 @@ class PDFService(
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
 
             "approverFirstName" to (
-                decision.financeDecisionHandlerName?.split(" ")?.get(0)
-                    ?: decision.approvedBy?.firstName
+                decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
                 ),
             "approverLastName" to (
-                decision.financeDecisionHandlerName?.split(" ")?.get(1)
-                    ?: decision.approvedBy?.lastName
-                )
+                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
+                ),
 
         )
     }
@@ -234,12 +232,10 @@ class PDFService(
             "familySize" to decision.familySize,
             "showValidTo" to (decision.validTo?.isBefore(LocalDate.now()) ?: false),
             "approverFirstName" to (
-                decision.financeDecisionHandlerName?.split(" ")?.get(0)
-                    ?: decision.approvedBy?.firstName
+                decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
                 ),
             "approverLastName" to (
-                decision.financeDecisionHandlerName?.split(" ")?.get(1)
-                    ?: decision.approvedBy?.lastName
+                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
                 ),
         ).mapValues {
             it.value ?: ""

@@ -120,7 +120,8 @@ data class FeeDecisionDetailed(
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
-    val financeDecisionHandlerName: String?
+    val financeDecisionHandlerFirstName: String?,
+    val financeDecisionHandlerLastName: String?
 ) : Mergeable<FeeDecisionPartDetailed, FeeDecisionDetailed> {
     override fun withParts(parts: List<FeeDecisionPartDetailed>) = this.copy(parts = parts)
 

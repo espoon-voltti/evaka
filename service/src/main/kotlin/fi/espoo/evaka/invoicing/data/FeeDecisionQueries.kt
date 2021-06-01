@@ -783,11 +783,8 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        financeDecisionHandlerName = rs.getString("finance_decision_handler_first_name")?.let {
-            rs.getString("finance_decision_handler_first_name") +
-                " " +
-                rs.getString("finance_decision_handler_last_name")
-        }
+        financeDecisionHandlerFirstName = rs.getString("finance_decision_handler_first_name"),
+        financeDecisionHandlerLastName = rs.getString("finance_decision_handler_last_name")
     )
 }
 

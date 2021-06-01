@@ -136,7 +136,8 @@ data class VoucherValueDecisionDetailed(
     val approvedAt: Instant? = null,
     val sentAt: Instant? = null,
     val created: Instant = Instant.now(),
-    val financeDecisionHandlerName: String?
+    val financeDecisionHandlerFirstName: String?,
+    val financeDecisionHandlerLastName: String?
 ) {
     @JsonProperty("incomeEffect")
     fun incomeEffect(): IncomeEffect =

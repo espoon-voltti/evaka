@@ -160,8 +160,11 @@ export async function getFeeDecision(
         })),
         createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        financeDecisionHandlerName: json.financeDecisionHandlerName
-          ? json.financeDecisionHandlerName
+        financeDecisionHandlerFirstName: json.financeDecisionHandlerFirstName
+          ? json.financeDecisionHandlerFirstName
+          : null,
+        financeDecisionHandlerLastName: json.financeDecisionHandlerLastName
+          ? json.financeDecisionHandlerLastName
           : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       })
