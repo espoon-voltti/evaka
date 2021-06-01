@@ -15,7 +15,7 @@ import { DATE_FORMAT_DATE_TIME } from '../../constants'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
 import { formatDate } from '../../utils/date'
-import { MessagesPageContext } from './MessagesPageContext'
+import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { Message, MessageThread, MessageType } from './types'
 
@@ -105,7 +105,7 @@ export function SingleThreadView({
     sendReply,
     replyState,
     setReplyContent
-  } = useContext(MessagesPageContext)
+  } = useContext(MessageContext)
 
   const replyContent = getReplyContent(threadId)
   const onUpdateContent = useCallback(

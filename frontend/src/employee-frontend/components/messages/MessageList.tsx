@@ -5,16 +5,14 @@
 import { ContentArea } from 'lib-components/layout/Container'
 import Pagination from 'lib-components/Pagination'
 import { H1, H2 } from 'lib-components/typography'
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
-import { markThreadRead } from './api'
+import { MessageContext } from './MessageContext'
 import { MessageDrafts } from './MessageDrafts'
-import { MessagesPageContext } from './MessagesPageContext'
 import { ReceivedMessages } from './ReceivedMessages'
 import { SentMessages } from './SentMessages'
 import { SingleThreadView } from './SingleThreadView'
-import { MessageThread } from './types'
 import { AccountView } from './types-view'
 
 const MessagesContainer = styled(ContentArea)`
@@ -35,32 +33,20 @@ export default React.memo(function MessagesList({
     setPage,
     pages,
     selectedThread,
-    setSelectedThread,
-    refreshMessages
-  } = useContext(MessagesPageContext)
+    selectThread
+  } = useContext(MessageContext)
 
-  useEffect(() => {
-    setSelectedThread(undefined)
-  }, [account.id, setSelectedThread, view])
-
-  const onSelectThread = useCallback(
-    (thread: MessageThread) => {
-      setSelectedThread(thread)
-
-      const hasUnreadMessages = thread.messages.some((m) => !m.readAt)
-      if (hasUnreadMessages) {
-        void markThreadRead(account.id, thread.id).then(() =>
-          refreshMessages(account.id)
-        )
-      }
+  useEffect(
+    function deselectThreadWhenViewChanges() {
+      selectThread(undefined)
     },
-    [account.id, refreshMessages, setSelectedThread]
+    [account.id, selectThread, view]
   )
 
   if (selectedThread) {
     return (
       <SingleThreadView
-        goBack={() => setSelectedThread(undefined)}
+        goBack={() => selectThread(undefined)}
         thread={selectedThread}
         accountId={account.id}
       />
@@ -75,7 +61,7 @@ export default React.memo(function MessagesList({
         <ReceivedMessages
           accountId={account.id}
           messages={receivedMessages}
-          onSelectThread={onSelectThread}
+          onSelectThread={selectThread}
         />
       )}
       {view === 'SENT' && <SentMessages messages={sentMessages} />}

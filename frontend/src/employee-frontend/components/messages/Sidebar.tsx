@@ -20,7 +20,7 @@ import { useTranslation } from '../../state/i18n'
 import Select, { SelectOptionProps } from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
-import { MessagesPageContext } from './MessagesPageContext'
+import { MessageContext } from './MessageContext'
 import {
   isGroupMessageAccount,
   isPersonalMessageAccount,
@@ -86,7 +86,7 @@ interface AccountsParams {
 function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
   const { setSelectedAccount, selectedAccount: accountView } = useContext(
-    MessagesPageContext
+    MessageContext
   )
 
   const personalAccount = accounts.find(isPersonalMessageAccount)
@@ -187,7 +187,7 @@ export default React.memo(function Sidebar({
 }: Props) {
   const { i18n } = useTranslation()
   const { accounts, selectedAccount, setSelectedAccount } = useContext(
-    MessagesPageContext
+    MessageContext
   )
 
   return (

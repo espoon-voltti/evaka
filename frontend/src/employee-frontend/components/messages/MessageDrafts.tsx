@@ -15,7 +15,7 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
-import { MessagesPageContext } from './MessagesPageContext'
+import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
 import { DraftContent } from './types'
 
@@ -24,7 +24,7 @@ interface RowProps {
 }
 
 function DraftRow({ draft }: RowProps) {
-  const { setSelectedDraft } = useContext(MessagesPageContext)
+  const { setSelectedDraft } = useContext(MessageContext)
   return (
     <MessageRow
       onClick={() => setSelectedDraft(draft)}

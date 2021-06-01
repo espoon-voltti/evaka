@@ -6,11 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Title from 'lib-components/atoms/Title'
-import colors from 'lib-customizations/common'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { cityLogo } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp, faSignOut } from 'lib-icons'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import {
   Link,
   NavLink,
@@ -23,6 +24,7 @@ import { featureFlags } from '../config'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { RequireRole } from '../utils/roles'
+import { MessageContext } from './messages/MessageContext'
 
 const Img = styled.img`
   color: #0050bb;
@@ -69,10 +71,34 @@ const LogoutLink = styled.a`
   color: ${colors.blues.medium};
 `
 
+const UnreadCount = styled.span`
+  color: ${colors.blues.medium};
+  font-weight: 500;
+  margin-left: ${defaultMargins.xs};
+`
+
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
+  const { accounts } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
+
+  const unreadIndicator = useMemo(
+    () =>
+      accounts.mapAll({
+        failure() {
+          return null
+        },
+        loading() {
+          return null
+        },
+        success(v) {
+          const count = v.reduce((sum, { unreadCount }) => sum + unreadCount, 0)
+          return count > 0 && <UnreadCount>{count}</UnreadCount>
+        }
+      }),
+    [accounts]
+  )
 
   const path = location.pathname
   const atCustomerInfo =
@@ -196,7 +222,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     to="/messages"
                     data-qa="messages-nav"
                   >
-                    {i18n.header.messages}
+                    {i18n.header.messages} {unreadIndicator}
                   </NavbarLink>
                 </RequireRole>
               )}

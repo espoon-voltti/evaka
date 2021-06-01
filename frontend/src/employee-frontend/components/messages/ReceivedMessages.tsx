@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Result } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import React from 'react'
+import { Result } from '../../../lib-common/api'
 import { UUID } from '../../types'
 import {
   MessageRow,
@@ -33,7 +33,7 @@ const getUniqueParticipants: (t: MessageThread) => string[] = (
 interface Props {
   accountId: UUID
   messages: Result<MessageThread[]>
-  onSelectThread: (thread: MessageThread) => void
+  onSelectThread: (thread: MessageThread | undefined) => void
 }
 
 export function ReceivedMessages({
