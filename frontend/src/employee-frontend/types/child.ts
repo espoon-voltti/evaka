@@ -66,7 +66,6 @@ export interface AssistanceAction {
 export interface AssistanceActionOption {
   value: string
   nameFi: string
-  isOther: boolean
 }
 
 export interface AdditionalInformation {

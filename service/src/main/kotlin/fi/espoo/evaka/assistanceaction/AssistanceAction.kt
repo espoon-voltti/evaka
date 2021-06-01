@@ -27,8 +27,7 @@ data class AssistanceActionRequest(
 
 data class AssistanceActionOption(
     val value: String,
-    val nameFi: String,
-    val isOther: Boolean
+    val nameFi: String
 )
 
 enum class AssistanceMeasure {

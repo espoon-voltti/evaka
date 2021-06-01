@@ -16,7 +16,7 @@ import LabelValueList from '../../../components/common/LabelValueList'
 import Toolbar from '../../../components/common/Toolbar'
 import { scrollToRef } from '../../../utils'
 import { removeAssistanceAction } from '../../../api/child/assistance-actions'
-import { assistanceMeasures } from 'lib-customizations/employee'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
 export interface Props {
   assistanceAction: AssistanceAction
@@ -113,14 +113,19 @@ function AssistanceActionRow({
                     {assistanceActionOptions.map(
                       (option) =>
                         assistanceAction.actions.has(option.value) && (
-                          <li key={option.value}>
-                            {option.nameFi}
-                            {option.isOther
-                              ? `: ${assistanceAction.otherAction}`
-                              : null}
-                          </li>
+                          <li key={option.value}>{option.nameFi}</li>
                         )
                     )}
+                    {featureFlags.assistanceActionOtherEnabled &&
+                    assistanceAction.otherAction !== '' ? (
+                      <li>
+                        {
+                          i18n.childInformation.assistanceAction.fields
+                            .actionTypes.OTHER
+                        }
+                        : {assistanceAction.otherAction}
+                      </li>
+                    ) : null}
                   </ul>
                 )
               },

@@ -1958,13 +1958,12 @@ INSERT INTO service_need_option (name, valid_placement_type, default_option, fee
     ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä yli 40h alle 50h', 'PREPARATORY_DAYCARE', FALSE, 0.6, 0.5, 1.0, 20, TRUE, TRUE, 'varhaiskasvatusta 15-25 h/vko', 'småbarnspedagogik 15-25 h/vecka', '', ''),
     ('Osapäiväinen ja osaviikkoinen liittyvä, yhteensä enintään 40h', 'PREPARATORY_DAYCARE', FALSE, 0.35, 0.5, 1.0, 15, TRUE, TRUE, 'varhaiskasvatusta korkeintaan 15 h/vko', 'småbarnspedagogik högst 15 h/vecka', '', '');
 
-INSERT INTO assistance_action_option (value, name_fi, is_other, priority) VALUES
-    ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', FALSE, 10),
-    ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', FALSE, 20),
-    ('SMALLER_GROUP', 'Pienennetty ryhmä', FALSE, 30),
-    ('SPECIAL_GROUP', 'Erityisryhmä', FALSE, 40),
-    ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', FALSE, 50),
-    ('RESOURCE_PERSON', 'Resurssihenkilö', FALSE, 60),
-    ('RATIO_DECREASE', 'Suhdeluvun väljennys', FALSE, 70),
-    ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', FALSE, 80),
-    ('OTHER', 'Muu tukitoimi', TRUE, 99);
+INSERT INTO assistance_action_option (value, name_fi, priority) VALUES
+    ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
+    ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
+    ('SMALLER_GROUP', 'Pienennetty ryhmä', 30),
+    ('SPECIAL_GROUP', 'Erityisryhmä', 40),
+    ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50),
+    ('RESOURCE_PERSON', 'Resurssihenkilö', 60),
+    ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
+    ('PERIODICAL_VEO_SUPPORT', 'Jaksottainen veon tuki (2–6 kk)', 80);

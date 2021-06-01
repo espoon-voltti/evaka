@@ -36,7 +36,7 @@ import {
   createAssistanceAction,
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
-import { assistanceMeasures } from 'lib-customizations/employee'
+import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -48,6 +48,7 @@ interface FormState {
   startDate: LocalDate
   endDate: LocalDate
   actions: Set<string>
+  otherSelected: boolean
   otherAction: string
   measures: Set<AssistanceMeasure>
 }
@@ -106,11 +107,13 @@ function AssistanceActionForm(props: Props) {
           startDate: LocalDate.today(),
           endDate: LocalDate.today(),
           actions: new Set(),
+          otherSelected: false,
           otherAction: '',
           measures: new Set()
         }
       : {
-          ...props.assistanceAction
+          ...props.assistanceAction,
+          otherSelected: props.assistanceAction.otherAction !== ''
         }
   const [form, setForm] = useState<FormState>(initialFormState)
 
@@ -257,20 +260,37 @@ function AssistanceActionForm(props: Props) {
                     />
                   </CheckboxRow>
                 ))}
-                {props.assistanceActionOptions.some(
-                  (option) => option.isOther && form.actions.has(option.value)
-                ) && (
-                  <InputField
-                    value={form.otherAction}
-                    onChange={(value) =>
-                      updateFormState({ otherAction: value })
-                    }
-                    placeholder={
-                      i18n.childInformation.assistanceAction.fields
-                        .otherActionPlaceholder
-                    }
-                  />
-                )}
+                {featureFlags.assistanceActionOtherEnabled ? (
+                  <>
+                    <CheckboxRow>
+                      <Checkbox
+                        label={
+                          i18n.childInformation.assistanceAction.fields
+                            .actionTypes.OTHER
+                        }
+                        checked={form.otherSelected}
+                        onChange={(value) => {
+                          updateFormState({
+                            otherSelected: value,
+                            otherAction: ''
+                          })
+                        }}
+                      />
+                    </CheckboxRow>
+                    {form.otherSelected && (
+                      <InputField
+                        value={form.otherAction}
+                        onChange={(value) =>
+                          updateFormState({ otherAction: value })
+                        }
+                        placeholder={
+                          i18n.childInformation.assistanceAction.fields
+                            .otherActionPlaceholder
+                        }
+                      />
+                    )}
+                  </>
+                ) : null}
               </div>
             ),
             valueWidth: '100%'

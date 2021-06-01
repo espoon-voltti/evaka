@@ -64,6 +64,7 @@ interface FeatureFlags {
   daycareApplicationServiceNeedOptionsEnabled: boolean
   urgencyAttachmentsEnabled: boolean
   preschoolEnabled: boolean
+  assistanceActionOtherEnabled: boolean
 }
 
 export interface EmployeeCustomizations {
