@@ -7,6 +7,7 @@ import { uploadChildImage } from '../../../api/childImages'
 
 import 'react-image-crop/dist/ReactCrop.css'
 import styled from 'styled-components'
+import { useHistory } from 'react-router-dom'
 
 const defaultCrop: ReactCrop.Crop = {
   unit: '%',
@@ -33,6 +34,21 @@ export default React.memo(function ImageEditor({
   const [imageElem, setImageElem] = useState<HTMLImageElement | null>(null)
   const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const [submitting, setSubmitting] = useState(false)
+  const h = useHistory()
+
+  useEffect(() => {
+    const popStateHandler = (e: PopStateEvent) => {
+      e.preventDefault()
+      h.goForward()
+      onReturn()
+    }
+
+    window.addEventListener('popstate', popStateHandler)
+
+    return () => {
+      window.removeEventListener('popstate', popStateHandler)
+    }
+  }, [onReturn, h])
 
   const onSave = () => {
     if (!crop || !previewCanvasRef.current) {
