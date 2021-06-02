@@ -298,30 +298,30 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
         )
     }
 
-    // @Test
-    // fun `search works with distinctions param UNCONFIRMED_HOURS`() {
-    //     val testDecision = testDecisions[0]
-    //     val testDecisionMissingServiceNeed = testDecisions[1].copy(
-    //         id = UUID.randomUUID(),
-    //         children = testDecisions[1].children[0].let { part ->
-    //             listOf(part.copy(placement = part.placement.copy(serviceNeed = ServiceNeed.MISSING)))
-    //         }
-    //     )
-    //
-    //     db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecision, testDecisionMissingServiceNeed)) }
-    //
-    //     val (_, _, result) = http.get(
-    //         "/decisions/search",
-    //         listOf("page" to "0", "pageSize" to "50", "distinctions" to "UNCONFIRMED_HOURS")
-    //     )
-    //         .asUser(user)
-    //         .responseString()
-    //
-    //     assertEqualEnough(
-    //         listOf(testDecisionMissingServiceNeed.let(::toSummary)),
-    //         deserializeListResult(result.get()).data
-    //     )
-    // }
+    @Test
+    fun `search works with distinctions param UNCONFIRMED_HOURS`() {
+        val testDecision = testDecisions[0]
+        val testDecisionMissingServiceNeed = testDecisions[1].copy(
+            id = UUID.randomUUID(),
+            children = testDecisions[1].children[0].let { part ->
+                listOf(part.copy(serviceNeed = part.serviceNeed.copy(missing = true)))
+            }
+        )
+
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(testDecision, testDecisionMissingServiceNeed)) }
+
+        val (_, _, result) = http.get(
+            "/decisions/search",
+            listOf("page" to "0", "pageSize" to "50", "distinctions" to "UNCONFIRMED_HOURS")
+        )
+            .asUser(user)
+            .responseString()
+
+        assertEqualEnough(
+            listOf(testDecisionMissingServiceNeed.let(::toSummary)),
+            deserializeListResult(result.get()).data
+        )
+    }
 
     @Test
     fun `search works with distinctions param EXTERNAL_CHILD`() {

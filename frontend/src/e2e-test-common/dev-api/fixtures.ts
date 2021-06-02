@@ -634,7 +634,8 @@ export const feeDecisionsFixture = (
       serviceNeed: {
         feeCoefficient: 1.0,
         descriptionFi: 'palveluntarve',
-        descriptionSv: 'vårdbehövet'
+        descriptionSv: 'vårdbehövet',
+        missing: false
       },
       baseFee: 28900,
       fee: 28900,

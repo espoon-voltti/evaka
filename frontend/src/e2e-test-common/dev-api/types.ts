@@ -60,6 +60,7 @@ export interface FeeDecision {
         feeCoefficient: number
         descriptionFi: string
         descriptionSv: string
+        missing: boolean
       }
       baseFee: number
       siblingDiscount: number

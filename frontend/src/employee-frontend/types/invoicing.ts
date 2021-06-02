@@ -210,6 +210,7 @@ export interface FeeDecisionChildDetailed {
   serviceNeedFeeCoefficient: number
   serviceNeedDescriptionFi: string
   serviceNeedDescriptionSv: string
+  serviceNeedMissing: boolean
   baseFee: number
   siblingDiscount: number
   fee: number

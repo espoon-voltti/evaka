@@ -32,7 +32,8 @@ sealed class UnitData {
 data class PlacementWithServiceNeed(
     val unitId: UUID,
     val type: PlacementType,
-    val serviceNeed: ServiceNeedValue
+    val serviceNeed: ServiceNeedValue,
+    val missingServiceNeed: Boolean
 )
 
 data class ServiceNeedValue(

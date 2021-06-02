@@ -11,7 +11,7 @@ INSERT INTO new_fee_decision (id, created, status, valid_during, decision_type, 
 SELECT id, created_at, status, daterange(valid_from, valid_to, '[]'), decision_type, head_of_family, head_of_family_income, partner, partner_income, family_size, pricing, decision_number, document_key, approved_at, approved_by, decision_handler, sent_at, cancelled_at
 FROM fee_decision;
 
-INSERT INTO new_fee_decision_child (id, fee_decision_id, child_id, child_date_of_birth, sibling_discount, placement_unit_id, placement_type, service_need_fee_coefficient, service_need_description_fi, service_need_description_sv, base_fee, fee, fee_alterations, final_fee)
+INSERT INTO new_fee_decision_child (id, fee_decision_id, child_id, child_date_of_birth, sibling_discount, placement_unit_id, placement_type, service_need_fee_coefficient, service_need_description_fi, service_need_description_sv, service_need_missing, base_fee, fee, fee_alterations, final_fee)
 SELECT
     fee_decision_part.id,
     fee_decision_id,
@@ -62,6 +62,7 @@ SELECT
         WHEN service_need = 'LTE_15' THEN 'småbarnspedagogik högst 15 h/vecka'
         WHEN service_need = 'LTE_0' THEN 'ingen avgiftsbelagd småbarnspedagogik'
     END),
+    service_need = 'MISSING',
     base_fee,
     fee,
     fee_alterations,

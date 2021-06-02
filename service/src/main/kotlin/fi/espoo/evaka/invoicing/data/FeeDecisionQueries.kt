@@ -42,6 +42,7 @@ SELECT
     part.service_need_fee_coefficient,
     part.service_need_description_fi,
     part.service_need_description_sv,
+    part.service_need_missing,
     part.base_fee,
     part.fee,
     part.fee_alterations,
@@ -61,6 +62,7 @@ SELECT
     part.service_need_fee_coefficient,
     part.service_need_description_fi,
     part.service_need_description_sv,
+    part.service_need_missing,
     part.base_fee,
     part.sibling_discount,
     part.fee,
@@ -187,6 +189,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<
             service_need_fee_coefficient,
             service_need_description_fi,
             service_need_description_sv,
+            service_need_missing,
             base_fee,
             sibling_discount,
             fee,
@@ -202,6 +205,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<
             :serviceNeedFeeCoefficient,
             :serviceNeedDescriptionFi,
             :serviceNeedDescriptionSv,
+            :serviceNeedMissing,
             :baseFee,
             :siblingDiscount,
             :fee,
@@ -224,6 +228,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<
                 .bind("serviceNeedFeeCoefficient", child.serviceNeed.feeCoefficient)
                 .bind("serviceNeedDescriptionFi", child.serviceNeed.descriptionFi)
                 .bind("serviceNeedDescriptionSv", child.serviceNeed.descriptionSv)
+                .bind("serviceNeedMissing", child.serviceNeed.missing)
                 .add()
         }
     }
@@ -300,7 +305,7 @@ fun Database.Read.searchFeeDecisions(
         if (statuses.isNotEmpty()) "status = ANY(:status::fee_decision_status[])" else null,
         if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
         if (unit != null) "part.placement_unit_id = :unit" else null,
-        if (withNullHours) "part.service_need" else null,
+        if (withNullHours) "part.service_need_missing" else null,
         if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice" else null,
         if (retroactiveOnly) "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, now()))" else null,
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,

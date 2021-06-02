@@ -90,6 +90,7 @@ class PdfServiceTest {
                 serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
                 serviceNeedDescriptionFi = it.serviceNeed.descriptionFi,
                 serviceNeedDescriptionSv = it.serviceNeed.descriptionSv,
+                serviceNeedMissing = it.serviceNeed.missing,
                 baseFee = it.baseFee,
                 siblingDiscount = it.siblingDiscount,
                 fee = it.fee,

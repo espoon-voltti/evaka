@@ -178,7 +178,8 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapp
                     serviceNeed = FeeDecisionServiceNeed(
                         feeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),
                         descriptionFi = rs.getString("service_need_description_fi"),
-                        descriptionSv = rs.getString("service_need_description_sv")
+                        descriptionSv = rs.getString("service_need_description_sv"),
+                        missing = rs.getBoolean("service_need_missing"),
                     ),
                     baseFee = rs.getInt("base_fee"),
                     siblingDiscount = rs.getInt("sibling_discount"),
@@ -260,6 +261,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
                     serviceNeedFeeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),
                     serviceNeedDescriptionFi = rs.getString("service_need_description_fi"),
                     serviceNeedDescriptionSv = rs.getString("service_need_description_sv"),
+                    serviceNeedMissing = rs.getBoolean("service_need_missing"),
                     baseFee = rs.getInt("base_fee"),
                     siblingDiscount = rs.getInt("sibling_discount"),
                     fee = rs.getInt("fee"),

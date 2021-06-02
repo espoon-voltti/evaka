@@ -91,7 +91,8 @@ data class FeeDecisionPlacement(
 data class FeeDecisionServiceNeed(
     val feeCoefficient: BigDecimal,
     val descriptionFi: String,
-    val descriptionSv: String
+    val descriptionSv: String,
+    val missing: Boolean
 )
 
 data class FeeAlterationWithEffect(
@@ -201,6 +202,7 @@ data class FeeDecisionChildDetailed(
     val serviceNeedFeeCoefficient: BigDecimal,
     val serviceNeedDescriptionFi: String,
     val serviceNeedDescriptionSv: String,
+    val serviceNeedMissing: Boolean,
     val baseFee: Int,
     val siblingDiscount: Int,
     val fee: Int,

@@ -164,7 +164,8 @@ private fun generateNewFeeDecisions2(
                             FeeDecisionServiceNeed(
                                 placement.serviceNeed.feeCoefficient,
                                 placement.serviceNeed.feeDescriptionFi,
-                                placement.serviceNeed.feeDescriptionSv
+                                placement.serviceNeed.feeDescriptionSv,
+                                placement.missingServiceNeed
                             ),
                             baseFee,
                             price.withoutDates().siblingDiscountPercent(index + 1),
@@ -247,7 +248,8 @@ FROM service_need_option WHERE default_option
                             unitId = placement.unitId,
                             type = placement.type,
                             serviceNeed = serviceNeed?.second ?: defaultServiceNeeds[placement.type]
-                                ?: error("No default service need found for type ${placement.type}")
+                                ?: error("No default service need found for type ${placement.type}"),
+                            missingServiceNeed = serviceNeed == null
                         )
                     }
                     .let { mergePeriods(it) }

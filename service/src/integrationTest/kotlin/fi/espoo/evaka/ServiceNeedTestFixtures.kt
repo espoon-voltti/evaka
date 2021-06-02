@@ -413,7 +413,8 @@ val serviceNeedTestFixtures = listOf(
 fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
     feeCoefficient = this.feeCoefficient,
     descriptionFi = this.feeDescriptionFi,
-    descriptionSv = this.feeDescriptionSv
+    descriptionSv = this.feeDescriptionSv,
+    missing = this.defaultOption
 )
 
 fun ServiceNeedOption.toValueDecisionServiceNeed() = VoucherValueDecisionServiceNeed(

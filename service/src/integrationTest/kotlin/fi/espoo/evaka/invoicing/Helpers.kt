@@ -40,6 +40,7 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
             serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
             serviceNeedDescriptionFi = child.serviceNeed.descriptionFi,
             serviceNeedDescriptionSv = child.serviceNeed.descriptionSv,
+            serviceNeedMissing = child.serviceNeed.missing,
             baseFee = child.baseFee,
             siblingDiscount = child.siblingDiscount,
             fee = child.fee,
