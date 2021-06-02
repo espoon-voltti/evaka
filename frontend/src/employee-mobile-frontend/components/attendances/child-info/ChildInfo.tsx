@@ -45,6 +45,7 @@ const ChildStatus = styled.div`
 `
 
 const RoundImage = styled.img`
+  display: block;
   border-radius: 100%;
   width: 128px;
   height: 128px;
