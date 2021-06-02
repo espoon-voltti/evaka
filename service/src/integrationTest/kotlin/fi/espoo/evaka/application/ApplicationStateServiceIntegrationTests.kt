@@ -261,6 +261,37 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
+    fun `sendApplication - daycare application is marked as transfer application when child is in 5yo daycare`() {
+        db.transaction { tx ->
+            // given
+            val draft = tx.insertApplication(
+                appliedType = PlacementType.DAYCARE,
+                urgent = false,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = draft.childId,
+                    unitId = testDaycare2.id,
+                    startDate = draft.form.preferences.preferredStartDate!!,
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1),
+                    type = PlacementType.DAYCARE_FIVE_YEAR_OLDS
+                )
+            )
+        }
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
+        db.read {
+            // then
+            val application = it.fetchApplicationDetails(applicationId)!!
+            assertEquals(true, application.transferApplication)
+        }
+    }
+
+    @Test
     fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
         db.transaction { tx ->
             // given
