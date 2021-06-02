@@ -7,34 +7,24 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
-import {
-  applicationFixture,
-  applicationFixtureId
-} from 'e2e-test-common/dev-api/fixtures'
+import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import { deleteApplication, insertApplications } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 
 const home = new Home()
 const applicationReadView = new ApplicationReadView()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Employee reads applications')
   .meta({ type: 'regression', subType: 'applications2' })
-  .page(home.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await deleteApplication(applicationFixtureId)
-  })
-  .after(async () => {
-    await cleanUp()
-  })
+  .afterEach(logConsoleMessages)
 
 test('Daycare application opens by link', async (t) => {
   const fixture = applicationFixture(
@@ -42,7 +32,7 @@ test('Daycare application opens by link', async (t) => {
     fixtures.enduserGuardianFixture
   )
   await insertApplications([fixture])
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
@@ -56,7 +46,7 @@ test('Preschool application opens by link', async (t) => {
     'PRESCHOOL'
   )
   await insertApplications([fixture])
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Esiopetushakemus')
@@ -69,7 +59,7 @@ test('Other VTJ guardian information is shown', async (t) => {
     fixtures.familyWithTwoGuardians.otherGuardian
   )
   await insertApplications([fixture])
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
@@ -92,7 +82,7 @@ test('If there is no other VTJ guardian it is mentioned', async (t) => {
     fixtures.enduserGuardianFixture
   )
   await insertApplications([fixture])
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')

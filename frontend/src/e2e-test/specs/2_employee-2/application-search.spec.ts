@@ -14,32 +14,26 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import { deleteApplication, insertApplications } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import {
+  deleteApplication,
+  insertApplications,
+  resetDatabase
+} from 'e2e-test-common/dev-api'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 
 const home = new Home()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Employee searches applications')
   .meta({ type: 'regression', subType: 'applications2' })
-  .page(home.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-  })
   .beforeEach(async (t) => {
-    await t.useRole(seppoAdminRole)
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
+    await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await deleteApplication(applicationFixtureId)
-  })
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
-  })
+  .afterEach(logConsoleMessages)
 
 test('Duplicate applications are found', async (t) => {
   const fixture = applicationFixture(

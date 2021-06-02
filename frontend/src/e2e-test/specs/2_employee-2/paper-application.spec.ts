@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import EmployeeHome from '../../pages/employee/home'
-import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
@@ -13,12 +12,11 @@ import { daycareGroupFixture } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
 import {
-  deleteEmployeeById,
-  deleteEmployeeFixture,
   insertDaycareGroupFixtures,
-  insertEmployeeFixture
+  insertEmployeeFixture,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import ApplicationEditView from '../../pages/employee/applications/application-edit-view'
 import { ApplicationPersonDetail } from 'e2e-test-common/dev-api/types'
@@ -28,29 +26,21 @@ const childInforationPage = new ChildInformationPage()
 const applicationEditPage = new ApplicationEditView()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
-let supervisorId: string
 
 fixture('Employee - paper application')
   .meta({ type: 'regression', subType: 'paperapplication' })
-  .page(employeeHome.url)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-    await insertDaycareGroupFixtures([daycareGroupFixture])
-    supervisorId = await insertEmployeeFixture(supervisor)
-  })
   .beforeEach(async () => {
-    await t.useRole(seppoAdminRole)
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
+    await insertDaycareGroupFixtures([daycareGroupFixture])
+    await insertEmployeeFixture(supervisor)
+
+    await employeeLogin(t, seppoAdmin, employeeHome.url)
     await employeeHome.navigateToChildInformation(
       fixtures.enduserChildFixtureJari.id
     )
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-    await deleteEmployeeFixture(config.supervisorExternalId)
-    await deleteEmployeeById(supervisorId)
-  })
 
 const formatPersonName = (person: ApplicationPersonDetail) =>
   `${person.lastName} ${person.firstName}`

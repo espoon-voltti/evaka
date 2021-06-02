@@ -9,13 +9,14 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
-  deleteEmployeeById,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
-  postDaycareDailyNote
+  insertServiceNeedOptions,
+  postDaycareDailyNote,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
@@ -36,7 +37,6 @@ import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 const employeeId = uuidv4()
 
@@ -51,10 +51,11 @@ const employeeHome = new EmployeeHome()
 
 fixture('Mobile daily notes')
   .meta({ type: 'regression', subType: 'mobile' })
-  .page(config.adminUrl)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
 
+    await insertServiceNeedOptions()
     await insertEmployeeFixture({
       id: employeeId,
       externalId: `espooad: ${employeeId}`,
@@ -99,17 +100,11 @@ fixture('Mobile daily notes')
         endDate: daycarePlacementFixtureKaarina.endDate
       }
     ])
-  })
-  .beforeEach(async () => {
-    await t.useRole(seppoAdminRole)
+
+    await employeeLogin(t, seppoAdmin, config.employeeUrl)
     await employeeHome.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-    await deleteEmployeeById(employeeId)
-    await Fixture.cleanup()
-  })
 
 const unitPage = new UnitPage()
 

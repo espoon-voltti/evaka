@@ -4,8 +4,8 @@
 
 import path from 'path'
 import {
-  deleteApplication,
-  insertApplications
+  insertApplications,
+  resetDatabase
 } from '../../../e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
@@ -13,10 +13,9 @@ import {
 } from '../../../e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
-  applicationFixtureId,
-  Fixture
+  applicationFixtureId
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin, seppoAdminRole } from '../../config/users'
 import ApplicationEditView from '../../pages/employee/applications/application-edit-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import Home from '../../pages/home'
@@ -30,32 +29,22 @@ const applicationReadView = new ApplicationReadView()
 const applicationEditView = new ApplicationEditView()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Employee attachments')
   .meta({ type: 'regression', subType: 'attachments' })
-  .page(home.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-  })
   .beforeEach(async (t) => {
-    await t.useRole(seppoAdminRole)
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
 
     const fixture = applicationFixture(
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture
     )
-
     await insertApplications([fixture])
+
+    await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await deleteApplication(applicationFixtureId)
-  })
-  .after(async () => {
-    await Fixture.cleanup()
-    await cleanUp()
-  })
+  .afterEach(logConsoleMessages)
 
 test('Employee can add and remove attachments', async () => {
   await applicationReadView.openApplicationByLink(applicationFixtureId)
