@@ -84,3 +84,27 @@ export class BoundingBox {
     return h && v
   }
 }
+
+/**
+ * Converts the given string into a valid single-quoted CSS string by escaping problematic characters and wrapping the content in single quotes.
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/CSS/string
+ */
+export function toCssString(text: string): string {
+  return [
+    "'",
+    ...Array.from(text).map((codepoint) => {
+      switch (codepoint) {
+        case '\\':
+          return '\\\\'
+        case "'":
+          return "\\'"
+        case '\n':
+          return '\\A'
+        default:
+          return codepoint
+      }
+    }),
+    "'"
+  ].join('')
+}

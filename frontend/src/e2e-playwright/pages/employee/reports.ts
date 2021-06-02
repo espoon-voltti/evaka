@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { RawElement } from 'e2e-playwright/utils/element'
+import { Combobox, RawElement } from 'e2e-playwright/utils/element'
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { captureTextualDownload } from 'e2e-playwright/browser'
 
 export default class ReportsPage {
   constructor(private readonly page: Page) {}
 
-  readonly #month = new RawElement(this.page, '[data-qa="select-month"]')
-  readonly #year = new RawElement(this.page, '[data-qa="select-year"]')
-  readonly #area = new RawElement(this.page, '[data-qa="select-area"]')
+  readonly #month = new Combobox(this.page, '[data-qa="select-month"]')
+  readonly #year = new Combobox(this.page, '[data-qa="select-year"]')
+  readonly #area = new Combobox(this.page, '[data-qa="select-area"]')
 
   readonly #downloadCsvLink = new RawElement(
     this.page,
@@ -24,21 +24,18 @@ export default class ReportsPage {
   }
 
   async selectMonth(month: 'Tammikuu') {
-    await this.#month.click()
-    await this.page.keyboard.type(month)
-    await this.page.keyboard.press('Enter')
+    await this.#month.fill(month)
+    await this.#month.findItem(month).click()
   }
 
   async selectYear(year: number) {
-    await this.#year.click()
-    await this.page.keyboard.type(year.toString())
-    await this.page.keyboard.press('Enter')
+    await this.#year.fill(year.toString())
+    await this.#year.findItem(year.toString()).click()
   }
 
   async selectArea(area: string) {
-    await this.#area.click()
-    await this.page.keyboard.type(area)
-    await this.page.keyboard.press('Enter')
+    await this.#area.fill(area)
+    await this.#area.findItem(area).click()
   }
 
   async assertVoucherServiceProviderRowCount(expectedChildCount: number) {
