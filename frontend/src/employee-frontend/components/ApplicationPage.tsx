@@ -78,9 +78,9 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
           LocalDate.today()
       ).then(setUnits)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     editing,
-    editedApplication,
     editedApplication?.type,
     editedApplication?.form.preferences.preferredStartDate
   ])
