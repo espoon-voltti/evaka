@@ -61,7 +61,10 @@ interface MapConfig {
 }
 
 interface FeatureFlags {
-  daycareApplicationServiceNeedOptionsEnabled: boolean
+  daycareApplication: {
+    dailyTimesEnabled: boolean
+    serviceNeedOptionsEnabled: boolean
+  }
   urgencyAttachmentsEnabled: boolean
   preschoolEnabled: boolean
   assistanceActionOtherEnabled: boolean

@@ -340,7 +340,10 @@ export const fi = {
       assistanceDesc: 'Tuen tarpeen kuvaus',
       partTime: 'Osapäiväinen',
       fullTime: 'Kokopäiväinen',
-      partTimeLabel: 'Osa- tai kokopäiväinen'
+      partTimeLabel: 'Osa- tai kokopäiväinen',
+      error: {
+        getServiceNeedOptions: 'Palveluntarpeiden haku epäonnistui!'
+      }
     },
     clubDetails: {
       wasOnClubCareLabel: 'Kerhossa edellisenä toimintakautena',

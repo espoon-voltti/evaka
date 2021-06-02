@@ -22,6 +22,7 @@ import { ApplicationDetails } from 'lib-common/api-types/application/Application
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import LocalDate from 'lib-common/local-date'
 import { DecisionType } from '../../decisions/types'
+import { featureFlags } from 'lib-customizations/citizen'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -143,13 +144,15 @@ export const validateApplication = (
         )
       ),
       startTime:
-        apiData.type === 'DAYCARE' ||
+        (apiData.type === 'DAYCARE' &&
+          featureFlags.daycareApplication.dailyTimesEnabled) ||
         (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.startTime) ||
             regexp(form.serviceNeed.startTime, TIME_REGEXP, 'timeFormat')
           : undefined,
       endTime:
-        apiData.type === 'DAYCARE' ||
+        (apiData.type === 'DAYCARE' &&
+          featureFlags.daycareApplication.dailyTimesEnabled) ||
         (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.endTime) ||
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')

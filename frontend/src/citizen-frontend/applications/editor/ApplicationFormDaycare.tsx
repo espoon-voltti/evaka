@@ -42,7 +42,7 @@ export default React.memo(function ApplicationFormDaycare({
   )
 
   useEffect(() => {
-    if (featureFlags.daycareApplicationServiceNeedOptionsEnabled) {
+    if (featureFlags.daycareApplication.serviceNeedOptionsEnabled) {
       loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
     } else {
       setServiceNeedOptions(Success.of([]))

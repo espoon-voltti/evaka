@@ -25,7 +25,7 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import { H4, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faChild,
   faExclamationTriangle,
@@ -36,8 +36,8 @@ import {
   faUserFriends,
   faUsers
 } from 'lib-icons'
-import { set } from 'lodash/fp'
-import React from 'react'
+import { flow, set } from 'lodash/fp'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
@@ -51,6 +51,8 @@ import { Translations, useTranslation } from '../../state/i18n'
 import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { featureFlags } from 'lib-customizations/citizen'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -60,11 +62,16 @@ interface PreschoolApplicationProps {
   errors: Record<string, string>
   units: Result<PublicUnit[]>
   guardians: PersonDetails[]
+  serviceNeedOptions: ServiceNeedOptionPublicInfo[]
 }
 
 const FileUploadGridContainer = styled.div`
   grid-column: 1 / span 2;
   margin: 8px 0;
+`
+const SubRadios = styled.div`
+  margin-bottom: ${defaultMargins.s};
+  margin-left: ${defaultMargins.XL};
 `
 
 export default React.memo(function ApplicationEditView({
@@ -72,7 +79,8 @@ export default React.memo(function ApplicationEditView({
   setApplication,
   errors,
   units,
-  guardians
+  guardians,
+  serviceNeedOptions
 }: PreschoolApplicationProps) {
   const { i18n } = useTranslation()
 
@@ -102,6 +110,21 @@ export default React.memo(function ApplicationEditView({
     guardianRestricted,
     attachments
   } = application
+
+  const fullTimeOptions = useMemo(
+    () =>
+      serviceNeedOptions?.filter(
+        (opt) => opt.validPlacementType === 'DAYCARE'
+      ) ?? [],
+    [serviceNeedOptions]
+  )
+  const partTimeOptions = useMemo(
+    () =>
+      serviceNeedOptions?.filter(
+        (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
+      ) ?? [],
+    [serviceNeedOptions]
+  )
 
   const preferencesInUnitsList = units
     .map((us) =>
@@ -220,27 +243,88 @@ export default React.memo(function ApplicationEditView({
               {serviceNeed !== null && (
                 <>
                   <Label>{i18n.application.serviceNeed.partTimeLabel}</Label>
-                  <div>
+                  <FixedSpaceColumn>
                     <Radio
                       label={i18n.application.serviceNeed.partTime}
                       checked={serviceNeed.partTime === true}
                       onChange={() => {
                         setApplication(
-                          set('form.preferences.serviceNeed.partTime', true)
+                          flow(
+                            set('form.preferences.serviceNeed.partTime', true),
+                            set(
+                              'form.preferences.serviceNeed.serviceNeedOption',
+                              partTimeOptions[0] ?? null
+                            )
+                          )
                         )
                       }}
                     />
-                    <Gap size="xs" />
+                    {featureFlags.daycareApplication
+                      .serviceNeedOptionsEnabled &&
+                      serviceNeed.partTime && (
+                        <SubRadios>
+                          <FixedSpaceColumn spacing={'xs'}>
+                            {partTimeOptions.map((opt) => (
+                              <Radio
+                                key={opt.id}
+                                label={opt.name}
+                                checked={
+                                  serviceNeed.serviceNeedOption?.id === opt.id
+                                }
+                                onChange={() => {
+                                  setApplication(
+                                    set(
+                                      'form.preferences.serviceNeed.serviceNeedOption',
+                                      opt
+                                    )
+                                  )
+                                }}
+                              />
+                            ))}
+                          </FixedSpaceColumn>
+                        </SubRadios>
+                      )}
                     <Radio
                       label={i18n.application.serviceNeed.fullTime}
                       checked={serviceNeed.partTime === false}
                       onChange={() => {
                         setApplication(
-                          set('form.preferences.serviceNeed.partTime', false)
+                          flow(
+                            set('form.preferences.serviceNeed.partTime', false),
+                            set(
+                              'form.preferences.serviceNeed.serviceNeedOption',
+                              fullTimeOptions[0] ?? null
+                            )
+                          )
                         )
                       }}
                     />
-                  </div>
+                    {featureFlags.daycareApplication
+                      .serviceNeedOptionsEnabled &&
+                      !serviceNeed.partTime && (
+                        <SubRadios>
+                          <FixedSpaceColumn spacing={'xs'}>
+                            {fullTimeOptions.map((opt) => (
+                              <Radio
+                                key={opt.id}
+                                label={opt.name}
+                                checked={
+                                  serviceNeed.serviceNeedOption?.id === opt.id
+                                }
+                                onChange={() => {
+                                  setApplication(
+                                    set(
+                                      'form.preferences.serviceNeed.serviceNeedOption',
+                                      opt
+                                    )
+                                  )
+                                }}
+                              />
+                            ))}
+                          </FixedSpaceColumn>
+                        </SubRadios>
+                      )}
+                  </FixedSpaceColumn>
                 </>
               )}
             </>
@@ -271,57 +355,69 @@ export default React.memo(function ApplicationEditView({
 
           {serviceNeed !== null && (
             <>
-              <Label>{i18n.application.serviceNeed.dailyTime}</Label>
-              <div>
-                <HorizontalContainer>
-                  <InputField
-                    width="m"
-                    placeholder={
-                      i18n.application.serviceNeed.startTimePlaceholder
-                    }
-                    value={serviceNeed.startTime}
-                    onChange={(value) =>
-                      setApplication(
-                        set('form.preferences.serviceNeed.startTime', value)
-                      )
-                    }
-                    info={
-                      errors['form.preferences.serviceNeed.startTime']
-                        ? {
-                            text:
-                              errors['form.preferences.serviceNeed.startTime'],
-                            status: 'warning'
+              {type !== 'DAYCARE' ||
+                (featureFlags.daycareApplication.dailyTimesEnabled && (
+                  <>
+                    <Label>{i18n.application.serviceNeed.dailyTime}</Label>
+                    <div>
+                      <HorizontalContainer>
+                        <InputField
+                          width="m"
+                          placeholder={
+                            i18n.application.serviceNeed.startTimePlaceholder
                           }
-                        : undefined
-                    }
-                    data-qa="start-time"
-                  />
-                  <Gap size="s" horizontal />
-                  <InputField
-                    width="m"
-                    placeholder={
-                      i18n.application.serviceNeed.endTimePlaceholder
-                    }
-                    value={serviceNeed.endTime}
-                    onChange={(value) =>
-                      setApplication(
-                        set('form.preferences.serviceNeed.endTime', value)
-                      )
-                    }
-                    info={
-                      errors['form.preferences.serviceNeed.endTime']
-                        ? {
-                            text:
-                              errors['form.preferences.serviceNeed.endTime'],
-                            status: 'warning'
+                          value={serviceNeed.startTime}
+                          onChange={(value) =>
+                            setApplication(
+                              set(
+                                'form.preferences.serviceNeed.startTime',
+                                value
+                              )
+                            )
                           }
-                        : undefined
-                    }
-                    data-qa="end-time"
-                  />
-                </HorizontalContainer>
-                <Gap size="m" />
-              </div>
+                          info={
+                            errors['form.preferences.serviceNeed.startTime']
+                              ? {
+                                  text:
+                                    errors[
+                                      'form.preferences.serviceNeed.startTime'
+                                    ],
+                                  status: 'warning'
+                                }
+                              : undefined
+                          }
+                          data-qa="start-time"
+                        />
+                        <Gap size="s" horizontal />
+                        <InputField
+                          width="m"
+                          placeholder={
+                            i18n.application.serviceNeed.endTimePlaceholder
+                          }
+                          value={serviceNeed.endTime}
+                          onChange={(value) =>
+                            setApplication(
+                              set('form.preferences.serviceNeed.endTime', value)
+                            )
+                          }
+                          info={
+                            errors['form.preferences.serviceNeed.endTime']
+                              ? {
+                                  text:
+                                    errors[
+                                      'form.preferences.serviceNeed.endTime'
+                                    ],
+                                  status: 'warning'
+                                }
+                              : undefined
+                          }
+                          data-qa="end-time"
+                        />
+                      </HorizontalContainer>
+                      <Gap size="m" />
+                    </div>
+                  </>
+                ))}
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               <Checkbox

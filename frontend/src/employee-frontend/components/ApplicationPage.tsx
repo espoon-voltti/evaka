@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../types'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import { ApplicationResponse } from '../types/application'
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
@@ -28,6 +28,12 @@ import { UserContext } from '../state/user'
 import { hasRole } from '../utils/roles'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
+import { featureFlags } from 'lib-customizations/employee'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import { getServiceNeedOptionPublicInfos } from 'employee-frontend/api/child/service-needs'
+import Loader from 'lib-components/atoms/Loader'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -124,16 +130,52 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     window.scrollTo({ left: 0, top: position })
   }, [application]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [serviceNeedOptions, setServiceNeedOptions] = useState<
+    Result<ServiceNeedOptionPublicInfo[]>
+  >(Success.of([]))
+
+  const loadServiceNeedOptions = useRestApi(
+    getServiceNeedOptionPublicInfos,
+    setServiceNeedOptions
+  )
+
+  useEffect(() => {
+    if (!editing || editedApplication?.type !== 'DAYCARE') {
+      return
+    }
+    if (featureFlags.daycareApplication.serviceNeedOptionsEnabled) {
+      loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
+    } else {
+      setServiceNeedOptions(Success.of([]))
+    }
+  }, [
+    setServiceNeedOptions,
+    loadServiceNeedOptions,
+    editing,
+    editedApplication?.type
+  ])
+
   const renderApplication = (applicationData: ApplicationResponse) =>
     editing ? (
       editedApplication ? (
-        <ApplicationEditView
-          application={editedApplication}
-          setApplication={setEditedApplication}
-          errors={validationErrors}
-          units={units}
-          guardians={applicationData.guardians}
-        />
+        <>
+          {serviceNeedOptions.isLoading && <Loader />}
+          {serviceNeedOptions.isFailure && (
+            <ErrorSegment
+              title={i18n.application.serviceNeed.error.getServiceNeedOptions}
+            />
+          )}
+          {serviceNeedOptions.isSuccess && (
+            <ApplicationEditView
+              application={editedApplication}
+              setApplication={setEditedApplication}
+              errors={validationErrors}
+              units={units}
+              guardians={applicationData.guardians}
+              serviceNeedOptions={serviceNeedOptions.value}
+            />
+          )}
+        </>
       ) : null
     ) : (
       <ApplicationReadView
@@ -203,7 +245,11 @@ function validateApplication(
       i18n.application.preferences.unitMismatch
   }
 
-  if (preferences.serviceNeed) {
+  if (
+    (application.type !== 'DAYCARE' ||
+      featureFlags.daycareApplication.dailyTimesEnabled) &&
+    preferences.serviceNeed
+  ) {
     if (!preferences.serviceNeed.startTime) {
       errors['form.preferences.serviceNeed.startTime'] =
         i18n.validationError.mandatoryField

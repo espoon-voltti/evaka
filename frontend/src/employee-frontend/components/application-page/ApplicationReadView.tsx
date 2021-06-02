@@ -32,6 +32,7 @@ import {
   ApplicationAttachment,
   ApplicationPersonBasics
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { featureFlags } from 'lib-customizations/employee'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()
@@ -193,10 +194,19 @@ function ApplicationReadView({
               {serviceNeed !== null && (
                 <>
                   <Label>{i18n.application.serviceNeed.partTimeLabel}</Label>
-                  {serviceNeed.partTime ? (
-                    <span>{i18n.application.serviceNeed.partTime}</span>
-                  ) : (
-                    <span>{i18n.application.serviceNeed.fullTime}</span>
+                  {!featureFlags.daycareApplication
+                    .serviceNeedOptionsEnabled && (
+                    <>
+                      {serviceNeed.partTime ? (
+                        <span>{i18n.application.serviceNeed.partTime}</span>
+                      ) : (
+                        <span>{i18n.application.serviceNeed.fullTime}</span>
+                      )}
+                    </>
+                  )}
+                  {featureFlags.daycareApplication
+                    .serviceNeedOptionsEnabled && (
+                    <span>{serviceNeed.serviceNeedOption?.name}</span>
                   )}
                 </>
               )}
@@ -215,10 +225,14 @@ function ApplicationReadView({
 
           {serviceNeed !== null && (
             <>
-              <Label>{i18n.application.serviceNeed.dailyTime}</Label>
-              <span>
-                {serviceNeed.startTime} - {serviceNeed.endTime}
-              </span>
+              {featureFlags.daycareApplication.dailyTimesEnabled && (
+                <>
+                  <Label>{i18n.application.serviceNeed.dailyTime}</Label>
+                  <span>
+                    {serviceNeed.startTime} - {serviceNeed.endTime}
+                  </span>
+                </>
+              )}
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               {!serviceNeed.shiftCare ? (
