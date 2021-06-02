@@ -170,7 +170,9 @@ export const fi = {
     email: 'Sähköposti on väärässä muodossa',
     phone: 'Puhelinnumero on väärässä muodossa',
     ssn: 'Henkilötunnus on väärässä muodossa',
-    time: 'Aika on väärässä muodossa'
+    time: 'Aika on väärässä muodossa',
+    cents: 'Euromäärä on väärässä muodossa',
+    decimal: 'Desimaaliluku on väärässä muodossa'
   },
   login: {
     title: 'Varhaiskasvatus',
@@ -2442,15 +2444,18 @@ export const fi = {
     title: 'Talouden maksuasetukset',
     fees: {
       title: 'Asiakasmaksut',
+      add: 'Luo uudet asiakasmaksut',
       validDuring: 'Asiakasmaksut ajalle',
       familySize: 'Perheen koko',
       minThreshold: 'Vähimmäisbruttotulo €/kk',
       maxThreshold: 'Korkeimman maksun bruttotuloraja €/kk',
+      maxFeeError: 'Enimmäismaksu ei täsmää',
       thresholdIncrease: 'Tulorajan korotussumma, kun perhekoko > 6',
       thresholdIncreaseInfo:
         'Jos perheen koko on suurempi kuin 6, korotetaan maksun määräämisen perusteena olevaa tulorajaa korotussumman verran kustakin seuraavasta perheen alaikäisestä lapsesta.',
       multiplier: 'Maksu %',
-      maxFee: 'Enimmäismaksu'
+      maxFee: 'Enimmäismaksu',
+      minFee: 'Pienin perittävä lapsikohtainen maksu'
     }
   },
   roles: {

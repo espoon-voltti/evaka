@@ -15,6 +15,7 @@ import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
 import { tabletMin } from '../../breakpoints'
 
 const Wrapper = styled.div`
+  display: inline-block;
   min-width: 0; // needed for correct overflow behavior
 `
 
@@ -145,6 +146,10 @@ const InputFieldUnderRow = styled.div`
   }
 `
 
+const Symbol = styled.span`
+  margin-left: ${defaultMargins.xxs};
+`
+
 export type InputInfo = {
   text: string
   status?: InfoStatus
@@ -164,6 +169,7 @@ interface TextInputProps extends BaseProps {
   clearable?: boolean
   align?: 'left' | 'right'
   icon?: IconProp
+  symbol?: string
   type?: string
   min?: number
   max?: number
@@ -192,6 +198,7 @@ function InputField({
   'data-qa': dataQa,
   className,
   icon,
+  symbol,
   type,
   min,
   max,
@@ -241,16 +248,17 @@ function InputField({
           required={required ?? false}
           ref={inputRef}
         />
-        {clearable && !icon && (
+        {clearable && (
           <InputIcon onClick={() => onChange && onChange('')}>
             <FontAwesomeIcon icon={faTimes} />
           </InputIcon>
         )}
-        {icon && !clearable && (
+        {!clearable && icon && (
           <InputIcon>
             <FontAwesomeIcon icon={icon} />
           </InputIcon>
         )}
+        {!clearable && !icon && symbol ? <Symbol>{symbol}</Symbol> : null}
       </InputRow>
       {infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>

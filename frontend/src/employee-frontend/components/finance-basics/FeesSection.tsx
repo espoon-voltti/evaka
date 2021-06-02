@@ -1,18 +1,25 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
+import LocalDate from 'lib-common/local-date'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import { H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
+import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { getPricing } from '../../api/finance-basics'
-import { Pricing } from '../../types/finance-basics'
+import { getFeeThresholds } from '../../api/finance-basics'
+import { familySizes, FeeThresholds } from '../../types/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
+import FeeThresholdsItemEditor from './FeeThresholdsItemEditor'
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()
@@ -20,10 +27,14 @@ export default React.memo(function FeesSection() {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
-  const [data, setData] = useState<Result<Pricing[]>>(Loading.of())
+  const [data, setData] = useState<Result<FeeThresholds[]>>(Loading.of())
+  const loadData = useRestApi(getFeeThresholds, setData)
   useEffect(() => {
-    void getPricing().then(setData)
-  }, [setData])
+    void loadData()
+  }, [loadData])
+
+  const [editorState, setEditorState] = useState<EditorState>({})
+  const closeEditor = useCallback(() => setEditorState({}), [setEditorState])
 
   return (
     <CollapsibleContentArea
@@ -32,6 +43,28 @@ export default React.memo(function FeesSection() {
       open={open}
       toggleOpen={toggleOpen}
     >
+      <AddButtonRow
+        onClick={() =>
+          setEditorState({
+            editing: 'new',
+            form: emptyForm(
+              data
+                .map((ps) => ps[0]?.validDuring?.end ?? undefined)
+                .getOrElse(undefined)
+            )
+          })
+        }
+        text={i18n.financeBasics.fees.add}
+        disabled={'editing' in editorState}
+      />
+      {editorState.editing === 'new' ? (
+        <FeeThresholdsItemEditor
+          i18n={i18n}
+          initialState={editorState.form}
+          close={closeEditor}
+          reloadData={loadData}
+        />
+      ) : null}
       {data.mapAll({
         loading() {
           return <Spinner />
@@ -39,14 +72,14 @@ export default React.memo(function FeesSection() {
         failure() {
           return <ErrorSegment title={i18n.common.error.unknown} />
         },
-        success(pricings) {
+        success(feeThresholdsList) {
           return (
             <>
-              {pricings.map((pricing) => (
-                <PricingItem
-                  key={pricing.validDuring.start.formatIso()}
+              {feeThresholdsList.map((feeThresholds) => (
+                <FeeThresholdsItem
+                  key={feeThresholds.id}
                   i18n={i18n}
-                  pricing={pricing}
+                  feeThresholds={feeThresholds}
                 />
               ))}
             </>
@@ -57,36 +90,64 @@ export default React.memo(function FeesSection() {
   )
 })
 
-const PricingItem = React.memo(function PricingItem({
+const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   i18n,
-  pricing
+  feeThresholds
 }: {
   i18n: Translations
-  pricing: Pricing
+  feeThresholds: FeeThresholds
 }) {
   return (
     <>
       <div className="separator large" />
-      <H3 noMargin>
-        {i18n.financeBasics.fees.validDuring} {pricing.validDuring.format()}
+      <H3 fitted>
+        {i18n.financeBasics.fees.validDuring}{' '}
+        {feeThresholds.validDuring.format()}
       </H3>
+      <RowWithMargin spacing="XL">
+        <FixedSpaceColumn>
+          <Label>{i18n.financeBasics.fees.maxFee}</Label>
+          <Indent>{formatCents(feeThresholds.maxFee)} €</Indent>
+        </FixedSpaceColumn>
+        <FixedSpaceColumn>
+          <Label>{i18n.financeBasics.fees.minFee}</Label>
+          <Indent>{formatCents(feeThresholds.minFee)} €</Indent>
+        </FixedSpaceColumn>
+      </RowWithMargin>
       <TableWithMargin>
         <Thead>
           <Tr>
             <Th>{i18n.financeBasics.fees.familySize}</Th>
             <Th>{i18n.financeBasics.fees.minThreshold}</Th>
+            <Th>{i18n.financeBasics.fees.multiplier}</Th>
             <Th>{i18n.financeBasics.fees.maxThreshold}</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {(['2', '3', '4', '5', '6'] as const).map((n) => {
-            const prop = `minThreshold${n}` as `minThreshold${typeof n}`
+          {familySizes.map((n) => {
             return (
               <Tr key={n}>
                 <Td>{n}</Td>
-                <Td>{formatCents(pricing[prop])} €</Td>
                 <Td>
-                  {formatCents(pricing[prop] + pricing.maxThresholdDifference)}{' '}
+                  {formatCents(
+                    feeThresholds[
+                      `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+                    ]
+                  )}{' '}
+                  €
+                </Td>
+                <Td>
+                  {feeThresholds[
+                    `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
+                  ] * 100}{' '}
+                  %
+                </Td>
+                <Td>
+                  {formatCents(
+                    feeThresholds[
+                      `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+                    ]
+                  )}{' '}
                   €
                 </Td>
               </Tr>
@@ -94,30 +155,17 @@ const PricingItem = React.memo(function PricingItem({
           })}
         </Tbody>
       </TableWithMargin>
-      <LabelValuePair>
+      <ColumnWithMargin>
         <ExpandingInfo
           info={i18n.financeBasics.fees.thresholdIncreaseInfo}
           ariaLabel={i18n.common.openExpandingInfo}
         >
           <Label>{i18n.financeBasics.fees.thresholdIncrease}</Label>
         </ExpandingInfo>
-        <Indent>{formatCents(pricing.thresholdIncrease6Plus)} €</Indent>
-      </LabelValuePair>
-      <LabelValuePair>
-        <Label>{i18n.financeBasics.fees.multiplier}</Label>
-        <Indent>{pricing.multiplier * 100} %</Indent>
-      </LabelValuePair>
-      <LabelValuePair>
-        <Label>{i18n.financeBasics.fees.maxFee}</Label>
         <Indent>
-          {formatCents(
-            Math.round(
-              (pricing.maxThresholdDifference * pricing.multiplier) / 100
-            ) * 100
-          )}{' '}
-          €
+          {formatCents(feeThresholds.incomeThresholdIncrease6Plus)} €
         </Indent>
-      </LabelValuePair>
+      </ColumnWithMargin>
     </>
   )
 })
@@ -126,7 +174,11 @@ const TableWithMargin = styled(Table)`
   margin: ${defaultMargins.m} 0;
 `
 
-const LabelValuePair = styled(FixedSpaceColumn)`
+const ColumnWithMargin = styled(FixedSpaceColumn)`
+  margin: ${defaultMargins.s} 0;
+`
+
+const RowWithMargin = styled(FixedSpaceRow)`
   margin: ${defaultMargins.s} 0;
 `
 
@@ -137,3 +189,43 @@ const Label = styled.span`
 const Indent = styled.span`
   margin-left: ${defaultMargins.s};
 `
+
+type EditorState =
+  | Record<string, never>
+  | {
+      editing: string
+      form: FormState
+    }
+
+export type FormState = {
+  [k in keyof Omit<
+    FeeThresholds,
+    'id' | 'validDuring' | 'siblingDiscount2' | 'siblingDiscount2Plus'
+  >]: string
+} & {
+  validFrom: string
+  validTo: string
+}
+
+const emptyForm = (latestEndDate?: LocalDate): FormState => ({
+  validFrom: latestEndDate?.addDays(1).format() ?? '',
+  validTo: '',
+  maxFee: '',
+  minFee: '',
+  minIncomeThreshold2: '',
+  minIncomeThreshold3: '',
+  minIncomeThreshold4: '',
+  minIncomeThreshold5: '',
+  minIncomeThreshold6: '',
+  maxIncomeThreshold2: '',
+  maxIncomeThreshold3: '',
+  maxIncomeThreshold4: '',
+  maxIncomeThreshold5: '',
+  maxIncomeThreshold6: '',
+  incomeMultiplier2: '',
+  incomeMultiplier3: '',
+  incomeMultiplier4: '',
+  incomeMultiplier5: '',
+  incomeMultiplier6: '',
+  incomeThresholdIncrease6Plus: ''
+})
