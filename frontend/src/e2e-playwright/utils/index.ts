@@ -5,6 +5,7 @@
 import { isEqual } from 'lodash'
 import { differenceInSeconds } from 'date-fns'
 import config from 'e2e-test-common/config'
+import { BaseError } from 'make-error-cause'
 
 /**
  * Returns a promise that is resolved after the given amount of milliseconds
@@ -18,18 +19,25 @@ export async function delay(ms: number): Promise<void> {
 const WAIT_TIMEOUT_SECONDS = config.playwright.ci ? 30 : 5
 const WAIT_LOOP_INTERVAL_MS = 100
 
+export class WaitTimeout extends BaseError {}
+
 /**
  * Waits until the given function returns a promise which resolves to the given expected value.
  */
 export async function waitUntilEqual<T>(f: () => Promise<T>, expected: T) {
   const startTimestamp = new Date()
 
-  while (!isEqual(await f(), expected)) {
+  let value = await f()
+  while (!isEqual(value, expected)) {
     await delay(WAIT_LOOP_INTERVAL_MS)
     const now = new Date()
     if (differenceInSeconds(now, startTimestamp) > WAIT_TIMEOUT_SECONDS) {
-      throw new Error('Wait timeout')
+      expect(value).toEqual(expected)
+      // fallback in case isEqual/toEqual had different semantics for some reason
+      // and expect(...).toEqual did not throw
+      throw new WaitTimeout()
     }
+    value = await f()
   }
 }
 
