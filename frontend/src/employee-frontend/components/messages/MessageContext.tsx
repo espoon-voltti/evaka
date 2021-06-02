@@ -115,7 +115,7 @@ export const MessageContextProvider = React.memo(
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
-      messagingEnabled && loadAccounts()
+      if (messagingEnabled) loadAccounts()
     }, [messagingEnabled, loadAccounts])
 
     const [selectedAccount, setSelectedAccount] = useState<AccountView>()
