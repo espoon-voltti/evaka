@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { MessageContextProvider } from '../components/messages/MessageContext'
 import { ChildContextProvider } from '../state/child'
 import { PersonContextProvider } from '../state/person'
 import { CustomersContextProvider } from '../state/customers'
@@ -40,13 +41,15 @@ const StateProvider = React.memo(function StateProvider({
                       <DecisionDraftContextProvider>
                         <PlacementDraftContextProvider>
                           <PDUnitsContextProvider>
-                            <TitleContextProvider>
-                              <ApplicationUIContextProvider>
-                                <ThemeProvider theme={theme}>
-                                  {children}
-                                </ThemeProvider>
-                              </ApplicationUIContextProvider>
-                            </TitleContextProvider>
+                            <MessageContextProvider>
+                              <TitleContextProvider>
+                                <ApplicationUIContextProvider>
+                                  <ThemeProvider theme={theme}>
+                                    {children}
+                                  </ThemeProvider>
+                                </ApplicationUIContextProvider>
+                              </TitleContextProvider>
+                            </MessageContextProvider>
                           </PDUnitsContextProvider>
                         </PlacementDraftContextProvider>
                       </DecisionDraftContextProvider>

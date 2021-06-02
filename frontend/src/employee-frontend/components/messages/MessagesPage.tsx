@@ -10,10 +10,7 @@ import { defaultMargins } from '../../../lib-components/white-space'
 import { deleteDraft, postMessage } from './api'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
-import {
-  MessagesPageContext,
-  MessagesPageContextProvider
-} from './MessagesPageContext'
+import { MessageContext } from './MessageContext'
 import ReceiverSelection from './ReceiverSelection'
 import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
@@ -35,7 +32,7 @@ const PanelContainer = styled.div`
   display: flex;
 `
 
-function MessagesPage() {
+export default function MessagesPage() {
   const {
     accounts,
     loadAccounts,
@@ -44,7 +41,7 @@ function MessagesPage() {
     selectedAccount,
     setSelectedAccount,
     refreshMessages
-  } = useContext(MessagesPageContext)
+  } = useContext(MessageContext)
 
   useEffect(() => loadAccounts(), [loadAccounts])
 
@@ -149,13 +146,5 @@ function MessagesPage() {
           )}
       </PanelContainer>
     </MessagesPageContainer>
-  )
-}
-
-export default function MessagesPageWrapper() {
-  return (
-    <MessagesPageContextProvider>
-      <MessagesPage />
-    </MessagesPageContextProvider>
   )
 }
