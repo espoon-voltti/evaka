@@ -82,16 +82,13 @@ export const updateSelector = (
 export const getReceiverOptions = (
   selectorNode: SelectorNode
 ): ReactSelectOption[] => {
-  return (selectorNode.childNodes.length > 0
-    ? [{ label: selectorNode.name, value: selectorNode.selectorId }]
-    : []
-  ).concat(
-    !selectorNode.selected
-      ? selectorNode.childNodes.flatMap((childNode) =>
+  return !selectorNode.selected && selectorNode.childNodes.length > 0
+    ? [{ label: selectorNode.name, value: selectorNode.selectorId }].concat(
+        selectorNode.childNodes.flatMap((childNode: SelectorNode) =>
           getReceiverOptions(childNode)
         )
-      : []
-  )
+      )
+    : []
 }
 
 export const deselectAll = (selectorNode: SelectorNode): SelectorNode => {
@@ -161,4 +158,21 @@ export const getSelected = (selector: SelectorNode): ReactSelectOption[] => {
   } else {
     return [{ value: selector.selectorId, label: selector.name }]
   }
+}
+
+export const getSubTree = (
+  selector: SelectorNode,
+  selectorId: UUID
+): SelectorNode | undefined => {
+  if (selector.selectorId === selectorId) {
+    return selector
+  } else {
+    for (const child of selector.childNodes) {
+      const out = getSubTree(child, selectorId)
+      if (out) {
+        return out
+      }
+    }
+  }
+  return undefined
 }

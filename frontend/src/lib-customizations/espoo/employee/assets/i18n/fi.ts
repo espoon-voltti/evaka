@@ -2393,7 +2393,7 @@ export const fi = {
       confirmText: 'Lähetä viesti valituille'
     },
     messageEditor: {
-      newMessage: 'Uusi viesti',
+      newMessage: (unitName: string) => `Uusi viesti (${unitName})`,
       to: {
         label: 'Vastaanottaja',
         placeholder: 'Valitse ryhmä',

@@ -1,3 +1,4 @@
+import { SelectOptionProps } from 'employee-frontend/components/common/Select'
 import React, {
   createContext,
   useCallback,
@@ -32,16 +33,17 @@ import {
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
-
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
-  accounts: Result<MessageAccount[]>
+  accountsRequest: Result<MessageAccount[]>
   loadAccounts: () => void
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
   setSelectedAccount: (view: AccountView) => void
+  selectedUnit: SelectOptionProps | undefined
+  setSelectedUnit: (unit: SelectOptionProps) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -59,12 +61,14 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  accounts: Loading.of(),
+  accountsRequest: Loading.of(),
   loadAccounts: () => undefined,
   selectedDraft: undefined,
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
   setSelectedAccount: () => undefined,
+  selectedUnit: undefined,
+  setSelectedUnit: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -108,10 +112,14 @@ export const MessageContextProvider = React.memo(
       [roles]
     )
 
-    const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
-      Loading.of()
-    )
-    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
+    const [selectedUnit, setSelectedUnit] = useState<
+      SelectOptionProps | undefined
+    >()
+
+    const [accountsRequest, setAccountsRequest] = useState<
+      Result<MessageAccount[]>
+    >(Loading.of())
+    const getAccounts = useRestApi(getMessagingAccounts, setAccountsRequest)
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
@@ -239,7 +247,7 @@ export const MessageContextProvider = React.memo(
           0
         )
         if (unreadCount > 0) {
-          setAccounts((state) =>
+          setAccountsRequest((state) =>
             state.map((accounts) =>
               accounts.map((acc) =>
                 acc.id === accountId
@@ -258,12 +266,14 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        accounts,
+        accountsRequest,
         loadAccounts,
         selectedDraft,
         setSelectedDraft,
         selectedAccount,
         setSelectedAccount,
+        selectedUnit,
+        setSelectedUnit,
         page,
         setPage,
         pages,
@@ -280,10 +290,12 @@ export const MessageContextProvider = React.memo(
         refreshMessages
       }),
       [
-        accounts,
+        accountsRequest,
         loadAccounts,
         selectedDraft,
         selectedAccount,
+        selectedUnit,
+        setSelectedUnit,
         page,
         pages,
         receivedMessages,

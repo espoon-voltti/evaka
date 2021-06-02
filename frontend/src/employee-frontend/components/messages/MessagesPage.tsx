@@ -34,27 +34,38 @@ const PanelContainer = styled.div`
 
 export default function MessagesPage() {
   const {
-    accounts,
+    accountsRequest,
     loadAccounts,
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
     setSelectedAccount,
+    selectedUnit,
     refreshMessages
   } = useContext(MessageContext)
 
   useEffect(() => loadAccounts(), [loadAccounts])
   useEffect(() => refreshMessages(), [refreshMessages])
 
-  // pre-select first account
+  // pre-select first account on page load and on unit change
   useEffect(() => {
-    if (!selectedAccount && accounts.isSuccess && accounts.value[0]) {
+    const unitSelectionChange =
+      selectedAccount &&
+      accountsRequest.isSuccess &&
+      !accountsRequest.value.find(
+        (account) => account.id === selectedAccount.account.id
+      )
+    if (
+      (!selectedAccount || unitSelectionChange) &&
+      accountsRequest.isSuccess &&
+      accountsRequest.value[0]
+    ) {
       setSelectedAccount({
         view: 'RECEIVED',
-        account: accounts.value[0]
+        account: accountsRequest.value[0]
       })
     }
-  }, [accounts, setSelectedAccount, selectedAccount])
+  }, [accountsRequest, setSelectedAccount, selectedAccount])
 
   const [showEditor, setShowEditor] = useState<boolean>(false)
 
@@ -126,18 +137,17 @@ export default function MessagesPage() {
           />
         )}
         {showEditor &&
-          accounts.isSuccess &&
+          accountsRequest.isSuccess &&
           selectedReceivers &&
-          selectedAccount && (
+          selectedAccount &&
+          selectedUnit && (
             <MessageEditor
               defaultSender={{
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              senderOptions={accounts.value.map(({ name, id }) => ({
-                value: id,
-                label: name
-              }))}
+              accounts={accountsRequest.value}
+              selectedUnit={selectedUnit}
               availableReceivers={selectedReceivers}
               onSend={onSend}
               onDiscard={onDiscard}

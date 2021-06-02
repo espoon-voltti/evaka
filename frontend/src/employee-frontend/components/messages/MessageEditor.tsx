@@ -18,21 +18,28 @@ import colors from 'lib-customizations/common'
 import { faTimes, faTrash } from 'lib-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import Select from '../../components/common/Select'
+import Select, { SelectOptionProps } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import {
   deselectAll,
   getReceiverOptions,
   getSelected,
   getSelectedBottomElements,
+  getSelectorName,
+  getSubTree,
   SelectorNode,
   updateSelector
 } from './SelectorNode'
-import { DraftContent, MessageBody, UpsertableDraftContent } from './types'
+import {
+  DraftContent,
+  MessageAccount,
+  MessageBody,
+  UpsertableDraftContent
+} from './types'
 import { Draft, useDraft } from './useDraft'
 
 type Message = UpsertableDraftContent & {
-  sender: Option
+  sender: SelectOptionProps
   recipientAccountIds: UUID[]
 }
 
@@ -53,7 +60,7 @@ const emptyMessage = {
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  sender: Option
+  sender: SelectOptionProps
 ): Message =>
   draft
     ? { ...draft, sender, recipientAccountIds: [] }
@@ -68,14 +75,10 @@ const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
     deselectAll(tree)
   )
 
-interface Option {
-  label: string
-  value: string
-}
-
 interface Props {
-  defaultSender: Option
-  senderOptions: Option[]
+  defaultSender: SelectOptionProps
+  accounts: MessageAccount[]
+  selectedUnit: SelectOptionProps
   availableReceivers: SelectorNode
   onSend: (
     accountId: UUID,
@@ -89,7 +92,8 @@ interface Props {
 
 export default React.memo(function MessageEditor({
   defaultSender,
-  senderOptions,
+  accounts,
+  selectedUnit,
   availableReceivers,
   onSend,
   onDiscard,
@@ -129,15 +133,18 @@ export default React.memo(function MessageEditor({
     [contentTouched, message, setDraft]
   )
 
-  const updateReceiverTree = useCallback((newSelection: Option[]) => {
-    setReceiverTree((old) =>
-      createReceiverTree(
-        old,
-        newSelection.map((s) => s.value)
+  const updateReceiverTree = useCallback(
+    (newSelection: SelectOptionProps[]) => {
+      setReceiverTree((old) =>
+        createReceiverTree(
+          old,
+          newSelection.map((s) => s.value)
+        )
       )
-    )
-    setContentTouched(true)
-  }, [])
+      setContentTouched(true)
+    },
+    []
+  )
 
   useEffect(
     function updateSelectedReceiversOnReceiverTreeChanges() {
@@ -169,12 +176,29 @@ export default React.memo(function MessageEditor({
     },
     [i18n, draftState, draftWasModified]
   )
+  useEffect(
+    function updateReceiversOnSenderChange() {
+      const account = accounts.find(
+        (account) => account.id === message.sender.value
+      )
+      if (account?.type === 'PERSONAL') {
+        setReceiverTree(availableReceivers)
+      } else if (account?.type === 'GROUP') {
+        const groupId = account.daycareGroup.id
+        const selection = getSubTree(availableReceivers, groupId)
+        if (selection) {
+          setReceiverTree(selection)
+        }
+      }
+    },
+    [message.sender, accounts, availableReceivers]
+  )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
   const title =
     debouncedSaveStatus ||
     message.title ||
-    i18n.messages.messageEditor.newMessage
+    i18n.messages.messageEditor.newMessage(selectedUnit.label)
 
   const updateMessage = useCallback<UpdateStateFn<Message>>((changes) => {
     setMessage((old) => ({ ...old, ...changes }))
@@ -204,6 +228,23 @@ export default React.memo(function MessageEditor({
     }
     onClose(draftWasModified)
   }, [draftState, draftWasModified, onClose, saveDraft])
+
+  const senderOptions = useMemo(
+    () =>
+      accounts
+        .filter(
+          (account: MessageAccount) =>
+            account.type === 'PERSONAL' ||
+            (account.type === 'GROUP' &&
+              !!getSelectorName(account.daycareGroup.id, availableReceivers) &&
+              account.daycareGroup.unitId === selectedUnit.value)
+        )
+        .map((account: MessageAccount) => ({
+          value: account.id,
+          label: account.name
+        })),
+    [accounts, availableReceivers, selectedUnit.value]
+  )
 
   return (
     <Container>
