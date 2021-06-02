@@ -30,26 +30,34 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
+
+    @Autowired
+    lateinit var mockEndpoint: MockVardaIntegrationEndpoint
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { it.insertGeneralTestFixtures() }
         insertVardaUnit(db)
+        mockEndpoint.cleanUp()
     }
 
     @AfterEach
     fun afterEach() {
         db.transaction { it.resetDatabase() }
+        mockEndpoint.cleanUp()
     }
 
     @Test
@@ -263,6 +271,11 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         assertEquals(2, snFeeDiff.size)
         assertEquals(vd1.id, snFeeDiff.find { it.serviceNeedId == snId1 }?.voucherValueDecisionIds?.get(0))
         assertEquals(vd2.id, snFeeDiff.find { it.serviceNeedId == snId2 }?.voucherValueDecisionIds?.get(0))
+    }
+
+    @Test
+    fun `updateChildData deletes all service need related data`() {
+        // TODO tässä
     }
 
     private fun assertServiceNeedDiffSizes(diff: VardaChildCalculatedServiceNeedChanges?, expectedAdditions: Int, expectedUpdates: Int, expectedDeletes: Int) {
