@@ -1,13 +1,17 @@
 import React, {
   createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState
 } from 'react'
 import { Loading, Paged, Result } from '../../../lib-common/api'
+import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
+import { requireRole } from '../../utils/roles'
 import {
   getMessageDrafts,
   getMessagingAccounts,
@@ -98,13 +102,23 @@ const appendMessageAndMoveThreadToTopOfList = (
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
-    const [selectedAccount, setSelectedAccount] = useState<AccountView>()
+    const { roles } = useContext(UserContext)
+    const messagingEnabled = useMemo(
+      () => requireRole(roles, 'UNIT_SUPERVISOR', 'STAFF'),
+      [roles]
+    )
 
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()
     )
-    const loadAccounts = useRestApi(getMessagingAccounts, setAccounts)
+    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
+    const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
+    useEffect(() => {
+      if (messagingEnabled) loadAccounts()
+    }, [messagingEnabled, loadAccounts])
+
+    const [selectedAccount, setSelectedAccount] = useState<AccountView>()
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
     )
@@ -172,8 +186,6 @@ export const MessageContextProvider = React.memo(
       page,
       selectedAccount
     ])
-
-    useEffect(loadMessages, [loadMessages])
 
     const [replyState, setReplyState] = useState<Result<void>>()
     const setReplyResponse = useCallback((res: Result<ReplyResponse>) => {

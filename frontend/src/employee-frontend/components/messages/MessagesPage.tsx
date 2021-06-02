@@ -44,6 +44,7 @@ export default function MessagesPage() {
   } = useContext(MessageContext)
 
   useEffect(() => loadAccounts(), [loadAccounts])
+  useEffect(() => refreshMessages(), [refreshMessages])
 
   // pre-select first account
   useEffect(() => {
