@@ -6,6 +6,7 @@ package fi.espoo.evaka.dailyservicetimes
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import org.jdbi.v3.core.result.RowView
@@ -24,13 +25,18 @@ data class TimeRange(
     )
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION, property = "regular")
+enum class DailyServiceTimesType {
+    REGULAR,
+    IRREGULAR
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION, property = "type")
 sealed class DailyServiceTimes(
-    val regular: Boolean
+    val type: DailyServiceTimesType
 ) {
     data class RegularTimes(
         val regularTimes: TimeRange
-    ) : DailyServiceTimes(regular = true)
+    ) : DailyServiceTimes(DailyServiceTimesType.REGULAR)
 
     data class IrregularTimes(
         val monday: TimeRange?,
@@ -38,7 +44,7 @@ sealed class DailyServiceTimes(
         val wednesday: TimeRange?,
         val thursday: TimeRange?,
         val friday: TimeRange?
-    ) : DailyServiceTimes(regular = false)
+    ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR)
 }
 
 fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
@@ -55,22 +61,21 @@ fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
         .firstOrNull()
 }
 
-fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
-    val regular: Boolean? = row.mapColumn("regular")
-    if (regular == null) return null
-    if (regular) {
-        return DailyServiceTimes.RegularTimes(
+fun toDailyServiceTimes(row: RowView): DailyServiceTimes {
+    val type: DailyServiceTimesType = row.mapColumn("type")
+
+    return when (type) {
+        DailyServiceTimesType.REGULAR -> DailyServiceTimes.RegularTimes(
             regularTimes = toTimeRange(row, "regular")!!
         )
-    } else {
-        return DailyServiceTimes.IrregularTimes(
+        DailyServiceTimesType.IRREGULAR -> DailyServiceTimes.IrregularTimes(
             monday = toTimeRange(row, "monday"),
             tuesday = toTimeRange(row, "tuesday"),
             wednesday = toTimeRange(row, "wednesday"),
             thursday = toTimeRange(row, "thursday"),
             friday = toTimeRange(row, "friday"),
         )
-    }
+    }.exhaust()
 }
 
 fun toTimeRange(row: RowView, columnPrefix: String): TimeRange? {
@@ -93,7 +98,7 @@ private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UU
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
-            child_id, regular, 
+            child_id, type, 
             regular_start, regular_end, 
             monday_start, monday_end, 
             tuesday_start, tuesday_end,
@@ -102,7 +107,7 @@ private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UU
             friday_start, friday_end
         )
         VALUES (
-            :childId, TRUE, 
+            :childId, 'REGULAR'::daily_service_time_type, 
             :regularStart, :regularEnd, 
             NULL, NULL,
             NULL, NULL,
@@ -114,7 +119,7 @@ private fun Database.Transaction.upsertRegularChildDailyServiceTimes(childId: UU
         ON CONFLICT (child_id) DO UPDATE
         
         SET 
-            regular = TRUE,
+            type = 'REGULAR'::daily_service_time_type,
             regular_start = :regularStart,
             regular_end = :regularEnd, 
             monday_start = NULL,
@@ -141,7 +146,7 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
     // language=sql
     val sql = """
         INSERT INTO daily_service_time (
-            child_id, regular, 
+            child_id, type, 
             regular_start, regular_end, 
             monday_start, monday_end, 
             tuesday_start, tuesday_end,
@@ -150,7 +155,7 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
             friday_start, friday_end
         )
         VALUES (
-            :childId, FALSE, 
+            :childId, 'IRREGULAR'::daily_service_time_type, 
             NULL, NULL,
             :mondayStart, :mondayEnd, 
             :tuesdayStart, :tuesdayEnd,
@@ -162,7 +167,7 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
         ON CONFLICT (child_id) DO UPDATE
         
         SET 
-            regular = FALSE,
+            type = 'IRREGULAR'::daily_service_time_type,
             regular_start = NULL,
             regular_end = NULL, 
             monday_start = :mondayStart,

@@ -4,7 +4,12 @@
 
 import React from 'react'
 import { useTranslation } from '../../state/i18n'
-import { DailyServiceTimes, TimeRange } from 'lib-common/api-types/child/common'
+import {
+  DailyServiceTimes,
+  isIrregular,
+  isRegular,
+  TimeRange
+} from 'lib-common/api-types/child/common'
 import { ServiceTime } from './components'
 
 const dayNames = [
@@ -18,8 +23,8 @@ const dayNames = [
 type DayName = typeof dayNames[number]
 
 function getToday(): DayName | undefined {
-  // Sunday is 0. Adjust to dayNames indexing by subtracting 1.
-  const dayIndex = new Date().getDay() - 1
+  // Sunday is 0
+  const dayIndex = (new Date().getDay() + 6) % 7
   return dayNames[dayIndex]
 }
 
@@ -28,12 +33,16 @@ function getTodaysServiceTimes(
 ): TimeRange | 'not_today' | 'not_set' {
   if (times === null) return 'not_set'
 
-  if (times.regular) return times.regularTimes
+  if (isRegular(times)) return times.regularTimes
 
-  const today = getToday()
-  if (!today) return 'not_today'
+  if (isIrregular(times)) {
+    const today = getToday()
+    if (!today) return 'not_today'
 
-  return times[today] ?? 'not_today'
+    return times[today] ?? 'not_today'
+  }
+
+  return 'not_set'
 }
 
 interface Props {
