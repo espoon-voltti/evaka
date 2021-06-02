@@ -35,7 +35,14 @@ fun Database.Read.applicationFlags(
         )
         ApplicationType.DAYCARE -> ApplicationFlags(
             isTransferApplication = getPlacementsForChildDuring(childId, startDate, null)
-                .any { listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME).contains(it.type) }
+                .any {
+                    listOf(
+                        PlacementType.DAYCARE,
+                        PlacementType.DAYCARE_PART_TIME,
+                        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+                    ).contains(it.type)
+                }
         )
         ApplicationType.PRESCHOOL -> {
             val existingPlacements = getPlacementsForChildDuring(childId, startDate, null)
