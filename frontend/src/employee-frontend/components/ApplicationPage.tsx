@@ -65,7 +65,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     hasRole(roles, 'ADMIN')
 
   useEffect(() => {
-    if (editing && editedApplication) {
+    if (editing && editedApplication?.type) {
       const applicationType =
         editedApplication.type === 'PRESCHOOL' &&
         editedApplication.form.preferences.preparatory
@@ -78,11 +78,11 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
           LocalDate.today()
       ).then(setUnits)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     editing,
     editedApplication?.type,
-    editedApplication?.form.preferences.preferredStartDate
+    editedApplication?.form.preferences.preferredStartDate,
+    editedApplication?.form.preferences.preparatory
   ])
 
   // this is used because text inputs become too sluggish without it
