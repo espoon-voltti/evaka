@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { t, Selector } from 'testcafe'
+import { Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
-import { Checkbox, selectFirstOption } from '../../utils/helpers'
+import { Checkbox } from '../../utils/helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'
 
@@ -53,7 +53,11 @@ export class UnitDetailsPage {
   }
 
   async chooseArea(area: string) {
-    await selectFirstOption(Selector('[data-qa="area-select"]'), area)
+    const combobox = Selector('[data-qa="area-select"]')
+    const input = combobox.find('input')
+    await t.selectText(input).pressKey('delete')
+    await t.typeText(input, area)
+    await t.click(combobox.find('[data-qa="item"]').withExactText(area))
   }
 
   async toggleCareType(type: CareType) {
