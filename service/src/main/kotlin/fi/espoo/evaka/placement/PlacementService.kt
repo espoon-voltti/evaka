@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
@@ -350,6 +351,101 @@ private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, ty
             ) to normalPlacementType
         else null
     )
+}
+
+fun getMissingGroupPlacements(
+    tx: Database.Read,
+    unitId: UUID
+): List<MissingGroupPlacement> {
+    data class GroupPlacementGap(
+        val backup: Boolean,
+        val placementId: UUID,
+        val placementType: PlacementType?,
+        val placementRange: FiniteDateRange,
+        val childId: UUID,
+        val gapRange: FiniteDateRange
+    )
+
+    data class PlacementResult(
+        val id: UUID,
+        val type: PlacementType,
+        val range: FiniteDateRange,
+        val childId: UUID,
+        val groupPlacementRanges: List<FiniteDateRange>
+    )
+    val placements = tx.createQuery(
+        """
+        SELECT 
+            FALSE AS backup,
+            pl.id, 
+            pl.type,
+            daterange(pl.start_date, pl.end_date, '[]') AS range,
+            pl.child_id,
+            array_remove(array_agg(
+                case when dgp.id is null then null else daterange(dgp.start_date, dgp.end_date, '[]') end
+            ), null) AS group_placement_ranges
+        FROM placement pl
+        LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id
+        WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange('2020-03-01', NULL)
+        GROUP BY pl.id, pl.type, pl.start_date, pl.end_date, pl.child_id
+    """
+    ).bind("unitId", unitId).mapTo<PlacementResult>().list()
+
+    val missingGroupPlacements = placements.flatMap { placement ->
+        placement.range.complement(placement.groupPlacementRanges).map { gap ->
+            GroupPlacementGap(
+                backup = false,
+                placementId = placement.id,
+                placementType = placement.type,
+                placementRange = placement.range,
+                childId = placement.childId,
+                gapRange = gap
+            )
+        }
+    }
+
+    val missingBackupCareGroups = tx.createQuery(
+        """
+        SELECT 
+            TRUE AS backup,
+            id AS placement_id,
+            NULL AS placement_type,
+            daterange(start_date, end_date, '[]') AS placement_range,
+            child_id,
+            daterange(start_date, end_date, '[]') AS gap_range
+        FROM backup_care bc
+        WHERE bc.unit_id = :unitId AND  bc.group_id IS NULL 
+            AND daterange(bc.start_date, bc.end_date, '[]') && daterange('2020-03-01', NULL)
+    """
+    ).bind("unitId", unitId).mapTo<GroupPlacementGap>().list()
+
+    val gaps = missingGroupPlacements + missingBackupCareGroups
+
+    val children = tx.createQuery(
+        """
+        SELECT id, first_name, last_name, date_of_birth, social_security_number
+        FROM person WHERE id = ANY(:childIds)
+    """
+    )
+        .bind("childIds", gaps.map { it.childId }.toSet().toTypedArray())
+        .mapTo<ChildBasics>()
+        .list()
+        .associateBy { it.id }
+
+    return gaps.map { gap ->
+        val child = children[gap.childId]!!
+        MissingGroupPlacement(
+            placementId = gap.placementId,
+            placementType = gap.placementType,
+            backup = gap.backup,
+            placementPeriod = gap.placementRange,
+            childId = child.id,
+            firstName = child.firstName,
+            lastName = child.lastName,
+            dateOfBirth = child.dateOfBirth,
+            gap = gap.gapRange
+        )
+    }
 }
 
 data class DaycarePlacement(

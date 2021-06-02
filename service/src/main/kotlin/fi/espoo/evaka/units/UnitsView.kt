@@ -58,7 +58,8 @@ class UnitsView(private val acl: AccessControlList) {
             value = "to",
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam(required = false) v2: Boolean = false
+        @RequestParam(required = false) v2: Boolean = false,
+        @RequestParam(required = false) missingGroupPlacementsV2: Boolean = false
     ): ResponseEntity<UnitDataResponse> {
         Audit.UnitView.log(targetId = unitId)
         val currentUserRoles = acl.getRolesForUnit(user, unitId)
@@ -69,7 +70,11 @@ class UnitsView(private val acl: AccessControlList) {
             val groups = it.getDaycareGroups(unitId, from, to)
             val placements = it.getDetailedDaycarePlacements(unitId, null, from, to).toList()
             val backupCares = it.getBackupCaresForDaycare(unitId, period)
-            val missingGroupPlacements = it.getMissingGroupPlacements(unitId)
+            val missingGroupPlacements = if (missingGroupPlacementsV2) {
+                getMissingGroupPlacements(it, unitId)
+            } else {
+                it.getMissingGroupPlacements(unitId)
+            }
             val caretakers = Caretakers(
                 unitCaretakers = it.getUnitStats(unitId, from, to),
                 groupCaretakers = it.getGroupStats(unitId, from, to)

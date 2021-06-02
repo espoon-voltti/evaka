@@ -156,14 +156,16 @@ export type UnitData = {
 export async function getUnitData(
   id: UUID,
   from: LocalDate,
-  to: LocalDate
+  to: LocalDate,
+  missingGroupPlacementsV2?: boolean
 ): Promise<Result<UnitData>> {
   try {
     const response = await client.get<JsonOf<UnitData>>(`/views/units/${id}`, {
       params: {
         from: from.formatIso(),
         to: to.formatIso(),
-        v2: featureFlags.useNewServiceNeeds
+        v2: featureFlags.useNewServiceNeeds,
+        missingGroupPlacementsV2
       }
     })
 
