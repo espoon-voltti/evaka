@@ -552,6 +552,14 @@ export async function insertChildFixture(
   }
 }
 
+export async function insertServiceNeedOptions(): Promise<void> {
+  try {
+    await devClient.post<UUID>(`/service-need-options`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function runPendingAsyncJobs(): Promise<void> {
   try {
     await devClient.post(`/run-jobs`, null)
