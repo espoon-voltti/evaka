@@ -16,6 +16,10 @@ const Root = styled.div`
   &.active {
     border-color: ${({ theme: { colors } }) => colors.main.primaryActive};
   }
+  &.full-width {
+    width: 100%;
+    max-width: initial;
+  }
 `
 
 const InputWrapper = styled.div`
@@ -125,6 +129,7 @@ interface Props<T> {
     menuItem?: (props: MenuItemProps<T>) => React.ReactNode
     menuEmptyItem?: (label: string) => React.ReactNode
   }
+  fullWidth?: boolean
   'data-qa'?: string
 }
 
@@ -159,6 +164,7 @@ export default function Combobox<T>(props: Props<T>) {
     getItemDataQa,
     menuEmptyLabel,
     children,
+    fullWidth,
     'data-qa': dataQa
   } = props
   const enabled = !disabled
@@ -272,7 +278,10 @@ export default function Combobox<T>(props: Props<T>) {
   }, [focused, isOpen, setInputValue, itemToString, selectedItem])
   const active = isOpen || focused
   return (
-    <Root data-qa={dataQa} className={classNames({ active })}>
+    <Root
+      data-qa={dataQa}
+      className={classNames({ active, 'full-width': fullWidth })}
+    >
       <InputWrapper
         {...getComboboxProps({
           disabled,
