@@ -173,8 +173,6 @@ export const MessageContextProvider = React.memo(
       selectedAccount
     ])
 
-    useEffect(loadMessages, [loadMessages])
-
     const [replyState, setReplyState] = useState<Result<void>>()
     const setReplyResponse = useCallback((res: Result<ReplyResponse>) => {
       setReplyState(res.map(() => undefined))
