@@ -9,26 +9,23 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import { voucherValueDecisionsFixture } from 'e2e-test-common/dev-api/fixtures'
 import {
-  cleanUpInvoicingDatabase,
   insertVoucherValueDecisionFixtures,
+  resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin, seppoAdminRole } from '../../config/users'
 
 const page = new InvoicingPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Invoicing - voucher value decisions')
   .meta({ type: 'regression', subType: 'voucherValueDecisions' })
-  .page(page.url)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-  })
   .beforeEach(async () => {
-    await cleanUpInvoicingDatabase()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
+
     await insertVoucherValueDecisionFixtures([
       voucherValueDecisionsFixture(
         'e2d75fa4-7359-406b-81b8-1703785ca649',
@@ -39,13 +36,9 @@ fixture('Invoicing - voucher value decisions')
     ])
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUpInvoicingDatabase()
-    await cleanUp()
-  })
 
 test('List of voucher value decision drafts shows at least one row', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, page.url)
   await page.navigateToValueDecisions(t)
   await t.click(page.areaFilter(fixtures.careAreaFixture.shortName))
 
@@ -53,7 +46,7 @@ test('List of voucher value decision drafts shows at least one row', async (t) =
 })
 
 test('Navigate to and from decision details page', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, page.url)
   await page.navigateToValueDecisions(t)
   await t.click(page.areaFilter(fixtures.careAreaFixture.shortName))
 
@@ -65,7 +58,7 @@ test('Navigate to and from decision details page', async (t) => {
 })
 
 test('voucher value decisions are toggled and sent', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, page.url)
   await page.navigateToValueDecisions(t)
   await t.click(page.areaFilter(fixtures.careAreaFixture.shortName))
 
