@@ -8,6 +8,7 @@ import { uploadChildImage } from '../../../api/childImages'
 import 'react-image-crop/dist/ReactCrop.css'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from '../../../state/i18n'
 
 const defaultCrop: ReactCrop.Crop = {
   unit: '%',
@@ -27,6 +28,7 @@ export default React.memo(function ImageEditor({
   image,
   onReturn
 }: Props) {
+  const { i18n } = useTranslation()
   const [crop, setCrop] = useState<ReactCrop.Crop>(defaultCrop)
   const [completedCrop, setCompletedCrop] = useState<ReactCrop.Crop | null>(
     null
@@ -137,9 +139,13 @@ export default React.memo(function ImageEditor({
       <Gap />
 
       <ButtonRow>
-        <Button text={'Peruuta'} onClick={onReturn} disabled={submitting} />
         <Button
-          text={'Tallenna'}
+          text={i18n.common.cancel}
+          onClick={onReturn}
+          disabled={submitting}
+        />
+        <Button
+          text={i18n.common.save}
           primary
           disabled={!completedCrop || submitting}
           onClick={onSave}

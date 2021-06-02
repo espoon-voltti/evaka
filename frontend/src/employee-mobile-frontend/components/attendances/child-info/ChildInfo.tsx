@@ -296,12 +296,14 @@ export default React.memo(function AttendanceChildPage() {
       {uiMode === 'img-modal' && (
         <>
           <BottomModalMenu
-            title={'Lapsen profiilikuva'}
+            title={i18n.attendances.childInfo.image.modalMenu.title}
             onClose={() => setUiMode('default')}
           >
             <FixedSpaceColumn>
               <Button
-                text={'Valitse kuva'}
+                text={
+                  i18n.attendances.childInfo.image.modalMenu.takeImageButton
+                }
                 primary
                 onClick={() => {
                   if (uploadInputRef.current) uploadInputRef.current.click()
@@ -309,7 +311,9 @@ export default React.memo(function AttendanceChildPage() {
               />
               {child?.imageUrl && (
                 <Button
-                  text={'Poista kuva'}
+                  text={
+                    i18n.attendances.childInfo.image.modalMenu.deleteImageButton
+                  }
                   onClick={() => setUiMode('img-delete')}
                 />
               )}
@@ -344,9 +348,10 @@ export default React.memo(function AttendanceChildPage() {
         <InfoModal
           icon={faQuestion}
           iconColour="orange"
-          title={'Haluatko varmasti poistaa lapsen kuvan?'}
+          title={i18n.attendances.childInfo.image.modalMenu.deleteConfirm.title}
           resolve={{
-            label: 'Poista kuva',
+            label:
+              i18n.attendances.childInfo.image.modalMenu.deleteConfirm.resolve,
             action: () => {
               void deleteChildImage(childId).then((res) => {
                 if (res.isFailure) {
@@ -359,7 +364,8 @@ export default React.memo(function AttendanceChildPage() {
             }
           }}
           reject={{
-            label: 'Älä poista',
+            label:
+              i18n.attendances.childInfo.image.modalMenu.deleteConfirm.reject,
             action: () => setUiMode('default')
           }}
         />
