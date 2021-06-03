@@ -364,21 +364,7 @@ class DevApi(
     @PostMapping("/pricing")
     fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholdsWithValidity): ResponseEntity<UUID> = db.transaction {
         ResponseEntity.ok(
-            it.createUpdate(
-                """
-INSERT INTO fee_thresholds (id, valid_during,
-    income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6,
-    min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6,
-    max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6,
-    income_threshold_increase_6_plus, min_fee, max_fee, sibling_discount_2, sibling_discount_2_plus)
-VALUES (:id, :validDuring,
-    :incomeMultiplier2, :incomeMultiplier3, :incomeMultiplier4, :incomeMultiplier5, :incomeMultiplier6,
-    :minIncomeThreshold2, :minIncomeThreshold3, :minIncomeThreshold4, :minIncomeThreshold5, :minIncomeThreshold6,
-    :maxIncomeThreshold2, :maxIncomeThreshold3, :maxIncomeThreshold4, :maxIncomeThreshold5, :maxIncomeThreshold6,
-    :incomeThresholdIncrease6Plus, :minFee, :maxFee, :siblingDiscount2, :siblingDiscount2Plus)
-RETURNING id
-"""
-            ).bindKotlin(feeThresholds).executeAndReturnGeneratedKeys().mapTo<UUID>().single()
+            it.insertTestPricing(feeThresholds)
         )
     }
 

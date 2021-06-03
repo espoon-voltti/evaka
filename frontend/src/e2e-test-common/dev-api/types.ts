@@ -22,6 +22,14 @@ export interface Coordinate {
   lon: number
 }
 
+export interface FeeDecisionThresholds {
+  minIncomeThreshold: number
+  maxIncomeThreshold: number
+  minFee: number
+  maxFee: number
+  incomeMultiplier: number
+}
+
 export interface FeeDecision {
   id: UUID
   status: FeeDecisionStatus
@@ -34,16 +42,7 @@ export interface FeeDecision {
   validTo: ISODate
   headOfFamily: { id: UUID }
   familySize: number
-  pricing: {
-    multiplier: string
-    maxThresholdDifference: number
-    minThreshold2: number
-    minThreshold3: number
-    minThreshold4: number
-    minThreshold5: number
-    minThreshold6: number
-    thresholdIncrease6Plus: number
-  }
+  pricing: FeeDecisionThresholds
   parts: [
     {
       child: {
@@ -87,16 +86,7 @@ export interface VoucherValueDecision {
   validTo: ISODate
   headOfFamily: { id: UUID }
   familySize: number
-  pricing: {
-    multiplier: string
-    maxThresholdDifference: number
-    minThreshold2: number
-    minThreshold3: number
-    minThreshold4: number
-    minThreshold5: number
-    minThreshold6: number
-    thresholdIncrease6Plus: number
-  }
+  pricing: FeeDecisionThresholds
   child: {
     id: UUID
     dateOfBirth: string
