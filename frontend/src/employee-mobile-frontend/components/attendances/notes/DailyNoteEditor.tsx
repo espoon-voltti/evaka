@@ -437,7 +437,7 @@ export default React.memo(function DailyNoteEditor() {
                       onChange={(value) =>
                         editNote({
                           ...dailyNote,
-                          sleepingHours: parseFloat(value)
+                          sleepingHours: parseInt(value)
                         })
                       }
                       placeholder={i18n.attendances.notes.placeholders.hours}
@@ -455,7 +455,7 @@ export default React.memo(function DailyNoteEditor() {
                       onChange={(value) =>
                         editNote({
                           ...dailyNote,
-                          sleepingMinutes: parseFloat(value)
+                          sleepingMinutes: parseInt(value)
                         })
                       }
                       placeholder={i18n.attendances.notes.placeholders.minutes}
