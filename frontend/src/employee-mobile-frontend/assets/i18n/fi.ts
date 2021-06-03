@@ -127,7 +127,8 @@ export const fi = {
       serviceToday: (start: string, end: string) =>
         `Varhaiskasvatusaika tänään ${start}-${end}`,
       noServiceToday: 'Ei varattua varhaiskasvatusaikaa tänään',
-      notSet: 'Varhaiskasvatusaikaa ei asetettuna'
+      notSet: 'Varhaiskasvatusaikaa ei asetettuna',
+      variableTimes: 'Vaihteleva varhaiskasvatusaika'
     },
     notes: {
       dailyNotes: 'Muistiinpanot',

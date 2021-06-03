@@ -537,7 +537,8 @@ export const fi = {
       types: {
         notSet: 'Ei asetettu',
         regular: 'Säännöllinen varhaiskasvatusaika',
-        irregular: 'Epäsäännöllinen varhaiskasvatusaika'
+        irregular: 'Epäsäännöllinen varhaiskasvatusaika',
+        variableTimes: 'Vaihteleva varhaiskasvatusaika'
       },
       weekdays: {
         monday: 'Maanantai',
