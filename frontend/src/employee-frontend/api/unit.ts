@@ -712,6 +712,13 @@ export async function upsertChildDaycareDailyNote(
   daycareDailyNote: DaycareDailyNoteFormData
 ): Promise<Result<Unit>> {
   const url = `/daycare-daily-note/child/${childId}`
+  if (daycareDailyNote.sleepingHours) {
+    daycareDailyNote.sleepingMinutes = (daycareDailyNote.sleepingMinutes
+      ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
+        Number(daycareDailyNote.sleepingHours) * 60
+      : 0
+    ).toString()
+  }
   return (daycareDailyNote.id
     ? client.put(url, daycareDailyNote)
     : client.post(url, daycareDailyNote)
@@ -725,6 +732,13 @@ export async function upsertGroupDaycareDailyNote(
   daycareDailyNote: DaycareDailyNoteFormData
 ): Promise<Result<Unit>> {
   const url = `/daycare-daily-note/group/${groupId}`
+  if (daycareDailyNote.sleepingHours) {
+    daycareDailyNote.sleepingMinutes = (daycareDailyNote.sleepingMinutes
+      ? Number(daycareDailyNote.sleepingMinutes ?? 0) +
+        Number(daycareDailyNote.sleepingHours) * 60
+      : 0
+    ).toString()
+  }
   return (daycareDailyNote.id
     ? client.put(url, daycareDailyNote)
     : client.post(url, daycareDailyNote)
@@ -751,6 +765,7 @@ export interface DaycareDailyNoteFormData {
   feedingNote?: DaycareDailyNoteLevelInfo
   sleepingNote?: DaycareDailyNoteLevelInfo
   sleepingHours?: string
+  sleepingMinutes?: string
   reminders: DaycareDailyNoteReminder[]
   reminderNote?: string
   modifiedAt?: Date | null

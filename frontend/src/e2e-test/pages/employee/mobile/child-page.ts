@@ -37,8 +37,11 @@ export default class ChildPage {
   readonly backBtn = Selector('[data-qa="back-btn"]')
 
   readonly dailyNoteNoteInput = Selector('[data-qa="daily-note-note-input"]')
-  readonly dailyNoteSleepingTimeInput = Selector(
-    '[data-qa="sleeping-time-input"]'
+  readonly dailyNoteSleepingTimeHoursInput = Selector(
+    '[data-qa="sleeping-time-hours-input"]'
+  )
+  readonly dailyNoteSleepingTimeMinutesInput = Selector(
+    '[data-qa="sleeping-time-minutes-input"]'
   )
   readonly dailyNoteReminderNoteInput = Selector(
     '[data-qa="reminder-note-input"]'
@@ -163,6 +166,8 @@ export default class ChildPage {
     mobileGroupsPage: MobileGroupsPage,
     dailyNote: DaycareDailyNote
   ) {
+    const hours = Math.floor(Number(dailyNote.sleepingMinutes) / 60).toString()
+    const minutes = (Number(dailyNote.sleepingMinutes) % 60).toString()
     await t.click(mobileGroupsPage.childName(childFixture.id))
     await t.click(this.dailyNoteLink)
 
@@ -170,7 +175,8 @@ export default class ChildPage {
 
     await t.click(this.dailyNoteFeedingNote(dailyNote.feedingNote))
     await t.click(this.dailyNoteSleepingNote(dailyNote.sleepingNote))
-    await t.typeText(this.dailyNoteSleepingTimeInput, dailyNote.sleepingHours)
+    await t.typeText(this.dailyNoteSleepingTimeHoursInput, hours)
+    await t.typeText(this.dailyNoteSleepingTimeMinutesInput, minutes)
     for (const reminder of dailyNote.reminders) {
       await t.click(this.dailyNoteReminders(reminder))
     }

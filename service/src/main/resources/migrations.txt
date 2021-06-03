@@ -96,3 +96,5 @@ V95__remove_absence_soft_delete.sql
 V96__message_account_foreign_keys.sql
 V97__assistance_action_option.sql
 V98__add_type_to_daily_service_times.sql
+V99__change_sleepinghours_to_sleepingminutes.sql
+

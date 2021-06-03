@@ -7,6 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useState } from 'react'
+
 import { useTranslation } from '../../../../state/i18n'
 import { faExclamation, faTrash } from 'lib-icons'
 import {
@@ -48,7 +49,17 @@ const initialFormData = (
   groupId: string | null
 ): DaycareDailyNoteFormData => {
   return note != null
-    ? { ...note, childId, groupId }
+    ? {
+        ...note,
+        childId,
+        groupId,
+        sleepingHours: note.sleepingMinutes
+          ? Math.floor(Number(note.sleepingMinutes) / 60).toString()
+          : '',
+        sleepingMinutes: note.sleepingMinutes
+          ? Math.round(Number(note.sleepingMinutes) % 60).toString()
+          : ''
+      }
     : {
         childId,
         groupId,
@@ -170,7 +181,8 @@ export default React.memo(function DaycareDailyNoteModal({
           submit()
           onClose()
         },
-        label: i18n.common.confirm
+        label: i18n.common.confirm,
+        disabled: Number(form.sleepingMinutes) > 59
       }}
       reject={{
         action: () => {
@@ -263,12 +275,30 @@ export default React.memo(function DaycareDailyNoteModal({
           >
             <InputField
               type={'number'}
-              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHint}
+              placeholder={i18n.unit.groups.daycareDailyNote.sleepingHoursHint}
               value={form.sleepingHours || ''}
               onChange={(value) => updateForm({ sleepingHours: value })}
               data-qa="sleeping-hours-input"
             />
             <span>{i18n.unit.groups.daycareDailyNote.sleepingHours}</span>
+            <InputField
+              type={'number'}
+              placeholder={
+                i18n.unit.groups.daycareDailyNote.sleepingMinutesHint
+              }
+              value={form.sleepingMinutes || ''}
+              onChange={(value) => updateForm({ sleepingMinutes: value })}
+              data-qa="sleeping-minutes-input"
+              info={
+                Number(form.sleepingMinutes) > 59
+                  ? {
+                      text: i18n.common.error.minutes,
+                      status: 'warning'
+                    }
+                  : undefined
+              }
+            />
+            <span>{i18n.unit.groups.daycareDailyNote.sleepingMinutes}</span>
           </FixedSpaceRow>
 
           <FixedSpaceColumn>

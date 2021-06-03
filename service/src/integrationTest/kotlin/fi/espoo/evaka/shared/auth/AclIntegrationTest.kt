@@ -82,7 +82,7 @@ class AclIntegrationTest : PureJdbiTest() {
                     modifiedAt = null,
                     reminderNote = null,
                     reminders = emptyList(),
-                    sleepingHours = null,
+                    sleepingMinutes = null,
                     sleepingNote = null
                 )
             )

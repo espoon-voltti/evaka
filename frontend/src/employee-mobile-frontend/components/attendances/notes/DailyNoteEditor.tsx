@@ -53,6 +53,7 @@ interface DailyNoteEdited {
   feedingNote: DaycareDailyNoteLevelInfo | undefined
   sleepingNote: DaycareDailyNoteLevelInfo | undefined
   sleepingHours: number | undefined
+  sleepingMinutes: number | undefined
   reminders: DaycareDailyNoteReminder[]
   reminderNote: string
 }
@@ -87,6 +88,7 @@ export default React.memo(function DailyNoteEditor() {
     feedingNote: undefined,
     sleepingNote: undefined,
     sleepingHours: undefined,
+    sleepingMinutes: undefined,
     reminders: [],
     reminderNote: ''
   })
@@ -99,7 +101,7 @@ export default React.memo(function DailyNoteEditor() {
     id: null,
     feedingNote: null,
     sleepingNote: null,
-    sleepingHours: null,
+    sleepingMinutes: null,
     reminders: [],
     reminderNote: null,
     modifiedAt: null,
@@ -234,6 +236,11 @@ export default React.memo(function DailyNoteEditor() {
           },
           label: i18n.common.save
         }}
+        resolveDisabled={
+          dailyNote.sleepingMinutes === undefined
+            ? false
+            : dailyNote.sleepingMinutes > 59
+        }
       />
     )
   }
@@ -273,6 +280,11 @@ export default React.memo(function DailyNoteEditor() {
                 }
                 text={i18n.common.save}
                 data-qa="create-daily-note-btn"
+                disabled={
+                  dailyNote.sleepingMinutes === undefined
+                    ? false
+                    : dailyNote.sleepingMinutes > 59
+                }
               />
             </TopRow>
             <FixedSpaceColumn>
@@ -425,17 +437,42 @@ export default React.memo(function DailyNoteEditor() {
                       onChange={(value) =>
                         editNote({
                           ...dailyNote,
-                          sleepingHours: parseFloat(value)
+                          sleepingHours: parseInt(value)
                         })
                       }
-                      placeholder={
-                        i18n.attendances.notes.placeholders.sleepingTime
-                      }
-                      data-qa="sleeping-time-input"
+                      placeholder={i18n.attendances.notes.placeholders.hours}
+                      data-qa="sleeping-time-hours-input"
                       width={'s'}
                       type={'number'}
                     />
-                    <span>{i18n.common.hours}</span>
+                    <span>{i18n.common.hourShort}</span>
+                    <InputField
+                      value={
+                        dailyNote.sleepingMinutes
+                          ? dailyNote.sleepingMinutes.toString()
+                          : ''
+                      }
+                      onChange={(value) =>
+                        editNote({
+                          ...dailyNote,
+                          sleepingMinutes: parseInt(value)
+                        })
+                      }
+                      placeholder={i18n.attendances.notes.placeholders.minutes}
+                      data-qa="sleeping-time-minutes-input"
+                      width={'s'}
+                      type={'number'}
+                      info={
+                        dailyNote.sleepingMinutes &&
+                        dailyNote.sleepingMinutes > 59
+                          ? {
+                              text: i18n.common.errors.minutes,
+                              status: 'warning'
+                            }
+                          : undefined
+                      }
+                    />
+                    <span>{i18n.common.minuteShort}</span>
                   </Time>
                   <FixedSpaceColumn spacing={'s'}>
                     <Label>{i18n.attendances.notes.labels.reminderNote}</Label>
@@ -503,9 +540,11 @@ function dailyNoteEditedToDailyNote(
     sleepingNote: dailyNoteEdited.sleepingNote
       ? dailyNoteEdited.sleepingNote
       : null,
-    sleepingHours: dailyNoteEdited.sleepingHours
-      ? dailyNoteEdited.sleepingHours
-      : null,
+    sleepingMinutes:
+      dailyNoteEdited.sleepingHours || dailyNoteEdited.sleepingMinutes
+        ? (dailyNoteEdited.sleepingHours ?? 0) * 60 +
+          ((dailyNoteEdited.sleepingMinutes ?? 0) % 60)
+        : null,
     modifiedBy: user?.id ?? 'unknown user',
     modifiedAt: null
   }
@@ -521,7 +560,12 @@ function dailyNoteToDailyNoteEdited(dailyNote: DailyNote): DailyNoteEdited {
     reminderNote: dailyNote.reminderNote ? dailyNote.reminderNote : '',
     feedingNote: dailyNote.feedingNote ? dailyNote.feedingNote : undefined,
     sleepingNote: dailyNote.sleepingNote ? dailyNote.sleepingNote : undefined,
-    sleepingHours: dailyNote.sleepingHours ? dailyNote.sleepingHours : undefined
+    sleepingHours: dailyNote.sleepingMinutes
+      ? Math.floor(dailyNote.sleepingMinutes / 60)
+      : undefined,
+    sleepingMinutes: dailyNote.sleepingMinutes
+      ? dailyNote.sleepingMinutes % 60
+      : undefined
   }
 }
 
@@ -542,7 +586,7 @@ function genNewGroupNote(
     id: null,
     feedingNote: null,
     sleepingNote: null,
-    sleepingHours: null,
+    sleepingMinutes: null,
     reminders: [],
     reminderNote: null,
     modifiedAt: null,
@@ -566,6 +610,7 @@ function dailyNoteIsEmpty(dailyNote: DailyNoteEdited) {
     dailyNote.reminderNote === '' &&
     dailyNote.reminders.length === 0 &&
     dailyNote.sleepingHours === undefined &&
+    dailyNote.sleepingMinutes === undefined &&
     dailyNote.sleepingNote === undefined
   )
     return true
@@ -578,6 +623,13 @@ const Time = styled.div`
 
   span {
     margin-left: ${defaultMargins.xs};
+  }
+
+  div:nth-child(2) {
+    position: absolute;
+    div:nth-child(2) {
+      position: relative;
+    }
   }
 `
 
