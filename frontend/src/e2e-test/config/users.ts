@@ -54,6 +54,12 @@ export async function employeeLogin(
   }
 }
 
+export async function mobileLogin(t: TestController, token: string) {
+  await t.navigateTo(
+    `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${token}`
+  )
+}
+
 export const seppoAdminRole = Role(
   config.employeeUrl,
   async () => {
