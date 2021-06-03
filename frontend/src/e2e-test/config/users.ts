@@ -23,7 +23,7 @@ export const seppoManager: DevLoginUser = {
 
 export async function employeeLogin(
   t: TestController,
-  user: DevLoginUser,
+  user: string | DevLoginUser,
   landingUrl?: string
 ) {
   await t.navigateTo(config.employeeUrl)
@@ -33,12 +33,16 @@ export async function employeeLogin(
   await t.eval(
     () => {
       const params = new URLSearchParams()
-      params.append('preset', 'custom')
-      params.append('firstName', 'Seppo')
-      params.append('lastName', 'Sorsa')
-      params.append('email', 'seppo.sorsa@espoo.fi')
-      params.append('aad', user.aad)
-      user.roles.forEach((role) => params.append('roles', role))
+      if (typeof user === 'string') {
+        params.append('preset', user)
+      } else {
+        params.append('preset', 'custom')
+        params.append('firstName', 'Seppo')
+        params.append('lastName', 'Sorsa')
+        params.append('email', 'seppo.sorsa@espoo.fi')
+        params.append('aad', user.aad)
+        user.roles.forEach((role) => params.append('roles', role))
+      }
       return fetch(authUrl, { method: 'POST', body: params }).then(
         () => undefined
       )
