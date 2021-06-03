@@ -2,17 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from 'e2e-test-common/config'
 import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
-  deleteDaycareDailyNotes,
-  deleteEmployeeById,
-  deleteMobileDevice,
-  deletePairing,
   insertBackupCareFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
@@ -21,7 +16,7 @@ import {
   postMobileDevice,
   resetDatabase
 } from 'e2e-test-common/dev-api'
-import { mobileAutoSignInRole } from '../../config/users'
+import { mobileLogin } from '../../config/users'
 import { t } from 'testcafe'
 import {
   CareAreaBuilder,
@@ -41,12 +36,10 @@ import {
 import LocalDate from 'lib-common/local-date'
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 const employeeId = uuidv4()
 const mobileDeviceId = employeeId
 const mobileLongTermToken = uuidv4()
-const pairingId = uuidv4()
 const daycareGroupPlacementId = uuidv4()
 
 let daycarePlacementFixture: DaycarePlacement
@@ -58,10 +51,9 @@ let careArea: CareAreaBuilder
 
 fixture('Mobile daily notes for backup care')
   .meta({ type: 'regression', subType: 'mobile' })
-  .page(config.adminUrl)
-  .before(async () => {
+  .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    ;[fixtures] = await initializeAreaAndPersonData()
 
     await Promise.all([
       insertEmployeeFixture({
@@ -120,20 +112,10 @@ fixture('Mobile daily notes for backup care')
       deleted: false,
       longTermToken: mobileLongTermToken
     })
+
+    await mobileLogin(t, mobileLongTermToken)
   })
-  .beforeEach(async () => {
-    await t.useRole(mobileAutoSignInRole(mobileLongTermToken))
-  })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await deleteDaycareDailyNotes()
-  })
-  .after(async () => {
-    await deletePairing(pairingId)
-    await deleteMobileDevice(mobileDeviceId)
-    await cleanUp()
-    await deleteEmployeeById(employeeId)
-  })
+  .afterEach(logConsoleMessages)
 
 const mobileGroupsPage = new MobileGroupsPage()
 const childPage = new ChildPage()
