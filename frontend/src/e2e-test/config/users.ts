@@ -60,22 +60,6 @@ export async function mobileLogin(t: TestController, token: string) {
   )
 }
 
-export const seppoAdminRole = Role(
-  config.employeeUrl,
-  async () => {
-    await home.login('admin')
-  },
-  { preserveUrl: true }
-)
-
-export const seppoManagerRole = Role(
-  config.employeeUrl,
-  async () => {
-    await home.login('manager')
-  },
-  { preserveUrl: true }
-)
-
 export const enduserRole = Role(
   config.enduserUrl,
   async () => {
@@ -83,18 +67,3 @@ export const enduserRole = Role(
   },
   { preserveUrl: true }
 )
-
-export const mobileAutoSignInRole = (token: string) =>
-  Role(
-    config.mobileUrl,
-    async (t) => {
-      await t.navigateTo(
-        `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${token}`
-      )
-    },
-    { preserveUrl: true }
-  )
-
-export const mobileRole = Role(config.mobileUrl, () => Promise.resolve(), {
-  preserveUrl: true
-})

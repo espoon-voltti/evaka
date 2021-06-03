@@ -14,7 +14,7 @@ import {
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
-import { employeeLogin, seppoAdmin, seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 
 const page = new InvoicingPage()
 
