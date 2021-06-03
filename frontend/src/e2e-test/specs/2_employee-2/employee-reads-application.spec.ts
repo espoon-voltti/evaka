@@ -22,7 +22,7 @@ fixture('Employee reads applications')
   .meta({ type: 'regression', subType: 'applications2' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
   .afterEach(logConsoleMessages)
 

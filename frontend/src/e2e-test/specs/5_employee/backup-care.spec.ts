@@ -42,7 +42,7 @@ fixture('Employee - Backup care')
   .meta({ type: 'regression', subType: 'backup-care' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     childFixture = fixtures.enduserChildFixtureKaarina
     backupCareFixture = createBackupCareFixture(
       childFixture.id,

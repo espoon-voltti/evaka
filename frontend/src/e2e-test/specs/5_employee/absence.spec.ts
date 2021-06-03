@@ -43,7 +43,7 @@ fixture('Employee - Absences')
   .meta({ type: 'regression', subType: 'absences' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await insertServiceNeedOptions()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertEmployeeFixture({

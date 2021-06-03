@@ -7,15 +7,12 @@ import {
   insertApplications,
   resetDatabase
 } from '../../../e2e-test-common/dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../../e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../../e2e-test-common/dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId
 } from '../../../e2e-test-common/dev-api/fixtures'
-import { employeeLogin, seppoAdmin, seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import ApplicationEditView from '../../pages/employee/applications/application-edit-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import Home from '../../pages/home'
@@ -28,13 +25,11 @@ const home = new Home()
 const applicationReadView = new ApplicationReadView()
 const applicationEditView = new ApplicationEditView()
 
-let fixtures: AreaAndPersonFixtures
-
 fixture('Employee attachments')
   .meta({ type: 'regression', subType: 'attachments' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
 
     const fixture = applicationFixture(
       fixtures.enduserChildFixtureJari,

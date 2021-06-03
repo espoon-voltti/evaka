@@ -36,7 +36,7 @@ const tauno: EmployeeDetail = {
 beforeEach(async () => {
   await resetDatabase()
 
-  const [fixtures] = await initializeAreaAndPersonData()
+  const fixtures = await initializeAreaAndPersonData()
   await insertEmployeeFixture({
     externalId: `espoo-ad:${config.unitSupervisorAad}`,
     email: 'teppo.testaaja@example.com',

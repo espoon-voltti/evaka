@@ -34,7 +34,7 @@ let childId: UUID
 beforeEach(async () => {
   await resetDatabase()
 
-  const [fixtures] = await initializeAreaAndPersonData()
+  const fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   const unitId = fixtures.daycareFixture.id

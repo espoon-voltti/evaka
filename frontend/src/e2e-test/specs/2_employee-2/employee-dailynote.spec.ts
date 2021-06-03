@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from 'e2e-test-common/config'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertDaycareGroupPlacementFixtures,
@@ -36,8 +33,6 @@ import LocalDate from 'lib-common/local-date'
 import EmployeeHome from '../../pages/employee/home'
 import UnitPage from '../../pages/employee/units/unit-page'
 
-let fixtures: AreaAndPersonFixtures
-
 const employeeId = uuidv4()
 
 let daycarePlacementFixtureJari: DaycarePlacement
@@ -53,7 +48,7 @@ fixture('Mobile daily notes')
   .meta({ type: 'regression', subType: 'mobile' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
 
     await insertServiceNeedOptions()
     await insertEmployeeFixture({

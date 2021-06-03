@@ -31,7 +31,7 @@ fixture('Mobile pairing')
   .meta({ type: 'regression', subType: 'mobile' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,

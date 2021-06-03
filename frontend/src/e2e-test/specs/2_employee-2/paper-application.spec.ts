@@ -31,7 +31,7 @@ fixture('Employee - paper application')
   .meta({ type: 'regression', subType: 'paperapplication' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertEmployeeFixture(supervisor)
 

@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from 'e2e-test-common/config'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   insertBackupPickups,
@@ -45,8 +41,6 @@ import {
 import LocalDate from '../../../lib-common/local-date'
 import { mobileLogin } from '../../config/users'
 
-let fixtures: AreaAndPersonFixtures
-
 const employeeId = uuidv4()
 const mobileDeviceId = employeeId
 const mobileLongTermToken = uuidv4()
@@ -67,7 +61,7 @@ fixture('Mobile PIN login')
   .meta({ type: 'regression', subType: 'mobile' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
 
     child = fixtures.enduserChildFixtureJari
 

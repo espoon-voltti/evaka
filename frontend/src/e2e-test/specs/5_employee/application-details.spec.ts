@@ -23,11 +23,9 @@ import {
 } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import AdminHome from '../../pages/home'
-import EmployeeHome from '../../pages/employee/home'
 import { ApplicationDetailsPage } from '../../pages/admin/application-details-page'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Application } from 'e2e-test-common/dev-api/types'
-import { DevLoginUser } from '../../pages/dev-login-form'
 import assert from 'assert'
 
 const applicationWorkbench = new ApplicationWorkbenchPage()
@@ -46,7 +44,7 @@ fixture('Application - employee application details')
   .meta({ type: 'regression', subType: 'applications' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     singleParentApplication = applicationFixture(
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserGuardianFixture

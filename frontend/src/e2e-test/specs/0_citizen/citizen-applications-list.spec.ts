@@ -32,7 +32,7 @@ fixture('Citizen applications list')
   .meta({ type: 'regression', subType: 'citizen-applications-list' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
   .afterEach(logConsoleMessages)
 

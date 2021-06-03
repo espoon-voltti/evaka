@@ -40,7 +40,7 @@ fixture('Employee - Head of family details')
   .meta({ type: 'regression', subType: 'childinformation' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await insertServiceNeedOptions()
     await insertVoucherValues()
     regularPerson = fixtures.familyWithTwoGuardians.guardian

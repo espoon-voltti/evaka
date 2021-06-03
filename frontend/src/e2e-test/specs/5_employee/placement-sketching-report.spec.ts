@@ -36,7 +36,7 @@ fixture('Placement sketching report')
   .meta({ type: 'regression', subType: 'reports' })
   .before(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
   .afterEach(logConsoleMessages)
 

@@ -30,7 +30,7 @@ fixture('Employee searches applications')
   .meta({ type: 'regression', subType: 'applications2' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   })
   .afterEach(logConsoleMessages)

@@ -22,7 +22,7 @@ fixture('Reporting - applications')
   .meta({ type: 'regression', subType: 'reports' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
 
     const careArea = await Fixture.careArea()
       .with({ name: 'Toinen alue' })

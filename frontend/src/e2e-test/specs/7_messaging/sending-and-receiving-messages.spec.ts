@@ -4,8 +4,6 @@
 
 import config from 'e2e-test-common/config'
 import {
-  deleteEmployeeFixture,
-  deleteMessageAccounts,
   deleteMessages,
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
@@ -44,7 +42,6 @@ const citizenMessagesPage = new CitizenMessagesPage()
 const childInformationPage = new ChildInformationPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let daycarePlacementFixture: DaycarePlacement
 let daycareGroupPlacementFixture: DaycareGroupPlacement
 
@@ -52,7 +49,7 @@ fixture('Sending and receiving bulletins')
   .meta({ type: 'regression', subType: 'bulletins' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,
       firstName: 'Seppo',

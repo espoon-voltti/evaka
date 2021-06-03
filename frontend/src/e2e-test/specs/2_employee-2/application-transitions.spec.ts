@@ -55,7 +55,7 @@ fixture('Application-transitions')
   .beforeEach(async () => {
     await resetDatabase()
     await cleanUpMessages()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
 
     const uniqueSupervisor = {
       ...supervisor,

@@ -27,7 +27,7 @@ fixture('Citizen club applications create')
   .meta({ type: 'regression', subType: 'citizen-applications-create' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
   .afterEach(logConsoleMessages)
 

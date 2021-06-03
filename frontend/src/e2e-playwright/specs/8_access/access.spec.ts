@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Fixture } from 'e2e-test-common/dev-api/fixtures'
 import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
 import { Page } from 'playwright'
@@ -26,7 +25,7 @@ let childInfo: ChildInformationPage
 
 beforeAll(async () => {
   await resetDatabase()
-  ;[fixtures] = await initializeAreaAndPersonData()
+  fixtures = await initializeAreaAndPersonData()
   await insertEmployeeFixture({
     id: config.serviceWorkerAad,
     externalId: `espoo-ad:${config.serviceWorkerAad}`,
@@ -97,9 +96,6 @@ beforeEach(async () => {
 })
 afterEach(async () => {
   await page.close()
-})
-afterAll(async () => {
-  await Fixture.cleanup()
 })
 
 describe('Child information page', () => {

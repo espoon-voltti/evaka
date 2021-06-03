@@ -4,10 +4,7 @@
 
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { supervisor, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import {
   applicationFixture,
@@ -36,8 +33,6 @@ const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
 const guardianPage = new GuardianPage()
 
-let fixtures: AreaAndPersonFixtures
-
 let daycarePlacementFixture: DaycarePlacement
 let supervisorId: string
 
@@ -45,7 +40,7 @@ fixture('Employee - Guardian Information')
   .meta({ type: 'regression', subType: 'guardianinformation' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     supervisorId = await insertEmployeeFixture(supervisor)
 

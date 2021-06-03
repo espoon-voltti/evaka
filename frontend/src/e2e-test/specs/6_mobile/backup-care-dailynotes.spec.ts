@@ -53,7 +53,7 @@ fixture('Mobile daily notes for backup care')
   .meta({ type: 'regression', subType: 'mobile' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
 
     await Promise.all([
       insertEmployeeFixture({

@@ -38,7 +38,7 @@ fixture('Invoicing - invoices')
   .meta({ type: 'regression', subType: 'invoices' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     adultWithoutSSN = await insertPersonFixture(adultFixtureWihtoutSSN)
     await insertParentshipFixtures([
       {

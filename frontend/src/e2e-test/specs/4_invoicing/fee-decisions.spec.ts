@@ -4,10 +4,7 @@
 
 import 'testcafe'
 import InvoicingPage from '../../pages/invoicing'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { feeDecisionsFixture } from 'e2e-test-common/dev-api/fixtures'
 import {
   insertFeeDecisionFixtures,
@@ -19,13 +16,11 @@ import { employeeLogin, seppoAdmin } from '../../config/users'
 
 const page = new InvoicingPage()
 
-let fixtures: AreaAndPersonFixtures
-
 fixture('Invoicing - fee decisions')
   .meta({ type: 'regression', subType: 'feeDecisions' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
 
     await insertFeeDecisionFixtures([
       feeDecisionsFixture(

@@ -36,7 +36,7 @@ fixture('Citizen decisions')
   .meta({ type: 'regression', subType: 'citizen-decisions' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
   .afterEach(logConsoleMessages)
 

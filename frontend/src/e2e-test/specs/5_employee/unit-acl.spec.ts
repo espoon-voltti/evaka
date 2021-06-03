@@ -40,7 +40,7 @@ fixture('Employee - Unit ACL')
   .meta({ type: 'regression', subType: 'unit-acl' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,

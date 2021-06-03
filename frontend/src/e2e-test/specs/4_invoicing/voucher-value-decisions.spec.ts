@@ -24,7 +24,7 @@ fixture('Invoicing - voucher value decisions')
   .meta({ type: 'regression', subType: 'voucherValueDecisions' })
   .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
 
     await insertVoucherValueDecisionFixtures([
       voucherValueDecisionsFixture(

@@ -5,10 +5,7 @@
 import 'testcafe'
 import EmployeeHome from '../../pages/employee/home'
 import { Selector } from 'testcafe'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import FridgeHeadInformationPage from '../../pages/employee/fridge-head-information/fridge-head-information-page'
@@ -16,14 +13,13 @@ import FridgeHeadInformationPage from '../../pages/employee/fridge-head-informat
 const page = new EmployeeHome()
 const fridgeHeadInformation = new FridgeHeadInformationPage()
 
-let fixtures: AreaAndPersonFixtures
 let personId: string
 
 fixture('Invoicing - invoices')
   .meta({ type: 'regression', subType: 'invoices' })
   .beforeEach(async (t) => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    const fixtures = await initializeAreaAndPersonData()
     personId = fixtures.enduserGuardianFixture.id
     await employeeLogin(t, seppoAdmin, page.url)
   })
