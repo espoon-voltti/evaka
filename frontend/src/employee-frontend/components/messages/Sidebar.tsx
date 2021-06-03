@@ -13,7 +13,7 @@ import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import colors from '../../../lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
@@ -92,19 +92,22 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
     setSelectedUnit
   } = useContext(MessageContext)
 
-  const personalAccount = accounts.find(isPersonalMessageAccount)
-  const groupAccounts = accounts.filter(isGroupMessageAccount)
+  const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
+    const personalAccount = accounts.find(isPersonalMessageAccount)
+    const groupAccounts = accounts.filter(isGroupMessageAccount)
+    const unitOptions = sortBy(
+      uniqBy(
+        groupAccounts.map(({ daycareGroup }) => ({
+          value: daycareGroup.unitId,
+          label: daycareGroup.unitName
+        })),
+        (val) => val.value
+      ),
+      (u) => u.label
+    )
+    return [personalAccount, groupAccounts, unitOptions]
+  }, [accounts])
 
-  const unitOptions = sortBy(
-    uniqBy(
-      groupAccounts.map(({ daycareGroup }) => ({
-        value: daycareGroup.unitId,
-        label: daycareGroup.unitName
-      })),
-      (val) => val.value
-    ),
-    (u) => u.label
-  )
   const unitSelectionEnabled = unitOptions.length > 1
 
   useEffect(() => {
