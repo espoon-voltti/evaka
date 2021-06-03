@@ -19,7 +19,7 @@ export type Person = {
 
 export type User = Person & {
   children: Person[]
-  userType: string
+  userType: 'ENDUSER' | 'CITIZEN_WEAK'
 }
 
 type AuthState = {

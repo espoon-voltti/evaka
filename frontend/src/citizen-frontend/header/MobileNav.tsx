@@ -6,7 +6,7 @@ import React, { Dispatch, SetStateAction, useCallback } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faSignIn, faSignOut, faTimes } from 'lib-icons'
+import { faBars, faLockAlt, faSignIn, faSignOut, faTimes } from 'lib-icons'
 import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
@@ -14,7 +14,7 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import { tabletMin } from 'lib-components/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
-import { getLoginUri, getLogoutUri } from '../header/const'
+import { getLoginUri, getLogoutUri } from './const'
 import { featureFlags } from '../config'
 import { CircledChar } from './DesktopNav'
 
@@ -181,6 +181,9 @@ const Navigation = React.memo(function Navigation({
   const t = useTranslation()
   const user = useUser()
 
+  const maybeLockElem = user?.userType !== 'ENDUSER' && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
   return (
     <Nav>
       <StyledNavLink to="/" exact onClick={close}>
@@ -189,10 +192,10 @@ const Navigation = React.memo(function Navigation({
       {user && (
         <>
           <StyledNavLink to="/applications" onClick={close}>
-            {t.header.nav.applications}
+            {t.header.nav.applications} {maybeLockElem}
           </StyledNavLink>
           <StyledNavLink to="/decisions" onClick={close}>
-            {t.header.nav.decisions}
+            {t.header.nav.decisions} {maybeLockElem}
           </StyledNavLink>
           {featureFlags.messaging && (
             <StyledNavLink to="/messages" onClick={close}>
@@ -239,6 +242,10 @@ const StyledNavItem = (component: any) => styled(component)`
   &.active {
     font-weight: 700;
     border-color: ${colors.greyscale.white};
+  }
+
+  & > :last-child {
+    margin-left: ${defaultMargins.xs};
   }
 `
 

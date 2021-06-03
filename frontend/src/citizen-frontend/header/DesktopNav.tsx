@@ -10,10 +10,16 @@ import { desktopMin } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
-import { faCheck, faChevronDown, faChevronUp, faSignIn } from 'lib-icons'
+import {
+  faCheck,
+  faChevronDown,
+  faChevronUp,
+  faLockAlt,
+  faSignIn
+} from 'lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
-import { getLoginUri, getLogoutUri } from '../header/const'
+import { getLoginUri, getLogoutUri } from './const'
 import { featureFlags } from '../config'
 
 interface Props {
@@ -24,22 +30,25 @@ export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
   const user = useUser()
   const t = useTranslation()
 
+  const maybeLockElem = user?.userType !== 'ENDUSER' && (
+    <FontAwesomeIcon icon={faLockAlt} size="xs" />
+  )
   return (
     <Container>
       <Nav>
         {user && (
           <>
-            <StyledNavLink to="/" exact data-qa={'nav-map'}>
+            <StyledNavLink to="/" exact data-qa="nav-map">
               {t.header.nav.map}
             </StyledNavLink>
-            <StyledNavLink to="/applications" data-qa={'nav-applications'}>
-              {t.header.nav.applications}
+            <StyledNavLink to="/applications" data-qa="nav-applications">
+              {t.header.nav.applications} {maybeLockElem}
             </StyledNavLink>
-            <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
-              {t.header.nav.decisions}
+            <StyledNavLink to="/decisions" data-qa="nav-decisions">
+              {t.header.nav.decisions} {maybeLockElem}
             </StyledNavLink>
             {featureFlags.messaging && (
-              <StyledNavLink to="/messages" data-qa={'nav-messages'}>
+              <StyledNavLink to="/messages" data-qa="nav-messages">
                 {t.header.nav.messages}{' '}
                 {unreadMessagesCount > 0 ? (
                   <CircledChar>{unreadMessagesCount}</CircledChar>
@@ -104,6 +113,10 @@ const StyledNavLink = styled(NavLink)`
   &.active {
     border-color: ${colors.greyscale.white};
     font-weight: 700;
+  }
+
+  & > :last-child {
+    margin-left: ${defaultMargins.xs};
   }
 `
 
