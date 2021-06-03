@@ -23,6 +23,8 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.template.EvakaTemplateProvider
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
@@ -159,4 +161,7 @@ class SharedIntegrationTestConfig {
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean
+    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 }

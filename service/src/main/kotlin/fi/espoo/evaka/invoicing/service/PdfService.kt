@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
 import org.thymeleaf.context.Context
@@ -61,6 +62,7 @@ fun instantFmt(instant: Instant?): String =
 
 @Component
 class PDFService(
+    private val templateProvider: ITemplateProvider,
     private val templateEngine: ITemplateEngine
 ) {
     fun processPage(page: Page): String = templateEngine.process(page.template.value, page.context)
@@ -101,15 +103,15 @@ class PDFService(
     }
 
     fun generateFeeDecisionPdf(data: FeeDecisionPdfData): ByteArray {
-
-        val page = Page(Template("fee-decision/decision"), createFeeDecisionPdfContext(data))
+        val template = Template(templateProvider.getFeeDecisionPath())
+        val page = Page(template, createFeeDecisionPdfContext(data))
 
         return render(page)
     }
 
     fun generateVoucherValueDecisionPdf(data: VoucherValueDecisionPdfData): ByteArray {
-
-        val page = Page(Template("fee-decision/voucher-value-decision"), createVoucherValueDecisionPdfContext(data))
+        val template = Template(templateProvider.getVoucherValueDecisionPath())
+        val page = Page(template, createVoucherValueDecisionPdfContext(data))
 
         return render(page)
     }
