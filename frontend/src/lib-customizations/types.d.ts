@@ -34,6 +34,7 @@ export interface CommonCustomizations {
 }
 
 export interface CitizenCustomizations {
+  langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
   cityLogo: {
     src: string

@@ -13,17 +13,23 @@ import { merge } from 'lodash'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
+  langs,
   cityLogo,
   footerLogo,
   routeLinkRootUrl,
   mapConfig,
   featureFlags
 }: CitizenCustomizations = customizations
-export { cityLogo, footerLogo, routeLinkRootUrl, mapConfig, featureFlags }
+export {
+  langs,
+  cityLogo,
+  footerLogo,
+  routeLinkRootUrl,
+  mapConfig,
+  featureFlags
+}
 
-export const langs = ['fi', 'sv', 'en'] as const
-
-export type Lang = typeof langs[number]
+export type Lang = 'fi' | 'sv' | 'en'
 
 export type Translations = typeof fi
 
