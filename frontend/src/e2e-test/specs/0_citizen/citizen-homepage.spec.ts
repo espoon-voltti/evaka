@@ -12,7 +12,7 @@ const citizenHomePage = new CitizenHomePage()
 
 fixture('Citizen page')
   .meta({ type: 'regression', subType: 'citizen-homepage' })
-  .before(async () => {
+  .beforeEach(async () => {
     await resetDatabase()
     await initializeAreaAndPersonData()
   })
