@@ -109,7 +109,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
 
   useEffect(() => {
     !selectedUnit && setSelectedUnit(unitOptions[0])
-  })
+  }, [selectedUnit, setSelectedUnit, unitOptions])
 
   useEffect(() => {
     if (!selectedUnit) {
