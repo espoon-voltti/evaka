@@ -11,14 +11,13 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeFixture,
-  deleteMobileDevice,
-  deletePairing,
   insertEmployeeFixture,
+  resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
 import { UUID } from 'e2e-test-common/dev-api/types'
 import UnitPage from '../../pages/employee/units/unit-page'
-import { Role, t } from 'testcafe'
+import { employeeLogin } from '../../config/users'
 
 const home = new EmployeeHome()
 const unitPage = new UnitPage()
@@ -29,9 +28,6 @@ const employeeExternalIds = [
 ] as const
 let employeeUuids: UUID[] = []
 
-let pairingId: UUID | undefined = undefined
-let deviceId: UUID | null = null
-
 const expectedAclRows = {
   seppo: { name: 'Seppo Sorsa', email: 'seppo.sorsa@espoo.fi' },
   pete: { name: 'Pete Päiväkoti', email: 'pete@example.com' },
@@ -39,13 +35,12 @@ const expectedAclRows = {
 }
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 fixture('Employee - Unit ACL')
   .meta({ type: 'regression', subType: 'unit-acl' })
-  .page(config.adminUrl)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,
@@ -75,31 +70,14 @@ fixture('Employee - Unit ACL')
       })
     ])
   })
-  .beforeEach(async () => {
-    await t.useRole(Role.anonymous())
-  })
-  .afterEach(async (m) => {
-    if (pairingId) {
-      await deletePairing(pairingId)
-      pairingId = undefined
-    }
-    if (deviceId) {
-      await deleteMobileDevice(deviceId)
-      deviceId = null
-    }
-    await logConsoleMessages(m)
-  })
-  .after(async () => {
-    await cleanUp()
-    await Promise.all(employeeExternalIds.map(deleteEmployeeFixture))
-    await deleteEmployeeFixture(config.supervisorExternalId)
-  })
+  .afterEach(logConsoleMessages)
 
 test('User can add and delete unit supervisors', async (t) => {
-  await home.login({
-    aad: config.adminAad,
-    roles: ['ADMIN', 'SERVICE_WORKER']
-  })
+  await employeeLogin(
+    t,
+    { aad: config.adminAad, roles: ['ADMIN', 'SERVICE_WORKER'] },
+    config.adminUrl
+  )
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await t
@@ -121,10 +99,11 @@ test('User can add and delete unit supervisors', async (t) => {
 })
 
 test('User can add and delete special education teachers', async (t) => {
-  await home.login({
-    aad: config.adminAad,
-    roles: ['ADMIN', 'SERVICE_WORKER']
-  })
+  await employeeLogin(
+    t,
+    { aad: config.adminAad, roles: ['ADMIN', 'SERVICE_WORKER'] },
+    config.adminUrl
+  )
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await t.expect(await unitPage.specialEducationTeacherAcl.getAclRows()).eql([])
@@ -142,10 +121,12 @@ test('User can add and delete special education teachers', async (t) => {
 })
 
 test('User can add and delete staff', async (t) => {
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
+  await t.debug()
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
@@ -163,25 +144,24 @@ test('User can add and delete staff', async (t) => {
 })
 
 test('User can add a mobile device unit side', async (t) => {
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
 
-  const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
-  pairingId = pId
-  deviceId = dId
-
+  await unitPage.addMobileDevice()
   await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
 })
 
 test('Added mobile devices should not be listed in employee selector', async (t) => {
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
@@ -190,9 +170,7 @@ test('Added mobile devices should not be listed in employee selector', async (t)
   const employeeCount = await unitPage.staffAcl.employeeOptions.count
   await t.pressKey('esc')
 
-  const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
-  pairingId = pId
-  deviceId = dId
+  await unitPage.addMobileDevice()
 
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)

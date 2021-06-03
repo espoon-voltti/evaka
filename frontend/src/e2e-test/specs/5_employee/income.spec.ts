@@ -9,30 +9,23 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
-import { cleanUpInvoicingDatabase } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { resetDatabase } from 'e2e-test-common/dev-api'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import FridgeHeadInformationPage from '../../pages/employee/fridge-head-information/fridge-head-information-page'
 
 const page = new EmployeeHome()
 const fridgeHeadInformation = new FridgeHeadInformationPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let personId: string
 
 fixture('Invoicing - invoices')
   .meta({ type: 'regression', subType: 'invoices' })
-  .page(page.url)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-    personId = fixtures.enduserGuardianFixture.id
-  })
   .beforeEach(async (t) => {
-    await cleanUpInvoicingDatabase()
-    await t.useRole(seppoAdminRole)
-  })
-  .after(async () => {
-    await cleanUp()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
+    personId = fixtures.enduserGuardianFixture.id
+    await employeeLogin(t, seppoAdmin, page.url)
   })
 
 const newIncomeButton = Selector('[data-qa="add-income-button"]')

@@ -12,19 +12,16 @@ import { applicationFixture } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   cleanUpMessages,
-  cleanUpInvoicingDatabase,
   createPlacementPlan,
-  deleteAclForDaycare,
-  deleteApplication,
-  deleteEmployeeByExternalId,
   execSimpleApplicationAction,
   insertApplications,
   insertEmployeeFixture,
   setAclForDaycares,
   runPendingAsyncJobs,
-  getMessages
+  getMessages,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import { ApplicationDetailsPage } from '../../pages/admin/application-details-page'
@@ -37,26 +34,19 @@ const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationDetailsPage = new ApplicationDetailsPage()
 const applicationReadView = new ApplicationReadView()
 const adminHome = new AdminHome()
-const employeeHome = new EmployeeHome()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 let singleParentApplication: Application
 let familyWithTwoGuardiansApplication: Application
 let separatedFamilyApplication: Application
 let restrictedDetailsGuardianApplication: Application
 
-const preschoolSupervisor: DevLoginUser = {
-  aad: config.supervisorAad,
-  roles: []
-}
-
 fixture('Application - employee application details')
   .meta({ type: 'regression', subType: 'applications' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
     singleParentApplication = applicationFixture(
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserGuardianFixture
@@ -100,8 +90,7 @@ fixture('Application - employee application details')
       fixtures.preschoolFixture.id
     )
     await cleanUpMessages()
-  })
-  .beforeEach(async () => {
+
     await insertApplications([
       singleParentApplication,
       familyWithTwoGuardiansApplication,
@@ -109,27 +98,10 @@ fixture('Application - employee application details')
       restrictedDetailsGuardianApplication
     ])
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await cleanUpMessages()
-    await deleteApplication(singleParentApplication.id)
-    await deleteApplication(familyWithTwoGuardiansApplication.id)
-    await deleteApplication(separatedFamilyApplication.id)
-    await deleteApplication(restrictedDetailsGuardianApplication.id)
-  })
-
-  .after(async () => {
-    await deleteEmployeeByExternalId(config.supervisorExternalId)
-    await deleteAclForDaycare(
-      config.supervisorExternalId,
-      fixtures.preschoolFixture.id
-    )
-    await cleanUpInvoicingDatabase()
-    await cleanUp()
-  })
+  .afterEach(logConsoleMessages)
 
 test('Admin can view application details', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
   await applicationWorkbench.openApplicationById(singleParentApplication.id)
   await t
     .expect(applicationDetailsPage.guardianName.innerText)
@@ -139,13 +111,13 @@ test('Admin can view application details', async (t) => {
 })
 
 test('Other VTJ guardian is shown as empty if there is no other guardian', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
   await applicationWorkbench.openApplicationById(singleParentApplication.id)
   await t.expect(applicationDetailsPage.noOtherVtjGuardianText.visible).ok()
 })
 
 test('Other VTJ guardian in same address is shown', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
   await applicationWorkbench.openApplicationById(
     familyWithTwoGuardiansApplication.id
   )
@@ -160,7 +132,7 @@ test('Other VTJ guardian in same address is shown', async (t) => {
 })
 
 test('Other VTJ guardian in different address is shown', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
   await applicationWorkbench.openApplicationById(separatedFamilyApplication.id)
   await t
     .expect(applicationDetailsPage.vtjGuardianName.innerText)
@@ -192,7 +164,8 @@ test('Decision is not sent automatically to the other guardian if the first guar
     restrictedDetailsGuardianApplication.id,
     'send-decisions-without-proposal'
   )
-  await employeeHome.login(preschoolSupervisor)
+
+  await employeeLogin(t, config.supervisorAad)
   await applicationReadView.openApplicationByLink(
     restrictedDetailsGuardianApplication.id
   )
@@ -227,7 +200,7 @@ test('Supervisor can read an accepted application although the supervisors unit 
     'send-decisions-without-proposal'
   )
 
-  await employeeHome.login(preschoolSupervisor)
+  await employeeLogin(t, config.supervisorAad)
   await applicationReadView.openApplicationByLink(singleParentApplication.id)
   await t
     .expect(applicationDetailsPage.applicationStatus.innerText)

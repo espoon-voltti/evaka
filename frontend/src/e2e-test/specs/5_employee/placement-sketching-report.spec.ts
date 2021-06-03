@@ -8,9 +8,9 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
-  deleteApplication,
   insertApplications,
-  insertDaycarePlacementFixtures
+  insertDaycarePlacementFixtures,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
 import {
   applicationFixture,
@@ -22,11 +22,10 @@ import Home from '../../pages/home'
 import { format, sub } from 'date-fns'
 import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
 import ReportsPage from '../../pages/reports'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 const home = new Home()
 const reports = new ReportsPage()
@@ -35,18 +34,11 @@ let applicationId: string | null = null
 
 fixture('Placement sketching report')
   .meta({ type: 'regression', subType: 'reports' })
-  .page(home.homePage('admin'))
   .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    await resetDatabase()
+    ;[fixtures] = await initializeAreaAndPersonData()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    if (applicationId) await deleteApplication(applicationId)
-    applicationId = null
-  })
-  .after(async () => {
-    await cleanUp()
-  })
+  .afterEach(logConsoleMessages)
 
 test('Not placed child shows on report', async (t) => {
   const now = new Date()
@@ -77,7 +69,7 @@ test('Not placed child shows on report', async (t) => {
 
   const preferredUnit = daycareFixture
 
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await reports.selectReportsTab()
   await reports.selectPlacementSketchingReport()
   await reports.assertPlacementSketchingRow(
@@ -126,7 +118,7 @@ test('Placed child shows on report', async (t) => {
   )
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await reports.selectReportsTab()
   await reports.selectPlacementSketchingReport()
   await reports.assertPlacementSketchingRow(
