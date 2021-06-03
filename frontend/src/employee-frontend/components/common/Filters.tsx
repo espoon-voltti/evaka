@@ -43,6 +43,7 @@ import { CareArea } from '../../types/unit'
 import { Label, LabelText } from '../../components/common/styled/common'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { featureFlags } from 'lib-customizations/employee'
 
 interface Props {
   freeText: string
@@ -695,7 +696,7 @@ export function ApplicationTypeFilter({
               data-qa={`application-type-filter-${id}`}
               small
             />
-          ) : (
+          ) : featureFlags.preschoolEnabled && (
             <Fragment key={id}>
               <Radio
                 key={id}
