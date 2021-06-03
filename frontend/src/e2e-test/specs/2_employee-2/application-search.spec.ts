@@ -14,11 +14,7 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
-import {
-  deleteApplication,
-  insertApplications,
-  resetDatabase
-} from 'e2e-test-common/dev-api'
+import { insertApplications, resetDatabase } from 'e2e-test-common/dev-api'
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 
@@ -59,19 +55,14 @@ test('Duplicate applications are found', async (t) => {
 
   await insertApplications([fixture, duplicateFixture, nonDuplicateFixture])
 
-  try {
-    await t.click(ApplicationListView.specialFilterItems.duplicate)
-    await t
-      .expect(ApplicationListView.application(applicationFixtureId).visible)
-      .ok()
-    await t
-      .expect(ApplicationListView.application(duplicateFixture.id).visible)
-      .ok()
-    await t.expect(ApplicationListView.applications.count).eql(2)
-  } finally {
-    await deleteApplication(duplicateFixture.id)
-    await deleteApplication(nonDuplicateFixture.id)
-  }
+  await t.click(ApplicationListView.specialFilterItems.duplicate)
+  await t
+    .expect(ApplicationListView.application(applicationFixtureId).visible)
+    .ok()
+  await t
+    .expect(ApplicationListView.application(duplicateFixture.id).visible)
+    .ok()
+  await t.expect(ApplicationListView.applications.count).eql(2)
 })
 
 test('Care area filters work', async (t) => {
@@ -101,22 +92,16 @@ test('Care area filters work', async (t) => {
   await insertApplications([app1, app2, app3])
   await t.eval(() => location.reload())
 
-  try {
-    await t.expect(ApplicationListView.applications.count).eql(3)
+  await t.expect(ApplicationListView.applications.count).eql(3)
 
-    await ApplicationListView.toggleArea(careArea1.data.name)
-    await t.expect(ApplicationListView.applications.count).eql(1)
-    await t.expect(ApplicationListView.application(app1.id).visible).ok()
+  await ApplicationListView.toggleArea(careArea1.data.name)
+  await t.expect(ApplicationListView.applications.count).eql(1)
+  await t.expect(ApplicationListView.application(app1.id).visible).ok()
 
-    await ApplicationListView.toggleArea(careArea2.data.name)
-    await t.expect(ApplicationListView.applications.count).eql(2)
-    await t.expect(ApplicationListView.application(app1.id).visible).ok()
-    await t.expect(ApplicationListView.application(app2.id).visible).ok()
-  } finally {
-    await deleteApplication(app1.id)
-    await deleteApplication(app2.id)
-    await deleteApplication(app3.id)
-  }
+  await ApplicationListView.toggleArea(careArea2.data.name)
+  await t.expect(ApplicationListView.applications.count).eql(2)
+  await t.expect(ApplicationListView.application(app1.id).visible).ok()
+  await t.expect(ApplicationListView.application(app2.id).visible).ok()
 })
 
 test('Unit filter works', async (t) => {
@@ -142,17 +127,12 @@ test('Unit filter works', async (t) => {
   await insertApplications([app1, app2])
   await t.eval(() => location.reload())
 
-  try {
-    await t.expect(ApplicationListView.applications.count).eql(2)
+  await t.expect(ApplicationListView.applications.count).eql(2)
 
-    await ApplicationListView.toggleUnit(daycare1.data.name)
-    await t.expect(ApplicationListView.application(app1.id).visible).ok()
-    await t.expect(ApplicationListView.application(app2.id).visible).notOk()
-    await t.expect(ApplicationListView.applications.count).eql(1)
-  } finally {
-    await deleteApplication(app1.id)
-    await deleteApplication(app2.id)
-  }
+  await ApplicationListView.toggleUnit(daycare1.data.name)
+  await t.expect(ApplicationListView.application(app1.id).visible).ok()
+  await t.expect(ApplicationListView.application(app2.id).visible).notOk()
+  await t.expect(ApplicationListView.applications.count).eql(1)
 })
 
 test('Voucher application filter works', async (t) => {
@@ -207,72 +187,66 @@ test('Voucher application filter works', async (t) => {
   ])
   await t.eval(() => location.reload())
 
-  try {
-    await t.click(ApplicationListView.voucherUnitFilter.noFilter)
-    await t.expect(ApplicationListView.applications.count).eql(3)
+  await t.click(ApplicationListView.voucherUnitFilter.noFilter)
+  await t.expect(ApplicationListView.applications.count).eql(3)
 
-    await t.click(ApplicationListView.voucherUnitFilter.firstChoice)
-    await t.expect(ApplicationListView.applications.count).eql(1)
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithVoucherUnitFirst.id)
-          .visible
-      )
-      .ok()
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithVoucherUnitSecond.id)
-          .visible
-      )
-      .notOk({ timeout: 200 })
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
-      )
-      .notOk({ timeout: 200 })
+  await t.click(ApplicationListView.voucherUnitFilter.firstChoice)
+  await t.expect(ApplicationListView.applications.count).eql(1)
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithVoucherUnitFirst.id)
+        .visible
+    )
+    .ok()
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithVoucherUnitSecond.id)
+        .visible
+    )
+    .notOk({ timeout: 200 })
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
+    )
+    .notOk({ timeout: 200 })
 
-    await t.click(ApplicationListView.voucherUnitFilter.voucherOnly)
-    await t.expect(ApplicationListView.applications.count).eql(2)
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithVoucherUnitFirst.id)
-          .visible
-      )
-      .ok()
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithVoucherUnitSecond.id)
-          .visible
-      )
-      .ok()
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
-      )
-      .notOk({ timeout: 200 })
+  await t.click(ApplicationListView.voucherUnitFilter.voucherOnly)
+  await t.expect(ApplicationListView.applications.count).eql(2)
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithVoucherUnitFirst.id)
+        .visible
+    )
+    .ok()
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithVoucherUnitSecond.id)
+        .visible
+    )
+    .ok()
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
+    )
+    .notOk({ timeout: 200 })
 
-    await t.click(ApplicationListView.voucherUnitFilter.voucherHide)
-    await t.expect(ApplicationListView.applications.count).eql(1)
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
-      )
-      .ok()
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithVoucherUnitFirst.id)
-          .visible
-      )
-      .notOk({ timeout: 200 })
-    await t
-      .expect(
-        ApplicationListView.application(applicationWithVoucherUnitSecond.id)
-          .visible
-      )
-      .notOk({ timeout: 200 })
-  } finally {
-    await deleteApplication(applicationWithVoucherUnitFirst.id)
-    await deleteApplication(applicationWithVoucherUnitSecond.id)
-    await deleteApplication(applicationWithNoVoucherUnit.id)
-  }
+  await t.click(ApplicationListView.voucherUnitFilter.voucherHide)
+  await t.expect(ApplicationListView.applications.count).eql(1)
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
+    )
+    .ok()
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithVoucherUnitFirst.id)
+        .visible
+    )
+    .notOk({ timeout: 200 })
+  await t
+    .expect(
+      ApplicationListView.application(applicationWithVoucherUnitSecond.id)
+        .visible
+    )
+    .notOk({ timeout: 200 })
 })

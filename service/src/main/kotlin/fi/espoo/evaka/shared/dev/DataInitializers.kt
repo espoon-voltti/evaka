@@ -146,13 +146,6 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: 
         .execute()
 }
 
-fun Database.Transaction.removeDaycareAcl(daycareId: UUID, externalId: ExternalId) {
-    createUpdate("DELETE FROM daycare_acl WHERE daycare_id=:daycare_id AND employee_id=(SELECT id from employee where external_id = :external_id)")
-        .bind("daycare_id", daycareId)
-        .bind("external_id", externalId)
-        .execute()
-}
-
 fun Database.Transaction.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
@@ -879,8 +872,6 @@ RETURNING id
 """
 )
 
-fun Database.Transaction.deleteFamilyContact(id: UUID) = createUpdate("DELETE FROM family_contact WHERE id = :id").bind("id", id).execute()
-
 data class DevBackupPickup(
     val id: UUID,
     val childId: UUID,
@@ -896,8 +887,6 @@ VALUES (:id, :childId, :name, :phone)
 RETURNING id
 """
 )
-
-fun Database.Transaction.deleteBackupPickup(id: UUID) = createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).execute()
 
 data class DevFridgeChild(
     val id: UUID,
@@ -916,8 +905,6 @@ RETURNING id
 """
 )
 
-fun Database.Transaction.deleteFridgeChild(id: UUID) = createUpdate("DELETE FROM fridge_child WHERE id = :id").bind("id", id).execute()
-
 data class DevFridgePartner(
     val partnershipId: UUID,
     val indx: Int,
@@ -934,8 +921,6 @@ VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
 RETURNING partnership_id
 """
 )
-
-fun Database.Transaction.deleteFridgePartner(id: UUID) = createUpdate("DELETE FROM fridge_partner WHERE person_id = :id").bind("id", id).execute()
 
 data class DevEmployeePin(
     val id: UUID,
@@ -958,8 +943,6 @@ fun Database.Transaction.getEmployeeIdByExternalId(externalId: String) = createQ
     .bind("id", externalId)
     .mapTo<UUID>()
     .first()
-
-fun Database.Transaction.deleteEmployeePin(id: UUID) = createUpdate("DELETE FROM employee_pin WHERE id = :id").bind("id", id).execute()
 
 fun Database.Transaction.insertTestDaycareGroupAcl(aclRow: DevDaycareGroupAcl) = createUpdate(
     """

@@ -181,16 +181,6 @@ WHERE id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
-fun Database.Transaction.deleteEmployeeRolesByExternalId(externalId: ExternalId) = createUpdate(
-    // language=SQL
-    """
-UPDATE employee
-SET roles='{}'
-WHERE external_id = :externalId
-    """.trimIndent()
-).bind("externalId", externalId)
-    .execute()
-
 fun Database.Transaction.upsertPinCode(
     userId: UUID,
     pinCode: PinCode

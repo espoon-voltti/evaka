@@ -4,7 +4,6 @@
 
 import config from 'e2e-test-common/config'
 import {
-  deleteMessages,
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
@@ -100,7 +99,6 @@ test('Supervisor sends a message and guardian reads it', async (t) => {
   await t
     .expect(citizenMessagesPage.messageReaderContent.textContent)
     .eql(content)
-  await deleteMessages()
 })
 
 test('Admin sends a message and blocked guardian does not get it', async (t) => {

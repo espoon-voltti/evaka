@@ -28,13 +28,6 @@ import {
   EmployeePin
 } from './types'
 import {
-  deleteCareAreaFixture,
-  deleteDaycare,
-  deleteDaycareGroup,
-  deleteDecisionFixture,
-  deleteEmployeeById,
-  deleteEmployeePin,
-  deleteVtjPerson,
   insertCareAreaFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
@@ -949,11 +942,6 @@ export class DaycareBuilder {
     return this
   }
 
-  async delete(): Promise<DaycareBuilder> {
-    await deleteDaycare(this.data.id)
-    return this
-  }
-
   // Note: shallow copy
   copy(): DaycareBuilder {
     return new DaycareBuilder({ ...this.data })
@@ -985,11 +973,6 @@ export class DaycareGroupBuilder {
     return this
   }
 
-  async delete(): Promise<DaycareGroupBuilder> {
-    await deleteDaycareGroup(this.data.id)
-    return this
-  }
-
   // Note: shallow copy
   copy(): DaycareGroupBuilder {
     return new DaycareGroupBuilder({ ...this.data })
@@ -1018,11 +1001,6 @@ export class CareAreaBuilder {
 
   async save(): Promise<CareAreaBuilder> {
     await insertCareAreaFixtures([this.data])
-    return this
-  }
-
-  async delete(): Promise<CareAreaBuilder> {
-    await deleteCareAreaFixture(this.data.id)
     return this
   }
 
@@ -1058,11 +1036,6 @@ export class PersonBuilder {
     return this
   }
 
-  async delete(): Promise<PersonBuilder> {
-    if (this.data.ssn) await deleteVtjPerson(this.data.ssn)
-    return this
-  }
-
   // Note: shallow copy
   copy(): PersonBuilder {
     return new PersonBuilder({ ...this.data })
@@ -1086,12 +1059,6 @@ export class EmployeeBuilder {
 
   async save(): Promise<EmployeeBuilder> {
     await insertEmployeeFixture(this.data)
-    return this
-  }
-
-  async delete(): Promise<EmployeeBuilder> {
-    //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await deleteEmployeeById(this.data.id!)
     return this
   }
 
@@ -1121,11 +1088,6 @@ export class DecisionBuilder {
     return this
   }
 
-  async delete(): Promise<DecisionBuilder> {
-    await deleteDecisionFixture(this.data.id)
-    return this
-  }
-
   // Note: shallow copy
   copy(): DecisionBuilder {
     return new DecisionBuilder({ ...this.data })
@@ -1149,11 +1111,6 @@ export class EmployeePinBuilder {
 
   async save(): Promise<EmployeePinBuilder> {
     await insertEmployeePins([this.data])
-    return this
-  }
-
-  async delete(): Promise<EmployeePinBuilder> {
-    await deleteEmployeePin(this.data.id)
     return this
   }
 

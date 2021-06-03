@@ -21,7 +21,6 @@ import fi.espoo.evaka.daycare.DaycareDecisionCustomization
 import fi.espoo.evaka.daycare.MailingAddress
 import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.VisitingAddress
-import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.Decision
@@ -50,7 +49,6 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -120,22 +118,10 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/clean-up")
-    fun cleanUpDatabase(db: Database): ResponseEntity<Unit> {
-        db.transaction { it.clearDatabase() }
-        return ResponseEntity.noContent().build()
-    }
-
     @PostMapping("/run-jobs")
     fun runJobs(): ResponseEntity<Unit> {
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/applications/{id}")
-    fun deleteApplicationByApplicationId(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteApplication(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -145,21 +131,9 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/care-areas/{id}")
-    fun deleteArea(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteCareArea(id) }
-        return ResponseEntity.noContent().build()
-    }
-
     @PostMapping("/daycares")
     fun createDaycares(db: Database, @RequestBody daycares: List<DevDaycare>): ResponseEntity<Unit> {
         db.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/daycares/{id}")
-    fun deleteDaycare(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteDaycare(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -175,18 +149,6 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/daycares/{daycareId}/acl/{externalId}")
-    fun removeUserAccessToDaycare(
-        db: Database,
-        @PathVariable daycareId: UUID,
-        @PathVariable externalId: ExternalId
-    ): ResponseEntity<Unit> {
-        db.transaction { tx ->
-            tx.removeDaycareAcl(daycareId, externalId)
-        }
-        return ResponseEntity.ok().build()
-    }
-
     @PostMapping("/daycare-group-acl")
     fun createDaycareGroupAclRows(db: Database.Connection, @RequestBody rows: List<DevDaycareGroupAcl>) {
         db.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } }
@@ -200,38 +162,23 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/daycare-groups/{id}")
-    fun removeDaycareGroup(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { tx ->
-            tx.deleteDaycareGroup(id)
-        }
-        return ResponseEntity.ok().build()
-    }
-
-    data class DaycareGroupPlacement(
-        val id: UUID,
-        val daycarePlacementId: UUID,
-        val daycareGroupId: UUID,
-        val startDate: LocalDate,
-        val end_date: LocalDate
-    )
-
     @PostMapping("/daycare-group-placements")
-    fun createDaycareGroupPlacement(db: Database, @RequestBody placements: List<DevDaycareGroupPlacement>): ResponseEntity<Unit> {
+    fun createDaycareGroupPlacement(
+        db: Database,
+        @RequestBody placements: List<DevDaycareGroupPlacement>
+    ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            placements.forEach { tx.insertTestDaycareGroupPlacement(it.daycarePlacementId, it.daycareGroupId, it.id, it.startDate, it.endDate) }
+            placements.forEach {
+                tx.insertTestDaycareGroupPlacement(
+                    it.daycarePlacementId,
+                    it.daycareGroupId,
+                    it.id,
+                    it.startDate,
+                    it.endDate
+                )
+            }
         }
         return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/daycare-group-placements/{id}")
-    fun removeDaycareGroupPlacement(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { tx ->
-            tx.createUpdate("DELETE FROM daycare_group_placement WHERE id = :id")
-                .bind("id", id)
-                .execute()
-        }
-        return ResponseEntity.ok().build()
     }
 
     data class Caretaker(
@@ -263,13 +210,6 @@ class DevApi(
                 tx.insertTestChild(it)
             }
         }
-        return ResponseEntity.noContent().build()
-    }
-
-    // also cascades delete to daycare_placement and group_placement
-    @DeleteMapping("/children/{id}")
-    fun deleteChild(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteChild(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -305,12 +245,6 @@ class DevApi(
                 )
             }
         }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/decisions/{id}")
-    fun deleteDecisions(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteDecision(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -362,29 +296,12 @@ class DevApi(
     }
 
     @PostMapping("/pricing")
-    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholdsWithValidity): ResponseEntity<UUID> = db.transaction {
-        ResponseEntity.ok(
-            it.insertTestPricing(feeThresholds)
-        )
-    }
-
-    @PostMapping("/pricing/clean-up")
-    fun clearFeeThresholds(db: Database): ResponseEntity<Unit> {
-        db.transaction { it.execute("DELETE FROM fee_thresholds") }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/pricing/{id}")
-    fun deleteFeeThresholdsRow(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteFeeThresholdsRow(id) }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/incomes/person/{id}")
-    fun deleteIncomesByPerson(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteIncome(id) }
-        return ResponseEntity.noContent().build()
-    }
+    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholdsWithValidity): ResponseEntity<UUID> =
+        db.transaction {
+            ResponseEntity.ok(
+                it.insertTestPricing(feeThresholds)
+            )
+        }
 
     @PostMapping("/person")
     fun upsertPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
@@ -413,52 +330,6 @@ class DevApi(
         }
     }
 
-    @DeleteMapping("/person/{id}")
-    fun deletePerson(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction {
-            it.execute(
-                """
-WITH ApplicationsDeleted AS (DELETE FROM application WHERE child_id = ? OR guardian_id = ? RETURNING id),
-AttachmentsDeleted AS (DELETE FROM application_form USING ApplicationsDeleted WHERE application_id = ApplicationsDeleted.id)
-DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = ApplicationsDeleted.id""",
-                id, id
-            )
-
-            it.execute("DELETE FROM fee_decision_part WHERE child = ?", id)
-            it.execute("DELETE FROM fee_decision WHERE head_of_family = ?", id)
-            it.execute("DELETE FROM new_fee_decision_child WHERE child_id = ?", id)
-            it.execute("DELETE FROM new_fee_decision WHERE head_of_family_id = ?", id)
-            it.execute("DELETE FROM income WHERE person_id = ?", id)
-            it.execute("DELETE FROM absence WHERE child_id = ?", id)
-            it.execute("DELETE FROM backup_care WHERE child_id = ?", id)
-            it.execute(
-                "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE child_id = ?)",
-                id
-            )
-            it.execute("DELETE FROM placement WHERE child_id = ?", id)
-            it.execute("DELETE FROM fridge_child WHERE head_of_child = ? OR child_id = ?", id, id)
-            it.execute("DELETE FROM guardian WHERE (guardian_id = ? OR child_id = ?)", id, id)
-            it.execute("DELETE FROM child WHERE id = ?", id)
-            it.execute("DELETE FROM backup_pickup WHERE child_id = ?", id)
-            it.execute("DELETE FROM family_contact WHERE child_id = ? OR contact_person_id = ?", id, id)
-            it.execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
-            it.execute("DELETE FROM messaging_blocklist WHERE (child_id = ? OR blocked_recipient = ?)", id, id)
-            it.execute("DELETE FROM person WHERE id = ?", id)
-        }
-        return ResponseEntity.ok().build()
-    }
-
-    @DeleteMapping("/person/ssn/{ssn}")
-    fun deletePersonBySsn(db: Database, @PathVariable ssn: String): ResponseEntity<Unit> {
-        db.read { h ->
-            h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
-                .bind("ssn", ssn)
-                .mapTo<UUID>()
-                .firstOrNull()
-        }?.let { uuid -> deletePerson(db, uuid) }
-        return ResponseEntity.ok().build()
-    }
-
     @PostMapping("/parentship")
     fun createParentships(
         db: Database,
@@ -476,12 +347,6 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
     @PostMapping("/employee")
     fun createEmployee(db: Database, @RequestBody body: DevEmployee): ResponseEntity<UUID> {
         return ResponseEntity.ok(db.transaction { it.insertTestEmployee(body) })
-    }
-
-    @DeleteMapping("/employee/{id}")
-    fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteAndCascadeEmployee(id) }
-        return ResponseEntity.ok().build()
     }
 
     @DeleteMapping("/employee/external-id/{externalId}")
@@ -512,12 +377,6 @@ RETURNING id
         )
     }
 
-    @DeleteMapping("/employee/roles/external-id/{externalId}")
-    fun deleteEmployeeRolesByExternalId(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
-        db.transaction { it.deleteEmployeeRolesByExternalId(externalId) }
-        return ResponseEntity.ok().build()
-    }
-
     @PostMapping("/child")
     fun insertChild(db: Database, @RequestBody body: DevPerson): ResponseEntity<UUID> = db.transaction {
         val id = it.insertTestPerson(
@@ -544,22 +403,6 @@ RETURNING id
             tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
             tx.execute("INSERT INTO message_account (employee_id) SELECT id FROM employee ON CONFLICT DO NOTHING")
         }
-    }
-
-    @DeleteMapping("/message/delete-all")
-    fun deleteMessages(db: Database) {
-        db.transaction { tx ->
-            tx.execute("DELETE FROM message_draft")
-            tx.execute("DELETE FROM message_recipients")
-            tx.execute("DELETE FROM message")
-            tx.execute("DELETE FROM message_content")
-        }
-    }
-
-    @DeleteMapping("/message-account/delete-all")
-    fun deleteMessageAccounts(db: Database) {
-        deleteMessages(db)
-        db.transaction { it.execute("DELETE FROM message_account") }
     }
 
     @PostMapping("/backup-cares")
@@ -659,21 +502,9 @@ RETURNING id
             ?: throw NotFound("vtj person $ssn was not found")
     }
 
-    @DeleteMapping("/vtj-persons/{ssn}")
-    fun deleteVtjPerson(db: Database, @PathVariable ssn: String): ResponseEntity<Unit> {
-        MockPersonDetailsService.deletePerson(ssn)
-        return ResponseEntity.noContent().build()
-    }
-
     @GetMapping("/application-emails")
     fun getApplicationEmails(): ResponseEntity<List<MockEmail>> {
         return ResponseEntity.ok(MockEmailClient.emails)
-    }
-
-    @PostMapping("/application-emails/clean-up")
-    fun cleanApplicationEmails(): ResponseEntity<Unit> {
-        MockEmailClient.emails.clear()
-        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/applications/{applicationId}/actions/{action}")
@@ -769,12 +600,6 @@ RETURNING id
         }.let { ResponseEntity.ok(it) }
     }
 
-    @DeleteMapping("/mobile/pairings/{id}")
-    fun deletePairing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deletePairing(id) }
-        return ResponseEntity.noContent().build()
-    }
-
     data class MobileDeviceReq(
         val id: UUID,
         val unitId: UUID,
@@ -808,12 +633,6 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         return db.transaction { it.createDaycareDailyNote(body) }.let { ResponseEntity.noContent().build() }
     }
 
-    @DeleteMapping("/mobile/devices/{id}")
-    fun deleteMobileDevice(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteMobileDevice(id) }
-        return ResponseEntity.noContent().build()
-    }
-
     @GetMapping("/digitransit/autocomplete")
     fun digitransitAutocomplete() = ResponseEntity.ok(digitransit.autocomplete())
 
@@ -821,48 +640,9 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
     fun putDigitransitAutocomplete(@RequestBody mockResponse: MockDigitransit.Autocomplete) =
         digitransit.setAutocomplete(mockResponse)
 
-    @DeleteMapping("/bulletins")
-    fun deleteBulletins(db: Database): ResponseEntity<Unit> {
-        db.transaction {
-            it.createUpdate("DELETE FROM bulletin_instance").execute()
-            it.createUpdate("DELETE FROM bulletin").execute()
-        }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/attendances")
-    fun deleteAttendances(db: Database): ResponseEntity<Unit> {
-        db.transaction {
-            it.createUpdate("DELETE FROM child_attendance").execute()
-        }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/daycare-daily-notes")
-    fun deleteDaycareDailyNotes(db: Database): ResponseEntity<Unit> {
-        db.transaction {
-            it.createUpdate("DELETE FROM daycare_daily_note").execute()
-        }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/absences")
-    fun deleteAbsences(db: Database): ResponseEntity<Unit> {
-        db.transaction {
-            it.createUpdate("DELETE FROM absence").execute()
-        }
-        return ResponseEntity.noContent().build()
-    }
-
     @PostMapping("/family-contact")
     fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>): ResponseEntity<Unit> {
         db.transaction { contacts.forEach { contact -> it.insertFamilyContact(contact) } }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/family-contact/{id}")
-    fun deleteFamilyContact(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteFamilyContact(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -872,33 +652,15 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/backup-pickup/{id}")
-    fun deleteBackupPickup(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteBackupPickup(id) }
-        return ResponseEntity.noContent().build()
-    }
-
     @PostMapping("/fridge-child")
     fun createFridgeChild(db: Database, @RequestBody fridgeChildren: List<DevFridgeChild>): ResponseEntity<Unit> {
         db.transaction { fridgeChildren.forEach { child -> it.insertFridgeChild(child) } }
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/fridge-child/{id}")
-    fun deleteFridgeChild(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteFridgeChild(id) }
-        return ResponseEntity.noContent().build()
-    }
-
     @PostMapping("/fridge-partner")
     fun createFridgePartner(db: Database, @RequestBody fridgePartners: List<DevFridgePartner>): ResponseEntity<Unit> {
         db.transaction { fridgePartners.forEach { partner -> it.insertFridgePartner(partner) } }
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/fridge-partner/{id}")
-    fun deleteFridgePartner(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteFridgePartner(id) }
         return ResponseEntity.noContent().build()
     }
 
@@ -917,44 +679,15 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/employee-pin/{id}")
-    fun deleteEmployeePin(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.deleteEmployeePin(id) }
-        return ResponseEntity.noContent().build()
-    }
-
     @PostMapping("/service-need-options")
     fun createServiceNeedOptions(db: Database): ResponseEntity<Unit> {
-        db.transaction {
-            it.execute(
-                """
-INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv) VALUES
-    ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25h/viikko', 'mer än 25 h/vecka'),
-    ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Viisivuotiaiden kokopäiväinen', 'DAYCARE_FIVE_YEAR_OLDS', TRUE, 0.8, 1.0, 1.0, 45, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25 h/viikko', 'mer än 25 h/vecka'),
-    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.0, 0.6, 0.5, 20, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
-    ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
-    ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
-    ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
-    ('Valmistava opetus ja liittyvä varhaiskasvatus', 'PREPARATORY_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
-    ('Kerho', 'CLUB', TRUE, 0.0, 0.0, 1.0, 0, TRUE, TRUE, '', '', '', ''),
-    ('Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 0.0, 1.0, 35, FALSE, TRUE, '', '', '', ''),
-    ('Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.0, 0.54, 25, TRUE, TRUE, '', '', '', '');
-        """.trimIndent()
-            )
-        }
+        db.transaction { it.insertServiceNeedOptions() }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/voucher-values")
-    fun createVouchers(db: Database): ResponseEntity<Unit> {
-        db.transaction {
-            it.execute(
-                """
-INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000);
-            """.trimIndent()
-            )
-        }
+    fun createVoucherValues(db: Database): ResponseEntity<Unit> {
+        db.transaction { it.insertVoucherValues() }
         return ResponseEntity.noContent().build()
     }
 }
@@ -969,46 +702,6 @@ fun Database.Transaction.ensureFakeAdminExists() {
         """.trimIndent()
 
     createUpdate(sql).bind("id", fakeAdmin.id).execute()
-}
-
-fun Database.Transaction.clearDatabase() = listOf(
-    "employee_pin",
-    "family_contact",
-    "backup_pickup",
-    "messaging_blocklist",
-    "attachment",
-    "guardian",
-    "decision",
-    "placement_plan",
-    "application_form",
-    "backup_care",
-    "placement",
-    "application_note",
-    "application",
-    "income",
-    "fee_alteration",
-    "invoice",
-    "fee_decision",
-    "voucher_value_decision",
-    "async_job"
-).forEach {
-    execute("DELETE FROM $it")
-}
-
-fun Database.Transaction.deletePairing(id: UUID) {
-    execute("DELETE FROM pairing WHERE id = ?", id)
-}
-
-fun Database.Transaction.deleteMobileDevice(id: UUID) {
-    execute("DELETE FROM mobile_device WHERE id = ?", id)
-}
-
-fun Database.Transaction.deleteApplication(id: UUID) {
-    execute("DELETE FROM attachment WHERE application_id = ?", id)
-    execute("DELETE FROM decision WHERE application_id = ?", id)
-    execute("DELETE FROM placement_plan WHERE application_id = ?", id)
-    execute("DELETE FROM application_form WHERE application_id = ?", id)
-    execute("DELETE FROM application WHERE id = ?", id)
 }
 
 fun Database.Transaction.deleteAndCascadeEmployee(id: UUID) {
@@ -1028,99 +721,32 @@ fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: Extern
     }
 }
 
-fun Database.Transaction.deleteCareArea(id: UUID) {
+fun Database.Transaction.insertServiceNeedOptions() {
     execute(
         """
-WITH deleted_ids AS (
-    DELETE FROM fee_decision_part
-    WHERE placement_unit IN (SELECT id FROM daycare WHERE care_area_id = ?)
-    RETURNING fee_decision_id
-) DELETE FROM fee_decision WHERE id IN (SELECT fee_decision_id FROM deleted_ids)
-""",
-        id
-    )
-    execute(
-        """
-WITH deleted_ids AS (
-    DELETE FROM new_fee_decision_child
-    WHERE placement_unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)
-    RETURNING fee_decision_id
-) DELETE FROM new_fee_decision WHERE id IN (SELECT fee_decision_id FROM deleted_ids)
-""",
-        id
-    )
-
-    execute(
-        "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?))",
-        id
-    )
-    execute("DELETE FROM decision WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute("DELETE FROM backup_care WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute("DELETE FROM placement_plan WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute("DELETE FROM placement WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute("DELETE FROM pairing WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute(
-        """
-        DELETE
-        FROM fee_decision
-        WHERE id IN (
-            SELECT fee_decision_id
-            FROM fee_decision_part
-            WHERE placement_unit IN (
-                SELECT id
-                FROM daycare
-                WHERE care_area_id = ?)
-                )
-""",
-        id
-    )
-    execute(
-        """
-        DELETE
-        FROM fee_decision_part
-        WHERE placement_unit IN (
-            SELECT id
-            FROM daycare
-            WHERE care_area_id = ?)
-""",
-        id
-    )
-    execute("DELETE FROM daycare_acl WHERE daycare_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute("DELETE FROM mobile_device WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
-    execute("DELETE FROM daycare_daily_note WHERE group_id IN (SELECT id FROM daycare_group WHERE daycare_id IN (SELECT id FROM daycare WHERE care_area_id = ?))", id)
-    execute("DELETE FROM daycare WHERE care_area_id = ?", id)
-    execute("DELETE FROM care_area WHERE id = ?", id)
-}
-
-fun Database.Transaction.deleteDaycare(id: UUID) {
-    execute("DELETE FROM daycare_daily_note WHERE group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ?)", id)
-    execute("DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE unit_id = ?)", id)
-    execute("DELETE FROM placement WHERE unit_id = ?", id)
-    execute("DELETE FROM mobile_device WHERE unit_id = ?", id)
-    execute(
-        "DELETE FROM daycare WHERE id = ?",
-        id
+INSERT INTO service_need_option (name, valid_placement_type, default_option, fee_coefficient, voucher_value_coefficient, occupancy_coefficient, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv) VALUES
+    ('Kokopäiväinen', 'DAYCARE', TRUE, 1.0, 1.0, 1.0, 35, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25h/viikko', 'mer än 25 h/vecka'),
+    ('Osapäiväinen', 'DAYCARE_PART_TIME', TRUE, 0.6, 0.6, 0.54, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Viisivuotiaiden kokopäiväinen', 'DAYCARE_FIVE_YEAR_OLDS', TRUE, 0.8, 1.0, 1.0, 45, FALSE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', 'yli 25 h/viikko', 'mer än 25 h/vecka'),
+    ('Viisivuotiaiden osapäiväinen', 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS', TRUE, 0.0, 0.6, 0.5, 20, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', 'korkeintaan 25 h/viikko', 'högst 25 h/vecka'),
+    ('Esiopetus', 'PRESCHOOL', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
+    ('Esiopetus ja liittyvä varhaiskasvatus', 'PRESCHOOL_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
+    ('Valmistava opetus', 'PREPARATORY', TRUE, 0.0, 0.5, 0.5, 0, TRUE, FALSE, 'ei maksullista varhaiskasvatusta', 'ingen avgiftsbelagd småbarnspedagogik', '', ''),
+    ('Valmistava opetus ja liittyvä varhaiskasvatus', 'PREPARATORY_DAYCARE', TRUE, 0.8, 0.5, 1.0, 25, TRUE, FALSE, 'palveluntarve puuttuu, korkein maksu', 'vårdbehovet saknas, högsta avgift', '', ''),
+    ('Kerho', 'CLUB', TRUE, 0.0, 0.0, 1.0, 0, TRUE, TRUE, '', '', '', ''),
+    ('Kokopäiväinen tilapäinen', 'TEMPORARY_DAYCARE', TRUE, 1.0, 0.0, 1.0, 35, FALSE, TRUE, '', '', '', ''),
+    ('Osapäiväinen tilapäinen', 'TEMPORARY_DAYCARE_PART_DAY', TRUE, 0.5, 0.0, 0.54, 25, TRUE, TRUE, '', '', '', '')
+"""
     )
 }
 
-fun Database.Transaction.deleteChild(id: UUID) {
+fun Database.Transaction.insertVoucherValues() {
     execute(
-        "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE child_id = ?)",
-        id
+        """
+INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000);
+"""
     )
-    execute("DELETE FROM family_contact WHERE child_id = ?", id)
-    execute("DELETE FROM backup_pickup WHERE child_id = ?", id)
-    execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
-    execute("DELETE FROM absence WHERE child_id = ?", id)
-    execute("DELETE FROM backup_care WHERE child_id = ?", id)
-    execute("DELETE FROM placement WHERE child_id = ?", id)
-    execute("DELETE FROM child WHERE id = ?", id)
 }
-
-fun Database.Transaction.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)
-fun Database.Transaction.deleteFeeThresholdsRow(id: UUID) = execute("DELETE FROM fee_thresholds WHERE id = ?", id)
-
-fun Database.Transaction.deleteDecision(id: UUID) = execute("DELETE FROM decision WHERE id = ?", id)
 
 data class DevCareArea(
     val id: UUID = UUID.randomUUID(),
