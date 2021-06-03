@@ -325,7 +325,6 @@ export default React.memo(function AttendanceChildPage() {
             style={{ display: 'hidden' }}
             type="file"
             accept="image/jpeg, image/png"
-            capture="environment"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               if (
                 event.target &&

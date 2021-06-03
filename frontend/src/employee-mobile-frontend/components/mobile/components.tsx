@@ -46,7 +46,7 @@ export const BackButton = styled(IconButton)`
 `
 
 export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;

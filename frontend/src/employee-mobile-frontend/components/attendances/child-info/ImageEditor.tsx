@@ -39,6 +39,11 @@ export default React.memo(function ImageEditor({
   const h = useHistory()
 
   useEffect(() => {
+    const htmlNode = document.querySelector('html')
+    if (htmlNode) {
+      htmlNode.style.overscrollBehavior = 'none'
+    }
+
     const popStateHandler = (e: PopStateEvent) => {
       e.preventDefault()
       h.goForward()
@@ -48,6 +53,9 @@ export default React.memo(function ImageEditor({
     window.addEventListener('popstate', popStateHandler)
 
     return () => {
+      if (htmlNode) {
+        htmlNode.style.overscrollBehavior = 'auto'
+      }
       window.removeEventListener('popstate', popStateHandler)
     }
   }, [onReturn, h])
@@ -117,7 +125,7 @@ export default React.memo(function ImageEditor({
     <Container>
       <Gap />
 
-      <div>
+      <div style={{ flexGrow: 1, flexShrink: 1, height: '100px' }}>
         <ReactCrop
           src={image}
           crop={crop}
@@ -125,6 +133,7 @@ export default React.memo(function ImageEditor({
           onChange={(c) => setCrop(c)}
           onComplete={setCompletedCrop}
           circularCrop
+          style={{ maxHeight: '100%' }}
         />
         <canvas
           ref={previewCanvasRef}
@@ -161,10 +170,12 @@ const Container = styled.div`
   justify-content: space-between;
   align-items: stretch;
   height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 `
 
 const ButtonRow = styled(FixedSpaceRow)`
   width: 100%;
   justify-content: space-around;
-  padding: ${defaultMargins.m};
+  padding: ${defaultMargins.s};
 `

@@ -11,7 +11,7 @@ import { faTimes } from '../../../lib-icons'
 
 const MenuBackground = styled.div`
   z-index: 100;
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
