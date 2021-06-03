@@ -196,7 +196,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             pe.last_name,
             ch.preferred_name,
             pe.date_of_birth,
-            dst.regular,
+            dst.type,
             dst.regular_start,
             dst.regular_end,
             dst.monday_start,

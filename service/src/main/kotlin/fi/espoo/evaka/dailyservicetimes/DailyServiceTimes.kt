@@ -61,8 +61,8 @@ fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
         .firstOrNull()
 }
 
-fun toDailyServiceTimes(row: RowView): DailyServiceTimes {
-    val type: DailyServiceTimesType = row.mapColumn("type")
+fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
+    val type: DailyServiceTimesType = row.mapColumn("type") ?: return null
 
     return when (type) {
         DailyServiceTimesType.REGULAR -> DailyServiceTimes.RegularTimes(
