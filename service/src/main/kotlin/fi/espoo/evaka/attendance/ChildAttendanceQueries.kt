@@ -209,6 +209,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             dst.thursday_end,
             dst.friday_start,
             dst.friday_end,
+            cimg.id AS image_id,
             c.group_id,
             c.placement_type,
             c.backup
@@ -216,6 +217,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
         JOIN person pe ON pe.id = c.child_id
         JOIN child ch ON ch.id = c.child_id
         LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id
+        LEFT JOIN child_images cimg ON pe.id = cimg.child_id
         """.trimIndent()
 
     return createQuery(sql)
@@ -231,7 +233,8 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
                 placementType = row.mapColumn("placement_type"),
                 dailyServiceTimes = toDailyServiceTimes(row),
                 groupId = row.mapColumn("group_id"),
-                backup = row.mapColumn("backup")
+                backup = row.mapColumn("backup"),
+                imageUrl = row.mapColumn<String?>("image_id")?.let { id -> "/api/internal/child-images/$id" }
             )
         }
         .list()

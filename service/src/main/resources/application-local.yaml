@@ -85,6 +85,7 @@ fi:
           daycaredecision: evaka-daycaredecisions-dev
           paymentdecision: evaka-paymentdecisions-dev
           vouchervaluedecision: evaka-vouchervaluedecisions-dev
+          data: evaka-data-dev
       vtj:
         client:
           # these are used if you run pis-service in "vtj-dev" profile (against Test VTJ).

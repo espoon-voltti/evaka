@@ -202,7 +202,19 @@ export const fi = {
       backupPhone: 'Varapuhelinnumero',
       email: 'Sähköpostiosoite',
       backupPickup: 'Varahakija',
-      backupPickupName: 'Varahakijan nimi'
+      backupPickupName: 'Varahakijan nimi',
+      image: {
+        modalMenu: {
+          title: 'Lapsen profiilikuva',
+          takeImageButton: 'Valitse kuva',
+          deleteImageButton: 'Poista kuva',
+          deleteConfirm: {
+            title: 'Haluatko varmasti poistaa lapsen kuvan?',
+            resolve: 'Poista kuva',
+            reject: 'Älä poista'
+          }
+        }
+      }
     }
   },
   staff: {

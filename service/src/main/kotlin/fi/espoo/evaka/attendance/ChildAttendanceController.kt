@@ -470,7 +470,8 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
             attendance = attendance,
             absences = absences,
             dailyServiceTimes = child.dailyServiceTimes,
-            dailyNote = daycareDailyNote
+            dailyNote = daycareDailyNote,
+            imageUrl = child.imageUrl
         )
     }
 

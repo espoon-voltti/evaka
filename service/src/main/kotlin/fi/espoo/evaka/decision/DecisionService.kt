@@ -160,7 +160,7 @@ class DecisionService(
     private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
         s3Client.upload(
             bucket,
-            DocumentWrapper(name = key, path = "/", bytes = document),
+            DocumentWrapper(name = key, bytes = document),
             "application/pdf"
         ).also {
             logger.debug { "PDF (object name: $key) uploaded to S3 with URL ${it.uri}." }
@@ -248,7 +248,6 @@ class DecisionService(
             ?.let {
                 DocumentWrapper(
                     name = calculateDecisionFileName(tx, decision, lang),
-                    path = "/",
                     bytes = it.getBytes()
                 )
             } ?: throw NotFound("Decision S3 URL is not set for $decisionId. Document generation is still in progress.")

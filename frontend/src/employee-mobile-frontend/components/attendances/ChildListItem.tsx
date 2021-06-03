@@ -50,7 +50,7 @@ const Bold = styled.div`
   }
 `
 
-const IconBox = styled.div<{ type: AttendanceStatus }>`
+export const IconBox = styled.div<{ type: AttendanceStatus }>`
   background-color: ${(props) => {
     switch (props.type) {
       case 'ABSENT':
@@ -97,6 +97,13 @@ const ToolsColumn = styled.div`
   flex-direction: column;
 `
 
+const RoundImage = styled.img`
+  border-radius: 9000px;
+  width: 56px;
+  height: 56px;
+  display: block;
+`
+
 interface ChildListItemProps {
   attendanceChild: AttendanceChild
   onClick?: () => void
@@ -119,21 +126,25 @@ export default React.memo(function ChildListItem({
     <ChildBox type={type} data-qa={`child-${attendanceChild.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
         <IconBox type={type}>
-          <RoundIcon
-            content={farUser}
-            color={
-              type === 'ABSENT'
-                ? colors.greyscale.dark
-                : type === 'DEPARTED'
-                ? colors.blues.primary
-                : type === 'PRESENT'
-                ? colors.accents.green
-                : type === 'COMING'
-                ? colors.accents.water
-                : colors.blues.medium
-            }
-            size="XL"
-          />
+          {attendanceChild.imageUrl ? (
+            <RoundImage src={attendanceChild.imageUrl} />
+          ) : (
+            <RoundIcon
+              content={farUser}
+              color={
+                type === 'ABSENT'
+                  ? colors.greyscale.dark
+                  : type === 'DEPARTED'
+                  ? colors.blues.primary
+                  : type === 'PRESENT'
+                  ? colors.accents.green
+                  : type === 'COMING'
+                  ? colors.accents.water
+                  : colors.blues.medium
+              }
+              size="XL"
+            />
+          )}
         </IconBox>
         <ChildBoxInfo onClick={onClick}>
           <Bold data-qa={'child-name'}>

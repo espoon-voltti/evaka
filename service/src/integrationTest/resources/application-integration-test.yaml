@@ -78,6 +78,7 @@ fi:
           daycaredecision: evaka-daycaredecisions-it
           paymentdecision: evaka-paymentdecisions-it
           vouchervaluedecision: evaka-vouchervaluedecisions-it
+          data: evaka-data-it
       vtj:
         client:
           password: ""

@@ -59,6 +59,7 @@ export interface AttendanceChild {
   absences: AbsenceSummary[]
   dailyServiceTimes: DailyServiceTimes | null
   dailyNote: DailyNote | null
+  imageUrl: string | null
 }
 
 interface Attendance {
