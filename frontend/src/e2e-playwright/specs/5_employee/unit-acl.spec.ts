@@ -18,6 +18,7 @@ import { Fixture, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'lib-common/types'
 import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import { waitUntilEqual } from 'e2e-playwright/utils'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
 let nav: EmployeeNav
@@ -57,9 +58,9 @@ beforeEach(async () => {
   staffId = await insertEmployeeFixture(tauno)
 
   page = await (await newBrowserContext()).newPage()
+  await employeeLogin(page, 'UNIT_SUPERVISOR')
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
-  await nav.login('UNIT_SUPERVISOR')
   await nav.openTab('units')
   const units = new UnitsPage(page)
   await units.navigateToUnit(fixtures.daycareFixture.id)

@@ -23,6 +23,7 @@ import {
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ReportsPage from 'e2e-playwright/pages/employee/reports'
 import assert from 'assert'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let fixtures: AreaAndPersonFixtures
 
@@ -56,10 +57,9 @@ beforeEach(async () => {
   ])
 
   page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl)
-  const nav = new EmployeeNav(page)
-  await nav.login('ADMIN')
-  await nav.openTab('reports')
+  await new EmployeeNav(page).openTab('reports')
 
   reports = new ReportsPage(page)
 })

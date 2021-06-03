@@ -5,6 +5,7 @@
 import { newBrowserContext } from 'e2e-playwright/browser'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import { waitUntilEqual } from 'e2e-playwright/utils'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 import config from 'e2e-test-common/config'
 import { insertEmployeeFixture, resetDatabase } from 'e2e-test-common/dev-api'
 import { Page } from 'playwright'
@@ -25,9 +26,9 @@ beforeEach(async () => {
   })
 
   page = await (await newBrowserContext()).newPage()
+  await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
-  await nav.login('ADMIN')
   employeesPage = new EmployeesPage(page)
 })
 

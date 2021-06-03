@@ -10,6 +10,7 @@ import { resetDatabase } from 'e2e-test-common/dev-api'
 import { Page } from 'playwright'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
 import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
 let nav: EmployeeNav
@@ -19,9 +20,9 @@ beforeEach(async () => {
   await resetDatabase()
 
   page = await (await newBrowserContext()).newPage()
+  await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
-  await nav.login('ADMIN')
   pinPage = new EmployeePinPage(page)
 })
 

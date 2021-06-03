@@ -17,6 +17,7 @@ import {
   resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -91,7 +92,6 @@ beforeAll(async () => {
 })
 beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
-  await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
   childInfo = new ChildInformationPage(page)
 })
@@ -104,7 +104,8 @@ afterAll(async () => {
 
 describe('Child information page', () => {
   test('Admin sees every tab', async () => {
-    await nav.login('ADMIN')
+    await employeeLogin(page, 'ADMIN')
+    await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: true,
       units: true,
@@ -116,7 +117,8 @@ describe('Child information page', () => {
   })
 
   test('Service worker sees applications, units, search and reports tabs', async () => {
-    await nav.login('SERVICE_WORKER')
+    await employeeLogin(page, 'SERVICE_WORKER')
+    await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: true,
       units: true,
@@ -128,7 +130,8 @@ describe('Child information page', () => {
   })
 
   test('FinanceAdmin sees units, search, finance and reports tabs', async () => {
-    await nav.login('FINANCE_ADMIN')
+    await employeeLogin(page, 'FINANCE_ADMIN')
+    await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
       units: true,
@@ -140,7 +143,8 @@ describe('Child information page', () => {
   })
 
   test('Director sees only the reports tab', async () => {
-    await nav.login('DIRECTOR')
+    await employeeLogin(page, 'DIRECTOR')
+    await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
       units: false,
@@ -152,7 +156,8 @@ describe('Child information page', () => {
   })
 
   test('Staff sees only the units and messaging tabs', async () => {
-    await nav.login('STAFF')
+    await employeeLogin(page, 'STAFF')
+    await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
       units: true,
@@ -164,7 +169,8 @@ describe('Child information page', () => {
   })
 
   test('Unit supervisor sees units, search, reports and messaging tabs', async () => {
-    await nav.login('UNIT_SUPERVISOR')
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
       units: true,
@@ -178,7 +184,7 @@ describe('Child information page', () => {
 
 describe('Child information page sections', () => {
   test('Admin sees every collapsible sections', async () => {
-    await nav.login('ADMIN')
+    await employeeLogin(page, 'ADMIN')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -197,7 +203,7 @@ describe('Child information page sections', () => {
   })
 
   test('Service worker sees guardians, parents, placements, backup care, service need, assistance, applicaitons and family contact sections ', async () => {
-    await nav.login('SERVICE_WORKER')
+    await employeeLogin(page, 'SERVICE_WORKER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -216,7 +222,7 @@ describe('Child information page sections', () => {
   })
 
   test('FinanceAdmin sees fee alterations, guardians, parents, placements backup cares and service need sections', async () => {
-    await nav.login('FINANCE_ADMIN')
+    await employeeLogin(page, 'FINANCE_ADMIN')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -235,7 +241,7 @@ describe('Child information page sections', () => {
   })
 
   test('Staff sees family contacts, backup pickups, placements, backup care and service need sections', async () => {
-    await nav.login('STAFF')
+    await employeeLogin(page, 'STAFF')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -254,7 +260,7 @@ describe('Child information page sections', () => {
   })
 
   test('Unit supervisor sees guardians, parents, placements, backup care, service need assistance, applications and family contacts, backup pickups sections', async () => {
-    await nav.login('UNIT_SUPERVISOR')
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -273,7 +279,7 @@ describe('Child information page sections', () => {
   })
 
   test('Special education techer sees family contacts, placements, backup care, service need and assistance sections', async () => {
-    await nav.login('SPECIAL_EDUCATION_TEACHER')
+    await employeeLogin(page, 'SPECIAL_EDUCATION_TEACHER')
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
