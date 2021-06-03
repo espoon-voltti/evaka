@@ -1,3 +1,4 @@
+import { SelectOptionProps } from 'employee-frontend/components/common/Select'
 import React, {
   createContext,
   useCallback,
@@ -32,7 +33,6 @@ import {
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
-
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
@@ -42,6 +42,8 @@ export interface MessagesState {
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
   setSelectedAccount: (view: AccountView) => void
+  selectedUnit: SelectOptionProps | undefined
+  setSelectedUnit: (unit: SelectOptionProps) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -65,6 +67,8 @@ const defaultState: MessagesState = {
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
   setSelectedAccount: () => undefined,
+  selectedUnit: undefined,
+  setSelectedUnit: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -107,6 +111,10 @@ export const MessageContextProvider = React.memo(
       () => requireRole(roles, 'UNIT_SUPERVISOR', 'STAFF'),
       [roles]
     )
+
+    const [selectedUnit, setSelectedUnit] = useState<
+      SelectOptionProps | undefined
+    >()
 
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()
@@ -264,6 +272,8 @@ export const MessageContextProvider = React.memo(
         setSelectedDraft,
         selectedAccount,
         setSelectedAccount,
+        selectedUnit,
+        setSelectedUnit,
         page,
         setPage,
         pages,
@@ -284,6 +294,8 @@ export const MessageContextProvider = React.memo(
         loadAccounts,
         selectedDraft,
         selectedAccount,
+        selectedUnit,
+        setSelectedUnit,
         page,
         pages,
         receivedMessages,

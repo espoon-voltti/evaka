@@ -13,11 +13,11 @@ import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { defaultMargins } from 'lib-components/white-space'
 import { sortBy, uniqBy } from 'lodash'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import colors from '../../../lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
-import Select, { SelectOptionProps } from '../common/Select'
+import Select from '../common/Select'
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
@@ -85,28 +85,34 @@ interface AccountsParams {
 
 function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
   const { i18n } = useTranslation()
-  const { setSelectedAccount, selectedAccount: accountView } = useContext(
-    MessageContext
-  )
+  const {
+    setSelectedAccount,
+    selectedAccount,
+    selectedUnit,
+    setSelectedUnit
+  } = useContext(MessageContext)
 
-  const personalAccount = accounts.find(isPersonalMessageAccount)
-  const groupAccounts = accounts.filter(isGroupMessageAccount)
+  const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
+    const personalAccount = accounts.find(isPersonalMessageAccount)
+    const groupAccounts = accounts.filter(isGroupMessageAccount)
+    const unitOptions = sortBy(
+      uniqBy(
+        groupAccounts.map(({ daycareGroup }) => ({
+          value: daycareGroup.unitId,
+          label: daycareGroup.unitName
+        })),
+        (val) => val.value
+      ),
+      (u) => u.label
+    )
+    return [personalAccount, groupAccounts, unitOptions]
+  }, [accounts])
 
-  const unitOptions = sortBy(
-    uniqBy(
-      groupAccounts.map(({ daycareGroup }) => ({
-        value: daycareGroup.unitId,
-        label: daycareGroup.unitName
-      })),
-      (val) => val.value
-    ),
-    (u) => u.label
-  )
   const unitSelectionEnabled = unitOptions.length > 1
 
-  const [selectedUnit, setSelectedUnit] = useState<
-    SelectOptionProps | undefined
-  >(unitOptions[0])
+  useEffect(() => {
+    !selectedUnit && setSelectedUnit(unitOptions[0])
+  }, [selectedUnit, setSelectedUnit, unitOptions])
 
   useEffect(() => {
     if (!selectedUnit) {
@@ -140,7 +146,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
               key={view}
               view={view}
               account={personalAccount}
-              activeView={accountView}
+              activeView={selectedAccount}
               setView={setSelectedAccount}
             />
           ))}
@@ -165,7 +171,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
           )}
           <GroupMessageAccountList
             accounts={visibleGroupAccounts}
-            activeView={accountView}
+            activeView={selectedAccount}
             setView={setSelectedAccount}
           />
         </AccountSection>
@@ -215,6 +221,7 @@ export default React.memo(function Sidebar({
             selectedAccount &&
             setSelectedAccount({ ...selectedAccount, view: 'RECEIVERS' })
           }
+          style={{ display: 'none' }}
         >
           {i18n.messages.receiverSelection.title}
         </Receivers>

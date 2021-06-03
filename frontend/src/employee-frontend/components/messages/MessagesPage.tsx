@@ -40,15 +40,26 @@ export default function MessagesPage() {
     setSelectedDraft,
     selectedAccount,
     setSelectedAccount,
+    selectedUnit,
     refreshMessages
   } = useContext(MessageContext)
 
   useEffect(() => loadAccounts(), [loadAccounts])
   useEffect(() => refreshMessages(), [refreshMessages])
 
-  // pre-select first account
+  // pre-select first account on page load and on unit change
   useEffect(() => {
-    if (!selectedAccount && accounts.isSuccess && accounts.value[0]) {
+    const unitSelectionChange =
+      selectedAccount &&
+      accounts.isSuccess &&
+      !accounts.value.find(
+        (account) => account.id === selectedAccount.account.id
+      )
+    if (
+      (!selectedAccount || unitSelectionChange) &&
+      accounts.isSuccess &&
+      accounts.value[0]
+    ) {
       setSelectedAccount({
         view: 'RECEIVED',
         account: accounts.value[0]
@@ -128,16 +139,15 @@ export default function MessagesPage() {
         {showEditor &&
           accounts.isSuccess &&
           selectedReceivers &&
-          selectedAccount && (
+          selectedAccount &&
+          selectedUnit && (
             <MessageEditor
               defaultSender={{
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              senderOptions={accounts.value.map(({ name, id }) => ({
-                value: id,
-                label: name
-              }))}
+              accounts={accounts.value}
+              selectedUnit={selectedUnit}
               availableReceivers={selectedReceivers}
               onSend={onSend}
               onDiscard={onDiscard}
