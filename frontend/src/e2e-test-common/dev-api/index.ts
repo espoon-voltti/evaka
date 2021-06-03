@@ -560,6 +560,14 @@ export async function insertServiceNeedOptions(): Promise<void> {
   }
 }
 
+export async function insertVoucherValues(): Promise<void> {
+  try {
+    await devClient.post<UUID>(`/voucher-values`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function runPendingAsyncJobs(): Promise<void> {
   try {
     await devClient.post(`/run-jobs`, null)
