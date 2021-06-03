@@ -20,6 +20,8 @@ import {
 import { t } from 'testcafe'
 import { seppoAdminRole } from '../../config/users'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
+import DateRange from 'lib-common/date-range'
+import LocalDate from 'lib-common/local-date'
 
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
@@ -45,16 +47,27 @@ fixture('Employee - Head of family details')
     await clearPricing()
     await insertPricing({
       id: PRICING_ID,
-      validFrom: '2020-01-01',
-      validTo: null,
-      multiplier: '0.107',
-      maxThresholdDifference: 2697,
-      minThreshold2: 2102,
-      minThreshold3: 2713,
-      minThreshold4: 3080,
-      minThreshold5: 3447,
-      minThreshold6: 3813,
-      thresholdIncrease6Plus: 142
+      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
+      minIncomeThreshold2: 210200,
+      minIncomeThreshold3: 271300,
+      minIncomeThreshold4: 308000,
+      minIncomeThreshold5: 344700,
+      minIncomeThreshold6: 381300,
+      maxIncomeThreshold2: 479900,
+      maxIncomeThreshold3: 541000,
+      maxIncomeThreshold4: 577700,
+      maxIncomeThreshold5: 614400,
+      maxIncomeThreshold6: 651000,
+      incomeMultiplier2: 0.107,
+      incomeMultiplier3: 0.107,
+      incomeMultiplier4: 0.107,
+      incomeMultiplier5: 0.107,
+      incomeMultiplier6: 0.107,
+      incomeThresholdIncrease6Plus: 14200,
+      siblingDiscount2: 0.5,
+      siblingDiscount2Plus: 0.8,
+      minFee: 2700,
+      maxFee: 28900
     })
   })
   .beforeEach(async () => {

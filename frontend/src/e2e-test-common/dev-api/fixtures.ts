@@ -586,6 +586,14 @@ export const placementPlanFixture = (
   periodEnd
 })
 
+const feeThresholds = {
+  minIncomeThreshold: 210200,
+  maxIncomeThreshold: 479900,
+  incomeMultiplier: 0.107,
+  minFee: 2700,
+  maxFee: 28900
+}
+
 export const decisionFixture = (
   applicationId: string,
   startDate: string,
@@ -613,16 +621,7 @@ export const feeDecisionsFixture = (
   validTo: LocalDate.today().addYears(1).formatIso(),
   headOfFamily: { id: adult.id },
   familySize: 2,
-  pricing: {
-    multiplier: '0.1070',
-    maxThresholdDifference: 269700,
-    minThreshold2: 210200,
-    minThreshold3: 271300,
-    minThreshold4: 308000,
-    minThreshold5: 344700,
-    minThreshold6: 381300,
-    thresholdIncrease6Plus: 14200
-  },
+  pricing: feeThresholds,
   parts: [
     {
       child: { id: child.id, dateOfBirth: child.dateOfBirth },
@@ -654,16 +653,7 @@ export const voucherValueDecisionsFixture = (
   validTo,
   headOfFamily: { id: adultId },
   familySize: 2,
-  pricing: {
-    multiplier: '0.1070',
-    maxThresholdDifference: 269700,
-    minThreshold2: 210200,
-    minThreshold3: 271300,
-    minThreshold4: 308000,
-    minThreshold5: 344700,
-    minThreshold6: 381300,
-    thresholdIncrease6Plus: 14200
-  },
+  pricing: feeThresholds,
   child: { id: childId, dateOfBirth: '2017-06-30' },
   placement: {
     unit: { id: daycareId },

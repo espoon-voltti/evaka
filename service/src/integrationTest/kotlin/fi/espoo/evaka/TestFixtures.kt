@@ -21,6 +21,7 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
@@ -32,7 +33,6 @@ import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPricing
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestCareArea
@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.kotlin.bindKotlin
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -519,18 +520,29 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     insertTestPricing(
-        DevPricing(
+        FeeThresholdsWithValidity(
             id = UUID.randomUUID(),
-            validFrom = LocalDate.of(2000, 1, 1),
-            validTo = null,
-            multiplier = 0.107,
-            maxThresholdDifference = 269700,
-            minThreshold2 = 210200,
-            minThreshold3 = 271300,
-            minThreshold4 = 308000,
-            minThreshold5 = 344700,
-            minThreshold6 = 381300,
-            thresholdIncrease6Plus = 14200
+            validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
+            minIncomeThreshold2 = 210200,
+            minIncomeThreshold3 = 271300,
+            minIncomeThreshold4 = 308000,
+            minIncomeThreshold5 = 344700,
+            minIncomeThreshold6 = 381300,
+            maxIncomeThreshold2 = 479900,
+            maxIncomeThreshold3 = 541000,
+            maxIncomeThreshold4 = 577700,
+            maxIncomeThreshold5 = 614400,
+            maxIncomeThreshold6 = 651000,
+            incomeMultiplier2 = BigDecimal("0.1070"),
+            incomeMultiplier3 = BigDecimal("0.1070"),
+            incomeMultiplier4 = BigDecimal("0.1070"),
+            incomeMultiplier5 = BigDecimal("0.1070"),
+            incomeMultiplier6 = BigDecimal("0.1070"),
+            incomeThresholdIncrease6Plus = 14200,
+            siblingDiscount2 = BigDecimal("0.5"),
+            siblingDiscount2Plus = BigDecimal("0.8"),
+            maxFee = 28900,
+            minFee = 2700
         )
     )
 

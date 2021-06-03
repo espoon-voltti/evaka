@@ -7,15 +7,16 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.placement.PlacementType
@@ -31,16 +32,7 @@ import java.util.UUID
 class PdfServiceTest {
     private val service: PDFService = PDFService(PDFConfig.templateEngine())
 
-    val testPricing = Pricing(
-        multiplier = BigDecimal(0.1070),
-        maxThresholdDifference = 269700,
-        minThreshold2 = 210200,
-        minThreshold3 = 271300,
-        minThreshold4 = 308000,
-        minThreshold5 = 344700,
-        minThreshold6 = 381300,
-        thresholdIncrease6Plus = 14200
-    )
+    val testPricing: FeeThresholds = fi.espoo.evaka.invoicing.testPricing.withoutDates()
 
     private val normalDecision = FeeDecisionDetailed(
         id = testDecision1.id,
@@ -72,7 +64,7 @@ class PdfServiceTest {
         headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
         partnerIncome = testDecisionIncome.copy(total = 413195),
         familySize = 3,
-        pricing = testPricing,
+        pricing = getFeeDecisionThresholds(testPricing, 3),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),
@@ -117,7 +109,6 @@ class PdfServiceTest {
         ),
         decisionNumber = testDecision1.decisionNumber,
         status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
-        familySize = 3,
         headOfFamily = PersonData.Detailed(
             id = UUID.randomUUID(),
             dateOfBirth = LocalDate.of(1980, 1, 1),
@@ -142,7 +133,8 @@ class PdfServiceTest {
         validTo = null,
         financeDecisionHandlerFirstName = null,
         financeDecisionHandlerLastName = null,
-        pricing = testPricing,
+        familySize = 3,
+        pricing = getFeeDecisionThresholds(testPricing, 3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
         child = PersonData.Detailed(

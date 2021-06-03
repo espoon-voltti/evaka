@@ -14,7 +14,10 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
+import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -25,7 +28,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.PermanentPlacement
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
-import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
@@ -33,6 +35,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.service.DaycareCodes
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
@@ -62,26 +65,54 @@ val testChild1 = PersonData.WithDateOfBirth(uuid4, LocalDate.of(2016, 1, 1))
 
 val testChild2 = testChild1.copy(id = uuid5, dateOfBirth = testChild1.dateOfBirth.plusDays(1))
 
-val oldTestPricing = Pricing(
-    multiplier = BigDecimal("0.1"),
-    maxThresholdDifference = 250000,
-    minThreshold2 = 200000,
-    minThreshold3 = 250000,
-    minThreshold4 = 300000,
-    minThreshold5 = 350000,
-    minThreshold6 = 400000,
-    thresholdIncrease6Plus = 50000
+val oldTestPricingAsThresholds = FeeThresholdsWithValidity(
+    id = UUID.randomUUID(),
+    validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
+    maxFee = 250000,
+    minFee = 27000,
+    minIncomeThreshold2 = 200000,
+    minIncomeThreshold3 = 250000,
+    minIncomeThreshold4 = 300000,
+    minIncomeThreshold5 = 400000,
+    minIncomeThreshold6 = 381300,
+    maxIncomeThreshold2 = 50000,
+    maxIncomeThreshold3 = 544300,
+    maxIncomeThreshold4 = 581600,
+    maxIncomeThreshold6 = 381300,
+    maxIncomeThreshold5 = 344700,
+    incomeMultiplier2 = BigDecimal("0.10"),
+    incomeMultiplier3 = BigDecimal("0.10"),
+    incomeMultiplier4 = BigDecimal("0.10"),
+    incomeMultiplier5 = BigDecimal("0.10"),
+    incomeMultiplier6 = BigDecimal("0.10"),
+    incomeThresholdIncrease6Plus = 50000,
+    siblingDiscount2 = BigDecimal("0.5"),
+    siblingDiscount2Plus = BigDecimal("0.2")
 )
 
-val testPricing = Pricing(
-    multiplier = BigDecimal("0.1070"),
-    maxThresholdDifference = 269700,
-    minThreshold2 = 210200,
-    minThreshold3 = 271300,
-    minThreshold4 = 308000,
-    minThreshold5 = 344700,
-    minThreshold6 = 381300,
-    thresholdIncrease6Plus = 14200
+val testPricing = FeeThresholdsWithValidity(
+    id = UUID.randomUUID(),
+    validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
+    maxFee = 28900,
+    minFee = 2700,
+    minIncomeThreshold2 = 210200,
+    minIncomeThreshold3 = 271300,
+    minIncomeThreshold4 = 308000,
+    minIncomeThreshold5 = 344700,
+    minIncomeThreshold6 = 381300,
+    maxIncomeThreshold2 = 479900,
+    maxIncomeThreshold3 = 541000,
+    maxIncomeThreshold4 = 577700,
+    maxIncomeThreshold5 = 614400,
+    maxIncomeThreshold6 = 651000,
+    incomeMultiplier2 = BigDecimal("0.1070"),
+    incomeMultiplier3 = BigDecimal("0.1070"),
+    incomeMultiplier4 = BigDecimal("0.1070"),
+    incomeMultiplier5 = BigDecimal("0.1070"),
+    incomeMultiplier6 = BigDecimal("0.1070"),
+    incomeThresholdIncrease6Plus = 14200,
+    siblingDiscount2 = BigDecimal("0.5000"),
+    siblingDiscount2Plus = BigDecimal("0.8000")
 )
 
 val testDecisionPart1 =
@@ -115,7 +146,7 @@ val testDecision1 = FeeDecision(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 3,
-    pricing = testPricing,
+    pricing = testPricing.getFeeDecisionThresholds(3),
     parts = listOf(testDecisionPart1, testDecisionPart2.copy(siblingDiscount = 50, fee = 14500)),
     createdAt = Instant.now()
 )
@@ -132,7 +163,7 @@ val testDecision2 = FeeDecision(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 2,
-    pricing = testPricing,
+    pricing = testPricing.getFeeDecisionThresholds(2),
     parts = listOf(testDecisionPart2),
     createdAt = Instant.now()
 )
@@ -300,7 +331,7 @@ fun createFeeDecisionFixture(
     period: DateRange,
     headOfFamilyId: UUID,
     parts: List<FeeDecisionPart>,
-    pricing: Pricing = testPricing,
+    pricing: FeeDecisionThresholds = testPricing.getFeeDecisionThresholds(parts.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
     id = UUID.randomUUID(),
@@ -323,21 +354,23 @@ fun createFeeDecision2Fixture(
     period: DateRange,
     headOfFamilyId: UUID,
     children: List<FeeDecisionChild>,
-    pricing: Pricing = testPricing,
+    pricing: FeeThresholds = testPricing.withoutDates(),
     headOfFamilyIncome: DecisionIncome? = null
-) = FeeDecision2(
-    id = UUID.randomUUID(),
-    status = status,
-    decisionType = decisionType,
-    validDuring = period,
-    headOfFamily = PersonData.JustId(headOfFamilyId),
-    partner = null,
-    headOfFamilyIncome = headOfFamilyIncome,
-    partnerIncome = null,
-    familySize = children.size + 1,
-    pricing = pricing,
-    children = children
-)
+) = (children.size + 1).let { familySize ->
+    FeeDecision2(
+        id = UUID.randomUUID(),
+        status = status,
+        decisionType = decisionType,
+        validDuring = period,
+        headOfFamily = PersonData.JustId(headOfFamilyId),
+        partner = null,
+        headOfFamilyIncome = headOfFamilyIncome,
+        partnerIncome = null,
+        familySize = familySize,
+        pricing = getFeeDecisionThresholds(pricing, familySize),
+        children = children
+    )
+}
 
 fun createVoucherValueDecisionFixture(
     status: VoucherValueDecisionStatus,
@@ -367,7 +400,7 @@ fun createVoucherValueDecisionFixture(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = familySize,
-    pricing = testPricing,
+    pricing = testPricing.getFeeDecisionThresholds(familySize),
     child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
     placement = VoucherValueDecisionPlacement(UnitData.JustId(unitId), placementType),
     serviceNeed = serviceNeed,
