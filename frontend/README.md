@@ -68,8 +68,8 @@ a better look and feel with regards to icons.
 
 ### Using free icons
 
-By default, all builds will use the free icons but you can also explicitly set
-then environment variable `ICONS=free`, e.g.:
+All builds will use the free icons if the pro icons have not been installed,
+but you can also explicitly set the environment variable `ICONS=free`, e.g.:
 
 ```sh
 ICONS=free yarn dev
@@ -80,8 +80,8 @@ ICONS=free yarn dev
 Please refer to [Font Awesome documentation](https://fontawesome.com/plans)
 on how to obtain a commercial license for the professional version of the icon library.
 
-By default, all builds will use the free icons, so you must set the environment
-variable `ICONS=pro` when running any builds, e.g.:
+Installed pro icons are used automatically, but you can also explicitly set the
+environment variable `ICONS=pro` when running any builds, e.g.:
 
 ```sh
 ICONS=pro yarn dev
