@@ -104,7 +104,7 @@ class MessageControllerCitizen(
         db: Database.Connection,
         user: AuthenticatedUser
     ): UUID {
-        user.requireOneOfRoles(UserRole.END_USER)
+        user.requireOneOfRoles(UserRole.END_USER, UserRole.CITIZEN_WEAK)
         return db.read { it.getCitizenMessageAccount(user.id) }
     }
 }
