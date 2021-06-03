@@ -27,7 +27,8 @@ data class TimeRange(
 
 enum class DailyServiceTimesType {
     REGULAR,
-    IRREGULAR
+    IRREGULAR,
+    VARIABLE_TIME
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION, property = "type")
@@ -45,6 +46,8 @@ sealed class DailyServiceTimes(
         val thursday: TimeRange?,
         val friday: TimeRange?
     ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR)
+
+    data class VariableTimes(val variableTimes: Boolean) : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME)
 }
 
 fun Database.Read.getChildDailyServiceTimes(childId: UUID): DailyServiceTimes? {
@@ -75,6 +78,9 @@ fun toDailyServiceTimes(row: RowView): DailyServiceTimes? {
             thursday = toTimeRange(row, "thursday"),
             friday = toTimeRange(row, "friday"),
         )
+        DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimes.VariableTimes(
+            variableTimes = true
+        )
     }.exhaust()
 }
 
@@ -91,6 +97,7 @@ fun Database.Transaction.upsertChildDailyServiceTimes(childId: UUID, times: Dail
     when (times) {
         is DailyServiceTimes.RegularTimes -> upsertRegularChildDailyServiceTimes(childId, times)
         is DailyServiceTimes.IrregularTimes -> upsertIrregularChildDailyServiceTimes(childId, times)
+        is DailyServiceTimes.VariableTimes -> upsertVariableChildDailyServiceTimes(childId)
     }
 }
 
@@ -195,6 +202,52 @@ private fun Database.Transaction.upsertIrregularChildDailyServiceTimes(childId: 
         .bind("thursdayEnd", times.thursday?.end)
         .bind("fridayStart", times.friday?.start)
         .bind("fridayEnd", times.friday?.end)
+        .execute()
+}
+
+private fun Database.Transaction.upsertVariableChildDailyServiceTimes(childId: UUID) {
+    // language=sql
+    val sql = """
+        INSERT INTO daily_service_time (
+            child_id, type, 
+            regular_start, regular_end, 
+            monday_start, monday_end, 
+            tuesday_start, tuesday_end,
+            wednesday_start, wednesday_end, 
+            thursday_start, thursday_end, 
+            friday_start, friday_end
+        )
+        VALUES (
+            :childId, 'VARIABLE_TIME'::daily_service_time_type, 
+            NULL, NULL, 
+            NULL, NULL,
+            NULL, NULL,
+            NULL, NULL,
+            NULL, NULL,
+            NULL, NULL
+        )
+        
+        ON CONFLICT (child_id) DO UPDATE
+        
+        SET 
+            type = 'VARIABLE_TIME'::daily_service_time_type,
+            regular_start = NULL,
+            regular_end = NULL,
+            monday_start = NULL,
+            monday_end = NULL, 
+            tuesday_start = NULL, 
+            tuesday_end = NULL,
+            wednesday_start = NULL,
+            wednesday_end = NULL, 
+            thursday_start = NULL, 
+            thursday_end = NULL, 
+            friday_start = NULL, 
+            friday_end = NULL
+            
+    """.trimIndent()
+
+    this.createUpdate(sql)
+        .bind("childId", childId)
         .execute()
 }
 
