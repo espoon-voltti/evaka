@@ -26,7 +26,33 @@ function resolveCustomizations() {
   }
 }
 
+function resolveIcons() {
+  switch (process.env.ICONS) {
+    case 'pro':
+      console.info('Using pro icons (forced)')
+      return 'pro';
+    case 'free':
+      console.info('Using free icons (forced)')
+      return 'free';
+    case undefined:
+      break;
+    default:
+      throw new Error(`Invalid environment variable ICONS=${process.env.ICONS}`)
+  }
+  try {
+    require('@fortawesome/pro-light-svg-icons')
+    require('@fortawesome/pro-regular-svg-icons')
+    require('@fortawesome/pro-solid-svg-icons')
+    console.info('Using pro icons (auto-detected)')
+    return 'pro'
+  } catch (e) {
+    console.info('Using free icons (fallback)')
+    return 'free'
+  }
+}
+
 const customizationsModule = resolveCustomizations()
+const icons = resolveIcons()
 
 function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
   const plugins = [
@@ -83,7 +109,7 @@ function baseConfig({ isDevelopment, isDevServer }, { name, publicPath }) {
       symlinks: false,
       alias: {
         Icons:
-          process.env.ICONS === 'pro'
+          icons === 'pro'
             ? path.resolve(__dirname, 'src/lib-icons/pro-icons')
             : path.resolve(__dirname, 'src/lib-icons/free-icons')
       },
