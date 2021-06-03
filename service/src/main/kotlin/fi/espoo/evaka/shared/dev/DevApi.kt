@@ -952,7 +952,7 @@ fun Database.Transaction.ensureFakeAdminExists() {
     val sql =
         """
         INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
-        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[])
+        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[])
         ON CONFLICT DO NOTHING
         """.trimIndent()
 
