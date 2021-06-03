@@ -80,18 +80,18 @@ const UnreadCount = styled.span`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { accountsRequest } = useContext(MessageContext)
+  const { accounts } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
   const unreadCount = useMemo<number>(
     () =>
-      accountsRequest.mapAll({
+      accounts.mapAll({
         failure: () => 0,
         loading: () => 0,
         success: (value) =>
           value.reduce((sum, { unreadCount }) => sum + unreadCount, 0)
       }),
-    [accountsRequest]
+    [accounts]
   )
 
   const path = location.pathname

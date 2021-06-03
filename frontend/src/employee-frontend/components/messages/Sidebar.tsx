@@ -189,14 +189,14 @@ export default React.memo(function Sidebar({
   showEditor
 }: Props) {
   const { i18n } = useTranslation()
-  const { accountsRequest, selectedAccount, setSelectedAccount } = useContext(
+  const { accounts, selectedAccount, setSelectedAccount } = useContext(
     MessageContext
   )
 
   return (
     <Container>
       <AccountContainer>
-        {accountsRequest.mapAll({
+        {accounts.mapAll({
           loading() {
             return <Loader />
           },

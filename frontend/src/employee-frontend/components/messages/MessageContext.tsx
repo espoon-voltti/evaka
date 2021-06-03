@@ -36,7 +36,7 @@ const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
-  accountsRequest: Result<MessageAccount[]>
+  accounts: Result<MessageAccount[]>
   loadAccounts: () => void
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
@@ -61,7 +61,7 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
-  accountsRequest: Loading.of(),
+  accounts: Loading.of(),
   loadAccounts: () => undefined,
   selectedDraft: undefined,
   setSelectedDraft: () => undefined,
@@ -116,10 +116,10 @@ export const MessageContextProvider = React.memo(
       SelectOptionProps | undefined
     >()
 
-    const [accountsRequest, setAccountsRequest] = useState<
-      Result<MessageAccount[]>
-    >(Loading.of())
-    const getAccounts = useRestApi(getMessagingAccounts, setAccountsRequest)
+    const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
+      Loading.of()
+    )
+    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
@@ -247,7 +247,7 @@ export const MessageContextProvider = React.memo(
           0
         )
         if (unreadCount > 0) {
-          setAccountsRequest((state) =>
+          setAccounts((state) =>
             state.map((accounts) =>
               accounts.map((acc) =>
                 acc.id === accountId
@@ -266,7 +266,7 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        accountsRequest,
+        accounts,
         loadAccounts,
         selectedDraft,
         setSelectedDraft,
@@ -290,7 +290,7 @@ export const MessageContextProvider = React.memo(
         refreshMessages
       }),
       [
-        accountsRequest,
+        accounts,
         loadAccounts,
         selectedDraft,
         selectedAccount,

@@ -34,7 +34,7 @@ const PanelContainer = styled.div`
 
 export default function MessagesPage() {
   const {
-    accountsRequest,
+    accounts,
     loadAccounts,
     selectedDraft,
     setSelectedDraft,
@@ -51,21 +51,21 @@ export default function MessagesPage() {
   useEffect(() => {
     const unitSelectionChange =
       selectedAccount &&
-      accountsRequest.isSuccess &&
-      !accountsRequest.value.find(
+      accounts.isSuccess &&
+      !accounts.value.find(
         (account) => account.id === selectedAccount.account.id
       )
     if (
       (!selectedAccount || unitSelectionChange) &&
-      accountsRequest.isSuccess &&
-      accountsRequest.value[0]
+      accounts.isSuccess &&
+      accounts.value[0]
     ) {
       setSelectedAccount({
         view: 'RECEIVED',
-        account: accountsRequest.value[0]
+        account: accounts.value[0]
       })
     }
-  }, [accountsRequest, setSelectedAccount, selectedAccount])
+  }, [accounts, setSelectedAccount, selectedAccount])
 
   const [showEditor, setShowEditor] = useState<boolean>(false)
 
@@ -137,7 +137,7 @@ export default function MessagesPage() {
           />
         )}
         {showEditor &&
-          accountsRequest.isSuccess &&
+          accounts.isSuccess &&
           selectedReceivers &&
           selectedAccount &&
           selectedUnit && (
@@ -146,7 +146,7 @@ export default function MessagesPage() {
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
               }}
-              accounts={accountsRequest.value}
+              accounts={accounts.value}
               selectedUnit={selectedUnit}
               availableReceivers={selectedReceivers}
               onSend={onSend}
