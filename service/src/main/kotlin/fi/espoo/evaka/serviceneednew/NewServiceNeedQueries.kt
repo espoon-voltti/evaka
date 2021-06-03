@@ -237,7 +237,7 @@ fun Database.Read.getOverlappingServiceNeeds(
 }
 
 fun Database.Read.getServiceNeedOptions(): List<ServiceNeedOption> {
-    return createQuery("SELECT * FROM service_need_option")
+    return createQuery("SELECT * FROM service_need_option ORDER BY display_order")
         .mapTo<ServiceNeedOption>()
         .list()
 }
@@ -250,6 +250,7 @@ fun Database.Read.getServiceNeedOptionPublicInfos(placementTypes: List<Placement
             valid_placement_type
         FROM service_need_option
         WHERE default_option IS FALSE AND valid_placement_type = ANY(:placementTypes::placement_type[])
+        ORDER BY display_order;
     """.trimIndent()
     return createQuery(sql)
         .bind("placementTypes", placementTypes.toTypedArray())
