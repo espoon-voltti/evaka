@@ -17,7 +17,8 @@ import {
   isIrregular,
   RegularDailyServiceTimes,
   IrregularDailyServiceTimes,
-  TimeRange
+  TimeRange,
+  DailyServiceTimesType
 } from 'lib-common/api-types/child/common'
 import {
   deleteChildDailyServiceTimes,
@@ -61,7 +62,7 @@ interface SelectableTimeInputRange extends TimeInputRange {
 }
 
 interface FormData extends Record<Weekday, SelectableTimeInputRange> {
-  type: 'REGULAR' | 'IRREGULAR' | 'NOT_SET'
+  type: DailyServiceTimesType | 'NOT_SET'
   regular: TimeInputRange
 }
 
@@ -225,7 +226,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
       apiCall = deleteChildDailyServiceTimes(id)
     } else if (formData.type === 'REGULAR') {
       const data: RegularDailyServiceTimes = {
-        regular: true,
+        type: 'REGULAR',
         regularTimes: {
           start: formData.regular.start,
           end: formData.regular.end
@@ -234,7 +235,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
       apiCall = putChildDailyServiceTimes(id, data)
     } else if (formData.type === 'IRREGULAR') {
       const data: IrregularDailyServiceTimes = {
-        regular: false,
+        type: 'IRREGULAR',
         monday: formData.monday.selected
           ? {
               start: formData.monday.start,
