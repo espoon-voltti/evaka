@@ -103,3 +103,4 @@ V102__service_need_option_display_order.sql
 V103__add_variable_time_to_daily_service_time_type.sql
 V104__fee_thresholds_constraints.sql
 V105__new_fee_decision_fixes.sql
+V106__create_varda_organizer_child.sql

@@ -233,7 +233,9 @@ data class VardaPersonResponse(
 data class VardaChildRequest(
     val id: UUID,
     @JsonProperty("henkilo")
-    val personUrl: String,
+    val personUrl: String? = null,
+    @JsonProperty("henkilo_oid")
+    val personOid: String? = null,
     @JsonProperty("vakatoimija_oid")
     val organizerOid: String?,
     @JsonProperty("oma_organisaatio_oid")
