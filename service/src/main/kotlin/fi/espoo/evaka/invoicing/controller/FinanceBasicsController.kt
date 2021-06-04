@@ -5,7 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -26,67 +27,49 @@ import java.util.UUID
 @RequestMapping("/finance-basics")
 class FinanceBasicsController {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithValidity> {
+    fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
-        return db.read { it.getFeeThresholds().sortedByDescending { it.validDuring.start } }
+        return db.read { it.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } }
     }
 
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody body: CreateFeeThresholdsBody
+        @RequestBody body: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsCreate.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         validateFeeThresholds(body)
-        db.transaction {
-            val latestThreshold = it.getFeeThresholds().maxByOrNull { it.validDuring.start }
+        db.transaction { tx ->
+            val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
-            if (latestThreshold != null) {
-                if (latestThreshold.validDuring.end != null && latestThreshold.validDuring.overlaps(body.validDuring))
+            if (latest != null) {
+                if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
                     throw BadRequest("New fee thresholds over lap with existing fee thresholds")
 
-                if (latestThreshold.validDuring.end == null)
-                    it.updateFeeThresholdsValidity(
-                        latestThreshold.id,
-                        latestThreshold.validDuring.copy(end = body.validDuring.start.minusDays(1))
+                if (latest.thresholds.validDuring.end == null)
+                    tx.updateFeeThresholdsValidity(
+                        latest.id,
+                        latest.thresholds.validDuring.copy(end = body.validDuring.start.minusDays(1))
                     )
             }
 
-            it.insertNewFeeThresholds(body)
+            tx.insertNewFeeThresholds(body)
         }
     }
 }
 
-data class CreateFeeThresholdsBody(
-    val validDuring: DateRange,
-    val minIncomeThreshold2: Int,
-    val minIncomeThreshold3: Int,
-    val minIncomeThreshold4: Int,
-    val minIncomeThreshold5: Int,
-    val minIncomeThreshold6: Int,
-    val incomeMultiplier2: BigDecimal,
-    val incomeMultiplier3: BigDecimal,
-    val incomeMultiplier4: BigDecimal,
-    val incomeMultiplier5: BigDecimal,
-    val incomeMultiplier6: BigDecimal,
-    val maxIncomeThreshold2: Int,
-    val maxIncomeThreshold3: Int,
-    val maxIncomeThreshold4: Int,
-    val maxIncomeThreshold5: Int,
-    val maxIncomeThreshold6: Int,
-    val incomeThresholdIncrease6Plus: Int,
-    val siblingDiscount2: BigDecimal,
-    val siblingDiscount2Plus: BigDecimal,
-    val maxFee: Int,
-    val minFee: Int
+data class FeeThresholdsWithId(
+    val id: UUID,
+    @Nested
+    val thresholds: FeeThresholds
 )
 
-private fun validateFeeThresholds(thresholds: CreateFeeThresholdsBody) {
+private fun validateFeeThresholds(thresholds: FeeThresholds) {
     val allMaxFeesMatch = listOf(
         calculateMaxFeeFromThresholds(
             thresholds.minIncomeThreshold2,
@@ -122,12 +105,12 @@ private fun calculateMaxFeeFromThresholds(minThreshold: Int, maxThreshold: Int, 
     return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
 }
 
-fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithValidity> =
+fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
     createQuery("SELECT * FROM fee_thresholds")
-        .mapTo<FeeThresholdsWithValidity>()
+        .mapTo<FeeThresholdsWithId>()
         .toList()
 
-fun Database.Transaction.insertNewFeeThresholds(thresholds: CreateFeeThresholdsBody) =
+fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds) =
     createUpdate(
         """
 INSERT INTO fee_thresholds (

@@ -14,7 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
@@ -28,7 +28,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.DateRange
@@ -49,8 +48,7 @@ val testChild1 = PersonData.WithDateOfBirth(uuid4, LocalDate.of(2016, 1, 1))
 
 val testChild2 = testChild1.copy(id = uuid5, dateOfBirth = testChild1.dateOfBirth.plusDays(1))
 
-val oldTestPricingAsThresholds = FeeThresholdsWithValidity(
-    id = UUID.randomUUID(),
+val oldTestPricingAsThresholds = FeeThresholds(
     validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
     maxFee = 250000,
     minFee = 27000,
@@ -74,8 +72,7 @@ val oldTestPricingAsThresholds = FeeThresholdsWithValidity(
     siblingDiscount2Plus = BigDecimal("0.2")
 )
 
-val testPricing = FeeThresholdsWithValidity(
-    id = UUID.randomUUID(),
+val testPricing = FeeThresholds(
     validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
     maxFee = 28900,
     minFee = 2700,

@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.PersonData
@@ -16,9 +15,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
+import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -32,8 +31,6 @@ import java.util.UUID
 
 class PdfServiceTest {
     private val service: PDFService = PDFService(EvakaTemplateProvider(), PDFConfig.templateEngine())
-
-    val testPricing: FeeThresholds = fi.espoo.evaka.invoicing.testPricing.withoutDates()
 
     private val normalDecision = FeeDecisionDetailed(
         id = testDecision1.id,
@@ -64,7 +61,7 @@ class PdfServiceTest {
         headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
         partnerIncome = testDecisionIncome.copy(total = 413195),
         familySize = 3,
-        pricing = getFeeDecisionThresholds(testPricing, 3),
+        pricing = testPricing.getFeeDecisionThresholds(3),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),
@@ -140,7 +137,7 @@ class PdfServiceTest {
         financeDecisionHandlerFirstName = null,
         financeDecisionHandlerLastName = null,
         familySize = 3,
-        pricing = getFeeDecisionThresholds(testPricing, 3),
+        pricing = testPricing.getFeeDecisionThresholds(3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
         child = PersonData.Detailed(

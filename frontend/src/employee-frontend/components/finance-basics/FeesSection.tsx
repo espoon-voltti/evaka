@@ -26,7 +26,11 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { getFeeThresholds } from '../../api/finance-basics'
-import { familySizes, FeeThresholds } from '../../types/finance-basics'
+import {
+  familySizes,
+  FeeThresholds,
+  FeeThresholdsWithId
+} from '../../types/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
 import StatusLabel from '../common/StatusLabel'
@@ -38,7 +42,7 @@ export default React.memo(function FeesSection() {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
-  const [data, setData] = useState<Result<FeeThresholds[]>>(Loading.of())
+  const [data, setData] = useState<Result<FeeThresholdsWithId[]>>(Loading.of())
   const loadData = useRestApi(getFeeThresholds, setData)
   useEffect(() => {
     void loadData()
@@ -50,7 +54,7 @@ export default React.memo(function FeesSection() {
   const lastThresholdsEndDate = useMemo(
     () =>
       data
-        .map((ps) => ps[0]?.validDuring?.end ?? undefined)
+        .map((ps) => ps[0]?.thresholds.validDuring.end ?? undefined)
         .getOrElse(undefined),
     [data]
   )
@@ -111,7 +115,7 @@ export default React.memo(function FeesSection() {
                 <FeeThresholdsItem
                   key={feeThresholds.id}
                   i18n={i18n}
-                  feeThresholds={feeThresholds}
+                  feeThresholds={feeThresholds.thresholds}
                   copyThresholds={copyThresholds}
                   editing={!!editorState.editing}
                 />
@@ -265,7 +269,7 @@ type EditorState =
     }
 
 export type FormState = {
-  [k in keyof Omit<FeeThresholds, 'id' | 'validDuring'>]: string
+  [k in keyof Omit<FeeThresholds, 'validDuring'>]: string
 } & {
   validFrom: string
   validTo: string

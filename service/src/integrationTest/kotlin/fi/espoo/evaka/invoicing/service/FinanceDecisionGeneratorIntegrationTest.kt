@@ -62,7 +62,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(from, pricing.validDuring.start)
             assertEquals(null, pricing.validDuring.end)
             assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier2)
-            assertEquals(BigDecimal("0.1070"), pricing.withoutDates().incomeMultiplier(2))
+            assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier(2))
         }
     }
 
@@ -75,7 +75,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         result[0].let { pricing ->
             assertEquals(LocalDate.of(2000, 1, 1), pricing.validDuring.start)
             assertEquals(null, pricing.validDuring.end)
-            assertEquals(BigDecimal("0.1070"), pricing.withoutDates().incomeMultiplier2)
+            assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier2)
         }
     }
 
