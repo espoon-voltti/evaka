@@ -24,8 +24,8 @@ const Container = styled.div<{ status: StatusLabelType }>`
   ${(p) =>
     p.status == 'coming'
       ? `
-   color: ${colors.accents.greenDark};
-   border: 1px solid ${colors.accents.greenDark};
+   color: ${colors.accents.emerald};
+   border: 1px solid ${colors.accents.emerald};
   `
       : ''}
 
@@ -33,7 +33,7 @@ const Container = styled.div<{ status: StatusLabelType }>`
     p.status == 'active'
       ? `
    color: ${colors.greyscale.white};
-   background: ${colors.accents.greenDark};
+   background: ${colors.accents.emerald};
   `
       : ''}
 
