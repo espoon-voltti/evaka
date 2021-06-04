@@ -1935,6 +1935,7 @@ export const fi = {
       title: 'Saapuneet hakemukset',
       description:
         'Raportti listaa saapuneita ja käsittelyssä olevia hakemuksia yksiköittäin.',
+      ageInfo: 'Lapsen ikä lasketaan valitun aikavälin loppupäivänä',
       preferredStartingDate: 'Aloituspäivä',
       under3Years: 'Vakahakemuksia (alle 3v)',
       over3Years: 'Vakahakemuksia (yli 3v)',
@@ -1945,7 +1946,7 @@ export const fi = {
     decisions: {
       title: 'Päätökset',
       description: 'Raportti listaa tehtyjä päätöksiä yksiköittäin.',
-      ageInfo: 'Lapsen ikä katsotaan päätöksen lähetyspäivänä',
+      ageInfo: 'Lapsen ikä lasketaan päätöksen lähetyspäivänä',
       sentDate: 'Päätöksen lähetyspäivä',
       daycareUnder3: 'Vakapäätöksiä (alle 3v)',
       daycareOver3: 'Vakapäätöksiä (yli 3v)',

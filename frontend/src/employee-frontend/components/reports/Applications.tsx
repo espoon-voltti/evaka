@@ -14,19 +14,16 @@ import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from 'lib-common/api'
 import { ApplicationsReportRow } from '../../types/reports'
 import { getApplicationsReport, PeriodFilters } from '../../api/reports'
-import ReportDownload from '../../components/reports/ReportDownload'
-import {
-  FilterLabel,
-  FilterRow,
-  TableFooter,
-  TableScrollable
-} from '../../components/reports/common'
+import ReportDownload from './ReportDownload'
+import { FilterLabel, FilterRow, TableFooter, TableScrollable } from './common'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from 'lib-common/local-date'
-import { FlexRow } from '../../components/common/styled/containers'
+import { FlexRow } from '../common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/form/Combobox'
+import { Gap } from '../../../lib-components/white-space'
+import { InfoBox } from '../../../lib-components/molecules/MessageBoxes'
 
 interface DisplayFilters {
   careArea: string
@@ -133,6 +130,9 @@ function Applications() {
             />
           </Wrapper>
         </FilterRow>
+
+        <Gap />
+        <InfoBox message={i18n.reports.applications.ageInfo} thin />
 
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}

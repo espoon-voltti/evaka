@@ -24,6 +24,8 @@ import { FlexRow } from '../common/styled/containers'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { DecisionsReportRow } from '../../types/reports'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
+import { InfoBox } from '../../../lib-components/molecules/MessageBoxes'
+import { Gap } from 'lib-components/white-space'
 
 interface DisplayFilters {
   careArea: string
@@ -129,6 +131,9 @@ function Decisions() {
             />
           </Wrapper>
         </FilterRow>
+
+        <Gap />
+        <InfoBox message={i18n.reports.decisions.ageInfo} thin />
 
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
