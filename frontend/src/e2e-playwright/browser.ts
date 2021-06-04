@@ -8,7 +8,8 @@ import playwright, {
   Browser,
   BrowserContext,
   BrowserContextOptions,
-  Download
+  Download,
+  Page
 } from 'playwright'
 import config from 'e2e-test-common/config'
 
@@ -77,10 +78,32 @@ async function takeScreenshots(namePrefix: string): Promise<void> {
   }
 }
 
+function configurePage(page: Page) {
+  page.on(
+    'console',
+    (msg) =>
+      void (async () => {
+        const args: unknown[] = []
+        for (const arg of msg.args()) {
+          const value = (await arg.jsonValue()) as unknown
+          args.push(value)
+        }
+        if (args.length === 0) {
+          args.push(msg.text())
+        }
+        console.log(`page ${page.url()} console.${msg.type()}`, ...args)
+      })()
+  )
+  page.on('pageerror', (err) => {
+    console.log(`Page ${page.url()}`, err)
+  })
+}
+
 export async function newBrowserContext(
   options?: BrowserContextOptions
 ): Promise<BrowserContext> {
   const ctx = await browser.newContext(options)
+  ctx.on('page', configurePage)
   ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
   await ctx.addInitScript({ content: injected })
   return ctx
