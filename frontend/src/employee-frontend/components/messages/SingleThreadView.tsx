@@ -2,6 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  Message,
+  MessageThread,
+  MessageType
+} from 'lib-common/api-types/messaging/message'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
@@ -18,7 +23,6 @@ import { UUID } from '../../types'
 import { formatDate } from '../../utils/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
-import { Message, MessageThread, MessageType } from './types'
 
 const MessageContainer = styled.div`
   background-color: white;

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import React, { useContext, useEffect } from 'react'
 import styled from 'styled-components'
-import ErrorSegment from '../../lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '../../lib-components/atoms/state/Spinner'
 import { headerHeight } from '../header/const'
 import { MessageContext } from './state'
 import ThreadList from './ThreadList'

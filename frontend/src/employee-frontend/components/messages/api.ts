@@ -3,21 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
+import {
+  deserializeMessageThread,
+  deserializeReplyResponse,
+  MessageThread,
+  ReplyResponse
+} from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { UUID } from '../../types'
 import {
   deserializeDraftContent,
-  deserializeMessage,
-  deserializeMessageThread,
   deserializeReceiverChild,
   deserializeSentMessage,
   DraftContent,
-  Message,
   MessageAccount,
   MessageBody,
-  MessageThread,
-  MessageType,
   ReceiverGroup,
   SentMessage,
   UpsertableDraftContent
@@ -129,39 +130,12 @@ export async function deleteDraft(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function createNewMessage(
-  title: string,
-  content: string,
-  type: MessageType,
-  senderAccountId: UUID,
-  recipientAccountIds: Set<UUID>
-): Promise<Result<void>> {
-  return client
-    .post(`/messages`, {
-      title,
-      content,
-      type,
-      senderAccountId,
-      recipientAccountIds
-    })
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export interface ReplyToThreadParams {
   messageId: UUID
   content: string
   accountId: UUID
   recipientAccountIds: UUID[]
 }
-export interface ReplyResponse {
-  threadId: string
-  message: Message
-}
-const deserializeReplyResponse = (data: JsonOf<ReplyResponse>) => ({
-  threadId: data.threadId,
-  message: deserializeMessage(data.message)
-})
 export async function replyToThread({
   messageId,
   content,

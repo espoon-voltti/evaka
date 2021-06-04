@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Loading, Paged, Result, Success } from 'lib-common/api'
+import {
+  MessageThread,
+  ReplyResponse
+} from 'lib-common/api-types/messaging/message'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import React, {
@@ -20,7 +24,6 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { MessageThread, ReplyResponse } from './types'
 
 const initialThreadState: ThreadsState = {
   threads: [],

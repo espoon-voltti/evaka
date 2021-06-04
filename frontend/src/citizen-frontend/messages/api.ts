@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
+import {
+  deserializeMessageThread,
+  deserializeReplyResponse,
+  MessageThread,
+  ReplyResponse
+} from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../api-client'
-import {
-  deserializeMessage,
-  deserializeMessageThread,
-  MessageThread,
-  ReplyResponse
-} from './types'
 
 export async function getReceivedMessages(
   page: number,
@@ -64,11 +64,6 @@ export async function replyToThread({
       content,
       recipientAccountIds
     })
-    .then(({ data: { message, threadId } }) =>
-      Success.of({
-        threadId: threadId,
-        message: deserializeMessage(message)
-      })
-    )
+    .then(({ data }) => Success.of(deserializeReplyResponse(data)))
     .catch((e) => Failure.fromError(e))
 }

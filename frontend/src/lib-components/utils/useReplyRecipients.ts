@@ -1,12 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Message } from 'lib-common/api-types/messaging/message'
 import { UUID } from 'lib-common/types'
+import { useCallback, useEffect, useState } from 'react'
 import { SelectableAccount } from '../molecules/MessageReplyEditor'
-
-interface Message {
-  senderId: string
-  senderName: string
-  recipients: { id: UUID; name: string }[]
-}
 
 function getInitialRecipients(
   messages: Message[],

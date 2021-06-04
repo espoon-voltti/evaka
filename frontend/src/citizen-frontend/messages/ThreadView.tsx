@@ -8,14 +8,18 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import { MessageReplyEditor } from '../../lib-components/molecules/MessageReplyEditor'
-import { useRecipients } from '../../lib-components/utils/useReplyRecipients'
+import {
+  MessageType,
+  Message,
+  MessageThread
+} from 'lib-common/api-types/messaging/message'
+import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { useTranslation } from '../localization'
 import { formatDate } from '../util'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'
-import { Message, MessageThread, MessageType } from './types'
 
 const TitleRow = styled.div`
   display: flex;

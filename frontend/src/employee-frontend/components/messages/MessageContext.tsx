@@ -1,4 +1,12 @@
 import { SelectOptionProps } from 'employee-frontend/components/common/Select'
+import { Loading, Paged, Result } from 'lib-common/api'
+import {
+  Message,
+  MessageThread,
+  ReplyResponse
+} from 'lib-common/api-types/messaging/message'
+import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
+import { useRestApi } from 'lib-common/utils/useRestApi'
 import React, {
   createContext,
   useCallback,
@@ -7,9 +15,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Loading, Paged, Result } from '../../../lib-common/api'
-import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
-import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
 import { requireRole } from '../../utils/roles'
@@ -19,17 +24,10 @@ import {
   getReceivedMessages,
   getSentMessages,
   markThreadRead,
-  ReplyResponse,
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import {
-  DraftContent,
-  Message,
-  MessageAccount,
-  MessageThread,
-  SentMessage
-} from './types'
+import { DraftContent, MessageAccount, SentMessage } from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20

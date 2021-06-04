@@ -2,11 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  MessageAccount as BaseMessageAccount,
+  MessageType
+} from 'lib-common/api-types/messaging/message'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../types'
 
-export type Recipient = {
+export interface Recipient {
   personId: string
   firstName: string
   lastName: string
@@ -40,10 +44,6 @@ export const deserializeReceiverChild = (
   childDateOfBirth: LocalDate.parseIso(json.childDateOfBirth)
 })
 
-export interface BaseMessageAccount {
-  id: UUID
-  name: string
-}
 interface AccountWithUnreadCount extends BaseMessageAccount {
   unreadCount: number
 }
@@ -68,8 +68,6 @@ export const isGroupMessageAccount = (
 export const isPersonalMessageAccount = (
   acc: MessageAccount
 ): acc is PersonalMessageAccount => acc.type === 'PERSONAL'
-
-export type MessageType = 'MESSAGE' | 'BULLETIN'
 
 export interface MessageBody {
   title: string
@@ -103,7 +101,7 @@ export interface SentMessage {
   type: MessageType
   threadTitle: string
   content: string
-  recipients: BaseMessageAccount[]
+  recipients: MessageAccount[]
   recipientNames: string[]
   sentAt: Date
 }
@@ -113,32 +111,4 @@ export const deserializeSentMessage = ({
 }: JsonOf<SentMessage>): SentMessage => ({
   ...rest,
   sentAt: new Date(sentAt)
-})
-
-export interface Message {
-  id: UUID
-  senderId: UUID
-  senderName: string
-  recipients: BaseMessageAccount[]
-  sentAt: Date
-  readAt: Date | null
-  content: string
-}
-export const deserializeMessage = (m: JsonOf<Message>): Message => ({
-  ...m,
-  sentAt: new Date(m.sentAt),
-  readAt: m.readAt ? new Date(m.readAt) : null
-})
-
-export interface MessageThread {
-  id: UUID
-  type: MessageType
-  title: string
-  messages: Message[]
-}
-export const deserializeMessageThread = (
-  json: JsonOf<MessageThread>
-): MessageThread => ({
-  ...json,
-  messages: json.messages.map(deserializeMessage)
 })
