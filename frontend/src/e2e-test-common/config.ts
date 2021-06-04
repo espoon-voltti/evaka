@@ -61,8 +61,10 @@ const config = {
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
       'chromium'
   },
+  apiUrl: `${browserUrl}/api/internal`,
   adminUrl: `${browserUrl}/employee/applications`,
   employeeUrl: `${browserUrl}/employee`,
+  employeeLoginUrl: `${browserUrl}/employee/login`,
   devApiGwUrl: `${baseUrl ?? 'http://localhost:3020'}/api/internal/dev-api`,
   enduserUrl: browserUrl,
   supervisorAad,

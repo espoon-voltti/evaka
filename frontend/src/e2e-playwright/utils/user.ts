@@ -53,19 +53,13 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
 }
 
 export async function employeeLogin(page: Page, role: UserRole) {
-  const authUrl =
-    'http://localhost:9099/api/internal/auth/saml/login/callback?RelayState=%2Femployee'
+  const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   const user = getLoginUser(role)
 
-  await page.goto(config.employeeUrl)
+  await page.goto(config.employeeLoginUrl)
+
   await page.evaluate(
-    async ({
-      user,
-      authUrl
-    }: {
-      user: DevLoginUser | string
-      authUrl: string
-    }) => {
+    ({ user, authUrl }: { user: DevLoginUser | string; authUrl: string }) => {
       const params = new URLSearchParams()
       if (typeof user === 'string') {
         params.append('preset', user)
@@ -77,9 +71,17 @@ export async function employeeLogin(page: Page, role: UserRole) {
         params.append('aad', user.aad)
         user.roles.forEach((role) => params.append('roles', role))
       }
-      return fetch(authUrl, { method: 'POST', body: params }).then(
-        () => undefined
-      )
+      return fetch(authUrl, {
+        method: 'POST',
+        body: params,
+        redirect: 'manual'
+      }).then((response) => {
+        if (response.status >= 400) {
+          throw new Error(
+            `Fetch to {authUrl} failed with status ${response.status}`
+          )
+        }
+      })
     },
     { user, authUrl }
   )
