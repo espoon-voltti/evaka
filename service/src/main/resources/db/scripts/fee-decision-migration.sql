@@ -26,7 +26,7 @@ SELECT
         ELSE placement_type::placement_type
     END),
     (CASE
-        WHEN placement_type = 'DAYCARE' AND service_need = 'MISSING' THEN 1.00
+        WHEN (placement_type = 'DAYCARE' OR placement_type = 'DAYCARE_PART_TIME') AND service_need = 'MISSING' THEN 1.00
         WHEN service_need = 'GTE_35' THEN 1.00
         WHEN service_need = 'GT_25_LT_35' THEN 0.80
         WHEN service_need = 'LTE_25' THEN 0.60
