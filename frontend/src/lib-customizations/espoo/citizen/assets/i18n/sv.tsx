@@ -13,6 +13,7 @@ const sv: Translations = {
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
     ok: 'Ok',
+    add: 'Lägg till',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kommunal',

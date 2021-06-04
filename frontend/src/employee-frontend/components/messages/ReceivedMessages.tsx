@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Result } from 'lib-common/api'
+import { MessageThread } from 'lib-common/api-types/messaging/message'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import React from 'react'
-import { Result } from '../../../lib-common/api'
 import { UUID } from '../../types'
 import {
   MessageRow,
@@ -17,9 +18,8 @@ import {
   TypeAndDate
 } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
-import { MessageThread } from './types'
 
-const getUniqueParticipants: (t: MessageThread) => string[] = (
+const getUniqueParticipants: (t: MessageThread) => UUID[] = (
   t: MessageThread
 ) =>
   Object.values(

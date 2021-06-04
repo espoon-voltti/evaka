@@ -322,7 +322,7 @@ ORDER BY msg.sent_at DESC
 data class ThreadWithParticipants(
     val threadId: UUID,
     val type: MessageType,
-    val sender: UUID,
+    val senders: Set<UUID>,
     val recipients: Set<UUID>
 )
 
@@ -331,13 +331,14 @@ fun Database.Read.getThreadByMessageId(messageId: UUID): ThreadWithParticipants?
         SELECT
             t.id AS threadId,
             t.message_type AS type,
-            m.sender_id AS sender,
-            (SELECT array_agg(recipient_id)) as recipients
+            (SELECT array_agg(m2.sender_id)) as senders,
+            (SELECT array_agg(rec.recipient_id)) as recipients
             FROM message m
             JOIN message_thread t ON m.thread_id = t.id
-            JOIN message_recipients rec ON rec.message_id = m.id
+            JOIN message m2 ON m2.thread_id = t.id 
+            JOIN message_recipients rec ON rec.message_id = m2.id
             WHERE m.id = :messageId
-            GROUP BY t.id, t.message_type, m.sender_id
+            GROUP BY t.id, t.message_type
     """.trimIndent()
     return this.createQuery(sql)
         .bind("messageId", messageId)

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MessageThread } from 'lib-common/api-types/messaging/message'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -17,7 +18,6 @@ import styled from 'styled-components'
 import { useTranslation } from '../localization'
 import { MessageContext } from './state'
 import ThreadListItem from './ThreadListItem'
-import { MessageThread } from './types'
 
 const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
   thread.messages.some((m) => !m.readAt && m.senderId !== accountId)

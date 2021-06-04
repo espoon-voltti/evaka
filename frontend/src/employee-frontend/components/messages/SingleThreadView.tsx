@@ -2,10 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import {
+  Message,
+  MessageThread,
+  MessageType
+} from 'lib-common/api-types/messaging/message'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { H2 } from 'lib-components/typography'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
@@ -17,7 +23,6 @@ import { UUID } from '../../types'
 import { formatDate } from '../../utils/date'
 import { MessageContext } from './MessageContext'
 import { MessageTypeChip } from './MessageTypeChip'
-import { Message, MessageThread, MessageType } from './types'
 
 const MessageContainer = styled.div`
   background-color: white;
@@ -112,31 +117,22 @@ export function SingleThreadView({
     (content) => setReplyContent(threadId, content),
     [setReplyContent, threadId]
   )
-
-  const [messageId, recipients] = useMemo(() => {
-    const message = messages.slice(-1)[0]
-    return [
-      message.id,
-      [
-        ...message.recipients.filter((r) => r.id !== accountId),
-        ...(message.senderId !== accountId
-          ? [{ id: message.senderId, name: message.senderName }]
-          : [])
-      ]
-    ]
-  }, [accountId, messages])
+  const { recipients, onToggleRecipient } = useRecipients(messages, accountId)
 
   const onSubmitReply = () =>
     sendReply({
       content: replyContent,
-      messageId,
-      recipientAccountIds: recipients.map((r) => r.id),
+      messageId: messages.slice(-1)[0].id,
+      recipientAccountIds: recipients
+        .filter((r) => r.selected)
+        .map((r) => r.id),
       accountId
     })
 
   const canReply = type === 'MESSAGE' || messages[0].senderId === accountId
   const editorLabels = useMemo(
     () => ({
+      add: i18n.common.add,
       message: i18n.messages.messageEditor.message,
       recipients: i18n.messages.messageEditor.receivers,
       send: i18n.messages.messageEditor.send,
@@ -168,6 +164,7 @@ export function SingleThreadView({
           <MessageContainer>
             <MessageReplyEditor
               recipients={recipients}
+              onToggleRecipient={onToggleRecipient}
               replyContent={replyContent}
               onUpdateContent={onUpdateContent}
               i18n={editorLabels}

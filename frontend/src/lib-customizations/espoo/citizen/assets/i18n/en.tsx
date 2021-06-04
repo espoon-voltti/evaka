@@ -13,6 +13,7 @@ const en: Translations = {
     cancel: 'Cancel',
     return: 'Return',
     ok: 'Ok',
+    add: 'Add',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Municipal',

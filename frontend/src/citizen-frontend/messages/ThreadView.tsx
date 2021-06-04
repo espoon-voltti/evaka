@@ -8,13 +8,18 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import { MessageReplyEditor } from '../../lib-components/molecules/MessageReplyEditor'
+import {
+  MessageType,
+  Message,
+  MessageThread
+} from 'lib-common/api-types/messaging/message'
+import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
+import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { useTranslation } from '../localization'
 import { formatDate } from '../util'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'
-import { Message, MessageThread, MessageType } from './types'
 
 const TitleRow = styled.div`
   display: flex;
@@ -94,18 +99,7 @@ export default React.memo(function ThreadView({
     getReplyContent
   } = useContext(MessageContext)
 
-  const [messageId, recipients] = useMemo(() => {
-    const message = messages.slice(-1)[0]
-    return [
-      message.id,
-      [
-        ...message.recipients.filter((r) => r.id !== accountId),
-        ...(message.senderId !== accountId
-          ? [{ id: message.senderId, name: message.senderName }]
-          : [])
-      ]
-    ]
-  }, [accountId, messages])
+  const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
 
   const onUpdateContent = useCallback(
     (content) => setReplyContent(threadId, content),
@@ -116,12 +110,13 @@ export default React.memo(function ThreadView({
   const onSubmit = () =>
     sendReply({
       content: replyContent,
-      messageId,
-      recipientAccountIds: recipients.map((r) => r.id)
+      messageId: messages.slice(-1)[0].id,
+      recipientAccountIds: recipients.filter((r) => r.selected).map((r) => r.id)
     })
 
   const editorLabels = useMemo(
     () => ({
+      add: i18n.common.add,
       message: i18n.messages.types.MESSAGE,
       messagePlaceholder: i18n.messages.messagePlaceholder,
       recipients: i18n.messages.recipients,
@@ -148,6 +143,7 @@ export default React.memo(function ThreadView({
             onSubmit={onSubmit}
             onUpdateContent={onUpdateContent}
             recipients={recipients}
+            onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
             i18n={editorLabels}
           />

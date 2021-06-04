@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from 'lib-common/json'
-import { UUID } from 'lib-common/types'
+import { JsonOf } from '../../json'
+import { UUID } from '../../types'
+
+export type MessageType = 'MESSAGE' | 'BULLETIN'
 
 export interface MessageAccount {
   id: UUID
@@ -19,13 +21,11 @@ export interface Message {
   readAt: Date | null
   content: string
 }
-export const deserializeMessage = (json: JsonOf<Message>): Message => ({
-  ...json,
-  sentAt: new Date(json.sentAt),
-  readAt: json.readAt ? new Date(json.readAt) : null
+export const deserializeMessage = (m: JsonOf<Message>): Message => ({
+  ...m,
+  sentAt: new Date(m.sentAt),
+  readAt: m.readAt ? new Date(m.readAt) : null
 })
-
-export type MessageType = 'MESSAGE' | 'BULLETIN'
 
 export interface MessageThread {
   id: UUID
@@ -44,3 +44,10 @@ export interface ReplyResponse {
   threadId: UUID
   message: Message
 }
+export const deserializeReplyResponse = ({
+  message,
+  threadId
+}: JsonOf<ReplyResponse>) => ({
+  threadId,
+  message: deserializeMessage(message)
+})
