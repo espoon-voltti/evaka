@@ -23,7 +23,7 @@ import java.util.UUID
 class FinanceBasicsController {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithValidity> {
-        Audit.FinanceBasicsPricingRead.log()
+        Audit.FinanceBasicsFeeThresholdsRead.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         return db.read { it.getFeeThresholds().sortedByDescending { it.validDuring.start } }
@@ -35,7 +35,7 @@ class FinanceBasicsController {
         user: AuthenticatedUser,
         @RequestBody body: CreateFeeThresholdsBody
     ) {
-        Audit.FinanceBasicsPricingRead.log()
+        Audit.FinanceBasicsFeeThresholdsCreate.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         validateFeeThresholds(body)

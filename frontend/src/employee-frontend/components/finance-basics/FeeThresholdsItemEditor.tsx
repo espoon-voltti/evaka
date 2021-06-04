@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
-import { H3LikeLabel, Label } from 'lib-components/typography'
+import { H3LikeLabel, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
@@ -80,6 +80,7 @@ export default React.memo(function FeeThresholdsItemEditor({
           hideErrorsBeforeTouched
         />
       </RowWithMargin>
+      <H4>{i18n.financeBasics.fees.thresholds}</H4>
       <RowWithMargin spacing="XL">
         <FixedSpaceColumn spacing="xxs">
           <Label htmlFor="maxFee">{i18n.financeBasics.fees.maxFee}</Label>
@@ -246,6 +247,45 @@ export default React.memo(function FeeThresholdsItemEditor({
           hideErrorsBeforeTouched
         />
       </ColumnWithMargin>
+      <H4>{i18n.financeBasics.fees.siblingDiscounts}</H4>
+      <RowWithMargin spacing="XL">
+        <FixedSpaceColumn spacing="xxs">
+          <Label htmlFor="siblingDiscount2">
+            {i18n.financeBasics.fees.siblingDiscount2}
+          </Label>
+          <InputField
+            width="s"
+            value={editorState.siblingDiscount2}
+            onChange={(siblingDiscount2) =>
+              setEditorState((previousState) => ({
+                ...previousState,
+                siblingDiscount2
+              }))
+            }
+            symbol={'%'}
+            info={validationErrorInfo('siblingDiscount2')}
+            hideErrorsBeforeTouched
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="xxs">
+          <Label htmlFor="siblingDiscount2Plus">
+            {i18n.financeBasics.fees.siblingDiscount2Plus}
+          </Label>
+          <InputField
+            width="s"
+            value={editorState.siblingDiscount2Plus}
+            onChange={(siblingDiscount2Plus) =>
+              setEditorState((previousState) => ({
+                ...previousState,
+                siblingDiscount2Plus
+              }))
+            }
+            symbol={'%'}
+            info={validationErrorInfo('siblingDiscount2Plus')}
+            hideErrorsBeforeTouched
+          />
+        </FixedSpaceColumn>
+      </RowWithMargin>
       <ButtonRow>
         <Button text={i18n.common.cancel} onClick={close} />
         <AsyncButton
@@ -311,7 +351,9 @@ const centProps: readonly (keyof FormState)[] = [
   'incomeMultiplier4',
   'incomeMultiplier5',
   'incomeMultiplier6',
-  'incomeThresholdIncrease6Plus'
+  'incomeThresholdIncrease6Plus',
+  'siblingDiscount2',
+  'siblingDiscount2Plus'
 ]
 
 function validateForm(
@@ -394,8 +436,8 @@ function parseFormOrThrow(form: FormState): FeeThresholdsPayload {
     incomeThresholdIncrease6Plus: parseCentsOrThrow(
       form.incomeThresholdIncrease6Plus
     ),
-    siblingDiscount2: 0.5,
-    siblingDiscount2Plus: 0.8
+    siblingDiscount2: parseMultiplier(form.siblingDiscount2),
+    siblingDiscount2Plus: parseMultiplier(form.siblingDiscount2Plus)
   }
 }
 
