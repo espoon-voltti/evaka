@@ -106,6 +106,11 @@ class DevApi(
 ) {
     private val digitransit = MockDigitransit()
 
+    @GetMapping
+    fun healthCheck(): ResponseEntity<Unit> {
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database): ResponseEntity<Unit> {
         db.transaction {
