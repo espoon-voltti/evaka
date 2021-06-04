@@ -30,13 +30,18 @@ export async function getFeeThresholds(): Promise<
 export async function createFeeThresholds(
   thresholds: FeeThresholds
 ): Promise<Result<void>> {
-  try {
-    const response = await client.post(
-      '/finance-basics/fee-thresholds',
-      thresholds
-    )
-    return Success.of(response.data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+  return client
+    .post('/finance-basics/fee-thresholds', thresholds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateFeeThresholds(
+  id: string,
+  thresholds: FeeThresholds
+): Promise<Result<void>> {
+  return client
+    .put(`/finance-basics/fee-thresholds/${id}`, thresholds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

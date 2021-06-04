@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { faCopy } from 'lib-icons'
+import { faCopy, faPen } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -81,6 +81,12 @@ export default React.memo(function FeesSection() {
     [setEditorState, lastThresholdsEndDate]
   )
 
+  const editThresholds = useCallback(
+    (id: string, item: FeeThresholds) =>
+      setEditorState({ editing: id, form: copyForm(item) }),
+    [setEditorState]
+  )
+
   return (
     <CollapsibleContentArea
       opaque
@@ -96,6 +102,7 @@ export default React.memo(function FeesSection() {
       {editorState.editing === 'new' ? (
         <FeeThresholdsItemEditor
           i18n={i18n}
+          id={undefined}
           initialState={editorState.form}
           close={closeEditor}
           reloadData={loadData}
@@ -111,15 +118,28 @@ export default React.memo(function FeesSection() {
         success(feeThresholdsList) {
           return (
             <>
-              {feeThresholdsList.map((feeThresholds) => (
-                <FeeThresholdsItem
-                  key={feeThresholds.id}
-                  i18n={i18n}
-                  feeThresholds={feeThresholds.thresholds}
-                  copyThresholds={copyThresholds}
-                  editing={!!editorState.editing}
-                />
-              ))}
+              {feeThresholdsList.map((feeThresholds) =>
+                editorState.editing === feeThresholds.id ? (
+                  <FeeThresholdsItemEditor
+                    key={feeThresholds.id}
+                    i18n={i18n}
+                    id={feeThresholds.id}
+                    initialState={editorState.form}
+                    close={closeEditor}
+                    reloadData={loadData}
+                  />
+                ) : (
+                  <FeeThresholdsItem
+                    key={feeThresholds.id}
+                    i18n={i18n}
+                    id={feeThresholds.id}
+                    feeThresholds={feeThresholds.thresholds}
+                    copyThresholds={copyThresholds}
+                    editThresholds={editThresholds}
+                    editing={!!editorState.editing}
+                  />
+                )
+              )}
             </>
           )
         }
@@ -130,13 +150,17 @@ export default React.memo(function FeesSection() {
 
 const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   i18n,
+  id,
   feeThresholds,
   copyThresholds,
+  editThresholds,
   editing
 }: {
   i18n: Translations
+  id: string
   feeThresholds: FeeThresholds
   copyThresholds: (feeThresholds: FeeThresholds) => void
+  editThresholds: (id: string, feeThresholds: FeeThresholds) => void
   editing: boolean
 }) {
   return (
@@ -151,6 +175,11 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           <IconButton
             icon={faCopy}
             onClick={() => copyThresholds(feeThresholds)}
+            disabled={editing}
+          />
+          <IconButton
+            icon={faPen}
+            onClick={() => editThresholds(id, feeThresholds)}
             disabled={editing}
           />
           <StatusLabel dateRange={feeThresholds.validDuring} />

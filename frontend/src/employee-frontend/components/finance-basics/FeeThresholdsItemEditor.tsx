@@ -10,6 +10,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
+import colors from 'lib-customizations/common'
 import { H3LikeLabel, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
@@ -22,6 +23,10 @@ import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import {
+  createFeeThresholds,
+  updateFeeThresholds
+} from '../../api/finance-basics'
 import { Translations } from '../../state/i18n'
 import {
   familySizes,
@@ -30,16 +35,16 @@ import {
 } from '../../types/finance-basics'
 import { isValidCents, parseCents, parseCentsOrThrow } from '../../utils/money'
 import { FormState } from './FeesSection'
-import { createFeeThresholds } from 'employee-frontend/api/finance-basics'
-import colors from 'lib-customizations/common'
 
 export default React.memo(function FeeThresholdsItemEditor({
   i18n,
+  id,
   initialState,
   close,
   reloadData
 }: {
   i18n: Translations
+  id: string | undefined
   initialState: FormState
   close: () => void
   reloadData: () => void
@@ -301,7 +306,9 @@ export default React.memo(function FeeThresholdsItemEditor({
           text={i18n.common.save}
           onClick={() =>
             'payload' in validationResult
-              ? createFeeThresholds(validationResult.payload)
+              ? id === undefined
+                ? createFeeThresholds(validationResult.payload)
+                : updateFeeThresholds(id, validationResult.payload)
               : Promise.resolve()
           }
           onSuccess={() => {

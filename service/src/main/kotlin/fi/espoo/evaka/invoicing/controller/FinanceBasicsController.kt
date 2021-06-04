@@ -16,7 +16,9 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -59,6 +61,22 @@ class FinanceBasicsController {
             }
 
             tx.insertNewFeeThresholds(body)
+        }
+    }
+
+    @PutMapping("/fee-thresholds/{id}")
+    fun updateFeeThresholds(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody thresholds: FeeThresholds
+    ) {
+        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+
+        validateFeeThresholds(thresholds)
+        db.transaction {
+            it.updateFeeThresholds(id, thresholds)
         }
     }
 }
@@ -170,4 +188,37 @@ fun Database.Transaction.updateFeeThresholdsValidity(id: UUID, newValidity: Date
     createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")
         .bind("id", id)
         .bind("validDuring", newValidity)
+        .execute()
+
+fun Database.Transaction.updateFeeThresholds(id: UUID, feeThresholds: FeeThresholds) =
+    createUpdate(
+        """
+UPDATE fee_thresholds
+SET
+    valid_during = :validDuring,
+    min_income_threshold_2 = :minIncomeThreshold2,
+    min_income_threshold_3 = :minIncomeThreshold3,
+    min_income_threshold_4 = :minIncomeThreshold4,
+    min_income_threshold_5 = :minIncomeThreshold5,
+    min_income_threshold_6 = :minIncomeThreshold6,
+    income_multiplier_2 = :incomeMultiplier2,
+    income_multiplier_3 = :incomeMultiplier3,
+    income_multiplier_4 = :incomeMultiplier4,
+    income_multiplier_5 = :incomeMultiplier5,
+    income_multiplier_6 = :incomeMultiplier6,
+    max_income_threshold_2 = :maxIncomeThreshold2,
+    max_income_threshold_3 = :maxIncomeThreshold3,
+    max_income_threshold_4 = :maxIncomeThreshold4,
+    max_income_threshold_5 = :maxIncomeThreshold5,
+    max_income_threshold_6 = :maxIncomeThreshold6,
+    income_threshold_increase_6_plus = :incomeThresholdIncrease6Plus,
+    sibling_discount_2 = :siblingDiscount2,
+    sibling_discount_2_plus = :siblingDiscount2Plus,
+    max_fee = :maxFee,
+    min_fee = :minFee
+WHERE id = :id
+"""
+    )
+        .bindKotlin(feeThresholds)
+        .bind("id", id)
         .execute()

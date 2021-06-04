@@ -121,6 +121,7 @@ enum class Audit(
     FeeDecisionSetType("evaka.fee-decision.set-type"),
     FinanceBasicsFeeThresholdsRead("evaka.finance-basics-fee-thresholds.read"),
     FinanceBasicsFeeThresholdsCreate("evaka.finance-basics-fee-thresholds.create"),
+    FinanceBasicsFeeThresholdsUpdate("evaka.finance-basics-fee-thresholds.update"),
     InvalidServiceNeedReportRead("evaka.invalid-service-need-report.read"),
     InvoicesCreate("evaka.invoices.create"),
     InvoicesDeleteDrafts("evaka.invoices.delete-drafts"),
