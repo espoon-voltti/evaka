@@ -366,6 +366,8 @@ fun getMissingGroupPlacements(
         val gapRange: FiniteDateRange
     )
 
+    val evakaLaunch = LocalDate.of(2020, 3, 1)
+
     data class PlacementResult(
         val id: UUID,
         val type: PlacementType,
@@ -375,19 +377,23 @@ fun getMissingGroupPlacements(
     )
     val placements = tx.createQuery(
         """
-        SELECT 
+        SELECT
             FALSE AS backup,
-            pl.id, 
+            pl.id,
             pl.type,
-            daterange(pl.start_date, pl.end_date, '[]') AS range,
+            daterange(greatest(pl.start_date, :launch), pl.end_date, '[]') AS range,
             pl.child_id,
-            array_agg(daterange(dgp.start_date, dgp.end_date, '[]')) FILTER (WHERE dgp is NOT NULL) AS group_placement_ranges
+            coalesce(array_agg(daterange(greatest(dgp.start_date, :launch), dgp.end_date, '[]')) FILTER (WHERE dgp is NOT NULL), '{}') AS group_placement_ranges
         FROM placement pl
-        LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id
-        WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange('2020-03-01', NULL)
+        LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') && daterange(:launch, NULL)
+        WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange(:launch, NULL)
         GROUP BY pl.id, pl.type, pl.start_date, pl.end_date, pl.child_id
+        --exclude simple cases where there is only one group placement and it matches the placement range
+        HAVING count(dgp) != 1
+            OR greatest(min(dgp.start_date), :launch) != greatest(pl.start_date, :launch)
+            OR greatest(max(dgp.end_date), :launch) != greatest(pl.end_date, :launch);
     """
-    ).bind("unitId", unitId).mapTo<PlacementResult>().list()
+    ).bind("unitId", unitId).bind("launch", evakaLaunch).mapTo<PlacementResult>().list()
 
     val missingGroupPlacements = placements.flatMap { placement ->
         placement.range.complement(placement.groupPlacementRanges).map { gap ->
@@ -412,10 +418,10 @@ fun getMissingGroupPlacements(
             child_id,
             daterange(start_date, end_date, '[]') AS gap_range
         FROM backup_care bc
-        WHERE bc.unit_id = :unitId AND  bc.group_id IS NULL 
-            AND daterange(bc.start_date, bc.end_date, '[]') && daterange('2020-03-01', NULL)
+        WHERE bc.unit_id = :unitId AND bc.group_id IS NULL 
+            AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:launch, NULL)
     """
-    ).bind("unitId", unitId).mapTo<GroupPlacementGap>().list()
+    ).bind("unitId", unitId).bind("launch", evakaLaunch).mapTo<GroupPlacementGap>().list()
 
     val gaps = missingGroupPlacements + missingBackupCareGroups
 
