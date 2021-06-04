@@ -381,9 +381,7 @@ fun getMissingGroupPlacements(
             pl.type,
             daterange(pl.start_date, pl.end_date, '[]') AS range,
             pl.child_id,
-            array_remove(array_agg(
-                case when dgp.id is null then null else daterange(dgp.start_date, dgp.end_date, '[]') end
-            ), null) AS group_placement_ranges
+            array_agg(daterange(dgp.start_date, dgp.end_date, '[]')) FILTER (WHERE dgp is NOT NULL) AS group_placement_ranges
         FROM placement pl
         LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id
         WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange('2020-03-01', NULL)
