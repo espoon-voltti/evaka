@@ -844,9 +844,10 @@ INSERT INTO public.daycare (id, name, type, care_area_id, phone, url, created, u
     ('e48826f4-5c43-11ea-9908-276394407cbf', 'Hiirisuon kerho, 2-vuotiaiden kerho, ti ja to klo 9-11, 2020-2021', '{CLUB}', '10842fdc-5750-447d-9b6b-50a1ca66864c', 'UNIT_PHONE', 'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Avoin_varhaiskasvatus_ja_kerhot/Kerhot/Espoon_keskus/Hiirisuon_kerho', '2020-03-02 05:08:45.385398', '2020-12-16 11:46:51.652556', null, null, '2020-08-13', '2021-06-04', 'UNIT_EMAIL@espoo.fi', null, '', 'd91b0b67-138d-4d93-a0f6-5824bca0510a', null, false, 0, '', '', '', '', 'Pohjoisentie 1', '02970', '', 'PL 97306, 02070 Espoon kaupunki', '(24.7378687,60.3028715)', null, null, null, false, 'MUNICIPAL', 'fi', false, null, null, null, '{1,2,3,4,5}', null, null, null, '[2020-03-01,)');
 
 
-INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus) VALUES
-    ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', '2000-01-01', '2020-07-31', 0.1070, 269700, 210200, 271300, 308000, 344700, 381300, 14200),
-    ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', '2020-08-01', NULL, 0.1070, 268700, 213600, 275600, 312900, 350200, 387400, 14200);
+INSERT INTO fee_thresholds (id, valid_during, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee)
+VALUES
+    ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', daterange('2000-01-01', '2020-07-31', '[]'), 210200, 271300, 308000, 344700, 381300, 210200 + 269700, 271300 + 269700, 308000 + 269700, 344700 + 269700, 381300 + 269700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28900, 2700),
+    ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', daterange('2020-08-01', NULL), 213600, 275600, 312900, 350200, 387400, 213600 + 268700, 275600 + 268700, 312900 + 268700, 350200 + 268700, 387400 + 268700, 0.1070, 0.1070, 0.1070, 0.1070, 0.1070, 14200, 0.5, 0.8, 28800, 2700);
 
 INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000);
 
