@@ -12,6 +12,7 @@ export default {
     cancel: 'Peruuta',
     return: 'Palaa',
     ok: 'Ok',
+    add: 'Lisää',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',

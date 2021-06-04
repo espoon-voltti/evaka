@@ -50,12 +50,12 @@ class MessageService(
         recipientAccountIds: Set<UUID>,
         content: String,
     ): ThreadReply {
-        val (threadId, type, sender, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
+        val (threadId, type, senders, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
             ?: throw NotFound("Message not found")
 
-        if (type == MessageType.BULLETIN && sender != senderAccount) throw Forbidden("Only the author can reply to bulletin")
+        if (type == MessageType.BULLETIN && !senders.contains(senderAccount)) throw Forbidden("Only the author can reply to bulletin")
 
-        val previousParticipants = recipients + sender
+        val previousParticipants = recipients + senders
         if (!previousParticipants.contains(senderAccount)) throw Forbidden("Not authorized to post to message")
         if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
 

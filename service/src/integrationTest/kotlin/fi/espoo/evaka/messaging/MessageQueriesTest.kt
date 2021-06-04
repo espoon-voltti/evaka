@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.messaging.message.MessageType
+import fi.espoo.evaka.messaging.message.ThreadWithParticipants
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getAccountNames
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
@@ -293,10 +294,36 @@ class MessageQueriesTest : PureJdbiTest() {
                     .bind("threadId", threadId).mapTo<UUID>().one()
             it.getThreadByMessageId(messageId)
         }
-        assertEquals(threadId, participants?.threadId)
-        assertEquals(MessageType.MESSAGE, participants?.type)
-        assertEquals(employee1Account, participants?.sender)
-        assertEquals(setOf(person1Account, person2Account), participants?.recipients)
+        assertEquals(
+            ThreadWithParticipants(
+                threadId = threadId,
+                type = MessageType.MESSAGE,
+                senders = setOf(employee1Account),
+                recipients = setOf(person1Account, person2Account)
+            ),
+            participants
+        )
+
+        val participants2 = db.transaction { tx ->
+            val contentId = tx.insertMessageContent("foo", person2Account)
+            val messageId = tx.insertMessage(
+                contentId = contentId,
+                threadId = threadId,
+                sender = person2Account,
+                recipientNames = tx.getAccountNames(setOf(employee1Account))
+            )
+            tx.insertRecipients(setOf(employee1Account), messageId)
+            tx.getThreadByMessageId(messageId)
+        }
+        assertEquals(
+            ThreadWithParticipants(
+                threadId = threadId,
+                type = MessageType.MESSAGE,
+                senders = setOf(employee1Account, person2Account),
+                recipients = setOf(person1Account, person2Account, employee1Account)
+            ),
+            participants2
+        )
     }
 
     @Test
