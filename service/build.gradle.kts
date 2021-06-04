@@ -119,6 +119,7 @@ dependencies {
     implementation("org.xhtmlrenderer:flying-saucer-pdf-openpdf")
 
     // Miscellaneous
+    implementation("com.github.kagkarlsson:db-scheduler")
     implementation("com.auth0:java-jwt")
     implementation("javax.annotation:javax.annotation-api")
     implementation("org.apache.commons:commons-pool2")

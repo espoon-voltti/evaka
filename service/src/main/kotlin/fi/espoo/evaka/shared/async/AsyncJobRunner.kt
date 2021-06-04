@@ -101,6 +101,9 @@ class AsyncJobRunner(
     @Volatile
     var sendMessageNotificationEmail: (db: Database, msg: SendMessageNotificationEmail) -> Unit = noHandler
 
+    @Volatile
+    var runDailyJob: (db: Database, msg: RunDailyJob) -> Unit = noHandler
+
     fun plan(
         tx: Database.Transaction,
         payloads: Iterable<AsyncJobPayload>,
@@ -217,6 +220,7 @@ class AsyncJobRunner(
                     AsyncJobType.SCHEDULE_KOSKI_UPLOADS -> it.runJob(job, this.scheduleKoskiUploads)
                     AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
                     AsyncJobType.SEND_UNREAD_MESSAGE_NOTIFICATION -> it.runJob(job, this.sendMessageNotificationEmail)
+                    AsyncJobType.RUN_DAILY_JOB -> it.runJob(job, this.runDailyJob)
                 }.exhaust()
             }
             if (completed) {
