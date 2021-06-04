@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useTranslation } from '../../state/i18n'
-
 import styled from 'styled-components'
+import DateRange from 'lib-common/date-range'
 import colors from 'lib-customizations/common'
+import { useTranslation } from '../../state/i18n'
+import { getStatusLabelByDateRange } from '../../utils/date'
 
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
 
@@ -54,12 +55,24 @@ const Container = styled.div<{ status: StatusLabelType }>`
       : ''}
 `
 
-export interface Props {
-  status: StatusLabelType
-}
+export type Props =
+  | {
+      status: StatusLabelType
+    }
+  | {
+      dateRange: DateRange
+    }
 
-function StatusLabel({ status }: Props) {
+function StatusLabel(props: Props) {
   const { i18n } = useTranslation()
+
+  const status =
+    'status' in props
+      ? props.status
+      : getStatusLabelByDateRange({
+          startDate: props.dateRange.start,
+          endDate: props.dateRange.end
+        })
 
   return <Container status={status}>{i18n.common.statuses[status]}</Container>
 }
