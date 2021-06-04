@@ -275,6 +275,7 @@ test('Placement proposal flow', async (t) => {
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
     .notOk()
   await t.click(unitPage.placementProposalsAcceptButton)
+  await t.expect(unitPage.placementProposalsAcceptButton.exists).notOk()
 
   await execSimpleApplicationAction(applicationId, 'confirm-decision-mailed')
 
