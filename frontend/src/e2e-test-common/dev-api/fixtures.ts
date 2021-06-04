@@ -617,23 +617,31 @@ export const feeDecisionsFixture = (
   id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
   status,
   decisionType: 'NORMAL',
-  validFrom: LocalDate.today().subYears(1).formatIso(),
-  validTo: LocalDate.today().addYears(1).formatIso(),
+  validDuring: new DateRange(
+    LocalDate.today().subYears(1),
+    LocalDate.today().addYears(1)
+  ),
   headOfFamily: { id: adult.id },
   familySize: 2,
   pricing: feeThresholds,
-  parts: [
+  children: [
     {
       child: { id: child.id, dateOfBirth: child.dateOfBirth },
       placement: {
-        unit: daycareId,
-        type: 'DAYCARE',
-        serviceNeed: 'GTE_35'
+        unit: { id: daycareId },
+        type: 'DAYCARE'
+      },
+      serviceNeed: {
+        feeCoefficient: 1.0,
+        descriptionFi: 'palveluntarve',
+        descriptionSv: 'vårdbehövet',
+        missing: false
       },
       baseFee: 28900,
       fee: 28900,
       siblingDiscount: 0.0,
-      feeAlterations: []
+      feeAlterations: [],
+      finalFee: 28900
     }
   ]
 })

@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -39,8 +39,7 @@ class PdfServiceTest {
         status = testDecision1.status,
         decisionNumber = testDecision1.decisionNumber,
         decisionType = FeeDecisionType.NORMAL,
-        validFrom = testDecision1.validFrom,
-        validTo = testDecision1.validTo,
+        validDuring = testDecision1.validDuring,
         headOfFamily = PersonData.Detailed(
             id = UUID.randomUUID(),
             dateOfBirth = LocalDate.of(1980, 1, 1),
@@ -71,8 +70,8 @@ class PdfServiceTest {
             "Pirkko",
             "Päättäjä"
         ),
-        parts = testDecision1.parts.map {
-            FeeDecisionPartDetailed(
+        children = testDecision1.children.map {
+            FeeDecisionChildDetailed(
                 child = PersonData.Detailed(
                     id = UUID.randomUUID(),
                     dateOfBirth = LocalDate.of(2017, 1, 1),
@@ -80,7 +79,7 @@ class PdfServiceTest {
                     lastName = "Doe",
                     restrictedDetailsEnabled = false
                 ),
-                placement = it.placement,
+                placementType = it.placement.type,
                 placementUnit = UnitData.Detailed(
                     id = UUID.randomUUID(),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
@@ -88,9 +87,15 @@ class PdfServiceTest {
                     areaId = UUID.randomUUID(),
                     areaName = "Test Area"
                 ),
+                serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
+                serviceNeedDescriptionFi = it.serviceNeed.descriptionFi,
+                serviceNeedDescriptionSv = it.serviceNeed.descriptionSv,
+                serviceNeedMissing = it.serviceNeed.missing,
                 baseFee = it.baseFee,
                 siblingDiscount = it.siblingDiscount,
-                fee = it.fee
+                fee = it.fee,
+                feeAlterations = it.feeAlterations,
+                finalFee = it.finalFee
             )
         },
         financeDecisionHandlerFirstName = null,

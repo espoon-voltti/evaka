@@ -1507,16 +1507,6 @@ export const fi = {
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
       TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus'
-    },
-    serviceNeed: {
-      MISSING: 'Vahvistamaton palveluntarve',
-      GTE_35: 'Maksullista varhaiskasvatusta vähintään 35h',
-      GTE_25: 'Maksullista varhaiskasvatusta vähintään 25h',
-      GT_25_LT_35: 'Maksullista varhaiskasvatusta yli 25h ja alle 35h',
-      GT_15_LT_25: 'Maksullista varhaiskasvatusta yli 15h ja alle 25h',
-      LTE_25: 'Maksullista varhaiskasvatusta enintään 25h',
-      LTE_15: 'Maksullista varhaiskasvatusta enintään 15h',
-      LTE_0: 'Ei maksullista varhaiskasvatusta'
     }
   },
   product: {
@@ -1567,7 +1557,7 @@ export const fi = {
       RELIEF_REJECTED: 'Huojennus hylätty (Lähetetään manuaalisesti)'
     },
     headOfFamily: 'Päämies',
-    decisionNUmber: 'Päätöksen numero',
+    decisionNumber: 'Päätöksen numero',
     validPeriod: 'Maksupäätös voimassa',
     sentAt: 'Maksupäätös lähetetty',
     decisionHandler: 'Päätöksen käsittelijä',

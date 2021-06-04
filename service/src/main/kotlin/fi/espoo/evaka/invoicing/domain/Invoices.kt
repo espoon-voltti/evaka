@@ -6,6 +6,18 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.PlacementType.CLUB
+import fi.espoo.evaka.placement.PlacementType.DAYCARE
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME
+import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+import fi.espoo.evaka.placement.PlacementType.PREPARATORY
+import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -169,12 +181,12 @@ fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
 
 fun getProductFromActivity(placementType: PlacementType): Product {
     return when (placementType) {
-        PlacementType.DAYCARE -> Product.DAYCARE
-        PlacementType.PRESCHOOL_WITH_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
-        PlacementType.PREPARATORY_WITH_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
-        PlacementType.FIVE_YEARS_OLD_DAYCARE -> Product.DAYCARE
-        PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
-            error("Preschool and preparatory without daycare shouldn't be invoiced.")
+        DAYCARE, DAYCARE_PART_TIME, DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> Product.DAYCARE
+        PRESCHOOL_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
+        PREPARATORY_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
+        TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY -> Product.TEMPORARY_CARE
+        PRESCHOOL, PREPARATORY, CLUB ->
+            error("Club and preschool or preparatory without daycare shouldn't be invoiced.")
     }
 }
 

@@ -4,12 +4,10 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByPeriod
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
-import fi.espoo.evaka.invoicing.data.toFeeDecision
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -38,6 +36,7 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
 import fi.espoo.evaka.shared.domain.orMax
+import org.jdbi.v3.core.kotlin.mapTo
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -47,8 +46,8 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
-fun Database.Transaction.createAllDraftInvoices(objectMapper: ObjectMapper, period: DateRange = getPreviousMonthRange()) {
-    val effectiveDecisions = getInvoiceableFeeDecisions(objectMapper, period).groupBy { it.headOfFamily.id }
+fun Database.Transaction.createAllDraftInvoices(period: DateRange = getPreviousMonthRange()) {
+    val effectiveDecisions = getInvoiceableFeeDecisions(period).groupBy { it.headOfFamily.id }
     val placements = getInvoiceablePlacements(period).groupBy { it.headOfFamily.id }
     val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(period)
 
@@ -141,10 +140,10 @@ internal fun generateDraftInvoice(
                     is PlacementStub.Permanent ->
                         periodDecisions
                             .mapNotNull { decision ->
-                                decision.parts.find { part -> part.child == child }
+                                decision.children.find { part -> part.child == child }
                                     ?.let { DateRange(decision.validFrom, decision.validTo) to it }
                             }
-                            .filterNot { (_, part) -> part.finalFee() == 0 }
+                            .filterNot { (_, part) -> part.finalFee == 0 }
                             .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                             .map { (decisionPeriod, part) ->
                                 DateRange(
@@ -152,7 +151,7 @@ internal fun generateDraftInvoice(
                                     minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
                                 ) to InvoiceRowStub(
                                     PersonData.WithDateOfBirth(part.child.id, part.child.dateOfBirth),
-                                    part.placement,
+                                    PermanentPlacement(part.placement.unit.id, part.placement.type),
                                     part.fee,
                                     part.feeAlterations.map { feeAlteration ->
                                         Pair(feeAlteration.type, feeAlteration.effect)
@@ -462,9 +461,9 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
         .groupBy { it.child }
         .flatMap { (child, rows) ->
             val uniqueChildFees = feeDecisions
-                .flatMap { it.parts }
+                .flatMap { it.children }
                 .filter { it.child.id == child.id }
-                .map { it.finalFee() }
+                .map { it.finalFee }
                 .distinct()
 
             val invoiceRowSum = rows.map { it.price() }.sum()
@@ -487,25 +486,18 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
         }
 }
 
-fun Database.Read.getInvoiceableFeeDecisions(objectMapper: ObjectMapper, period: DateRange): List<FeeDecision> {
+fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDecision> {
     val sql =
         """
             $feeDecisionQueryBase
-            WHERE
-                decision.valid_from <= :period_end
-                AND (decision.valid_to IS NULL OR decision.valid_to >= :period_start)
+            WHERE decision.valid_during && :dateRange
                 AND decision.status = ANY(:effective::fee_decision_status[])
-                ${
-        /* delete this when these kinds of fee decisions stop existing */
-        "AND (decision.valid_from <= decision.valid_to OR decision.valid_to IS NULL)"
-        }
         """
 
     return createQuery(sql)
-        .bind("period_start", period.start)
-        .bind("period_end", period.end)
+        .bind("dateRange", dateRange)
         .bind("effective", FeeDecisionStatus.effective)
-        .map(toFeeDecision(objectMapper))
+        .mapTo<FeeDecision>()
         .let { it.merge() }
 }
 

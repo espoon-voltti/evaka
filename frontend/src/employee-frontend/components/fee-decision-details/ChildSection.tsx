@@ -5,22 +5,25 @@
 import { faUserFriends } from 'lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { PersonDetailed, Placement, UnitDetailed } from '../../types/invoicing'
+import { PersonDetailed, UnitDetailed } from '../../types/invoicing'
 import { formatName } from '../../utils'
 
 interface Props {
   child: PersonDetailed
-  placement: Placement
+  placementType: PlacementType
   placementUnit: UnitDetailed
+  serviceNeedDescription: string
 }
 
 const ChildSection = React.memo(function ChildSection({
   child,
-  placement,
-  placementUnit
+  placementType,
+  placementUnit,
+  serviceNeedDescription
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -51,7 +54,7 @@ const ChildSection = React.memo(function ChildSection({
           },
           {
             label: i18n.feeDecision.form.child.placementType,
-            value: i18n.placement.type[placement.type]
+            value: i18n.placement.type[placementType]
           },
           {
             label: i18n.feeDecision.form.child.careArea,
@@ -67,7 +70,7 @@ const ChildSection = React.memo(function ChildSection({
           },
           {
             label: i18n.feeDecision.form.child.serviceNeed,
-            value: i18n.placement.serviceNeed[placement.serviceNeed]
+            value: serviceNeedDescription
           }
         ]}
       />

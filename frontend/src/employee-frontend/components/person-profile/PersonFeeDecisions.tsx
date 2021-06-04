@@ -61,15 +61,12 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
               <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
                 <Td>
                   <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
-                    Maksupäätös{' '}
-                    {`${feeDecision.validFrom.format()} - ${
-                      feeDecision.validTo?.format() ?? ''
-                    }`}
+                    Maksupäätös {feeDecision.validDuring.format()}
                   </Link>
                 </Td>
                 <Td>{formatCents(feeDecision.totalFee)}</Td>
                 <Td>{feeDecision.decisionNumber}</Td>
-                <DateTd>{formatDate(feeDecision.createdAt)}</DateTd>
+                <DateTd>{formatDate(feeDecision.created)}</DateTd>
                 <DateTd>{formatDate(feeDecision.sentAt)}</DateTd>
                 <StatusTd>
                   {i18n.feeDecision.status[feeDecision.status]}

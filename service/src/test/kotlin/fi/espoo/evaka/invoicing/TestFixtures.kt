@@ -8,58 +8,42 @@ import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
-import fi.espoo.evaka.invoicing.domain.FeeDecision2
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
-import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
-import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
-import fi.espoo.evaka.invoicing.domain.PermanentPlacement
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.Product
-import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
-import fi.espoo.evaka.invoicing.service.DaycareCodes
-import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 val uuid1 = UUID.fromString("124c0bcf-df0d-4a89-86ff-8f971123f87d")
-val uuid2 = UUID.fromString("603e5943-29b5-48de-8095-01b4ef533382")
 val uuid3 = UUID.fromString("124c0bcf-df0d-4a89-86ff-8f9711622233")
 val uuid4 = UUID.fromString("603e5943-29b5-48de-8095-01b4ef511122")
 val uuid5 = UUID.fromString("1b533dbb-9871-4406-b48e-735153d8f36c")
 
 val testDecisionFrom = LocalDate.of(2019, 5, 1)
 val testDecisionTo = LocalDate.of(2019, 5, 31)
-
-val testPlacement = PermanentPlacement(
-    unit = UUID.randomUUID(),
-    type = PlacementType.DAYCARE,
-    serviceNeed = ServiceNeed.GTE_35
-)
 
 val testChild1 = PersonData.WithDateOfBirth(uuid4, LocalDate.of(2016, 1, 1))
 
@@ -115,23 +99,27 @@ val testPricing = FeeThresholdsWithValidity(
     siblingDiscount2Plus = BigDecimal("0.8000")
 )
 
-val testDecisionPart1 =
-    FeeDecisionPart(
+val testDecisionChild1 =
+    FeeDecisionChild(
         child = testChild1,
-        placement = testPlacement,
+        placement = FeeDecisionPlacement(UnitData.JustId(UUID.randomUUID()), PlacementType.DAYCARE),
+        serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,
-        feeAlterations = listOf()
+        feeAlterations = listOf(),
+        finalFee = 28900
     )
-val testDecisionPart2 =
-    FeeDecisionPart(
+val testDecisionChild2 =
+    FeeDecisionChild(
         child = testChild2,
-        placement = testPlacement,
+        placement = FeeDecisionPlacement(UnitData.JustId(UUID.randomUUID()), PlacementType.DAYCARE),
+        serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
         fee = 28900,
-        feeAlterations = listOf()
+        feeAlterations = listOf(),
+        finalFee = 28900
     )
 
 val testDecision1 = FeeDecision(
@@ -139,33 +127,15 @@ val testDecision1 = FeeDecision(
     status = FeeDecisionStatus.DRAFT,
     decisionNumber = 1010101010L,
     decisionType = FeeDecisionType.NORMAL,
-    validFrom = testDecisionFrom,
-    validTo = testDecisionTo,
+    validDuring = DateRange(testDecisionFrom, testDecisionTo),
     headOfFamily = PersonData.JustId(uuid3),
     partner = null,
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 3,
     pricing = testPricing.getFeeDecisionThresholds(3),
-    parts = listOf(testDecisionPart1, testDecisionPart2.copy(siblingDiscount = 50, fee = 14500)),
-    createdAt = Instant.now()
-)
-
-val testDecision2 = FeeDecision(
-    id = uuid2,
-    status = FeeDecisionStatus.SENT,
-    decisionNumber = 11,
-    decisionType = FeeDecisionType.NORMAL,
-    validFrom = testDecisionFrom,
-    validTo = null,
-    headOfFamily = PersonData.JustId(UUID.randomUUID()),
-    partner = null,
-    headOfFamilyIncome = null,
-    partnerIncome = null,
-    familySize = 2,
-    pricing = testPricing.getFeeDecisionThresholds(2),
-    parts = listOf(testDecisionPart2),
-    createdAt = Instant.now()
+    children = listOf(testDecisionChild1, testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500)),
+    created = Instant.now()
 )
 
 val testInvoiceRow = InvoiceRow(
@@ -190,10 +160,6 @@ val testInvoice = Invoice(
     rows = listOf(testInvoiceRow)
 )
 
-val testDaycareCodes: Map<UUID, DaycareCodes> = mapOf(
-    testPlacement.unit to DaycareCodes(249, "31450", "01")
-)
-
 fun testPisPerson(data: PersonData.JustId): PersonJSON {
     return PersonJSON(
         id = data.id,
@@ -211,42 +177,7 @@ fun testPisPerson(data: PersonData.WithDateOfBirth): PersonJSON {
 }
 
 val testPisFridgeParentId = UUID.randomUUID()
-val testPisFridgeParent = PersonData.JustId(testPisFridgeParentId)
 val testPisFridgeChildId = UUID.randomUUID()
-val testPisFridgeChild = PersonData.WithDateOfBirth(testPisFridgeChildId, LocalDate.of(2017, 1, 1))
-
-val testPeriod = LocalDate.now().let {
-    DateRange(it, it.plusDays(100))
-}
-
-fun testParentship(
-    child: PersonJSON = testPisPerson(testPisFridgeChild),
-    parent: PersonJSON = testPisPerson(testPisFridgeParent),
-    period: FiniteDateRange = testPeriod.asFiniteDateRange()!!
-) = Parentship(
-    id = UUID.randomUUID(),
-    childId = child.id,
-    child = child,
-    headOfChildId = parent.id,
-    headOfChild = parent,
-    startDate = period.start,
-    endDate = period.end
-)
-
-val testParentship = testParentship()
-
-fun testFridgeFamily(
-    parent: PersonData.JustId = testPisFridgeParent,
-    children: List<PersonData.WithDateOfBirth> = listOf(testPisFridgeChild),
-    period: DateRange = testPeriod
-) = FridgeFamily(
-    headOfFamily = parent,
-    partner = null,
-    children = children,
-    period = period
-)
-
-val testFridgeFamily = testFridgeFamily()
 
 val testIncome = Income(
     id = UUID.randomUUID(),
@@ -285,30 +216,11 @@ fun createFeeDecisionAlterationFixture(
 ) =
     FeeAlterationWithEffect(type, amount, isAbsolute, effect)
 
-fun createFeeDecisionPartFixture(
-    childId: UUID,
-    dateOfBirth: LocalDate,
-    daycareId: UUID,
-    serviceNeed: ServiceNeed = ServiceNeed.MISSING,
-    baseFee: Int = 28900,
-    siblingDiscount: Int = 0,
-    fee: Int = 28900,
-    feeAlterations: List<FeeAlterationWithEffect> = listOf(),
-    placementType: PlacementType = PlacementType.DAYCARE
-) = FeeDecisionPart(
-    child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
-    placement = testPlacement.copy(unit = daycareId, serviceNeed = serviceNeed, type = placementType),
-    baseFee = baseFee,
-    siblingDiscount = siblingDiscount,
-    fee = fee,
-    feeAlterations = feeAlterations
-)
-
 fun createFeeDecisionChildFixture(
     childId: UUID,
     dateOfBirth: LocalDate,
     placementUnitId: UUID,
-    placementType: fi.espoo.evaka.placement.PlacementType,
+    placementType: PlacementType,
     serviceNeed: FeeDecisionServiceNeed,
     baseFee: Int = 28900,
     siblingDiscount: Int = 0,
@@ -330,47 +242,22 @@ fun createFeeDecisionFixture(
     decisionType: FeeDecisionType,
     period: DateRange,
     headOfFamilyId: UUID,
-    parts: List<FeeDecisionPart>,
-    pricing: FeeDecisionThresholds = testPricing.getFeeDecisionThresholds(parts.size + 1),
+    children: List<FeeDecisionChild>,
+    pricing: FeeDecisionThresholds = testPricing.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
     id = UUID.randomUUID(),
     status = status,
     decisionType = decisionType,
-    validFrom = period.start,
-    validTo = period.end,
+    validDuring = period,
     headOfFamily = PersonData.JustId(headOfFamilyId),
     partner = null,
     headOfFamilyIncome = headOfFamilyIncome,
     partnerIncome = null,
-    familySize = parts.size + 1,
+    familySize = children.size + 1,
     pricing = pricing,
-    parts = parts
+    children = children
 )
-
-fun createFeeDecision2Fixture(
-    status: FeeDecisionStatus,
-    decisionType: FeeDecisionType,
-    period: DateRange,
-    headOfFamilyId: UUID,
-    children: List<FeeDecisionChild>,
-    pricing: FeeThresholds = testPricing.withoutDates(),
-    headOfFamilyIncome: DecisionIncome? = null
-) = (children.size + 1).let { familySize ->
-    FeeDecision2(
-        id = UUID.randomUUID(),
-        status = status,
-        decisionType = decisionType,
-        validDuring = period,
-        headOfFamily = PersonData.JustId(headOfFamilyId),
-        partner = null,
-        headOfFamilyIncome = headOfFamilyIncome,
-        partnerIncome = null,
-        familySize = familySize,
-        pricing = getFeeDecisionThresholds(pricing, familySize),
-        children = children
-    )
-}
 
 fun createVoucherValueDecisionFixture(
     status: VoucherValueDecisionStatus,
@@ -381,7 +268,7 @@ fun createVoucherValueDecisionFixture(
     dateOfBirth: LocalDate,
     unitId: UUID,
     familySize: Int = 2,
-    placementType: fi.espoo.evaka.placement.PlacementType,
+    placementType: PlacementType,
     serviceNeed: VoucherValueDecisionServiceNeed,
     baseValue: Int = 87000,
     ageCoefficient: BigDecimal = BigDecimal("1.00"),

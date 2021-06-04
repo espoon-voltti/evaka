@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.DateRange
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -15,33 +17,39 @@ import java.time.ZoneId
 import java.util.UUID
 import kotlin.math.max
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecision(
     override val id: UUID,
-    override val parts: List<FeeDecisionPart>,
-    override val validFrom: LocalDate,
-    override val validTo: LocalDate?,
+    override val children: List<FeeDecisionChild>,
+    val validDuring: DateRange,
+    @Nested("head_of_family")
     override val headOfFamily: PersonData.JustId,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
+    @Nested("partner")
     val partner: PersonData.JustId?,
+    @Json
     val headOfFamilyIncome: DecisionIncome?,
+    @Json
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
+    @Json
     val pricing: FeeDecisionThresholds,
     val documentKey: String? = null,
+    @Nested("approved_by")
     val approvedBy: PersonData.JustId? = null,
     val approvedAt: Instant? = null,
+    @Nested("decision_handler")
     val decisionHandler: PersonData.JustId? = null,
-    val createdAt: Instant = Instant.now(),
-    val sentAt: Instant? = null
-) : FinanceDecision<FeeDecision>, Mergeable<FeeDecisionPart, FeeDecision> {
-    override fun withParts(parts: List<FeeDecisionPart>) = this.copy(parts = parts)
+    val sentAt: Instant? = null,
+    val created: Instant = Instant.now()
+) : FinanceDecision<FeeDecision>, Mergeable<FeeDecisionChild, FeeDecision> {
+    override val validFrom: LocalDate = validDuring.start
+    override val validTo: LocalDate? = validDuring.end
     override fun withRandomId() = this.copy(id = UUID.randomUUID())
-    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
+    override fun withValidity(period: DateRange) = this.copy(validDuring = period)
     override fun contentEquals(decision: FeeDecision): Boolean {
-        return this.parts.toSet() == decision.parts.toSet() &&
+        return this.children.toSet() == decision.children.toSet() &&
             this.headOfFamily == decision.headOfFamily &&
             this.partner == decision.partner &&
             this.headOfFamilyIncome == decision.headOfFamilyIncome &&
@@ -51,25 +59,41 @@ data class FeeDecision(
     }
 
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
-    override fun isEmpty(): Boolean = this.parts.isEmpty()
+    override fun isEmpty(): Boolean = this.children.isEmpty()
     override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
+    override fun withChildren(children: List<FeeDecisionChild>) = this.copy(children = children)
 
     @JsonProperty("totalFee")
-    fun totalFee(): Int = parts.fold(0) { sum, part -> sum + part.finalFee() }
+    fun totalFee(): Int = children.fold(0) { sum, child -> sum + child.finalFee }
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class FeeDecisionPart(
+data class FeeDecisionChild(
+    @Nested("child")
     val child: PersonData.WithDateOfBirth,
-    val placement: PermanentPlacement,
+    @Nested("placement")
+    val placement: FeeDecisionPlacement,
+    @Nested("service_need")
+    val serviceNeed: FeeDecisionServiceNeed,
     val baseFee: Int,
     val siblingDiscount: Int,
     val fee: Int,
-    val feeAlterations: List<FeeAlterationWithEffect>
-) {
-    @JsonProperty("finalFee")
-    fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
-}
+    @Json
+    val feeAlterations: List<FeeAlterationWithEffect>,
+    val finalFee: Int
+)
+
+data class FeeDecisionPlacement(
+    @Nested("unit")
+    val unit: UnitData.JustId,
+    val type: PlacementType
+)
+
+data class FeeDecisionServiceNeed(
+    val feeCoefficient: BigDecimal,
+    val descriptionFi: String,
+    val descriptionSv: String,
+    val missing: Boolean
+)
 
 data class FeeAlterationWithEffect(
     val type: FeeAlteration.Type,
@@ -100,12 +124,10 @@ enum class FeeDecisionType {
     RELIEF_ACCEPTED
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionDetailed(
     override val id: UUID,
-    override val parts: List<FeeDecisionPartDetailed>,
-    val validFrom: LocalDate,
-    val validTo: LocalDate?,
+    override val children: List<FeeDecisionChildDetailed>,
+    val validDuring: DateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
@@ -118,15 +140,14 @@ data class FeeDecisionDetailed(
     val documentKey: String? = null,
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
-    val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
     val financeDecisionHandlerFirstName: String?,
-    val financeDecisionHandlerLastName: String?
-) : Mergeable<FeeDecisionPartDetailed, FeeDecisionDetailed> {
-    override fun withParts(parts: List<FeeDecisionPartDetailed>) = this.copy(parts = parts)
-
+    val financeDecisionHandlerLastName: String?,
+    val created: Instant = Instant.now()
+) : Mergeable<FeeDecisionChildDetailed, FeeDecisionDetailed> {
+    override fun withChildren(children: List<FeeDecisionChildDetailed>) = this.copy(children = children)
     @JsonProperty("totalFee")
-    fun totalFee(): Int = parts.fold(0) { sum, part -> sum + part.finalFee() }
+    fun totalFee(): Int = children.fold(0) { sum, part -> sum + part.finalFee }
 
     @JsonProperty("incomeEffect")
     fun incomeEffect(): IncomeEffect =
@@ -159,7 +180,7 @@ data class FeeDecisionDetailed(
     @JsonProperty("isRetroactive")
     fun isRetroactive(): Boolean {
         val sentAtLocalDate = sentAt?.atZone(ZoneId.of("UTC"))
-        return isRetroactive(this.validFrom, LocalDate.from(sentAtLocalDate ?: LocalDate.now()))
+        return isRetroactive(this.validDuring.start, LocalDate.from(sentAtLocalDate ?: LocalDate.now()))
     }
 
     @JsonProperty("minThreshold")
@@ -174,59 +195,50 @@ fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {
     return decisionValidFrom.isBefore(retroThreshold)
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class FeeDecisionPartDetailed(
+data class FeeDecisionChildDetailed(
     val child: PersonData.Detailed,
-    val placement: PermanentPlacement,
+    val placementType: PlacementType,
     val placementUnit: UnitData.Detailed,
+    val serviceNeedFeeCoefficient: BigDecimal,
+    val serviceNeedDescriptionFi: String,
+    val serviceNeedDescriptionSv: String,
+    val serviceNeedMissing: Boolean,
     val baseFee: Int,
     val siblingDiscount: Int,
     val fee: Int,
-    val feeAlterations: List<FeeAlterationWithEffect> = listOf()
-) {
-    @JsonProperty("finalFee")
-    fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
+    val feeAlterations: List<FeeAlterationWithEffect>,
+    val finalFee: Int
+)
 
-    @JsonProperty("serviceNeedMultiplier")
-    fun serviceNeedMultiplier(): Int = getServiceNeedPercentage(placement)
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionSummary(
     override val id: UUID,
-    override val parts: List<FeeDecisionPartSummary>,
-    val validFrom: LocalDate,
-    val validTo: LocalDate?,
+    override val children: List<PersonData.Basic>,
+    val validDuring: DateRange,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val headOfFamily: PersonData.Basic,
     val approvedAt: Instant? = null,
-    val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
-    val finalPrice: Int
-) : Mergeable<FeeDecisionPartSummary, FeeDecisionSummary> {
-    override fun withParts(parts: List<FeeDecisionPartSummary>) = this.copy(parts = parts)
+    val finalPrice: Int,
+    val created: Instant = Instant.now()
+) : Mergeable<PersonData.Basic, FeeDecisionSummary> {
+    override fun withChildren(children: List<PersonData.Basic>) = this.copy(children = children)
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class FeeDecisionPartSummary(
-    val child: PersonData.Basic
-)
-
-private interface Mergeable<Part, Decision : Mergeable<Part, Decision>> {
+private interface Mergeable<Child, Decision : Mergeable<Child, Decision>> {
     val id: UUID
-    val parts: List<Part>
+    val children: List<Child>
 
-    fun withParts(parts: List<Part>): Decision
+    fun withChildren(children: List<Child>): Decision
 }
 
-fun <Part, Decision : Mergeable<Part, Decision>, Decisions : Iterable<Decision>> Decisions.merge(): List<Decision> {
+fun <Child, Decision : Mergeable<Child, Decision>, Decisions : Iterable<Decision>> Decisions.merge(): List<Decision> {
     val map = mutableMapOf<UUID, Decision>()
     for (decision in this) {
         val id = decision.id
         if (map.containsKey(id)) {
             val existing = map.getValue(id)
-            map[id] = existing.withParts(existing.parts + decision.parts)
+            map[id] = existing.withChildren(existing.children + decision.children)
         } else {
             map[id] = decision
         }
@@ -288,49 +300,12 @@ fun getTotalIncome(
     else -> null
 }
 
-fun calculateFeeBeforeFeeAlterations(baseFee: Int, placement: PermanentPlacement, siblingDiscountMultiplier: BigDecimal, minFee: Int): Int {
-    val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
-    val serviceNeedMultiplier =
-        BigDecimal(getServiceNeedPercentage(placement)).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
-    val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedMultiplier).toInt()
-    return feeBeforeRounding.let { fee ->
-        if (fee < minFee) 0
-        else fee
-    }
-}
-
 fun calculateFeeBeforeFeeAlterations(baseFee: Int, serviceNeedCoefficient: BigDecimal, siblingDiscountMultiplier: BigDecimal, minFee: Int): Int {
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
     val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedCoefficient).toInt()
     return feeBeforeRounding.let { fee ->
         if (fee < minFee) 0
         else fee
-    }
-}
-
-fun getServiceNeedPercentage(placement: PermanentPlacement): Int {
-    val unexpectedCombination =
-        { error("Unexpected placement and service need combination: ${placement.type} ${placement.serviceNeed}") }
-
-    return when (placement.type) {
-        PlacementType.DAYCARE -> when (placement.serviceNeed) {
-            ServiceNeed.MISSING,
-            ServiceNeed.GTE_35 -> 100
-            ServiceNeed.GT_25_LT_35 -> 80
-            ServiceNeed.LTE_25 -> 60
-            else -> unexpectedCombination()
-        }
-        PlacementType.PRESCHOOL_WITH_DAYCARE,
-        PlacementType.PREPARATORY_WITH_DAYCARE,
-        PlacementType.FIVE_YEARS_OLD_DAYCARE -> when (placement.serviceNeed) {
-            ServiceNeed.MISSING,
-            ServiceNeed.GTE_25 -> 80
-            ServiceNeed.GT_15_LT_25 -> 60
-            ServiceNeed.LTE_15 -> 35
-            ServiceNeed.LTE_0 -> 0
-            else -> unexpectedCombination()
-        }
-        PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> 0
     }
 }
 

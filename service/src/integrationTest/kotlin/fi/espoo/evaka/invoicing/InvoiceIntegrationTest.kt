@@ -29,6 +29,7 @@ import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.invoicing.integration.fallbackPostOffice
 import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
 import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -38,6 +39,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAreaCode
@@ -45,6 +47,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -100,16 +103,20 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
             period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-            parts = listOf(
-                createFeeDecisionPartFixture(
+            children = listOf(
+                createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    daycareId = testDaycare.id
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                 ),
-                createFeeDecisionPartFixture(
+                createFeeDecisionChildFixture(
                     childId = testChild_2.id,
                     dateOfBirth = testChild_2.dateOfBirth,
-                    daycareId = testDaycare.id,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     siblingDiscount = 50,
                     fee = 14500
                 )
@@ -120,11 +127,13 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
             period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-            parts = listOf(
-                createFeeDecisionPartFixture(
+            children = listOf(
+                createFeeDecisionChildFixture(
                     childId = testChild_2.id,
                     dateOfBirth = testChild_2.dateOfBirth,
-                    daycareId = testDaycare.id
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                 )
             )
         ),
@@ -133,11 +142,13 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_2.id,
             period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-            parts = listOf(
-                createFeeDecisionPartFixture(
+            children = listOf(
+                createFeeDecisionChildFixture(
                     childId = testChild_1.id,
                     dateOfBirth = testChild_1.dateOfBirth,
-                    daycareId = testDaycare.id
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                 )
             )
         )
@@ -1021,13 +1032,13 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->
-        tx.upsertFeeDecisions(objectMapper, decisions)
+        tx.upsertFeeDecisions(decisions)
         decisions.forEach { decision ->
-            decision.parts.forEach { part ->
+            decision.children.forEach { part ->
                 tx.insertTestPlacement(
                     DevPlacement(
                         childId = part.child.id,
-                        unitId = part.placement.unit,
+                        unitId = part.placement.unit.id,
                         startDate = decision.validFrom,
                         endDate = decision.validTo!!
                     )

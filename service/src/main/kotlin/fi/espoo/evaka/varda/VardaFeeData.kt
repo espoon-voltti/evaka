@@ -152,8 +152,8 @@ private fun getAnnulledDecisions(tx: Database.Read): List<Long> {
             """
 SELECT varda_id
 FROM varda_fee_data
-JOIN fee_decision ON fee_decision.id = varda_fee_data.evaka_fee_decision_id
-    AND fee_decision.status = :annulledFeeDecision::fee_decision_status
+JOIN new_fee_decision ON new_fee_decision.id = varda_fee_data.evaka_fee_decision_id
+    AND new_fee_decision.status = :annulledFeeDecision::fee_decision_status
 
 UNION ALL
 
@@ -178,8 +178,8 @@ JOIN LATERAL (
     SELECT MAX(approved_at) approved_at
     FROM (
         SELECT approved_at
-        FROM fee_decision d
-        JOIN fee_decision_part p ON d.id = p.fee_decision_id AND p.child = varda_child.person_id
+        FROM new_fee_decision d
+        JOIN new_fee_decision_child p ON d.id = p.fee_decision_id AND p.child_id = varda_child.person_id
         WHERE d.status = ANY(:effectiveFeeDecision::fee_decision_status[])
         UNION ALL
         SELECT approved_at
@@ -209,7 +209,7 @@ fun getOutdatedFeeData(tx: Database.Read, decisionPeriod: VardaClient.DecisionPe
 SELECT vfd.varda_id
 FROM varda_decision vd
 JOIN varda_fee_data vfd ON vd.id = vfd.varda_decision_id
-JOIN fee_decision d ON vfd.evaka_fee_decision_id = d.id AND NOT daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
+JOIN new_fee_decision d ON vfd.evaka_fee_decision_id = d.id AND NOT d.valid_during && :decisionPeriod
 WHERE vd.varda_decision_id = :decisionId
 
 UNION ALL
@@ -236,26 +236,17 @@ SELECT
     NULL AS voucher_value_decision_id,
     vc.varda_child_id AS varda_child_id,
     vfd.varda_id AS varda_id,
-    GREATEST(d.valid_from, :decisionStartDate) AS start_date,
-    LEAST(d.valid_to, :decisionEndDate) AS end_date,
-    (p.fee + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
+    GREATEST(lower(d.valid_during), :decisionStartDate) AS start_date,
+    LEAST(upper(d.valid_during) - interval '1 day', :decisionEndDate) AS end_date,
+    p.final_fee / 100.0 AS fee,
     0.0 AS voucher_value,
     d.family_size AS family_size,
-    p.placement_type = ANY(:feeDecisionFiveYearOldTypes) AS is_five_year_old_daycare
+    p.placement_type = ANY(:feeDecisionFiveYearOldTypes::placement_type[]) AS is_five_year_old_daycare
 FROM varda_child vc
-JOIN fee_decision_part p ON vc.person_id = p.child
-JOIN fee_decision d ON p.fee_decision_id = d.id
-    AND daterange(d.valid_from, d.valid_to, '[]') && :decisionPeriod
+JOIN new_fee_decision_child p ON vc.person_id = p.child_id
+JOIN new_fee_decision d ON p.fee_decision_id = d.id
+    AND d.valid_during && :decisionPeriod
     AND d.status = ANY(:effective::fee_decision_status[])
-LEFT JOIN (
-    SELECT fee_decision_part.id, SUM(effects.effect) sum
-    FROM fee_decision_part
-    JOIN (
-        SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
-        FROM fee_decision_part
-    ) effects ON fee_decision_part.id = effects.id
-    GROUP BY fee_decision_part.id
-) alterations ON p.id = alterations.id
 JOIN varda_decision vd ON vd.varda_decision_id = :decisionId
 LEFT JOIN varda_fee_data vfd ON d.id = vfd.evaka_fee_decision_id AND vd.id = vfd.varda_decision_id AND vc.id = vfd.varda_child_id
 WHERE vc.varda_child_id = :childVardaId
@@ -288,7 +279,7 @@ WHERE vc.varda_child_id = :childVardaId
         .bind("decisionEndDate", decisionPeriod.paattymis_pvm)
         .bind("decisionPeriod", FiniteDateRange(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
         .bind("effective", FeeDecisionStatus.effective)
-        .bind("feeDecisionFiveYearOldTypes", arrayOf(fi.espoo.evaka.invoicing.domain.PlacementType.FIVE_YEARS_OLD_DAYCARE))
+        .bind("feeDecisionFiveYearOldTypes", arrayOf(PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS))
         .bind("valueDecisionFiveYearOldTypes", arrayOf(PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS))
         .mapTo<VardaFeeDataBase>()
         .toList()

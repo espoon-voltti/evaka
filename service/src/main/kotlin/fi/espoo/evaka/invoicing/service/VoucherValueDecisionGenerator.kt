@@ -54,7 +54,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val feeAlterations =
         getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(listOf(child), incomes)
 
-    val placements = getPaidPlacements2(from, allChildren)
+    val placements = getPaidPlacements(from, allChildren)
     val serviceVoucherUnits = getServiceVoucherUnits()
 
     val newDrafts =

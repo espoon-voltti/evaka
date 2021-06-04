@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../types'
@@ -35,12 +36,6 @@ export type InvoiceStatus =
   | 'WAITING_FOR_SENDING'
   | 'SENT'
   | 'CANCELED'
-
-export type FeeDecisionPlacementType =
-  | 'DAYCARE'
-  | 'FIVE_YEARS_OLD_DAYCARE'
-  | 'PRESCHOOL_WITH_DAYCARE'
-  | 'PREPARATORY_WITH_DAYCARE'
 
 export type ServiceNeed =
   | 'MISSING'
@@ -136,12 +131,6 @@ export const deserializePersonDetailed = (
   dateOfDeath: LocalDate.parseNullableIso(json.dateOfDeath)
 })
 
-export interface Placement {
-  unit: UUID
-  type: FeeDecisionPlacementType
-  serviceNeed: ServiceNeed
-}
-
 export interface InvoiceCodes {
   products: Product[]
   agreementTypes: number[]
@@ -214,16 +203,19 @@ interface FeeDecisionAlteration {
   effect: number
 }
 
-export interface FeeDecisionPartDetailed {
+export interface FeeDecisionChildDetailed {
   child: PersonDetailed
-  placement: Placement
+  placementType: PlacementType
   placementUnit: UnitDetailed
+  serviceNeedFeeCoefficient: number
+  serviceNeedDescriptionFi: string
+  serviceNeedDescriptionSv: string
+  serviceNeedMissing: boolean
   baseFee: number
   siblingDiscount: number
   fee: number
   feeAlterations: FeeDecisionAlteration[]
   finalFee: number
-  serviceNeedMultiplier: number
 }
 
 /**
@@ -233,11 +225,10 @@ export interface FeeDecision {
   id: UUID
   status: FeeDecisionStatus
   decisionNumber: number | null
-  validFrom: LocalDate
-  validTo: LocalDate | null
-  createdAt: Date
+  validDuring: DateRange
   sentAt: Date | null
   totalFee: number
+  created: Date
 }
 
 export interface FeeDecisionDetailed {
@@ -245,17 +236,15 @@ export interface FeeDecisionDetailed {
   status: FeeDecisionStatus
   decisionNumber: number | null
   decisionType: FeeDecisionType
-  validFrom: LocalDate
-  validTo: LocalDate | null
+  validDuring: DateRange
   headOfFamily: PersonDetailed
   partner: PersonDetailed | null
   headOfFamilyIncome: Income | null
   partnerIncome: Income | null
   familySize: number
-  parts: FeeDecisionPartDetailed[]
+  children: FeeDecisionChildDetailed[]
   documentKey: string | null
   approvedAt: Date | null
-  createdAt: Date
   sentAt: Date | null
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
@@ -267,20 +256,20 @@ export interface FeeDecisionDetailed {
   totalIncome: number | null
   requiresManualSending: boolean
   isRetroactive: boolean
+  created: Date
 }
 
 export interface FeeDecisionSummary {
   id: UUID
   status: FeeDecisionStatus
   decisionNumber: number | null
-  validFrom: LocalDate
-  validTo: LocalDate | null
+  validDuring: DateRange
   headOfFamily: PersonBasic
-  parts: Array<{ child: PersonBasic }>
+  children: PersonBasic[]
   approvedAt: Date | null
-  createdAt: Date
   sentAt: Date | null
   finalPrice: number
+  created: Date
 }
 
 export interface VoucherValueDecisionDetailed {

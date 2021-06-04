@@ -9,7 +9,7 @@ import { Gap } from 'lib-components/white-space'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { H4 } from 'lib-components/typography'
 import IncomeSection from './IncomeSection'
-import PartsSection from './PartsSection'
+import ChildrenSection from './ChildrenSection'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from '../../utils/money'
@@ -30,7 +30,7 @@ export default React.memo(function Summary({ decision }: Props) {
     >
       <IncomeSection decision={decision} />
       <Gap size="m" />
-      <PartsSection decision={decision} />
+      <ChildrenSection decision={decision} />
       <Gap size="m" />
       <Total data-qa="decision-summary-total-price">
         <TotalTitle noMargin>

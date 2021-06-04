@@ -7,11 +7,9 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -29,6 +27,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
+import fi.espoo.evaka.toValueDecisionServiceNeed
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -312,13 +311,4 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
                 .toList()
         }
     }
-
-    private fun ServiceNeedOption.toValueDecisionServiceNeed() = VoucherValueDecisionServiceNeed(
-        feeCoefficient = this.feeCoefficient,
-        voucherValueCoefficient = this.voucherValueCoefficient,
-        feeDescriptionFi = this.feeDescriptionFi,
-        feeDescriptionSv = this.feeDescriptionSv,
-        voucherValueDescriptionFi = this.voucherValueDescriptionFi,
-        voucherValueDescriptionSv = this.voucherValueDescriptionSv,
-    )
 }

@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import java.math.BigDecimal
@@ -31,7 +33,7 @@ val snDefaultPartDayDaycare = ServiceNeedOption(
     name = "Osapäiväinen",
     validPlacementType = PlacementType.DAYCARE_PART_TIME,
     defaultOption = true,
-    feeCoefficient = BigDecimal("0.60"),
+    feeCoefficient = BigDecimal("1.00"),
     voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("0.54"),
     daycareHoursPerWeek = 25,
@@ -65,7 +67,7 @@ val snDefaultFiveYearOldsPartDayDaycare = ServiceNeedOption(
     name = "Viisivuotiaiden osapäiväinen",
     validPlacementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
     defaultOption = true,
-    feeCoefficient = BigDecimal("0.35"),
+    feeCoefficient = BigDecimal("0.80"),
     voucherValueCoefficient = BigDecimal("0.60"),
     occupancyCoefficient = BigDecimal("0.54"),
     daycareHoursPerWeek = 25,
@@ -406,4 +408,20 @@ val serviceNeedTestFixtures = listOf(
     snPreparatoryDaycarePartDay40to50,
     snPreparatoryDaycarePartDay40,
     snDaycareFiveYearOldsFullDayPartWeek25
+)
+
+fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
+    feeCoefficient = this.feeCoefficient,
+    descriptionFi = this.feeDescriptionFi,
+    descriptionSv = this.feeDescriptionSv,
+    missing = this.defaultOption
+)
+
+fun ServiceNeedOption.toValueDecisionServiceNeed() = VoucherValueDecisionServiceNeed(
+    feeCoefficient = this.feeCoefficient,
+    voucherValueCoefficient = this.voucherValueCoefficient,
+    feeDescriptionFi = this.feeDescriptionFi,
+    feeDescriptionSv = this.feeDescriptionSv,
+    voucherValueDescriptionFi = this.voucherValueDescriptionFi,
+    voucherValueDescriptionSv = this.voucherValueDescriptionSv,
 )
