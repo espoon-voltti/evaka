@@ -696,40 +696,42 @@ export function ApplicationTypeFilter({
               data-qa={`application-type-filter-${id}`}
               small
             />
-          ) : featureFlags.preschoolEnabled && (
-            <Fragment key={id}>
-              <Radio
-                key={id}
-                label={
-                  <>
-                    {i18n.applications.types[id]}
-                    <ApplicationOpenIcon
-                      icon={toggled === id ? faAngleUp : faAngleDown}
-                      size={'lg'}
-                      color={colors.greyscale.dark}
-                    />
-                  </>
-                }
-                ariaLabel={i18n.applications.types[id]}
-                checked={toggled === id}
-                onChange={toggle(id)}
-                data-qa={`application-type-filter-${id}`}
-                small
-              />
-              {toggled === id && (
-                <CustomDiv spacing={'xs'}>
-                  {preschoolTypes.map((type) => (
-                    <Checkbox
-                      key={type}
-                      label={i18n.applications.types[type]}
-                      checked={toggledPreschool.includes(type)}
-                      onChange={togglePreschool(type)}
-                      data-qa={`application-type-filter-preschool-${type}`}
-                    />
-                  ))}
-                </CustomDiv>
-              )}
-            </Fragment>
+          ) : (
+            featureFlags.preschoolEnabled && (
+              <Fragment key={id}>
+                <Radio
+                  key={id}
+                  label={
+                    <>
+                      {i18n.applications.types[id]}
+                      <ApplicationOpenIcon
+                        icon={toggled === id ? faAngleUp : faAngleDown}
+                        size={'lg'}
+                        color={colors.greyscale.dark}
+                      />
+                    </>
+                  }
+                  ariaLabel={i18n.applications.types[id]}
+                  checked={toggled === id}
+                  onChange={toggle(id)}
+                  data-qa={`application-type-filter-${id}`}
+                  small
+                />
+                {toggled === id && (
+                  <CustomDiv spacing={'xs'}>
+                    {preschoolTypes.map((type) => (
+                      <Checkbox
+                        key={type}
+                        label={i18n.applications.types[type]}
+                        checked={toggledPreschool.includes(type)}
+                        onChange={togglePreschool(type)}
+                        data-qa={`application-type-filter-preschool-${type}`}
+                      />
+                    ))}
+                  </CustomDiv>
+                )}
+              </Fragment>
+            )
           )
         })}
       </FixedSpaceColumn>
