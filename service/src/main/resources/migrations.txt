@@ -100,3 +100,4 @@ V99__change_sleepinghours_to_sleepingminutes.sql
 V100__child_images.sql
 V101__update_fee_decision_pricing.sql
 V102__service_need_option_display_order.sql
+V103__add_variable_time_to_daily_service_time_type.sql

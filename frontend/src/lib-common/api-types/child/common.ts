@@ -7,7 +7,7 @@ export interface TimeRange {
   end: string
 }
 
-export type DailyServiceTimesType = 'REGULAR' | 'IRREGULAR'
+export type DailyServiceTimesType = 'REGULAR' | 'IRREGULAR' | 'VARIABLE_TIME'
 
 export interface RegularDailyServiceTimes {
   type: 'REGULAR'
@@ -23,9 +23,15 @@ export interface IrregularDailyServiceTimes {
   friday: TimeRange | null
 }
 
+export interface VariableDailyServiceTimes {
+  type: 'VARIABLE_TIME'
+  variableTimes: boolean | null
+}
+
 export type DailyServiceTimes =
   | RegularDailyServiceTimes
   | IrregularDailyServiceTimes
+  | VariableDailyServiceTimes
 
 export function isRegular(
   times: DailyServiceTimes
@@ -37,4 +43,10 @@ export function isIrregular(
   times: DailyServiceTimes
 ): times is IrregularDailyServiceTimes {
   return times.type === 'IRREGULAR'
+}
+
+export function isVariableTime(
+  times: DailyServiceTimes
+): times is VariableDailyServiceTimes {
+  return times.type === 'VARIABLE_TIME'
 }

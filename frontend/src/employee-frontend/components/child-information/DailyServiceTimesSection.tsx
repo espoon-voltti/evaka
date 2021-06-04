@@ -18,7 +18,9 @@ import {
   RegularDailyServiceTimes,
   IrregularDailyServiceTimes,
   TimeRange,
-  DailyServiceTimesType
+  DailyServiceTimesType,
+  isVariableTime,
+  VariableDailyServiceTimes
 } from 'lib-common/api-types/child/common'
 import {
   deleteChildDailyServiceTimes,
@@ -64,6 +66,7 @@ interface SelectableTimeInputRange extends TimeInputRange {
 interface FormData extends Record<Weekday, SelectableTimeInputRange> {
   type: DailyServiceTimesType | 'NOT_SET'
   regular: TimeInputRange
+  variableTimes: boolean
 }
 
 const emptyRange = {
@@ -79,7 +82,8 @@ const emptyForm: FormData = {
   tuesday: emptyRange,
   wednesday: emptyRange,
   thursday: emptyRange,
-  friday: emptyRange
+  friday: emptyRange,
+  variableTimes: false
 }
 
 interface ValidationResult {
@@ -90,6 +94,7 @@ interface ValidationResult {
   wednesday: NullableValues<TimeInputRange>
   thursday: NullableValues<TimeInputRange>
   friday: NullableValues<TimeInputRange>
+  variableTimes: boolean
 }
 
 interface Props {
@@ -162,6 +167,11 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
             end: apiData.value.friday?.end ?? ''
           }
         })
+      } else if (isVariableTime(apiData.value)) {
+        setFormData({
+          ...emptyForm,
+          type: 'VARIABLE_TIME'
+        })
       }
     } else {
       setFormData(null)
@@ -209,7 +219,8 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
         tuesday: validateWeekday(formData, 'tuesday'),
         wednesday: validateWeekday(formData, 'wednesday'),
         thursday: validateWeekday(formData, 'thursday'),
-        friday: validateWeekday(formData, 'friday')
+        friday: validateWeekday(formData, 'friday'),
+        variableTimes: formData.type === 'VARIABLE_TIME'
       })
     }
   }
@@ -268,6 +279,12 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
           : null
       }
       apiCall = putChildDailyServiceTimes(id, data)
+    } else if (formData.type === 'VARIABLE_TIME') {
+      const data: VariableDailyServiceTimes = {
+        type: 'VARIABLE_TIME',
+        variableTimes: true
+      }
+      apiCall = putChildDailyServiceTimes(id, data)
     }
 
     if (apiCall) {
@@ -291,7 +308,7 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
     }
   }
 
-  const setType = (type: 'NOT_SET' | 'REGULAR' | 'IRREGULAR') => () =>
+  const setType = (type: 'NOT_SET' | DailyServiceTimesType) => () =>
     setFormData((old) => (old !== null ? { ...old, type } : null))
 
   const setTimes = (wd: 'regular' | Weekday) => (value: TimeRange) =>
@@ -397,6 +414,14 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                       </div>
                     </FixedSpaceRow>
                   )}
+                  {isVariableTime(apiData.value) && (
+                    <FixedWidthLabel data-qa="times-type">
+                      {
+                        i18n.childInformation.dailyServiceTimes.types
+                          .variableTimes
+                      }
+                    </FixedWidthLabel>
+                  )}
                 </>
               )}
             </>
@@ -485,6 +510,15 @@ const DailyServiceTimesSection = React.memo(function DailyServiceTimesSection({
                       ))}
                     </FixedSpaceColumn>
                   )}
+                  <Radio
+                    label={
+                      i18n.childInformation.dailyServiceTimes.types
+                        .variableTimes
+                    }
+                    checked={formData.type === 'VARIABLE_TIME'}
+                    onChange={setType('VARIABLE_TIME')}
+                    data-qa="radio-variable-time"
+                  />
                 </FixedSpaceColumn>
               </div>
 

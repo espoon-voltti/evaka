@@ -8,6 +8,7 @@ import {
   DailyServiceTimes,
   isIrregular,
   isRegular,
+  isVariableTime,
   TimeRange
 } from 'lib-common/api-types/child/common'
 import { ServiceTime } from './components'
@@ -30,10 +31,12 @@ function getToday(): DayName | undefined {
 
 function getTodaysServiceTimes(
   times: DailyServiceTimes | null
-): TimeRange | 'not_today' | 'not_set' {
+): TimeRange | 'not_today' | 'not_set' | 'variable_times' {
   if (times === null) return 'not_set'
 
   if (isRegular(times)) return times.regularTimes
+
+  if (isVariableTime(times)) return 'variable_times'
 
   if (isIrregular(times)) {
     const today = getToday()
@@ -61,6 +64,8 @@ export default React.memo(function AttendanceDailyServiceTimes({
         <em>{i18n.attendances.serviceTime.notSet}</em>
       ) : todaysTimes === 'not_today' ? (
         i18n.attendances.serviceTime.noServiceToday
+      ) : todaysTimes === 'variable_times' ? (
+        i18n.attendances.serviceTime.variableTimes
       ) : (
         i18n.attendances.serviceTime.serviceToday(
           todaysTimes.start,
