@@ -71,6 +71,25 @@ export interface ApplicationsReportRow {
   total: number
 }
 
+export interface DecisionsReportRow {
+  careAreaName: string
+  unitId: string
+  unitName: string
+  unitProviderType: ProviderType
+  daycareUnder3: number
+  daycareOver3: number
+  preschool: number
+  preschoolDaycare: number
+  preparatory: number
+  preparatoryDaycare: number
+  club: number
+  preference1: number
+  preference2: number
+  preference3: number
+  preferenceNone: number
+  total: number
+}
+
 export interface RawReportRow {
   day: LocalDate
   childId: UUID

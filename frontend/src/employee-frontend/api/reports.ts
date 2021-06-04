@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { client } from '../api/client'
+import { client } from './client'
 import {
   ChildAgeLanguageReportRow,
   ChildrenInDifferentAddressReportRow,
@@ -25,7 +25,8 @@ import {
   AssistanceNeedsAndActionsReportRow,
   VoucherServiceProviderUnitReport,
   VoucherServiceProviderReport,
-  InvalidServiceNeedReportRow
+  InvalidServiceNeedReportRow,
+  DecisionsReportRow
 } from '../types/reports'
 import { UUID } from '../types'
 import { JsonOf } from 'lib-common/json'
@@ -42,6 +43,20 @@ export async function getApplicationsReport(
 ): Promise<Result<ApplicationsReportRow[]>> {
   return client
     .get<JsonOf<ApplicationsReportRow[]>>('/reports/applications', {
+      params: {
+        from: filters.from.formatIso(),
+        to: filters.to.formatIso()
+      }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getDecisionsReport(
+  filters: PeriodFilters
+): Promise<Result<DecisionsReportRow[]>> {
+  return client
+    .get<JsonOf<DecisionsReportRow[]>>('/reports/decisions', {
       params: {
         from: filters.from.formatIso(),
         to: filters.to.formatIso()

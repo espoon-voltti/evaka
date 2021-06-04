@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
+import java.util.UUID
 
 @RestController
 class DecisionsReportController {
@@ -64,6 +65,7 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
         )
         SELECT
             care_area_name,
+            unit_id,
             unit_name,
             provider_type,
             count(DISTINCT decision_id) FILTER ( WHERE age < 3 AND decision_type IN ('DAYCARE', 'DAYCARE_PART_TIME') ) AS daycare_under_3,
@@ -89,6 +91,7 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
 
 data class DecisionsReportRow(
     val careAreaName: String,
+    val unitId: UUID,
     val unitName: String,
     val providerType: String,
     val daycareUnder3: Int,
