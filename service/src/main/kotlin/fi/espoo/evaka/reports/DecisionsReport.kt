@@ -55,13 +55,12 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
                 (af.document ->> 'connectedDaycare') :: BOOLEAN AS connected_daycare,
                 a.child_id,
                 date_part('year', age(de.sent_date, ch.date_of_birth)) AS age
-            FROM decision de
-            JOIN application a ON a.id = de.application_id
-            JOIN application_form af ON af.application_id = a.id AND af.latest IS TRUE
-            JOIN person ch ON ch.id = a.child_id
-            JOIN daycare u ON u.id = de.unit_id
-            JOIN care_area ca ON ca.id = u.care_area_id
-            WHERE de.sent_date IS NOT NULL AND daterange(:from, :to, '[]') @> de.sent_date 
+            FROM care_area ca
+            JOIN daycare u ON u.care_area_id = ca.id
+            LEFT JOIN decision de ON de.unit_id = u.id AND de.sent_date IS NOT NULL AND daterange(:from, :to, '[]') @> de.sent_date 
+            LEFT JOIN application a ON a.id = de.application_id
+            LEFT JOIN application_form af ON af.application_id = a.id AND af.latest IS TRUE
+            LEFT JOIN person ch ON ch.id = a.child_id
         )
         SELECT
             care_area_name,
@@ -75,12 +74,14 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
             count(DISTINCT decision_id) FILTER ( WHERE decision_type = 'PREPARATORY_EDUCATION' AND connected_daycare IS FALSE ) AS preparatory,
             count(DISTINCT decision_id) FILTER ( WHERE decision_type = 'PREPARATORY_EDUCATION' AND connected_daycare IS TRUE ) AS preparatory_daycare,
             count(DISTINCT decision_id) FILTER ( WHERE decision_type = 'CLUB' ) AS club,
-            count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[0] ) AS preference_1,
-            count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[1] ) AS preference_2,
-            count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[2] ) AS preference_3,
+            count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[1] ) AS preference_1,
+            count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[2] ) AS preference_2,
+            count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[3] ) AS preference_3,
             count(DISTINCT decision_id) FILTER ( WHERE unit_id != ANY(preferred_units) ) AS preference_none,
             count(DISTINCT decision_id) total
         FROM data
+        GROUP BY care_area_name, unit_id, unit_name, provider_type
+        ORDER BY care_area_name, unit_name
         """.trimIndent()
     return createQuery(sql)
         .bind("from", from)
