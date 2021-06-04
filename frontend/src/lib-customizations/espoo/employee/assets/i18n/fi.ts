@@ -2452,6 +2452,7 @@ export const fi = {
     fees: {
       title: 'Asiakasmaksut',
       add: 'Luo uudet asiakasmaksut',
+      thresholds: 'Tulorajat',
       validDuring: 'Asiakasmaksut ajalle',
       familySize: 'Perheen koko',
       minThreshold: 'Vähimmäisbruttotulo €/kk',
@@ -2462,7 +2463,10 @@ export const fi = {
         'Jos perheen koko on suurempi kuin 6, korotetaan maksun määräämisen perusteena olevaa tulorajaa korotussumman verran kustakin seuraavasta perheen alaikäisestä lapsesta.',
       multiplier: 'Maksu %',
       maxFee: 'Enimmäismaksu',
-      minFee: 'Pienin perittävä lapsikohtainen maksu'
+      minFee: 'Pienin perittävä lapsikohtainen maksu',
+      siblingDiscounts: 'Sisaralennukset',
+      siblingDiscount2: 'Alennus% 1. sisarus',
+      siblingDiscount2Plus: 'Alennus% muut sisarukset'
     }
   },
   roles: {

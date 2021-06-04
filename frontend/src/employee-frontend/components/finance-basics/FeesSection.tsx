@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { H2, H3 } from 'lib-components/typography'
+import { H2, H3, H4 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
   FixedSpaceColumn,
@@ -100,10 +100,11 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   return (
     <>
       <div className="separator large" />
-      <H3 fitted>
+      <H3>
         {i18n.financeBasics.fees.validDuring}{' '}
         {feeThresholds.validDuring.format()}
       </H3>
+      <H4>{i18n.financeBasics.fees.thresholds}</H4>
       <RowWithMargin spacing="XL">
         <FixedSpaceColumn>
           <Label>{i18n.financeBasics.fees.maxFee}</Label>
@@ -166,6 +167,17 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           {formatCents(feeThresholds.incomeThresholdIncrease6Plus)} €
         </Indent>
       </ColumnWithMargin>
+      <H4>{i18n.financeBasics.fees.siblingDiscounts}</H4>
+      <RowWithMargin spacing="XL">
+        <FixedSpaceColumn>
+          <Label>{i18n.financeBasics.fees.siblingDiscount2}</Label>
+          <Indent>{feeThresholds.siblingDiscount2 * 100} %</Indent>
+        </FixedSpaceColumn>
+        <FixedSpaceColumn>
+          <Label>{i18n.financeBasics.fees.siblingDiscount2Plus}</Label>
+          <Indent>{feeThresholds.siblingDiscount2Plus * 100} %</Indent>
+        </FixedSpaceColumn>
+      </RowWithMargin>
     </>
   )
 })
@@ -198,10 +210,7 @@ type EditorState =
     }
 
 export type FormState = {
-  [k in keyof Omit<
-    FeeThresholds,
-    'id' | 'validDuring' | 'siblingDiscount2' | 'siblingDiscount2Plus'
-  >]: string
+  [k in keyof Omit<FeeThresholds, 'id' | 'validDuring'>]: string
 } & {
   validFrom: string
   validTo: string
@@ -227,5 +236,7 @@ const emptyForm = (latestEndDate?: LocalDate): FormState => ({
   incomeMultiplier4: '',
   incomeMultiplier5: '',
   incomeMultiplier6: '',
-  incomeThresholdIncrease6Plus: ''
+  incomeThresholdIncrease6Plus: '',
+  siblingDiscount2: '',
+  siblingDiscount2Plus: ''
 })
