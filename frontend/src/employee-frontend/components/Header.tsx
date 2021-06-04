@@ -21,6 +21,7 @@ import {
 import styled from 'styled-components'
 import { logoutUrl } from '../api/auth'
 import { featureFlags } from '../config'
+import { isNotProduction } from '../constants'
 import { useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
 import { RequireRole } from '../utils/roles'
@@ -80,7 +81,7 @@ const UnreadCount = styled.span`
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const { i18n } = useTranslation()
   const { user, loggedIn } = useContext(UserContext)
-  const { accounts } = useContext(MessageContext)
+  const { hasPilotAccess, accounts } = useContext(MessageContext)
   const [popupVisible, setPopupVisible] = useState(false)
 
   const unreadCount = useMemo<number>(
@@ -208,7 +209,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                 </NavbarLink>
               </RequireRole>
 
-              {featureFlags.messaging && (
+              {featureFlags.messaging && (isNotProduction() || hasPilotAccess) && (
                 <RequireRole oneOf={['UNIT_SUPERVISOR', 'STAFF']}>
                   <NavbarLink
                     onClick={() => setPopupVisible(false)}
