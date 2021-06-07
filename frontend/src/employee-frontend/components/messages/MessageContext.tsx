@@ -15,7 +15,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { isPilotUnit } from '../../constants'
+import { isNotProduction, isPilotUnit } from '../../constants'
 import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
 import { requireRole } from '../../utils/roles'
@@ -31,6 +31,7 @@ import {
 import {
   DraftContent,
   isGroupMessageAccount,
+  isPersonalMessageAccount,
   MessageAccount,
   SentMessage
 } from './types'
@@ -110,12 +111,8 @@ const appendMessageAndMoveThreadToTopOfList = (
     ]
   })
 
-const isSomeAccountInPilotUnit = (accounts: Result<MessageAccount[]>) =>
-  accounts.isSuccess &&
-  accounts.value.some(
-    (acc: MessageAccount) =>
-      isGroupMessageAccount(acc) && isPilotUnit(acc.daycareGroup.unitId)
-  )
+const isPilotUnitAccount = (acc: MessageAccount) =>
+  isGroupMessageAccount(acc) && isPilotUnit(acc.daycareGroup.unitId)
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
@@ -124,6 +121,7 @@ export const MessageContextProvider = React.memo(
       () => requireRole(roles, 'UNIT_SUPERVISOR', 'STAFF'),
       [roles]
     )
+    const [hasPilotAccess, setPilotAccess] = useState(false)
 
     const [selectedUnit, setSelectedUnit] = useState<
       SelectOptionProps | undefined
@@ -132,17 +130,29 @@ export const MessageContextProvider = React.memo(
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()
     )
-    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
+    const setAccountsResult = useCallback((res: Result<MessageAccount[]>) => {
+      if (res.isSuccess) {
+        setPilotAccess((prev) => prev || res.value.some(isPilotUnitAccount))
+        setAccounts(
+          res.map((val) =>
+            val.filter(
+              (acc) =>
+                isNotProduction() ||
+                isPilotUnitAccount(acc) ||
+                isPersonalMessageAccount(acc)
+            )
+          )
+        )
+      } else {
+        setAccounts(res)
+      }
+    }, [])
+    const getAccounts = useRestApi(getMessagingAccounts, setAccountsResult)
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
       if (hasRequiredRoleForMessaging) loadAccounts()
     }, [hasRequiredRoleForMessaging, loadAccounts])
-
-    const [hasPilotAccess, setPilotAccess] = useState(false)
-    useEffect(() => {
-      setPilotAccess((prev) => prev || isSomeAccountInPilotUnit(accounts))
-    }, [accounts])
 
     const [selectedAccount, setSelectedAccount] = useState<AccountView>()
     const [selectedDraft, setSelectedDraft] = useState(
