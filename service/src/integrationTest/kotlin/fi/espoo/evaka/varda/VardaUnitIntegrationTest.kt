@@ -18,15 +18,20 @@ import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
+import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.util.UUID
 
 class VardaUnitIntegrationTest : FullApplicationTest() {
+    @Autowired
+    lateinit var mockEndpoint: MockVardaIntegrationEndpoint
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -36,12 +41,17 @@ class VardaUnitIntegrationTest : FullApplicationTest() {
             tx.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
             tx.insertTestVardaOrganizer()
         }
+
+        mockEndpoint.cleanUp()
     }
 
     @Test
     fun `uploading municipal units works`() {
         updateUnits()
         assertEquals(2, getVardaUnits(db).size)
+        assertEquals(2, mockEndpoint.units.size)
+        assertEquals(vardaClient.sourceSystem, mockEndpoint.units.values.elementAt(0).lahdejarjestelma)
+        assertEquals("[FI]", mockEndpoint.units.values.elementAt(0).asiointikieli_koodi.toString())
     }
 
     @Test
