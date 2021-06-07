@@ -75,6 +75,11 @@ async function takeScreenshots(namePrefix: string): Promise<void> {
       type: 'png',
       path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`
     })
+    await page.screenshot({
+      type: 'png',
+      path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
+      fullPage: true
+    })
   }
 }
 
