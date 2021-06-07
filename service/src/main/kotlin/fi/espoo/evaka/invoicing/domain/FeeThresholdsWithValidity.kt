@@ -87,7 +87,7 @@ data class FeeThresholds(
         else when (familySize) {
             2 -> incomeMultiplier2
             3 -> incomeMultiplier3
-            4 -> incomeMultiplier2
+            4 -> incomeMultiplier4
             5 -> incomeMultiplier5
             6 -> incomeMultiplier6
             else -> incomeMultiplier6
@@ -98,7 +98,7 @@ data class FeeThresholds(
         else when (familySize) {
             2 -> minIncomeThreshold2
             3 -> minIncomeThreshold3
-            4 -> minIncomeThreshold2
+            4 -> minIncomeThreshold4
             5 -> minIncomeThreshold5
             6 -> minIncomeThreshold6
             else -> minIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
@@ -109,7 +109,7 @@ data class FeeThresholds(
         else when (familySize) {
             2 -> maxIncomeThreshold2
             3 -> maxIncomeThreshold3
-            4 -> maxIncomeThreshold2
+            4 -> maxIncomeThreshold4
             5 -> maxIncomeThreshold5
             6 -> maxIncomeThreshold6
             else -> maxIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
