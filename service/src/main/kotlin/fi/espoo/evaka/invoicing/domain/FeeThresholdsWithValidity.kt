@@ -119,7 +119,7 @@ data class FeeThresholds(
         if (siblingOrdinal <= 0) error("Sibling ordinal must be > 0 (was $siblingOrdinal)")
         else when (siblingOrdinal) {
             1 -> BigDecimal(1)
-            2 -> siblingDiscount2
+            2 -> BigDecimal(1) - siblingDiscount2
             else -> BigDecimal(1) - siblingDiscount2Plus
         }
 
