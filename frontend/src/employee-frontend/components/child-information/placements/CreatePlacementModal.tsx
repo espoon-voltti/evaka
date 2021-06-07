@@ -7,7 +7,6 @@ import ReactSelect from 'react-select'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../../types'
 import { useTranslation } from '../../../state/i18n'
-import { getApplicationUnits } from '../../../api/daycare'
 import { Loading, Result } from 'lib-common/api'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { faMapMarkerAlt } from 'lib-icons'
@@ -16,9 +15,12 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { createPlacement } from '../../../api/child/placements'
 import Select from '../../../components/common/Select'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { Unit } from '../../../types/unit'
+import { getDaycares } from '../../../api/unit'
+import { useRestApi } from '../../../../lib-common/utils/useRestApi'
+import DateRange from 'lib-common/date-range'
 
 export interface Props {
   childId: UUID
@@ -48,7 +50,8 @@ const placementTypes: PlacementType[] = [
 function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
-  const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
+  const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
+  const [activeUnits, setActiveUnits] = useState<Result<Unit[]>>(Loading.of())
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unitId: undefined,
@@ -61,22 +64,40 @@ function CreatePlacementModal({ childId, reload }: Props) {
   // todo: could validate form for inverted date range
   const errors = []
 
+  const loadUnits = useRestApi(getDaycares, setUnits)
+
+  useEffect(loadUnits, [loadUnits])
+
   useEffect(() => {
-    setUnits(Loading.of())
-    void void getApplicationUnits(form.type, form.startDate).then((units) => {
-      setUnits(units)
-      if (units.isSuccess && !form.unitId) {
-        const defaultUnit = units.value.sort((a, b) =>
-          a.name < b.name ? -1 : 1
-        )[0]
-        setForm({
-          ...form,
-          unitId: defaultUnit.id,
-          ghostUnit: defaultUnit.ghostUnit || false
-        })
-      }
-    })
-  }, [setUnits, form.type, form.startDate]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (form.startDate.isAfter(form.endDate)) return
+
+    setActiveUnits(
+      units.map((list) =>
+        list.filter((u) =>
+          new DateRange(
+            u.openingDate ?? LocalDate.of(1900, 1, 1),
+            u.closingDate
+          ).overlapsWith(new DateRange(form.startDate, form.endDate))
+        )
+      )
+    )
+  }, [units, setActiveUnits, form.startDate, form.endDate])
+
+  useEffect(() => {
+    if (
+      activeUnits.isSuccess &&
+      (!form.unitId || !activeUnits.value.some((u) => u.id === form.unitId))
+    ) {
+      const defaultUnit = activeUnits.value.sort((a, b) =>
+        a.name < b.name ? -1 : 1
+      )[0]
+      setForm((old) => ({
+        ...old,
+        unitId: defaultUnit.id,
+        ghostUnit: defaultUnit.ghostUnit || false
+      }))
+    }
+  }, [activeUnits, form.unitId])
 
   const submitForm = () => {
     setSubmitting(true)
@@ -148,7 +169,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
 
           <ReactSelect
             placeholder={i18n.common.select}
-            options={units
+            options={activeUnits
               .map((us) =>
                 us
                   .map(({ id, name, ghostUnit }) => ({
@@ -168,7 +189,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
                   })
                 : undefined
             }
-            isLoading={units.isLoading}
+            isLoading={activeUnits.isLoading}
             loadingMessage={() => i18n.common.loading}
             noOptionsMessage={() => i18n.common.loadingFailed}
           />
