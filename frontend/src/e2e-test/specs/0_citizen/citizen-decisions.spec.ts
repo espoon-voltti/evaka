@@ -87,7 +87,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     preschoolDecisionId,
     `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`,
     'Päätös esiopetuksesta',
-    format(new Date(application.form.preferredStartDate), 'dd.MM.yyyy'),
+    format(new Date(), 'dd.MM.yyyy'),
     'Vahvistettavana huoltajalla'
   )
 
@@ -96,7 +96,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     preschoolDaycareDecisionId,
     `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`,
     'Päätös liittyvästä varhaiskasvatuksesta',
-    format(new Date(application.form.preferredStartDate), 'dd.MM.yyyy'),
+    format(new Date(), 'dd.MM.yyyy'),
     'Vahvistettavana huoltajalla'
   )
 

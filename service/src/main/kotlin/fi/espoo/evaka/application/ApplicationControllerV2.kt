@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.application.utils.ok
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -293,7 +294,16 @@ class ApplicationControllerV2(
         Audit.ApplicationUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
-        db.transaction { applicationStateService.updateApplicationContentsServiceWorker(it, user, applicationId, application, user.id) }
+        db.transaction {
+            applicationStateService.updateApplicationContentsServiceWorker(
+                it,
+                user,
+                applicationId,
+                application,
+                user.id,
+                currentDateInFinland()
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -303,7 +313,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it, user, applicationId) }
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) }
         return ResponseEntity.noContent().build()
     }
 

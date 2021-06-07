@@ -67,7 +67,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
@@ -91,7 +90,13 @@ class ApplicationStateService(
 ) {
     // STATE TRANSITIONS
 
-    fun sendApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, isEnduser: Boolean = false) {
+    fun sendApplication(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        applicationId: UUID,
+        currentDate: LocalDate,
+        isEnduser: Boolean = false,
+    ) {
         Audit.ApplicationSend.log(targetId = applicationId)
 
         val application = getApplication(tx, applicationId)
@@ -104,12 +109,12 @@ class ApplicationStateService(
         }
 
         verifyStatus(application, CREATED)
-        validateApplication(tx, application.type, application.form, strict = isEnduser)
+        validateApplication(tx, application.type, application.form, currentDate, strict = isEnduser)
 
         val applicationFlags = tx.applicationFlags(application)
         tx.updateApplicationFlags(application.id, applicationFlags)
 
-        val sentDate = application.sentDate ?: LocalDate.now()
+        val sentDate = application.sentDate ?: currentDate
         val dueDate = calculateDueDate(
             application.type,
             sentDate,
@@ -444,7 +449,14 @@ class ApplicationStateService(
 
     // CONTENT UPDATE
 
-    fun updateOwnApplicationContentsCitizen(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate, asDraft: Boolean = false): ApplicationDetails {
+    fun updateOwnApplicationContentsCitizen(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        applicationId: UUID,
+        update: ApplicationFormUpdate,
+        currentDate: LocalDate,
+        asDraft: Boolean = false
+    ): ApplicationDetails {
         val original = tx.fetchApplicationDetails(applicationId)
             ?.takeIf { it.guardianId == user.id }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
@@ -465,7 +477,7 @@ class ApplicationStateService(
         if (asDraft) {
             if (original.status !== CREATED) throw BadRequest("Cannot save as draft, application already sent")
         } else {
-            validateApplication(tx, original.type, updatedForm, strict = true)
+            validateApplication(tx, original.type, updatedForm, currentDate, strict = true)
 
             if (listOf(SENT).contains(original.status)) {
                 original.form.preferences.preferredStartDate?.let { previousStartDate ->
@@ -481,12 +493,19 @@ class ApplicationStateService(
         return getApplication(tx, applicationId)
     }
 
-    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationUpdate, userId: UUID) {
+    fun updateApplicationContentsServiceWorker(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        applicationId: UUID,
+        update: ApplicationUpdate,
+        userId: UUID,
+        currentDate: LocalDate
+    ) {
         val original = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
         val updatedForm = original.form.update(update.form)
-        validateApplication(tx, original.type, updatedForm, strict = false)
+        validateApplication(tx, original.type, updatedForm, currentDate, strict = false)
 
         val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
         if (!updatedForm.preferences.urgent) {
@@ -569,11 +588,17 @@ class ApplicationStateService(
             throw BadRequest("Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}")
     }
 
-    private fun validateApplication(tx: Database.Read, type: ApplicationType, application: ApplicationForm, strict: Boolean) {
+    private fun validateApplication(
+        tx: Database.Read,
+        type: ApplicationType,
+        application: ApplicationForm,
+        currentDate: LocalDate,
+        strict: Boolean,
+    ) {
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
             val canApplyForPreferredDate = tx.getActivePreschoolTermAt(preferredStartDate)
-                ?.isApplicationAccepted(LocalDate.now(europeHelsinki))
+                ?.isApplicationAccepted(currentDate)
                 ?: false
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")

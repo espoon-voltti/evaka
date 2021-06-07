@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format } from 'date-fns'
+import { format, getMonth, setMonth } from 'date-fns'
 import config from '../config'
 import {
   Application,
@@ -473,76 +473,88 @@ const applicationForm = (
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false
-): ApplicationForm => ({
-  type,
-  additionalDetails: {
-    allergyType: '',
-    dietType: '',
-    otherInfo: ''
-  },
-  apply: {
-    preferredUnits: preferredUnits,
-    siblingBasis: false
-  },
-  careDetails: {
-    assistanceNeeded: false
-  },
-  child: {
-    firstName: child.firstName,
-    lastName: child.lastName,
-    socialSecurityNumber: child.ssn,
-    address: {
-      street: child.streetAddress,
-      postalCode: child.postalCode,
-      city: child.postOffice,
-      editable: false
+): ApplicationForm => {
+  // Try to make sure there's an active preschool term for the preferred start date
+  let startDate = new Date()
+  if (
+    type === 'PRESCHOOL' &&
+    // May-Aug
+    [4, 5, 6, 7].includes(getMonth(startDate))
+  ) {
+    // => Sep
+    startDate = setMonth(startDate, 8)
+  }
+  return {
+    type,
+    additionalDetails: {
+      allergyType: '',
+      dietType: '',
+      otherInfo: ''
     },
-    nationality: 'FI',
-    language: 'fi',
-    restricted: false
-  },
-  connectedDaycare: type === 'PRESCHOOL' && connectedDaycare,
-  docVersion: 0,
-  extendedCare: false,
-  guardian: {
-    firstName: guardian.firstName,
-    lastName: guardian.lastName,
-    socialSecurityNumber: guardian.ssn,
-    address: {
-      street: guardian.streetAddress,
-      postalCode: guardian.postalCode,
-      city: guardian.postOffice,
-      editable: false
+    apply: {
+      preferredUnits: preferredUnits,
+      siblingBasis: false
     },
-    phoneNumber: guardian.phone,
-    email: guardian.email,
-    restricted: false
-  },
-  guardian2: {
-    firstName: '',
-    lastName: '',
-    socialSecurityNumber: '',
-    address: {
-      street: '',
-      postalCode: '',
-      city: '',
-      editable: false
+    careDetails: {
+      assistanceNeeded: false
     },
-    phoneNumber: guardian2Phone,
-    email: guardian2Email,
-    restricted: false
-  },
-  hasOtherAdult: false,
-  hasOtherChildren: false,
-  otherAdults: [],
-  otherChildren: [],
-  partTime: false,
-  preferredStartDate: new Date().toISOString(),
-  serviceEnd: '08:00',
-  serviceStart: '16:00',
-  urgent: false,
-  otherGuardianAgreementStatus
-})
+    child: {
+      firstName: child.firstName,
+      lastName: child.lastName,
+      socialSecurityNumber: child.ssn,
+      address: {
+        street: child.streetAddress,
+        postalCode: child.postalCode,
+        city: child.postOffice,
+        editable: false
+      },
+      nationality: 'FI',
+      language: 'fi',
+      restricted: false
+    },
+    connectedDaycare: type === 'PRESCHOOL' && connectedDaycare,
+    docVersion: 0,
+    extendedCare: false,
+    guardian: {
+      firstName: guardian.firstName,
+      lastName: guardian.lastName,
+      socialSecurityNumber: guardian.ssn,
+      address: {
+        street: guardian.streetAddress,
+        postalCode: guardian.postalCode,
+        city: guardian.postOffice,
+        editable: false
+      },
+      phoneNumber: guardian.phone,
+      email: guardian.email,
+      restricted: false
+    },
+    guardian2: {
+      firstName: '',
+      lastName: '',
+      socialSecurityNumber: '',
+      address: {
+        street: '',
+        postalCode: '',
+        city: '',
+        editable: false
+      },
+      phoneNumber: guardian2Phone,
+      email: guardian2Email,
+      restricted: false
+    },
+    hasOtherAdult: false,
+    hasOtherChildren: false,
+    otherAdults: [],
+    otherChildren: [],
+    partTime: false,
+    preferredStartDate: startDate.toISOString(),
+    serviceEnd: '08:00',
+    serviceStart: '16:00',
+    urgent: false,
+    otherGuardianAgreementStatus
+  }
+}
 
 export const applicationFixtureId = '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
 export const applicationFixture = (

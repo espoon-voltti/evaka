@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.daycare.getNextPreschoolTerm
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
@@ -200,7 +201,15 @@ class ApplicationControllerCitizen(
         Audit.ApplicationUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        db.transaction { applicationStateService.updateOwnApplicationContentsCitizen(it, user, applicationId, applicationForm) }
+        db.transaction {
+            applicationStateService.updateOwnApplicationContentsCitizen(
+                it,
+                user,
+                applicationId,
+                applicationForm,
+                currentDateInFinland()
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -214,7 +223,16 @@ class ApplicationControllerCitizen(
         Audit.ApplicationUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        db.transaction { applicationStateService.updateOwnApplicationContentsCitizen(it, user, applicationId, applicationForm, asDraft = true) }
+        db.transaction {
+            applicationStateService.updateOwnApplicationContentsCitizen(
+                it,
+                user,
+                applicationId,
+                applicationForm,
+                currentDateInFinland(),
+                asDraft = true
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -246,7 +264,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it, user, applicationId, isEnduser = true) }
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland(), isEnduser = true) }
         return ResponseEntity.noContent().build()
     }
 
