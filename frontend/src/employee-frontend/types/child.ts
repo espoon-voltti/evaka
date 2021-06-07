@@ -5,7 +5,7 @@
 import { UUID } from '../types/index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { ProviderType } from './unit'
+import { DaycareGroupPlacement, ProviderType } from './unit'
 import { AssistanceMeasure } from 'lib-customizations/types'
 import {
   ServiceNeedOptionSummary,
@@ -117,6 +117,7 @@ export interface Placement {
   }
   missingServiceNeedDays: number
   missingNewServiceNeedDays: number
+  groupPlacements: DaycareGroupPlacement[]
   serviceNeeds: NewServiceNeed[]
   isRestrictedFromUser: boolean
 }

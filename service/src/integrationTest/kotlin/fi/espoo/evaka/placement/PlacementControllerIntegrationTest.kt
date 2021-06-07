@@ -367,7 +367,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `deleting group placement works`() {
         val groupPlacementId = db.transaction { tx ->
-            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
+            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
         }
 
         val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
@@ -535,7 +535,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `service worker cannot remove placements`() {
         val groupPlacementId = db.transaction { tx ->
-            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
+            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
         }
 
         val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")

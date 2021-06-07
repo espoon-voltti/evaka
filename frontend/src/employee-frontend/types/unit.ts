@@ -153,6 +153,7 @@ export interface DaycarePlacementPlan {
 export interface DaycareGroupPlacement {
   id: UUID | null
   groupId: UUID | null
+  groupName: string | null
   daycarePlacementId: UUID
   type: PlacementType
   startDate: LocalDate

@@ -33,6 +33,7 @@ import LocalDate from 'lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import NewServiceNeeds from './NewServiceNeeds'
 import { featureFlags } from '../../../config'
+import FiniteDateRange from 'lib-common/finite-date-range'
 
 interface Props {
   placement: Placement
@@ -160,6 +161,10 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
     ? placement.missingServiceNeedDays
     : 0
 
+  const currentGroupPlacement = placement.groupPlacements.find((gp) =>
+    FiniteDateRange.from(gp).includes(LocalDate.today())
+  )
+
   return placement.isRestrictedFromUser ? (
     <RestrictedToolbar
       title={i18n.childInformation.placements.restrictedName}
@@ -277,6 +282,23 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             </Link>
           </DataValue>
         </DataRow>
+        {FiniteDateRange.from(placement).includes(LocalDate.today()) && (
+          <DataRow>
+            <DataLabel>
+              {i18n.childInformation.placements.daycareGroup}
+            </DataLabel>
+            <DataValue data-qa="placement-details-unit">
+              {currentGroupPlacement?.groupId &&
+              currentGroupPlacement?.groupName ? (
+                <Link to={`/absences/${currentGroupPlacement.groupId}`}>
+                  {currentGroupPlacement.groupName}
+                </Link>
+              ) : (
+                i18n.childInformation.placements.daycareGroupMissing
+              )}
+            </DataValue>
+          </DataRow>
+        )}
         <DataRow>
           <DataLabel>{i18n.childInformation.placements.type}</DataLabel>
           <DataValue data-qa="placement-details-type">
