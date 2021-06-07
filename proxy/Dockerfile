@@ -9,7 +9,10 @@ LABEL maintainer="https://github.com/espoon-voltti/evaka"
 ENV NGINX_ENV=local \
     TZ=UTC
 
+ARG CACHE_BUST=2021-06-07
+
 RUN apk add --no-cache 'ruby=~2.7' \
+ && apk --no-cache upgrade \
  && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.3.0/s3downloader-linux-amd64 \
        -o /bin/s3download \
  && chmod +x /bin/s3download \
