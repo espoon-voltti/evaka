@@ -383,12 +383,23 @@ function validateForm(
     }
   })
 
-  if (LocalDate.parseFiOrNull(form.validFrom) === null) {
+  const parsedValidFrom = LocalDate.parseFiOrNull(form.validFrom)
+  if (parsedValidFrom === null) {
     validationErrors.validFrom = i18n.validationError.dateRange
   }
 
-  if (form.validTo && LocalDate.parseFiOrNull(form.validTo) === null) {
+  const parsedValidTo = LocalDate.parseFiOrNull(form.validTo)
+  if (form.validTo && parsedValidTo === null) {
     validationErrors.validTo = i18n.validationError.dateRange
+  }
+
+  if (
+    parsedValidFrom !== null &&
+    parsedValidTo !== null &&
+    parsedValidTo.isBefore(parsedValidFrom)
+  ) {
+    validationErrors.validFrom = i18n.validationError.invertedDateRange
+    validationErrors.validTo = i18n.validationError.invertedDateRange
   }
 
   familySizes.forEach((n) => {
