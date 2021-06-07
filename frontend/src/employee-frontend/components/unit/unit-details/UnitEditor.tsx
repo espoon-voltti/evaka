@@ -6,7 +6,6 @@ import React, { useMemo, useState } from 'react'
 import { UpdateStateFn } from 'lib-common/form-state'
 import LocalDate from 'lib-common/local-date'
 import styled from 'styled-components'
-import Select from '../../../components/common/Select'
 import {
   CareArea,
   Coordinate,
@@ -16,8 +15,8 @@ import {
   UnitTypes
 } from '../../../types/unit'
 import {
-  DatePickerDeprecated,
-  DatePickerClearableDeprecated
+  DatePickerClearableDeprecated,
+  DatePickerDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import InputField from 'lib-components/atoms/form/InputField'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -38,6 +37,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import DateRange from 'lib-common/date-range'
 import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -544,11 +544,6 @@ export default function UnitEditor(props: Props): JSX.Element {
     [form.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
-  const areaOptions = props.areas.map(({ id, name }) => ({
-    value: id,
-    label: name
-  }))
-
   const onClickSubmit = (e: React.MouseEvent) => {
     e.preventDefault()
     const [fields, errors] = validateForm(i18n, form)
@@ -637,16 +632,18 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.area)}</div>
         {props.editable ? (
-          <Select
-            options={areaOptions}
+          <Combobox
+            items={props.areas}
+            selectedItem={
+              props.areas.find(({ id }) => id === form.areaId) ?? null
+            }
             placeholder={i18n.unitEditor.placeholder.area}
-            onChange={(value) =>
-              value && 'value' in value
-                ? updateForm({ areaId: value.value })
-                : undefined
+            onChange={(area) =>
+              area ? updateForm({ areaId: area.id }) : undefined
             }
             fullWidth
             data-qa="area-select"
+            getItemLabel={(area) => area.name}
           />
         ) : (
           props.areas.find((area) => area.id === form.areaId)?.name
@@ -669,34 +666,22 @@ export default function UnitEditor(props: Props): JSX.Element {
               data-qa="care-type-checkbox-DAYCARE"
             />
             {form.careTypes.DAYCARE && (
-              <Select
+              <Combobox<DaycareType>
                 disabled={!props.editable}
                 fullWidth
-                options={[
-                  { value: 'CENTRE', label: i18n.common.types.CENTRE },
-                  { value: 'FAMILY', label: i18n.common.types.FAMILY },
-                  {
-                    value: 'GROUP_FAMILY',
-                    label: i18n.common.types.GROUP_FAMILY
-                  }
-                ]}
+                items={['CENTRE', 'FAMILY', 'GROUP_FAMILY']}
+                selectedItem={form.daycareType ?? null}
                 placeholder={showRequired(
                   i18n.unitEditor.placeholder.daycareType
                 )}
                 onChange={(value) =>
-                  value && 'value' in value
+                  value
                     ? updateForm({
-                        daycareType:
-                          value.value === 'CENTRE'
-                            ? 'CENTRE'
-                            : value.value === 'FAMILY'
-                            ? 'FAMILY'
-                            : value.value === 'GROUP_FAMILY'
-                            ? 'GROUP_FAMILY'
-                            : undefined
+                        daycareType: value
                       })
                     : undefined
                 }
+                getItemLabel={(item) => i18n.common.types[item]}
               />
             )}
           </DaycareTypeSelectContainer>
@@ -1024,17 +1009,18 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
         {props.editable ? (
-          <Select
-            options={props.financeDecisionHandlerOptions}
+          <Combobox
+            items={props.financeDecisionHandlerOptions}
             placeholder={i18n.unitEditor.placeholder.financeDecisionHandler}
-            value={selectedFinanceDecisionManager}
+            selectedItem={selectedFinanceDecisionManager ?? null}
             onChange={(value) =>
-              value && 'value' in value
+              value
                 ? updateForm({ financeDecisionHandlerId: value.value })
                 : updateForm({ financeDecisionHandlerId: undefined })
             }
             clearable
             fullWidth
+            getItemLabel={(item) => item.label}
           />
         ) : (
           selectedFinanceDecisionManager?.label

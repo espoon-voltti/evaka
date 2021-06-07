@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Page } from 'playwright'
-import { BoundingBox } from '.'
+import { BoundingBox, toCssString } from '.'
 
 export class RawElement {
   constructor(public page: Page, public selector: string) {}
@@ -101,3 +101,9 @@ export class RawTextInput extends WithTextInput(RawElement) {}
 export class RawRadio extends WithChecked(RawElement) {}
 
 export class SelectionChip extends WithChecked(RawElement, descendantInput) {}
+
+export class Combobox extends WithTextInput(RawElement, descendantInput) {
+  findItem(label: string): RawElement {
+    return this.find(`[data-qa="item"]:has-text(${toCssString(label)})`)
+  }
+}

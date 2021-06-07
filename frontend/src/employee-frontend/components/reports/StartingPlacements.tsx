@@ -5,14 +5,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { fi } from 'date-fns/locale'
-import ReactSelect from 'react-select'
 import { Link } from 'react-router-dom'
 
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { reactSelectStyles } from '../../components/common/Select'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
@@ -21,7 +19,7 @@ import {
   RowCountInfo,
   TableScrollable
 } from '../../components/reports/common'
-import { useTranslation, Lang, Translations } from '../../state/i18n'
+import { Lang, Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import {
   getStartingPlacementsReport,
@@ -32,6 +30,7 @@ import LocalDate from 'lib-common/local-date'
 import { FlexRow } from '../../components/common/styled/containers'
 import _ from 'lodash'
 import { distinct } from '../../utils'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -127,29 +126,39 @@ const StartingPlacements = React.memo(function StartingPlacements() {
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
             <Wrapper>
-              <ReactSelect
-                options={monthOptions(lang)}
+              <Combobox
+                items={monthOptions(lang)}
+                selectedItem={
+                  monthOptions(lang).find(
+                    ({ value }) => Number(value) === filters.month
+                  ) ?? null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const month = parseInt(value.value)
                     setFilters({ ...filters, month })
                   }
                 }}
-                styles={reactSelectStyles}
                 placeholder={i18n.common.month}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
             <Wrapper>
-              <ReactSelect
-                options={yearOptions()}
+              <Combobox
+                items={yearOptions()}
+                selectedItem={
+                  yearOptions().find(
+                    ({ value }) => Number(value) === filters.year
+                  ) ?? null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const year = parseInt(value.value)
                     setFilters({ ...filters, year })
                   }
                 }}
-                styles={reactSelectStyles}
                 placeholder={i18n.common.year}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>
@@ -159,8 +168,8 @@ const StartingPlacements = React.memo(function StartingPlacements() {
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <FlexRow>
             <Wrapper>
-              <ReactSelect
-                options={[
+              <Combobox
+                items={[
                   { value: '', label: i18n.common.all },
                   ...rows
                     .map((rs) =>
@@ -172,14 +181,14 @@ const StartingPlacements = React.memo(function StartingPlacements() {
                     .getOrElse([])
                 ]}
                 onChange={(option) =>
-                  option && 'value' in option
+                  option
                     ? setDisplayFilters({
                         ...displayFilters,
                         careArea: option.value
                       })
                     : undefined
                 }
-                value={
+                selectedItem={
                   displayFilters.careArea !== ''
                     ? {
                         label: displayFilters.careArea,
@@ -190,8 +199,8 @@ const StartingPlacements = React.memo(function StartingPlacements() {
                         value: ''
                       }
                 }
-                styles={reactSelectStyles}
                 placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>

@@ -3,16 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { Link, useLocation } from 'react-router-dom'
 import { range } from 'lodash'
-import { faSearch } from 'lib-icons'
+import { faLockAlt, faSearch } from 'lib-icons'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { reactSelectStyles } from '../../components/common/Select'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { SelectOptionProps } from '../../components/common/Select'
 import { useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { VoucherServiceProviderReport } from '../../types/reports'
@@ -24,7 +23,6 @@ import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import ReportDownload from '../../components/reports/ReportDownload'
 import { formatDate } from '../../utils/date'
-import { SelectOptionProps } from '../../components/common/Select'
 import { fi } from 'date-fns/locale'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
@@ -40,9 +38,9 @@ import { defaultMargins } from 'lib-components/white-space'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt } from 'lib-icons'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { UserContext } from 'employee-frontend/state/user'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -162,33 +160,36 @@ function VoucherServiceProviders() {
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
             <FilterWrapper data-qa="select-month">
-              <ReactSelect
-                options={months}
-                value={months.find(
-                  (opt) => opt.value === filters.month.toString()
-                )}
+              <Combobox
+                items={months}
+                selectedItem={
+                  months.find(
+                    (opt) => opt.value === filters.month.toString()
+                  ) ?? null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const month = parseInt(value.value)
                     setFilters({ ...filters, month })
                   }
                 }}
-                styles={reactSelectStyles}
+                getItemLabel={(item) => item.label}
               />
             </FilterWrapper>
             <FilterWrapper data-qa="select-year">
-              <ReactSelect
-                options={years}
-                value={years.find(
-                  (opt) => opt.value === filters.year.toString()
-                )}
+              <Combobox
+                items={years}
+                selectedItem={
+                  years.find((opt) => opt.value === filters.year.toString()) ??
+                  null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const year = parseInt(value.value)
                     setFilters({ ...filters, year })
                   }
                 }}
-                styles={reactSelectStyles}
+                getItemLabel={(item) => item.label}
               />
             </FilterWrapper>
           </FlexRow>
@@ -198,25 +199,25 @@ function VoucherServiceProviders() {
             <FilterRow>
               <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
               <FilterWrapper data-qa="select-area">
-                <ReactSelect
-                  options={[
+                <Combobox
+                  items={[
                     ...areas.map((area) => ({
                       value: area.id,
                       label: area.name
                     }))
                   ]}
-                  value={
+                  selectedItem={
                     areas
                       .filter(({ id }) => id === filters.areaId)
                       .map((area) => ({ value: area.id, label: area.name }))[0]
                   }
                   onChange={(value) => {
-                    if (value && 'value' in value) {
+                    if (value) {
                       setFilters({ ...filters, areaId: value.value })
                     }
                   }}
-                  styles={reactSelectStyles}
                   placeholder={i18n.reports.common.careAreaName}
+                  getItemLabel={(item) => item.label}
                 />
               </FilterWrapper>
             </FilterRow>

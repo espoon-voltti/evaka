@@ -3,15 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
-import { reactSelectStyles } from '../../components/common/Select'
+import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { SelectOptionProps } from '../../components/common/Select'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from 'lib-common/api'
 import { OccupancyReportRow } from '../../types/reports'
@@ -25,8 +24,7 @@ import ReportDownload from '../../components/reports/ReportDownload'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import { formatDate } from '../../utils/date'
 import { DATE_FORMAT_ISO } from '../../constants'
-import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
-import { SelectOptionProps } from '../../components/common/Select'
+import { formatDecimal, formatPercentage } from 'lib-common/utils/number'
 import { fi } from 'date-fns/locale'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
@@ -37,6 +35,7 @@ import {
 } from '../../components/reports/common'
 import { FlexRow } from '../../components/common/styled/containers'
 import { featureFlags } from '../../config'
+import Combobox from 'lib-components/atoms/form/Combobox'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -246,33 +245,36 @@ function Occupancies() {
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
             <Wrapper>
-              <ReactSelect
-                options={months}
-                value={months.find(
-                  (opt) => opt.value === filters.month.toString()
-                )}
+              <Combobox
+                items={months}
+                selectedItem={
+                  months.find(
+                    (opt) => opt.value === filters.month.toString()
+                  ) ?? null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const month = parseInt(value.value)
                     setFilters({ ...filters, month })
                   }
                 }}
-                styles={reactSelectStyles}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
             <Wrapper>
-              <ReactSelect
-                options={years}
-                value={years.find(
-                  (opt) => opt.value === filters.year.toString()
-                )}
+              <Combobox
+                items={years}
+                selectedItem={
+                  years.find((opt) => opt.value === filters.year.toString()) ??
+                  null
+                }
                 onChange={(value) => {
-                  if (value && 'value' in value) {
+                  if (value) {
                     const year = parseInt(value.value)
                     setFilters({ ...filters, year })
                   }
                 }}
-                styles={reactSelectStyles}
+                getItemLabel={(item) => item.label}
               />
             </Wrapper>
           </FlexRow>
@@ -280,8 +282,8 @@ function Occupancies() {
         <FilterRow>
           <FilterLabel>{i18n.reports.occupancies.filters.type}</FilterLabel>
           <Wrapper>
-            <ReactSelect
-              options={[
+            <Combobox
+              items={[
                 {
                   value: 'UNIT_CONFIRMED',
                   label: i18n.reports.occupancies.filters.types.UNIT_CONFIRMED
@@ -303,36 +305,37 @@ function Occupancies() {
                   label: i18n.reports.occupancies.filters.types.GROUP_REALIZED
                 }
               ]}
-              value={{
+              selectedItem={{
                 value: filters.type,
                 label: i18n.reports.occupancies.filters.types[filters.type]
               }}
               onChange={(value) => {
-                if (value && 'value' in value) {
+                if (value) {
                   setFilters({
                     ...filters,
                     type: value.value as OccupancyReportType
                   })
                 }
               }}
-              styles={reactSelectStyles}
+              getItemLabel={(item) => item.label}
             />
           </Wrapper>
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
           <Wrapper>
-            <ReactSelect
-              options={[
-                ...areas.map((area) => ({ value: area.id, label: area.name }))
-              ]}
-              onChange={(value) => {
-                if (value && 'value' in value) {
-                  setFilters({ ...filters, careAreaId: value.value })
+            <Combobox
+              items={areas}
+              onChange={(item) => {
+                if (item) {
+                  setFilters({ ...filters, careAreaId: item.id })
                 }
               }}
-              styles={reactSelectStyles}
+              selectedItem={
+                areas.find((area) => area.id === filters.careAreaId) ?? null
+              }
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+              getItemLabel={(item) => item.name}
             />
           </Wrapper>
         </FilterRow>
@@ -341,8 +344,8 @@ function Occupancies() {
             {i18n.reports.occupancies.filters.valueOnReport}
           </FilterLabel>
           <Wrapper>
-            <ReactSelect
-              options={[
+            <Combobox
+              items={[
                 {
                   value: 'percentage' as ValueOnReport,
                   label:
@@ -358,17 +361,17 @@ function Occupancies() {
                   label: i18n.reports.occupancies.filters.valuesOnReport.raw
                 }
               ]}
-              value={{
+              selectedItem={{
                 value: usedValues,
                 label:
                   i18n.reports.occupancies.filters.valuesOnReport[usedValues]
               }}
               onChange={(value) => {
-                if (value && 'value' in value) {
+                if (value) {
                   setUsedValues(value.value)
                 }
               }}
-              styles={reactSelectStyles}
+              getItemLabel={(item) => item.label}
             />
           </Wrapper>
         </FilterRow>

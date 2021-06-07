@@ -23,9 +23,10 @@ export default class ReportsPage {
 
   async selectArea(area: string) {
     const areaSelector = Selector('[data-qa="select-area"]')
-    await t.click(areaSelector)
-    await t.typeText(areaSelector, area)
-    await t.pressKey('enter')
+    const input = areaSelector.find('input')
+    await t.selectText(input).pressKey('delete')
+    await t.typeText(input, area)
+    await t.click(areaSelector.find('[data-qa="item"]').withExactText(area))
   }
 
   async selectDateRangePickerDates(from: Date, to: Date) {
