@@ -18,16 +18,26 @@ export interface User {
   name: string
 }
 
-export const adRoles = [
-  'SERVICE_WORKER',
-  'UNIT_SUPERVISOR',
-  'STAFF',
-  'FINANCE_ADMIN',
+export const globalRoles = [
   'ADMIN',
-  'DIRECTOR',
-  'SPECIAL_EDUCATION_TEACHER'
+  'SERVICE_WORKER',
+  'FINANCE_ADMIN',
+  'DIRECTOR'
 ] as const
-export type AdRole = typeof adRoles[number]
+
+export type GlobalRole = typeof globalRoles[number]
+
+export const scopedRoles = [
+  'UNIT_SUPERVISOR',
+  'SPECIAL_EDUCATION_TEACHER',
+  'STAFF'
+] as const
+
+export type ScopedRole = typeof scopedRoles[number]
+
+export const adRoles = [...globalRoles, ...scopedRoles] as const
+
+export type AdRole = GlobalRole | ScopedRole
 
 export type SearchOrder = 'ASC' | 'DESC'
 

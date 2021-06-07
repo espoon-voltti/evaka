@@ -2456,7 +2456,10 @@ export const fi = {
     title: 'Käyttäjät',
     name: 'Nimi',
     rights: 'Oikeudet',
-    findByName: 'Etsi nimellä'
+    findByName: 'Etsi nimellä',
+    editor: {
+      roles: 'Roolit'
+    }
   },
   financeBasics: {
     title: 'Talouden maksuasetukset',
