@@ -233,7 +233,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 guardian = guardian,
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
+                preferredStartDate = LocalDate.of(2021, 8, 11)
             )
         }
 

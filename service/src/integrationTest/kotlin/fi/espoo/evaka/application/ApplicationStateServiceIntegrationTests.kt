@@ -64,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
+import java.time.ZoneOffset
 import java.util.UUID
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
@@ -82,13 +83,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private val applicationId = UUID.randomUUID()
-    val address = Address(
+    private val address = Address(
         street = "Street 1",
         postalCode = "00200",
         postOffice = "Espoo"
     )
-    val mainPeriod = preschoolTerm2020
-    val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
+    private val mainPeriod = preschoolTerm2020
+    private val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
+
+    private val today: LocalDate = LocalDate.of(2020, 2, 16)
+    private val now: Instant = today.atTime(12, 0, 0).toInstant(ZoneOffset.ofHours(2))
 
     @BeforeEach
     private fun beforeEach() {
@@ -112,15 +116,15 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
 
         db.read {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
-            assertEquals(LocalDate.now(), application.sentDate)
-            assertEquals(LocalDate.now(), application.dueDate)
+            assertEquals(today, application.sentDate)
+            assertEquals(today, application.dueDate)
         }
     }
 
@@ -137,12 +141,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.read {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
-            assertEquals(LocalDate.now().plusMonths(4), application.dueDate)
+            assertEquals(today.plusMonths(4), application.dueDate)
         }
     }
 
@@ -171,7 +175,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         // then
         assertDueDate(applicationId, null) // missing attachment
@@ -181,12 +185,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
                 .bind("applicationId", applicationId)
-                .bind("receivedAt", Instant.now().minus(Period.ofWeeks(1)))
+                .bind("receivedAt", now.minus(Period.ofWeeks(1)))
                 .execute()
         }
         assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id)))
         // then
-        assertDueDate(applicationId, Instant.now().plus(Period.ofWeeks(2))) // end date >= earliest attachment.receivedAt
+        assertDueDate(applicationId, now.plus(Period.ofWeeks(2))) // end date >= earliest attachment.receivedAt
     }
 
     @Test
@@ -213,20 +217,20 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
                 .bind("type", AttachmentType.EXTENDED_CARE)
                 .bind("applicationId", applicationId)
-                .bind("receivedAt", Instant.now().plus(Period.ofWeeks(1)))
+                .bind("receivedAt", now.plus(Period.ofWeeks(1)))
                 .execute()
             tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
                 .bind("type", AttachmentType.URGENCY)
                 .bind("applicationId", applicationId)
-                .bind("receivedAt", Instant.now().plus(Period.ofDays(3)))
+                .bind("receivedAt", now.plus(Period.ofDays(3)))
                 .execute()
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         // then
-        assertDueDate(applicationId, Instant.now().plus(Period.ofDays(14 + 3))) // attachments received after application sent
+        assertDueDate(applicationId, now.plus(Period.ofDays(14 + 3))) // attachments received after application sent
     }
 
     @Test
@@ -250,7 +254,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.read {
             // then
@@ -282,7 +286,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.read {
             // then
@@ -300,7 +304,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.transaction { tx ->
             // when
@@ -323,7 +327,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.transaction { tx ->
             // when
@@ -345,7 +349,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.transaction { tx ->
             // when
@@ -370,7 +374,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 preferredStartDate = LocalDate.of(2020, 8, 1),
                 guardianEmail = ""
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.transaction { tx ->
             // when
@@ -393,7 +397,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 hasAdditionalInfo = true,
                 applicationId = applicationId
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.transaction { tx ->
             // when
@@ -416,7 +420,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -446,7 +450,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
         }
         db.transaction { tx ->
             // when
@@ -464,7 +468,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -483,7 +487,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -506,7 +510,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -564,7 +568,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -622,7 +626,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -696,7 +700,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -771,7 +775,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -867,7 +871,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -929,7 +933,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -963,7 +967,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1002,7 +1006,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1056,7 +1060,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 guardian = testAdult_1, applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1123,7 +1127,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 guardian = testAdult_1, applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1152,7 +1156,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 guardian = testAdult_1, applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13)
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -2100,7 +2104,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 applicationId = applicationId,
                 preferredStartDate = preferredStartDate
             )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId, today)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
