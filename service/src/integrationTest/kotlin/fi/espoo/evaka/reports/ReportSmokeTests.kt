@@ -77,6 +77,16 @@ class ReportSmokeTests : FullApplicationTest() {
     }
 
     @Test
+    fun `decisions report returns http 200`() {
+        assertOkResponse(
+            http.get(
+                "/reports/decisions",
+                listOf("from" to "2020-05-01", "to" to "2020-08-01")
+            )
+        )
+    }
+
+    @Test
     fun `duplicate-people report returns http 200`() {
         assertOkResponse(
             http.get(

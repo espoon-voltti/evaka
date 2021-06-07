@@ -24,7 +24,8 @@ import {
   faFileAlt,
   faDiagnoses,
   faDatabase,
-  faMoneyBillWave
+  faMoneyBillWave,
+  faGavel
 } from 'lib-icons'
 import colors from 'lib-customizations/common'
 import { RequireRole } from '../utils/roles'
@@ -239,6 +240,17 @@ function Reports() {
                 </LinkTitle>
               </TitleRow>
               <Description>{i18n.reports.applications.description}</Description>
+            </ReportItem>
+          </RequireRole>
+          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon size="L" color={colors.primary} content={faGavel} />
+                <LinkTitle data-qa={'report-decisions'} to="/reports/decisions">
+                  {i18n.reports.decisions.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>{i18n.reports.decisions.description}</Description>
             </ReportItem>
           </RequireRole>
           <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>

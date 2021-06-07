@@ -97,6 +97,7 @@ enum class Audit(
     DecisionRead("evaka.decision.read"),
     DecisionReadByApplication("evaka.decision.read.by-application"),
     DecisionReject("evaka.decision.reject"),
+    DecisionsReportRead("evaka.decisions-report.read"),
     DuplicatePeopleReportRead("evaka.duplicate-people-report.read"),
     EmployeeCreate("evaka.employee.create"),
     EmployeeDelete("evaka.employee.delete"),
