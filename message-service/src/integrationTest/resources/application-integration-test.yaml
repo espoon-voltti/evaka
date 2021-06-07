@@ -11,7 +11,7 @@ fi:
   espoo:
     voltti:
       s3mock:
-        url: http://s3.lvh.me:9876
+        url: http://s3.127.0.0.1.nip.io:9876
 
 voltti:
   datasource:
