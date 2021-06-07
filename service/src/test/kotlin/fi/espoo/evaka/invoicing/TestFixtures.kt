@@ -241,7 +241,8 @@ fun createFeeDecisionFixture(
     headOfFamilyId: UUID,
     children: List<FeeDecisionChild>,
     pricing: FeeDecisionThresholds = testPricing.getFeeDecisionThresholds(children.size + 1),
-    headOfFamilyIncome: DecisionIncome? = null
+    headOfFamilyIncome: DecisionIncome? = null,
+    sentAt: Instant? = null
 ) = FeeDecision(
     id = UUID.randomUUID(),
     status = status,
@@ -253,7 +254,8 @@ fun createFeeDecisionFixture(
     partnerIncome = null,
     familySize = children.size + 1,
     pricing = pricing,
-    children = children
+    children = children,
+    sentAt = sentAt
 )
 
 fun createVoucherValueDecisionFixture(
@@ -273,7 +275,8 @@ fun createVoucherValueDecisionFixture(
     baseCoPayment: Int = 28900,
     siblingDiscount: Int = 0,
     coPayment: Int = 28900,
-    feeAlterations: List<FeeAlterationWithEffect> = listOf()
+    feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+    sentAt: Instant? = null
 ) = VoucherValueDecision(
     id = UUID.randomUUID(),
     status = status,
@@ -295,7 +298,8 @@ fun createVoucherValueDecisionFixture(
     siblingDiscount = siblingDiscount,
     coPayment = coPayment,
     feeAlterations = feeAlterations,
-    finalCoPayment = coPayment + feeAlterations.sumBy { it.effect }
+    finalCoPayment = coPayment + feeAlterations.sumBy { it.effect },
+    sentAt = sentAt
 )
 
 fun createInvoiceRowFixture(childId: UUID) = InvoiceRow(

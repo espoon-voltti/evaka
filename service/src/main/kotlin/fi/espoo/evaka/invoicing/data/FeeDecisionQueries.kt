@@ -133,8 +133,8 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             head_of_family_income,
             partner_income,
             family_size,
-<<<<<<< HEAD
-            pricing
+            pricing,
+            sent_at
         ) VALUES (
             :id,
             :status::fee_decision_status,
@@ -146,7 +146,8 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             :headOfFamilyIncome,
             :partnerIncome,
             :familySize,
-            :pricing
+            :pricing,
+            :sentAt
         ) ON CONFLICT (id) DO UPDATE SET
             status = :status::fee_decision_status,
             decision_number = :decisionNumber,
@@ -157,84 +158,16 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             head_of_family_income = :headOfFamilyIncome,
             partner_income = :partnerIncome,
             family_size = :familySize,
-            pricing = :pricing
-=======
-            pricing,
-            created_at,
-            sent_at
-        ) VALUES (
-            :id,
-            :status::fee_decision_status,
-            :decision_number,
-            :decision_type::fee_decision_type,
-            :valid_from,
-            :valid_to,
-            :head_of_family,
-            :partner,
-            :head_of_family_income,
-            :partner_income,
-            :family_size,
-            :pricing,
-            :created_at,
-            :sent_at
-        ) ON CONFLICT (id) DO UPDATE SET
-            status = :status::fee_decision_status,
-            decision_number = :decision_number,
-            decision_type = :decision_type::fee_decision_type,
-            valid_from = :valid_from,
-            valid_to = :valid_to,
-            head_of_family = :head_of_family,
-            partner = :partner,
-            head_of_family_income = :head_of_family_income,
-            partner_income = :partner_income,
-            family_size = :family_size,
             pricing = :pricing,
-            sent_at = :sent_at
->>>>>>> 82f58da7c (Service need fee data varda change tests)
+            sent_at = :sentAt
     """
 
     val batch = prepareBatch(sql)
     decisions.forEach { decision ->
         batch
-<<<<<<< HEAD
             .bindKotlin(decision)
             .bind("headOfFamilyId", decision.headOfFamily.id)
             .bind("partnerId", decision.partner?.id)
-=======
-            .bindMap(
-                mapOf(
-                    "id" to decision.id,
-                    "status" to decision.status.toString(),
-                    "decision_number" to decision.decisionNumber,
-                    "decision_type" to decision.decisionType.toString(),
-                    "valid_from" to decision.validFrom,
-                    "valid_to" to decision.validTo,
-                    "head_of_family" to decision.headOfFamily.id,
-                    "partner" to decision.partner?.id,
-                    "family_size" to decision.familySize,
-                    "pricing" to decision.pricing.let {
-                        PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(it)
-                        }
-                    },
-                    "head_of_family_income" to decision.headOfFamilyIncome?.let {
-                        PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(it)
-                        }
-                    },
-                    "partner_income" to decision.partnerIncome?.let {
-                        PGobject().apply {
-                            type = "jsonb"
-                            value = mapper.writeValueAsString(it)
-                        }
-                    },
-                    "created_at" to decision.createdAt.atOffset(ZoneOffset.UTC),
-                    "sent_at" to decision.sentAt
-                )
-            )
->>>>>>> 82f58da7c (Service need fee data varda change tests)
             .add()
     }
     batch.execute()

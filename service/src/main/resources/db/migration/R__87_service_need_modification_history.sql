@@ -6,6 +6,7 @@ CREATE TABLE varda_service_need(
     evaka_service_need_updated        timestamp with time zone not null,
     evaka_service_need_option_updated timestamp with time zone not null,
     evaka_child_id                    uuid not null REFERENCES person(id),
+    varda_child_id                    bigint,
     varda_decision_id                 bigint,
     varda_placement_id                bigint,
     varda_fee_data_ids                bigint[],

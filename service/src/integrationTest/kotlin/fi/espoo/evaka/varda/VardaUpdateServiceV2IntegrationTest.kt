@@ -1,12 +1,16 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.FixtureBuilder
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.invoicing.createFeeDecision2Fixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
+import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
-import fi.espoo.evaka.invoicing.data.upsertFeeDecisions2
+import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -43,13 +47,14 @@ import java.time.LocalDate
 import java.util.UUID
 
 class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
-
     @Autowired
     lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction {
+            it.insertGeneralTestFixtures()
+        }
         insertVardaUnit(db)
         mockEndpoint.cleanUp()
     }
@@ -63,6 +68,8 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateServiceNeedsChanges finds changed service need since given moment`() {
         val earliestIncludedTime = HelsinkiDateTime.now()
+        val startDate = earliestIncludedTime.minusDays(20).toLocalDate()
+        val endDate = startDate.plusDays(10)
         val shouldBeIncluded = earliestIncludedTime.plusHours(1)
         val shouldBeExcluded = earliestIncludedTime.plusHours(-1)
         val includedServiceNeedId = createServiceNeed(
@@ -70,14 +77,14 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             snDefaultDaycare.copy(
                 updated = shouldBeIncluded
             ),
-            testChild_1, -20, -10
+            testChild_1, startDate, endDate
         )
         createServiceNeed(
             db, shouldBeExcluded,
             snDefaultPartDayDaycare.copy(
                 updated = shouldBeExcluded
             ),
-            testChild_1, -9
+            testChild_1, endDate.plusDays(1)
         )
 
         db.read {
@@ -91,6 +98,8 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateServiceNeedsChanges finds changed service need option since given moment`() {
         val earliestIncludedTime = HelsinkiDateTime.now()
+        val startDate = earliestIncludedTime.minusDays(20).toLocalDate()
+        val endDate = startDate.plusDays(10)
         val shouldBeIncluded = earliestIncludedTime.plusHours(1)
         val shouldBeExcluded = earliestIncludedTime.plusHours(-1)
         val includedServiceNeedId = createServiceNeed(
@@ -98,14 +107,14 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             snDefaultDaycare.copy(
                 updated = shouldBeIncluded
             ),
-            testChild_1, -20, -10
+            testChild_1, startDate, endDate
         )
         createServiceNeed(
             db, shouldBeExcluded,
             snDefaultPartDayDaycare.copy(
                 updated = shouldBeExcluded
             ),
-            testChild_1, -9
+            testChild_1, endDate.plusDays(1)
         )
 
         db.read {
@@ -226,11 +235,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateEvakaFeeDataChangesByServiceNeed sees only a changed fee decision`() {
         val since = HelsinkiDateTime.now()
-        val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -100)
+        val startDate = since.minusDays(100).toLocalDate()
+        val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate)
 
-        val includedFdId = createFeeDecision(db, testChild_1, DateRange(since.minusDays(99).toLocalDate(), since.minusDays(90).toLocalDate()), since.toInstant())
+        val includedFdId = createFeeDecision(db, testChild_1, DateRange(startDate, startDate.plusDays(10)), since.toInstant())
         val includedFeeDecisionChildIds = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(includedFdId) }
-        createFeeDecision(db, testChild_1, DateRange(since.minusDays(89).toLocalDate(), since.minusDays(80).toLocalDate()), since.minusDays(1).toInstant())
+        createFeeDecision(db, testChild_1, DateRange(startDate.plusDays(11), startDate.plusDays(20)), since.minusDays(1).toInstant())
 
         val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
         assertEquals(1, snFeeDiff.size)
@@ -244,13 +254,16 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateEvakaFeeDataChangesByServiceNeed matches fee decisions correctly to service needs`() {
         val since = HelsinkiDateTime.now()
-        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -100, -90)
-        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -89)
+        val startDate = since.minusDays(100).toLocalDate()
+        val endDate = since.minusDays(90).toLocalDate()
+        val startDate2 = endDate.plusDays(1)
+        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate, endDate)
+        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate2)
 
-        val fdId1 = createFeeDecision(db, testChild_1, DateRange(since.minusDays(100).toLocalDate(), since.minusDays(90).toLocalDate()), since.toInstant())
+        val fdId1 = createFeeDecision(db, testChild_1, DateRange(startDate, endDate), since.toInstant())
         val includedFeeDecisionChildIds1 = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(fdId1) }
 
-        val fdId2 = createFeeDecision(db, testChild_1, DateRange(since.minusDays(89).toLocalDate(), null), since.toInstant())
+        val fdId2 = createFeeDecision(db, testChild_1, DateRange(startDate2, null), since.toInstant())
         val includedFeeDecisionChildIds2 = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(fdId2) }
 
         val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
@@ -262,10 +275,13 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     @Test
     fun `calculateEvakaFeeDataChangesByServiceNeed matches voucher value decisions correctly to service needs`() {
         val since = HelsinkiDateTime.now()
-        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -100, -90)
-        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, -89)
-        val vd1 = createVoucherDecision(db, since.minusDays(100).toLocalDate(), since.minusDays(100).toLocalDate(), testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
-        val vd2 = createVoucherDecision(db, since.minusDays(89).toLocalDate(), null, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
+        val startDate = since.minusDays(100).toLocalDate()
+        val endDate = since.minusDays(90).toLocalDate()
+        val startDate2 = endDate.plusDays(1)
+        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate, endDate)
+        val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate2)
+        val vd1 = createVoucherDecision(db, startDate, startDate, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
+        val vd2 = createVoucherDecision(db, startDate2, null, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
 
         val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
         assertEquals(2, snFeeDiff.size)
@@ -274,8 +290,102 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updateChildData deletes all service need related data`() {
-        // TODO tässä
+    fun `updateChildData created related varda decision data when evaka service need is added`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val startDate = since.minusDays(100).toLocalDate()
+        val endDate = since.toLocalDate()
+        val feeDecisionEndDate = startDate.plusDays(10)
+        val voucherStartDate = feeDecisionEndDate.plusDays(1)
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate, endDate)
+        createFeeDecision(db, testChild_1, DateRange(startDate, feeDecisionEndDate), since.toInstant())
+        createVoucherDecision(db, voucherStartDate, null, testDaycare.id, 10000, 5000, testAdult_1.id, testChild_1, since.toInstant())
+
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 2)
+        val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
+        assertVardaDecision(vardaDecision, startDate, endDate, startDate, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaFeeData(
+            VardaFeeData(
+                huoltajat = listOf(asVardaGuardian(testAdult_1)),
+                maksun_peruste_koodi = "MP03",
+                asiakasmaksu = 289.0,
+                palveluseteli_arvo = 0.0,
+                alkamis_pvm = startDate,
+                paattymis_pvm = feeDecisionEndDate,
+                perheen_koko = 2,
+                lahdejarjestelma = "SourceSystemVarda",
+                lapsi = "not asserted"
+            ),
+            mockEndpoint.feeData.values.elementAt(0)
+        )
+        assertVardaFeeData(
+            VardaFeeData(
+                huoltajat = listOf(asVardaGuardian(testAdult_1)),
+                maksun_peruste_koodi = "MP03",
+                asiakasmaksu = 50.0,
+                palveluseteli_arvo = 100.0,
+                alkamis_pvm = voucherStartDate,
+                paattymis_pvm = endDate,
+                perheen_koko = 2,
+                lahdejarjestelma = "SourceSystemVarda",
+                lapsi = "not asserted"
+            ),
+            mockEndpoint.feeData.values.elementAt(1)
+        )
+    }
+
+    private fun asVardaGuardian(g: PersonData.Detailed): VardaGuardian = VardaGuardian(henkilotunnus = g.ssn ?: "", etunimet = g.firstName, sukunimi = g.lastName)
+
+    /*
+    TODO assert these
+    data class VardaDecision(
+    @JsonProperty("pikakasittely_kytkin")
+    val urgent: Boolean,
+    @JsonProperty("tilapainen_vaka_kytkin")
+    val temporary: Boolean,
+    @JsonProperty("paivittainen_vaka_kytkin")
+    val daily: Boolean,
+    @JsonProperty("vuorohoito_kytkin")
+    val shiftCare: Boolean,
+    @JsonProperty("jarjestamismuoto_koodi")
+    val providerTypeCode: String,
+) {
+    @JsonProperty("kokopaivainen_vaka_kytkin")
+    val fullDay: Boolean = hoursPerWeek >= 25
+}
+     */
+    private fun assertVardaDecision(
+        vardaDecision: VardaDecision,
+        expectedStartDate: LocalDate,
+        expectedEndDate: LocalDate,
+        expectedApplicationDate: LocalDate,
+        expectedChildId: Long,
+        expectedHoursPerWeek: Double
+    ) {
+        assertEquals(true, vardaDecision.childUrl.endsWith("$expectedChildId/"), "Expected ${vardaDecision.childUrl} to end with $expectedChildId")
+        assertEquals(expectedStartDate, vardaDecision.startDate)
+        assertEquals(expectedEndDate, vardaDecision.endDate)
+        assertEquals(expectedApplicationDate, vardaDecision.applicationDate)
+        assertEquals(expectedHoursPerWeek, vardaDecision.hoursPerWeek)
+    }
+
+    private fun assertVardaFeeData(expectedVardaFeeData: VardaFeeData, vardaFeeData: VardaFeeData) {
+        expectedVardaFeeData.huoltajat.forEach { expectedHuoltaja -> assertEquals(true, vardaFeeData.huoltajat.any { g -> g.henkilotunnus == expectedHuoltaja.henkilotunnus }) }
+        assertEquals(expectedVardaFeeData.maksun_peruste_koodi, vardaFeeData.maksun_peruste_koodi)
+        assertEquals(expectedVardaFeeData.asiakasmaksu, vardaFeeData.asiakasmaksu)
+        assertEquals(expectedVardaFeeData.palveluseteli_arvo, vardaFeeData.palveluseteli_arvo)
+        assertEquals(expectedVardaFeeData.alkamis_pvm, vardaFeeData.alkamis_pvm)
+        assertEquals(expectedVardaFeeData.paattymis_pvm, vardaFeeData.paattymis_pvm)
+        assertEquals(expectedVardaFeeData.perheen_koko, vardaFeeData.perheen_koko)
+        assertEquals(expectedVardaFeeData.lahdejarjestelma, vardaFeeData.lahdejarjestelma)
+    }
+
+    private fun assertVardaElementCounts(expectedDecisionCount: Int, expectedPlacementCount: Int, expectedFeeDataCount: Int) {
+        assertEquals(expectedDecisionCount, mockEndpoint.decisions.values.size, "Expected varda decision count $expectedDecisionCount does not match ${mockEndpoint.decisions.values.size}")
+        assertEquals(expectedPlacementCount, mockEndpoint.placements.values.size, "Expected varda placement count $expectedPlacementCount does not match ${mockEndpoint.placements.values.size}")
+        assertEquals(expectedFeeDataCount, mockEndpoint.feeData.values.size, "Expected varda fee data count $expectedFeeDataCount does not match ${mockEndpoint.feeData.values.size}")
     }
 
     private fun assertServiceNeedDiffSizes(diff: VardaChildCalculatedServiceNeedChanges?, expectedAdditions: Int, expectedUpdates: Int, expectedDeletes: Int) {
@@ -287,7 +397,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: Int = -100, toDays: Int = 0): UUID {
+    private fun createServiceNeed(db: Database.Connection, updated: HelsinkiDateTime, option: ServiceNeedOption, child: PersonData.Detailed = testChild_1, fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(), toDays: LocalDate = HelsinkiDateTime.now().toLocalDate()): UUID {
         var serviceNeedId = UUID.randomUUID()
         db.transaction { tx ->
             FixtureBuilder(tx, HelsinkiDateTime.now().toLocalDate())
@@ -306,7 +416,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, period: DateRange, sentAt: Instant): UUID {
-        val fd = createFeeDecision2Fixture(
+        val fd = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
             period,
@@ -322,7 +432,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             ),
             sentAt = sentAt
         )
-        db.transaction { tx -> tx.upsertFeeDecisions2(listOf(fd)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(fd)) }
 
         return fd.id
     }
@@ -378,7 +488,8 @@ WHERE sn.id = :serviceNeedId
 private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNeed(
     feeCoefficient = this.feeCoefficient,
     descriptionFi = this.feeDescriptionFi,
-    descriptionSv = this.feeDescriptionSv
+    descriptionSv = this.feeDescriptionSv,
+    missing = false
 )
 
 private fun Database.Read.getFeeDecisionChildIdsByFeeDecisionId(fdId: UUID) = createQuery(

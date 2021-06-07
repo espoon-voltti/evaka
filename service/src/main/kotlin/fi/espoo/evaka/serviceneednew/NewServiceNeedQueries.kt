@@ -45,8 +45,8 @@ fun Database.Read.getServiceNeedsByUnit(
     val sql =
         """
         SELECT 
-            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, 
-            sno.id as option_id, sno.name as option_name,
+            sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
+            sno.id as option_id, sno.name as option_name, sno.updated AS option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
         FROM new_service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
