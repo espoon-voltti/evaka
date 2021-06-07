@@ -24,6 +24,7 @@ type FeatureFlags = {
   messaging: boolean
   financeBasicsPage: boolean
   vasu: boolean
+  ai: boolean
 }
 
 type Features = {
@@ -40,7 +41,8 @@ const features: Features = {
     evakaLogin: true,
     messaging: true,
     financeBasicsPage: true,
-    vasu: true
+    vasu: true,
+    ai: true
   },
   staging: {
     voucherValueDecisionsPage: true,
@@ -49,7 +51,8 @@ const features: Features = {
     evakaLogin: true,
     messaging: true,
     financeBasicsPage: true,
-    vasu: false
+    vasu: false,
+    ai: false
   },
   prod: {
     voucherValueDecisionsPage: false,
@@ -58,7 +61,8 @@ const features: Features = {
     evakaLogin: true,
     messaging: true,
     financeBasicsPage: true,
-    vasu: false
+    vasu: false,
+    ai: false
   }
 }
 

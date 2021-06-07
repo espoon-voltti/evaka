@@ -274,6 +274,17 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     </Link>
                   </RequireRole>
                 )}
+                {featureFlags.ai && (
+                  <RequireRole oneOf={['ADMIN']}>
+                    <Link
+                      to="/ai"
+                      onClick={() => setPopupVisible(false)}
+                      data-qa="user-popup-ai"
+                    >
+                      AI
+                    </Link>
+                  </RequireRole>
+                )}
                 <Link
                   to={`/pin-code`}
                   onClick={() => setPopupVisible(false)}

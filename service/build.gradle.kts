@@ -66,6 +66,7 @@ dependencies {
 
     // Kotlin + core
     api(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
     integrationTestImplementation(kotlin("test"))
@@ -215,6 +216,13 @@ tasks {
         systemProperty("spring.datasource.password", "evaka_it")
         systemProperty("flyway.username", "evaka_it")
         systemProperty("flyway.password", "evaka_it")
+    }
+
+    create("bootRunAi", org.springframework.boot.gradle.tasks.run.BootRun::class) {
+        mainClass.set("fi.espoo.evaka.MainKt")
+        classpath = sourceSets["main"].runtimeClasspath
+        systemProperty("spring.profiles.active", "local,ai")
+        systemProperty("server.port", "8889")
     }
 
     create("ktlintApplyToIdea", JavaExec::class) {
