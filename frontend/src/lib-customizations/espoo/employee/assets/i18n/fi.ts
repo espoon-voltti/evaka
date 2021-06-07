@@ -2494,7 +2494,11 @@ export const fi = {
       minFee: 'Pienin perittävä lapsikohtainen maksu',
       siblingDiscounts: 'Sisaralennukset',
       siblingDiscount2: 'Alennus% 1. sisarus',
-      siblingDiscount2Plus: 'Alennus% muut sisarukset'
+      siblingDiscount2Plus: 'Alennus% muut sisarukset',
+      errors: {
+        'date-overlap':
+          'Maksuasetukset menevät päällekkäin jonkin muun voimassaolevan asetuksen kanssa. Päivitä muiden maksuasetusten voimassaoloaika ensin.'
+      }
     }
   },
   roles: {

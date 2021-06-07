@@ -10,11 +10,14 @@ import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
+import org.postgresql.util.PSQLState
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -51,7 +54,7 @@ class FinanceBasicsController {
 
             if (latest != null) {
                 if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
-                    throw BadRequest("New fee thresholds over lap with existing fee thresholds")
+                    throwDateOverlapEx()
 
                 if (latest.thresholds.validDuring.end == null)
                     tx.updateFeeThresholdsValidity(
@@ -60,7 +63,7 @@ class FinanceBasicsController {
                     )
             }
 
-            tx.insertNewFeeThresholds(body)
+            mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
         }
     }
 
@@ -75,8 +78,8 @@ class FinanceBasicsController {
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         validateFeeThresholds(thresholds)
-        db.transaction {
-            it.updateFeeThresholds(id, thresholds)
+        db.transaction { tx ->
+            mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
         }
     }
 }
@@ -116,7 +119,7 @@ private fun validateFeeThresholds(thresholds: FeeThresholds) {
         )
     ).all { it == thresholds.maxFee }
 
-    if (!allMaxFeesMatch) throw BadRequest("Inconsistent max fees from income thresholds")
+    if (!allMaxFeesMatch) throw BadRequest("Inconsistent max fees from income thresholds", "inconsistent-thresholds")
 }
 
 private fun calculateMaxFeeFromThresholds(minThreshold: Int, maxThreshold: Int, multiplier: BigDecimal): Int {
@@ -222,3 +225,17 @@ WHERE id = :id
         .bindKotlin(feeThresholds)
         .bind("id", id)
         .execute()
+
+fun <T> mapConstraintExceptions(fn: () -> T): T {
+    return try {
+        fn()
+    } catch (e: JdbiException) {
+        when (e.psqlCause()?.sqlState) {
+            PSQLState.EXCLUSION_VIOLATION.state -> throwDateOverlapEx()
+            else -> throw e
+        }
+    }
+}
+
+fun throwDateOverlapEx(): Nothing =
+    throw BadRequest("Fee thresholds over lap with existing fee thresholds", "date-overlap")

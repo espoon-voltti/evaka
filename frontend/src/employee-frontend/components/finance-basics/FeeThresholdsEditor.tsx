@@ -8,6 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import colors from 'lib-customizations/common'
@@ -51,6 +52,24 @@ export default React.memo(function FeeThresholdsEditor({
 }) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
   const validationResult = validateForm(i18n, editorState)
+  const [saveError, setSaveError] = useState<string>()
+
+  const handleSaveErrors = async (promise: Promise<Result<unknown>>) => {
+    let result
+    try {
+      result = await promise
+    } catch (e) {
+      setSaveError('unknown')
+      throw e
+    }
+
+    if (result.isFailure) {
+      setSaveError(result.errorCode)
+      throw Error(result.message)
+    } else {
+      setSaveError(undefined)
+    }
+  }
 
   const validationErrorInfo = (
     prop: keyof FormState
@@ -299,6 +318,12 @@ export default React.memo(function FeeThresholdsEditor({
           />
         </FixedSpaceColumn>
       </RowWithMargin>
+      {saveError ? (
+        <SaveError>
+          {i18n.financeBasics.fees.errors[saveError] ??
+            i18n.common.error.unknown}
+        </SaveError>
+      ) : null}
       <ButtonRow>
         <Button text={i18n.common.cancel} onClick={close} />
         <AsyncButton
@@ -306,9 +331,11 @@ export default React.memo(function FeeThresholdsEditor({
           text={i18n.common.save}
           onClick={() =>
             'payload' in validationResult
-              ? id === undefined
-                ? createFeeThresholds(validationResult.payload)
-                : updateFeeThresholds(id, validationResult.payload)
+              ? handleSaveErrors(
+                  id === undefined
+                    ? createFeeThresholds(validationResult.payload)
+                    : updateFeeThresholds(id, validationResult.payload)
+                )
               : Promise.resolve()
           }
           onSuccess={() => {
@@ -342,6 +369,10 @@ const MaxFeeError = styled.span`
   color: ${colors.greyscale.dark};
   font-style: italic;
   margin-left: ${defaultMargins.s};
+`
+
+const SaveError = styled.span`
+  color: ${colors.accents.red};
 `
 
 type ValidationErrors = Partial<Record<keyof FormState, string>> &
