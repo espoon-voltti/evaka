@@ -79,6 +79,7 @@ function Message({
         <SenderName>{message.senderName}</SenderName>
         <SentDate>{formatDate(message.sentAt, DATE_FORMAT_DATE_TIME)}</SentDate>
       </TitleRow>
+      <span>{message.recipients.map((r) => r.name).join(', ')}</span>
       <MessageContent>{message.content}</MessageContent>
     </MessageContainer>
   )
