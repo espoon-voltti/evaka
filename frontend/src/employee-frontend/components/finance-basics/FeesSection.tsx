@@ -34,7 +34,7 @@ import {
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
 import StatusLabel from '../common/StatusLabel'
-import FeeThresholdsItemEditor from './FeeThresholdsItemEditor'
+import FeeThresholdsEditor from './FeeThresholdsEditor'
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()
@@ -100,7 +100,7 @@ export default React.memo(function FeesSection() {
         disabled={'editing' in editorState}
       />
       {editorState.editing === 'new' ? (
-        <FeeThresholdsItemEditor
+        <FeeThresholdsEditor
           i18n={i18n}
           id={undefined}
           initialState={editorState.form}
@@ -120,7 +120,7 @@ export default React.memo(function FeesSection() {
             <>
               {feeThresholdsList.map((feeThresholds) =>
                 editorState.editing === feeThresholds.id ? (
-                  <FeeThresholdsItemEditor
+                  <FeeThresholdsEditor
                     key={feeThresholds.id}
                     i18n={i18n}
                     id={feeThresholds.id}

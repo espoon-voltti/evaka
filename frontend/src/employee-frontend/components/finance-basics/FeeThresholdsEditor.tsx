@@ -36,7 +36,7 @@ import {
 import { isValidCents, parseCents, parseCentsOrThrow } from '../../utils/money'
 import { FormState } from './FeesSection'
 
-export default React.memo(function FeeThresholdsItemEditor({
+export default React.memo(function FeeThresholdsEditor({
   i18n,
   id,
   initialState,
