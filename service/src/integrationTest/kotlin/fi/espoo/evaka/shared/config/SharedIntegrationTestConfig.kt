@@ -129,7 +129,7 @@ class SharedIntegrationTestConfig {
             .enablePathStyleAccess()
             .withEndpointConfiguration(
                 AwsClientBuilder.EndpointConfiguration(
-                    "http://s3.lvh.me:$port",
+                    "http://s3.127.0.0.1.nip.io:$port",
                     "us-east-1"
                 )
             )
