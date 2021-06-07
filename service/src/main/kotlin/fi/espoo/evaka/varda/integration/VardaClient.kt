@@ -27,7 +27,7 @@ import fi.espoo.evaka.varda.VardaPersonRequest
 import fi.espoo.evaka.varda.VardaPersonResponse
 import fi.espoo.evaka.varda.VardaPlacement
 import fi.espoo.evaka.varda.VardaPlacementResponse
-import fi.espoo.evaka.varda.VardaUnit
+import fi.espoo.evaka.varda.VardaUnitRequest
 import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import fi.espoo.voltti.logging.loggers.error
@@ -58,15 +58,15 @@ class VardaClient(
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
     val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.varda.source_system")
 
-    fun createUnit(unit: VardaUnit): VardaUnitResponse? {
-        logger.info { "Creating a new unit ${unit.name} to Varda" }
+    fun createUnit(unit: VardaUnitRequest): VardaUnitResponse? {
+        logger.info { "Creating a new unit ${unit.nimi} to Varda" }
         val (request, _, result) = fuel.post(unitUrl)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Creating a new unit ${unit.name} to Varda succeeded" }
+                logger.info { "Creating a new unit ${unit.nimi} to Varda succeeded" }
                 objectMapper.readValue<VardaUnitResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )
@@ -78,16 +78,16 @@ class VardaClient(
         }
     }
 
-    fun updateUnit(unit: VardaUnit): VardaUnitResponse? {
-        logger.info { "Updating unit ${unit.name} to Varda" }
-        val url = "$unitUrl${unit.vardaUnitId}/"
+    fun updateUnit(unit: VardaUnitRequest): VardaUnitResponse? {
+        logger.info { "Updating unit ${unit.nimi} to Varda" }
+        val url = "$unitUrl${unit.id}/"
         val (request, _, result) = fuel.put(url)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Updating unit ${unit.name} to Varda succeeded" }
+                logger.info { "Updating unit ${unit.nimi} to Varda succeeded" }
                 objectMapper.readValue<VardaUnitResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )

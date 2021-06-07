@@ -10,6 +10,7 @@ import fi.espoo.evaka.varda.VardaDecision
 import fi.espoo.evaka.varda.VardaFeeData
 import fi.espoo.evaka.varda.VardaPersonRequest
 import fi.espoo.evaka.varda.VardaPlacement
+import fi.espoo.evaka.varda.VardaUnitRequest
 import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
@@ -36,6 +37,7 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
 
     var organizerId = 0L
     var unitId = 0L
+    val units = mutableMapOf<Long, VardaUnitRequest>()
     var personId = 0L
     val people = mutableMapOf<Long, VardaPersonRequest>()
     var decisionId = 0L
@@ -51,6 +53,7 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         lock.withLock {
             organizerId = 0L
             unitId = 0L
+            units.clear()
             personId = 0L
             people.clear()
             decisionId = 0L
@@ -72,27 +75,29 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
 
     @PostMapping("/v1/toimipaikat/")
     fun createUnit(
-        @RequestBody body: String,
+        @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint POST /toimipaikat received body: $body" }
+        logger.info { "Mock varda integration endpoint POST /toimipaikat received body: $unit" }
         unitId = unitId.inc()
+        units.put(unitId, unit)
         ResponseEntity.ok(getMockUnitResponse(unitId))
     }
 
     @PutMapping("/v1/toimipaikat/{vardaId}/")
     fun updateUnit(
         @PathVariable("vardaId") vardaId: Long?,
-        @RequestBody body: String,
+        @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /toimipaikat/$vardaId recieved body: $body" }
+        logger.info { "Mock varda integration endpoint PUT /toimipaikat/$vardaId recieved body: $unit" }
         val id = if (vardaId == null) {
             unitId = unitId.inc()
             unitId
         } else {
             vardaId
         }
+        units.replace(id, unit)
         ResponseEntity.ok(getMockUnitResponse(id))
     }
 

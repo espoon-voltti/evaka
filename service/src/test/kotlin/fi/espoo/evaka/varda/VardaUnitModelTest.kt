@@ -64,12 +64,13 @@ val testUnit = VardaUnit(
     language = VardaLanguage.fi,
     languageEmphasisId = null,
     openingDate = "2000-01-01",
-    closingDate = null
+    closingDate = null,
+    sourceSystem = "ss"
 )
 
 val testUnitJson =
     """
-{"vakajarjestaja":"http://path.to.organizer","kayntiosoite":"Testiosoite 6","postiosoite":"Postiosoite 4","nimi":"Testipäiväkoti","kayntiosoite_postinumero":"00200","kayntiosoite_postitoimipaikka":"Espoo","postinumero":"00100","postitoimipaikka":"Espoo","kunta_koodi":"049","puhelinnumero":"+3581233222","sahkopostiosoite":"testi@testi.com","kasvatusopillinen_jarjestelma_koodi":"kj98","toimintamuoto_koodi":"tm01","asiointikieli_koodi":["FI"],"jarjestamismuoto_koodi":["jm01"],"varhaiskasvatuspaikat":21,"toiminnallinenpainotus_kytkin":false,"kielipainotus_kytkin":false,"alkamis_pvm":"2000-01-01"}
+{"vakajarjestaja":"http://path.to.organizer","kayntiosoite":"Testiosoite 6","postiosoite":"Postiosoite 4","nimi":"Testipäiväkoti","kayntiosoite_postinumero":"00200","kayntiosoite_postitoimipaikka":"Espoo","postinumero":"00100","postitoimipaikka":"Espoo","kunta_koodi":"049","puhelinnumero":"+3581233222","sahkopostiosoite":"testi@testi.com","kasvatusopillinen_jarjestelma_koodi":"kj98","toimintamuoto_koodi":"tm01","asiointikieli_koodi":["FI"],"jarjestamismuoto_koodi":["jm01"],"varhaiskasvatuspaikat":21,"toiminnallinenpainotus_kytkin":false,"kielipainotus_kytkin":false,"alkamis_pvm":"2000-01-01","lahdejarjestelma":"ss"}
     """.trimIndent()
 val testUnitFamily = testUnit.copy(unitType = listOf(VardaUnitType.FAMILY))
 val testUnitGroupFamily = testUnit.copy(unitType = listOf(VardaUnitType.GROUP_FAMILY))

@@ -21,12 +21,12 @@ private val logger = KotlinLogging.logger {}
 val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
 fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: String) {
-    val units = db.read { getNewOrStaleUnits(it, organizerName) }
+    val units = db.read { getNewOrStaleUnits(it, organizerName, client.sourceSystem) }
     logger.info { "Varda: Sending ${units.size} new or updated units" }
     units.forEach { unit ->
         val response =
-            if (unit.vardaUnitId == null) client.createUnit(unit)
-            else client.updateUnit(unit)
+            if (unit.vardaUnitId == null) client.createUnit(VardaUnitRequest.fromVardaUnit(unit))
+            else client.updateUnit(VardaUnitRequest.fromVardaUnit(unit))
 
         response?.let { (vardaUnitId, ophUnitOid) ->
             db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = vardaUnitId, ophUnitOid = ophUnitOid)) }
@@ -34,7 +34,7 @@ fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: Str
     }
 }
 
-fun getNewOrStaleUnits(tx: Database.Read, organizerName: String): List<VardaUnit> {
+fun getNewOrStaleUnits(tx: Database.Read, organizerName: String, sourceSystem: String): List<VardaUnit> {
     //language=SQL
     val sql =
         """
@@ -59,7 +59,8 @@ fun getNewOrStaleUnits(tx: Database.Read, organizerName: String): List<VardaUnit
             daycare.language AS language,
             daycare.language_emphasis_id AS languageEmphasisId,
             daycare.opening_date AS openingDate,
-            daycare.closing_date AS closingDate
+            daycare.closing_date AS closingDate,
+            :sourceSystem AS sourceSystem
         FROM daycare
         LEFT JOIN varda_unit ON varda_unit.evaka_daycare_id = daycare.id
         LEFT JOIN unit_manager ON daycare.unit_manager_id = unit_manager.id
@@ -74,6 +75,7 @@ fun getNewOrStaleUnits(tx: Database.Read, organizerName: String): List<VardaUnit
 
     return tx.createQuery(sql)
         .bind("organizer", organizerName)
+        .bind("sourceSystem", sourceSystem)
         .bindList("providerTypes", unitTypesToUpload)
         .mapTo<VardaUnit>()
         .toList()
@@ -197,7 +199,9 @@ data class VardaUnit(
     @JsonProperty("paattymis_pvm")
     val closingDate: String?,
     @JsonProperty("kunta_koodi")
-    val municipalityCode: String
+    val municipalityCode: String,
+    @JsonProperty("lahdejarjestelma")
+    val sourceSystem: String
 ) {
     // Espoo always false
     @JsonProperty("toiminnallinenpainotus_kytkin")
@@ -251,5 +255,59 @@ data class VardaUnit(
             return false
         }
         return true
+    }
+}
+
+data class VardaUnitRequest(
+    val id: Long?,
+    val organisaatio_oid: String?,
+    val vakajarjestaja: String?,
+    val nimi: String?,
+    val kayntiosoite: String?,
+    val kayntiosoite_postinumero: String?,
+    val kayntiosoite_postitoimipaikka: String?,
+    val postiosoite: String?,
+    val postinumero: String?,
+    val postitoimipaikka: String?,
+    val puhelinnumero: String?,
+    val sahkopostiosoite: String?,
+    val varhaiskasvatuspaikat: Int,
+    val alkamis_pvm: String?,
+    val paattymis_pvm: String?,
+    val kunta_koodi: String?,
+    val lahdejarjestelma: String?,
+    val toiminnallinenpainotus_kytkin: Boolean? = false,
+    val kasvatusopillinen_jarjestelma_koodi: String? = VardaUnitEducationSystem.NONE.vardaCode,
+    val jarjestamismuoto_koodi: List<String>,
+    val toimintamuoto_koodi: String?,
+    val asiointikieli_koodi: List<String>,
+    val kielipainotus_kytkin: Boolean
+) {
+    companion object {
+        fun fromVardaUnit(unit: VardaUnit): VardaUnitRequest = VardaUnitRequest(
+            id = unit.vardaUnitId,
+            organisaatio_oid = unit.ophUnitOid,
+            vakajarjestaja = unit.organizer,
+            nimi = unit.name,
+            kayntiosoite = unit.address,
+            kayntiosoite_postinumero = unit.postalCode,
+            kayntiosoite_postitoimipaikka = unit.postOffice,
+            postiosoite = unit.mailingStreetAddress,
+            postinumero = unit.mailingPostalCode,
+            postitoimipaikka = unit.mailingPostOffice,
+            puhelinnumero = unit.phoneNumber,
+            sahkopostiosoite = unit.email,
+            varhaiskasvatuspaikat = unit.capacity,
+            alkamis_pvm = unit.openingDate,
+            paattymis_pvm = unit.closingDate,
+            kunta_koodi = unit.municipalityCode,
+            lahdejarjestelma = unit.sourceSystem,
+            toiminnallinenpainotus_kytkin = unit.getUnitEmphasisSwitch(),
+            kasvatusopillinen_jarjestelma_koodi = unit.getEducationSystemCode(),
+            jarjestamismuoto_koodi = unit.getUnitProviderTypeAsList(),
+            toimintamuoto_koodi = unit.getUnitTypeAsString(),
+            asiointikieli_koodi = unit.getLanguageAsList(),
+            kielipainotus_kytkin = unit.getLanguageEmphasisSwitch()
+        )
     }
 }
