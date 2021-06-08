@@ -109,6 +109,7 @@ class DecisionService(
         unitManager: DaycareManager
     ): URI {
         val decisionBytes = createDecisionPdf(
+            messageProvider,
             templateProvider,
             pdfService,
             decision,
@@ -219,7 +220,7 @@ class DecisionService(
         }
 
         val lang = tx.getDecisionLanguage(decision.id)
-        val sendAddress = getSendAddress(guardian, lang)
+        val sendAddress = getSendAddress(messageProvider, guardian, lang)
         // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
         val message = SuomiFiMessage(
@@ -284,6 +285,7 @@ class DecisionService(
 }
 
 fun createDecisionPdf(
+    messageProvider: IMessageProvider,
     templateProvider: ITemplateProvider,
     pdfService: PDFService,
     decision: Decision,
@@ -293,7 +295,7 @@ fun createDecisionPdf(
     lang: String,
     unitManager: DaycareManager
 ): ByteArray {
-    val sendAddress = getSendAddress(guardian, lang)
+    val sendAddress = getSendAddress(messageProvider, guardian, lang)
     val template = createTemplate(templateProvider, decision, isTransferApplication)
     val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
 

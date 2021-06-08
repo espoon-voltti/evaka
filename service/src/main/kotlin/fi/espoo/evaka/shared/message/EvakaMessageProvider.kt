@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared.message
 
+import fi.espoo.evaka.decision.DecisionSendAddress
+
 class EvakaMessageProvider() : IMessageProvider {
 
     override fun getDecisionHeader(lang: MessageLanguage): String = when (lang) {
@@ -70,5 +72,24 @@ Klientavgifterna för kommunal småbarnspedagogik varierar enligt familjens stor
 
 Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är skyldig att meddela om familjens inkomster väsentligt förändras (+/- 10 %). Eftersom du har tagit Suomi.fi-tjänsten i bruk, kan du läsa beslutet i bilagorna nedan.
 """
+    }
+
+    override fun getDefaultDecisionAddress(lang: MessageLanguage): DecisionSendAddress = when (lang) {
+        MessageLanguage.FI -> DecisionSendAddress(
+            street = "PL 3125",
+            postalCode = "02070",
+            postOffice = "Espoon kaupunki",
+            row1 = "Varhaiskasvatuksen palveluohjaus",
+            row2 = "PL 3125",
+            row3 = "02070 Espoon kaupunki"
+        )
+        MessageLanguage.SV -> DecisionSendAddress(
+            street = "PB 32",
+            postalCode = "02070",
+            postOffice = "ESBO STAD",
+            row1 = "Svenska bildningstjänster",
+            row2 = "Småbarnspedagogik",
+            row3 = "PB 32, 02070 ESBO STAD"
+        )
     }
 }

@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared.message
 
+import fi.espoo.evaka.decision.DecisionSendAddress
+
 interface IMessageProvider {
     fun getDecisionHeader(lang: MessageLanguage): String
     fun getDecisionContent(lang: MessageLanguage): String
@@ -11,6 +13,11 @@ interface IMessageProvider {
     fun getFeeDecisionContent(lang: MessageLanguage): String
     fun getVoucherValueDecisionHeader(lang: MessageLanguage): String
     fun getVoucherValueDecisionContent(lang: MessageLanguage): String
+
+    /**
+     * Returns address used for decisions when person has restricted details enabled or missing address.
+     */
+    fun getDefaultDecisionAddress(lang: MessageLanguage): DecisionSendAddress
 }
 
 enum class MessageLanguage {

@@ -14,6 +14,7 @@ import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.validPreschoolApplication
@@ -148,6 +149,7 @@ class PDFServiceTest {
     private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String) {
         val decisionPdfByteArray =
             createDecisionPdf(
+                EvakaMessageProvider(),
                 EvakaTemplateProvider(),
                 pdfService,
                 decision,
