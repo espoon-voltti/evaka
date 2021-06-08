@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.template.EvakaTemplateProvider
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -25,4 +27,7 @@ class EspooConfig {
 
     @Bean
     fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean
+    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 }

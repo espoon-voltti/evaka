@@ -14,6 +14,9 @@ import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.message.EvakaMessageProvider
+import fi.espoo.evaka.shared.template.EvakaTemplateProvider
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -23,6 +26,8 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
@@ -100,9 +105,15 @@ private val guardian = PersonDTO(
 )
 private val manager = DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
+@TestConfiguration
+class PDFServiceTestConfiguration {
+    @Bean
+    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+}
+
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    classes = [PDFConfig::class, PDFService::class]
+    classes = [PDFServiceTestConfiguration::class, PDFConfig::class, PDFService::class]
 )
 class PDFServiceTest {
 
@@ -138,6 +149,8 @@ class PDFServiceTest {
     private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String) {
         val decisionPdfByteArray =
             createDecisionPdf(
+                EvakaMessageProvider(),
+                EvakaTemplateProvider(),
                 pdfService,
                 decision,
                 guardian,

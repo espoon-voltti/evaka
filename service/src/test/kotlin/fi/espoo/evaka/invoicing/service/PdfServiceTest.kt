@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -30,7 +31,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class PdfServiceTest {
-    private val service: PDFService = PDFService(PDFConfig.templateEngine())
+    private val service: PDFService = PDFService(EvakaTemplateProvider(), PDFConfig.templateEngine())
 
     val testPricing: FeeThresholds = fi.espoo.evaka.invoicing.testPricing.withoutDates()
 

@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
+import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
@@ -45,6 +46,7 @@ class DecisionService(
     private val decisionBucket: String,
     private val personService: PersonService,
     private val s3Client: DocumentService,
+    private val templateProvider: ITemplateProvider,
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient,
@@ -107,6 +109,8 @@ class DecisionService(
         unitManager: DaycareManager
     ): URI {
         val decisionBytes = createDecisionPdf(
+            messageProvider,
+            templateProvider,
             pdfService,
             decision,
             guardian,
@@ -216,7 +220,7 @@ class DecisionService(
         }
 
         val lang = tx.getDecisionLanguage(decision.id)
-        val sendAddress = getSendAddress(guardian, lang)
+        val sendAddress = getSendAddress(messageProvider, guardian, lang)
         // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
         val message = SuomiFiMessage(
@@ -281,6 +285,8 @@ class DecisionService(
 }
 
 fun createDecisionPdf(
+    messageProvider: IMessageProvider,
+    templateProvider: ITemplateProvider,
     pdfService: PDFService,
     decision: Decision,
     guardian: PersonDTO,
@@ -289,8 +295,8 @@ fun createDecisionPdf(
     lang: String,
     unitManager: DaycareManager
 ): ByteArray {
-    val sendAddress = getSendAddress(guardian, lang)
-    val template = createTemplate(decision, isTransferApplication)
+    val sendAddress = getSendAddress(messageProvider, guardian, lang)
+    val template = createTemplate(templateProvider, decision, isTransferApplication)
     val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
 
     val pages = generateDecisionPages(
@@ -336,28 +342,29 @@ private fun generateDecisionPages(
 }
 
 private fun createTemplate(
+    templateProvider: ITemplateProvider,
     decision: Decision,
     isTransferApplication: Boolean
 ): String {
     return when (decision.type) {
-        DecisionType.CLUB -> "club/decision"
+        DecisionType.CLUB -> templateProvider.getClubDecisionPath()
 
         DecisionType.DAYCARE, DecisionType.PRESCHOOL_DAYCARE, DecisionType.DAYCARE_PART_TIME -> {
             if (decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
-                "daycare/voucher/decision"
+                templateProvider.getDaycareVoucherDecisionPath()
             } else {
                 if (isTransferApplication) {
-                    "daycare/transfer/decision"
+                    templateProvider.getDaycareTransferDecisionPath()
                 } else {
 
-                    "daycare/decision"
+                    templateProvider.getDaycareDecisionPath()
                 }
             }
         }
         DecisionType.PRESCHOOL ->
-            "preschool/decision"
+            templateProvider.getPreschoolDecisionPath()
 
         DecisionType.PREPARATORY_EDUCATION ->
-            "preparatory/decision"
+            templateProvider.getPreparatoryDecisionPath()
     }
 }
