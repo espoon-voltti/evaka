@@ -508,6 +508,72 @@ export const ValueDecisionStatusFilter = React.memo(
   }
 )
 
+interface ValueDecisionDateFilterProps {
+  startDate: LocalDate | undefined
+  setStartDate: (startDate: LocalDate | undefined) => void
+  endDate: LocalDate | undefined
+  setEndDate: (endDate: LocalDate | undefined) => void
+  searchByStartDate: boolean
+  setSearchByStartDate: (searchByStartDate: boolean) => void
+}
+
+export function ValueDecisionDateFilter({
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
+  searchByStartDate,
+  setSearchByStartDate
+}: ValueDecisionDateFilterProps) {
+  const { i18n } = useTranslation()
+
+  return (
+    <>
+      <Label>
+        <LabelText>{i18n.filters.validityPeriod}</LabelText>
+      </Label>
+
+      <FlexRow>
+        <DatePickerClearableDeprecated
+          date={startDate}
+          onChange={setStartDate}
+          data-qa="value-decisions-start-date"
+          onCleared={() => setStartDate(undefined)}
+        />
+        <Gap horizontal size="xs" />
+        <DatePickerClearableDeprecated
+          date={endDate}
+          onChange={setEndDate}
+          data-qa="value-decisions-end-date"
+          onCleared={() => setEndDate(undefined)}
+        />
+      </FlexRow>
+      {startDate && endDate && startDate.isAfter(endDate) ? (
+        <>
+          <Gap size="xs" />
+          <span>
+            {i18n.common.checkDates}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={colors.accents.orange}
+            />
+          </span>
+        </>
+      ) : null}
+
+      <Gap size="s" />
+
+      <Checkbox
+        label={i18n.filters.searchByStartDate}
+        checked={searchByStartDate}
+        onChange={setSearchByStartDate}
+        data-qa={`value-decision-search-by-start-date`}
+      />
+    </>
+  )
+}
+
 interface InvoiceStatusFilterProps {
   toggled: InvoiceStatus
   toggle: (status: InvoiceStatus) => () => void

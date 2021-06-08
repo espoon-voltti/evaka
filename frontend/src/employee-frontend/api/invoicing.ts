@@ -49,6 +49,9 @@ export interface VoucherValueDecisionSearchParams {
   unit?: string
   searchTerms?: string
   financeDecisionHandlerId?: string
+  startDate?: string
+  endDate?: string
+  searchByStartDate: boolean
 }
 
 export interface InvoiceSearchParams extends SearchParams {
