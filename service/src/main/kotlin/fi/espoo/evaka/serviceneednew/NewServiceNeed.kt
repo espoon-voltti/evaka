@@ -224,5 +224,4 @@ fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobR
             NotifyServiceNeedUpdated(childRange.childId, childRange.startDate, childRange.endDate)
         )
     )
-    asyncJobRunner.scheduleImmediateRun()
 }

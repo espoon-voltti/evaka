@@ -61,6 +61,7 @@ class NewServiceNeedController(
                 .let { id -> tx.getNewServiceNeedChildRange(id) }
                 .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
+        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }
@@ -83,6 +84,7 @@ class NewServiceNeedController(
         acl.getRolesForNewServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
+            val oldRange = tx.getNewServiceNeedChildRange(id)
             updateNewServiceNeed(
                 tx = tx,
                 user = user,
@@ -93,8 +95,17 @@ class NewServiceNeedController(
                 shiftCare = body.shiftCare,
                 confirmedAt = HelsinkiDateTime.now()
             )
-            tx.getNewServiceNeedChildRange(id).let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
+            notifyServiceNeedUpdated(
+                tx,
+                asyncJobRunner,
+                NewServiceNeedChildRange(
+                    childId = oldRange.childId,
+                    startDate = minOf(oldRange.startDate, body.startDate),
+                    endDate = maxOf(oldRange.endDate, body.endDate)
+                )
+            )
         }
+        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }
@@ -113,6 +124,7 @@ class NewServiceNeedController(
             tx.deleteNewServiceNeed(id)
             notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
         }
+        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }
