@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -25,7 +26,8 @@ import java.util.UUID
 
 @RestController
 class NewServiceNeedController(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
 
     data class NewServiceNeedCreateRequest(
@@ -56,6 +58,8 @@ class NewServiceNeedController(
                 shiftCare = body.shiftCare,
                 confirmedAt = HelsinkiDateTime.now()
             )
+                .let { id -> tx.getNewServiceNeedChildRange(id) }
+                .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
 
         return ResponseEntity.noContent().build()
@@ -89,6 +93,7 @@ class NewServiceNeedController(
                 shiftCare = body.shiftCare,
                 confirmedAt = HelsinkiDateTime.now()
             )
+            tx.getNewServiceNeedChildRange(id).let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
 
         return ResponseEntity.noContent().build()
@@ -104,7 +109,9 @@ class NewServiceNeedController(
         acl.getRolesForNewServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
+            val childRange = tx.getNewServiceNeedChildRange(id)
             tx.deleteNewServiceNeed(id)
+            notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
         }
 
         return ResponseEntity.noContent().build()

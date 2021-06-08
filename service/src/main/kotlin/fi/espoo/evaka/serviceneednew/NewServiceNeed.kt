@@ -5,6 +5,8 @@
 package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -26,6 +28,12 @@ data class NewServiceNeed(
     val shiftCare: Boolean,
     @Nested("confirmed")
     val confirmed: ServiceNeedConfirmation
+)
+
+data class NewServiceNeedChildRange(
+    val childId: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class ServiceNeedOptionSummary(
@@ -112,10 +120,10 @@ fun createNewServiceNeed(
     optionId: UUID,
     shiftCare: Boolean,
     confirmedAt: HelsinkiDateTime
-) {
+): UUID {
     validateServiceNeed(tx, placementId, startDate, endDate, optionId)
     clearNewServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
-    tx.insertNewServiceNeed(
+    return tx.insertNewServiceNeed(
         placementId = placementId,
         startDate = startDate,
         endDate = endDate,
@@ -207,4 +215,14 @@ fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, 
             }
         }
     }
+}
+
+fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner, childRange: NewServiceNeedChildRange) {
+    asyncJobRunner.plan(
+        tx,
+        listOf(
+            NotifyServiceNeedUpdated(childRange.childId, childRange.startDate, childRange.endDate)
+        )
+    )
+    asyncJobRunner.scheduleImmediateRun()
 }
