@@ -74,6 +74,8 @@ git remote remove <name for remote>
 # E.g. git remote remove Tampere
 ```
 
+After the push the build in the original PR continues. Once it passes, merge the branch.
+
 If any changes are made to the PR, they must similarly pushed to origin. You
 can use the same method as above.
 
