@@ -735,6 +735,8 @@ export const fi = {
       endDate: 'Päättymispäivämäärä',
       area: 'Alue',
       daycareUnit: 'Toimipaikka',
+      daycareGroup: 'Nykyinen ryhmä',
+      daycareGroupMissing: 'Ei ryhmitetty',
       type: 'Toimintamuoto',
       providerType: 'Järjestämismuoto',
       serviceNeedMissing1: 'Sijoitukselta puuttuu palveluntarve',

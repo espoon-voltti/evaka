@@ -24,7 +24,6 @@ private val placementSelector =
     """.trimIndent()
 
 fun Database.Read.getPlacement(id: UUID): Placement? {
-    // language=SQL
     return createQuery("$placementSelector WHERE p.id = :id")
         .bind("id", id)
         .mapTo<Placement>()
@@ -310,9 +309,16 @@ fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
     // language=SQL
     val sql =
         """
-        SELECT id, daycare_group_id AS group_id, daycare_placement_id, start_date, end_date
-        FROM daycare_group_placement
-        WHERE id = :id
+        SELECT 
+            gp.id, 
+            gp.daycare_group_id AS group_id,
+            dg.name AS group_name,
+            gp.daycare_placement_id, 
+            gp.start_date, 
+            gp.end_date
+        FROM daycare_group_placement gp
+        JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+        WHERE gp.id = :id
         """.trimIndent()
 
     return createQuery(sql)
@@ -329,9 +335,16 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
     // language=SQL
     val sql =
         """
-        SELECT id, daycare_group_id AS group_id, daycare_placement_id, start_date, end_date
-        FROM daycare_group_placement
-        WHERE daycare_placement_id = :placementId AND daycare_group_id = :groupId AND end_date = :endDate
+        SELECT 
+            gp.id, 
+            gp.daycare_group_id AS group_id,
+            dg.name AS group_name,
+            gp.daycare_placement_id, 
+            gp.start_date, 
+            gp.end_date
+        FROM daycare_group_placement gp
+        JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+        WHERE daycare_placement_id = :placementId AND daycare_group_id = :groupId AND gp.end_date = :endDate
         """.trimIndent()
 
     return createQuery(sql)
@@ -350,9 +363,16 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
     // language=SQL
     val sql =
         """
-        SELECT id, daycare_group_id AS group_id, daycare_placement_id, start_date, end_date
-        FROM daycare_group_placement
-        WHERE daycare_placement_id = :placementId AND daycare_group_id = :groupId AND start_date = :startDate
+        SELECT 
+            gp.id, 
+            gp.daycare_group_id AS group_id,
+            dg.name AS group_name,
+            gp.daycare_placement_id, 
+            gp.start_date, 
+            gp.end_date
+        FROM daycare_group_placement gp
+        JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+        WHERE daycare_placement_id = :placementId AND daycare_group_id = :groupId AND gp.start_date = :startDate
         """.trimIndent()
 
     return createQuery(sql)
@@ -372,8 +392,15 @@ fun Database.Read.getDaycareGroupPlacements(
     // language=SQL
     val sql =
         """
-        SELECT id, daycare_group_id AS group_id, daycare_placement_id, start_date, end_date
-        FROM daycare_group_placement
+        SELECT 
+            gp.id, 
+            gp.daycare_group_id AS group_id,
+            dg.name AS group_name,
+            gp.daycare_placement_id, 
+            gp.start_date, 
+            gp.end_date
+        FROM daycare_group_placement gp
+        JOIN daycare_group dg ON dg.id = gp.daycare_group_id
         WHERE (:groupId::uuid IS NULL OR daycare_group_id = :groupId)
         AND EXISTS (
             SELECT 1 FROM placement p
@@ -398,9 +425,16 @@ fun Database.Read.getChildGroupPlacements(
     // language=SQL
     val sql =
         """
-        SELECT dgp.id, dgp.daycare_group_id AS group_id, dgp.daycare_placement_id, dgp.start_date, dgp.end_date
-        FROM daycare_group_placement dgp
-        JOIN placement pl ON pl.id = dgp.daycare_placement_id
+        SELECT 
+            gp.id, 
+            gp.daycare_group_id AS group_id,
+            dg.name AS group_name,
+            gp.daycare_placement_id, 
+            gp.start_date, 
+            gp.end_date
+        FROM daycare_group_placement gp
+        JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+        JOIN placement pl ON pl.id = gp.daycare_placement_id
         WHERE pl.child_id = :childId
         """.trimIndent()
 
@@ -486,13 +520,13 @@ fun Database.Transaction.createGroupPlacement(
     groupId: UUID,
     startDate: LocalDate,
     endDate: LocalDate
-): DaycareGroupPlacement {
+): UUID {
     // language=SQL
     val sql =
         """
         INSERT INTO daycare_group_placement (daycare_placement_id, daycare_group_id, start_date, end_date)
         VALUES (:placementId, :groupId, :startDate, :endDate)
-        RETURNING id, daycare_group_id AS group_id, daycare_placement_id, start_date, end_date
+        RETURNING id
         """.trimIndent()
 
     return createQuery(sql)
@@ -500,8 +534,8 @@ fun Database.Transaction.createGroupPlacement(
         .bind("groupId", groupId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<DaycareGroupPlacement>()
-        .first()
+        .mapTo<UUID>()
+        .one()
 }
 
 fun Database.Transaction.updateGroupPlacementStartDate(id: UUID, startDate: LocalDate): Boolean {

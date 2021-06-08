@@ -15,6 +15,11 @@ function minOf(a: LocalDate, b: LocalDate) {
   return a.isBefore(b) ? a : b
 }
 
+interface DeprecatedRange {
+  startDate: LocalDate
+  endDate: LocalDate
+}
+
 export default class FiniteDateRange {
   constructor(readonly start: LocalDate, readonly end: LocalDate) {
     if (end.isBefore(start)) {
@@ -22,6 +27,13 @@ export default class FiniteDateRange {
         `Attempting to initialize invalid finite date range with start: ${start.formatIso()}, end: ${end.formatIso()}`
       )
     }
+  }
+
+  static from(objectWithRange: DeprecatedRange) {
+    return new FiniteDateRange(
+      objectWithRange.startDate,
+      objectWithRange.endDate
+    )
   }
 
   withStart(start: LocalDate): FiniteDateRange {

@@ -134,7 +134,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
             identicalAfter.id
         } else {
             // no merging needed, create new
-            createGroupPlacement(daycarePlacementId, groupId, startDate, endDate).id!!
+            createGroupPlacement(daycarePlacementId, groupId, startDate, endDate)
         }
     } catch (e: Exception) {
         throw mapPSQLException(e)
@@ -308,6 +308,7 @@ private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithDeta
             ?: DaycareGroupPlacement(
                 id = null,
                 groupId = null,
+                groupName = null,
                 daycarePlacementId = daycarePlacement.id,
                 startDate = startDate,
                 endDate = endDate
@@ -489,6 +490,7 @@ data class DaycarePlacementWithDetails(
 data class DaycareGroupPlacement(
     val id: UUID?,
     val groupId: UUID?,
+    val groupName: String?,
     val daycarePlacementId: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate

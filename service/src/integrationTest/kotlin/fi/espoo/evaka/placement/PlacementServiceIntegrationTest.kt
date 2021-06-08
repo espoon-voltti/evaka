@@ -55,13 +55,15 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             groupId1 = it.insertTestDaycareGroup(
                 DevDaycareGroup(
                     daycareId = unitId,
-                    startDate = placementStart
+                    startDate = placementStart,
+                    name = "group 1"
                 )
             )
             groupId2 = it.insertTestDaycareGroup(
                 DevDaycareGroup(
                     daycareId = unitId,
-                    startDate = placementStart
+                    startDate = placementStart,
+                    name = "group 2"
                 )
             )
 
@@ -763,6 +765,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = null,
                             groupId = null,
+                            groupName = null,
                             daycarePlacementId = daycarePlacementId,
                             startDate = daycarePlacementStartDate,
                             endDate = daycarePlacementEndDate
@@ -839,6 +842,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = null,
                             groupId = null,
+                            groupName = null,
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(1),
                             endDate = date(2)
@@ -846,6 +850,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = groupPlacementId1,
                             groupId = groupId1,
+                            groupName = "group 1",
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(3),
                             endDate = date(5)
@@ -853,6 +858,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = groupPlacementId2,
                             groupId = groupId1,
+                            groupName = "group 1",
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(6),
                             endDate = date(9)
@@ -860,6 +866,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = null,
                             groupId = null,
+                            groupName = null,
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(10),
                             endDate = date(11)
@@ -867,6 +874,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = groupPlacementId3,
                             groupId = groupId1,
+                            groupName = "group 1",
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(12),
                             endDate = date(12)
@@ -874,6 +882,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = null,
                             groupId = null,
+                            groupName = null,
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(13),
                             endDate = date(15)
@@ -881,6 +890,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = groupPlacementId4,
                             groupId = groupId1,
+                            groupName = "group 1",
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(16),
                             endDate = date(17)
@@ -888,6 +898,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = null,
                             groupId = null,
+                            groupName = null,
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(18),
                             endDate = date(18)
@@ -895,6 +906,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                         DaycareGroupPlacement(
                             id = groupPlacementId5,
                             groupId = groupId1,
+                            groupName = "group 1",
                             daycarePlacementId = daycarePlacementId,
                             startDate = date(19),
                             endDate = date(20)
