@@ -8,9 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.RunDailyJob
-import fi.espoo.evaka.shared.daily.DailyJob
+import fi.espoo.evaka.shared.daily.DailyJobs
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -31,7 +29,7 @@ import java.util.UUID
 
 class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
     @Autowired
-    private lateinit var asyncJobRunner: AsyncJobRunner
+    private lateinit var dailyJobs: DailyJobs
 
     private val groupId = UUID.randomUUID()
     private val daycarePlacementId = UUID.randomUUID()
@@ -78,10 +76,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
             )
         }
 
-        db.transaction { tx ->
-            asyncJobRunner.plan(tx, listOf(RunDailyJob(DailyJob.EndOfDayAttendanceUpkeep)))
-        }
-        asyncJobRunner.runPendingJobsSync()
+        dailyJobs.endOfDayAttendanceUpkeep(db)
 
         val attendances = db.read {
             it.createQuery(
