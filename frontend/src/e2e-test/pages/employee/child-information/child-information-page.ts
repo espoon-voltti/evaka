@@ -7,27 +7,6 @@ import { Daycare } from 'e2e-test-common/dev-api/types'
 import { selectFirstOption } from '../../../utils/helpers'
 
 export default class ChildInformationPage {
-  readonly serviceNeedElement = (root: Selector) => ({
-    root,
-    serviceNeedValue: root.find('[data-qa="service-need-value"]').innerText,
-    buttonRemoveServiceNeed: root.find('[data-qa="btn-remove-service-need"]'),
-    buttonConfirmServiceNeedRemoval: root.find('[data-qa="modal-okBtn"]'),
-    collapsible: root.find('[data-qa="collapsible-trigger"]')
-  })
-  readonly btnCreateNewServiceNeed: Selector = Selector(
-    '[data-qa="btn-create-new-service-need"]'
-  )
-  readonly inputServiceNeed: Selector = Selector(
-    '[data-qa="input-service-need-hours-per-week"]'
-  )
-  readonly btnSubmitServiceNeed: Selector = Selector(
-    '[data-qa="submit-service-need-form"]'
-  )
-
-  readonly serviceNeedCollapsible = Selector(
-    '[data-qa="service-need-collapsible"]'
-  )
-
   readonly assistanceCollapsible = Selector(
     '[data-qa="assistance-collapsible"]'
   )
@@ -92,8 +71,6 @@ export default class ChildInformationPage {
   readonly backupCareForm: Selector = Selector('[data-qa="backup-care-form"]')
   readonly backupCares: Selector = Selector('[data-qa="backup-cares"]')
 
-  readonly serviceNeeds: Selector = Selector('[data-qa="service-need"]')
-
   readonly guardiansCollapsible: Selector = Selector(
     '[data-qa="person-guardians-collapsible"]'
   )
@@ -139,10 +116,6 @@ export default class ChildInformationPage {
 
   async openAssistanceCollapsible() {
     await this.openCollapsible(this.assistanceCollapsible)
-  }
-
-  async openServiceNeedCollapsible() {
-    await this.openCollapsible(this.serviceNeedCollapsible)
   }
 
   async openApplicationsCollapsible() {
@@ -210,37 +183,6 @@ export default class ChildInformationPage {
     await t.click(this.backupCares.find('[data-qa="modal-okBtn"]'))
     await t.expect(modal.exists).notOk()
     await t.expect(this.backupCares.visible).ok()
-  }
-
-  async verifyNumberOfServiceNeeds(expected: number) {
-    await t.expect(this.serviceNeeds.count).eql(expected)
-  }
-
-  async openServiceNeedForm() {
-    await t.click(this.btnCreateNewServiceNeed)
-  }
-
-  async verifyServiceNeedDefaultValues() {
-    await t.expect(this.inputServiceNeed.value).eql('35')
-  }
-
-  async createNewServiceNeed() {
-    await t.selectText(this.inputServiceNeed).pressKey('delete')
-    await t.typeText(this.inputServiceNeed, '3')
-    await t.expect(this.inputServiceNeed.value).eql('30')
-    await t.click(this.btnSubmitServiceNeed)
-  }
-
-  async removeServiceNeed(nth: number) {
-    const serviceNeed = this.serviceNeedElement(this.serviceNeeds.nth(nth))
-    await t.click(serviceNeed.buttonRemoveServiceNeed)
-    await t.click(serviceNeed.buttonConfirmServiceNeedRemoval)
-  }
-
-  async verifyServiceNeedDetails(nth: number) {
-    const serviceNeed = this.serviceNeedElement(this.serviceNeeds.nth(nth))
-    await t.click(serviceNeed.collapsible)
-    await t.expect(serviceNeed.serviceNeedValue).eql('30')
   }
 
   findGuardianRow(ssn: string) {
