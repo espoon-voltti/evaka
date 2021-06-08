@@ -24,10 +24,6 @@ export default class ChildInformationPage {
     this.page,
     '[data-qa="child-placements-collapsible"]'
   )
-  readonly serviceNeedCollapsible = new RawElement(
-    this.page,
-    '[data-qa="service-need-collapsible"]'
-  )
   readonly assistanceCollapsible = new RawElement(
     this.page,
     '[data-qa="assistance-collapsible"]'
@@ -59,7 +55,6 @@ export default class ChildInformationPage {
     guardians: boolean
     fridgeParents: boolean
     placements: boolean
-    serviceNeed: boolean
     assistance: boolean
     backupCare: boolean
     familyContacts: boolean
@@ -76,7 +71,6 @@ export default class ChildInformationPage {
       params.fridgeParents
     )
     expect(await this.placementsCollapsible.visible).toBe(params.placements)
-    expect(await this.serviceNeedCollapsible.visible).toBe(params.serviceNeed)
     expect(await this.assistanceCollapsible.visible).toBe(params.assistance)
     expect(await this.backupCareCollapsible.visible).toBe(params.backupCare)
     expect(await this.familyContactsCollapsible.visible).toBe(

@@ -27,13 +27,6 @@ const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
 
 export default class AbsencesPage {
-  readonly serviceNeedElement = (root: Selector) => ({
-    root,
-    serviceNeedValue: root.find('[data-qa="service-need-value"]').innerText,
-    buttonRemoveServiceNeed: root.find('[data-qa="btn-remove-service-need"]'),
-    buttonConfirmServiceNeedRemoval: root.find('[data-qa="modal-okBtn"]')
-  })
-
   readonly btnOpenAbsenceDiary: Selector = Selector(
     '[data-qa="open-absence-diary-button"]'
   )

@@ -82,6 +82,21 @@ fun Database.Read.getNewServiceNeed(id: UUID): NewServiceNeed {
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
+fun Database.Read.getNewServiceNeedChildRange(id: UUID): NewServiceNeedChildRange {
+    // language=sql
+    val sql = """
+        SELECT p.child_id, sn.start_date, sn.end_date
+        FROM new_service_need sn
+        JOIN placement p on sn.placement_id = p.id
+        WHERE sn.id = :id
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("id", id)
+        .mapTo<NewServiceNeedChildRange>()
+        .firstOrNull() ?: throw NotFound("Service need $id not found")
+}
+
 // language=sql
 val migrationSqlCases = """
 CASE
@@ -157,13 +172,14 @@ fun Database.Transaction.insertNewServiceNeed(
     shiftCare: Boolean,
     confirmedBy: UUID,
     confirmedAt: HelsinkiDateTime
-) {
+): UUID {
     // language=sql
     val sql = """
         INSERT INTO new_service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
-        VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt);
+        VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt)
+        RETURNING id;
     """.trimIndent()
-    createUpdate(sql)
+    return createQuery(sql)
         .bind("placementId", placementId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
@@ -171,7 +187,8 @@ fun Database.Transaction.insertNewServiceNeed(
         .bind("shiftCare", shiftCare)
         .bind("confirmedBy", confirmedBy)
         .bind("confirmedAt", confirmedAt)
-        .execute()
+        .mapTo<UUID>()
+        .one()
 }
 
 fun Database.Transaction.updateNewServiceNeed(

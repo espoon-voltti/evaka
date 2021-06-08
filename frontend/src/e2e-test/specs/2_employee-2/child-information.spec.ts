@@ -56,18 +56,6 @@ fixture('Employee - Child Information')
     await cleanUp()
   })
 
-test('create service need for a child can be added and removed', async () => {
-  await childInformation.openServiceNeedCollapsible()
-  await childInformation.verifyNumberOfServiceNeeds(0)
-  await childInformation.openServiceNeedForm()
-  await childInformation.verifyServiceNeedDefaultValues()
-  await childInformation.createNewServiceNeed()
-  await childInformation.verifyNumberOfServiceNeeds(1)
-  await childInformation.verifyServiceNeedDetails(0)
-  await childInformation.removeServiceNeed(0)
-  await childInformation.verifyNumberOfServiceNeeds(0)
-})
-
 test('backup care for a child can be added and removed', async () => {
   await childInformation.openBackupCaresCollapsible()
   await childInformation.createBackupCare(

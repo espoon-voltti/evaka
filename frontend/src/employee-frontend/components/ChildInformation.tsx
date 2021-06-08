@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, Fragment } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from '../state/i18n'
@@ -38,6 +38,7 @@ import { requireRole } from '../utils/roles'
 import ChildApplications from '../components/child-information/ChildApplications'
 import MessageBlocklist from 'employee-frontend/components/child-information/MessageBlocklist'
 import DailyServiceTimesSection from './child-information/DailyServiceTimesSection'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 const HeaderRow = styled.div`
   display: flex;
@@ -242,15 +243,12 @@ const ChildInformation = React.memo(function ChildInformation({
 
         <Gap size={'m'} />
 
-        {layout.map(({ component, open }) => {
-          const Component = components[component]
-          return (
-            <Fragment key={component}>
-              <Component id={id} startOpen={open} />
-              <Gap size={'m'} />
-            </Fragment>
-          )
-        })}
+        <FixedSpaceColumn spacing="m">
+          {layout.map(({ component, open }) => {
+            const Component = components[component]
+            return <Component id={id} key={component} startOpen={open} />
+          })}
+        </FixedSpaceColumn>
       </div>
     </Container>
   )
