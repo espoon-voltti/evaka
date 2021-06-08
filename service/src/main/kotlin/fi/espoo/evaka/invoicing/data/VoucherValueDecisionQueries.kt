@@ -257,7 +257,6 @@ WHERE
 ORDER BY $sortColumn $sortDirection, decision.id DESC
 LIMIT :pageSize OFFSET :pageSize * :page
 """
-    println(sql)
     return this.createQuery(sql)
         .bindMap(params + freeTextParams)
         .map { row -> WithCount(row.mapColumn("count"), toVoucherValueDecisionSummary(row)) }
