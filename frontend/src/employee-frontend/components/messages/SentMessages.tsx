@@ -64,7 +64,7 @@ export function SentMessages({ messages }: Props) {
       return (
         <>
           {messages.map((msg) => (
-            <SentMessage key={msg.id} message={msg} />
+            <SentMessage key={msg.contentId} message={msg} />
           ))}
         </>
       )

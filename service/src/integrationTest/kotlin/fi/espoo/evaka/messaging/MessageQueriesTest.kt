@@ -245,9 +245,8 @@ class MessageQueriesTest : PureJdbiTest() {
         }
 
         // when two threads are created
-        val threadId1 =
-            createThread("thread 1", "content 1", employee1Account, listOf(person1Account, person2Account))
-        val thread2Id = createThread("thread 2", "content 2", employee1Account, listOf(person1Account))
+        createThread("thread 1", "content 1", employee1Account, listOf(person1Account, person2Account))
+        createThread("thread 2", "content 2", employee1Account, listOf(person1Account))
 
         // then sent messages are returned for sender id
         val firstPage = db.read { it.getMessagesSentByAccount(employee1Account, 1, 1) }
@@ -258,7 +257,6 @@ class MessageQueriesTest : PureJdbiTest() {
         val newestMessage = firstPage.data[0]
         assertEquals("content 2", newestMessage.content)
         assertEquals("thread 2", newestMessage.threadTitle)
-        assertEquals(thread2Id, newestMessage.threadId)
         assertEquals(setOf(person1Account), newestMessage.recipients.map { it.id }.toSet())
 
         val secondPage = db.read { it.getMessagesSentByAccount(employee1Account, 1, 2) }
@@ -269,7 +267,6 @@ class MessageQueriesTest : PureJdbiTest() {
         val oldestMessage = secondPage.data[0]
         assertEquals("content 1", oldestMessage.content)
         assertEquals("thread 1", oldestMessage.threadTitle)
-        assertEquals(threadId1, oldestMessage.threadId)
         assertEquals(setOf(person1Account, person2Account), oldestMessage.recipients.map { it.id }.toSet())
 
         // then fetching sent messages by recipient ids does not return the messages

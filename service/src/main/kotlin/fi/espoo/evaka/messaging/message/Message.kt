@@ -26,10 +26,9 @@ data class MessageThread(
 )
 
 data class SentMessage(
-    val id: UUID,
+    val contentId: UUID,
     val content: String,
     val sentAt: HelsinkiDateTime,
-    val threadId: UUID,
     val threadTitle: String,
     val type: MessageType,
     @Json
