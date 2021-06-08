@@ -47,4 +47,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2020-13936</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Not relevant for us as we do not use WebFlux.
+        ]]></notes>
+        <cve>CVE-2021-22118</cve>
+    </suppress>
 </suppressions>
