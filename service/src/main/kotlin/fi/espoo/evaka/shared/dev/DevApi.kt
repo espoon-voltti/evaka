@@ -113,6 +113,10 @@ class DevApi(
 
     @PostMapping("/reset-db")
     fun resetDatabase(db: Database): ResponseEntity<Unit> {
+        // Run async jobs before database reset to avoid database locks/deadlocks
+        asyncJobRunner.runPendingJobsSync()
+        asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
+
         db.transaction {
             it.resetDatabase()
 
