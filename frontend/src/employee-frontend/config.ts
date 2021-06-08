@@ -60,7 +60,7 @@ const features: Features = {
     attachments: false,
     evakaLogin: true,
     messaging: false,
-    showNewServiceNeedsList: false,
+    showNewServiceNeedsList: true,
     useNewServiceNeeds: true,
     financeBasicsPage: false
   }
