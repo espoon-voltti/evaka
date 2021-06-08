@@ -18,6 +18,7 @@ import { getPlacements } from '../../api/child/placements'
 import { RequireRole } from '../../utils/roles'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 import { H2 } from '../../../lib-components/typography'
+import { featureFlags } from '../../config'
 
 export interface Props {
   id: UUID
@@ -61,6 +62,8 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, startOpen }: Props) {
       ))
     }
   }
+
+  if (featureFlags.showNewServiceNeedsList) return null
 
   return (
     <div ref={refSectionTop}>
