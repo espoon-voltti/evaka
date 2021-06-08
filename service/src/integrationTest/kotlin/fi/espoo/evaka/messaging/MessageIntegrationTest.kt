@@ -16,6 +16,7 @@ import fi.espoo.evaka.messaging.message.SentMessage
 import fi.espoo.evaka.messaging.message.createPersonMessageAccount
 import fi.espoo.evaka.messaging.message.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
+import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
@@ -325,28 +326,44 @@ class MessageIntegrationTest : FullApplicationTest() {
         val title = "Thread splitting"
         val content = "This message is sent to several participants and split to threads"
         val recipients = listOf(person1Account, person2Account, person3Account, person4Account)
+        val recipientNames = listOf("Hippiäiset", "Jani")
         postNewThread(
             title = title,
             message = content,
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
             recipients = recipients,
+            recipientNames = recipientNames,
             user = employee1
         )
 
         // then three threads should be created
+        db.read {
+            assertEquals(1, it.createQuery("SELECT COUNT(id) FROM message_content").mapTo<Int>().one())
+            assertEquals(3, it.createQuery("SELECT COUNT(id) FROM message_thread").mapTo<Int>().one())
+            assertEquals(3, it.createQuery("SELECT COUNT(id) FROM message").mapTo<Int>().one())
+            assertEquals(5, it.createQuery("SELECT COUNT(id) FROM message_recipients").mapTo<Int>().one())
+        }
+
+        // then sent message is shown as one
+        val sentMessages = db.read { it.getMessagesSentByAccount(employee1Account, 10, 1) }
+        assertEquals(1, sentMessages.total)
+        assertEquals(1, sentMessages.data.size)
+        assertEquals(recipientNames, sentMessages.data.flatMap { it.recipientNames })
+        assertEquals(recipients.toSet(), sentMessages.data.flatMap { msg -> msg.recipients.map { it.id } }.toSet())
+        assertEquals(title, sentMessages.data[0].threadTitle)
+        assertEquals(MessageType.MESSAGE, sentMessages.data[0].type)
+        assertEquals(content, sentMessages.data[0].content)
+
+        // then threads are grouped properly
         // person 1 and 2: common child
         // person 2 and 3: common child
         // person 4: no child
-        assertEquals(3, db.read { it.createQuery("SELECT COUNT(id) FROM message_thread").mapTo<Int>().one() })
-        assertEquals(5, db.read { it.createQuery("SELECT COUNT(id) FROM message_recipients").mapTo<Int>().one() })
-
         val person1Threads = getMessageThreads(person1Account, person1)
         val person2Threads = getMessageThreads(person2Account, person2)
         val person3Threads = getMessageThreads(person3Account, person3)
         val person4Threads = getMessageThreads(person4Account, person4)
 
-        // then
         assertEquals(1, person1Threads.size)
         assertEquals(2, person2Threads.size)
         assertEquals(1, person3Threads.size)
@@ -476,7 +493,7 @@ class MessageIntegrationTest : FullApplicationTest() {
             user = employee1,
         )
 
-        // then 
+        // then
         val person1UnreadMessages = getUnreadMessages(person1Account, person1)
         assertEquals(1, person1UnreadMessages.size)
         assertEquals(1, getUnreadMessages(person2Account, person2).size)
@@ -518,6 +535,7 @@ class MessageIntegrationTest : FullApplicationTest() {
         messageType: MessageType,
         sender: UUID,
         recipients: List<UUID>,
+        recipientNames: List<String> = listOf(),
         user: AuthenticatedUser.Employee,
     ) = http.post("/messages/$sender")
         .jsonBody(
@@ -526,7 +544,7 @@ class MessageIntegrationTest : FullApplicationTest() {
                     title = title,
                     content = message,
                     type = messageType,
-                    recipientNames = listOf(),
+                    recipientNames = recipientNames,
                     recipientAccountIds = recipients.toSet()
                 )
             )

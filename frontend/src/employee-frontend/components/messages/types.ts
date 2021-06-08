@@ -97,7 +97,7 @@ export const deserializeDraftContent = ({
 })
 
 export interface SentMessage {
-  id: UUID
+  contentId: UUID
   type: MessageType
   threadTitle: string
   content: string

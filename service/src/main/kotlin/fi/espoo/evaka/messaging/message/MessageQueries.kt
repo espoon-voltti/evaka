@@ -280,36 +280,43 @@ fun Database.Read.getMessagesSentByAccount(accountId: UUID, pageSize: Int, page:
     // language=SQL
     val sql = """
 WITH pageable_messages AS (
-    SELECT id, content_id, thread_id, sent_at, recipient_names, COUNT(*) OVER () AS count
+    SELECT
+        m.content_id,
+        m.sent_at,
+        m.recipient_names,
+        t.title,
+        t.message_type,
+        COUNT(*) OVER () AS count
     FROM message m
+    JOIN message_thread t ON m.thread_id = t.id
     WHERE sender_id = :accountId
+    GROUP BY content_id, sent_at, recipient_names, title, message_type
     ORDER BY sent_at DESC
     LIMIT :pageSize OFFSET :offset
 ),
 recipients AS (
-    SELECT message_id, recipient_id, name_view.account_name
+    SELECT m.content_id, rec.recipient_id, name_view.account_name
     FROM message_recipients rec
+    JOIN message m ON rec.message_id = m.id
     JOIN message_account_name_view name_view ON rec.recipient_id = name_view.id
 )
 
 SELECT
     msg.count,
-    msg.id,
+    msg.content_id,
     msg.sent_at,
     msg.recipient_names,
+    msg.title AS thread_title,
+    msg.message_type AS type,
     mc.content,
-    t.id AS threadId,
-    t.title AS threadTitle,
-    t.message_type AS type,
     (SELECT jsonb_agg(json_build_object(
            'id', rec.recipient_id,
            'name', rec.account_name
        ))) AS recipients
 FROM pageable_messages msg
-JOIN recipients rec ON msg.id = rec.message_id
+JOIN recipients rec ON msg.content_id = rec.content_id
 JOIN message_content mc ON msg.content_id = mc.id
-JOIN message_thread t ON msg.thread_id = t.id
-GROUP BY msg.count, msg.id, msg.sent_at, msg.recipient_names, mc.content, t.id, t.title, t.message_type
+GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.title
 ORDER BY msg.sent_at DESC
     """.trimIndent()
 
