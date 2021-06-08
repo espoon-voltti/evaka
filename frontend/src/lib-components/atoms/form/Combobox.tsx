@@ -209,7 +209,6 @@ export default function Combobox<T>(props: Props<T>) {
     (item: T | null) => (item ? getItemLabel(item) : ''),
     [getItemLabel]
   )
-  const [focused, setFocused] = useState(false)
   const [currentFilter, setCurrentFilter] = useState('')
   const filteredItems = useMemo(() => filterItems(currentFilter, items), [
     filterItems,
@@ -272,28 +271,25 @@ export default function Combobox<T>(props: Props<T>) {
     [reset]
   )
   useEffect(() => {
-    if (!focused && !isOpen) {
+    if (!isOpen) {
       setInputValue(itemToString(selectedItem))
     }
-  }, [focused, isOpen, setInputValue, itemToString, selectedItem])
-  const active = isOpen || focused
+  }, [isOpen, setInputValue, itemToString, selectedItem])
   return (
     <Root
       data-qa={dataQa}
-      className={classNames({ active, 'full-width': fullWidth })}
+      className={classNames({ active: isOpen, 'full-width': fullWidth })}
     >
       <InputWrapper
         {...getComboboxProps({
           disabled,
           onClick: enabled ? toggleMenu : undefined,
-          className: classNames({ active })
+          className: classNames({ active: isOpen })
         })}
       >
         <Input
           {...getInputProps({
             disabled,
-            onFocus: () => setFocused(true),
-            onBlur: () => setFocused(false),
             placeholder
           })}
         />
