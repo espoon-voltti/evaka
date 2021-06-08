@@ -8,6 +8,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.RunDailyJob
+import fi.espoo.evaka.shared.daily.DailyJob
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -20,12 +23,16 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
 class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
+    @Autowired
+    private lateinit var asyncJobRunner: AsyncJobRunner
+
     private val groupId = UUID.randomUUID()
     private val daycarePlacementId = UUID.randomUUID()
     private val placementStart = LocalDate.now().minusDays(30)
@@ -71,9 +78,10 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
             )
         }
 
-        val (_, res, _) = http.post("/scheduled/attendance-upkeep")
-            .response()
-        assertEquals(204, res.statusCode)
+        db.transaction { tx ->
+            asyncJobRunner.plan(tx, listOf(RunDailyJob(DailyJob.EndOfDayAttendanceUpkeep)))
+        }
+        asyncJobRunner.runPendingJobsSync()
 
         val attendances = db.read {
             it.createQuery(
