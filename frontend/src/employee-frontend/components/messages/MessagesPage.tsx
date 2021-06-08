@@ -8,9 +8,9 @@ import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from '../../../lib-components/white-space'
 import { deleteDraft, postMessage } from './api'
+import { MessageContext } from './MessageContext'
 import MessageEditor from './MessageEditor'
 import MessageList from './MessageList'
-import { MessageContext } from './MessageContext'
 import ReceiverSelection from './ReceiverSelection'
 import { deselectAll, SelectorNode } from './SelectorNode'
 import Sidebar from './Sidebar'
@@ -49,20 +49,17 @@ export default function MessagesPage() {
 
   // pre-select first account on page load and on unit change
   useEffect(() => {
+    if (!accounts.isSuccess) {
+      return
+    }
+    const { value: data } = accounts
     const unitSelectionChange =
       selectedAccount &&
-      accounts.isSuccess &&
-      !accounts.value.find(
-        (account) => account.id === selectedAccount.account.id
-      )
-    if (
-      (!selectedAccount || unitSelectionChange) &&
-      accounts.isSuccess &&
-      accounts.value[0]
-    ) {
+      !data.find((account) => account.id === selectedAccount.account.id)
+    if ((!selectedAccount || unitSelectionChange) && data.length > 0) {
       setSelectedAccount({
         view: 'RECEIVED',
-        account: accounts.value[0]
+        account: data.find((a) => a.type === 'PERSONAL') || data[0]
       })
     }
   }, [accounts, setSelectedAccount, selectedAccount])
