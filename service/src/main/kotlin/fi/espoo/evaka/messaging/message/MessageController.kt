@@ -213,7 +213,7 @@ class MessageController(
     }
 
     private fun requireAuthorizedMessagingRole(user: AuthenticatedUser) {
-        user.requireOneOfRoles(UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 
     private fun requireMessageAccountAccess(
