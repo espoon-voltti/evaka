@@ -68,6 +68,10 @@ export function MessageBox({
   thin,
   ...props
 }: MessageBoxProps) {
+  if (!title && !message) {
+    return null
+  }
+
   return (
     <MessageBoxContainer
       color={color}
