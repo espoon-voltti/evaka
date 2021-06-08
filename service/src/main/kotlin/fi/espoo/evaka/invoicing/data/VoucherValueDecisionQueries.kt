@@ -23,6 +23,7 @@ import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecision>) {
@@ -187,6 +188,9 @@ fun Database.Read.searchValueDecisions(
     areas: List<String>,
     unit: UUID?,
     searchTerms: String = "",
+    startDate: LocalDate?,
+    endDate: LocalDate?,
+    searchByStartDate: Boolean = false,
     financeDecisionHandlerId: UUID?
 ): Paged<VoucherValueDecisionSummary> {
     val sortColumn = when (sortBy) {
@@ -200,11 +204,20 @@ fun Database.Read.searchValueDecisions(
         "status" to status.name,
         "areas" to areas.toTypedArray(),
         "unit" to unit,
+        "start_date" to startDate,
+        "end_date" to endDate,
         "financeDecisionHandlerId" to financeDecisionHandlerId
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
 
+    val conditions = listOfNotNull(
+        if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,
+        if (unit != null) "decision.placement_unit_id = :unit" else null,
+        if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
+        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
+        if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null
+    )
     val sql =
         // language=sql
         """
@@ -238,14 +251,13 @@ LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_un
 LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
 WHERE
     decision.status = :status::voucher_value_decision_status
-    AND (:unit::uuid IS NULL OR decision.placement_unit_id = :unit)
-    AND (:areas::text[] = '{}' OR area.short_name = ANY(:areas))
     AND $freeTextQuery
-    AND (:financeDecisionHandlerId::uuid IS NULL OR placement_unit.finance_decision_handler = :financeDecisionHandlerId)
+    ${if (conditions.isNotEmpty()) """AND ${conditions.joinToString("\nAND ")}
+        """.trimIndent() else ""}
 ORDER BY $sortColumn $sortDirection, decision.id DESC
 LIMIT :pageSize OFFSET :pageSize * :page
 """
-
+    println(sql)
     return this.createQuery(sql)
         .bindMap(params + freeTextParams)
         .map { row -> WithCount(row.mapColumn("count"), toVoucherValueDecisionSummary(row)) }

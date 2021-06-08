@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @RestController
@@ -65,7 +66,10 @@ class VoucherValueDecisionController(
         @RequestParam(required = false) area: String?,
         @RequestParam(required = false) unit: String?,
         @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) financeDecisionHandlerId: UUID?
+        @RequestParam(required = false) financeDecisionHandlerId: UUID?,
+        @RequestParam(required = false) startDate: String?,
+        @RequestParam(required = false) endDate: String?,
+        @RequestParam(required = false) searchByStartDate: Boolean = false
     ): ResponseEntity<Paged<VoucherValueDecisionSummary>> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -83,6 +87,9 @@ class VoucherValueDecisionController(
                     area?.split(",") ?: listOf(),
                     unit?.let { parseUUID(it) },
                     searchTerms ?: "",
+                    startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
+                    endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
+                    searchByStartDate,
                     financeDecisionHandlerId
                 )
             }
