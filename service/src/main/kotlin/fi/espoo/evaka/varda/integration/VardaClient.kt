@@ -447,26 +447,26 @@ private fun logRequestError(request: Request, error: FuelError) {
     logger.error(error, meta) { "Varda request to ${request.url} failed, status ${error.response.statusCode}" }
 }
 
-fun convertToVardaRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
+fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
     return VardaChildRequest(
         id = evakaPersonId,
-        personUrl = null,
-        personOid = payload.organizerOid,
-        organizerOid = payload.organizerOid,
-        ownOrganizationOid = null,
-        paosOrganizationOid = null,
-        sourceSystem = payload.sourceSystem
+        henkilo = null,
+        henkilo_oid = payload.organizerOid,
+        vakatoimija_oid = payload.organizerOid,
+        oma_organisaatio_oid = null,
+        paos_organisaatio_oid = null,
+        lahdejarjestelma = payload.sourceSystem
     )
 }
 
-fun convertToVardaRequest(evakaPersonId: UUID, payload: VardaPaosChildPayload): VardaChildRequest {
+fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaPaosChildPayload): VardaChildRequest {
     return VardaChildRequest(
         id = evakaPersonId,
-        personUrl = null,
-        personOid = payload.organizerOid,
-        organizerOid = null,
-        ownOrganizationOid = payload.organizerOid,
-        paosOrganizationOid = payload.paosOrganizationOid,
-        sourceSystem = payload.sourceSystem
+        henkilo = null,
+        henkilo_oid = payload.organizerOid,
+        vakatoimija_oid = null,
+        oma_organisaatio_oid = payload.organizerOid,
+        paos_organisaatio_oid = payload.paosOrganizationOid,
+        lahdejarjestelma = payload.sourceSystem
     )
 }

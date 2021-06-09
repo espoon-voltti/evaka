@@ -2,12 +2,9 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
-import fi.espoo.evaka.varda.integration.convertToVardaRequest
-import mu.KotlinLogging
+import fi.espoo.evaka.varda.integration.convertToVardaChildRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
-
-private val logger = KotlinLogging.logger {}
 
 fun getOrCreateVardaChildByOrganizer(
     db: Database.Connection,
@@ -122,7 +119,7 @@ private fun createVardaChildWhenPersonExists(
             sourceSystem = sourceSystem
         )
 
-        val vardaChildId = client.createChild(convertToVardaRequest(evakaPersonId, vardaChildPayload))?.vardaId?.toLong()
+        val vardaChildId = client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload))?.id?.toLong()
             ?: error("Couldn't create Varda PAOS child for $vardaChildPayload")
 
         insertVardaOrganizerChild(
@@ -141,7 +138,7 @@ private fun createVardaChildWhenPersonExists(
             sourceSystem = sourceSystem
         )
 
-        val vardaChildId = client.createChild(convertToVardaRequest(evakaPersonId, vardaChildPayload))?.vardaId?.toLong()
+        val vardaChildId = client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload))?.id?.toLong()
             ?: error("Couldn't create Varda child for $vardaChildPayload")
 
         insertVardaOrganizerChild(
