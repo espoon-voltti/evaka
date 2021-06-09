@@ -8,7 +8,8 @@ import {
   Filters,
   ValueDecisionStatusFilter,
   UnitFilter,
-  FinanceDecisionHandlerFilter
+  FinanceDecisionHandlerFilter,
+  ValueDecisionDateFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
@@ -17,6 +18,7 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { getFinanceDecisionHandlers } from '../../api/employees'
 import { useMemo } from 'react'
+import LocalDate from 'lib-common/local-date'
 
 export default React.memo(function VoucherValueDecisionFilters() {
   const {
@@ -107,6 +109,26 @@ export default React.memo(function VoucherValueDecisionFilters() {
     },
     [setSearchFilters]
   )
+  const setStartDate = (startDate: LocalDate | undefined) => {
+    setSearchFilters({
+      ...searchFilters,
+      startDate: startDate
+    })
+  }
+
+  const setEndDate = (endDate: LocalDate | undefined) => {
+    setSearchFilters({
+      ...searchFilters,
+      endDate: endDate
+    })
+  }
+
+  const setSearchByStartDate = (value: boolean) => {
+    setSearchFilters({
+      ...searchFilters,
+      searchByStartDate: value
+    })
+  }
 
   return (
     <Filters
@@ -150,6 +172,15 @@ export default React.memo(function VoucherValueDecisionFilters() {
           <ValueDecisionStatusFilter
             toggled={searchFilters.status}
             toggle={toggleStatus}
+          />
+          <Gap size="L" />
+          <ValueDecisionDateFilter
+            startDate={searchFilters.startDate}
+            setStartDate={setStartDate}
+            endDate={searchFilters.endDate}
+            setEndDate={setEndDate}
+            searchByStartDate={searchFilters.searchByStartDate}
+            setSearchByStartDate={setSearchByStartDate}
           />
         </>
       }

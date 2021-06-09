@@ -60,6 +60,9 @@ interface ValueDecisionSearchFilters {
   unit?: string
   status: VoucherValueDecisionStatus
   financeDecisionHandlerId?: string
+  startDate: LocalDate | undefined
+  endDate: LocalDate | undefined
+  searchByStartDate: boolean
 }
 
 interface ValueDecisionSearchFilterState {
@@ -137,7 +140,10 @@ const defaultState: UiState = {
   valueDecisions: {
     searchFilters: {
       status: 'DRAFT' as const,
-      area: []
+      area: [],
+      startDate: LocalDate.today().withDate(1),
+      endDate: LocalDate.today(),
+      searchByStartDate: false
     },
     setSearchFilters: () => undefined,
     searchTerms: '',

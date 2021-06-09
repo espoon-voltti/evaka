@@ -73,7 +73,10 @@ export default React.memo(function VoucherValueDecisionsPage() {
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
         ? searchFilters.financeDecisionHandlerId
-        : undefined
+        : undefined,
+      startDate: searchFilters.startDate?.formatIso(),
+      endDate: searchFilters.endDate?.formatIso(),
+      searchByStartDate: searchFilters.searchByStartDate
     }
     reloadDecisions(page, pageSize, sortBy, sortDirection, params)
   }, [
