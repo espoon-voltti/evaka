@@ -306,7 +306,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         assertVardaElementCounts(1, 1, 2)
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
         assertVardaFeeData(
             VardaFeeData(
                 huoltajat = listOf(asVardaGuardian(testAdult_1)),
@@ -377,7 +377,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         assertVardaElementCounts(1, 1, 2)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
-        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
         assertVardaFeeData(
             VardaFeeData(
                 huoltajat = listOf(asVardaGuardian(testAdult_1)),

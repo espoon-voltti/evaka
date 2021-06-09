@@ -121,15 +121,19 @@ fun handleServiceNeedUpdate(db: Database.Connection, vardaClient: VardaClient, s
 // Add child if missing, service need, placement and mandatory fee decision(s)
 fun handleServiceNeedAddition(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID, childId: UUID): Boolean {
     val errors = mutableListOf<String>()
-    val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(serviceNeedId) }
 
-    // Todo: "nettopalvelu"-unit children do not have fee data
-    if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
-        val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
-        val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(childId, evakaServiceNeed)
+    try {
+        val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(serviceNeedId) }
 
-        try {
-            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildForServiceNeedOrganization(db, childId, evakaServiceNeed.ophOrganizerOid)
+        // Todo: "nettopalvelu"-unit children do not have fee data
+        if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
+            val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
+            val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(childId, evakaServiceNeed)
+            db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
+
+            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need $serviceNeedId related oph_orginizer_id is null or empty")
+
+            newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = createDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = createPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
             newVardaServiceNeed.vardaFeeDataIds = serviceNeedFeeData.feeDecisionIds.map { fdId ->
@@ -137,26 +141,25 @@ fun handleServiceNeedAddition(db: Database.Connection, vardaClient: VardaClient,
                 createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, feeDecision)
             }.plus(
                 serviceNeedFeeData.voucherValueDecisionIds.map { vvdId ->
-                    val voucherValueDecision = db.read { it.getVoucherValueDecision(vvdId) } ?: throw Exception("VardaUpdate: cannot create voucher fee data: voucher $vvdId not found for $serviceNeedId")
+                    val voucherValueDecision = db.read { it.getVoucherValueDecision(vvdId) }
+                        ?: throw Exception("VardaUpdate: cannot create voucher fee data: voucher $vvdId not found for $serviceNeedId")
                     createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, voucherValueDecision)
                 }
             )
-        } catch (e: Exception) {
-            errors.add("VardaUpdate: error creating a new varda decision for service need $serviceNeedId: ${e.localizedMessage}")
-        }
 
+            db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
+        }
+    } catch (e: Exception) {
+        errors.add("VardaUpdate: error creating a new varda decision for service need $serviceNeedId: ${e.localizedMessage}")
+    }
+
+    if (errors.isNotEmpty()) {
+        errors.add("VardaUpdate: could not create service need $serviceNeedId and related data, marking it as failed")
+        logger.error(errors.joinToString(", "))
         db.transaction {
-            it.upsertVardaServiceNeed(newVardaServiceNeed)
+            it.markServiceNeedUpdateFailed(serviceNeedId, errors)
         }
-
-        if (errors.isNotEmpty()) {
-            errors.add("VardaUpdate: could not create service need $serviceNeedId and related data, marking it as failed")
-            logger.error(errors.joinToString(", "))
-            db.transaction {
-                it.markServiceNeedUpdateFailed(serviceNeedId, errors)
-            }
-            return false
-        }
+        return false
     }
     return true
 }
