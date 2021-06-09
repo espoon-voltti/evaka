@@ -429,8 +429,10 @@ function RedirectToMainPage() {
     return <Redirect to={'/units'} />
   } else if (hasRole(roles, 'DIRECTOR')) {
     return <Redirect to={'/reports'} />
-  } else {
+  } else if (roles.length === 0) {
     return <Redirect to={'/welcome'} />
+  } else {
+    return <Redirect to={'/search'} />
   }
 }
 
