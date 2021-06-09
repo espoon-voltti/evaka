@@ -2498,6 +2498,22 @@ export const fi = {
       errors: {
         'date-overlap':
           'Maksuasetukset menevät päällekkäin jonkin muun voimassaolevan asetuksen kanssa. Päivitä muiden maksuasetusten voimassaoloaika ensin.'
+      },
+      modals: {
+        editRetroactive: {
+          title: 'Haluatko varmasti muokata tietoja?',
+          text:
+            'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille luodaan takautuva maksupäätös.',
+          resolve: 'Muokkaa',
+          reject: 'Älä muokkaa'
+        },
+        saveRetroactive: {
+          title: 'Haluatko tallentaa maksuasetukset takautuvasti?',
+          text:
+            'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille luodaan uusi takautuva maksupäätös. Haluatko varmasti tallentaa?',
+          resolve: 'Tallenna',
+          reject: 'Peruuta'
+        }
       }
     }
   },

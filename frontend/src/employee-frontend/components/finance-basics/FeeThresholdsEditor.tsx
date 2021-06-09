@@ -42,13 +42,18 @@ export default React.memo(function FeeThresholdsEditor({
   id,
   initialState,
   close,
-  reloadData
+  reloadData,
+  toggleSaveRetroactiveWarning
 }: {
   i18n: Translations
   id: string | undefined
   initialState: FormState
   close: () => void
   reloadData: () => void
+  toggleSaveRetroactiveWarning: (cbs: {
+    resolve: () => void
+    reject: () => void
+  }) => void
 }) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
   const validationResult = validateForm(i18n, editorState)
@@ -329,15 +334,26 @@ export default React.memo(function FeeThresholdsEditor({
         <AsyncButton
           primary
           text={i18n.common.save}
-          onClick={() =>
-            'payload' in validationResult
-              ? handleSaveErrors(
-                  id === undefined
-                    ? createFeeThresholds(validationResult.payload)
-                    : updateFeeThresholds(id, validationResult.payload)
-                )
-              : Promise.resolve()
-          }
+          onClick={async () => {
+            if (!('payload' in validationResult)) {
+              return
+            }
+
+            const resolved = await new Promise((resolve) =>
+              toggleSaveRetroactiveWarning({
+                resolve: () => resolve(true),
+                reject: () => resolve(false)
+              })
+            )
+
+            if (!resolved) return 'AsyncButton.cancel'
+
+            return await handleSaveErrors(
+              id === undefined
+                ? createFeeThresholds(validationResult.payload)
+                : updateFeeThresholds(id, validationResult.payload)
+            )
+          }}
           onSuccess={() => {
             close()
             reloadData()

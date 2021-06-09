@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { faCopy, faPen } from 'lib-icons'
+import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -25,6 +25,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { getFeeThresholds } from '../../api/finance-basics'
 import {
   familySizes,
@@ -47,6 +48,33 @@ export default React.memo(function FeesSection() {
   useEffect(() => {
     void loadData()
   }, [loadData])
+
+  const [modal, setModal] = useState<{
+    type: 'editRetroactive' | 'saveRetroactive'
+    resolve: () => void
+    reject?: () => void
+  }>()
+
+  const toggleEditRetroactiveWarning = useCallback(
+    (resolve: () => void) => {
+      setModal({
+        type: 'editRetroactive',
+        resolve
+      })
+    },
+    [setModal]
+  )
+
+  const toggleSaveRetroactiveWarning = useCallback(
+    ({ resolve, reject }: { resolve: () => void; reject: () => void }) => {
+      setModal({
+        type: 'saveRetroactive',
+        resolve,
+        reject
+      })
+    },
+    [setModal]
+  )
 
   const [editorState, setEditorState] = useState<EditorState>({})
   const closeEditor = useCallback(() => setEditorState({}), [setEditorState])
@@ -106,6 +134,7 @@ export default React.memo(function FeesSection() {
           initialState={editorState.form}
           close={closeEditor}
           reloadData={loadData}
+          toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
         />
       ) : null}
       {data.mapAll({
@@ -127,6 +156,7 @@ export default React.memo(function FeesSection() {
                     initialState={editorState.form}
                     close={closeEditor}
                     reloadData={loadData}
+                    toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
                   />
                 ) : (
                   <FeeThresholdsItem
@@ -137,6 +167,7 @@ export default React.memo(function FeesSection() {
                     copyThresholds={copyThresholds}
                     editThresholds={editThresholds}
                     editing={!!editorState.editing}
+                    toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
                   />
                 )
               )}
@@ -144,6 +175,28 @@ export default React.memo(function FeesSection() {
           )
         }
       })}
+      {modal ? (
+        <InfoModal
+          icon={faQuestion}
+          iconColour="red"
+          title={i18n.financeBasics.fees.modals[modal.type].title}
+          text={i18n.financeBasics.fees.modals[modal.type].text}
+          reject={{
+            action: () => {
+              setModal(undefined)
+              modal.reject?.()
+            },
+            label: i18n.financeBasics.fees.modals[modal.type].reject
+          }}
+          resolve={{
+            action: () => {
+              setModal(undefined)
+              modal.resolve()
+            },
+            label: i18n.financeBasics.fees.modals[modal.type].resolve
+          }}
+        />
+      ) : null}
     </CollapsibleContentArea>
   )
 })
@@ -154,7 +207,8 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   feeThresholds,
   copyThresholds,
   editThresholds,
-  editing
+  editing,
+  toggleEditRetroactiveWarning
 }: {
   i18n: Translations
   id: string
@@ -162,6 +216,7 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   copyThresholds: (feeThresholds: FeeThresholds) => void
   editThresholds: (id: string, feeThresholds: FeeThresholds) => void
   editing: boolean
+  toggleEditRetroactiveWarning: (resolve: () => void) => void
 }) {
   return (
     <>
@@ -179,7 +234,15 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
           />
           <IconButton
             icon={faPen}
-            onClick={() => editThresholds(id, feeThresholds)}
+            onClick={() => {
+              if (feeThresholds.validDuring.start.isAfter(LocalDate.today())) {
+                editThresholds(id, feeThresholds)
+              } else {
+                toggleEditRetroactiveWarning(() =>
+                  editThresholds(id, feeThresholds)
+                )
+              }
+            }}
             disabled={editing}
           />
           <StatusLabel dateRange={feeThresholds.validDuring} />
