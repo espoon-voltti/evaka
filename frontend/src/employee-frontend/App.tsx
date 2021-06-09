@@ -68,6 +68,7 @@ import { idleTracker } from 'lib-common/utils/idleTracker'
 import { client } from './api/client'
 import MessagesPage from './components/messages/MessagesPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
+import WelcomePage from './components/WelcomePage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -379,6 +380,12 @@ export default function App() {
               component={ensureAuthenticated(EmployeePage)}
               title={i18n.employees.title}
             />
+            <RouteWithTitle
+              exact
+              path="/welcome"
+              component={ensureAuthenticated(WelcomePage)}
+              title={i18n.titles.welcomePage}
+            />
             {redirectRoutes([
               {
                 from: '/fee-decisions',
@@ -423,7 +430,7 @@ function RedirectToMainPage() {
   } else if (hasRole(roles, 'DIRECTOR')) {
     return <Redirect to={'/reports'} />
   } else {
-    return <Redirect to={'/search'} />
+    return <Redirect to={'/welcome'} />
   }
 }
 

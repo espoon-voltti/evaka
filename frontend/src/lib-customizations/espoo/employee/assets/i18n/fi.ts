@@ -24,7 +24,8 @@ export const fi = {
     messages: 'Viestit',
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
-    employeePinCode: 'PIN-koodin hallinta'
+    employeePinCode: 'PIN-koodin hallinta',
+    welcomePage: 'Tervetuloa eVakaan'
   },
   common: {
     yes: 'Kyllä',
@@ -2494,5 +2495,9 @@ export const fi = {
       UNIT_SUPERVISOR: 'Johtaja',
       MOBILE: 'Mobiili'
     }
+  },
+  welcomePage: {
+    text:
+      'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
   }
 }
