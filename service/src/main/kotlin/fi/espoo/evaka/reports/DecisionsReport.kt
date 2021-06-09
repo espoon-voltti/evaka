@@ -77,7 +77,7 @@ private fun Database.Read.getDecisionsRows(from: LocalDate, to: LocalDate): List
             count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[1] ) AS preference_1,
             count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[2] ) AS preference_2,
             count(DISTINCT decision_id) FILTER ( WHERE unit_id = preferred_units[3] ) AS preference_3,
-            count(DISTINCT decision_id) FILTER ( WHERE unit_id != ANY(preferred_units) ) AS preference_none,
+            count(DISTINCT decision_id) FILTER ( WHERE unit_id != ALL(preferred_units) ) AS preference_none,
             count(DISTINCT decision_id) total
         FROM data
         GROUP BY care_area_name, unit_id, unit_name, provider_type
