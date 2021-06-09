@@ -122,11 +122,12 @@ fun handleServiceNeedUpdate(db: Database.Connection, vardaClient: VardaClient, s
 fun handleServiceNeedAddition(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID, childId: UUID): Boolean {
     val errors = mutableListOf<String>()
     val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(serviceNeedId) }
-    val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
-    val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(childId, evakaServiceNeed)
 
     // Todo: "nettopalvelu"-unit children do not have fee data
-    if (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty()) {
+    if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
+        val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
+        val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(childId, evakaServiceNeed)
+
         try {
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildForServiceNeedOrganization(db, childId, evakaServiceNeed.ophOrganizerOid)
             newVardaServiceNeed.vardaDecisionId = createDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
@@ -534,7 +535,7 @@ FROM service_need_fees
         .mapTo<FeeDataByServiceNeed>()
         .list()
 
-fun Database.Read.getServiceNeedFeeData(serviceNeedId: UUID): FeeDataByServiceNeed =
+fun Database.Read.getServiceNeedFeeData(serviceNeedId: UUID): FeeDataByServiceNeed? =
     createQuery(
         """
 WITH child_fees AS (
@@ -547,18 +548,18 @@ WITH child_fees AS (
   SELECT
     sn.id AS service_need_id,
     p.child_id AS child_id,
-    array_agg(child_fees.fee_decision_id) AS fee_decision_ids
+    array_agg(child_fees.fee_decision_id) FILTER (WHERE child_fees.fee_decision_id IS NOT NULL) AS fee_decision_ids
   FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
-    JOIN child_fees ON p.child_id = child_fees.child_id 
+    LEFT JOIN child_fees ON p.child_id = child_fees.child_id 
       AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
   GROUP BY service_need_id, p.child_id
 ), service_need_vouchers AS (
 SELECT
     sn.id AS service_need_id,
     p.child_id AS child_id,
-    array_agg(vvd.id) AS voucher_value_decision_ids
+    array_agg(vvd.id) FILTER (WHERE vvd.id IS NOT NULL) AS voucher_value_decision_ids
 FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
-  JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
+  LEFT JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
     AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
 GROUP BY service_need_id, p.child_id
 )
@@ -575,7 +576,7 @@ WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_
     )
         .bind("serviceNeedId", serviceNeedId)
         .mapTo<FeeDataByServiceNeed>()
-        .first()
+        .firstOrNull()
 
 data class FeeDataByServiceNeed(
     val evakaChildId: UUID,

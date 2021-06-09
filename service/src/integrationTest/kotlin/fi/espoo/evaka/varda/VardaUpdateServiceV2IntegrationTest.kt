@@ -356,6 +356,58 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         assertVardaElementCounts(0, 0, 0)
     }
 
+    @Test
+    fun `updateChildData sends child service need to varda only when all required data exists in evaka`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(0, 0, 0)
+
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        createFeeDecision(db, testChild_1, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+        createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, testAdult_1.id, testChild_1, since.toInstant())
+
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 2)
+
+        val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 123, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaFeeData(
+            VardaFeeData(
+                huoltajat = listOf(asVardaGuardian(testAdult_1)),
+                maksun_peruste_koodi = "MP03",
+                asiakasmaksu = 289.0,
+                palveluseteli_arvo = 0.0,
+                alkamis_pvm = feeDecisionPeriod.start,
+                paattymis_pvm = feeDecisionPeriod.end,
+                perheen_koko = 2,
+                lahdejarjestelma = "SourceSystemVarda",
+                lapsi = "not asserted"
+            ),
+            mockEndpoint.feeData.values.elementAt(0)
+        )
+        assertVardaFeeData(
+            VardaFeeData(
+                huoltajat = listOf(asVardaGuardian(testAdult_1)),
+                maksun_peruste_koodi = "MP03",
+                asiakasmaksu = 50.0,
+                palveluseteli_arvo = 100.0,
+                alkamis_pvm = voucherDecisionPeriod.start,
+                paattymis_pvm = serviceNeedPeriod.end,
+                perheen_koko = 2,
+                lahdejarjestelma = "SourceSystemVarda",
+                lapsi = "not asserted"
+            ),
+            mockEndpoint.feeData.values.elementAt(1)
+        )
+    }
+
     private fun createServiceNeedAndFeeData(
         child: PersonData.Detailed,
         adult: PersonData.Detailed,
