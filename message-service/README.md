@@ -159,14 +159,14 @@ Some useful commands for managing the trust store:
 aws s3 cp s3://${DEPLOYMENT_BUCKET}/message-srv/trustStore.jks trustStore.jks
 
 # Get trust store password:
-aws ssm get-parameter --with-decryption --name /${TARGET_ENV}/evaka-message-srv/sfi_truststore_password --query 'Parameter.Value' --output text
+aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text
 
 # List certificates in trust store (prompts for the password, see above):
 keytool -list -v -keystore trustStore.jks
 
 # Rotate password of trust store:
 keytool -storepasswd -keystore trustStore.jks
-aws ssm put-parameter --name /${TARGET_ENV}/evaka-message-srv/sfi_truststore_password --value 'supersecretpassword' --type SecureString --overwrite
+aws ssm put-parameter --name $PARAMETER_NAME --value 'supersecretpassword' --type SecureString --overwrite
 aws s3 cp trustStore.jks s3://${DEPLOYMENT_BUCKET}/message-srv/trustStore.jks
 ```
 
@@ -195,7 +195,7 @@ Repeat for all environments:
 1. Re-deploy all ECS service tasks:
 
     ```sh
-    aws ecs update-service --force-new-deployment --service evaka-message-srv --cluster voltti-ecs-cluster-$ENV
+    aws ecs update-service --force-new-deployment --service evaka-message-srv --cluster $CLUSTER_NAME
     ```
 
     - **NOTE:** Cluster and service name are deployment specific

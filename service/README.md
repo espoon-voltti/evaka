@@ -97,12 +97,99 @@ where `<container>` is to be found with `docker ps`.
 
 Documentation: <https://backend-qa.varda-db.csc.fi/> (You need Voltti, Gofore or Reaktor IP)
 
-### To test against Varda QA server:
+### To test against Varda QA server
 
 - change application-dev.properties file: `fi.espoo.integration.varda.url=https://backend-qa.varda-db.csc.fi/api`
 - get apiKey from <https://backend-qa.varda-db.csc.fi/varda/swagger/>
   - login using Opintopolku: See #evaka-tech pinned items
   - change `vardaService.getApiKey()` to return the apiKey
+
+## Maintenance
+
+### Key and trust stores
+
+This service uses a trust store to explicitly trust certificates of its
+integrations, such as:
+
+- X-Road Security Server's proxy (VTJ integration)
+- [Varda](https://github.com/espoon-voltti/evaka/wiki/Varda-integraatio)
+- [Koski](https://github.com/espoon-voltti/evaka/wiki/Koski-integraatio)
+
+The trust store is configurable with:
+
+- `FI_ESPOO_VOLTTI_VTJ_XROAD_TRUSTSTORE_LOCATION`: file location
+- `FI_ESPOO_VOLTTI_VTJ_XROAD_TRUSTSTORE_TYPE`: trust store type (usually: "JKS")
+- `FI_ESPOO_VOLTTI_VTJ_XROAD_TRUSTSTORE_PASSWORD`: trust store's password
+
+and the actual store should contain whatever certificates you trust.
+
+For authenticating in X-Road, the service also has a key store, configured with:
+
+- `FI_ESPOO_VOLTTI_VTJ_XROAD_KEYSTORE_LOCATION`: file location
+- `FI_ESPOO_VOLTTI_VTJ_XROAD_KEYSTORE_PASSWORD`: key store's password
+
+and the actual store should contain your keys.
+
+Some useful commands for managing the stores (same actions apply for both):
+
+```sh
+# Download current trust store from S3:
+aws s3 cp s3://${DEPLOYMENT_BUCKET}/evaka-srv/trustStore.jks trustStore.jks
+
+# Get trust store password from Parameter Store:
+aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text
+
+# List certificates in trust store:
+keytool -list -v -keystore trustStore.jks -storepass "$(aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text)"
+
+# Rotate password of trust store (prompts for new password):
+keytool -storepasswd -keystore trustStore.jks -storepass "$(aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text)"
+aws ssm put-parameter --name $PARAMETER_NAME --value 'supersecretpassword' --type SecureString --overwrite
+aws s3 cp trustStore.jks s3://${DEPLOYMENT_BUCKET}/evaka-srv/trustStore.jks
+```
+
+#### Updating certificates in trust store
+
+Repeat for all environments:
+
+1. Download current trust store:
+
+    ```sh
+    aws s3 cp s3://${DEPLOYMENT_BUCKET}/evaka-srv/trustStore.jks trustStore.jks
+    ```
+
+1. Find the old alias of the entry:
+
+    ```sh
+    keytool -list -v -keystore trustStore.jks -storepass "$(aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text)"
+    ```
+
+1. *IF REPLACING:* Remove old cert from trust store:
+
+    ```sh
+    keytool -delete -alias $OLD_ALIAS -keystore trustStore.jks -storepass "$(aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text)"
+    ```
+
+1. Fetch and import a new trusted cert:
+
+    ```sh
+    # Replace HOST with e.g. koski.opintopolku.fi to fetch the Koski production cert
+    keytool -printcert -sslserver "${HOST}:443" -rfc | keytool -import -noprompt -alias $NEW_ALIAS -keystore trustStore.jks -storepass "$(aws ssm get-parameter --with-decryption --name $PARAMETER_NAME --query 'Parameter.Value' --output text)"
+    ```
+
+1. Upload updated trust store:
+
+    ```sh
+    aws s3 cp trustStore.jks s3://${DEPLOYMENT_BUCKET}/evaka-srv/trustStore.jks
+    ```
+
+1. Re-deploy all ECS service tasks:
+
+    ```sh
+    aws ecs update-service --force-new-deployment --service evaka-srv --cluster $CLUSTER_NAME
+    ```
+
+    - **NOTE:** Cluster and service name are deployment specific
 
 ## Tips
 
