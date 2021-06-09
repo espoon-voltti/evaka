@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { useHistory } from 'react-router'
 import styled from 'styled-components'
 import { Gap } from 'lib-components/white-space'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -30,6 +31,7 @@ export default React.memo(function ApplicationActionsBar({
   reloadApplication,
   errors
 }: Props) {
+  const history = useHistory()
   const { i18n } = useTranslation()
 
   const actions = [
@@ -49,9 +51,16 @@ export default React.memo(function ApplicationActionsBar({
     },
     {
       id: 'cancel-editing',
-      enabled: editing,
+      enabled: editing && applicationStatus !== 'CREATED',
       component: (
         <Button onClick={() => setEditing(false)} text={i18n.common.cancel} />
+      )
+    },
+    {
+      id: 'cancel-new-application',
+      enabled: editing && applicationStatus === 'CREATED',
+      component: (
+        <Button onClick={() => history.goBack()} text={i18n.common.cancel} />
       )
     },
     {
