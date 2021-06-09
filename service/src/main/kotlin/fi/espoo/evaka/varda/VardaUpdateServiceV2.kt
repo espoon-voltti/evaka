@@ -36,34 +36,47 @@ fun updateAllVardaData(
     updateChildData(db, client, HelsinkiDateTime.now().minusHours(24))
 }
 
+// TODO: handle failed uploads first: delete service need, upload all data
 fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime) {
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
-    val feeAndVoucherDiffByChild = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(startingFrom) }.groupBy { it.evakaChildId }
-    // val feeAndVoucherDiffByServiceNeed = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(startingFrom) }.groupBy { it.serviceNeedId }
+    val feeAndVoucherDiffsByServiceNeed = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(startingFrom) }.groupBy { it.serviceNeedId }
+    val uploadedServiceNeedIds = mutableSetOf<UUID>()
 
     serviceNeedDiffsByChild.entries.forEach { serviceNeedDiffByChild ->
         val childId = serviceNeedDiffByChild.value.childId
+
         serviceNeedDiffByChild.value.deletes.forEach { deletedServiceNeedId ->
-            handleServiceNeedDelete(db, client, deletedServiceNeedId)
+            if (handleServiceNeedDelete(db, client, deletedServiceNeedId))
+                uploadedServiceNeedIds.add(deletedServiceNeedId)
         }
 
         serviceNeedDiffByChild.value.updates.forEach { updatedServiceNeedId ->
-            handleServiceNeedUpdate(db, updatedServiceNeedId, childId)
+            if (handleServiceNeedUpdate(db, client, updatedServiceNeedId, childId))
+                uploadedServiceNeedIds.add(updatedServiceNeedId)
         }
 
         serviceNeedDiffByChild.value.additions.forEach { addedServiceNeedId ->
-            handleServiceNeedAddition(db, client, addedServiceNeedId, childId)
+            if (handleServiceNeedAddition(db, client, addedServiceNeedId, childId))
+                uploadedServiceNeedIds.add(addedServiceNeedId)
         }
-
-        // Todo: ne service needit joita EI päivitetty yllä ^ pitää vielä käsitellä
-        // feeAndVoucherDiffByChild.get(childId).forEach { feeDataChange -> feeDataChange. }
     }
 
-    logger.debug("Got $serviceNeedDiffsByChild AND $feeAndVoucherDiffByChild AND $client")
+    // Handle fee data only -changes (no changes in service need). If there was any service need change, all related
+    // fee data has already been sent to / deleted from varda, so we filter those service needs out here
+    feeAndVoucherDiffsByServiceNeed.filterNot { uploadedServiceNeedIds.contains(it.key) }.entries.forEach {
+        val serviceNeedId = it.key
+        val diff = it.value
+        val vardaServiceNeed = db.read { it.getVardaServiceNeed(serviceNeedId) }
+        if (vardaServiceNeed != null) {
+            handleServiceNeedUpdate(db, client, serviceNeedId, diff.first().evakaChildId)
+        } else {
+            handleServiceNeedAddition(db, client, serviceNeedId, diff.first().evakaChildId)
+        }
+    }
 }
 
 // Delete varda decision, placement and related varda fee decisions
-fun handleServiceNeedDelete(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID) {
+fun handleServiceNeedDelete(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID): Boolean {
     val errors = mutableListOf<String>()
     try {
         val vardaServiceNeed = db.read { it.getVardaServiceNeed(serviceNeedId) }
@@ -84,19 +97,29 @@ fun handleServiceNeedDelete(db: Database.Connection, vardaClient: VardaClient, s
         logger.error(error)
         errors.add(error)
         db.transaction { it.markServiceNeedUpdateFailed(serviceNeedId, errors) }
+        return false
+    } else {
+        db.transaction { it.deleteVardaServiceNeed(serviceNeedId) }
+        return true
     }
 }
 
 // Delete varda decision, placement and related varda fee decisions and add new (use
 // the function below!)
-fun handleServiceNeedUpdate(db: Database.Connection, serviceNeedId: UUID, childId: UUID) {
-    if (!db.isConnected()) logger.info("silence lint")
+fun handleServiceNeedUpdate(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID, childId: UUID): Boolean {
+    try {
+        handleServiceNeedDelete(db, vardaClient, serviceNeedId)
+        handleServiceNeedAddition(db, vardaClient, serviceNeedId, childId)
+    } catch (e: Exception) {
+        logger.error("VardaUpdate: could not update service need $serviceNeedId: ${e.localizedMessage}")
+        return false
+    }
 
-    logger.info("TODO: handle $serviceNeedId update for $childId")
+    return true
 }
 
 // Add child if missing, service need, placement and mandatory fee decision(s)
-fun handleServiceNeedAddition(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID, childId: UUID) {
+fun handleServiceNeedAddition(db: Database.Connection, vardaClient: VardaClient, serviceNeedId: UUID, childId: UUID): Boolean {
     val errors = mutableListOf<String>()
     val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(serviceNeedId) }
     val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
@@ -131,13 +154,15 @@ fun handleServiceNeedAddition(db: Database.Connection, vardaClient: VardaClient,
             db.transaction {
                 it.markServiceNeedUpdateFailed(serviceNeedId, errors)
             }
+            return false
         }
     }
+    return true
 }
 
 fun createDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
     if (vardaChildId == null) throw Exception("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
-    var res: VardaDecisionResponse?
+    val res: VardaDecisionResponse?
     try {
         res = client.createDecision(evakaServiceNeedInfoForVarda.toVardaDecisionForChild(client.getChildUrl(vardaChildId), client.sourceSystem))
     } catch (e: Exception) {
@@ -149,7 +174,7 @@ fun createDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaService
 }
 
 fun createPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
-    var res: VardaPlacementResponse?
+    val res: VardaPlacementResponse?
     try {
         res = client.createPlacement(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
     } catch (e: Exception) {
@@ -172,7 +197,7 @@ fun createFeeDataToVardaFromFeeDecision(
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
         ?: throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
 
-    var res: VardaFeeDataResponse?
+    val res: VardaFeeDataResponse?
     try {
         res = client.createFeeData(
             VardaFeeData(
@@ -205,7 +230,7 @@ fun createFeeDataToVardaFromVoucherValueDecision(
     val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
     if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
 
-    var res: VardaFeeDataResponse?
+    val res: VardaFeeDataResponse?
     try {
         res = client.createFeeData(
             VardaFeeData(
@@ -237,13 +262,6 @@ private fun vardaFeeBasisByPlacementType(type: PlacementType): String {
 
 private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDates: DateRange): LocalDate {
     return if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
-}
-
-// Add service need, placement and mandatory fee decision(s)
-fun handleServiceNeedFeeDataUpdate(db: Database.Connection, serviceNeedId: UUID, childId: UUID) {
-    if (!db.isConnected()) logger.info("silence lint")
-
-    logger.info("TODO: handle $serviceNeedId addition for $childId")
 }
 
 fun getOrCreateVardaChildForServiceNeedOrganization(db: Database.Connection, childId: UUID, ophOrganizerOid: String?): Long {
@@ -368,6 +386,14 @@ ON CONFLICT (evaka_service_need_id) DO UPDATE
         varda_fee_data_ids = :vardaFeeDataIds
 """
 ).bindKotlin(vardaServiceNeed)
+    .execute()
+
+fun Database.Transaction.deleteVardaServiceNeed(serviceNeedId: UUID) = createUpdate(
+    """
+DELETE FROM varda_service_need
+WHERE evaka_service_need_id = :serviceNeedId    
+        """
+).bind("serviceNeedId", serviceNeedId)
     .execute()
 
 fun Database.Transaction.markServiceNeedUpdateFailed(serviceNeedId: UUID, errors: List<String>) = createUpdate(
