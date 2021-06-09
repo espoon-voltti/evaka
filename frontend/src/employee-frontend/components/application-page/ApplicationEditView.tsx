@@ -355,69 +355,67 @@ export default React.memo(function ApplicationEditView({
 
           {serviceNeed !== null && (
             <>
-              {type !== 'DAYCARE' ||
-                (featureFlags.daycareApplication.dailyTimesEnabled && (
-                  <>
-                    <Label>{i18n.application.serviceNeed.dailyTime}</Label>
-                    <div>
-                      <HorizontalContainer>
-                        <InputField
-                          width="m"
-                          placeholder={
-                            i18n.application.serviceNeed.startTimePlaceholder
-                          }
-                          value={serviceNeed.startTime}
-                          onChange={(value) =>
-                            setApplication(
-                              set(
-                                'form.preferences.serviceNeed.startTime',
-                                value
-                              )
-                            )
-                          }
-                          info={
-                            errors['form.preferences.serviceNeed.startTime']
-                              ? {
-                                  text:
-                                    errors[
-                                      'form.preferences.serviceNeed.startTime'
-                                    ],
-                                  status: 'warning'
-                                }
-                              : undefined
-                          }
-                          data-qa="start-time"
-                        />
-                        <Gap size="s" horizontal />
-                        <InputField
-                          width="m"
-                          placeholder={
-                            i18n.application.serviceNeed.endTimePlaceholder
-                          }
-                          value={serviceNeed.endTime}
-                          onChange={(value) =>
-                            setApplication(
-                              set('form.preferences.serviceNeed.endTime', value)
-                            )
-                          }
-                          info={
-                            errors['form.preferences.serviceNeed.endTime']
-                              ? {
-                                  text:
-                                    errors[
-                                      'form.preferences.serviceNeed.endTime'
-                                    ],
-                                  status: 'warning'
-                                }
-                              : undefined
-                          }
-                          data-qa="end-time"
-                        />
-                      </HorizontalContainer>
-                      <Gap size="m" />
-                    </div>
-                  </>
-                ))}
+              {((type === 'DAYCARE' &&
+                featureFlags.daycareApplication.dailyTimesEnabled) ||
+                type === 'PRESCHOOL') && (
+                <>
+                  <Label>{i18n.application.serviceNeed.dailyTime}</Label>
+                  <div>
+                    <HorizontalContainer>
+                      <InputField
+                        width="m"
+                        placeholder={
+                          i18n.application.serviceNeed.startTimePlaceholder
+                        }
+                        value={serviceNeed.startTime}
+                        onChange={(value) =>
+                          setApplication(
+                            set('form.preferences.serviceNeed.startTime', value)
+                          )
+                        }
+                        info={
+                          errors['form.preferences.serviceNeed.startTime']
+                            ? {
+                                text:
+                                  errors[
+                                    'form.preferences.serviceNeed.startTime'
+                                  ],
+                                status: 'warning'
+                              }
+                            : undefined
+                        }
+                        data-qa="start-time"
+                      />
+                      <Gap size="s" horizontal />
+                      <InputField
+                        width="m"
+                        placeholder={
+                          i18n.application.serviceNeed.endTimePlaceholder
+                        }
+                        value={serviceNeed.endTime}
+                        onChange={(value) =>
+                          setApplication(
+                            set('form.preferences.serviceNeed.endTime', value)
+                          )
+                        }
+                        info={
+                          errors['form.preferences.serviceNeed.endTime']
+                            ? {
+                                text:
+                                  errors[
+                                    'form.preferences.serviceNeed.endTime'
+                                  ],
+                                status: 'warning'
+                              }
+                            : undefined
+                        }
+                        data-qa="end-time"
+                      />
+                    </HorizontalContainer>
+                    <Gap size="m" />
+                  </div>
+                </>
+              )}
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               <Checkbox
