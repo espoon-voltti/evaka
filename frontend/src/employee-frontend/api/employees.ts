@@ -7,6 +7,8 @@ import { JsonOf } from 'lib-common/json'
 import { client } from '../api/client'
 import { FinanceDecisionHandlerOption } from '../state/invoicing-ui'
 import { Employee, EmployeeUser } from '../types/employee'
+import { UUID } from '../../lib-common/types'
+import { GlobalRole } from '../types'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client
@@ -61,5 +63,24 @@ export function searchEmployees(
       params: { page, pageSize, searchTerm }
     })
     .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getEmployeeDetails(id: UUID): Promise<Result<EmployeeUser>> {
+  return client
+    .get<JsonOf<EmployeeUser>>(`/employee/${id}/details`)
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function updateEmployee(
+  id: UUID,
+  globalRoles: GlobalRole[]
+): Promise<Result<null>> {
+  return client
+    .put(`/employee/${id}`, {
+      globalRoles
+    })
+    .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

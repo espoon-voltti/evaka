@@ -11,20 +11,24 @@ import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.pis.getEmployeeWithRoles
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
+import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -64,6 +68,43 @@ class EmployeeController {
         }
         return db.read { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
+    }
+
+    data class EmployeeUpdate(
+        val globalRoles: List<UserRole>
+    )
+    @PutMapping("/{id}")
+    fun updateEmployee(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable(value = "id") id: UUID,
+        @RequestBody body: EmployeeUpdate
+    ): ResponseEntity<Unit> {
+        Audit.EmployeeUpdate.log(targetId = id)
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        db.transaction {
+            it.updateEmployee(
+                id = id,
+                globalRoles = body.globalRoles
+            )
+        }
+
+        return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/{id}/details")
+    fun getEmployeeDetails(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable(value = "id") id: UUID
+    ): ResponseEntity<EmployeeWithDaycareRoles> {
+        Audit.EmployeeRead.log(targetId = id)
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        return db.read { it.getEmployeeWithRoles(id) }
+            ?.let { ResponseEntity.ok().body(it) }
+            ?: throw NotFound("employee $id not found")
     }
 
     @PostMapping("")

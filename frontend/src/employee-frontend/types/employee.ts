@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AdRole, UUID } from './index'
+import { GlobalRole, ScopedRole, UUID } from './index'
 
 export interface Employee {
   id: UUID
@@ -17,7 +17,7 @@ export interface Employee {
 interface DaycareRole {
   daycareId: string
   daycareName: string
-  role: AdRole
+  role: ScopedRole
 }
 
 export interface EmployeeUser {
@@ -25,6 +25,6 @@ export interface EmployeeUser {
   firstName: string
   lastName: string
   email: string | null
-  globalRoles: AdRole[]
+  globalRoles: GlobalRole[]
   daycareRoles: DaycareRole[]
 }

@@ -12,6 +12,11 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { useTranslation } from '../../state/i18n'
 import { EmployeeUser as Employee } from '../../types/employee'
+import { useHistory } from 'react-router'
+
+const LinkTr = styled(Tr)`
+  cursor: pointer;
+`
 
 const Name = styled.div`
   font-weight: 600;
@@ -28,12 +33,13 @@ interface Props {
 
 export function EmployeeList({ employees }: Props) {
   const { i18n } = useTranslation()
+  const history = useHistory()
 
   const rows =
     employees?.isSuccess &&
     employees.value.map(
       ({ daycareRoles, email, firstName, globalRoles, id, lastName }) => (
-        <Tr key={id}>
+        <LinkTr key={id} onClick={() => history.push(`/employees/${id}`)}>
           <Td>
             <Name data-qa="employee-name">
               {lastName} {firstName}
@@ -55,7 +61,7 @@ export function EmployeeList({ employees }: Props) {
               ))}
             </ExpandableList>
           </Td>
-        </Tr>
+        </LinkTr>
       )
     )
 

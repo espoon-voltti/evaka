@@ -26,6 +26,7 @@ import FinancePage from './components/FinancePage'
 import InvoicePage from './components/invoice/InvoicePage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
 import EmployeesPage from './components/employees/EmployeesPage'
+import EmployeePage from './components/employees/EmployeePage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import Absences from './components/absences/Absences'
 import GroupCaretakers from './components/GroupCaretakers'
@@ -370,6 +371,12 @@ export default function App() {
               exact
               path="/employees"
               component={ensureAuthenticated(EmployeesPage)}
+              title={i18n.employees.title}
+            />
+            <RouteWithTitle
+              exact
+              path="/employees/:id"
+              component={ensureAuthenticated(EmployeePage)}
               title={i18n.employees.title}
             />
             {redirectRoutes([

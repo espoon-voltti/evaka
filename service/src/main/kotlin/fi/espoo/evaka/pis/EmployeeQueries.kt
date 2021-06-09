@@ -124,6 +124,52 @@ fun Database.Read.getEmployeeUserByExternalId(externalId: ExternalId): EmployeeU
     .mapTo<EmployeeUser>()
     .singleOrNull()
 
+fun Database.Read.getEmployeeWithRoles(id: UUID): EmployeeWithDaycareRoles? {
+    // language=SQL
+    val sql = """
+SELECT
+    id,
+    created,
+    updated,
+    first_name,
+    last_name,
+    email,
+    employee.roles AS global_roles,
+    (
+        SELECT jsonb_agg(json_build_object('daycareId', dav.daycare_id, 'daycareName', d.name, 'role', dav.role))
+        FROM daycare_acl_view dav
+        JOIN daycare d ON dav.daycare_id = d.id
+        WHERE dav.employee_id = employee.id
+    ) AS daycare_roles
+FROM employee
+WHERE id = :id
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("id", id)
+        .mapTo<EmployeeWithDaycareRoles>()
+        .firstOrNull()
+}
+
+fun Database.Transaction.updateEmployee(
+    id: UUID,
+    globalRoles: List<UserRole>
+) {
+    // language=SQL
+    val sql = """
+UPDATE employee
+SET roles = :roles::user_role[]
+WHERE id = :id
+    """.trimIndent()
+
+    val updated = createUpdate(sql)
+        .bind("id", id)
+        .bind("roles", globalRoles.toTypedArray())
+        .execute()
+
+    if (updated != 1) throw NotFound("employee $id not found")
+}
+
 fun getEmployeesPaged(
     tx: Database.Read,
     page: Int,
