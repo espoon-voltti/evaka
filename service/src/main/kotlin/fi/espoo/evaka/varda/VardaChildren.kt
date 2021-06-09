@@ -176,11 +176,11 @@ private fun toVardaChildRequest(
         val isPaos = rs.getBoolean("is_paos")
         VardaChildRequest(
             id = rs.getUUID("id"),
-            personUrl = getPersonUrl(rs.getLong("varda_person_id")),
-            organizerOid = if (isPaos) null else rs.getString("varda_organizer_oid"),
-            ownOrganizationOid = if (isPaos) rs.getString("varda_organizer_oid") else null,
-            paosOrganizationOid = if (isPaos) rs.getString("oph_organizer_oid") else null,
-            sourceSystem = sourceSystem
+            henkilo = getPersonUrl(rs.getLong("varda_person_id")),
+            vakatoimija_oid = if (isPaos) null else rs.getString("varda_organizer_oid"),
+            oma_organisaatio_oid = if (isPaos) rs.getString("varda_organizer_oid") else null,
+            paos_organisaatio_oid = if (isPaos) rs.getString("oph_organizer_oid") else null,
+            lahdejarjestelma = sourceSystem
         )
     }
 
@@ -192,7 +192,7 @@ private fun updateChild(tx: Database.Transaction, vardaChildResponse: VardaChild
         """.trimIndent()
 
     tx.createUpdate(sql)
-        .bind("vardaChildId", vardaChildResponse.vardaId)
+        .bind("vardaChildId", vardaChildResponse.id)
         .bind("id", id)
         .execute()
 }
@@ -232,20 +232,15 @@ data class VardaPersonResponse(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaChildRequest(
     val id: UUID,
-    @JsonProperty("henkilo")
-    val personUrl: String,
-    @JsonProperty("vakatoimija_oid")
-    val organizerOid: String?,
-    @JsonProperty("oma_organisaatio_oid")
-    val ownOrganizationOid: String?,
-    @JsonProperty("paos_organisaatio_oid")
-    val paosOrganizationOid: String?,
-    @JsonProperty("lahdejarjestelma")
-    val sourceSystem: String
+    val henkilo: String? = null,
+    val henkilo_oid: String? = null,
+    val vakatoimija_oid: String?,
+    val oma_organisaatio_oid: String?,
+    val paos_organisaatio_oid: String?,
+    val lahdejarjestelma: String
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaChildResponse(
-    @JsonProperty("id")
-    val vardaId: Int
+    val id: Int
 )

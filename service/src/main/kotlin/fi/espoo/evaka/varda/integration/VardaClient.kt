@@ -17,12 +17,14 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
+import fi.espoo.evaka.varda.VardaChildPayload
 import fi.espoo.evaka.varda.VardaChildRequest
 import fi.espoo.evaka.varda.VardaChildResponse
 import fi.espoo.evaka.varda.VardaDecision
 import fi.espoo.evaka.varda.VardaDecisionResponse
 import fi.espoo.evaka.varda.VardaFeeData
 import fi.espoo.evaka.varda.VardaFeeDataResponse
+import fi.espoo.evaka.varda.VardaPaosChildPayload
 import fi.espoo.evaka.varda.VardaPersonRequest
 import fi.espoo.evaka.varda.VardaPersonResponse
 import fi.espoo.evaka.varda.VardaPlacement
@@ -34,6 +36,7 @@ import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import java.time.LocalDate
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -442,4 +445,28 @@ private fun logRequestError(request: Request, error: FuelError) {
         "errorMessage" to error.errorData.decodeToString()
     )
     logger.error(error, meta) { "Varda request to ${request.url} failed, status ${error.response.statusCode}" }
+}
+
+fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
+    return VardaChildRequest(
+        id = evakaPersonId,
+        henkilo = null,
+        henkilo_oid = payload.organizerOid,
+        vakatoimija_oid = payload.organizerOid,
+        oma_organisaatio_oid = null,
+        paos_organisaatio_oid = null,
+        lahdejarjestelma = payload.sourceSystem
+    )
+}
+
+fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaPaosChildPayload): VardaChildRequest {
+    return VardaChildRequest(
+        id = evakaPersonId,
+        henkilo = null,
+        henkilo_oid = payload.organizerOid,
+        vakatoimija_oid = null,
+        oma_organisaatio_oid = payload.organizerOid,
+        paos_organisaatio_oid = payload.paosOrganizationOid,
+        lahdejarjestelma = payload.sourceSystem
+    )
 }
