@@ -3,41 +3,41 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UnitDetailsPage } from '../../pages/admin/unit-details-page'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import AdminHome from '../../pages/home'
 import { Daycare } from 'e2e-test-common/dev-api/types'
+import { insertCareAreaFixtures, resetDatabase } from 'e2e-test-common/dev-api'
 
 const adminHome = new AdminHome()
 const unitDetailsPage = new UnitDetailsPage()
 
-let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let daycare1: Daycare
 
 fixture('Unit - unit details')
   .meta({ type: 'regression', subType: 'units' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-    daycare1 = fixtures.daycareFixture
-  })
   .beforeEach(async (t) => {
-    await t.useRole(seppoAdminRole)
+    await resetDatabase()
+    const fixtures = await initializeAreaAndPersonData()
+    await insertCareAreaFixtures([
+      {
+        id: '7f08ec20-3843-466e-807e-a8cddf5d5605',
+        name: 'Matinkylä-Olari',
+        areaCode: '251',
+        subCostCenter: '03',
+        shortName: 'matinkyla-olari'
+      }
+    ])
+    daycare1 = fixtures.daycareFixture
+    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-  })
 
 test('Admin creates a new unit', async () => {
   await unitDetailsPage.openNewUnitEditor()
   await unitDetailsPage.fillUnitName('Uusi Kerho')
-  await unitDetailsPage.chooseArea('Matinkylä-Olari')
+  await unitDetailsPage.chooseArea('Superkeskus')
   await unitDetailsPage.toggleCareType('CLUB')
   await unitDetailsPage.toggleApplicationType('CLUB')
   await unitDetailsPage.fillVisitingAddress('Kamreerintie 1', '02100', 'Espoo')

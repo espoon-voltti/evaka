@@ -4,16 +4,12 @@
 
 import { Page } from 'playwright'
 
-import config from 'e2e-test-common/config'
-import { UserRole } from 'e2e-test-common/dev-api/types'
-
 import { RawElement } from 'e2e-playwright/utils/element'
-import DevLoginForm from 'e2e-playwright/pages/dev-login-form'
+import { waitUntilEqual } from 'e2e-playwright/utils'
 
 export default class EmployeeNav {
   constructor(private readonly page: Page) {}
 
-  readonly #loginBtn = new RawElement(this.page, '[data-qa="login-btn"]')
   readonly #userNameBtn = new RawElement(this.page, '[data-qa="username"]')
 
   readonly applicationsTab = new RawElement(
@@ -34,45 +30,6 @@ export default class EmployeeNav {
     this.page,
     '[data-qa="user-popup-pin-code"]'
   )
-
-  async login(role: UserRole) {
-    await this.#loginBtn.click()
-
-    const form = new DevLoginForm(this.page)
-    switch (role) {
-      case 'MANAGER':
-        await form.login({
-          aad: config.supervisorAad,
-          roles: []
-        })
-        break
-      case 'ADMIN':
-        await form.login({
-          aad: config.adminAad,
-          roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
-        })
-        break
-      case 'SERVICE_WORKER':
-        await form.loginAsUser(config.serviceWorkerAad)
-        break
-      case 'FINANCE_ADMIN':
-        await form.loginAsUser(config.financeAdminAad)
-        break
-      case 'DIRECTOR':
-        await form.loginAsUser(config.directorAad)
-        break
-      case 'STAFF':
-        await form.loginAsUser(config.staffAad)
-        break
-      case 'UNIT_SUPERVISOR':
-        await form.loginAsUser(config.unitSupervisorAad)
-        break
-      case 'SPECIAL_EDUCATION_TEACHER':
-        await form.loginAsUser(config.specialEducationTeacher)
-        break
-    }
-    await this.#userNameBtn.waitUntilVisible()
-  }
 
   async openDropdownMenu() {
     await this.#userNameBtn.click()
@@ -110,11 +67,18 @@ export default class EmployeeNav {
     reports: boolean
     messages: boolean
   }) {
-    expect(await this.applicationsTab.visible).toBe(params.applications)
-    expect(await this.unitsTab.visible).toBe(params.units)
-    expect(await this.searchTab.visible).toBe(params.search)
-    expect(await this.financeTab.visible).toBe(params.finance)
-    expect(await this.reportsTab.visible).toBe(params.reports)
-    expect(await this.messagesTab.visible).toBe(params.messages)
+    await waitUntilEqual(
+      () => this.applicationsTab.visible,
+      params.applications
+    )
+    await waitUntilEqual(
+      () => this.applicationsTab.visible,
+      params.applications
+    )
+    await waitUntilEqual(() => this.unitsTab.visible, params.units)
+    await waitUntilEqual(() => this.searchTab.visible, params.search)
+    await waitUntilEqual(() => this.financeTab.visible, params.finance)
+    await waitUntilEqual(() => this.reportsTab.visible, params.reports)
+    await waitUntilEqual(() => this.messagesTab.visible, params.messages)
   }
 }

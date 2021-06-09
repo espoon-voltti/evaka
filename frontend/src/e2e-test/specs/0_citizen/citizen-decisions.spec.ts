@@ -10,7 +10,6 @@ import {
   initializeAreaAndPersonData
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  deleteApplication,
   execSimpleApplicationActions,
   getDecisionsByApplication,
   insertApplications,
@@ -35,14 +34,11 @@ let fixtures: AreaAndPersonFixtures
 
 fixture('Citizen decisions')
   .meta({ type: 'regression', subType: 'citizen-decisions' })
-  .before(async () => {
+  .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await deleteApplication(applicationId)
-  })
+  .afterEach(logConsoleMessages)
 
 test('Citizen sees her decisions, accepts preschool and rejects preschool daycare', async (t) => {
   const application = applicationFixture(

@@ -16,7 +16,6 @@ import {
   uuidv4
 } from 'e2e-test-common/dev-api/fixtures'
 import { UUID } from 'e2e-test-common/dev-api/types'
-import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ChildInformationPage, {
   DailyServiceTimeSection
 } from 'e2e-playwright/pages/employee/child-information'
@@ -26,6 +25,7 @@ import {
   waitUntilFalse,
   waitUntilTrue
 } from 'e2e-playwright/utils'
+import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
 let childInformationPage: ChildInformationPage
@@ -34,7 +34,7 @@ let childId: UUID
 beforeEach(async () => {
   await resetDatabase()
 
-  const [fixtures] = await initializeAreaAndPersonData()
+  const fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
 
   const unitId = fixtures.daycareFixture.id
@@ -48,9 +48,7 @@ beforeEach(async () => {
   await insertDaycarePlacementFixtures([daycarePlacementFixture])
 
   page = await (await newBrowserContext()).newPage()
-  await page.goto(config.employeeUrl)
-  const nav = new EmployeeNav(page)
-  await nav.login('ADMIN')
+  await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
 })

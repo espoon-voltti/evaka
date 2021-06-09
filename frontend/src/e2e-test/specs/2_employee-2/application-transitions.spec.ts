@@ -16,18 +16,17 @@ import { EmployeeDetail } from 'e2e-test-common/dev-api/types'
 import {
   cleanUpMessages,
   createDecisionPdf,
-  deleteAclForDaycare,
-  deleteApplication,
-  deleteEmployeeFixture,
   execSimpleApplicationAction,
   execSimpleApplicationActions,
   insertApplications,
   insertDecisionFixtures,
   insertEmployeeFixture,
+  resetDatabase,
   setAclForDaycares as setAclForDaycare
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole, seppoManagerRole } from '../../config/users'
+import { employeeLogin, seppoAdmin, seppoManager } from '../../config/users'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
+import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { addWeeks, format } from 'date-fns'
@@ -47,15 +46,17 @@ const supervisor: EmployeeDetail = {
 }
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let applicationId: string
 let applicationId2: string
 let supervisorId: string
 
 fixture('Application-transitions')
   .meta({ type: 'regression', subType: 'daycare-application' })
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    await cleanUpMessages()
+    fixtures = await initializeAreaAndPersonData()
+
     const uniqueSupervisor = {
       ...supervisor,
       email: `${Math.random().toString(36).substring(7)}@espoo.fi`
@@ -65,28 +66,8 @@ fixture('Application-transitions')
       config.supervisorExternalId,
       fixtures.daycareFixture.id
     )
-    await cleanUpMessages()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    if (applicationId) {
-      await deleteApplication(applicationId)
-      applicationId = ''
-    }
-    if (applicationId2) {
-      await deleteApplication(applicationId2)
-      applicationId = ''
-    }
-    await cleanUpMessages()
-  })
-  .after(async () => {
-    await deleteAclForDaycare(
-      config.supervisorExternalId,
-      fixtures.daycareFixture.id
-    )
-    await cleanUp()
-    await deleteEmployeeFixture(config.supervisorExternalId)
-  })
+  .afterEach(logConsoleMessages)
 
 test('Supervisor accepts decision on behalf of the enduser', async (t) => {
   const fixture = {
@@ -105,7 +86,7 @@ test('Supervisor accepts decision on behalf of the enduser', async (t) => {
     'send-decisions-without-proposal'
   ])
 
-  await t.useRole(seppoManagerRole)
+  await employeeLogin(t, seppoManager)
   await applicationReadView.openApplicationByLink(applicationId)
   await applicationReadView.acceptDecision('DAYCARE')
 
@@ -131,7 +112,7 @@ test('Supervisor accepts decision on behalf of the enduser and forwards start da
     'send-decisions-without-proposal'
   ])
 
-  await t.useRole(seppoManagerRole)
+  await employeeLogin(t, seppoManager)
   await applicationReadView.openApplicationByLink(applicationId)
   await applicationReadView.setDecisionStartDate(
     'DAYCARE',
@@ -160,7 +141,7 @@ test('Sending decision sets application to waiting confirmation -state', async (
     'create-default-placement-plan'
   ])
 
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, ApplicationListView.url)
 
   await applicationWorkbench.openDecisionQueue()
   await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
@@ -187,7 +168,7 @@ test('Accepting decision for non vtj guardiam sets application to waiting mailin
     'create-default-placement-plan'
   ])
 
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, ApplicationListView.url)
 
   await applicationWorkbench.openDecisionQueue()
   await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
@@ -215,7 +196,7 @@ test('Placement dialog shows warning if guardian has restricted details', async 
 
   await execSimpleApplicationAction(applicationId, 'move-to-waiting-placement')
 
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, ApplicationListView.url)
 
   await applicationWorkbench.openPlacementQueue()
 
@@ -258,7 +239,7 @@ test('Placement proposal flow', async (t) => {
     'send-placement-proposal'
   ])
 
-  await t.useRole(seppoManagerRole)
+  await employeeLogin(t, seppoManager)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabPlacementProposals()
 
@@ -283,17 +264,18 @@ test('Placement proposal flow', async (t) => {
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
     .ok()
 
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, ApplicationListView.url)
   await applicationWorkbench.openPlacementProposalQueue()
   await applicationWorkbench.withdrawPlacementProposal(applicationId2)
 
-  await t.useRole(seppoManagerRole)
+  await employeeLogin(t, seppoManager)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabPlacementProposals()
   await t
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
     .notOk()
   await t.click(unitPage.placementProposalsAcceptButton)
+  await t.expect(unitPage.placementProposalsAcceptButton.exists).notOk()
 
   await execSimpleApplicationAction(applicationId, 'confirm-decision-mailed')
 
@@ -328,7 +310,7 @@ test('Supervisor can download decision PDF only after it has been generated', as
       employeeId: supervisorId
     }
   ])
-  await t.useRole(seppoManagerRole)
+  await employeeLogin(t, seppoManager)
 
   await applicationReadView.openApplicationByLink(applicationId)
   await applicationReadView.assertDecisionDownloadPending(decision.type)

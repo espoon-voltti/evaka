@@ -10,7 +10,6 @@ import CitizenApplicationVerificationPage from '../../pages/citizen/citizen-appl
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
 import {
-  deleteApplication,
   execSimpleApplicationActions,
   getApplication,
   getDecisionsByApplication,
@@ -59,14 +58,11 @@ let fixtures: AreaAndPersonFixtures
 
 fixture('Citizen daycare applications create')
   .meta({ type: 'regression', subType: 'citizen-applications-create' })
-  .before(async () => {
+  .beforeEach(async () => {
     await resetDatabase()
-    ;[fixtures] = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    if (applicationId) await deleteApplication(applicationId)
-  })
+  .afterEach(logConsoleMessages)
 
 test('Sending invalid daycare application gives validation error', async (t) => {
   await t.useRole(enduserRole)

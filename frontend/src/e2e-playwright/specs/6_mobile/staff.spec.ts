@@ -11,10 +11,7 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import { newBrowserContext } from '../../browser'
 import { Page } from 'playwright'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import MobileNav from 'e2e-playwright/pages/mobile/mobile-nav'
 import StaffPage from 'e2e-playwright/pages/mobile/staff-page'
 import {
@@ -27,7 +24,6 @@ import { waitUntilEqual, waitUntilTrue } from 'e2e-playwright/utils'
 import { DaycareGroup } from 'e2e-test-common/dev-api/types'
 import { pairMobileDevice } from 'e2e-playwright/utils/mobile'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let nav: MobileNav
 let staffPage: StaffPage
@@ -40,7 +36,7 @@ const daycareGroup2Fixture: DaycareGroup = {
 
 beforeEach(async () => {
   await resetDatabase()
-  ;[fixtures] = await initializeAreaAndPersonData()
+  const fixtures = await initializeAreaAndPersonData()
 
   await insertDaycareGroupFixtures([daycareGroupFixture, daycareGroup2Fixture])
   const daycarePlacementFixture = createDaycarePlacementFixture(

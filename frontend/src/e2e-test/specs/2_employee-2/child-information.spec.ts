@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import {
@@ -19,23 +18,22 @@ import { t } from 'testcafe'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures
+  insertDaycarePlacementFixtures,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 
-const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
 const childInformation = new ChildInformationPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let daycarePlacementFixture: DaycarePlacement
 
 fixture('Employee - Child Information')
   .meta({ type: 'regression', subType: 'childinformation' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async (t) => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
 
     await insertDaycareGroupFixtures([daycareGroupFixture])
     daycarePlacementFixture = createDaycarePlacementFixture(
@@ -44,17 +42,13 @@ fixture('Employee - Child Information')
       fixtures.daycareFixture.id
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  })
-  .beforeEach(async () => {
-    await t.useRole(seppoAdminRole)
+
+    await employeeLogin(t, seppoAdmin)
     await employeeHome.navigateToChildInformation(
       fixtures.familyWithTwoGuardians.children[0].id
     )
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-  })
 
 test('backup care for a child can be added and removed', async () => {
   await childInformation.openBackupCaresCollapsible()

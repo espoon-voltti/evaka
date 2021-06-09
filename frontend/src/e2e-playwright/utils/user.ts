@@ -1,15 +1,16 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
-//
-// SPDX-License-Identifier: LGPL-2.1-or-later
-
-// This will be used with Testcafe's useRole.
-
-import { Role } from 'testcafe'
-import Home from '../pages/home'
+import { Page } from 'playwright'
 import config from 'e2e-test-common/config'
 import { UUID } from 'e2e-test-common/dev-api/types'
 
-const home = new Home()
+export type UserRole =
+  | 'ADMIN'
+  | 'FINANCE_ADMIN'
+  | 'UNIT_SUPERVISOR'
+  | 'SERVICE_WORKER'
+  | 'STAFF'
+  | 'DIRECTOR'
+  | 'MANAGER'
+  | 'SPECIAL_EDUCATION_TEACHER'
 
 export interface DevLoginUser {
   aad: UUID
@@ -24,26 +25,41 @@ const devLoginRoles = [
   'ADMIN'
 ] as const
 
-export const seppoAdmin: DevLoginUser = {
-  aad: config.adminAad,
-  roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
+function getLoginUser(role: UserRole): DevLoginUser | string {
+  switch (role) {
+    case 'MANAGER':
+      return {
+        aad: config.supervisorAad,
+        roles: []
+      }
+    case 'ADMIN':
+      return {
+        aad: config.adminAad,
+        roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
+      }
+    case 'SERVICE_WORKER':
+      return config.serviceWorkerAad
+    case 'FINANCE_ADMIN':
+      return config.financeAdminAad
+    case 'DIRECTOR':
+      return config.directorAad
+    case 'STAFF':
+      return config.staffAad
+    case 'UNIT_SUPERVISOR':
+      return config.unitSupervisorAad
+    case 'SPECIAL_EDUCATION_TEACHER':
+      return config.specialEducationTeacher
+  }
 }
 
-export const seppoManager: DevLoginUser = {
-  aad: config.supervisorAad,
-  roles: []
-}
-
-export async function employeeLogin(
-  t: TestController,
-  user: string | DevLoginUser,
-  landingUrl?: string
-) {
-  await t.navigateTo(config.employeeLoginUrl)
+export async function employeeLogin(page: Page, role: UserRole) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
+  const user = getLoginUser(role)
 
-  await t.eval(
-    () => {
+  await page.goto(config.employeeLoginUrl)
+
+  await page.evaluate(
+    ({ user, authUrl }: { user: DevLoginUser | string; authUrl: string }) => {
       const params = new URLSearchParams()
       if (typeof user === 'string') {
         params.append('preset', user)
@@ -67,23 +83,6 @@ export async function employeeLogin(
         }
       })
     },
-    { dependencies: { authUrl, user } }
-  )
-  if (landingUrl) {
-    await t.navigateTo(landingUrl)
-  }
-}
-
-export async function mobileLogin(t: TestController, token: string) {
-  await t.navigateTo(
-    `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${token}`
+    { user, authUrl }
   )
 }
-
-export const enduserRole = Role(
-  config.enduserUrl,
-  async () => {
-    await home.enduserLogin()
-  },
-  { preserveUrl: true }
-)

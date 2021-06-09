@@ -19,28 +19,26 @@ import { logConsoleMessages } from '../../utils/fixture'
 import EmployeeHome from '../../pages/employee/home'
 import GuardianPage from '../../pages/employee/guardian-page'
 import {
-  cleanUpInvoicingDatabase,
-  deletePersonFixture,
   insertDaycarePlacementFixtures,
   insertFeeDecisionFixtures,
   insertInvoiceFixtures,
   insertParentshipFixtures,
-  insertPersonFixture
+  insertPersonFixture,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import LocalDate from 'lib-common/local-date'
 
 const page = new InvoicingPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let adultWithoutSSN: string
 
 fixture('Invoicing - invoices')
   .meta({ type: 'regression', subType: 'invoices' })
-  .page(page.url)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async (t) => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
     adultWithoutSSN = await insertPersonFixture(adultFixtureWihtoutSSN)
     await insertParentshipFixtures([
       {
@@ -50,9 +48,7 @@ fixture('Invoicing - invoices')
         endDate: '2099-01-01'
       }
     ])
-  })
-  .beforeEach(async (t) => {
-    await cleanUpInvoicingDatabase()
+
     const feeDecision = feeDecisionsFixture(
       'SENT',
       fixtures.enduserGuardianFixture,
@@ -69,16 +65,12 @@ fixture('Invoicing - invoices')
         feeDecision.validDuring.end.formatIso()
       )
     ])
-    await t.useRole(seppoAdminRole)
+
+    await employeeLogin(t, seppoAdmin, page.url)
     await page.navigateToInvoices(t)
     await t.expect(page.loaderSpinner.exists).notOk()
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUpInvoicingDatabase()
-    await deletePersonFixture(adultWithoutSSN)
-    await cleanUp()
-  })
 
 test('List of invoice drafts is empty intially and after creating new drafts the list has one invoice', async (t) => {
   await t.expect(page.invoiceTable.visible).ok()

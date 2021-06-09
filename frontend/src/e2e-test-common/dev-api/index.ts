@@ -133,19 +133,6 @@ export async function execSimpleApplicationActions(
   }
 }
 
-export async function deleteApplication(applicationId: string): Promise<void> {
-  try {
-    await devClient.delete(`/applications/${applicationId}`)
-  } catch (err) {
-    console.log(
-      `Warning: could not clean up application ${applicationId} after test: ${String(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        err.stack || err.message
-      )}`
-    )
-  }
-}
-
 export async function insertPlacementPlan(
   applicationId: string,
   fixture: PlacementPlan
@@ -162,21 +149,6 @@ export async function insertCareAreaFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/care-areas`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-/*
-  Causes the following things to be deleted:
-  - care area by given id
-  - all clubs and daycares on that care area
-  - all addresses related to deleted daycares
-  - daycare_placements for all deleted daycares
- */
-export async function deleteCareAreaFixture(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/care-areas/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -219,27 +191,11 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
   }
 }
 
-export async function deleteDaycare(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/daycares/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertDaycareGroupFixtures(
   fixture: DaycareGroup[]
 ): Promise<void> {
   try {
     await devClient.post(`/daycare-groups`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteDaycareGroup(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/daycare-groups/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -258,14 +214,6 @@ export function insertDaycareCaretakerFixtures(
 ): Promise<void> {
   try {
     return devClient.post(`/daycare-caretakers`, fixtures)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteChildFixture(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/children/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -309,40 +257,6 @@ export async function deleteEmployeeFixture(externalId: string): Promise<void> {
   }
 }
 
-export async function deleteEmployeeById(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/employee/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteEmployeeByExternalId(
-  externalId: UUID
-): Promise<void> {
-  try {
-    await devClient.delete(`/employee/external-id/${externalId}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deletePersonBySsn(ssn: string): Promise<void> {
-  try {
-    await devClient.delete(`/person/ssn/${ssn}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deletePersonFixture(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/person/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertParentshipFixtures(
   fixtures: {
     childId: UUID
@@ -353,22 +267,6 @@ export async function insertParentshipFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/parentship`, fixtures)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteMessages(): Promise<void> {
-  try {
-    await devClient.delete(`/message/delete-all`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteMessageAccounts(): Promise<void> {
-  try {
-    await devClient.delete(`/message-account/delete-all`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -394,28 +292,9 @@ export async function setAclForDaycares(
   }
 }
 
-export async function deleteAclForDaycare(
-  externalId: string,
-  daycareId: UUID
-): Promise<void> {
-  try {
-    await devClient.delete(`/daycares/${daycareId}/acl/${externalId}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function resetDatabase(): Promise<void> {
   try {
     await devClient.post(`/reset-db`, null)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function cleanUpInvoicingDatabase(): Promise<void> {
-  try {
-    await devClient.post(`/clean-up`, null)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -426,14 +305,6 @@ export async function insertDecisionFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/decisions`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteDecisionFixture(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/decisions/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -483,30 +354,6 @@ export async function insertPricing(fixture: DevPricing): Promise<void> {
   }
 }
 
-export async function deletePricing(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/pricing/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function clearPricing(): Promise<void> {
-  try {
-    await devClient.post(`/pricing/clean-up`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteIncomesByPerson(id: UUID): Promise<void> {
-  try {
-    await devClient.delete(`/incomes/person/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 // returns the id of the upserted person
 export async function upsertPersonFixture(
   fixture: PersonDetail
@@ -547,6 +394,22 @@ export async function insertChildFixture(
   try {
     const { data } = await devClient.post<UUID>(`/child`, fixture)
     return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertServiceNeedOptions(): Promise<void> {
+  try {
+    await devClient.post<UUID>(`/service-need-options`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertVoucherValues(): Promise<void> {
+  try {
+    await devClient.post<UUID>(`/voucher-values`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -630,14 +493,6 @@ export async function getVtjPerson(ssn: string): Promise<VtjPerson> {
   }
 }
 
-export async function deleteVtjPerson(ssn: string): Promise<void> {
-  try {
-    await devClient.delete(`/vtj-persons/${ssn}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export function personToVtjPerson(
   person: PersonDetail,
   dependants: PersonDetail[],
@@ -680,14 +535,6 @@ export async function getSentEmails(): Promise<ApplicationEmail> {
       `/application-emails/`
     )
     return data
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function cleanUpApplicationEmails(): Promise<void> {
-  try {
-    await devClient.post(`/application-emails/clean-up`, null)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -755,19 +602,6 @@ export async function postPairing(unitId: UUID): Promise<PairingResponse> {
   }
 }
 
-export async function deletePairing(pairingId: string): Promise<void> {
-  try {
-    await devClient.delete(`/mobile/pairings/${pairingId}`)
-  } catch (err) {
-    console.log(
-      `Warning: could not clean up pairing ${pairingId} after test: ${String(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        err.stack || err.message
-      )}`
-    )
-  }
-}
-
 interface MobileDevice {
   id: UUID
   unitId: UUID
@@ -783,19 +617,6 @@ export async function postMobileDevice(
     await devClient.post<PairingResponse>(`/mobile/devices`, mobileDevice)
   } catch (e) {
     throw new DevApiError(e)
-  }
-}
-
-export async function deleteMobileDevice(deviceId: string): Promise<void> {
-  try {
-    await devClient.delete(`/mobile/devices/${deviceId}`)
-  } catch (err) {
-    console.log(
-      `Warning: could not clean up mobile device ${deviceId} after test: ${String(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        err.stack || err.message
-      )}`
-    )
   }
 }
 
@@ -861,43 +682,11 @@ export async function postDaycareDailyNote(
   }
 }
 
-export async function deleteAttendances(): Promise<void> {
-  try {
-    await devClient.delete(`/attendances`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteDaycareDailyNotes(): Promise<void> {
-  try {
-    await devClient.delete(`/daycare-daily-notes`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteAbsences(): Promise<void> {
-  try {
-    await devClient.delete(`/absences`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertFamilyContacts(
   fixture: FamilyContact[]
 ): Promise<void> {
   try {
     await devClient.post(`/family-contact`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteFamilyContact(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/family-contact/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -913,27 +702,11 @@ export async function insertBackupPickups(
   }
 }
 
-export async function deleteBackupPickup(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/backup-pickup/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertFridgeChildren(
   fixture: FridgeChild[]
 ): Promise<void> {
   try {
     await devClient.post(`/fridge-child`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteFridgeChild(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/fridge-child/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -949,27 +722,11 @@ export async function insertFridgePartners(
   }
 }
 
-export async function deleteFridgePartner(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/fridge-partner/${id}`)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function insertEmployeePins(
   fixture: EmployeePin[]
 ): Promise<void> {
   try {
     await devClient.post(`/employee-pin`, fixture)
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function deleteEmployeePin(id: string): Promise<void> {
-  try {
-    await devClient.delete(`/employee-pin/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }

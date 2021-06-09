@@ -16,21 +16,17 @@ import {
 import { newBrowserContext } from '../../browser'
 import config from 'e2e-test-common/config'
 import { Page } from 'playwright'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import EmployeeNav from 'e2e-playwright/pages/employee/employee-nav'
 import ReportsPage from 'e2e-playwright/pages/employee/reports'
 import assert from 'assert'
-
-let fixtures: AreaAndPersonFixtures
+import { employeeLogin } from 'e2e-playwright/utils/user'
 
 let page: Page
 let reports: ReportsPage
 beforeEach(async () => {
   await resetDatabase()
-  ;[fixtures] = await initializeAreaAndPersonData()
+  const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
   await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
 
@@ -56,10 +52,9 @@ beforeEach(async () => {
   ])
 
   page = await (await newBrowserContext({ acceptDownloads: true })).newPage()
+  await employeeLogin(page, 'ADMIN')
   await page.goto(config.employeeUrl)
-  const nav = new EmployeeNav(page)
-  await nav.login('ADMIN')
-  await nav.openTab('reports')
+  await new EmployeeNav(page).openTab('reports')
 
   reports = new ReportsPage(page)
 })

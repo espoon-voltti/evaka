@@ -4,11 +4,7 @@
 
 import AdminHome from '../../pages/home'
 import EmployeeHome from '../../pages/employee/home'
-import config from 'e2e-test-common/config'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { supervisor, uuidv4 } from 'e2e-test-common/dev-api/fixtures'
 import {
   applicationFixture,
@@ -23,33 +19,28 @@ import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
 import { DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
-  deleteEmployeeFixture,
   insertApplications,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertDecisionFixtures,
   insertEmployeeFixture,
-  deleteApplication
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import GuardianPage from '../../pages/employee/guardian-page'
 
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
 const guardianPage = new GuardianPage()
 
-let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
-
 let daycarePlacementFixture: DaycarePlacement
 let supervisorId: string
-let applicationId: string
 
 fixture('Employee - Guardian Information')
   .meta({ type: 'regression', subType: 'guardianinformation' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    const fixtures = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     supervisorId = await insertEmployeeFixture(supervisor)
 
@@ -62,7 +53,6 @@ fixture('Employee - Guardian Information')
       enduserChildFixtureJari,
       enduserGuardianFixture
     )
-    applicationId = application.id
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
     await insertApplications([application])
     await insertDecisionFixtures([
@@ -75,17 +65,10 @@ fixture('Employee - Guardian Information')
         employeeId: supervisorId
       }
     ])
-  })
-  .beforeEach(async () => {
-    await t.useRole(seppoAdminRole)
+    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
     await employeeHome.navigateToGuardianInformation(enduserGuardianFixture.id)
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    applicationId && (await deleteApplication(applicationId))
-    await cleanUp()
-    await deleteEmployeeFixture(config.supervisorExternalId)
-  })
 
 test('guardian information is shown', async () => {
   const expectedChildName = `${enduserChildFixtureJari.firstName} ${enduserChildFixtureJari.lastName}`

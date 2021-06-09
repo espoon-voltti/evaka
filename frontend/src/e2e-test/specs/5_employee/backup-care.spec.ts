@@ -23,9 +23,10 @@ import {
 } from 'e2e-test-common/dev-api/types'
 import {
   insertBackupCareFixtures,
-  insertDaycareGroupFixtures
+  insertDaycareGroupFixtures,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
 import LocalDate from 'lib-common/local-date'
 
@@ -34,15 +35,14 @@ const employeeHome = new EmployeeHome()
 const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let childFixture: ApplicationPersonDetail
 let backupCareFixture: BackupCare
 
 fixture('Employee - Backup care')
   .meta({ type: 'regression', subType: 'backup-care' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async (t) => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
     childFixture = fixtures.enduserChildFixtureKaarina
     backupCareFixture = createBackupCareFixture(
       childFixture.id,
@@ -50,15 +50,11 @@ fixture('Employee - Backup care')
     )
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertBackupCareFixtures([backupCareFixture])
-  })
-  .beforeEach(async (t) => {
-    await t.useRole(seppoAdminRole)
+
+    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
     await employeeHome.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-  })
 
 test('daycare has one backup care child missing group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)

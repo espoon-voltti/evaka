@@ -41,7 +41,7 @@ const areaAndPersonFixtures = {
 export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
 
 export const initializeAreaAndPersonData = async (): Promise<
-  [typeof areaAndPersonFixtures, () => Promise<void>]
+  typeof areaAndPersonFixtures
 > => {
   const careArea = await Fixture.careArea()
     .with(areaAndPersonFixtures.careAreaFixture)
@@ -140,9 +140,5 @@ export const initializeAreaAndPersonData = async (): Promise<
     personFixtureChildZeroYearOld
   ])
 
-  const cleanUp = async () => {
-    await Fixture.cleanup()
-  }
-
-  return [areaAndPersonFixtures, cleanUp]
+  return areaAndPersonFixtures
 }

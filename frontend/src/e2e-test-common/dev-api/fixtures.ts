@@ -28,14 +28,6 @@ import {
   EmployeePin
 } from './types'
 import {
-  deleteCareAreaFixture,
-  deleteDaycare,
-  deleteDaycareGroup,
-  deleteDecisionFixture,
-  deleteEmployeeById,
-  deleteEmployeePin,
-  deletePersonFixture,
-  deleteVtjPerson,
   insertCareAreaFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
@@ -818,25 +810,7 @@ export const uuidv4 = (): string => {
 export const uniqueLabel = (l = 7): string =>
   Math.random().toString(36).substring(0, l)
 
-type CleanupOperation = () => Promise<void>
-
 export class Fixture {
-  static cleanupOperations: CleanupOperation[] = []
-
-  static async cleanup() {
-    try {
-      for (const op of this.cleanupOperations) {
-        try {
-          await op()
-        } catch (e) {
-          console.log('Error while cleaning up fixtures, continuing', e)
-        }
-      }
-    } finally {
-      Fixture.cleanupOperations = []
-    }
-  }
-
   static daycare(): DaycareBuilder {
     const id = uniqueLabel()
     return new DaycareBuilder({
@@ -965,14 +939,6 @@ export class DaycareBuilder {
 
   async save(): Promise<DaycareBuilder> {
     await insertDaycareFixtures([this.data])
-    Fixture.cleanupOperations.push(
-      async () => await deleteDaycare(this.data.id)
-    )
-    return this
-  }
-
-  async delete(): Promise<DaycareBuilder> {
-    await deleteDaycare(this.data.id)
     return this
   }
 
@@ -1004,14 +970,6 @@ export class DaycareGroupBuilder {
 
   async save(): Promise<DaycareGroupBuilder> {
     await insertDaycareGroupFixtures([this.data])
-    Fixture.cleanupOperations.push(async () => {
-      await deleteDaycareGroup(this.data.id)
-    })
-    return this
-  }
-
-  async delete(): Promise<DaycareGroupBuilder> {
-    await deleteDaycareGroup(this.data.id)
     return this
   }
 
@@ -1043,14 +1001,6 @@ export class CareAreaBuilder {
 
   async save(): Promise<CareAreaBuilder> {
     await insertCareAreaFixtures([this.data])
-    Fixture.cleanupOperations.push(async () => {
-      await deleteCareAreaFixture(this.data.id)
-    })
-    return this
-  }
-
-  async delete(): Promise<CareAreaBuilder> {
-    await deleteCareAreaFixture(this.data.id)
     return this
   }
 
@@ -1077,28 +1027,12 @@ export class PersonBuilder {
 
   async save(): Promise<PersonBuilder> {
     await insertPersonFixture(this.data)
-    Fixture.cleanupOperations.push(async () => {
-      await deletePersonFixture(this.data.id)
-    })
     return this
   }
 
   async saveAndUpdateMockVtj(): Promise<PersonBuilder> {
     await this.save()
     await insertVtjPersonFixture(this.data)
-    Fixture.cleanupOperations.push(async () => {
-      if (this.data.ssn) await deleteVtjPerson(this.data.ssn)
-      if (this.data.dependants) {
-        for (const dependant of this.data.dependants) {
-          if (dependant.ssn) await deleteVtjPerson(dependant.ssn)
-        }
-      }
-    })
-    return this
-  }
-
-  async delete(): Promise<PersonBuilder> {
-    if (this.data.ssn) await deleteVtjPerson(this.data.ssn)
     return this
   }
 
@@ -1125,15 +1059,6 @@ export class EmployeeBuilder {
 
   async save(): Promise<EmployeeBuilder> {
     await insertEmployeeFixture(this.data)
-    Fixture.cleanupOperations.push(async () => {
-      await this.delete()
-    })
-    return this
-  }
-
-  async delete(): Promise<EmployeeBuilder> {
-    //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await deleteEmployeeById(this.data.id!)
     return this
   }
 
@@ -1160,14 +1085,6 @@ export class DecisionBuilder {
 
   async save(): Promise<DecisionBuilder> {
     await insertDecisionFixtures([this.data])
-    Fixture.cleanupOperations.push(async () => {
-      await deleteDecisionFixture(this.data.id)
-    })
-    return this
-  }
-
-  async delete(): Promise<DecisionBuilder> {
-    await deleteDecisionFixture(this.data.id)
     return this
   }
 
@@ -1194,14 +1111,6 @@ export class EmployeePinBuilder {
 
   async save(): Promise<EmployeePinBuilder> {
     await insertEmployeePins([this.data])
-    Fixture.cleanupOperations.push(async () => {
-      await deleteEmployeePin(this.data.id)
-    })
-    return this
-  }
-
-  async delete(): Promise<EmployeePinBuilder> {
-    await deleteEmployeePin(this.data.id)
     return this
   }
 

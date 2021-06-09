@@ -4,32 +4,24 @@
 
 import 'testcafe'
 import InvoicingPage from '../../pages/invoicing'
-import {
-  initializeAreaAndPersonData,
-  AreaAndPersonFixtures
-} from 'e2e-test-common/dev-api/data-init'
+import { initializeAreaAndPersonData } from 'e2e-test-common/dev-api/data-init'
 import { feeDecisionsFixture } from 'e2e-test-common/dev-api/fixtures'
 import {
-  cleanUpInvoicingDatabase,
   insertFeeDecisionFixtures,
+  resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 
 const page = new InvoicingPage()
 
-let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
-
 fixture('Invoicing - fee decisions')
   .meta({ type: 'regression', subType: 'feeDecisions' })
-  .page(page.url)
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-  })
   .beforeEach(async (t) => {
-    await cleanUpInvoicingDatabase()
+    await resetDatabase()
+    const fixtures = await initializeAreaAndPersonData()
+
     await insertFeeDecisionFixtures([
       feeDecisionsFixture(
         'DRAFT',
@@ -39,14 +31,10 @@ fixture('Invoicing - fee decisions')
       )
     ])
 
-    await t.useRole(seppoAdminRole)
+    await employeeLogin(t, seppoAdmin, page.url)
     await page.navigateToFeeDecisions(t)
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUpInvoicingDatabase()
-    await cleanUp()
-  })
 
 test('List of fee decision drafts shows at least one row', async (t) => {
   await t.expect(page.feeDecisionTable.visible).ok()

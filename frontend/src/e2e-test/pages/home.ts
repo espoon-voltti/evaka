@@ -6,12 +6,10 @@
 import { Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
 import { Idp } from '../config/idp'
-import DevLoginForm from './dev-login-form'
 
 type EvakaRole = 'manager' | 'admin' | 'enduser'
 
 export default class Home {
-  private readonly devLoginForm = new DevLoginForm()
   constructor(
     readonly loginBtn = Selector('[data-qa="login-btn"]'),
     readonly userNameBtn = Selector('[data-qa="username"]'),
@@ -38,29 +36,9 @@ export default class Home {
     return this.userNameBtn.exists
   }
 
-  async login(role: EvakaRole) {
+  async enduserLogin() {
     await t.click(this.loginBtn)
-    switch (role) {
-      case 'manager':
-        await this.devLoginForm.login({
-          aad: config.supervisorAad,
-          roles: []
-        })
-        break
-      case 'admin':
-        await this.devLoginForm.login({
-          aad: config.adminAad,
-          roles: ['SERVICE_WORKER', 'FINANCE_ADMIN', 'ADMIN']
-        })
-        break
-      case 'enduser':
-        break
-    }
-    if (role === 'enduser') {
-      await t.expect(this.logoutBtn.visible).ok()
-    } else {
-      await t.expect(this.userNameBtn.visible).ok()
-    }
+    await t.expect(this.logoutBtn.visible).ok()
   }
 
   async logout() {

@@ -43,7 +43,7 @@ const daycareGroup2Fixture: DaycareGroup = {
 
 beforeEach(async () => {
   await resetDatabase()
-  ;[fixtures] = await initializeAreaAndPersonData()
+  fixtures = await initializeAreaAndPersonData()
 
   await insertDaycareGroupFixtures([daycareGroupFixture, daycareGroup2Fixture])
   const daycarePlacementFixture = createDaycarePlacementFixture(

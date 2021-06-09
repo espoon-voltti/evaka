@@ -12,13 +12,14 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
-  clearPricing,
-  deletePricing,
   insertPricing,
+  insertServiceNeedOptions,
+  insertVoucherValues,
+  resetDatabase,
   runPendingAsyncJobs
 } from 'e2e-test-common/dev-api'
 import { t } from 'testcafe'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import { PersonDetail } from 'e2e-test-common/dev-api/types'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
@@ -29,7 +30,6 @@ const fridgeHeadInformation = new FridgeHeadInformationPage()
 const childInformation = new ChildInformationPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let regularPerson: PersonDetail
 let fridgePartner: PersonDetail
 let child: PersonDetail
@@ -38,13 +38,14 @@ const PRICING_ID = '99f976c2-2c0d-4acc-b10b-d46e2ecd951d'
 
 fixture('Employee - Head of family details')
   .meta({ type: 'regression', subType: 'childinformation' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+    await insertServiceNeedOptions()
+    await insertVoucherValues()
     regularPerson = fixtures.familyWithTwoGuardians.guardian
     fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
     child = fixtures.familyWithTwoGuardians.children[0]
-    await clearPricing()
     await insertPricing({
       id: PRICING_ID,
       validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
@@ -69,15 +70,9 @@ fixture('Employee - Head of family details')
       minFee: 2700,
       maxFee: 28900
     })
-  })
-  .beforeEach(async () => {
-    await t.useRole(seppoAdminRole)
+    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-    await deletePricing(PRICING_ID)
-  })
 
 test('guardian has restriction details enabled', async () => {
   await employeeHome.navigateToGuardianInformation(

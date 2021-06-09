@@ -2,27 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { resetDatabase } from 'e2e-test-common/dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../../e2e-test-common/dev-api/data-init'
 import { Fixture } from '../../../e2e-test-common/dev-api/fixtures'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import Home from '../../pages/home'
 import ReportsPage from '../../pages/reports'
 import { logConsoleMessages } from '../../utils/fixture'
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 
 const home = new Home()
 const reports = new ReportsPage()
 
 fixture('Reporting - applications')
   .meta({ type: 'regression', subType: 'reports' })
-  .page(home.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
 
     const careArea = await Fixture.careArea()
       .with({ name: 'Toinen alue' })
@@ -36,11 +36,10 @@ fixture('Reporting - applications')
       .careArea(careArea)
       .save()
   })
-  .afterEach(async (t) => await logConsoleMessages(t))
-  .after(async () => await cleanUp())
+  .afterEach(logConsoleMessages)
 
 test('application report is generated correctly, respecting care area filter', async (t) => {
-  await t.useRole(seppoAdminRole)
+  await employeeLogin(t, seppoAdmin, home.homePage('admin'))
   await reports.selectReportsTab()
   await reports.selectApplicationsReport()
 

@@ -4,10 +4,8 @@
 
 import { Selector, t } from 'testcafe'
 import config from 'e2e-test-common/config'
-import DevLoginForm, { DevLoginUser } from '../dev-login-form'
 
 export default class EmployeeHome {
-  private readonly devLoginForm = new DevLoginForm()
   readonly loginBtn = Selector('[data-qa="login-btn"]')
   readonly userNameBtn = Selector('[data-qa="username"]')
   readonly logoutBtn = Selector('[data-qa="logout-btn"]')
@@ -43,12 +41,6 @@ export default class EmployeeHome {
     async navigateToNthPerson(n: number) {
       await t.click(this.searchResults.nth(n).find('a').nth(0))
     }
-  }
-
-  async login(user: DevLoginUser) {
-    await t.click(this.loginBtn)
-    await this.devLoginForm.login(user)
-    await t.expect(this.userNameBtn.visible).ok()
   }
 
   async navigateToUnits() {

@@ -26,9 +26,11 @@ import { Child, DaycarePlacement } from 'e2e-test-common/dev-api/types'
 import {
   insertDaycareCaretakerFixtures,
   insertDaycareGroupFixtures,
-  insertDaycarePlacementFixtures
+  insertDaycarePlacementFixtures,
+  insertServiceNeedOptions,
+  resetDatabase
 } from 'e2e-test-common/dev-api'
-import { seppoAdminRole } from '../../config/users'
+import { employeeLogin, seppoAdmin } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
 
 const adminHome = new AdminHome()
@@ -38,15 +40,15 @@ const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let childFixture: Child
 let daycarePlacementFixture: DaycarePlacement
 
 fixture('Employee - Units')
   .meta({ type: 'regression', subType: 'units' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async (t) => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+    await insertServiceNeedOptions()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     childFixture = fixtures.familyWithTwoGuardians.children[0]
     daycarePlacementFixture = createDaycarePlacementFixture(
@@ -55,15 +57,11 @@ fixture('Employee - Units')
       fixtures.daycareFixture.id
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  })
-  .beforeEach(async (t) => {
-    await t.useRole(seppoAdminRole)
+
+    await employeeLogin(t, seppoAdmin, adminHome.homePage('admin'))
     await employeeHome.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-  })
 
 test('filtering units, navigating to one, contact details', async (t) => {
   await unitsPage.filterByName(fixtures.daycareFixture.name)

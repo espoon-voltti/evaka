@@ -4,13 +4,11 @@
 
 import config from 'e2e-test-common/config'
 import {
-  deleteEmployeeFixture,
-  deleteMessageAccounts,
-  deleteMessages,
   insertDaycareGroupFixtures,
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
+  resetDatabase,
   setAclForDaycares,
   upsertMessageAccounts
 } from 'e2e-test-common/dev-api'
@@ -29,7 +27,7 @@ import {
   DaycarePlacement
 } from 'e2e-test-common/dev-api/types'
 import MessagesPage from '../../pages/employee/messaging/messages-page'
-import { enduserRole } from '../../config/users'
+import { employeeLogin, enduserRole } from '../../config/users'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import EmployeeHome from '../../pages/employee/home'
 import { logConsoleMessages } from '../../utils/fixture'
@@ -43,14 +41,14 @@ const citizenMessagesPage = new CitizenMessagesPage()
 const childInformationPage = new ChildInformationPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let daycarePlacementFixture: DaycarePlacement
 let daycareGroupPlacementFixture: DaycareGroupPlacement
 
 fixture('Sending and receiving bulletins')
   .meta({ type: 'regression', subType: 'bulletins' })
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,
       firstName: 'Seppo',
@@ -78,27 +76,20 @@ fixture('Sending and receiving bulletins')
     await insertDaycareGroupPlacementFixtures([daycareGroupPlacementFixture])
     await upsertMessageAccounts()
   })
-  .afterEach(async (t) => {
-    await logConsoleMessages(t)
-    await deleteMessages()
-  })
-  .after(async () => {
-    await deleteMessageAccounts()
-    await deleteEmployeeFixture(config.supervisorExternalId)
-    await cleanUp()
-  })
+  .afterEach(logConsoleMessages)
 
 test('Supervisor sends a message and guardian reads it', async (t) => {
   const title = 'Testiviesti'
   const content = 'Testiviestin sisältö'
+
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
-  await t.navigateTo(config.adminUrl)
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
   await home.navigateToMessages()
   await messagesPage.sendNewMessage(title, content)
   await t.useRole(enduserRole)
@@ -108,20 +99,20 @@ test('Supervisor sends a message and guardian reads it', async (t) => {
   await t
     .expect(citizenMessagesPage.messageReaderContent.textContent)
     .eql(content)
-  await deleteMessages()
 })
 
 test('Admin sends a message and blocked guardian does not get it', async (t) => {
   const title = 'Kielletty viesti'
   const content = 'Tämän ei pitäisi mennä perille'
+
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
-  await t.navigateTo(config.adminUrl)
-  await home.login({
-    aad: config.supervisorAad,
-    roles: ['ADMIN']
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: ['ADMIN'] },
+    config.adminUrl
+  )
   await home.navigateToMessages()
 
   await home.navigateToChildInformation(fixtures.enduserChildFixtureJari.id)
@@ -142,14 +133,15 @@ test('Admin sends a message and blocked guardian does not get it', async (t) => 
 test('A draft is saved correctly', async (t) => {
   const title = 'Luonnos'
   const content = 'Tässä luonnostellaan'
+
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
-  await t.navigateTo(config.adminUrl)
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
   await home.navigateToMessages()
   await messagesPage.draftNewMessage(title, content)
   await t.click(messagesPage.closeEditorBtn)
@@ -162,14 +154,16 @@ test('A draft is saved correctly', async (t) => {
 test('A draft is not saved when a message is sent', async (t) => {
   const title = 'Viesti'
   const content = 'Tämä ei tallennu, koska viesti lähetetään'
+
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
   await t.navigateTo(config.adminUrl)
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
   await home.navigateToMessages()
   await messagesPage.draftNewMessage(title, content)
   await t.click(messagesPage.sendMessageBtn)
@@ -180,14 +174,15 @@ test('A draft is not saved when a message is sent', async (t) => {
 test('A draft is not saved when its discarded', async (t) => {
   const title = 'Luonnos'
   const content = 'Tämä ei tallennu, koska luonnos hylätään'
+
   // login as a citizen first to init data in guardian table
   await t.useRole(enduserRole)
 
-  await t.navigateTo(config.adminUrl)
-  await home.login({
-    aad: config.supervisorAad,
-    roles: []
-  })
+  await employeeLogin(
+    t,
+    { aad: config.supervisorAad, roles: [] },
+    config.adminUrl
+  )
   await home.navigateToMessages()
   await messagesPage.draftNewMessage(title, content)
   await t.click(messagesPage.discardDraftBtn)

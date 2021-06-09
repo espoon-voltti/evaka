@@ -4,16 +4,22 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
+url=$1
+
+healthcheck() {
+	curl -w "%{http_code}" --connect-timeout 3 "$url/api/internal/dev-api"
+}
+
 TRIES=1
-STATUS=$(curl -w "%{http_code}" --connect-timeout 3 -X POST "$1/api/internal/dev-api/clean-up")
+STATUS=$(healthcheck)
 
 while [ "$STATUS" != "204" ]; do
-  if [ $TRIES -lt 37 ]; then
-    sleep 5s
-    TRIES=$((TRIES+1))
-    STATUS=$(curl -w "%{http_code}" --connect-timeout 3 -X POST "$1/api/internal/dev-api/clean-up")
-  else
-    echo "dev api did not answer in $TRIES tries"
-    exit 1
-  fi
+	if [ $TRIES -lt 37 ]; then
+		sleep 5s
+		TRIES=$((TRIES + 1))
+		STATUS=$(healthcheck)
+	else
+		echo "dev api did not answer in $TRIES tries"
+		exit 1
+	fi
 done

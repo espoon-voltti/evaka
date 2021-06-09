@@ -19,16 +19,17 @@ import {
   AreaAndPersonFixtures
 } from 'e2e-test-common/dev-api/data-init'
 import {
-  deleteEmployeeFixture,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
+  insertServiceNeedOptions,
+  resetDatabase,
   setAclForDaycares
 } from 'e2e-test-common/dev-api'
 import { logConsoleMessages } from '../../utils/fixture'
 import AbsencesPage from '../../pages/employee/absences/absences-page'
 import { t } from 'testcafe'
-import { seppoManagerRole } from '../../config/users'
+import { employeeLogin, seppoManager } from '../../config/users'
 
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
@@ -36,14 +37,14 @@ const unitPage = new UnitPage()
 const absencesPage = new AbsencesPage()
 
 let fixtures: AreaAndPersonFixtures
-let cleanUp: () => Promise<void>
 let daycarePlacementFixture: DaycarePlacement
 
 fixture('Employee - Absences')
   .meta({ type: 'regression', subType: 'absences' })
-  .page(adminHome.homePage('admin'))
-  .before(async () => {
-    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+  .beforeEach(async () => {
+    await resetDatabase()
+    fixtures = await initializeAreaAndPersonData()
+    await insertServiceNeedOptions()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,
@@ -62,16 +63,11 @@ fixture('Employee - Absences')
       fixtures.daycareFixture.id
     )
     await insertDaycarePlacementFixtures([daycarePlacementFixture])
-  })
-  .beforeEach(async () => {
-    await t.useRole(seppoManagerRole)
+
+    await employeeLogin(t, seppoManager, adminHome.homePage('admin'))
     await employeeHome.navigateToUnits()
   })
   .afterEach(logConsoleMessages)
-  .after(async () => {
-    await cleanUp()
-    await deleteEmployeeFixture(config.supervisorExternalId)
-  })
 
 test('User can place a child into a group and remove the child from the group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
