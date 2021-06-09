@@ -209,7 +209,7 @@ fun Database.Read.searchValueDecisions(
         "financeDecisionHandlerId" to financeDecisionHandlerId
     )
 
-    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
+    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "child"), searchTerms)
 
     val conditions = listOfNotNull(
         if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,

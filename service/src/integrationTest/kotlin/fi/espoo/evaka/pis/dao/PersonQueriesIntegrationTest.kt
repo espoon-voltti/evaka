@@ -199,6 +199,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     }
 
     @Test
+    fun `person can be found by first name when it contains umlauts`() {
+        val created = db.transaction { createVtjPerson(it) }
+        val persons = db.read { it.searchPeople(adminUser, "Yrjö", "last_name", "ASC") }
+
+        Assertions.assertEquals(persons[0].firstName, created.firstName)
+    }
+
+    @Test
     fun `unit supervisor cannot find a child without acl access`() {
         db.transaction { createVtjPerson(it) }
         val persons = db.read { it.searchPeople(AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)), "Matti", "last_name", "ASC") }
@@ -317,7 +325,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
             customerId = 0L,
             identity = ExternalIdentifier.SSN.getInstance(validSSN),
             dateOfBirth = getDobFromSsn(validSSN),
-            firstName = "Matti Pekka Jari-Ville",
+            firstName = "Matti Yrjö Jari-Ville",
             lastName = "O'Brien",
             email = null,
             phone = null,

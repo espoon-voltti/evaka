@@ -219,6 +219,22 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `value decision search`() {
+        createPlacement(startDate, endDate)
+
+        assertEquals(1, searchValueDecisions(status = "DRAFT").total)
+        assertEquals(1, searchValueDecisions(status = "DRAFT", searchTerms = "Ricky").total)
+        assertEquals(0, searchValueDecisions(status = "DRAFT", searchTerms = "Foobar").total)
+        assertEquals(0, searchValueDecisions(status = "SENT").total)
+
+        sendAllValueDecisions()
+        assertEquals(0, searchValueDecisions(status = "DRAFT").total)
+        assertEquals(1, searchValueDecisions(status = "SENT").total)
+        assertEquals(1, searchValueDecisions(status = "SENT", searchTerms = "Ricky").total)
+        assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
+    }
+
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
@@ -267,6 +283,14 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             }
 
         asyncJobRunner.runPendingJobsSync()
+    }
+
+    private fun searchValueDecisions(status: String, searchTerms: String = ""): Paged<VoucherValueDecisionSummary> {
+        val searchParams = listOf("page" to 0, "pageSize" to 100, "status" to status, "searchTerms" to searchTerms)
+        val (_, _, data) = http.get("/value-decisions/search", searchParams)
+            .asUser(financeWorker)
+            .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
+        return data.get()
     }
 
     private fun sendAllValueDecisions() {
