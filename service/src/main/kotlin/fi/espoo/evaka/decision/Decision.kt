@@ -53,6 +53,7 @@ data class DecisionUnit(
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
+    val phone: String?,
     val decisionHandler: String,
     val decisionHandlerAddress: String,
     val providerType: ProviderType
