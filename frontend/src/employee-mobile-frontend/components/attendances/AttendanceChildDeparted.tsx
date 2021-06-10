@@ -4,7 +4,7 @@
 import React, { Fragment, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
 import {
   AttendanceChild,
@@ -41,7 +41,7 @@ export default React.memo(function AttendanceChildDeparted({
 
   return (
     <Fragment>
-      <FixedSpaceColumn>
+      <FixedSpaceRow justifyContent={'center'}>
         <ArrivalTime>
           <span>{i18n.attendances.arrivalTime}</span>
           <span>
@@ -58,7 +58,7 @@ export default React.memo(function AttendanceChildDeparted({
               : 'xx:xx'}
           </span>
         </ArrivalTime>
-      </FixedSpaceColumn>
+      </FixedSpaceRow>
       <CustomHorizontalLine />
 
       {child.absences.length > 0 && (
