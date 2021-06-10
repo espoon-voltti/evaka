@@ -310,8 +310,8 @@ const en: Translations = {
                   activities will not affect the child home care allowance paid
                   by Kela. However, if the child has been granted a place in
                   early childhood education or your family has been granted
-                  private daycare allowance, a place in a club cannot be
-                  granted to the child
+                  private daycare allowance, a place in a club cannot be granted
+                  to the child
                 </P>
                 <P fitted={true}>
                   * Information marked with an asterisk is required
@@ -521,7 +521,9 @@ const en: Translations = {
             PRESCHOOL: [
               'Finnish and Swedish pre-primary education begins on 11 August 2021. If you need early childhood education starting from 1 August 2021 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
             ],
-            CLUB: ['Clubs follow pre-primary education work and vacation times.']
+            CLUB: [
+              'Clubs follow pre-primary education work and vacation times.'
+            ]
           },
           clubTerm: 'Club term',
           clubTerms: 'Club terms',
@@ -1073,9 +1075,9 @@ const en: Translations = {
       return (
         <P width="800px">
           This page displays the received decisions regarding child{"'"}s early
-          childhood education, pre-primary education and club applications. Upon receiving a
-          new decision, you are required to respond in two weeks, whether you
-          accept or reject it.
+          childhood education, pre-primary education and club applications. Upon
+          receiving a new decision, you are required to respond in two weeks,
+          whether you accept or reject it.
         </P>
       )
     },
