@@ -69,7 +69,31 @@ fun Database.Read.searchPeople(user: AuthenticatedUser, searchTerms: String, sor
 
     // language=SQL
     val sql = """
-        SELECT DISTINCT person.*
+        SELECT DISTINCT
+            id,
+            customer_id,
+            social_security_number,
+            first_name,
+            last_name,
+            email,
+            phone,
+            backup_phone,
+            language,
+            date_of_birth,
+            date_of_death,
+            nationalities,
+            restricted_details_enabled,
+            restricted_details_end_date,
+            street_address,
+            postal_code,
+            post_office,
+            residence_code,
+            updated_from_vtj,
+            invoice_recipient_name,
+            invoicing_street_address,
+            invoicing_postal_code,
+            invoicing_post_office,
+            force_manual_fee_decisions
         FROM person
         ${if (scopedRole) "JOIN child_acl_view acl ON acl.child_id = person.id AND acl.employee_id = :userId" else ""}
         WHERE $freeTextQuery

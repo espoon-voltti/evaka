@@ -247,6 +247,7 @@ SELECT
 FROM voucher_value_decision AS decision
 LEFT JOIN person AS head ON decision.head_of_family_id = head.id
 LEFT JOIN person AS child ON decision.child_id = child.id
+LEFT JOIN person AS partner ON decision.partner_id = partner.id
 LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_unit_id
 LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
 WHERE

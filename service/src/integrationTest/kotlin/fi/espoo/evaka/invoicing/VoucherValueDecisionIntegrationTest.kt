@@ -24,14 +24,15 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,6 +50,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
         db.transaction {
+            it.resetDatabase()
             it.insertGeneralTestFixtures()
             it.insertTestParentship(
                 headOfChild = testAdult_1.id,
@@ -56,12 +58,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
                 startDate = testChild_1.dateOfBirth,
                 endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
             )
+            it.insertTestPartnership(
+                adult1 = testAdult_1.id,
+                adult2 = testAdult_2.id,
+                endDate = LocalDate.of(9999, 12, 31)
+            )
         }
-    }
-
-    @AfterEach
-    fun afterEach() {
-        db.transaction { it.resetDatabase() }
     }
 
     private val startDate = LocalDate.now().minusMonths(1)
@@ -219,6 +221,24 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `value decision search`() {
+        createPlacement(startDate, endDate)
+
+        assertEquals(1, searchValueDecisions(status = "DRAFT").total)
+        assertEquals(1, searchValueDecisions(status = "DRAFT", searchTerms = "Ricky").total) // child
+        assertEquals(1, searchValueDecisions(status = "DRAFT", searchTerms = "John").total) // head
+        assertEquals(1, searchValueDecisions(status = "DRAFT", searchTerms = "Joan").total) // partner
+        assertEquals(0, searchValueDecisions(status = "DRAFT", searchTerms = "Foobar").total) // no match
+        assertEquals(0, searchValueDecisions(status = "SENT").total)
+
+        sendAllValueDecisions()
+        assertEquals(0, searchValueDecisions(status = "DRAFT").total)
+        assertEquals(1, searchValueDecisions(status = "SENT").total)
+        assertEquals(1, searchValueDecisions(status = "SENT", searchTerms = "Ricky").total)
+        assertEquals(0, searchValueDecisions(status = "SENT", searchTerms = "Foobar").total)
+    }
+
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val financeWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
@@ -267,6 +287,14 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
             }
 
         asyncJobRunner.runPendingJobsSync()
+    }
+
+    private fun searchValueDecisions(status: String, searchTerms: String = ""): Paged<VoucherValueDecisionSummary> {
+        val searchParams = listOf("page" to 0, "pageSize" to 100, "status" to status, "searchTerms" to searchTerms)
+        val (_, _, data) = http.get("/value-decisions/search", searchParams)
+            .asUser(financeWorker)
+            .responseObject<Paged<VoucherValueDecisionSummary>>(objectMapper)
+        return data.get()
     }
 
     private fun sendAllValueDecisions() {

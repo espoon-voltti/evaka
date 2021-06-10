@@ -21,7 +21,7 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     val freeTextString = searchText.let(removeSsnParams).let(removeDateParams)
 
     val freeTextQuery =
-        if (freeTextString.isNotBlank()) freeTextQuery(tables, freeTextParamName)
+        if (freeTextString.isNotBlank()) freeTextComputedColumnQuery(tables, freeTextParamName)
         else null
 
     val ssnQuery =
@@ -77,6 +77,10 @@ private fun freeTextQuery(tables: List<String>, param: String, columns: List<Str
     val tsQuery = "to_tsquery('simple', :$param)"
 
     return "($tsVector @@ $tsQuery)"
+}
+
+private fun freeTextComputedColumnQuery(tables: List<String>, param: String): String {
+    return "(" + tables.joinToString(" OR ") { table -> "$table.freetext_vec @@ to_tsquery('simple', :$param)" } + ")"
 }
 
 private fun findSsnParams(str: String) = splitSearchText(str).filter(SSN_PATTERN.toRegex()::matches)
