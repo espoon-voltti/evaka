@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import DateRange from 'lib-common/date-range'
 
 export const familySizes = ['2', '3', '4', '5', '6'] as const

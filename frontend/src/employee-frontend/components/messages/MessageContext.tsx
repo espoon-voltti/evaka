@@ -1,3 +1,11 @@
+{
+  /*
+SPDX-FileCopyrightText: 2017-2021 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+*/
+}
+
 import { SelectOptionProps } from 'employee-frontend/components/common/Select'
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
