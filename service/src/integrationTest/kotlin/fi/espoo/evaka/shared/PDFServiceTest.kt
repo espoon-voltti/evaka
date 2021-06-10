@@ -63,6 +63,7 @@ private val voucherDecision = daycareDecision.copy(
         "Hyväntoivonniementie 13 B",
         "02200",
         "ESPOO",
+        "+35850 1234564",
         "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
         "Kartanonkujanpää 565, 02210 Espoo",
         providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
@@ -186,6 +187,7 @@ fun createValidDecision(
         "Kuusernkerkänpolku 123",
         "02200",
         "ESPOO",
+        "+35850 1234564",
         "Varhaiskasvatuksen palveluohjaus",
         "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.MUNICIPAL

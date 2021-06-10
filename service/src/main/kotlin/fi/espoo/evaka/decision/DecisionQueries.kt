@@ -26,6 +26,7 @@ private val decisionSelector =
             d.id, d.type, d.start_date, d.end_date, d.document_uri, d.other_guardian_document_uri, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved,
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
             u.street_address, u.postal_code, u.post_office,
+            u.phone,
             m.name AS manager,
             ap.child_id, ap.guardian_id,
             p.first_name, p.last_name,
@@ -60,6 +61,7 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
         streetAddress = rs.getString("street_address"),
         postalCode = rs.getString("postal_code"),
         postOffice = rs.getString("post_office"),
+        phone = rs.getString("phone"),
         decisionHandler = rs.getString("decision_handler"),
         decisionHandlerAddress = rs.getString("decision_handler_address"),
         providerType = rs.getEnum("provider_type")

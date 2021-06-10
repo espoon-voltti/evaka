@@ -189,6 +189,7 @@ SELECT
     street_address, 
     postal_code, 
     post_office,
+    u.phone,
     provider_type
 FROM daycare u
 LEFT JOIN unit_manager m ON u.unit_manager_id = m.id
@@ -202,6 +203,7 @@ private val toDecisionUnit = { rs: ResultSet ->
         streetAddress = rs.getString("street_address"),
         postalCode = rs.getString("postal_code"),
         postOffice = rs.getString("post_office"),
+        phone = rs.getString("phone"),
         daycareDecisionName = rs.getString("decision_daycare_name"),
         preschoolDecisionName = rs.getString("decision_preschool_name"),
         decisionHandler = rs.getString("decision_handler"),

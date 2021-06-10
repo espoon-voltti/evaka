@@ -76,6 +76,7 @@ UPDATE daycare SET
   street_address = 'Test address',
   postal_code = 'Test postal code',
   post_office = 'Test post office',
+  phone = 'Test phone',
   decision_handler = 'Test decision handler',
   decision_handler_address = 'Test decision handler address'
 WHERE id = :unitId
@@ -327,6 +328,7 @@ WHERE id = :unitId
                     streetAddress = "Test address",
                     postalCode = "Test postal code",
                     postOffice = "Test post office",
+                    phone = "Test phone",
                     decisionHandler = "Test decision handler",
                     decisionHandlerAddress = "Test decision handler address",
                     providerType = ProviderType.MUNICIPAL
