@@ -32,7 +32,9 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
@@ -242,21 +244,25 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val startDate = since.minusDays(100).toLocalDate()
         val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate)
 
-        val includedFdId = createFeeDecision(db, testChild_1, DateRange(startDate, startDate.plusDays(10)), since.toInstant())
-        val includedFeeDecisionChildIds = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(includedFdId) }
-        createFeeDecision(db, testChild_1, DateRange(startDate.plusDays(11), startDate.plusDays(20)), since.minusDays(1).toInstant())
+        val includedFdId = createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(startDate, startDate.plusDays(10)), since.toInstant())
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(startDate.plusDays(11), startDate.plusDays(20)), since.minusDays(1).toInstant())
 
-        val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
+        // Another child, but service need and fee data was changed before the "since" date so it should not show in the changed since -set
+        createServiceNeed(db, since.minusDays(1), snDefaultDaycare, testChild_2, startDate)
+        createFeeDecision(db, testChild_2, testAdult_2.id, DateRange(startDate.plusDays(11), startDate.plusDays(20)), since.minusDays(1).toInstant())
+
+        val snFeeDiff = db.read { it.getServiceNeedFeeData(since, null) }
         assertEquals(1, snFeeDiff.size)
         assertEquals(snId, snFeeDiff.get(0).serviceNeedId)
         assertEquals(testChild_1.id, snFeeDiff.get(0).evakaChildId)
+
         assertEquals(1, snFeeDiff.get(0).feeDecisionIds.size)
-        assertEquals(includedFeeDecisionChildIds.get(0), snFeeDiff.get(0).feeDecisionIds.get(0))
+        assertEquals(includedFdId, snFeeDiff.get(0).feeDecisionIds.get(0))
         assertEquals(0, snFeeDiff.get(0).voucherValueDecisionIds.size)
     }
 
     @Test
-    fun `calculateEvakaFeeDataChangesByServiceNeed matches fee decisions correctly to service needs`() {
+    fun `getServiceNeedFeeData matches fee decisions correctly to service needs`() {
         val since = HelsinkiDateTime.now()
         val startDate = since.minusDays(100).toLocalDate()
         val endDate = since.minusDays(90).toLocalDate()
@@ -264,20 +270,17 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate, endDate)
         val snId2 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, startDate2)
 
-        val fdId1 = createFeeDecision(db, testChild_1, DateRange(startDate, endDate), since.toInstant())
-        val includedFeeDecisionChildIds1 = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(fdId1) }
+        val fdId1 = createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(startDate, endDate), since.toInstant())
+        val fdId2 = createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(startDate2, null), since.toInstant())
 
-        val fdId2 = createFeeDecision(db, testChild_1, DateRange(startDate2, null), since.toInstant())
-        val includedFeeDecisionChildIds2 = db.read { it.getFeeDecisionChildIdsByFeeDecisionId(fdId2) }
-
-        val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
+        val snFeeDiff = db.read { it.getServiceNeedFeeData(since, null) }
         assertEquals(2, snFeeDiff.size)
-        assertEquals(includedFeeDecisionChildIds1.get(0), snFeeDiff.find { it.serviceNeedId == snId1 }?.feeDecisionIds?.get(0))
-        assertEquals(includedFeeDecisionChildIds2.get(0), snFeeDiff.find { it.serviceNeedId == snId2 }?.feeDecisionIds?.get(0))
+        assertEquals(fdId1, snFeeDiff.find { it.serviceNeedId == snId1 }?.feeDecisionIds?.get(0))
+        assertEquals(fdId2, snFeeDiff.find { it.serviceNeedId == snId2 }?.feeDecisionIds?.get(0))
     }
 
     @Test
-    fun `calculateEvakaFeeDataChangesByServiceNeed matches voucher value decisions correctly to service needs`() {
+    fun `getServiceNeedFeeData matches voucher value decisions correctly to service needs`() {
         val since = HelsinkiDateTime.now()
         val startDate = since.minusDays(100).toLocalDate()
         val endDate = since.minusDays(90).toLocalDate()
@@ -287,7 +290,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val vd1 = createVoucherDecision(db, startDate, startDate, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
         val vd2 = createVoucherDecision(db, startDate2, null, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant())
 
-        val snFeeDiff = db.read { it.calculateEvakaFeeDataChangesByServiceNeed(since) }
+        val snFeeDiff = db.read { it.getServiceNeedFeeData(since, null) }
         assertEquals(2, snFeeDiff.size)
         assertEquals(vd1.id, snFeeDiff.find { it.serviceNeedId == snId1 }?.voucherValueDecisionIds?.get(0))
         assertEquals(vd2.id, snFeeDiff.find { it.serviceNeedId == snId2 }?.voucherValueDecisionIds?.get(0))
@@ -369,7 +372,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
-        createFeeDecision(db, testChild_1, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, testAdult_1.id, testChild_1, since.toInstant())
 
         updateChildData(db, vardaClient, since)
@@ -417,7 +420,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         voucherDecisionPeriod: DateRange
     ): UUID {
         val id = createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
-        createFeeDecision(db, child, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+        createFeeDecision(db, child, adult.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, adult.id, child, since.toInstant())
         return id
     }
@@ -501,12 +504,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, period: DateRange, sentAt: Instant): UUID {
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant): UUID {
         val fd = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
             period,
-            testAdult_1.id,
+            headOfFamilyId,
             listOf(
                 createFeeDecisionChildFixture(
                     child.id,
@@ -577,12 +580,3 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNee
     descriptionSv = this.feeDescriptionSv,
     missing = false
 )
-
-private fun Database.Read.getFeeDecisionChildIdsByFeeDecisionId(fdId: UUID) = createQuery(
-    """
-SELECT c.id
-FROM new_fee_decision as d
-LEFT JOIN new_fee_decision_child c ON d.id = c.fee_decision_id
-WHERE d.id = :fdId
-        """
-).bind("fdId", fdId).mapTo<UUID>().list()
