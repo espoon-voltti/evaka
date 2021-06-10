@@ -156,7 +156,7 @@ const en: Translations = {
       title: 'Selection of application type',
       daycareLabel: 'Early childhood education and service voucher application',
       daycareInfo:
-        'The application for early childhood education is used to apply for a municipal early childhood education place at a day-care centre, family day-care provider and group family day-care provider. You can also use the same application to apply for a service voucher for early childhood education. Under Preferred units, select the service voucher unit to which you want to apply.',
+        'The application for early childhood education is used to apply for a municipal early childhood education place at an early childhood education unit, family daycare provider and group family daycare provider. You can also use the same application to apply for a service voucher for early childhood education. Under Preferred units, select the service voucher unit to which you want to apply.',
       preschoolLabel:
         'Enrolment to pre-primary education and/or preparatory education',
       preschoolInfo:
@@ -296,7 +296,7 @@ const en: Translations = {
                   you have not activated the service.
                 </P>
                 <P>
-                  You can also submit a club applicationoutside of the
+                  You can also submit a club application outside of the
                   application period and after the clubs’ operating period has
                   started. We will, however, first process all applications that
                   are submitted during the application period. The applications
@@ -310,7 +310,7 @@ const en: Translations = {
                   activities will not affect the child home care allowance paid
                   by Kela. However, if the child has been granted a place in
                   early childhood education or your family has been granted
-                  private day care allowance, a place in a club cannot be
+                  private daycare allowance, a place in a club cannot be
                   granted to the child
                 </P>
                 <P fitted={true}>
@@ -521,7 +521,7 @@ const en: Translations = {
             PRESCHOOL: [
               'Finnish and Swedish pre-primary education begins on 11 August 2021. If you need early childhood education starting from 1 August 2021 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
             ],
-            CLUB: ['Clubs follow preschool work and vacation times.']
+            CLUB: ['Clubs follow pre-primary education work and vacation times.']
           },
           clubTerm: 'Club term',
           clubTerms: 'Club terms',
@@ -548,7 +548,7 @@ const en: Translations = {
           wasOnDaycare:
             'Child has an early childhood education placement, which he or she will give up when he or she gets a club placement',
           wasOnDaycareInfo:
-            'If a child has been in early childhood education (daycare, family daycare or group family daycare) and gives up his or her place at the start of the club, he or she has a better chance of getting a club placement.',
+            'If a child has been in early childhood education, family daycare or group family daycare and gives up his or her place at the start of the club, he or she has a better chance of getting a club placement.',
           wasOnClubCare: 'Child has been in a club during last club term',
           wasOnClubCareInfo:
             'If the child has already been to the club during the previous club term, he or she has a better chance of getting a placement in the club.'
@@ -646,7 +646,7 @@ const en: Translations = {
             DAYCARE:
               'Indicate the most commonly needed early childhood education time, the time will be specified when early childhood education begins.',
             PRESCHOOL:
-              'Pre-primary education is provided in both day-care centres and schools for 4 hours a day, as a rule, between 09:00 and 13:00, but the hours may vary by unit. Indicate the early childhood education hours needed by the child so that it includes the 4 hours of pre-primary education (e.g. 7:00–17:00). The hours will be specified when early childhood education begins. If the hours of early childhood education need to vary daily or weekly (e.g. in round-the-clock care), please specify the need in the additional information field.'
+              'Pre-primary education is provided in both early childhood education units and schools for 4 hours a day, as a rule, between 09:00 and 13:00, but the hours may vary by unit. Indicate the early childhood education hours needed by the child so that it includes the 4 hours of pre-primary education (e.g. 7:00–17:00). The hours will be specified when early childhood education begins. If the hours of early childhood education need to vary daily or weekly (e.g. in round-the-clock care), please specify the need in the additional information field.'
           },
           usualArrivalAndDeparture: {
             DAYCARE: 'Daily early childhood education time',
@@ -677,11 +677,11 @@ const en: Translations = {
           'Describe the need for support for the child.',
         assistanceNeedInstructions: {
           DAYCARE:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
           CLUB:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
           PRESCHOOL:
-            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
+            'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Childhood Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
         },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
@@ -725,7 +725,7 @@ const en: Translations = {
                       early childhood education in their own service area, where
                       they have a sibling who has, at the moment of making the
                       decision and in the coming pre-primary education year, a
-                      place at the pre-primary education day-care centre
+                      place at the pre-primary education unit
                     </li>
                     <li>
                       local school determined by the city, which will be
@@ -952,7 +952,7 @@ const en: Translations = {
         allergiesPlaceholder:
           'If you wish, you can indicate your child’s allergies in this field',
         allergiesInfo:
-          'Information on allergies is mainly needed when applying for family day care.'
+          'Information on allergies is mainly needed when applying for family daycare.'
       },
       contactInfo: {
         title: 'Personal information',
@@ -1006,7 +1006,7 @@ const en: Translations = {
         secondGuardianNotFound:
           'Based on information from the national Population Information System (VTJ) the child does not have a second guardian.',
         secondGuardianInfoPreschoolSeparated:
-          'Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to early education.',
+          'Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to early childhood education.',
         secondGuardianAgreementStatus: {
           label:
             'Have you agreed about the application together with the second guardian?',
@@ -1073,7 +1073,7 @@ const en: Translations = {
       return (
         <P width="800px">
           This page displays the received decisions regarding child{"'"}s early
-          childhood education, preschool and club applications. Upon receiving a
+          childhood education, pre-primary education and club applications. Upon receiving a
           new decision, you are required to respond in two weeks, whether you
           accept or reject it.
         </P>
@@ -1125,7 +1125,7 @@ const en: Translations = {
         cancel: 'Cancel',
         submit: 'Submit response to the decision',
         disabledInfo:
-          'NOTE! You are able to accept/reject the related early childhood education decision if you accept the preschool / preparatory education decision first.'
+          'NOTE! You are able to accept/reject the related early childhood education decision if you accept the pre-primary / preparatory education decision first.'
       },
       openPdf: 'Show the decision',
       warnings: {
@@ -1139,7 +1139,7 @@ const en: Translations = {
         doubleRejectWarning: {
           title: 'Are you sure you want to reject the placement?',
           text:
-            'You are rejecting an offer on preschool / preparatory education placement. The related early childhood education placement will also be rejected.',
+            'You are rejecting an offer on pre-primary / preparatory education placement. The related early childhood education placement will also be rejected.',
           resolveLabel: 'Reject both',
           rejectLabel: 'Cancel'
         }
