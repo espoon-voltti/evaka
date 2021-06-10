@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.daily.DailyJob
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
 import java.time.LocalDate
@@ -35,7 +36,8 @@ enum class AsyncJobType {
     GARBAGE_COLLECT_PAIRING,
     VARDA_UPDATE,
     SEND_PENDING_DECISION_EMAIL,
-    SEND_UNREAD_MESSAGE_NOTIFICATION
+    SEND_UNREAD_MESSAGE_NOTIFICATION,
+    RUN_DAILY_JOB
 }
 
 interface AsyncJobPayload {
@@ -156,6 +158,11 @@ data class VTJRefresh(val personId: UUID, val requestingUserId: UUID) : AsyncJob
 
 class VardaUpdate : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.VARDA_UPDATE
+    override val user: AuthenticatedUser? = null
+}
+
+data class RunDailyJob(val dailyJob: DailyJob) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.RUN_DAILY_JOB
     override val user: AuthenticatedUser? = null
 }
 
