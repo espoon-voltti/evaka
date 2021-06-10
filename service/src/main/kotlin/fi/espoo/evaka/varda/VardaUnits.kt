@@ -119,7 +119,8 @@ enum class VardaUnitType(val vardaCode: String) {
     PRESCHOOL("tm01"),
     PREPARATORY_EDUCATION(""),
     FAMILY("tm02"),
-    GROUP_FAMILY("tm03")
+    GROUP_FAMILY("tm03"),
+    CLUB("")
 }
 
 //  https://virkailija.opintopolku.fi/koodisto-service/rest/json/kieli/koodi
