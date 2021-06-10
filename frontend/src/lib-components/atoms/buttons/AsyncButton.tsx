@@ -18,7 +18,9 @@ type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: () => Promise<void | Result | (void | Result)[]>
+  onClick: () => Promise<
+    void | Result | (void | Result)[] | 'AsyncButton.cancel'
+  >
   onSuccess: () => void
   onFailure?: () => void
   primary?: boolean
@@ -58,7 +60,11 @@ export default React.memo(function AsyncButton({
   const callback = () => {
     setInProgress(true)
     onClick()
-      .then((result: void | Result | (void | Result)[]) => {
+      .then((result) => {
+        if (result === 'AsyncButton.cancel') {
+          return
+        }
+
         if (Array.isArray(result)) {
           let failure = false
           for (const elem of result) {
