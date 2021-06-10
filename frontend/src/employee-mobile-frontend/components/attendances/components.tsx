@@ -115,16 +115,20 @@ export const FlexLabel = styled(Label)`
   }
 `
 
-export const ArrivalTime = styled.div`
-  font-family: Montserrat, sans-serif;
-  font-size: 18px;
+export const ArrivalTime = styled.span`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: 27px;
   letter-spacing: 0em;
   display: flex;
-  justify-content: space-between;
   color: ${colors.greyscale.dark};
+
+  span:first-child {
+    margin-right: ${defaultMargins.xs};
+    font-weight: 600;
+  }
 `
 
 export const CustomHorizontalLine = styled(HorizontalLine)`
@@ -133,7 +137,7 @@ export const CustomHorizontalLine = styled(HorizontalLine)`
 `
 
 export const ServiceTime = styled.div`
-  padding: ${defaultMargins.s};
+  padding: ${defaultMargins.xxs};
   color: ${colors.greyscale.dark};
   text-align: center;
 `

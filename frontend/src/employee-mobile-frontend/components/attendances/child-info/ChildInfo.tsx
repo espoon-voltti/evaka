@@ -69,7 +69,7 @@ const GroupName = styled.div`
   font-size: 15px;
   line-height: 22px;
   text-transform: uppercase;
-  color: ${colors.greyscale.dark};
+  color: ${colors.blues.dark};
 `
 
 const Zindex = styled.div`
