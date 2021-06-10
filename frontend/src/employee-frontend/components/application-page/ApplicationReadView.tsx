@@ -225,7 +225,9 @@ function ApplicationReadView({
 
           {serviceNeed !== null && (
             <>
-              {featureFlags.daycareApplication.dailyTimesEnabled && (
+              {((type === 'DAYCARE' &&
+                featureFlags.daycareApplication.dailyTimesEnabled) ||
+                type === 'PRESCHOOL') && (
                 <>
                   <Label>{i18n.application.serviceNeed.dailyTime}</Label>
                   <span>

@@ -246,9 +246,10 @@ function validateApplication(
   }
 
   if (
-    (application.type !== 'DAYCARE' ||
-      featureFlags.daycareApplication.dailyTimesEnabled) &&
-    preferences.serviceNeed
+    preferences.serviceNeed !== null &&
+    ((application.type === 'DAYCARE' &&
+      featureFlags.daycareApplication.dailyTimesEnabled) ||
+      application.type === 'PRESCHOOL')
   ) {
     if (!preferences.serviceNeed.startTime) {
       errors['form.preferences.serviceNeed.startTime'] =
