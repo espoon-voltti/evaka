@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -100,8 +101,10 @@ class NewServiceNeedController(
                 asyncJobRunner,
                 NewServiceNeedChildRange(
                     childId = oldRange.childId,
-                    startDate = minOf(oldRange.startDate, body.startDate),
-                    endDate = maxOf(oldRange.endDate, body.endDate)
+                    dateRange = FiniteDateRange(
+                        minOf(oldRange.dateRange.start, body.startDate),
+                        maxOf(oldRange.dateRange.end, body.endDate)
+                    )
                 )
             )
         }

@@ -11,7 +11,7 @@ import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -197,7 +197,7 @@ class PlacementPlanService(
             effectivePeriod = period
         }
         effectivePeriod?.also {
-            asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(childId, it.start, it.end)))
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(childId, it.asDateRange())))
         }
     }
 

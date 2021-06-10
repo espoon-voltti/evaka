@@ -22,13 +22,10 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
-import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.util.UUID
-
-private val logger = KotlinLogging.logger {}
 
 @Component
 class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Environment) {
@@ -50,39 +47,14 @@ class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Envi
             }
     }
 
-    fun handlePlacement(tx: Database.Transaction, childId: UUID, period: DateRange) {
-        logger.debug { "Generating fee decisions from new placement (childId: $childId, period: $period)" }
-
-        val families = tx.findFamiliesByChild(childId, period)
-        handleDecisionChangesForFamilies(tx, period, families)
+    fun generateNewDecisionsForAdult(tx: Database.Transaction, personId: UUID, dateRange: DateRange) {
+        val families = tx.findFamiliesByAdult(personId, dateRange)
+        handleDecisionChangesForFamilies(tx, dateRange, families)
     }
 
-    fun handleServiceNeed(tx: Database.Transaction, childId: UUID, period: DateRange) {
-        logger.debug { "Generating fee decisions from changed service need (childId: $childId, period: $period)" }
-
-        val families = tx.findFamiliesByChild(childId, period)
-        handleDecisionChangesForFamilies(tx, period, families)
-    }
-
-    fun handleFamilyUpdate(tx: Database.Transaction, adultId: UUID, period: DateRange) {
-        logger.debug { "Generating fee decisions from changed family (adultId: $adultId, period: $period)" }
-
-        val families = tx.findFamiliesByHeadOfFamily(adultId, period) + tx.findFamiliesByPartner(adultId, period)
-        handleDecisionChangesForFamilies(tx, period, families)
-    }
-
-    fun handleIncomeChange(tx: Database.Transaction, personId: UUID, period: DateRange) {
-        logger.debug { "Generating fee decisions from changed income (personId: $personId, period: $period)" }
-
-        val families = tx.findFamiliesByHeadOfFamily(personId, period) + tx.findFamiliesByPartner(personId, period)
-        handleDecisionChangesForFamilies(tx, period, families)
-    }
-
-    fun handleFeeAlterationChange(tx: Database.Transaction, childId: UUID, period: DateRange) {
-        logger.debug { "Generating fee decisions from changed fee alteration (childId: $childId, period: $period)" }
-
-        val families = tx.findFamiliesByChild(childId, period)
-        handleDecisionChangesForFamilies(tx, period, families)
+    fun generateNewDecisionsForChild(tx: Database.Transaction, personId: UUID, dateRange: DateRange) {
+        val families = tx.findFamiliesByChild(personId, dateRange)
+        handleDecisionChangesForFamilies(tx, dateRange, families)
     }
 
     private fun handleDecisionChangesForFamilies(tx: Database.Transaction, period: DateRange, families: List<FridgeFamily>) {
@@ -124,15 +96,18 @@ private fun Database.Read.findFamiliesByChild(childId: UUID, period: DateRange):
     }
 }
 
+private fun Database.Read.findFamiliesByAdult(personId: UUID, period: DateRange): List<FridgeFamily> {
+    val possibleHeadsOfFamily = getPartnersForPerson(personId, includeConflicts = false, period = period)
+        .map { it.person.id }
+        .distinct() + personId
+
+    return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it, period) }
+}
+
 private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
     val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
     val partners = getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
-}
-
-private fun Database.Read.findFamiliesByPartner(personId: UUID, period: DateRange): List<FridgeFamily> {
-    val possibleHeadsOfFamily = getPartnersForPerson(personId, includeConflicts = false, period = period)
-    return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it.person.id, period) }
 }
 
 private fun generateFamilyCompositions(

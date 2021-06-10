@@ -16,7 +16,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -69,7 +69,7 @@ class IncomeController(
             val validIncome = income.copy(id = id).let(::validateIncome)
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, user.id)
-            asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, period)))
             id
         }
 
@@ -96,10 +96,7 @@ class IncomeController(
                 DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
             } ?: DateRange(income.validFrom, income.validTo)
 
-            asyncJobRunner.plan(
-                tx,
-                listOf(NotifyIncomeUpdated(validIncome.personId, expandedPeriod.start, expandedPeriod.end))
-            )
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)))
         }
 
         asyncJobRunner.scheduleImmediateRun()
@@ -118,7 +115,7 @@ class IncomeController(
 
             tx.deleteIncome(parseUUID(incomeId))
 
-            asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(existing.personId, period.start, period.end)))
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(existing.personId, period)))
         }
 
         asyncJobRunner.scheduleImmediateRun()

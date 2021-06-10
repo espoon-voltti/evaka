@@ -20,7 +20,7 @@ import fi.espoo.evaka.messaging.message.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -138,7 +139,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
         verify(asyncJobRunnerMock).plan(
             any(),
-            eq(listOf(NotifyFamilyUpdated(adultId, validFrom, validTo))),
+            eq(listOf(GenerateFinanceDecisions.forAdult(adultId, DateRange(validFrom, validTo)))),
             any(),
             any(),
             any()
@@ -319,7 +320,10 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
         verify(asyncJobRunnerMock).plan(
             any(),
-            eq(listOf(NotifyFamilyUpdated(adultId, placementStart, placementEnd))), any(), any(), any()
+            eq(listOf(GenerateFinanceDecisions.forAdult(adultId, DateRange(placementStart, placementEnd)))),
+            any(),
+            any(),
+            any()
         )
     }
 }

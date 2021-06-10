@@ -11,10 +11,11 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -89,7 +90,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
 
     private fun Database.Transaction.sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(this, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+        asyncJobRunner.plan(this, listOf(GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))))
     }
 }
 

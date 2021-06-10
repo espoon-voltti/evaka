@@ -12,13 +12,14 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.core.env.Environment
 import org.springframework.format.annotation.DateTimeFormat
@@ -129,7 +130,10 @@ class PlacementController(
                 endDate = body.endDate,
                 useFiveYearsOldDaycare = useFiveYearsOldDaycare
             )
-            asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate)))
+            )
         }
 
         asyncJobRunner.scheduleImmediateRun()
@@ -153,10 +157,12 @@ class PlacementController(
             asyncJobRunner.plan(
                 tx,
                 listOf(
-                    NotifyPlacementPlanApplied(
+                    GenerateFinanceDecisions.forChild(
                         oldPlacement.childId,
-                        minOf(body.startDate, oldPlacement.startDate),
-                        maxOf(body.endDate, oldPlacement.endDate)
+                        DateRange(
+                            minOf(body.startDate, oldPlacement.startDate),
+                            maxOf(body.endDate, oldPlacement.endDate)
+                        )
                     )
                 )
             )
@@ -178,7 +184,10 @@ class PlacementController(
 
         db.transaction { tx ->
             val (childId, startDate, endDate) = tx.cancelPlacement(placementId)
-            asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
+            asyncJobRunner.plan(
+                tx,
+                listOf(GenerateFinanceDecisions.forChild(childId, DateRange(startDate, endDate)))
+            )
         }
 
         asyncJobRunner.scheduleImmediateRun()

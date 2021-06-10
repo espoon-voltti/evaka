@@ -6,53 +6,52 @@ package fi.espoo.evaka.invoicing.messaging
 
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
-import fi.espoo.evaka.shared.async.NotifyFeeAlterationUpdated
-import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
-import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
-import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import mu.KotlinLogging
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class FeeDecisionGenerationJobProcessor(
     private val generator: FinanceDecisionGenerator,
-    asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner
 ) {
     init {
-        asyncJobRunner.notifyFamilyUpdated = ::runJob
-        asyncJobRunner.notifyFeeAlterationUpdated = ::runJob
-        asyncJobRunner.notifyIncomeUpdated = ::runJob
-        asyncJobRunner.notifyPlacementPlanApplied = ::runJob
-        asyncJobRunner.notifyServiceNeedUpdated = ::runJob
+        asyncJobRunner.generateFinanceDecisions = ::runJob
     }
 
-    fun runJob(db: Database, msg: NotifyFamilyUpdated) = db.transaction { tx ->
-        logger.info { "Handling family updated event for person (id: ${msg.adultId})" }
-        generator.handleFamilyUpdate(tx, msg.adultId, DateRange(msg.startDate, msg.endDate))
+    fun runJob(db: Database, msg: GenerateFinanceDecisions) {
+        logger.info { "Generating finance decisions with parameters $msg" }
+        db.transaction { tx ->
+            when (msg.person) {
+                is GenerateFinanceDecisions.Person.Adult ->
+                    generator.generateNewDecisionsForAdult(tx, msg.person.adultId, msg.dateRange)
+                is GenerateFinanceDecisions.Person.Child ->
+                    generator.generateNewDecisionsForChild(tx, msg.person.childId, msg.dateRange)
+            }
+        }
+    }
+}
+
+fun planFinanceDecisionGeneration(
+    tx: Database.Transaction,
+    asyncJobRunner: AsyncJobRunner,
+    dateRange: DateRange,
+    targetHeadsOfFamily: List<UUID>
+) {
+    val heads = targetHeadsOfFamily.ifEmpty {
+        tx.createQuery(
+            "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && :dateRange AND conflict = false"
+        )
+            .bind("dateRange", dateRange)
+            .mapTo<UUID>()
+            .list()
     }
 
-    fun runJob(db: Database, msg: NotifyFeeAlterationUpdated) = db.transaction { tx ->
-        logger.info { "Handling fee alteration updated event ($msg)" }
-        generator.handleFeeAlterationChange(tx, msg.personId, DateRange(msg.startDate, msg.endDate))
-    }
-
-    fun runJob(db: Database, msg: NotifyIncomeUpdated) = db.transaction { tx ->
-        logger.info { "Handling income updated event ($msg)" }
-        generator.handleIncomeChange(tx, msg.personId, DateRange(msg.startDate, msg.endDate))
-    }
-
-    fun runJob(db: Database, msg: NotifyPlacementPlanApplied) {
-        logger.info { "Handling placement plan accepted event ($msg)" }
-        db.transaction { generator.handlePlacement(it, msg.childId, DateRange(msg.startDate, msg.endDate)) }
-    }
-
-    fun runJob(db: Database, msg: NotifyServiceNeedUpdated) {
-        logger.info { "Handling service need updated event for child (id: ${msg.childId})" }
-        db.transaction { generator.handleServiceNeed(it, msg.childId, DateRange(msg.startDate, msg.endDate)) }
-    }
+    asyncJobRunner.plan(tx, heads.distinct().map { GenerateFinanceDecisions.forAdult(it, dateRange) })
 }

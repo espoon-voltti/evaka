@@ -6,7 +6,7 @@ package fi.espoo.evaka.serviceneednew
 
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -34,8 +34,7 @@ data class NewServiceNeed(
 
 data class NewServiceNeedChildRange(
     val childId: UUID,
-    val startDate: LocalDate,
-    val endDate: LocalDate
+    val dateRange: FiniteDateRange
 )
 
 data class ServiceNeedOptionSummary(
@@ -224,8 +223,6 @@ fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, 
 fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner, childRange: NewServiceNeedChildRange) {
     asyncJobRunner.plan(
         tx,
-        listOf(
-            NotifyServiceNeedUpdated(childRange.childId, childRange.startDate, childRange.endDate)
-        )
+        listOf(GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange()))
     )
 }

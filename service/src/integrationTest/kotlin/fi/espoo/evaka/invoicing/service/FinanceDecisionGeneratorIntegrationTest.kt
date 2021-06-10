@@ -87,7 +87,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period) }
 
         val feeDecisions = getAllFeeDecisions()
         assertEquals(1, feeDecisions.size)
