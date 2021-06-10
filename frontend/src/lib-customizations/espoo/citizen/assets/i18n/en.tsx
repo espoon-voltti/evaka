@@ -1170,8 +1170,8 @@ const en: Translations = {
     pageLoadError: 'Failed to load guardian applications',
     noApplications: 'No applications',
     type: {
-      DAYCARE: 'Daycare application',
-      PRESCHOOL: 'Early education application',
+      DAYCARE: 'Application for early childhood education',
+      PRESCHOOL: 'Pre-primary education application',
       CLUB: 'Club application'
     },
     transferApplication: 'Transfer application',
