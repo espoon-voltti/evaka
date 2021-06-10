@@ -4,7 +4,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.mapper.Nested
 import java.util.UUID
 
 fun Database.Transaction.insertVasuTemplate(
@@ -56,7 +55,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
             RETURNING id
         )
         INSERT INTO vasu_document (child_id, template_id, content_id) 
-        VALUES (:childId, :templateId, content.id)
+        SELECT :childId, :templateId, ct.id FROM content ct
         RETURNING id
     """.trimIndent()
 
@@ -67,18 +66,6 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
         .one()
 }
 
-data class VasuDocumentResponse(
-    val id: UUID,
-    @Nested("child")
-    val child: VasuDocumentResponseChild,
-    val templateName: String,
-    val content: VasuContent
-)
-data class VasuDocumentResponseChild(
-    val id: UUID,
-    val firstName: String,
-    val lastName: String
-)
 fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse {
     // language=sql
     val sql = """
@@ -87,9 +74,11 @@ fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse {
             vd.child_id,
             p.first_name AS child_first_name,
             p.last_name AS child_last_name,
+            vt.name AS template_name,
             vc.content
         FROM vasu_document vd
         JOIN vasu_content vc on vd.content_id = vc.id
+        JOIN vasu_template vt on vd.template_id = vt.id
         JOIN person p on p.id = vd.child_id
         WHERE vd.id =:id
     """.trimIndent()

@@ -1,7 +1,9 @@
 package fi.espoo.evaka.vasu
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.domain.DateRange
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
@@ -9,6 +11,7 @@ data class VasuTemplate(
     val id: UUID,
     val name: String,
     val valid: DateRange,
+    @Json
     val content: VasuContent
 )
 
@@ -20,7 +23,22 @@ data class VasuTemplateSummary(
 
 data class VasuDocument(
     val id: UUID,
+    @Json
     val content: VasuContent
+)
+
+data class VasuDocumentResponse(
+    val id: UUID,
+    @Nested("child")
+    val child: VasuDocumentResponseChild,
+    val templateName: String,
+    @Json
+    val content: VasuContent
+)
+data class VasuDocumentResponseChild(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String
 )
 
 @Json
@@ -33,7 +51,17 @@ data class VasuSection(
     val questions: List<VasuQuestion>
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type"
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = VasuQuestion.TextQuestion::class, name = "TEXT"),
+    JsonSubTypes.Type(value = VasuQuestion.CheckboxQuestion::class, name = "CHECKBOX"),
+    JsonSubTypes.Type(value = VasuQuestion.RadioGroupQuestion::class, name = "RADIO_GROUP"),
+    JsonSubTypes.Type(value = VasuQuestion.MultiSelectQuestion::class, name = "MULTISELECT"),
+)
 sealed class VasuQuestion(
     val type: VasuQuestionType,
 ) {
