@@ -20,7 +20,9 @@ class PlaywrightEnvironment extends NodeEnvironment {
       const specName = event.test.name.replace(/\W/g, '-')
 
       const namePrefix = `${parentName}_${specName}`
-      await this.global.evaka?.takeScreenshots(namePrefix)
+      await this.global.evaka?.saveScreenshotsAndVideos(namePrefix)
+    } else if (event.name === 'test_fn_success') {
+      this.global.evaka?.deleteVideoFiles()
     }
   }
 }

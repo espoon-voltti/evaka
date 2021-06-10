@@ -284,6 +284,9 @@ commands:
       - store_artifacts:
           path: frontend/screenshots
           destination: screenshots
+      - store_artifacts:
+          path: frontend/videos
+          destination: videos
       - store_test_results:
           path: frontend/test-results
 
