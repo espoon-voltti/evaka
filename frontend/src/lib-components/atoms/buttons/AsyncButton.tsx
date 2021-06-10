@@ -119,6 +119,15 @@ export default React.memo(function AsyncButton({
       disabled={disabled || showIcon}
       onClick={callback}
       {...props}
+      data-status={
+        inProgress
+          ? 'in-progress'
+          : showSuccess
+          ? 'success'
+          : showFailure
+          ? 'failure'
+          : ''
+      }
     >
       <Content>
         <IconContainer
