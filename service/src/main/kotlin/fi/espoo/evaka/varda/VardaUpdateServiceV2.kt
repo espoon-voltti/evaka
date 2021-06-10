@@ -45,8 +45,9 @@ fun updateAllVardaData(
     2. Find out all changed evaka fee data affecting service needs not yet updated above, and for each service need
        update all service need related data to varda
  */
-// TODO: handle failed uploads first: delete service need, upload all data
 fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime) {
+    handleUnsuccessfulServiceNeedUploads(db, client)
+
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
     val feeAndVoucherDiffsByServiceNeed = db.read { it.getServiceNeedFeeData(startingFrom, null) }.groupBy { it.serviceNeedId }
     val uploadedServiceNeedIds = mutableSetOf<UUID>()
@@ -80,6 +81,20 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
             handleServiceNeedUpdate(db, client, serviceNeedId, diff.first().evakaChildId)
         } else {
             handleServiceNeedAddition(db, client, serviceNeedId, diff.first().evakaChildId)
+        }
+    }
+}
+
+fun handleUnsuccessfulServiceNeedUploads(db: Database.Connection, vardaClient: VardaClient) {
+    val unsuccessfullyUploadedServiceNeeds = db.read { it.getUnsuccessfullyUploadVardaServiceNeeds() }
+    unsuccessfullyUploadedServiceNeeds.forEach {
+        try {
+            if (it.existsInEvaka && it.childId != null)
+                handleServiceNeedUpdate(db, vardaClient, it.evakaServiceNeedId, it.childId)
+            else
+                handleServiceNeedDelete(db, vardaClient, it.evakaServiceNeedId)
+        } catch (e: Exception) {
+            logger.error("VardaUpdate: got an error while trying to redo a failed service need varda update: ${e.localizedMessage}")
         }
     }
 }
@@ -276,14 +291,6 @@ private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDa
     return if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
 }
 
-fun getOrCreateVardaChildForServiceNeedOrganization(db: Database.Connection, childId: UUID, ophOrganizerOid: String?): Long {
-    if (!ophOrganizerOid.isNullOrEmpty()) {
-        return db.read { it.getVardaChildIdByEvakaPersonIdAndOphUnitOid(childId, ophOrganizerOid) } ?: throw Exception("VardaUpdate: TODO: Creating a varda child not yet supported")
-    } else {
-        throw Exception("VardaUpdate: Cannot get or create varda child $childId: unit does not have oph_organizer_id")
-    }
-}
-
 fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, startingFrom: HelsinkiDateTime): Map<UUID, VardaChildCalculatedServiceNeedChanges> {
     val evakaServiceNeedDeletionsByChild = calculateDeletedChildServiceNeeds(db)
     val evakaServiceNeedChangesByChild = db.read { it.getEvakaServiceNeedChanges(startingFrom) }
@@ -386,8 +393,8 @@ private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, v
  */
 fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) = createUpdate(
     """
-INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_placement_id, varda_fee_data_ids) 
-VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaPlacementId, :vardaFeeDataIds)
+INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_placement_id, varda_fee_data_ids, update_failed, errors) 
+VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaPlacementId, :vardaFeeDataIds, :updateFailed, :errors)
 ON CONFLICT (evaka_service_need_id) DO UPDATE 
     SET evaka_service_need_option_id = :evakaServiceNeedOptionId, 
         evaka_service_need_updated = :evakaServiceNeedUpdated, 
@@ -395,7 +402,9 @@ ON CONFLICT (evaka_service_need_id) DO UPDATE
         evaka_child_id = :evakaChildId, 
         varda_decision_id = :vardaDecisionId, 
         varda_placement_id = :vardaPlacementId, 
-        varda_fee_data_ids = :vardaFeeDataIds
+        varda_fee_data_ids = :vardaFeeDataIds,
+        update_failed = :updateFailed,
+        errors = :errors
 """
 ).bindKotlin(vardaServiceNeed)
     .execute()
@@ -674,3 +683,24 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: UUID): EvakaServiceNeedInf
         .mapTo<EvakaServiceNeedInfoForVarda>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
+
+data class UnsuccessfullyUploadedServiceNeed(
+    val evakaServiceNeedId: UUID,
+    val existsInEvaka: Boolean,
+    val childId: UUID?
+)
+
+fun Database.Read.getUnsuccessfullyUploadVardaServiceNeeds(): List<UnsuccessfullyUploadedServiceNeed> =
+    createQuery(
+        """
+SELECT 
+    vsn.evaka_service_need_id, 
+    EXISTS(SELECT 1 FROM new_service_need sn WHERE sn.id = vsn.evaka_service_need_id ) AS exists_in_evaka,
+    p.child_id
+FROM varda_service_need vsn 
+    LEFT JOIN new_service_need sn ON sn.id = vsn.evaka_service_need_id
+    LEFT JOIN placement p ON p.id = sn.placement_id
+WHERE update_failed = true"""
+    )
+        .mapTo<UnsuccessfullyUploadedServiceNeed>()
+        .list()
