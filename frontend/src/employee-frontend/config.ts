@@ -59,7 +59,7 @@ const features: Features = {
     voucherServiceProviders: false,
     attachments: false,
     evakaLogin: true,
-    messaging: false,
+    messaging: true,
     showNewServiceNeedsList: true,
     useNewServiceNeeds: true,
     financeBasicsPage: false

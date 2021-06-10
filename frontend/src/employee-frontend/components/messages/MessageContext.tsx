@@ -23,6 +23,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
+import { isNotProduction, isPilotUnit } from '../../constants'
 import { UserContext } from '../../state/user'
 import { UUID } from '../../types'
 import { requireRole } from '../../utils/roles'
@@ -35,13 +36,20 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { DraftContent, MessageAccount, SentMessage } from './types'
+import {
+  DraftContent,
+  isGroupMessageAccount,
+  isPersonalMessageAccount,
+  MessageAccount,
+  SentMessage
+} from './types'
 import { AccountView } from './types-view'
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
+  hasPilotAccess: boolean
   accounts: Result<MessageAccount[]>
   loadAccounts: () => void
   selectedDraft: DraftContent | undefined
@@ -67,6 +75,7 @@ export interface MessagesState {
 }
 
 const defaultState: MessagesState = {
+  hasPilotAccess: false,
   accounts: Loading.of(),
   loadAccounts: () => undefined,
   selectedDraft: undefined,
@@ -110,13 +119,17 @@ const appendMessageAndMoveThreadToTopOfList = (
     ]
   })
 
+const isPilotUnitAccount = (acc: MessageAccount) =>
+  isGroupMessageAccount(acc) && isPilotUnit(acc.daycareGroup.unitId)
+
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const { roles } = useContext(UserContext)
-    const messagingEnabled = useMemo(
+    const hasRequiredRoleForMessaging = useMemo(
       () => requireRole(roles, 'UNIT_SUPERVISOR', 'STAFF'),
       [roles]
     )
+    const [hasPilotAccess, setPilotAccess] = useState(false)
 
     const [selectedUnit, setSelectedUnit] = useState<
       SelectOptionProps | undefined
@@ -125,12 +138,29 @@ export const MessageContextProvider = React.memo(
     const [accounts, setAccounts] = useState<Result<MessageAccount[]>>(
       Loading.of()
     )
-    const getAccounts = useRestApi(getMessagingAccounts, setAccounts)
+    const setAccountsResult = useCallback((res: Result<MessageAccount[]>) => {
+      if (res.isSuccess) {
+        setPilotAccess((prev) => prev || res.value.some(isPilotUnitAccount))
+        setAccounts(
+          res.map((val) =>
+            val.filter(
+              (acc) =>
+                isNotProduction() ||
+                isPilotUnitAccount(acc) ||
+                isPersonalMessageAccount(acc)
+            )
+          )
+        )
+      } else {
+        setAccounts(res)
+      }
+    }, [])
+    const getAccounts = useRestApi(getMessagingAccounts, setAccountsResult)
     const loadAccounts = useDebouncedCallback(getAccounts, 100)
 
     useEffect(() => {
-      if (messagingEnabled) loadAccounts()
-    }, [messagingEnabled, loadAccounts])
+      if (hasRequiredRoleForMessaging) loadAccounts()
+    }, [hasRequiredRoleForMessaging, loadAccounts])
 
     const [selectedAccount, setSelectedAccount] = useState<AccountView>()
     const [selectedDraft, setSelectedDraft] = useState(
@@ -272,6 +302,7 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
+        hasPilotAccess,
         accounts,
         loadAccounts,
         selectedDraft,
@@ -296,6 +327,7 @@ export const MessageContextProvider = React.memo(
         refreshMessages
       }),
       [
+        hasPilotAccess,
         accounts,
         loadAccounts,
         selectedDraft,

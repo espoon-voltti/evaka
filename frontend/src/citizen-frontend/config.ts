@@ -34,7 +34,7 @@ const features: Features = {
     messaging: true
   },
   prod: {
-    messaging: false
+    messaging: true
   }
 }
 
