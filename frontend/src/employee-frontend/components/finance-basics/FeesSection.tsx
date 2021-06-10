@@ -135,6 +135,7 @@ export default React.memo(function FeesSection() {
           close={closeEditor}
           reloadData={loadData}
           toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
+          existingThresholds={data}
         />
       ) : null}
       {data.mapAll({
@@ -157,6 +158,7 @@ export default React.memo(function FeesSection() {
                     close={closeEditor}
                     reloadData={loadData}
                     toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
+                    existingThresholds={data}
                   />
                 ) : (
                   <FeeThresholdsItem

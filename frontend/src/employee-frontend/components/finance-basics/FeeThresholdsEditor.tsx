@@ -32,7 +32,8 @@ import { Translations } from '../../state/i18n'
 import {
   familySizes,
   FamilySize,
-  FeeThresholds
+  FeeThresholds,
+  FeeThresholdsWithId
 } from '../../types/finance-basics'
 import { isValidCents, parseCents, parseCentsOrThrow } from '../../utils/money'
 import { FormState } from './FeesSection'
@@ -43,7 +44,8 @@ export default React.memo(function FeeThresholdsEditor({
   initialState,
   close,
   reloadData,
-  toggleSaveRetroactiveWarning
+  toggleSaveRetroactiveWarning,
+  existingThresholds
 }: {
   i18n: Translations
   id: string | undefined
@@ -54,9 +56,14 @@ export default React.memo(function FeeThresholdsEditor({
     resolve: () => void
     reject: () => void
   }) => void
+  existingThresholds: Result<FeeThresholdsWithId[]>
 }) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
-  const validationResult = validateForm(i18n, editorState)
+  const validationResult = validateForm(
+    i18n,
+    editorState,
+    existingThresholds.map((ts) => ts.filter((t) => t.id !== id))
+  )
   const [saveError, setSaveError] = useState<string>()
 
   const handleSaveErrors = async (promise: Promise<Result<unknown>>) => {
@@ -86,6 +93,14 @@ export default React.memo(function FeeThresholdsEditor({
         }
       : undefined
 
+  const dateOverlapInputInfo =
+    'errors' in validationResult && validationResult.errors.dateOverlap
+      ? ({
+          status: 'warning',
+          text: ''
+        } as const)
+      : undefined
+
   return (
     <>
       <div className="separator large" />
@@ -100,7 +115,7 @@ export default React.memo(function FeeThresholdsEditor({
               validFrom
             }))
           }
-          info={validationErrorInfo('validFrom')}
+          info={validationErrorInfo('validFrom') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
         />
         <span>-</span>
@@ -113,10 +128,15 @@ export default React.memo(function FeeThresholdsEditor({
               validTo
             }))
           }
-          info={validationErrorInfo('validTo')}
+          info={validationErrorInfo('validTo') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
         />
       </RowWithMargin>
+      {'errors' in validationResult && validationResult.errors.dateOverlap ? (
+        <ErrorDescription>
+          {validationResult.errors.dateOverlap}
+        </ErrorDescription>
+      ) : null}
       <H4>{i18n.financeBasics.fees.thresholds}</H4>
       <RowWithMargin spacing="XL">
         <FixedSpaceColumn spacing="xxs">
@@ -381,9 +401,12 @@ const ButtonRow = styled(FixedSpaceRow)`
   margin: ${defaultMargins.L} 0;
 `
 
-const MaxFeeError = styled.span`
+const ErrorDescription = styled.span`
   color: ${colors.greyscale.dark};
   font-style: italic;
+`
+
+const MaxFeeError = styled(ErrorDescription)`
   margin-left: ${defaultMargins.s};
 `
 
@@ -391,8 +414,11 @@ const SaveError = styled.span`
   color: ${colors.accents.red};
 `
 
-type ValidationErrors = Partial<Record<keyof FormState, string>> &
-  Partial<Record<`maxFee${FamilySize}`, number>>
+type ValidationErrors = Partial<
+  Record<keyof FormState, string> &
+    Record<`maxFee${FamilySize}`, number> &
+    Record<'dateOverlap', string>
+>
 type FeeThresholdsPayload = Omit<FeeThresholds, 'id'>
 
 const centProps: readonly (keyof FormState)[] = [
@@ -420,7 +446,8 @@ const centProps: readonly (keyof FormState)[] = [
 
 function validateForm(
   i18n: Translations,
-  form: FormState
+  form: FormState,
+  existingThresholds: Result<FeeThresholdsWithId[]>
 ): { errors: ValidationErrors } | { payload: FeeThresholdsPayload } {
   const validationErrors: ValidationErrors = {}
 
@@ -447,6 +474,32 @@ function validateForm(
   ) {
     validationErrors.validFrom = i18n.validationError.invertedDateRange
     validationErrors.validTo = i18n.validationError.invertedDateRange
+  }
+
+  const dateOverlap =
+    existingThresholds
+      .map((ts) =>
+        ts.filter((t) => {
+          if (parsedValidFrom === null) {
+            return false
+          }
+
+          const dateRange = new DateRange(parsedValidFrom, parsedValidTo)
+
+          if (t.thresholds.validDuring.end === null) {
+            return t.thresholds.validDuring.start.isEqualOrAfter(
+              dateRange.start
+            )
+          }
+
+          return t.thresholds.validDuring.overlapsWith(dateRange)
+        })
+      )
+      .getOrElse([]).length > 0
+
+  if (dateOverlap) {
+    validationErrors.dateOverlap =
+      i18n.financeBasics.fees.errors['date-overlap']
   }
 
   familySizes.forEach((n) => {
