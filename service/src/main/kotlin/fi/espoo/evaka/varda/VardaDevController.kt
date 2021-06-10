@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -27,6 +28,17 @@ class VardaDevController(
             vardaUpdateService.deleteDecisionsByChild(vardaChildId, db)
             vardaUpdateService.deleteChild(vardaChildId, db)
             return ResponseEntity.ok().build()
+        }
+        return ResponseEntity.notFound().build()
+    }
+
+    @PostMapping("/run-update-all")
+    fun runUpdateAll(
+        db: Database.Connection
+    ): ResponseEntity<Unit> {
+        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
+            vardaUpdateService.scheduleVardaUpdate(db, runNow = true)
+            return ResponseEntity.noContent().build()
         }
         return ResponseEntity.notFound().build()
     }

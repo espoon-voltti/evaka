@@ -46,15 +46,14 @@ class VardaUpdateService(
     private val mapper: ObjectMapper,
     private val personService: PersonService
 ) {
-    private val forceSync = env.getProperty("fi.espoo.varda.force.sync", Boolean::class.java, false)
     private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
 
     init {
         asyncJobRunner.vardaUpdate = ::updateAll
     }
 
-    fun scheduleVardaUpdate(db: Database.Connection) {
-        if (forceSync) {
+    fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {
+        if (runNow) {
             val client = VardaClient(tokenProvider, fuel, env, mapper)
             updateAll(db, client, personService, organizer)
         } else {
