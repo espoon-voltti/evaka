@@ -153,6 +153,9 @@ export default class InvoicingPage {
   async confirmAllFeeDecisions(t: TestController) {
     await this.toggleAllFeeDecisions.click()
     await t.click(this.confirmFeeDecisions)
+    await t
+      .expect(this.confirmFeeDecisions.getAttribute('data-status'))
+      .eql('success')
   }
 
   async openFirstInvoice(t: TestController) {

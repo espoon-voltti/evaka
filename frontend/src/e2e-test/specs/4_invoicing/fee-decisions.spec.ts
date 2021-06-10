@@ -72,6 +72,9 @@ test('Fee decisions are toggled and confirmed', async (t) => {
 
   await page.toggleFirstFeeDecision.click()
   await t.click(page.confirmFeeDecisions)
+  await t
+    .expect(page.confirmFeeDecisions.getAttribute('data-status'))
+    .eql('success')
   await runPendingAsyncJobs()
 
   await page.feeDecisionsStatusFilterDraft.click()

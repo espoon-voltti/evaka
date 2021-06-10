@@ -69,6 +69,9 @@ test('voucher value decisions are toggled and sent', async (t) => {
   await t.expect(page.toggleAllValueDecisions.checked).eql(true)
 
   await t.click(page.sendValueDecisions)
+  await t
+    .expect(page.sendValueDecisions.getAttribute('data-status'))
+    .eql('success')
   await runPendingAsyncJobs()
 
   await page.valueDecisionsStatusFilterSent.click()
