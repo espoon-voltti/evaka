@@ -5,7 +5,7 @@
   "private": true,
   "license": "LGPL-2.1-or-later",
   "scripts": {
-    "clean": "rm -rf dist/ && rm -rf node_modules/.cache",
+    "clean": "rm -rf dist screenshots videos node_modules/.cache",
     "dev": "node dev-server.js",
     "lint": "eslint --ext .ts,.tsx src",
     "lint-strict": "eslint --ext .ts,.tsx --max-warnings 0 src",
