@@ -3,6 +3,7 @@ package fi.espoo.evaka.vasu
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.util.UUID
@@ -19,6 +20,21 @@ data class VasuTemplateSummary(
     val id: UUID,
     val name: String,
     val valid: DateRange
+)
+
+enum class VasuDocumentState {
+    DRAFT,
+    CREATED,
+    REVIEWED,
+    CLOSED
+}
+
+data class VasuDocumentSummary(
+    val id: UUID,
+    val name: String,
+    val state: VasuDocumentState,
+    val modifiedAt: HelsinkiDateTime,
+    val publishedAt: HelsinkiDateTime? = null
 )
 
 data class VasuDocument(
