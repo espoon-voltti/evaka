@@ -25,7 +25,8 @@ export const fi = {
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
     employeePinCode: 'PIN-koodin hallinta',
-    welcomePage: 'Tervetuloa eVakaan'
+    welcomePage: 'Tervetuloa eVakaan',
+    vasuPage: 'Vasu 2021'
   },
   common: {
     yes: 'Kyllä',

@@ -69,6 +69,7 @@ import { client } from './api/client'
 import MessagesPage from './components/messages/MessagesPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import WelcomePage from './components/WelcomePage'
+import VasuPage from './components/vasu/VasuPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -386,6 +387,14 @@ export default function App() {
               component={ensureAuthenticated(WelcomePage)}
               title={i18n.titles.welcomePage}
             />
+            {featureFlags.vasu && (
+              <RouteWithTitle
+                exact
+                path="/vasu/:id"
+                component={ensureAuthenticated(VasuPage)}
+                title={i18n.titles.vasuPage}
+              />
+            )}
             {redirectRoutes([
               {
                 from: '/fee-decisions',
