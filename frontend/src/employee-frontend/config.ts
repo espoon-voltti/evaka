@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -22,8 +22,6 @@ type FeatureFlags = {
   attachments: boolean
   evakaLogin: boolean
   messaging: boolean
-  showNewServiceNeedsList: boolean
-  useNewServiceNeeds: boolean
   financeBasicsPage: boolean
   vasu: boolean
 }
@@ -41,8 +39,6 @@ const features: Features = {
     attachments: true,
     evakaLogin: true,
     messaging: true,
-    showNewServiceNeedsList: true,
-    useNewServiceNeeds: true,
     financeBasicsPage: true,
     vasu: true
   },
@@ -52,8 +48,6 @@ const features: Features = {
     attachments: true,
     evakaLogin: true,
     messaging: true,
-    showNewServiceNeedsList: true,
-    useNewServiceNeeds: true,
     financeBasicsPage: false,
     vasu: false
   },
@@ -63,8 +57,6 @@ const features: Features = {
     attachments: false,
     evakaLogin: true,
     messaging: true,
-    showNewServiceNeedsList: true,
-    useNewServiceNeeds: true,
     financeBasicsPage: false,
     vasu: false
   }

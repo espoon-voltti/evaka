@@ -115,7 +115,6 @@ export interface Placement {
     area: string
     providerType: ProviderType
   }
-  missingServiceNeedDays: number
   missingNewServiceNeedDays: number
   groupPlacements: DaycareGroupPlacement[]
   serviceNeeds: NewServiceNeed[]
@@ -138,7 +137,6 @@ export interface ChildBackupCare {
 export interface UnitBackupCare {
   id: UUID
   period: FiniteDateRange
-  missingServiceNeedDays: number
   missingNewServiceNeedDays: number
   group?: {
     id: UUID

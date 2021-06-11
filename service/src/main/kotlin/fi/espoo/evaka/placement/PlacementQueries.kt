@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -240,13 +240,6 @@ fun Database.Read.getDaycarePlacements(
             pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.unit_id,
             d.name AS daycare_name, d.provider_type, a.name AS area_name,
             ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
-            (
-                SELECT count(*)
-                FROM generate_series(greatest(pl.start_date, '2020-03-01'::date), pl.end_date, '1 day') t
-                LEFT OUTER JOIN service_need sn
-                    ON sn.child_id = pl.child_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
-                WHERE sn.id IS NULL
-            ) AS missing_service_need,
             CASE
                 WHEN (SELECT every(default_option) FROM service_need_option WHERE valid_placement_type = pl.type) THEN 0
                 ELSE (
@@ -611,7 +604,6 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
         startDate = rs.getDate("start_date").toLocalDate(),
         endDate = rs.getDate("end_date").toLocalDate(),
         type = rs.getEnum("type"),
-        missingServiceNeedDays = rs.getInt("missing_service_need"),
         missingNewServiceNeedDays = rs.getInt("missing_new_service_need")
     )
 }

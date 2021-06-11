@@ -44,23 +44,8 @@ SELECT
   group_id,
   daycare_group.name AS group_name,
   daterange(backup_care.start_date, backup_care.end_date, '[]') AS period,
-  days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_service_need AS missingServiceNeedDays,
   days_in_range(daterange(backup_care.start_date, backup_care.end_date, '[]') * daterange('2020-03-01', NULL)) - days_with_new_service_need AS missingNewServiceNeedDays
 FROM backup_care
-JOIN (
-  SELECT
-    bc.id,
-    coalesce(sum(days_in_range(daterange(bc.start_date, bc.end_date, '[]') * daterange('2020-03-01', NULL) * sn.period)), 0) AS days_with_service_need
-  FROM backup_care bc
-  LEFT JOIN (
-    SELECT child_id, daterange(start_date, end_date, '[]') AS period
-    FROM service_need
-  ) AS sn
-  ON bc.child_id = sn.child_id
-  AND daterange(bc.start_date, bc.end_date, '[]') && sn.period
-  GROUP BY bc.id
-) AS service_need_stats
-USING (id)
 JOIN (
   SELECT
     bc.id,

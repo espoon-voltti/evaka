@@ -62,7 +62,7 @@ fun Database.Transaction.resetDatabase() {
 
 fun Database.Transaction.ensureDevData() {
     if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
-        listOf("espoo-dev-data.sql", "employees.sql", "preschool-terms.sql", "club-terms.sql").forEach { runDevScript(it) }
+        listOf("espoo-dev-data.sql", "service-need-options.sql", "employees.sql", "preschool-terms.sql", "club-terms.sql").forEach { runDevScript(it) }
 
         insertVasuTemplate(
             name = "Varhaiskasvatussuunnitelma 2020-2021",

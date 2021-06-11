@@ -5,37 +5,32 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
+import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
+import { fi } from 'date-fns/locale'
 
-import { Container, ContentArea } from 'lib-components/layout/Container'
+import { formatPercentage, formatDecimal } from 'lib-common/utils/number'
+import { Loading, Result, Success } from 'lib-common/api'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import Combobox from 'lib-components/atoms/form/Combobox'
+import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { SelectOptionProps } from '../../components/common/Select'
 import { Translations, useTranslation } from '../../state/i18n'
-import { Loading, Result, Success } from 'lib-common/api'
 import { OccupancyReportRow } from '../../types/reports'
 import {
   getOccupanciesReport,
   OccupancyReportFilters,
   OccupancyReportType
 } from '../../api/reports'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
 import { formatDate } from '../../utils/date'
 import { DATE_FORMAT_ISO } from '../../constants'
-import { formatDecimal, formatPercentage } from 'lib-common/utils/number'
-import { fi } from 'date-fns/locale'
+import { SelectOptionProps } from '../common/Select'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'
-import {
-  FilterLabel,
-  FilterRow,
-  TableScrollable
-} from '../../components/reports/common'
-import { FlexRow } from '../../components/common/styled/containers'
-import { featureFlags } from '../../config'
-import Combobox from 'lib-components/atoms/form/Combobox'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
+import { FlexRow } from '../common/styled/containers'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -216,9 +211,7 @@ function Occupancies() {
     if (filters.careAreaId == '') return
 
     setRows(Loading.of())
-    void getOccupanciesReport(filters, featureFlags.useNewServiceNeeds).then(
-      setRows
-    )
+    void getOccupanciesReport(filters).then(setRows)
   }, [filters])
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
@@ -375,6 +368,7 @@ function Occupancies() {
             />
           </Wrapper>
         </FilterRow>
+
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && filters.careAreaId != '' && (

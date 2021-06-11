@@ -280,7 +280,6 @@ fun Database.Read.getDetailedDaycarePlacements(
                 startDate = daycarePlacement.startDate,
                 endDate = daycarePlacement.endDate,
                 type = daycarePlacement.type,
-                missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
                 missingNewServiceNeedDays = daycarePlacement.missingNewServiceNeedDays,
                 groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
@@ -469,7 +468,6 @@ data class DaycarePlacementDetails(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
-    val missingServiceNeedDays: Int,
     val missingNewServiceNeedDays: Int
 )
 
@@ -480,7 +478,6 @@ data class DaycarePlacementWithDetails(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
-    val missingServiceNeedDays: Int,
     val missingNewServiceNeedDays: Int,
     val groupPlacements: List<DaycareGroupPlacement>,
     val serviceNeeds: List<NewServiceNeed>,

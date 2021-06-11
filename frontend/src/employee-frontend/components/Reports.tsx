@@ -159,23 +159,6 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.accents.orange}
-                  content={faClock}
-                />
-                <LinkTitle to="/reports/invalid-service-need">
-                  {i18n.reports.invalidServiceNeed.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.invalidServiceNeed.description}
-              </Description>
-            </ReportItem>
-          </RequireRole>
           <RequireRole
             oneOf={[
               'ADMIN',

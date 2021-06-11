@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -29,7 +29,6 @@ import { Occupancy } from '../../types/unit'
 import { DaycarePlacementPlan } from '../../types/placementdraft'
 import { Unit } from '../../state/placementdraft'
 import { UUID } from '../../types'
-import { featureFlags } from 'employee-frontend/config'
 
 const MarginBox = styled.div`
   margin: 1rem;
@@ -162,8 +161,7 @@ const MemoizedCard = memo(function UnitCard({
         unitId,
         occupancyStartDate,
         occupancyEndDate,
-        'PLANNED',
-        featureFlags.useNewServiceNeeds
+        'PLANNED'
       ).then(setOccupancies)
     }
 

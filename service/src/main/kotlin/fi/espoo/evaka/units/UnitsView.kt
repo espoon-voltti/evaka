@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -58,7 +58,6 @@ class UnitsView(private val acl: AccessControlList) {
             value = "to",
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam(required = false) v2: Boolean = false,
         @RequestParam(required = false) missingGroupPlacementsV2: Boolean = false
     ): ResponseEntity<UnitDataResponse> {
         Audit.UnitView.log(targetId = unitId)
@@ -89,8 +88,8 @@ class UnitsView(private val acl: AccessControlList) {
             )
 
             if (currentUserRoles.hasOneOfRoles(*detailedDataRoles)) {
-                val unitOccupancies = getUnitOccupancies(it, unitId, period, v2)
-                val groupOccupancies = getGroupOccupancies(it, unitId, period, v2)
+                val unitOccupancies = getUnitOccupancies(it, unitId, period)
+                val groupOccupancies = getGroupOccupancies(it, unitId, period)
                 val placementProposals = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
                 val placementPlans = it.getPlacementPlans(unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
                 val applications = it.getApplicationUnitSummaries(unitId)
@@ -137,13 +136,12 @@ data class UnitOccupancies(
 private fun getUnitOccupancies(
     tx: Database.Read,
     unitId: UUID,
-    period: FiniteDateRange,
-    v2: Boolean = false
+    period: FiniteDateRange
 ): UnitOccupancies {
     return UnitOccupancies(
-        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED, v2)),
-        confirmed = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED, v2)),
-        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED, v2))
+        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)),
+        confirmed = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED)),
+        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED))
     )
 }
 
@@ -163,24 +161,21 @@ data class GroupOccupancies(
 private fun getGroupOccupancies(
     tx: Database.Read,
     unitId: UUID,
-    period: FiniteDateRange,
-    v2: Boolean = false
+    period: FiniteDateRange
 ): GroupOccupancies {
     return GroupOccupancies(
         confirmed = getGroupOccupancyResponses(
             tx.calculateOccupancyPeriodsGroupLevel(
                 unitId,
                 period,
-                OccupancyType.CONFIRMED,
-                v2
+                OccupancyType.CONFIRMED
             )
         ),
         realized = getGroupOccupancyResponses(
             tx.calculateOccupancyPeriodsGroupLevel(
                 unitId,
                 period,
-                OccupancyType.REALIZED,
-                v2
+                OccupancyType.REALIZED
             )
         )
     )

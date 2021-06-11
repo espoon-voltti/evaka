@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -41,11 +41,11 @@ import CareTypeLabel, {
 import styled from 'styled-components'
 import colors from 'lib-customizations/common'
 import { capitalizeFirstLetter, formatName } from '../../../../utils'
-import { StatusIconContainer } from '../../../../components/common/StatusIconContainer'
+import { StatusIconContainer } from '../../../common/StatusIconContainer'
 import { UnitBackupCare } from '../../../../types/child'
 import { updateBackupCare } from '../../../../api/child/backup-care'
 import { formatPercentage } from 'lib-common/utils/number'
-import { DataList } from '../../../../components/common/DataList'
+import { DataList } from '../../../common/DataList'
 import { Gap } from 'lib-components/white-space'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -65,7 +65,6 @@ import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { isNotProduction, isPilotUnit } from '../../../../constants'
-import { featureFlags } from '../../../../config'
 
 interface Props {
   unit: Unit
@@ -523,12 +522,8 @@ function Group({
                   {sortedPlacements.map((placement) => {
                     const missingServiceNeedDays =
                       'type' in placement
-                        ? featureFlags.useNewServiceNeeds
-                          ? placement.daycarePlacementMissingNewServiceNeedDays
-                          : placement.daycarePlacementMissingServiceNeedDays
-                        : featureFlags.useNewServiceNeeds
-                        ? placement.missingNewServiceNeedDays
-                        : placement.missingServiceNeedDays
+                        ? placement.daycarePlacementMissingNewServiceNeedDays
+                        : placement.missingNewServiceNeedDays
                     return (
                       <Tr
                         key={placement.id || ''}
