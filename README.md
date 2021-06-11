@@ -143,6 +143,12 @@ usage: reuse addheader [-h] [--copyright COPYRIGHT] [--license LICENSE]
 reuse addheader: error: 'frontend/packages/employee-frontend/src/components/voucher-value-decision/VoucherValueDecisionActionBar.tsx' does not have a recognised file extension, please use --style, --explicit-license or --skip-unrecognised
 ```
 
+### Linting shell scripts
+
+CI does this automatically but you can manually lint all the shell scripts in
+this repo with: `./bin/run-shellcheck.sh`. See [shellcheck](https://github.com/koalaman/shellcheck)
+for more details on the linter.
+
 ## Contact information
 
 eVaka is developed in the [City of Espoo](https://www.espoo.fi), Finland.
