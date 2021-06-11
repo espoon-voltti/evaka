@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.data.findValueDecisionsForChild
@@ -51,7 +50,6 @@ import java.util.UUID
 @RequestMapping("/value-decisions")
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
-    private val objectMapper: ObjectMapper,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping("/search")

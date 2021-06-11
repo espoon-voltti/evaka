@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoices
 import fi.espoo.evaka.invoicing.data.getDetailedInvoice
@@ -57,8 +56,7 @@ enum class InvoiceSortParam {
 @RestController
 @RequestMapping("/invoices")
 class InvoiceController(
-    private val service: InvoiceService,
-    private val objectMapper: ObjectMapper
+    private val service: InvoiceService
 ) {
     @GetMapping("/search")
     fun searchInvoices(

@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
@@ -247,6 +246,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
         assertTrue(janReportAfterFebFreeze.first().isNew)
     }
 
+    @Test
     fun `future service voucher report does not include unfrozen months as corrections`() {
         createVoucherDecision(janFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800)
         db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
@@ -276,7 +276,6 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
     }
 
     private fun LocalDate.toEndOfMonth() = this.plusMonths(1).withDayOfMonth(1).minusDays(1)
-    private fun LocalDate.toInstant() = this.atStartOfDay(helsinkiZone).toInstant()
 
     private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 

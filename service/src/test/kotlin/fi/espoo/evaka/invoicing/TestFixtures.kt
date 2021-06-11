@@ -28,7 +28,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
@@ -157,24 +156,7 @@ val testInvoice = Invoice(
     rows = listOf(testInvoiceRow)
 )
 
-fun testPisPerson(data: PersonData.JustId): PersonJSON {
-    return PersonJSON(
-        id = data.id,
-        socialSecurityNumber = null,
-        dateOfBirth = LocalDate.of(1970, 1, 1)
-    )
-}
-
-fun testPisPerson(data: PersonData.WithDateOfBirth): PersonJSON {
-    return PersonJSON(
-        id = data.id,
-        socialSecurityNumber = null,
-        dateOfBirth = data.dateOfBirth
-    )
-}
-
 val testPisFridgeParentId = UUID.randomUUID()
-val testPisFridgeChildId = UUID.randomUUID()
 
 val testIncome = Income(
     id = UUID.randomUUID(),
@@ -192,17 +174,6 @@ val testDecisionIncome = DecisionIncome(
     total = 314100,
     validFrom = LocalDate.of(2000, 1, 1),
     validTo = null
-)
-
-val testFeeAlteration = FeeAlteration(
-    id = UUID.randomUUID(),
-    personId = UUID.randomUUID(),
-    type = FeeAlteration.Type.DISCOUNT,
-    amount = 100,
-    isAbsolute = false,
-    validFrom = LocalDate.of(2000, 1, 1),
-    validTo = null,
-    notes = ""
 )
 
 fun createFeeDecisionAlterationFixture(

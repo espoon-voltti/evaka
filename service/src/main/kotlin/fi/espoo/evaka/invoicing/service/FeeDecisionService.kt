@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.approveFeeDecisionDraftsForSending
@@ -47,7 +46,6 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class FeeDecisionService(
-    private val objectMapper: ObjectMapper,
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
     private val messageProvider: IMessageProvider,

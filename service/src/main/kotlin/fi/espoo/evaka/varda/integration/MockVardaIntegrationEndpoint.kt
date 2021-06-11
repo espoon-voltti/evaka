@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.varda.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.varda.VardaChildRequest
 import fi.espoo.evaka.varda.VardaDecision
 import fi.espoo.evaka.varda.VardaFeeData
@@ -32,7 +31,7 @@ private val logger = KotlinLogging.logger {}
 @Profile("enable_varda_mock_integration_endpoint")
 @RestController
 @RequestMapping("/mock-integration/varda/api")
-class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
+class MockVardaIntegrationEndpoint {
     private val lock = ReentrantLock()
 
     var organizerId = 0L

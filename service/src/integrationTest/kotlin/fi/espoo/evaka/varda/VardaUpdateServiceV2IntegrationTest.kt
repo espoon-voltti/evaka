@@ -21,8 +21,8 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.serviceneednew.ServiceNeedOption
-import fi.espoo.evaka.serviceneednew.deleteNewServiceNeed
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -136,7 +136,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
         val snId = createServiceNeed(db, since, option)
-        val childId = db.read { it.getChidIdByServiceNeedId(snId) }
+        val childId = db.read { it.getChildIdByServiceNeedId(snId) }
 
         val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, since)
         assertEquals(1, diffs.keys.size)
@@ -149,7 +149,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
         val snId = createServiceNeed(db, since, option)
-        val childId = db.read { it.getChidIdByServiceNeedId(snId) } ?: throw Exception("Created service need not found?!?")
+        val childId = db.read { it.getChildIdByServiceNeedId(snId) } ?: throw Exception("Created service need not found?!?")
         db.transaction {
             it.insertVardaServiceNeed(
                 VardaServiceNeed(
@@ -173,7 +173,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
         val changedServiceNeedId = createServiceNeed(db, since, option)
-        val childId = db.read { it.getChidIdByServiceNeedId(changedServiceNeedId) } ?: throw Exception("Created service need not found?!?")
+        val childId = db.read { it.getChildIdByServiceNeedId(changedServiceNeedId) } ?: throw Exception("Created service need not found?!?")
         db.transaction {
             it.insertVardaServiceNeed(
                 VardaServiceNeed(
@@ -353,7 +353,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         assertVardaElementCounts(1, 1, 2)
 
-        db.transaction { it.deleteNewServiceNeed(id) }
+        db.transaction { it.deleteServiceNeed(id) }
         updateChildData(db, vardaClient, since)
 
         assertVardaElementCounts(0, 0, 0)
@@ -635,7 +635,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun Database.Read.getChidIdByServiceNeedId(serviceNeedId: UUID): UUID? = createQuery(
+private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: UUID): UUID? = createQuery(
     """
 SELECT p.child_id FROM placement p LEFT JOIN new_service_need sn ON p.id = sn.placement_id
 WHERE sn.id = :serviceNeedId

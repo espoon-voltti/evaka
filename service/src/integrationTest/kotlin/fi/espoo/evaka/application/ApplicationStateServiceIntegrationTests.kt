@@ -83,11 +83,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private val applicationId = UUID.randomUUID()
-    private val address = Address(
-        street = "Street 1",
-        postalCode = "00200",
-        postOffice = "Espoo"
-    )
     private val mainPeriod = preschoolTerm2020
     private val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
 

@@ -9,13 +9,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.util.UUID
 
-fun Database.Read.getDaycareDailyNote(noteId: UUID): DaycareDailyNote? {
-    return createQuery("SELECT * FROM daycare_daily_note WHERE id = :id")
-        .bind("id", noteId)
-        .mapTo<DaycareDailyNote>()
-        .first()
-}
-
 fun Database.Read.getChildDaycareDailyNotes(childId: UUID): List<DaycareDailyNote> {
     return createQuery("SELECT * FROM daycare_daily_note WHERE child_id = :id")
         .bind("id", childId)
