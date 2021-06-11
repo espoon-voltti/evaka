@@ -25,7 +25,8 @@ export const fi = {
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
     employeePinCode: 'PIN-koodin hallinta',
-    welcomePage: 'Tervetuloa eVakaan'
+    welcomePage: 'Tervetuloa eVakaan',
+    vasuPage: 'Vasu 2021'
   },
   common: {
     yes: 'Kyllä',
@@ -36,7 +37,7 @@ export const fi = {
     add: 'Lisää',
     create: 'Luo',
     remove: 'Poista',
-    cancel: 'Peruuta',
+    cancel: 'Peruut2a',
     goBack: 'Palaa',
     confirm: 'Vahvista',
     period: 'Ajalle',
@@ -2499,5 +2500,6 @@ export const fi = {
   welcomePage: {
     text:
       'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
-  }
+  },
+  what: 'hmmm'
 }
