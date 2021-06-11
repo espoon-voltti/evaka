@@ -17,4 +17,5 @@ fi
 
 # Run as exec so the application can receive any Unix signals sent to the container, e.g.,
 # Ctrl + C.
+# shellcheck disable=SC2086
 exec java -cp . -server $JAVA_OPTS org.springframework.boot.loader.JarLauncher "$@"
