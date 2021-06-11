@@ -41,6 +41,7 @@ enum class AsyncJobType {
     SEND_PENDING_DECISION_EMAIL,
     SEND_UNREAD_MESSAGE_NOTIFICATION,
     RUN_DAILY_JOB,
+    FEE_THRESHOLDS_UPDATED,
     GENERATE_FINANCE_DECISIONS
 }
 
@@ -177,6 +178,11 @@ class VardaUpdateV2 : AsyncJobPayload {
 
 data class RunDailyJob(val dailyJob: DailyJob) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.RUN_DAILY_JOB
+    override val user: AuthenticatedUser? = null
+}
+
+data class NotifyFeeThresholdsUpdated(val dateRange: DateRange) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.FEE_THRESHOLDS_UPDATED
     override val user: AuthenticatedUser? = null
 }
 

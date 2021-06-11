@@ -94,6 +94,9 @@ class AsyncJobRunner(
     var runDailyJob: (db: Database, msg: RunDailyJob) -> Unit = noHandler
 
     @Volatile
+    var notifyFeeThresholdsUpdated: (db: Database, msg: NotifyFeeThresholdsUpdated) -> Unit = noHandler
+
+    @Volatile
     var generateFinanceDecisions: (db: Database, msg: GenerateFinanceDecisions) -> Unit = noHandler
 
     fun plan(
@@ -211,6 +214,7 @@ class AsyncJobRunner(
                     AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
                     AsyncJobType.SEND_UNREAD_MESSAGE_NOTIFICATION -> it.runJob(job, this.sendMessageNotificationEmail)
                     AsyncJobType.RUN_DAILY_JOB -> it.runJob(job, this.runDailyJob)
+                    AsyncJobType.FEE_THRESHOLDS_UPDATED -> it.runJob(job, this.notifyFeeThresholdsUpdated)
                     AsyncJobType.GENERATE_FINANCE_DECISIONS -> it.runJob(job, this.generateFinanceDecisions)
 
                     // Deprecated, delete when no more jobs of this type in the database

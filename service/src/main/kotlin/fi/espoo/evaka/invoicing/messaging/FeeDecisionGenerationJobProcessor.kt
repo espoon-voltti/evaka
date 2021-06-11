@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.messaging
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
+import fi.espoo.evaka.shared.async.NotifyFeeThresholdsUpdated
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import mu.KotlinLogging
@@ -22,7 +23,14 @@ class FeeDecisionGenerationJobProcessor(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     init {
+        asyncJobRunner.notifyFeeThresholdsUpdated = ::runJob
         asyncJobRunner.generateFinanceDecisions = ::runJob
+    }
+
+    fun runJob(db: Database, msg: NotifyFeeThresholdsUpdated) {
+        logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
+        db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, msg.dateRange, listOf()) }
+        asyncJobRunner.scheduleImmediateRun()
     }
 
     fun runJob(db: Database, msg: GenerateFinanceDecisions) {
