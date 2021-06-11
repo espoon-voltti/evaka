@@ -166,7 +166,7 @@ Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen
 Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
 </p>
 <p>
-Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a> eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
+Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen <a href="https://esbosmabarnspedagogik.fi">esbosmabarnspedagogik.fi</a> eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
 </p>
 <p>
 Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 27600
@@ -198,9 +198,9 @@ Tähän viestiin ei voi vastata. Tarvittaessa ole yhteydessä varhaiskasvatuksen
            
 Du har ett obesvarat beslut av småbarnspedagogiken i Esbo. Beslutet ska godkännas eller förkastas inom två veckor från att det inkommit.
 
-Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen https://espoonvarhaiskasvatus.fi eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
+Den som lämnat in ansökan kan godkänna eller förkasta obesvarade beslut genom att logga in på adressen https://esbosmabarnspedagogik.fi eller genom att returnera den ifyllda blanketten som finns på sista sidan av beslutet till den adress som nämns på sidan.
 
-Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 7600                
+Detta meddelande kan inte besvaras. Kontakta vid behov servicehänvisningen inom småbarnspedagogiken, tfn 09 816 27600                
         
 -----
 
