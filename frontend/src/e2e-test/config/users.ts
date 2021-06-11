@@ -59,13 +59,16 @@ export async function employeeLogin(
         method: 'POST',
         body: params,
         redirect: 'manual'
-      }).then((response) => {
-        if (response.status >= 400) {
-          throw new Error(
-            `Fetch to {authUrl} failed with status ${response.status}`
-          )
-        }
       })
+        .then((response) => {
+          if (response.status >= 400) {
+            throw new Error(
+              `Fetch to ${authUrl} failed with status ${response.status}`
+            )
+          }
+          return response.arrayBuffer()
+        })
+        .then(() => undefined)
     },
     { dependencies: { authUrl, user } }
   )
