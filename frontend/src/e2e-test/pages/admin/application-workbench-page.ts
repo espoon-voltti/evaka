@@ -113,19 +113,23 @@ export class ApplicationWorkbenchPage {
     }
   }
 
+  async waitUntilLoaded() {
+    await t.expect(this.applicationList.visible).ok()
+  }
+
   async openPlacementQueue() {
     await t.click(this.applicationsWaitingPlacement)
-    await t.expect(this.applicationList.visible).ok()
+    await this.waitUntilLoaded()
   }
 
   async openDecisionQueue() {
     await t.click(this.applicationsWaitingDecision)
-    await t.expect(this.applicationList.visible).ok()
+    await this.waitUntilLoaded()
   }
 
   async openPlacementProposalQueue() {
     await t.click(this.applicationsWaitingUnitConfirmation)
-    await t.expect(this.applicationList.visible).ok()
+    await this.waitUntilLoaded()
   }
 
   async verifyNoteExists(note: string) {
