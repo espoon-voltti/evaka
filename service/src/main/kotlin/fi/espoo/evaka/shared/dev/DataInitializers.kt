@@ -598,7 +598,7 @@ fun Database.Transaction.insertTestFeeAlteration(
     return id
 }
 
-fun Database.Transaction.insertTestPricing(feeThresholds: FeeThresholds) = insertTestDataRow(
+fun Database.Transaction.insertTestFeeThresholds(feeThresholds: FeeThresholds) = insertTestDataRow(
     feeThresholds,
     """
 INSERT INTO fee_thresholds (valid_during, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee)

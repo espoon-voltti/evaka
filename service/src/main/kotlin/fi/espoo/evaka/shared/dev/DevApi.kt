@@ -304,11 +304,11 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/pricing")
+    @PostMapping("/fee-thresholds")
     fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholds): ResponseEntity<UUID> =
         db.transaction {
             ResponseEntity.ok(
-                it.insertTestPricing(feeThresholds)
+                it.insertTestFeeThresholds(feeThresholds)
             )
         }
 

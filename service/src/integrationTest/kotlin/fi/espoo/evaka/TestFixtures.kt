@@ -39,8 +39,8 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.dev.insertTestPricing
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
@@ -519,7 +519,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         insertTestChild(DevChild(id = it.id))
     }
 
-    insertTestPricing(
+    insertTestFeeThresholds(
         FeeThresholds(
             validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
             minIncomeThreshold2 = 210200,

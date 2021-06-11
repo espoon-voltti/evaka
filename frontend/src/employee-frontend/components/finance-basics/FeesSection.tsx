@@ -121,11 +121,13 @@ export default React.memo(function FeesSection() {
       title={<H2 noMargin>{i18n.financeBasics.fees.title}</H2>}
       open={open}
       toggleOpen={toggleOpen}
+      data-qa="fees-section"
     >
       <AddButtonRow
         onClick={createNewThresholds}
         text={i18n.financeBasics.fees.add}
         disabled={'editing' in editorState}
+        data-qa="create-new-fee-thresholds"
       />
       {editorState.editing === 'new' ? (
         <FeeThresholdsEditor
@@ -140,7 +142,7 @@ export default React.memo(function FeesSection() {
       ) : null}
       {data.mapAll({
         loading() {
-          return <Spinner />
+          return <Spinner data-qa="fees-section-spinner" />
         },
         failure() {
           return <ErrorSegment title={i18n.common.error.unknown} />
@@ -148,7 +150,7 @@ export default React.memo(function FeesSection() {
         success(feeThresholdsList) {
           return (
             <>
-              {feeThresholdsList.map((feeThresholds) =>
+              {feeThresholdsList.map((feeThresholds, index) =>
                 editorState.editing === feeThresholds.id ? (
                   <FeeThresholdsEditor
                     key={feeThresholds.id}
@@ -170,6 +172,7 @@ export default React.memo(function FeesSection() {
                     editThresholds={editThresholds}
                     editing={!!editorState.editing}
                     toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
+                    data-qa={`fee-thresholds-item-${index}`}
                   />
                 )
               )}
@@ -210,7 +213,8 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   copyThresholds,
   editThresholds,
   editing,
-  toggleEditRetroactiveWarning
+  toggleEditRetroactiveWarning,
+  ...props
 }: {
   i18n: Translations
   id: string
@@ -219,111 +223,128 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   editThresholds: (id: string, feeThresholds: FeeThresholds) => void
   editing: boolean
   toggleEditRetroactiveWarning: (resolve: () => void) => void
+  ['data-qa']: string
 }) {
   return (
     <>
       <div className="separator large" />
-      <TitleContainer>
-        <H3>
-          {i18n.financeBasics.fees.validDuring}{' '}
-          {feeThresholds.validDuring.format()}
-        </H3>
-        <FixedSpaceRow>
-          <IconButton
-            icon={faCopy}
-            onClick={() => copyThresholds(feeThresholds)}
-            disabled={editing}
-          />
-          <IconButton
-            icon={faPen}
-            onClick={() => {
-              if (feeThresholds.validDuring.start.isAfter(LocalDate.today())) {
-                editThresholds(id, feeThresholds)
-              } else {
-                toggleEditRetroactiveWarning(() =>
+      <div data-qa={props['data-qa']}>
+        <TitleContainer>
+          <H3>
+            {i18n.financeBasics.fees.validDuring}{' '}
+            <span data-qa="validDuring">
+              {feeThresholds.validDuring.format()}
+            </span>
+          </H3>
+          <FixedSpaceRow>
+            <IconButton
+              icon={faCopy}
+              onClick={() => copyThresholds(feeThresholds)}
+              disabled={editing}
+              data-qa="copy"
+            />
+            <IconButton
+              icon={faPen}
+              onClick={() => {
+                if (
+                  feeThresholds.validDuring.start.isAfter(LocalDate.today())
+                ) {
                   editThresholds(id, feeThresholds)
-                )
-              }
-            }}
-            disabled={editing}
-          />
-          <StatusLabel dateRange={feeThresholds.validDuring} />
-        </FixedSpaceRow>
-      </TitleContainer>
-      <H4>{i18n.financeBasics.fees.thresholds} </H4>
-      <RowWithMargin spacing="XL">
-        <FixedSpaceColumn>
-          <Label>{i18n.financeBasics.fees.maxFee}</Label>
-          <Indent>{formatCents(feeThresholds.maxFee)} €</Indent>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.financeBasics.fees.minFee}</Label>
-          <Indent>{formatCents(feeThresholds.minFee)} €</Indent>
-        </FixedSpaceColumn>
-      </RowWithMargin>
-      <TableWithMargin>
-        <Thead>
-          <Tr>
-            <Th>{i18n.financeBasics.fees.familySize}</Th>
-            <Th>{i18n.financeBasics.fees.minThreshold}</Th>
-            <Th>{i18n.financeBasics.fees.multiplier}</Th>
-            <Th>{i18n.financeBasics.fees.maxThreshold}</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {familySizes.map((n) => {
-            return (
-              <Tr key={n}>
-                <Td>{n}</Td>
-                <Td>
-                  {formatCents(
-                    feeThresholds[
-                      `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
-                    ]
-                  )}{' '}
-                  €
-                </Td>
-                <Td>
-                  {feeThresholds[
-                    `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
-                  ] * 100}{' '}
-                  %
-                </Td>
-                <Td>
-                  {formatCents(
-                    feeThresholds[
-                      `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
-                    ]
-                  )}{' '}
-                  €
-                </Td>
-              </Tr>
-            )
-          })}
-        </Tbody>
-      </TableWithMargin>
-      <ColumnWithMargin>
-        <ExpandingInfo
-          info={i18n.financeBasics.fees.thresholdIncreaseInfo}
-          ariaLabel={i18n.common.openExpandingInfo}
-        >
-          <Label>{i18n.financeBasics.fees.thresholdIncrease}</Label>
-        </ExpandingInfo>
-        <Indent>
-          {formatCents(feeThresholds.incomeThresholdIncrease6Plus)} €
-        </Indent>
-      </ColumnWithMargin>
-      <H4>{i18n.financeBasics.fees.siblingDiscounts}</H4>
-      <RowWithMargin spacing="XL">
-        <FixedSpaceColumn>
-          <Label>{i18n.financeBasics.fees.siblingDiscount2}</Label>
-          <Indent>{feeThresholds.siblingDiscount2 * 100} %</Indent>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.financeBasics.fees.siblingDiscount2Plus}</Label>
-          <Indent>{feeThresholds.siblingDiscount2Plus * 100} %</Indent>
-        </FixedSpaceColumn>
-      </RowWithMargin>
+                } else {
+                  toggleEditRetroactiveWarning(() =>
+                    editThresholds(id, feeThresholds)
+                  )
+                }
+              }}
+              disabled={editing}
+              data-qa="edit"
+            />
+            <StatusLabel dateRange={feeThresholds.validDuring} />
+          </FixedSpaceRow>
+        </TitleContainer>
+        <H4>{i18n.financeBasics.fees.thresholds} </H4>
+        <RowWithMargin spacing="XL">
+          <FixedSpaceColumn>
+            <Label>{i18n.financeBasics.fees.maxFee}</Label>
+            <Indent data-qa="maxFee">
+              {formatCents(feeThresholds.maxFee)} €
+            </Indent>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn>
+            <Label>{i18n.financeBasics.fees.minFee}</Label>
+            <Indent data-qa="minFee">
+              {formatCents(feeThresholds.minFee)} €
+            </Indent>
+          </FixedSpaceColumn>
+        </RowWithMargin>
+        <TableWithMargin>
+          <Thead>
+            <Tr>
+              <Th>{i18n.financeBasics.fees.familySize}</Th>
+              <Th>{i18n.financeBasics.fees.minThreshold}</Th>
+              <Th>{i18n.financeBasics.fees.multiplier}</Th>
+              <Th>{i18n.financeBasics.fees.maxThreshold}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {familySizes.map((n) => {
+              return (
+                <Tr key={n}>
+                  <Td>{n}</Td>
+                  <Td data-qa={`minIncomeThreshold${n}`}>
+                    {formatCents(
+                      feeThresholds[
+                        `minIncomeThreshold${n}` as `minIncomeThreshold${typeof n}`
+                      ]
+                    )}{' '}
+                    €
+                  </Td>
+                  <Td data-qa={`incomeMultiplier${n}`}>
+                    {feeThresholds[
+                      `incomeMultiplier${n}` as `incomeMultiplier${typeof n}`
+                    ] * 100}{' '}
+                    %
+                  </Td>
+                  <Td data-qa={`maxIncomeThreshold${n}`}>
+                    {formatCents(
+                      feeThresholds[
+                        `maxIncomeThreshold${n}` as `maxIncomeThreshold${typeof n}`
+                      ]
+                    )}{' '}
+                    €
+                  </Td>
+                </Tr>
+              )
+            })}
+          </Tbody>
+        </TableWithMargin>
+        <ColumnWithMargin>
+          <ExpandingInfo
+            info={i18n.financeBasics.fees.thresholdIncreaseInfo}
+            ariaLabel={i18n.common.openExpandingInfo}
+          >
+            <Label>{i18n.financeBasics.fees.thresholdIncrease}</Label>
+          </ExpandingInfo>
+          <Indent data-qa="incomeThresholdIncrease6Plus">
+            {formatCents(feeThresholds.incomeThresholdIncrease6Plus)} €
+          </Indent>
+        </ColumnWithMargin>
+        <H4>{i18n.financeBasics.fees.siblingDiscounts}</H4>
+        <RowWithMargin spacing="XL">
+          <FixedSpaceColumn>
+            <Label>{i18n.financeBasics.fees.siblingDiscount2}</Label>
+            <Indent data-qa="siblingDiscount2">
+              {feeThresholds.siblingDiscount2 * 100} %
+            </Indent>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn>
+            <Label>{i18n.financeBasics.fees.siblingDiscount2Plus}</Label>
+            <Indent data-qa="siblingDiscount2Plus">
+              {feeThresholds.siblingDiscount2Plus * 100} %
+            </Indent>
+          </FixedSpaceColumn>
+        </RowWithMargin>
+      </div>
     </>
   )
 })

@@ -12,7 +12,7 @@ import {
 } from 'e2e-test-common/dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
-  insertPricing,
+  insertFeeThresholds,
   insertServiceNeedOptions,
   insertVoucherValues,
   resetDatabase,
@@ -34,8 +34,6 @@ let regularPerson: PersonDetail
 let fridgePartner: PersonDetail
 let child: PersonDetail
 
-const PRICING_ID = '99f976c2-2c0d-4acc-b10b-d46e2ecd951d'
-
 fixture('Employee - Head of family details')
   .meta({ type: 'regression', subType: 'childinformation' })
   .beforeEach(async () => {
@@ -46,8 +44,7 @@ fixture('Employee - Head of family details')
     regularPerson = fixtures.familyWithTwoGuardians.guardian
     fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
     child = fixtures.familyWithTwoGuardians.children[0]
-    await insertPricing({
-      id: PRICING_ID,
+    await insertFeeThresholds({
       validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
       minIncomeThreshold2: 210200,
       minIncomeThreshold3: 271300,

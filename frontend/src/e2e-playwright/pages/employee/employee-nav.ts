@@ -30,18 +30,26 @@ export default class EmployeeNav {
     this.page,
     '[data-qa="user-popup-pin-code"]'
   )
+  readonly #financeBasicsLink = new RawElement(
+    this.page,
+    '[data-qa="user-popup-finance-basics"]'
+  )
 
   async openDropdownMenu() {
     await this.#userNameBtn.click()
   }
 
-  async openAndClickDropdownMenuItem(item: 'employees' | 'pinCode') {
+  async openAndClickDropdownMenuItem(
+    item: 'employees' | 'pinCode' | 'financeBasics'
+  ) {
     await this.openDropdownMenu()
     switch (item) {
       case 'employees':
         return await this.#employeesLink.click()
       case 'pinCode':
         return await this.#pinCodeLink.click()
+      case 'financeBasics':
+        return await this.#financeBasicsLink.click()
     }
   }
 

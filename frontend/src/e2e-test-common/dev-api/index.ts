@@ -20,7 +20,6 @@ import {
   Decision,
   DecisionFixture,
   deserializeDecision,
-  DevPricing,
   EmployeeDetail,
   FeeDecision,
   Invoice,
@@ -42,6 +41,7 @@ import {
   ApplicationDetails,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
+import { FeeThresholds } from 'lib-common/api-types/finance'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
@@ -346,9 +346,11 @@ export async function insertInvoiceFixtures(fixture: Invoice[]): Promise<void> {
   }
 }
 
-export async function insertPricing(fixture: DevPricing): Promise<void> {
+export async function insertFeeThresholds(
+  fixture: FeeThresholds
+): Promise<void> {
   try {
-    await devClient.post('/pricing', fixture)
+    await devClient.post('/fee-thresholds', fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
