@@ -155,19 +155,18 @@ export default React.memo(function VasuPage({
                   key={optionName}
                   checked={question1.value.includes(optionIndex)}
                   label={optionName}
-                  onChange={() => {
+                  onChange={(checked) => {
                     setVasuDocument((prev) => {
                       return prev.map((prevData) => {
                         const clone = cloneDeep(prevData)
                         const question1 = clone.content.sections[sectionIndex]
                           .questions[questionIndex] as MultiSelectQuestion
-                        if (question1.value.includes(optionIndex)) {
-                          question1.value = question.value.filter(
-                            (elem) => elem !== optionIndex
-                          )
-                        } else {
+                        if (checked && !question1.value.includes(optionIndex))
                           question1.value.push(optionIndex)
-                        }
+                        if (!checked)
+                          question1.value = question1.value.filter(
+                            (i) => i !== optionIndex
+                          )
                         return clone
                       })
                     })
