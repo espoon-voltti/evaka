@@ -7,7 +7,8 @@
 set -euo pipefail
 
 # For logback tagging (allow for local fallback)
-export HOST_IP=$(wget -qO- http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')
+HOST_IP=$(curl --fail -s http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')
+export HOST_IP
 
 # Download deployment specific files from S3 if in a non-local environment
 if [ "${VOLTTI_ENV:-X}" != "local" ]; then
