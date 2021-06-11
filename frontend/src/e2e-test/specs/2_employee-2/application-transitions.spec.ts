@@ -142,6 +142,7 @@ test('Sending decision sets application to waiting confirmation -state', async (
   ])
 
   await employeeLogin(t, seppoAdmin, ApplicationListView.url)
+  await applicationWorkbench.waitUntilLoaded()
 
   await applicationWorkbench.openDecisionQueue()
   await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
@@ -169,6 +170,7 @@ test('Accepting decision for non vtj guardiam sets application to waiting mailin
   ])
 
   await employeeLogin(t, seppoAdmin, ApplicationListView.url)
+  await applicationWorkbench.waitUntilLoaded()
 
   await applicationWorkbench.openDecisionQueue()
   await applicationWorkbench.sendDecisionsWithoutProposal(applicationId)
@@ -197,6 +199,7 @@ test('Placement dialog shows warning if guardian has restricted details', async 
   await execSimpleApplicationAction(applicationId, 'move-to-waiting-placement')
 
   await employeeLogin(t, seppoAdmin, ApplicationListView.url)
+  await applicationWorkbench.waitUntilLoaded()
 
   await applicationWorkbench.openPlacementQueue()
 
@@ -265,6 +268,8 @@ test('Placement proposal flow', async (t) => {
     .ok()
 
   await employeeLogin(t, seppoAdmin, ApplicationListView.url)
+  await applicationWorkbench.waitUntilLoaded()
+
   await applicationWorkbench.openPlacementProposalQueue()
   await applicationWorkbench.withdrawPlacementProposal(applicationId2)
 

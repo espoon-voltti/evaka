@@ -18,7 +18,8 @@ declare global {
   namespace NodeJS {
     interface Global {
       evaka?: {
-        takeScreenshots: (namePrefix: string) => Promise<void>
+        saveScreenshotsAndVideos(namePrefix: string): Promise<void>
+        deleteVideoFiles(): void
       }
     }
   }
@@ -42,7 +43,7 @@ beforeAll(async () => {
   browser = await playwright[config.playwright.browser].launch({
     headless: config.playwright.headless
   })
-  global.evaka = { takeScreenshots }
+  global.evaka = { saveScreenshotsAndVideos, deleteVideoFiles }
 })
 
 afterEach(async () => {
@@ -61,7 +62,7 @@ const injected = fs.readFileSync(
   'utf-8'
 )
 
-async function takeScreenshots(namePrefix: string): Promise<void> {
+async function saveScreenshotsAndVideos(namePrefix: string): Promise<void> {
   if (!browser) return
   const pages = browser.contexts().flatMap((ctx, ctxIndex) =>
     ctx.pages().map((page, pageIndex) => ({
@@ -80,6 +81,22 @@ async function takeScreenshots(namePrefix: string): Promise<void> {
       path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
       fullPage: true
     })
+
+    // The video is only available after the browser context is closed, so don't
+    // await the promise here.
+    void page
+      .video()
+      ?.saveAs(`videos/${namePrefix}.${ctxIndex}.${pageIndex}.webm`)
+  }
+}
+
+function deleteVideoFiles(): void {
+  if (!browser) return
+  const pages = browser.contexts().flatMap((ctx) => ctx.pages())
+  for (const page of pages) {
+    // The deletion only happens after the browser context is closed, so don't
+    // await the promise here.
+    void page.video()?.delete()
   }
 }
 
@@ -107,7 +124,10 @@ function configurePage(page: Page) {
 export async function newBrowserContext(
   options?: BrowserContextOptions
 ): Promise<BrowserContext> {
-  const ctx = await browser.newContext(options)
+  const recordVideoOptions = config.playwright.ci
+    ? { recordVideo: { dir: '/tmp/playwright_videos' } }
+    : undefined
+  const ctx = await browser.newContext({ ...recordVideoOptions, ...options })
   ctx.on('page', configurePage)
   ctx.setDefaultTimeout(config.playwright.ci ? 30_000 : 5_000)
   await ctx.addInitScript({ content: injected })

@@ -39,9 +39,13 @@ export async function employeeLogin(
   user: string | DevLoginUser,
   landingUrl?: string
 ) {
-  await t.navigateTo(config.employeeLoginUrl)
-  const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
+  const currentUrl = (await t.eval(() => document.location.href)) as string
+  if (!currentUrl.startsWith(config.employeeUrl)) {
+    // We must be in the correct domain to be able to fetch()
+    await t.navigateTo(config.employeeLoginUrl)
+  }
 
+  const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   await t.eval(
     () => {
       const params = new URLSearchParams()
