@@ -6,6 +6,8 @@ package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
@@ -61,6 +63,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -70,9 +73,12 @@ import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.getProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -87,6 +93,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 private val fakeAdmin = AuthenticatedUser.Employee(
     id = UUID.fromString("00000000-0000-0000-0000-000000000001"),
@@ -102,9 +109,31 @@ class DevApi(
     private val asyncJobRunner: AsyncJobRunner,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
-    private val decisionService: DecisionService
+    private val decisionService: DecisionService,
+    private val env: Environment
 ) {
     private val digitransit = MockDigitransit()
+
+    private val flywayJdbi: Jdbi = configureJdbi(
+        Jdbi.create(
+            HikariDataSource(
+                HikariConfig().apply {
+                    jdbcUrl = env.getRequiredProperty("spring.datasource.url")
+                    username = env.getRequiredProperty("flyway.username")
+                    password = env.getRequiredProperty("flyway.password")
+                    maximumPoolSize = env.getProperty<Int>("spring.datasource.hikari.maximumPoolSize") ?: 10
+                    leakDetectionThreshold = env.getProperty<Long>("spring.datasource.hikari.leak-detection-threshold") ?: 0
+                    addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
+                }
+            )
+        )
+    )
+
+    init {
+        Database(flywayJdbi).transaction {
+            it.runDevScript("reset-database.sql")
+        }
+    }
 
     @GetMapping
     fun healthCheck(): ResponseEntity<Unit> {
@@ -117,13 +146,19 @@ class DevApi(
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
 
-        db.transaction {
+        Database(flywayJdbi).transaction {
             it.resetDatabase()
 
             // Terms are not inserted by fixtures
             it.runDevScript("preschool-terms.sql")
             it.runDevScript("club-terms.sql")
         }
+
+        flywayJdbi.open().use {
+            // VACUUM cannot be run inside a transaction
+            it.execute("VACUUM")
+        }
+
         return ResponseEntity.noContent().build()
     }
 

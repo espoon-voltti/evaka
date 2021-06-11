@@ -23,7 +23,6 @@ RUN mkdir `pg_config --pkglibdir`/plugins && \
 ADD postgresql.conf /var/lib/postgresql/
 
 # Add the initialisation scripts
-COPY *.sh /docker-entrypoint-initdb.d/
 COPY *.sql /docker-entrypoint-initdb.d/
 
 # Force the modified postgres configuration ito use
