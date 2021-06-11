@@ -37,7 +37,7 @@ export const fi = {
     add: 'Lisää',
     create: 'Luo',
     remove: 'Poista',
-    cancel: 'Peruut2a',
+    cancel: 'Peruuta',
     goBack: 'Palaa',
     confirm: 'Vahvista',
     period: 'Ajalle',
@@ -2500,6 +2500,5 @@ export const fi = {
   welcomePage: {
     text:
       'Olet kirjautunut sisään Espoon kaupungin eVaka palveluun. Käyttäjätunnuksellesi ei ole vielä annettu oikeuksia, jotka mahdollistavat palvelun käytön. Tarvittavat käyttöoikeudet saat omalta esimieheltäsi.'
-  },
-  what: 'hmmm'
+  }
 }

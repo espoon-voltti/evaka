@@ -387,12 +387,14 @@ export default function App() {
               component={ensureAuthenticated(WelcomePage)}
               title={i18n.titles.welcomePage}
             />
-            <RouteWithTitle
-              exact
-              path="/vasu/:id"
-              component={ensureAuthenticated(VasuPage)}
-              title={i18n.titles.vasuPage}
-            />
+            {featureFlags.vasu && (
+              <RouteWithTitle
+                exact
+                path="/vasu/:id"
+                component={ensureAuthenticated(VasuPage)}
+                title={i18n.titles.vasuPage}
+              />
+            )}
             {redirectRoutes([
               {
                 from: '/fee-decisions',

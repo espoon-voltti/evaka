@@ -25,6 +25,7 @@ type FeatureFlags = {
   showNewServiceNeedsList: boolean
   useNewServiceNeeds: boolean
   financeBasicsPage: boolean
+  vasu: boolean
 }
 
 type Features = {
@@ -42,7 +43,8 @@ const features: Features = {
     messaging: true,
     showNewServiceNeedsList: true,
     useNewServiceNeeds: true,
-    financeBasicsPage: true
+    financeBasicsPage: true,
+    vasu: true
   },
   staging: {
     voucherValueDecisionsPage: true,
@@ -52,7 +54,8 @@ const features: Features = {
     messaging: true,
     showNewServiceNeedsList: true,
     useNewServiceNeeds: true,
-    financeBasicsPage: false
+    financeBasicsPage: false,
+    vasu: false
   },
   prod: {
     voucherValueDecisionsPage: false,
@@ -62,7 +65,8 @@ const features: Features = {
     messaging: true,
     showNewServiceNeedsList: true,
     useNewServiceNeeds: true,
-    financeBasicsPage: false
+    financeBasicsPage: false,
+    vasu: false
   }
 }
 
