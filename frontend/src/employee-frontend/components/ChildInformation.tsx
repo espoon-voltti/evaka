@@ -4,6 +4,7 @@
 
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+import { featureFlags } from '../config'
 
 import { useTranslation } from '../state/i18n'
 import { Link, RouteComponentProps } from 'react-router-dom'
@@ -28,6 +29,7 @@ import FridgeParents from '../components/child-information/FridgeParents'
 import { getParentshipsByChild } from '../api/parentships'
 import { UserContext } from '../state/user'
 import { TitleContext, TitleState } from '../state/title'
+import VasuAndLeops from './child-information/VasuAndLeops'
 import { getLayout, Layouts } from './layouts'
 import BackupCare from '../components/child-information/BackupCare'
 import BackupPickup from '../components/child-information/BackupPickup'
@@ -74,6 +76,7 @@ const components = {
   parents: FridgeParents,
   placements: Placements,
   'daily-service-times': DailyServiceTimesSection,
+  vasuAndLeops: VasuAndLeops,
   assistance: Assistance,
   'backup-care': BackupCare,
   'family-contacts': FamilyContacts,
@@ -92,6 +95,9 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
+    ...(featureFlags.vasu
+      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : []),
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }

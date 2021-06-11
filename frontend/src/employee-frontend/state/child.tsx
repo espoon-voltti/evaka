@@ -18,6 +18,7 @@ import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
 import { Recipient } from 'employee-frontend/components/messages/types'
+import { VasuDocumentSummary } from '../types/vasu'
 
 export interface ChildState {
   person: Result<PersonDetails>
@@ -46,6 +47,8 @@ export interface ChildState {
   setApplications: (r: Result<ApplicationSummary[]>) => void
   recipients: Result<Recipient[]>
   setRecipients: (r: Result<Recipient[]>) => void
+  vasus: Result<VasuDocumentSummary[]>
+  setVasus: (r: Result<VasuDocumentSummary[]>) => void
 }
 
 const defaultState: ChildState = {
@@ -74,7 +77,9 @@ const defaultState: ChildState = {
   applications: Loading.of(),
   setApplications: () => undefined,
   recipients: Loading.of(),
-  setRecipients: () => undefined
+  setRecipients: () => undefined,
+  vasus: Loading.of(),
+  setVasus: () => undefined
 }
 
 export const ChildContext = createContext<ChildState>(defaultState)
@@ -120,6 +125,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const [applications, setApplications] = useState<
     Result<ApplicationSummary[]>
   >(defaultState.applications)
+  const [vasus, setVasus] = useState<Result<VasuDocumentSummary[]>>(
+    defaultState.vasus
+  )
 
   const [recipients, setRecipients] = useState<Result<Recipient[]>>(
     defaultState.recipients
@@ -149,6 +157,8 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setBackupCares,
       guardians,
       setGuardians,
+      vasus,
+      setVasus,
       applications,
       setApplications,
       recipients,
@@ -177,6 +187,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       setBackupCares,
       guardians,
       setGuardians,
+      vasus,
       applications,
       setApplications,
       recipients,

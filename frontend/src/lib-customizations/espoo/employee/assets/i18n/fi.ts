@@ -824,6 +824,18 @@ export const fi = {
       add: 'Lisää varahakija',
       edit: 'Muokkaa varahakijan tietoja',
       removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
+    },
+    vasu: {
+      title: 'Vasu ja Leops',
+      createNew: 'Luo uusi varhaiskasvatussuunnitelma',
+      modified: 'Muokattu',
+      published: 'Julkaistu',
+      states: {
+        DRAFT: 'Luonnos',
+        CREATED: 'Laadittu',
+        REVIEWED: 'Arvioitu',
+        CLOSED: 'Päättynyt'
+      }
     }
   },
   personSearch: {
