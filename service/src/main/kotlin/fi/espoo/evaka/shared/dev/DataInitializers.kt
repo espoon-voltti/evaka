@@ -24,8 +24,13 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.vasu.VasuContent
+import fi.espoo.evaka.vasu.VasuQuestion
+import fi.espoo.evaka.vasu.VasuSection
+import fi.espoo.evaka.vasu.insertVasuTemplate
 import mu.KotlinLogging
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -58,6 +63,59 @@ fun Database.Transaction.resetDatabase() {
 fun Database.Transaction.ensureDevData() {
     if (createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
         listOf("espoo-dev-data.sql", "employees.sql", "preschool-terms.sql", "club-terms.sql").forEach { runDevScript(it) }
+
+        insertVasuTemplate(
+            name = "Varhaiskasvatussuunnitelma 2020-2021",
+            valid = DateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 8, 31)),
+            content = VasuContent(
+                sections = listOf(
+                    VasuSection(
+                        name = "Eka osio",
+                        questions = listOf(
+                            VasuQuestion.CheckboxQuestion(
+                                name = "Vasu edistyy?",
+                                value = false
+                            ),
+                            VasuQuestion.TextQuestion(
+                                name = "Fiilikset parilla sanalla",
+                                multiline = false,
+                                value = ""
+                            )
+                        )
+                    ),
+                    VasuSection(
+                        name = "Toka osio",
+                        questions = listOf(
+                            VasuQuestion.RadioGroupQuestion(
+                                name = "Lapsen lempiväri",
+                                optionNames = listOf(
+                                    "Punainen",
+                                    "Vihreä",
+                                    "Sininen"
+                                ),
+                                value = null
+                            ),
+                            VasuQuestion.MultiSelectQuestion(
+                                name = "Tavoitteet vuodelle",
+                                optionNames = listOf(
+                                    "Oppii sitomaan kengännauhat",
+                                    "Ei pure muita",
+                                    "Ratkaisee toisen asteen polynomin"
+                                ),
+                                minSelections = 1,
+                                maxSelections = null,
+                                value = emptyList()
+                            ),
+                            VasuQuestion.TextQuestion(
+                                name = "Kerro lisää mietteitä",
+                                multiline = true,
+                                value = ""
+                            )
+                        )
+                    )
+                )
+            )
+        )
     }
 }
 
