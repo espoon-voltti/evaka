@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.serviceneednew
+package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -19,7 +19,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-data class NewServiceNeed(
+data class ServiceNeed(
     val id: UUID,
     val placementId: UUID,
     val startDate: LocalDate,
@@ -32,7 +32,7 @@ data class NewServiceNeed(
     val updated: Instant
 )
 
-data class NewServiceNeedChildRange(
+data class ServiceNeedChildRange(
     val childId: UUID,
     val dateRange: FiniteDateRange
 )
@@ -114,7 +114,7 @@ fun validateServiceNeed(
         .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
 }
 
-fun createNewServiceNeed(
+fun createServiceNeed(
     tx: Database.Transaction,
     user: AuthenticatedUser,
     placementId: UUID,
@@ -125,8 +125,8 @@ fun createNewServiceNeed(
     confirmedAt: HelsinkiDateTime
 ): UUID {
     validateServiceNeed(tx, placementId, startDate, endDate, optionId)
-    clearNewServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
-    return tx.insertNewServiceNeed(
+    clearServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
+    return tx.insertServiceNeed(
         placementId = placementId,
         startDate = startDate,
         endDate = endDate,
@@ -137,7 +137,7 @@ fun createNewServiceNeed(
     )
 }
 
-fun updateNewServiceNeed(
+fun updateServiceNeed(
     tx: Database.Transaction,
     user: AuthenticatedUser,
     id: UUID,
@@ -147,16 +147,16 @@ fun updateNewServiceNeed(
     shiftCare: Boolean,
     confirmedAt: HelsinkiDateTime
 ) {
-    val old = tx.getNewServiceNeed(id)
+    val old = tx.getServiceNeed(id)
     validateServiceNeed(tx, old.placementId, startDate, endDate, optionId)
     if (startDate.isBefore(old.startDate)) {
-        clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(startDate, old.startDate.minusDays(1)), excluding = id)
+        clearServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(startDate, old.startDate.minusDays(1)), excluding = id)
     }
     if (endDate.isAfter(old.endDate)) {
-        clearNewServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(old.endDate.plusDays(1), endDate), excluding = id)
+        clearServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(old.endDate.plusDays(1), endDate), excluding = id)
     }
 
-    tx.updateNewServiceNeed(
+    tx.updateServiceNeed(
         id = id,
         startDate = startDate,
         endDate = endDate,
@@ -167,15 +167,15 @@ fun updateNewServiceNeed(
     )
 }
 
-fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
+fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
     tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding).forEach { old ->
         val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
         when {
             periodToClear.contains(oldPeriod) -> {
-                tx.deleteNewServiceNeed(old.id)
+                tx.deleteServiceNeed(old.id)
             }
             periodToClear.includes(oldPeriod.start) -> {
-                tx.updateNewServiceNeed(
+                tx.updateServiceNeed(
                     id = old.id,
                     startDate = periodToClear.end.plusDays(1),
                     endDate = old.endDate,
@@ -186,7 +186,7 @@ fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, 
                 )
             }
             periodToClear.includes(oldPeriod.end) -> {
-                tx.updateNewServiceNeed(
+                tx.updateServiceNeed(
                     id = old.id,
                     startDate = old.startDate,
                     endDate = periodToClear.start.minusDays(1),
@@ -197,7 +197,7 @@ fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, 
                 )
             }
             else -> {
-                tx.updateNewServiceNeed(
+                tx.updateServiceNeed(
                     id = old.id,
                     startDate = old.startDate,
                     endDate = periodToClear.start.minusDays(1),
@@ -206,7 +206,7 @@ fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, 
                     confirmedBy = old.confirmed.employeeId,
                     confirmedAt = old.confirmed.at
                 )
-                tx.insertNewServiceNeed(
+                tx.insertServiceNeed(
                     placementId = placementId,
                     startDate = periodToClear.end.plusDays(1),
                     endDate = old.endDate,
@@ -220,7 +220,7 @@ fun clearNewServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, 
     }
 }
 
-fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner, childRange: NewServiceNeedChildRange) {
+fun notifyServiceNeedUpdated(tx: Database.Transaction, asyncJobRunner: AsyncJobRunner, childRange: ServiceNeedChildRange) {
     asyncJobRunner.plan(
         tx,
         listOf(GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange()))

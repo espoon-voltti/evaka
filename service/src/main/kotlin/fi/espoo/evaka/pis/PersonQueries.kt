@@ -380,6 +380,7 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
         where const.contype = 'f' 
             and target.relname in ('person', 'child') 
             and source.relname not in ('person', 'child', 'guardian', 'message_account')
+            and source.relname not like 'old_%'
         order by source.relname, attr.attname
     """.trimIndent()
     return createQuery(sql).mapTo<PersonReference>().list()

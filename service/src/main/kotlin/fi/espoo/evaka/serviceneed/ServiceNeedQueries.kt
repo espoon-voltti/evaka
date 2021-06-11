@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.serviceneednew
+package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
@@ -15,7 +15,7 @@ import java.util.UUID
 
 fun Database.Read.getServiceNeedsByChild(
     childId: UUID
-): List<NewServiceNeed> {
+): List<ServiceNeed> {
     // language=SQL
     val sql =
         """
@@ -23,7 +23,7 @@ fun Database.Read.getServiceNeedsByChild(
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name as option_name, sno.updated as option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
-        FROM new_service_need sn
+        FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
         JOIN employee e on e.id = sn.confirmed_by
@@ -32,7 +32,7 @@ fun Database.Read.getServiceNeedsByChild(
 
     return createQuery(sql)
         .bind("childId", childId)
-        .mapTo<NewServiceNeed>()
+        .mapTo<ServiceNeed>()
         .toList()
 }
 
@@ -40,7 +40,7 @@ fun Database.Read.getServiceNeedsByUnit(
     unitId: UUID,
     startDate: LocalDate?,
     endDate: LocalDate?
-): List<NewServiceNeed> {
+): List<ServiceNeed> {
     // language=SQL
     val sql =
         """
@@ -48,7 +48,7 @@ fun Database.Read.getServiceNeedsByUnit(
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name as option_name, sno.updated AS option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
-        FROM new_service_need sn
+        FROM service_need sn
         JOIN service_need_option sno on sno.id = sn.option_id
         JOIN placement pl ON pl.id = sn.placement_id
         JOIN employee e on e.id = sn.confirmed_by
@@ -59,18 +59,18 @@ fun Database.Read.getServiceNeedsByUnit(
         .bind("unitId", unitId)
         .bindNullable("start", startDate)
         .bindNullable("end", endDate)
-        .mapTo<NewServiceNeed>()
+        .mapTo<ServiceNeed>()
         .toList()
 }
 
-fun Database.Read.getNewServiceNeed(id: UUID): NewServiceNeed {
+fun Database.Read.getServiceNeed(id: UUID): ServiceNeed {
     // language=sql
     val sql = """
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name as option_name, sno.updated AS option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
-        FROM new_service_need sn
+        FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
         JOIN employee e on e.id = sn.confirmed_by
         WHERE sn.id = :id
@@ -78,22 +78,22 @@ fun Database.Read.getNewServiceNeed(id: UUID): NewServiceNeed {
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<NewServiceNeed>()
+        .mapTo<ServiceNeed>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
-fun Database.Read.getNewServiceNeedChildRange(id: UUID): NewServiceNeedChildRange {
+fun Database.Read.getServiceNeedChildRange(id: UUID): ServiceNeedChildRange {
     // language=sql
     val sql = """
         SELECT p.child_id, daterange(sn.start_date, sn.end_date, '[]')
-        FROM new_service_need sn
+        FROM service_need sn
         JOIN placement p on sn.placement_id = p.id
         WHERE sn.id = :id
     """.trimIndent()
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<NewServiceNeedChildRange>()
+        .mapTo<ServiceNeedChildRange>()
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }
 
@@ -164,7 +164,7 @@ CASE
 END
 """
 
-fun Database.Transaction.insertNewServiceNeed(
+fun Database.Transaction.insertServiceNeed(
     placementId: UUID,
     startDate: LocalDate,
     endDate: LocalDate,
@@ -175,7 +175,7 @@ fun Database.Transaction.insertNewServiceNeed(
 ): UUID {
     // language=sql
     val sql = """
-        INSERT INTO new_service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
+        INSERT INTO service_need (placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at) 
         VALUES (:placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt)
         RETURNING id;
     """.trimIndent()
@@ -191,7 +191,7 @@ fun Database.Transaction.insertNewServiceNeed(
         .one()
 }
 
-fun Database.Transaction.updateNewServiceNeed(
+fun Database.Transaction.updateServiceNeed(
     id: UUID,
     startDate: LocalDate,
     endDate: LocalDate,
@@ -202,7 +202,7 @@ fun Database.Transaction.updateNewServiceNeed(
 ) {
     // language=sql
     val sql = """
-        UPDATE new_service_need
+        UPDATE service_need
         SET start_date = :startDate, end_date = :endDate, option_id = :optionId, shift_care = :shiftCare, confirmed_by = :confirmedBy, confirmed_at = :confirmedAt
         WHERE id = :id
     """.trimIndent()
@@ -218,10 +218,10 @@ fun Database.Transaction.updateNewServiceNeed(
         .execute()
 }
 
-fun Database.Transaction.deleteNewServiceNeed(
+fun Database.Transaction.deleteServiceNeed(
     id: UUID
 ) {
-    createUpdate("DELETE FROM new_service_need WHERE id = :id")
+    createUpdate("DELETE FROM service_need WHERE id = :id")
         .bind("id", id)
         .execute()
 }
@@ -231,14 +231,14 @@ fun Database.Read.getOverlappingServiceNeeds(
     startDate: LocalDate,
     endDate: LocalDate,
     excluding: UUID?
-): List<NewServiceNeed> {
+): List<ServiceNeed> {
     // language=sql
     val sql = """
         SELECT 
             sn.id, sn.placement_id, sn.start_date, sn.end_date, sn.shift_care, sn.updated,
             sno.id as option_id, sno.name as option_name, sno.updated as option_updated,
             sn.confirmed_by as confirmed_employee_id, e.first_name as confirmed_first_name, e.last_name as confirmed_last_name, sn.confirmed_at
-        FROM new_service_need sn
+        FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
         JOIN employee e on e.id = sn.confirmed_by
         WHERE placement_id = :placementId AND daterange(sn.start_date, sn.end_date, '[]') && daterange(:startDate, :endDate, '[]')
@@ -248,7 +248,7 @@ fun Database.Read.getOverlappingServiceNeeds(
         .bind("placementId", placementId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<NewServiceNeed>()
+        .mapTo<ServiceNeed>()
         .list()
         .filter { it.id != excluding }
 }

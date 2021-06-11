@@ -543,8 +543,8 @@ function Group({
                   {sortedPlacements.map((placement) => {
                     const missingServiceNeedDays =
                       'type' in placement
-                        ? placement.daycarePlacementMissingNewServiceNeedDays
-                        : placement.missingNewServiceNeedDays
+                        ? placement.daycarePlacementMissingServiceNeedDays
+                        : placement.missingServiceNeedDays
                     return (
                       <Tr
                         key={placement.id || ''}

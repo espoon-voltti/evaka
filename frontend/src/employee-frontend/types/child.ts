@@ -12,20 +12,6 @@ import {
   PlacementType
 } from 'lib-common/api-types/serviceNeed/common'
 
-export interface ServiceNeed {
-  id: UUID
-  childId: UUID
-  startDate: LocalDate
-  endDate: LocalDate | null
-  hoursPerWeek: number
-  partDay: boolean
-  partWeek: boolean
-  shiftCare: boolean
-  notes: string
-  updated: Date
-  updatedByName: string
-}
-
 export type AssistanceBasis =
   | 'AUTISM'
   | 'DEVELOPMENTAL_DISABILITY_1'
@@ -89,7 +75,7 @@ export interface ServiceNeedOption {
   partWeek: boolean
 }
 
-export interface NewServiceNeed {
+export interface ServiceNeed {
   id: UUID
   placementId: UUID
   startDate: LocalDate
@@ -115,9 +101,9 @@ export interface Placement {
     area: string
     providerType: ProviderType
   }
-  missingNewServiceNeedDays: number
+  missingServiceNeedDays: number
   groupPlacements: DaycareGroupPlacement[]
-  serviceNeeds: NewServiceNeed[]
+  serviceNeeds: ServiceNeed[]
   isRestrictedFromUser: boolean
 }
 
@@ -137,7 +123,7 @@ export interface ChildBackupCare {
 export interface UnitBackupCare {
   id: UUID
   period: FiniteDateRange
-  missingNewServiceNeedDays: number
+  missingServiceNeedDays: number
   group?: {
     id: UUID
     name: string

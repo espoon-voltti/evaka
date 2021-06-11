@@ -58,7 +58,7 @@ private fun Database.Read.getServiceNeedRows(date: LocalDate, authorizedUnits: A
         JOIN care_area ON d.care_area_id = care_area.id
         LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> :target_date AND pl.type != 'CLUB'::placement_type
         LEFT JOIN person p ON pl.child_id = p.id AND date_part('year', age(p.date_of_birth)) = ages.age
-        LEFT JOIN new_service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :target_date
+        LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :target_date
         LEFT JOIN service_need_option sno ON sno.id = sn.option_id
         ${if (authorizedUnits != AclAuthorization.All) "WHERE d.id = ANY(:units :: uuid[])" else ""}
         GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type

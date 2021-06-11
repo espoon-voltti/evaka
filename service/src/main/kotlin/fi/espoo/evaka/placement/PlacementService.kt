@@ -8,10 +8,10 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.serviceneednew.NewServiceNeed
-import fi.espoo.evaka.serviceneednew.clearNewServiceNeedsFromPeriod
-import fi.espoo.evaka.serviceneednew.getServiceNeedsByChild
-import fi.espoo.evaka.serviceneednew.getServiceNeedsByUnit
+import fi.espoo.evaka.serviceneed.ServiceNeed
+import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
+import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
+import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -57,11 +57,11 @@ fun Database.Transaction.updatePlacement(
     val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
     if (startDate.isAfter(old.startDate)) {
         clearGroupPlacementsBefore(id, startDate)
-        clearNewServiceNeedsFromPeriod(this, old.id, FiniteDateRange(old.startDate, startDate.minusDays(1)))
+        clearServiceNeedsFromPeriod(this, old.id, FiniteDateRange(old.startDate, startDate.minusDays(1)))
     }
     if (endDate.isBefore(old.endDate)) {
         clearGroupPlacementsAfter(id, endDate)
-        clearNewServiceNeedsFromPeriod(this, old.id, FiniteDateRange(endDate.plusDays(1), old.endDate))
+        clearServiceNeedsFromPeriod(this, old.id, FiniteDateRange(endDate.plusDays(1), old.endDate))
     }
     clearOldPlacements(childId = old.childId, from = startDate, to = endDate, excludePlacement = id, aclAuth = aclAuth)
 
@@ -213,7 +213,7 @@ private fun Database.Transaction.movePlacementStartDateLater(placement: Placemen
     if (newStartDate.isBefore(placement.startDate)) throw IllegalArgumentException("Use this method only for shortening placement")
 
     clearGroupPlacementsBefore(placement.id, newStartDate)
-    clearNewServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(placement.startDate, newStartDate.minusDays(1)))
+    clearServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(placement.startDate, newStartDate.minusDays(1)))
     updatePlacementStartDate(placement.id, newStartDate)
 }
 
@@ -221,7 +221,7 @@ private fun Database.Transaction.movePlacementEndDateEarlier(placement: Placemen
     if (newEndDate.isAfter(placement.endDate)) throw IllegalArgumentException("Use this method only for shortening placement")
 
     clearGroupPlacementsAfter(placement.id, newEndDate)
-    clearNewServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(newEndDate.plusDays(1), placement.endDate))
+    clearServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(newEndDate.plusDays(1), placement.endDate))
     updatePlacementEndDate(placement.id, newEndDate)
 }
 
@@ -280,7 +280,7 @@ fun Database.Read.getDetailedDaycarePlacements(
                 startDate = daycarePlacement.startDate,
                 endDate = daycarePlacement.endDate,
                 type = daycarePlacement.type,
-                missingNewServiceNeedDays = daycarePlacement.missingNewServiceNeedDays,
+                missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
                 groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
             )
@@ -468,7 +468,7 @@ data class DaycarePlacementDetails(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
-    val missingNewServiceNeedDays: Int
+    val missingServiceNeedDays: Int
 )
 
 data class DaycarePlacementWithDetails(
@@ -478,9 +478,9 @@ data class DaycarePlacementWithDetails(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
-    val missingNewServiceNeedDays: Int,
+    val missingServiceNeedDays: Int,
     val groupPlacements: List<DaycareGroupPlacement>,
-    val serviceNeeds: List<NewServiceNeed>,
+    val serviceNeeds: List<ServiceNeed>,
     val isRestrictedFromUser: Boolean = false
 )
 

@@ -111,3 +111,4 @@ V110__varda_service_need.sql
 V111__drop_bulletin_tables.sql
 V112__drop_pricing.sql
 V113__replace_document_uri.sql
+V114__new_service_needs_rename.sql

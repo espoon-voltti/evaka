@@ -78,7 +78,7 @@ class PersonIntegrationTest : PureJdbiTest() {
     @Test
     fun `getTransferablePersonReferences returns references to person and child tables`() {
         val references = db.read { it.getTransferablePersonReferences() }
-        Assertions.assertEquals(39, references.size)
+        Assertions.assertEquals(35, references.size)
         Assertions.assertEquals(
             listOf(
                 PersonReference("absence", "child_id"),
@@ -97,9 +97,9 @@ class PersonIntegrationTest : PureJdbiTest() {
                 PersonReference("family_contact", "child_id"),
                 PersonReference("family_contact", "contact_person_id"),
                 PersonReference("fee_alteration", "person_id"),
-                PersonReference("fee_decision", "head_of_family"),
-                PersonReference("fee_decision", "partner"),
-                PersonReference("fee_decision_part", "child"),
+                PersonReference("fee_decision", "head_of_family_id"),
+                PersonReference("fee_decision", "partner_id"),
+                PersonReference("fee_decision_child", "child_id"),
                 PersonReference("fridge_child", "child_id"),
                 PersonReference("fridge_child", "head_of_child"),
                 PersonReference("fridge_partner", "person_id"),
@@ -109,11 +109,7 @@ class PersonIntegrationTest : PureJdbiTest() {
                 PersonReference("koski_study_right", "child_id"),
                 PersonReference("messaging_blocklist", "blocked_recipient"),
                 PersonReference("messaging_blocklist", "child_id"),
-                PersonReference("new_fee_decision", "head_of_family_id"),
-                PersonReference("new_fee_decision", "partner_id"),
-                PersonReference("new_fee_decision_child", "child_id"),
                 PersonReference("placement", "child_id"),
-                PersonReference("service_need", "child_id"),
                 PersonReference("varda_child", "person_id"),
                 PersonReference("varda_service_need", "evaka_child_id"),
                 PersonReference("vasu_document", "child_id"),

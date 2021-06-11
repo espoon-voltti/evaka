@@ -47,8 +47,8 @@ SELECT
     part.fee,
     part.fee_alterations,
     part.final_fee
-FROM new_fee_decision as decision
-LEFT JOIN new_fee_decision_child as part ON decision.id = part.fee_decision_id
+FROM fee_decision as decision
+LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 """
 
 val feeDecisionDetailedQueryBase =
@@ -101,8 +101,8 @@ SELECT
     care_area.name as placement_unit_area_name,
     finance_decision_handler.first_name AS finance_decision_handler_first_name,
     finance_decision_handler.last_name AS finance_decision_handler_last_name
-FROM new_fee_decision as decision
-LEFT JOIN new_fee_decision_child as part ON decision.id = part.fee_decision_id
+FROM fee_decision as decision
+LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 LEFT JOIN person as head ON decision.head_of_family_id = head.id
 LEFT JOIN person as partner ON decision.partner_id = partner.id
 LEFT JOIN person as child ON part.child_id = child.id
@@ -122,7 +122,7 @@ fun Database.Transaction.upsertFeeDecisions(decisions: List<FeeDecision>) {
 private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
     val sql =
         """
-        INSERT INTO new_fee_decision (
+        INSERT INTO fee_decision (
             id,
             status,
             decision_number,
@@ -179,7 +179,7 @@ private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
 private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<FeeDecisionChild>>>) {
     val sql =
         """
-        INSERT INTO new_fee_decision_child (
+        INSERT INTO fee_decision_child (
             id,
             fee_decision_id,
             child_id,
@@ -238,7 +238,7 @@ private fun Database.Transaction.insertChildren(decisions: List<Pair<UUID, List<
 private fun Database.Transaction.deleteChildren(decisionIds: List<UUID>) {
     if (decisionIds.isEmpty()) return
 
-    createUpdate("DELETE FROM new_fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
+    createUpdate("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(:decisionIds)")
         .bind("decisionIds", decisionIds.toTypedArray())
         .execute()
 }
@@ -246,7 +246,7 @@ private fun Database.Transaction.deleteChildren(decisionIds: List<UUID>) {
 fun Database.Transaction.deleteFeeDecisions(ids: List<UUID>) {
     if (ids.isEmpty()) return
 
-    createUpdate("DELETE FROM new_fee_decision WHERE id = ANY(:ids)")
+    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
         .bind("ids", ids.toTypedArray())
         .execute()
 }
@@ -319,12 +319,12 @@ fun Database.Read.searchFeeDecisions(
         """
         WITH youngest_child AS (
             SELECT
-                new_fee_decision_child.fee_decision_id AS decision_id,
+                fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
                 daycare.finance_decision_handler AS finance_decision_handler,
                 row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC) AS rownum
-            FROM new_fee_decision_child
-            LEFT JOIN daycare ON new_fee_decision_child.placement_unit_id = daycare.id
+            FROM fee_decision_child
+            LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         )
         """.trimIndent()
@@ -336,17 +336,17 @@ fun Database.Read.searchFeeDecisions(
         WITH decision_ids AS (
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
-            FROM new_fee_decision AS decision
-            LEFT JOIN new_fee_decision_child AS part ON decision.id = part.fee_decision_id
+            FROM fee_decision AS decision
+            LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
             LEFT JOIN person AS head ON decision.head_of_family_id = head.id
             LEFT JOIN person AS partner ON decision.partner_id = partner.id
             LEFT JOIN person AS child ON part.child_id = child.id
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
             LEFT JOIN (
-                SELECT new_fee_decision.id, sum(new_fee_decision_child.final_fee) sum
-                FROM new_fee_decision
-                LEFT JOIN new_fee_decision_child ON new_fee_decision.id = new_fee_decision_child.fee_decision_id
-                GROUP BY new_fee_decision.id
+                SELECT fee_decision.id, sum(fee_decision_child.final_fee) sum
+                FROM fee_decision
+                LEFT JOIN fee_decision_child ON fee_decision.id = fee_decision_child.fee_decision_id
+                GROUP BY fee_decision.id
             ) sums ON decision.id = sums.id
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
             ${if (conditions.isNotEmpty()) """
@@ -375,8 +375,8 @@ fun Database.Read.searchFeeDecisions(
             child.last_name AS child_last_name,
             child.social_security_number AS child_ssn
         FROM decision_ids
-        LEFT JOIN new_fee_decision AS decision ON decision_ids.id = decision.id
-        LEFT JOIN new_fee_decision_child AS part ON decision.id = part.fee_decision_id
+        LEFT JOIN fee_decision AS decision ON decision_ids.id = decision.id
+        LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
         LEFT JOIN person AS head ON decision.head_of_family_id = head.id
         LEFT JOIN person AS child ON part.child_id = child.id
         ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.child_date_of_birth DESC
@@ -465,13 +465,13 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, app
         """
         WITH youngest_child AS (
             SELECT
-                new_fee_decision_child.fee_decision_id AS decision_id,
+                fee_decision_child.fee_decision_id AS decision_id,
                 daycare.finance_decision_handler AS finance_decision_handler_id,
                 row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY child_date_of_birth DESC) AS rownum
-            FROM new_fee_decision_child
-            LEFT JOIN daycare ON new_fee_decision_child.placement_unit_id = daycare.id
+            FROM fee_decision_child
+            LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
         )
-        UPDATE new_fee_decision
+        UPDATE fee_decision
         SET
             status = :status::fee_decision_status,
             decision_number = nextval('fee_decision_number_sequence'),
@@ -483,9 +483,9 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, app
                 ELSE :approvedBy
             END,
             approved_at = :approvedAt
-        FROM new_fee_decision AS fd
+        FROM fee_decision AS fd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
-        WHERE fd.id = :id AND new_fee_decision.id = fd.id
+        WHERE fd.id = :id AND fee_decision.id = fd.id
         """.trimIndent()
 
     val batch = prepareBatch(sql)
@@ -504,7 +504,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(ids: List<UUID>, app
 fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
     val sql =
         """
-        UPDATE new_fee_decision
+        UPDATE fee_decision
         SET
             status = :status::fee_decision_status
         WHERE id = :id
@@ -521,7 +521,7 @@ fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: UUID) {
 fun Database.Transaction.setFeeDecisionSent(ids: List<UUID>) {
     val sql =
         """
-        UPDATE new_fee_decision
+        UPDATE fee_decision
         SET
             status = :status::fee_decision_status,
             sent_at = NOW()
@@ -539,7 +539,7 @@ fun Database.Transaction.setFeeDecisionSent(ids: List<UUID>) {
 }
 
 fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<FeeDecision>) {
-    prepareBatch("UPDATE new_fee_decision SET status = :status::fee_decision_status, valid_during = :validDuring WHERE id = :id")
+    prepareBatch("UPDATE fee_decision SET status = :status::fee_decision_status, valid_during = :validDuring WHERE id = :id")
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
@@ -555,7 +555,7 @@ fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<
 fun Database.Transaction.updateFeeDecisionDocumentKey(id: UUID, key: String) {
     val sql =
         """
-        UPDATE new_fee_decision
+        UPDATE fee_decision
         SET document_key = :key
         WHERE id = :id
     """
@@ -570,7 +570,7 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: UUID): String? {
     val sql =
         """
         SELECT document_key 
-        FROM new_fee_decision
+        FROM fee_decision
         WHERE id = :id
     """
 
@@ -584,7 +584,7 @@ fun Database.Transaction.setFeeDecisionType(id: UUID, type: FeeDecisionType) {
     //language=SQL
     val sql =
         """
-        UPDATE new_fee_decision
+        UPDATE fee_decision
         SET decision_type = :type::fee_decision_type
         WHERE id = :id
             AND status = :requiredStatus::fee_decision_status
@@ -598,13 +598,13 @@ fun Database.Transaction.setFeeDecisionType(id: UUID, type: FeeDecisionType) {
 }
 
 fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
-    createUpdate("SELECT id FROM new_fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
+    createUpdate("SELECT id FROM fee_decision WHERE head_of_family_id = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
         .execute()
 }
 
 fun Database.Transaction.lockFeeDecisions(ids: List<UUID>) {
-    createUpdate("SELECT id FROM new_fee_decision WHERE id = ANY(:ids) FOR UPDATE")
+    createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
         .bind("ids", ids.toTypedArray())
         .execute()
 }

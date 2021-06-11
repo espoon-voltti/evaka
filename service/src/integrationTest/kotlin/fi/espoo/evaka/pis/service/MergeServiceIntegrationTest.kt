@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testDaycare
@@ -147,7 +146,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `merging child moves placements and service needs`() {
+    fun `merging child moves placements`() {
         val childId = UUID.randomUUID()
         val childIdDuplicate = UUID.randomUUID()
         db.transaction {
@@ -155,7 +154,6 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
             it.insertTestPerson(DevPerson(id = childIdDuplicate))
             it.insertTestChild(DevChild(childIdDuplicate))
         }
-        val employeeId = db.transaction { it.insertTestEmployee(DevEmployee()) }
         val from = LocalDate.of(2010, 1, 1)
         val to = LocalDate.of(2020, 12, 30)
         db.transaction {
@@ -167,7 +165,6 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
                     endDate = to
                 )
             )
-            it.insertTestServiceNeed(childIdDuplicate, startDate = from, endDate = to, updatedBy = employeeId)
         }
 
         val countBefore = db.read {

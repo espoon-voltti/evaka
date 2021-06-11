@@ -152,8 +152,8 @@ private fun getAnnulledDecisions(tx: Database.Read): List<Long> {
             """
 SELECT varda_id
 FROM varda_fee_data
-JOIN new_fee_decision ON new_fee_decision.id = varda_fee_data.evaka_fee_decision_id
-    AND new_fee_decision.status = :annulledFeeDecision::fee_decision_status
+JOIN fee_decision ON fee_decision.id = varda_fee_data.evaka_fee_decision_id
+    AND fee_decision.status = :annulledFeeDecision::fee_decision_status
 
 UNION ALL
 
@@ -178,8 +178,8 @@ JOIN LATERAL (
     SELECT MAX(approved_at) approved_at
     FROM (
         SELECT approved_at
-        FROM new_fee_decision d
-        JOIN new_fee_decision_child p ON d.id = p.fee_decision_id AND p.child_id = varda_child.person_id
+        FROM fee_decision d
+        JOIN fee_decision_child p ON d.id = p.fee_decision_id AND p.child_id = varda_child.person_id
         WHERE d.status = ANY(:effectiveFeeDecision::fee_decision_status[])
         UNION ALL
         SELECT approved_at
@@ -209,7 +209,7 @@ fun getOutdatedFeeData(tx: Database.Read, decisionPeriod: VardaClient.DecisionPe
 SELECT vfd.varda_id
 FROM varda_decision vd
 JOIN varda_fee_data vfd ON vd.id = vfd.varda_decision_id
-JOIN new_fee_decision d ON vfd.evaka_fee_decision_id = d.id AND NOT d.valid_during && :decisionPeriod
+JOIN fee_decision d ON vfd.evaka_fee_decision_id = d.id AND NOT d.valid_during && :decisionPeriod
 WHERE vd.varda_decision_id = :decisionId
 
 UNION ALL
@@ -243,8 +243,8 @@ SELECT
     d.family_size AS family_size,
     p.placement_type = ANY(:feeDecisionFiveYearOldTypes::placement_type[]) AS is_five_year_old_daycare
 FROM varda_child vc
-JOIN new_fee_decision_child p ON vc.person_id = p.child_id
-JOIN new_fee_decision d ON p.fee_decision_id = d.id
+JOIN fee_decision_child p ON vc.person_id = p.child_id
+JOIN fee_decision d ON p.fee_decision_id = d.id
     AND d.valid_during && :decisionPeriod
     AND d.status = ANY(:effective::fee_decision_status[])
 JOIN varda_decision vd ON vd.varda_decision_id = :decisionId

@@ -66,7 +66,7 @@ private fun Database.Read.getMissingServiceNeedRows(
             ) AS pl
             LEFT JOIN (
               SELECT placement_id, daterange(start_date, end_date, '[]') * daterange(:from, :to, '[]') AS period
-              FROM new_service_need
+              FROM service_need
             ) AS sn
             ON pl.id = sn.placement_id AND pl.period && sn.period
             WINDOW w AS (PARTITION BY (pl.id))

@@ -22,7 +22,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneednew.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -449,40 +449,6 @@ fun Database.Transaction.insertTestPlacement(
 }
 
 fun Database.Transaction.insertTestServiceNeed(
-    childId: UUID,
-    updatedBy: UUID,
-    id: UUID = UUID.randomUUID(),
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate? = LocalDate.of(2019, 12, 31),
-    hoursPerWeek: Double = 40.0,
-    partDay: Boolean = false,
-    partWeek: Boolean = false,
-    shiftCare: Boolean = false
-): UUID {
-    createUpdate(
-        """
-            INSERT INTO service_need (id, child_id, start_date, end_date, hours_per_week, part_day, part_week, shift_care, updated_by)
-            VALUES (:id, :childId, :startDate, :endDate, :hoursPerWeek, :partDay, :partWeek, :shiftCare, :updatedBy)
-            """
-    )
-        .bindMap(
-            mapOf(
-                "id" to id,
-                "childId" to childId,
-                "startDate" to startDate,
-                "endDate" to endDate,
-                "hoursPerWeek" to hoursPerWeek,
-                "partDay" to partDay,
-                "partWeek" to partWeek,
-                "shiftCare" to shiftCare,
-                "updatedBy" to updatedBy
-            )
-        )
-        .execute()
-    return id
-}
-
-fun Database.Transaction.insertTestNewServiceNeed(
     confirmedBy: UUID,
     placementId: UUID,
     period: FiniteDateRange,
@@ -494,11 +460,10 @@ fun Database.Transaction.insertTestNewServiceNeed(
 ): UUID {
     createUpdate(
         """
-ALTER TABLE new_service_need DISABLE TRIGGER set_timestamp;
-INSERT INTO new_service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at, updated)
+ALTER TABLE service_need DISABLE TRIGGER set_timestamp;
+INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at, updated)
 VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt, :updated);
 ALTER TABLE new_service_need ENABLE TRIGGER set_timestamp;
-
 """
     )
         .bind("id", id)
