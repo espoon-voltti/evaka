@@ -140,11 +140,14 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
     }
 
     @PostMapping("/v1/varhaiskasvatuspaatokset/")
-    fun postDecision(
+    fun createDecision(
         @RequestBody body: VardaDecision,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint POST /varhaiskasvatuspaatokset received body: $body" }
+
+        if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
+
         decisionId = decisionId.inc()
         decisions.put(decisionId, body)
         ResponseEntity.ok(getMockDecisionResponse(decisionId))
@@ -157,6 +160,9 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint PUT /varhaiskasvatuspaatokset/$vardaId/ received body: $body" }
+
+        if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
+
         decisions.replace(vardaId, body)
         ResponseEntity.ok(getMockDecisionResponse(vardaId))
     }
@@ -167,6 +173,7 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<Unit> = lock.withLock {
         logger.info { "Mock varda integration endpoint DELETE /varhaiskasvatuspaatokset/$vardaId/ called" }
+
         decisions.remove(vardaId)
         ResponseEntity.noContent().build()
     }
@@ -208,6 +215,9 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         @RequestBody body: VardaFeeData,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
+
+        if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
+
         this.feeDataId = feeDataId.inc()
         this.feeData.put(feeDataId, body)
         logger.info { "Mock varda integration endpoint POST /maksutiedot received body: $body" }
@@ -221,6 +231,9 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint PUT /maksutiedot/$vardaId received body: $body" }
+
+        if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
+
         this.feeData.replace(vardaId, body)
         ResponseEntity.ok(getMockFeeDataResponse(vardaId, body))
     }
@@ -231,6 +244,9 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
         logger.info { "Mock varda integration endpoint DELETE /maksutiedot received id: $vardaId" }
+
+        if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
+
         this.feeData.remove(vardaId)
         ResponseEntity.noContent().build()
     }
@@ -402,5 +418,27 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
     "id": $id
 }
         """.trimIndent()
+    }
+
+    enum class VardaCallType {
+        DECISION,
+        FEE_DATA
+    }
+
+    private var failNextRequest: VardaCallType? = null
+    private var failResponseCode = 200
+
+    fun failNextVardaCall(failWithHttpCode: Int, ofType: VardaCallType) {
+        failNextRequest = ofType
+        failResponseCode = failWithHttpCode
+    }
+
+    private fun shouldFailRequest(type: VardaCallType) = type.equals(failNextRequest)
+
+    private fun failRequest(): ResponseEntity<String> {
+        logger.info("MockVardaIntegrationEndpoint: failing $failNextRequest varda call as requested with $failResponseCode")
+        failNextRequest = null
+        failResponseCode = 200
+        return ResponseEntity.status(failResponseCode).build()
     }
 }

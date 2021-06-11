@@ -411,6 +411,55 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `updateChildData retries failed service need addition`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
+
+        mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA)
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 0)
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 2)
+
+        val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+        assertVardaFeeData(
+            VardaFeeData(
+                huoltajat = listOf(asVardaGuardian(testAdult_1)),
+                maksun_peruste_koodi = "MP03",
+                asiakasmaksu = 289.0,
+                palveluseteli_arvo = 0.0,
+                alkamis_pvm = feeDecisionPeriod.start,
+                paattymis_pvm = feeDecisionPeriod.end,
+                perheen_koko = 2,
+                lahdejarjestelma = "SourceSystemVarda",
+                lapsi = "not asserted"
+            ),
+            mockEndpoint.feeData.values.elementAt(0)
+        )
+        assertVardaFeeData(
+            VardaFeeData(
+                huoltajat = listOf(asVardaGuardian(testAdult_1)),
+                maksun_peruste_koodi = "MP03",
+                asiakasmaksu = 50.0,
+                palveluseteli_arvo = 100.0,
+                alkamis_pvm = voucherDecisionPeriod.start,
+                paattymis_pvm = serviceNeedPeriod.end,
+                perheen_koko = 2,
+                lahdejarjestelma = "SourceSystemVarda",
+                lapsi = "not asserted"
+            ),
+            mockEndpoint.feeData.values.elementAt(1)
+        )
+    }
+
     private fun createServiceNeedAndFeeData(
         child: PersonData.Detailed,
         adult: PersonData.Detailed,

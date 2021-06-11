@@ -76,7 +76,7 @@ afterEach(async () => {
 })
 
 describe('Future absences', () => {
-  test.skip('User can set and delete future absence periods', async () => {
+  test('User can set and delete future absence periods', async () => {
     await listPage.selectChild(fixtures.familyWithTwoGuardians.children[0].id)
     await childPage.markFutureAbsences()
     await waitUntilEqual(() => absencesPage.getAbsencesCount(), 0)
