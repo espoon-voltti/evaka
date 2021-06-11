@@ -154,10 +154,10 @@ class DevApi(
             it.runDevScript("club-terms.sql")
         }
 
-        flywayJdbi.open().use {
-            // VACUUM cannot be run inside a transaction
-            it.execute("VACUUM")
-        }
+        // flywayJdbi.open().use {
+        //     // VACUUM cannot be run inside a transaction
+        //     it.execute("VACUUM ANALYZE")
+        // }
 
         return ResponseEntity.noContent().build()
     }
