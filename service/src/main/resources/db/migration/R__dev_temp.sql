@@ -26,9 +26,9 @@ CREATE TABLE vasu_document(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     created timestamp with time zone NOT NULL DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
-    child_id uuid REFERENCES person(id),
-    template_id uuid REFERENCES vasu_template(id),
-    content_id uuid REFERENCES vasu_content(id)
+    child_id uuid NOT NULL REFERENCES child(id),
+    template_id uuid NOT NULL REFERENCES vasu_template(id),
+    content_id uuid NOT NULL REFERENCES vasu_content(id)
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON vasu_document FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();

@@ -1,8 +1,8 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
@@ -26,7 +26,7 @@ fun Database.Transaction.insertVasuTemplate(
         .one()
 }
 
-fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate {
+fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate? {
     // language=sql
     val sql = """
         SELECT *
@@ -37,7 +37,7 @@ fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate {
     return createQuery(sql)
         .bind("id", id)
         .mapTo<VasuTemplate>()
-        .firstOrNull() ?: throw NotFound("template $id not found")
+        .firstOrNull()
 }
 
 fun Database.Read.getVasuTemplates(): List<VasuTemplateSummary> {
@@ -66,7 +66,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
         .one()
 }
 
-fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse {
+fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse? {
     // language=sql
     val sql = """
         SELECT 
@@ -86,7 +86,7 @@ fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse {
     return createQuery(sql)
         .bind("id", id)
         .mapTo<VasuDocumentResponse>()
-        .firstOrNull() ?: throw NotFound("template $id not found")
+        .firstOrNull()
 }
 
 fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
@@ -100,6 +100,5 @@ fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
     createUpdate(sql)
         .bind("id", id)
         .bind("content", content)
-        .execute()
-        .also { if (it < 1) throw NotFound("document content to update not found") }
+        .updateExactlyOne()
 }

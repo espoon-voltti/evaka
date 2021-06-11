@@ -4,6 +4,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -33,13 +34,14 @@ class VasuController {
         user.requireOneOfRoles(UserRole.ADMIN)
 
         val document = db.transaction { tx ->
-            tx.getVasuTemplate(body.templateId).let { template ->
+            tx.getVasuTemplate(body.templateId)?.let { template ->
                 if (!template.valid.includes(LocalDate.now())) {
                     throw BadRequest("Template is not currently valid")
                 }
-            }
+            } ?: throw NotFound("template ${body.templateId} not found")
+
             val id = tx.insertVasuDocument(body.childId, body.templateId)
-            tx.getVasuDocumentResponse(id)
+            tx.getVasuDocumentResponse(id)!!
         }
 
         return ResponseEntity.created(URI.create("/vasu/${document.id}")).body(document)
@@ -50,12 +52,12 @@ class VasuController {
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
-    ): ResponseEntity<VasuDocumentResponse> {
+    ): VasuDocumentResponse {
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.read { tx ->
-            tx.getVasuDocumentResponse(id)
-        }.let { ResponseEntity.ok(it) }
+            tx.getVasuDocumentResponse(id) ?: throw NotFound("template $id not found")
+        }
     }
 
     data class UpdateDocumentRequest(
@@ -67,25 +69,19 @@ class VasuController {
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: UpdateDocumentRequest
-    ): ResponseEntity<Unit> {
+    ) {
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        db.transaction { tx ->
-            tx.updateVasuDocument(id, body.content)
-        }
-
-        return ResponseEntity.noContent().build()
+        db.transaction { tx -> tx.updateVasuDocument(id, body.content) }
     }
 
     @GetMapping("/templates")
     fun getTemplates(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): ResponseEntity<List<VasuTemplateSummary>> {
+    ): List<VasuTemplateSummary> {
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        return db.read { tx ->
-            tx.getVasuTemplates()
-        }.let { ResponseEntity.ok(it) }
+        return db.read { tx -> tx.getVasuTemplates() }
     }
 }
