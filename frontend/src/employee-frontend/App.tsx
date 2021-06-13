@@ -69,6 +69,8 @@ import MessagesPage from './components/messages/MessagesPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import WelcomePage from './components/WelcomePage'
 import VasuPage from './components/vasu/VasuPage'
+import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
+import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -386,6 +388,22 @@ export default function App() {
                 path="/vasu/:id"
                 component={ensureAuthenticated(VasuPage)}
                 title={i18n.titles.vasuPage}
+              />
+            )}
+            {featureFlags.vasu && (
+              <RouteWithTitle
+                exact
+                path="/vasu-templates"
+                component={ensureAuthenticated(VasuTemplatesPage)}
+                title={i18n.titles.vasuTemplates}
+              />
+            )}
+            {featureFlags.vasu && (
+              <RouteWithTitle
+                exact
+                path="/vasu-templates/:id"
+                component={ensureAuthenticated(VasuTemplateEditor)}
+                title={i18n.titles.vasuTemplates}
               />
             )}
             {redirectRoutes([

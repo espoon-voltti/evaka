@@ -4,27 +4,8 @@
 
 import { UUID } from 'employee-frontend/types'
 import { Result, Success, Failure } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../client'
-
-interface VasuTemplateSummary {
-  id: UUID
-  name: string
-  valid: DateRange
-}
-
-export async function getVasuTemplates(): Promise<Result<VasuTemplateSummary>> {
-  return client
-    .get<JsonOf<VasuTemplateSummary>>(`/vasu/templates`)
-    .then((res) =>
-      Success.of({
-        ...res.data,
-        valid: DateRange.parseJson(res.data.valid)
-      })
-    )
-    .catch((e) => Failure.fromError(e))
-}
 
 export async function getVasuDocument(
   id: UUID
@@ -73,16 +54,24 @@ interface VasuDocumentResponseChild {
   lastName: string
 }
 
-interface VasuContent {
+export interface VasuContent {
   sections: VasuSection[]
 }
 
-interface VasuSection {
+export interface VasuSection {
   name: string
   questions: VasuQuestion[]
 }
 
-type VasuQuestionType = 'TEXT' | 'CHECKBOX' | 'RADIO_GROUP' | 'MULTISELECT'
+export const VasuQuestionTypes = [
+  'TEXT',
+  'CHECKBOX',
+  'RADIO_GROUP',
+  'MULTISELECT'
+]
+
+export type VasuQuestionType = typeof VasuQuestionTypes[number]
+
 interface VasuQuestionCommon {
   type: VasuQuestionType
   name: string
@@ -109,7 +98,7 @@ export interface MultiSelectQuestion extends VasuQuestionCommon {
   value: number[]
 }
 
-type VasuQuestion =
+export type VasuQuestion =
   | TextQuestion
   | CheckboxQuestion
   | RadioGroupQuestion

@@ -115,3 +115,7 @@ enum class VasuQuestionType {
     RADIO_GROUP,
     MULTISELECT
 }
+
+val defaultTemplateContent = VasuContent(
+    sections = emptyList()
+)

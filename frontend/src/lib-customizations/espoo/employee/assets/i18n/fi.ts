@@ -26,7 +26,8 @@ export const fi = {
     createUnit: 'Luo uusi yksikkö',
     employeePinCode: 'PIN-koodin hallinta',
     welcomePage: 'Tervetuloa eVakaan',
-    vasuPage: 'Vasu 2021'
+    vasuPage: 'Vasu 2021',
+    vasuTemplates: 'Vasu-pohjat'
   },
   common: {
     yes: 'Kyllä',
@@ -2516,6 +2517,11 @@ export const fi = {
         }
       }
     }
+  },
+  vasuTemplates: {
+    title: 'Vasu-pohjat',
+    name: 'Nimi',
+    valid: 'Käytössä aikavälillä'
   },
   roles: {
     adRoles: {

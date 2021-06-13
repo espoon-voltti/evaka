@@ -146,6 +146,7 @@ function defaultGetItemLabel<T>(item: T) {
 }
 
 function stopPropagation(e: React.SyntheticEvent) {
+  e.preventDefault()
   e.stopPropagation()
 }
 

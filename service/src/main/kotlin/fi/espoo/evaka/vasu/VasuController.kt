@@ -4,6 +4,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.http.ResponseEntity
@@ -75,6 +76,27 @@ class VasuController {
         db.transaction { tx -> tx.updateVasuDocument(id, body.content) }
     }
 
+    data class CreateTemplateRequest(
+        val name: String,
+        val valid: FiniteDateRange
+    )
+    @PostMapping("/vasu/templates")
+    fun postTemplate(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: CreateTemplateRequest
+    ): ResponseEntity<UUID> {
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        return db.transaction {
+            it.insertVasuTemplate(
+                name = body.name,
+                valid = body.valid,
+                content = defaultTemplateContent
+            )
+        }.let { ResponseEntity.created(URI.create("/vasu/templates/$it")).body(it) }
+    }
+
     @GetMapping("/vasu/templates")
     fun getTemplates(
         db: Database.Connection,
@@ -83,6 +105,29 @@ class VasuController {
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.read { tx -> tx.getVasuTemplates() }
+    }
+
+    @GetMapping("/vasu/templates/{id}")
+    fun getTemplate(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID
+    ): VasuTemplate {
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        return db.read { tx -> tx.getVasuTemplate(id) } ?: throw NotFound("template $id not found")
+    }
+
+    @PutMapping("/vasu/templates/{id}/content")
+    fun putTemplateContent(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody content: VasuContent
+    ) {
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        db.transaction { tx -> tx.updateVasuTemplateContent(id, content) }
     }
 
     @GetMapping("/children/{childId}/vasu-summaries")

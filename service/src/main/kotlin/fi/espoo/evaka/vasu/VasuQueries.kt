@@ -2,13 +2,13 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
-import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Transaction.insertVasuTemplate(
     name: String,
-    valid: DateRange,
+    valid: FiniteDateRange,
     content: VasuContent
 ): UUID {
     // language=sql
@@ -95,6 +95,20 @@ fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
         UPDATE vasu_content
         SET content = :content
         WHERE id IN (SELECT vd.content_id FROM vasu_document vd WHERE vd.id = :id)
+    """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("content", content)
+        .updateExactlyOne()
+}
+
+fun Database.Transaction.updateVasuTemplateContent(id: UUID, content: VasuContent) {
+    // language=sql
+    val sql = """
+        UPDATE vasu_template
+        SET content = :content
+        WHERE id = :id
     """.trimIndent()
 
     createUpdate(sql)

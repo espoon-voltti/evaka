@@ -24,7 +24,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vasu.VasuContent
@@ -66,7 +65,7 @@ fun Database.Transaction.ensureDevData() {
 
         insertVasuTemplate(
             name = "Varhaiskasvatussuunnitelma 2020-2021",
-            valid = DateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 8, 31)),
+            valid = FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 8, 31)),
             content = VasuContent(
                 sections = listOf(
                     VasuSection(

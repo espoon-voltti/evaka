@@ -86,7 +86,10 @@ function InlineButton({
     <StyledButton
       className={classNames(className, { disabled, darker })}
       data-qa={dataQa}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        onClick()
+      }}
       disabled={disabled}
       aria-label={altText}
       color={color}

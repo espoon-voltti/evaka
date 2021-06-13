@@ -4,6 +4,9 @@
 
 import { JsonOf } from '../../lib-common/json'
 import { UUID } from './index'
+import FiniteDateRange from '../../lib-common/finite-date-range'
+import LocalDate from '../../lib-common/local-date'
+import { VasuContent } from '../api/child/vasu'
 
 export type VasuDocumentState = 'DRAFT' | 'CREATED' | 'REVIEWED' | 'CLOSED'
 
@@ -22,4 +25,34 @@ export const deserializeVasuDocumentSummary = ({
   ...rest,
   modifiedAt: new Date(modifiedAt),
   publishedAt: publishedAt ? new Date(publishedAt) : undefined
+})
+
+export interface VasuTemplateSummary {
+  id: UUID
+  name: string
+  valid: FiniteDateRange
+}
+export const deserializeVasuTemplateSummary = ({
+  valid,
+  ...rest
+}: JsonOf<VasuTemplateSummary>): VasuTemplateSummary => ({
+  ...rest,
+  valid: FiniteDateRange.parseJson(valid)
+})
+
+export interface VasuTemplate {
+  id: UUID
+  name: string
+  valid: FiniteDateRange
+  content: VasuContent
+}
+export const deserializeVasuTemplate = ({
+  valid,
+  ...rest
+}: JsonOf<VasuTemplate>): VasuTemplate => ({
+  ...rest,
+  valid: new FiniteDateRange(
+    LocalDate.parseIso(valid.start),
+    LocalDate.parseIso(valid.end)
+  )
 })

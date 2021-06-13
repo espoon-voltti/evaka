@@ -263,6 +263,17 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     </Link>
                   </RequireRole>
                 ) : null}
+                {featureFlags.vasu ? (
+                  <RequireRole oneOf={['ADMIN']}>
+                    <Link
+                      to="/vasu-templates"
+                      onClick={() => setPopupVisible(false)}
+                      data-qa="user-popup-vasu-templates"
+                    >
+                      {i18n.vasuTemplates.title}
+                    </Link>
+                  </RequireRole>
+                ) : null}
                 <Link
                   to={`/pin-code`}
                   onClick={() => setPopupVisible(false)}
