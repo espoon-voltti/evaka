@@ -50,17 +50,17 @@ class AsyncJobsTest {
     @Test
     fun `decision attachment is retrieved from document service`() {
         val documentId = "16989643-6bc1-4978-a996-10bd838c8229f"
-        val path = "s3://evaka_clubdecision_prod/$documentId"
+        val bucket = "evaka_clubdecision_prod"
 
         val documentDisplayName = "Kerhopäätös Mikko Ilmari Mikkonen.pdf"
         val messageHeader = "Testiviestin otsikko"
         val messageContent = "Testiviestin sisältö"
-        whenever(attachmentService.getDocument(path)).thenReturn("pdf".toByteArray())
+        whenever(attachmentService.getDocument(bucket, documentId)).thenReturn("pdf".toByteArray())
         whenever(sfiClient.sendMessage(any())).thenReturn(createOkResponse())
-        val details = getMessage(path, documentDisplayName, documentId, messageHeader, messageContent)
+        val details = getMessage(bucket, documentId, documentDisplayName, documentId, messageHeader, messageContent)
         asyncJobs.sendMessagePDF(details)
 
-        verify(attachmentService).getDocument(path)
+        verify(attachmentService).getDocument(bucket, documentId)
 
         argumentCaptor<ISfiClientService.MessageMetadata>().apply {
             verify(sfiClient).sendMessage(capture())
@@ -75,14 +75,16 @@ class AsyncJobsTest {
     }
 
     private fun getMessage(
-        documentUri: String,
+        documentBucket: String,
+        documentKey: String,
         documentDisplayName: String,
         documentId: String,
         messageHeader: String,
         messageContent: String
     ) = PdfSendMessage(
         messageId = null,
-        documentUri = documentUri,
+        documentBucket = documentBucket,
+        documentKey = documentKey,
         documentDisplayName = documentDisplayName,
         documentId = documentId,
         ssn = recipient.ssn,

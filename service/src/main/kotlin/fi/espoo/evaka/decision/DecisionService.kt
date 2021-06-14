@@ -223,11 +223,13 @@ class DecisionService(
         val sendAddress = getSendAddress(messageProvider, guardian, lang)
         // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
+        val (bucket, key) = s3Client.parseUri(documentUri)
         val message = SuomiFiMessage(
             messageId = uniqueId,
             documentId = uniqueId,
             documentDisplayName = calculateDecisionFileName(tx, decision, lang),
-            documentUri = documentUri,
+            documentBucket = bucket,
+            documentKey = key,
             firstName = guardian.firstName!!,
             lastName = guardian.lastName!!,
             streetAddress = sendAddress.street,

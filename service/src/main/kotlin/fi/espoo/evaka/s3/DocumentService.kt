@@ -44,4 +44,6 @@ interface DocumentService {
      * Delete a document from S3
      */
     fun delete(bucketName: String, key: String)
+
+    fun parseUri(uri: String): Pair<String, String>
 }

@@ -146,13 +146,12 @@ class FeeDecisionService(
         val feeDecisionDisplayName =
             if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
 
-        val documentUri = s3Client.getFeeDecisionDocumentUri(decision.documentKey)
-
         val message = SuomiFiMessage(
             messageId = decision.id.toString(),
             documentId = decision.id.toString(),
             documentDisplayName = feeDecisionDisplayName,
-            documentUri = documentUri,
+            documentBucket = s3Client.getFeeDecisionBucket(),
+            documentKey = decision.documentKey,
             language = lang,
             firstName = recipient.firstName,
             lastName = recipient.lastName,

@@ -53,4 +53,8 @@ class S3DocumentClient(private val s3Client: AmazonS3) : DocumentService {
     override fun delete(bucketName: String, key: String) {
         s3Client.deleteObject(bucketName, key)
     }
+
+    override fun parseUri(uri: String): Pair<String, String> = AmazonS3URI(uri).let {
+        Pair(it.bucket, it.key)
+    }
 }

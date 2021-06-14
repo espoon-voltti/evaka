@@ -8,5 +8,5 @@ interface DocumentService {
     /**
      * Get attachment by attachment path. Subclasses can set add more restrictions to path value.
      */
-    fun getDocument(documentUri: String): ByteArray
+    fun getDocument(bucket: String, key: String): ByteArray
 }

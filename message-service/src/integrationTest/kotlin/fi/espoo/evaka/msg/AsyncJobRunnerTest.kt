@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit
 
 private val testMsg = PdfSendMessage(
     messageId = UUID.randomUUID().toString(),
-    documentUri = "",
+    documentBucket = "",
+    documentKey = "",
     documentId = "",
     documentDisplayName = "",
     ssn = "",
