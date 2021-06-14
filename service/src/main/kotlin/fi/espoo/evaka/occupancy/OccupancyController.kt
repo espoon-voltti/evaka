@@ -35,7 +35,7 @@ class OccupancyController(private val acl: AccessControlList) {
     ): ResponseEntity<OccupancyResponse> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.MOBILE)
 
         val occupancies = db.read {
             it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type)
