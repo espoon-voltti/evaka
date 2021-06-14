@@ -511,7 +511,7 @@ WITH child_fees AS (
     fd.id AS fee_decision_id,
     fdc.child_id,
     fd.valid_during
-  FROM new_fee_decision fd LEFT JOIN new_fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
+  FROM new_fee_decision fd JOIN new_fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
   ${if (startingFrom != null) " WHERE fd.sent_at >= :startingFrom" else ""}  
 ), service_need_fees AS (
   SELECT
@@ -554,28 +554,6 @@ data class FeeDataByServiceNeed(
     val feeDecisionIds: List<UUID> = emptyList(),
     val voucherValueDecisionIds: List<UUID> = emptyList()
 )
-
-fun Database.Read.getVardaChildIdByEvakaPersonIdAndOphUnitOid(evakaChildId: UUID, organizerOid: String): Long? = createQuery(
-    """
-SELECT varda_child_id
-FROM varda_child
-WHERE person_id = :evakaChildId AND oph_organizer_oid = :organizerOid
-"""
-).bind("evakaChildId", evakaChildId)
-    .bind("organizerOid", organizerOid)
-    .mapTo<Long>()
-    .first()
-
-fun Database.Read.getVardaChildByEvakaPersonIdAndOphUnitOid(evakaChildId: UUID, organizerOid: String): VardaChild? = createQuery(
-    """
-SELECT *
-FROM varda_child
-WHERE person_id = :evakaChildId AND oph_organizer_oid = :organizerOid
-"""
-).bind("evakaChildId", evakaChildId)
-    .bind("organizerOid", organizerOid)
-    .mapTo<VardaChild>()
-    .first()
 
 data class VardaChild(
     val id: UUID,
