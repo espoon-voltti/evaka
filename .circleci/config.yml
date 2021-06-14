@@ -27,6 +27,7 @@ aliases:
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
   - &remote_docker_version "19.03.13"
   - &yarn_version '1.22.\*'
+  - &shellcheck_image_version v0.7.2
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202010-01
@@ -159,6 +160,17 @@ executors:
     machine:
       image: *ubuntu_machine_image
       resource_class: large
+  shellcheck:
+    parameters:
+      shellcheck_image_version:
+        type: string
+        default: *shellcheck_image_version
+    docker:
+      - image: koalaman/shellcheck-alpine:<< parameters.shellcheck_image_version >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    working_directory: *workspace_root
 
 commands:
   attach_root_workspace:
@@ -570,6 +582,19 @@ jobs:
             - evaka-infra
       - notify_slack
 
+  lint_scripts:
+    executor: shellcheck
+    steps:
+      - *restore_repo
+      - run:
+          name: Install dependencies
+          command: apk add curl jq git
+      - run:
+          name: Lint shell scripts
+          command: |
+            ./bin/run-shellcheck.sh
+      - notify_slack
+
   # BUILD JOBS
 
   build_base_image:
@@ -975,6 +1000,10 @@ workflows:
           <<: *aws_contexts
           requires:
             - checkout_repo
+      - lint_scripts:
+          <<: *default_contexts
+          requires:
+            - checkout_repo
       - build_base_image:
           <<: *default_contexts
           requires:
@@ -1088,6 +1117,7 @@ workflows:
       - clone_infra_repo:
           <<: *aws_contexts
           requires:
+            - lint_scripts
             - e2e-test-citizen
             - e2e-test-invoicing
             - e2e-test-employee

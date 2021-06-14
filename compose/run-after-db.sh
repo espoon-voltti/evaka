@@ -11,4 +11,4 @@ until nc -z "localhost" "5432"; do
   sleep 1
 done
 
-exec $*
+exec "$@"
