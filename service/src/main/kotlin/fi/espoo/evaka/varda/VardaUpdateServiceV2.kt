@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.varda
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
@@ -11,26 +13,63 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.VardaUpdateV2
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.varda.integration.VardaClient
+import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.springframework.core.env.Environment
+import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
+@Service
+class VardaUpdateServiceV2(
+    private val asyncJobRunner: AsyncJobRunner,
+    private val tokenProvider: VardaTokenProvider,
+    private val fuel: FuelManager,
+    private val env: Environment,
+    private val mapper: ObjectMapper,
+) {
+    private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
+
+    init {
+        asyncJobRunner.vardaUpdateV2 = ::updateAll
+    }
+
+    fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {
+        if (runNow) {
+            logger.info("VardaUpdate: running varda update immediately")
+            val client = VardaClient(tokenProvider, fuel, env, mapper)
+            updateAllVardaData(db, client, organizer)
+        } else {
+            logger.info("VardaUpdate: scheduling varda update")
+            db.transaction { asyncJobRunner.plan(it, listOf(VardaUpdateV2()), retryCount = 1) }
+        }
+    }
+
+    fun updateAll(db: Database, msg: VardaUpdateV2) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        db.connect { updateAllVardaData(it, client, organizer) }
+    }
+}
+
 fun updateAllVardaData(
     db: Database.Connection,
     client: VardaClient,
     organizer: String
 ) {
+    logger.info("VardaUpdate: running varda update")
     updateOrganizer(db, client, organizer)
     updateUnits(db, client, organizer)
     updateChildData(db, client, HelsinkiDateTime.now().minusHours(24))
