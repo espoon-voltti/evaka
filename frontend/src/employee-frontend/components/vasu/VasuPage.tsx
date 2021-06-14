@@ -11,25 +11,23 @@ import { Label } from 'lib-components/typography'
 import { TextArea } from 'lib-components/atoms/form/InputField'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Button from 'lib-components/atoms/buttons/Button'
-import {
-  CheckboxQuestion,
-  getVasuDocument,
-  isCheckboxQuestion,
-  isMultiSelectQuestion,
-  isRadioGroupQuestion,
-  isTextQuestion,
-  MultiSelectQuestion,
-  putVasuDocument,
-  RadioGroupQuestion,
-  TextQuestion,
-  VasuDocumentResponse
-} from 'employee-frontend/api/child/vasu'
 import { Loading, Result } from 'lib-common/api'
 import { cloneDeep } from 'lodash'
 import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { UUID } from 'lib-common/types'
 import { RouteComponentProps } from 'react-router-dom'
+import {
+  CheckboxQuestion,
+  isCheckboxQuestion,
+  isMultiSelectQuestion,
+  isRadioGroupQuestion,
+  isTextQuestion,
+  MultiSelectQuestion,
+  RadioGroupQuestion,
+  TextQuestion
+} from './vasu-content'
+import { getVasuDocument, putVasuDocument, VasuDocumentResponse } from './api'
 
 export default React.memo(function VasuPage({
   match

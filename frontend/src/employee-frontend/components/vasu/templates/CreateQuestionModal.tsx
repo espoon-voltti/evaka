@@ -4,11 +4,6 @@
 
 import React, { useState } from 'react'
 import FormModal from '../../../../lib-components/molecules/modals/FormModal'
-import {
-  VasuQuestion,
-  VasuQuestionType,
-  VasuQuestionTypes
-} from '../../../api/child/vasu'
 import InputField from '../../../../lib-components/atoms/form/InputField'
 import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
@@ -20,6 +15,11 @@ import Combobox from '../../../../lib-components/atoms/form/Combobox'
 import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
 import { faTrash } from '../../../../lib-icons'
 import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
+import {
+  VasuQuestion,
+  VasuQuestionType,
+  VasuQuestionTypes
+} from '../vasu-content'
 
 interface Props {
   onSave: (question: VasuQuestion) => void
@@ -86,7 +86,6 @@ export default React.memo(function CreateQuestionModal({
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
           <Label>Kysymyksen tyyppi</Label>
-          {/* TODO: clicking dropdown arrow closes modal !?*/}
           <Combobox
             items={VasuQuestionTypes}
             selectedItem={type}

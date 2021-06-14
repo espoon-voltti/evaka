@@ -9,9 +9,12 @@ import Container, {
 } from '../../../../lib-components/layout/Container'
 import { Gap } from '../../../../lib-components/white-space'
 import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import { getVasuTemplate, updateVasuTemplateContents } from '../../../api/vasu'
+import {
+  getVasuTemplate,
+  updateVasuTemplateContents,
+  VasuTemplate
+} from './api'
 import { Loading, Result } from '../../../../lib-common/api'
-import { VasuTemplate } from '../../../types/vasu'
 import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
 import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
 import { useParams } from 'react-router-dom'
@@ -27,7 +30,7 @@ import {
   RadioGroupQuestion,
   TextQuestion,
   VasuQuestion
-} from '../../../api/child/vasu'
+} from '../vasu-content'
 import InputField, {
   TextArea
 } from '../../../../lib-components/atoms/form/InputField'

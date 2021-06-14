@@ -12,12 +12,15 @@ import { CollapsibleContentArea } from '../../../lib-components/layout/Container
 import { Table, Tbody, Td, Tr } from '../../../lib-components/layout/Table'
 import { H2 } from '../../../lib-components/typography'
 import colors from '../../../lib-customizations/common'
-import { getVasuDocumentSummaries } from '../../api/vasu'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UUID } from '../../types'
-import { VasuDocumentState, VasuDocumentSummary } from '../../types/vasu'
 import { formatDate } from '../../utils/date'
+import {
+  getVasuDocumentSummaries,
+  VasuDocumentState,
+  VasuDocumentSummary
+} from '../vasu/api'
 
 const StateCell = styled(Td)`
   display: flex;

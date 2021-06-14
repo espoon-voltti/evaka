@@ -2521,7 +2521,8 @@ export const fi = {
   vasuTemplates: {
     title: 'Vasu-pohjat',
     name: 'Nimi',
-    valid: 'Käytössä aikavälillä'
+    valid: 'Käytössä aikavälillä',
+    documentCount: 'Vasu-dokumentteja'
   },
   roles: {
     adRoles: {

@@ -2,49 +2,8 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
-
-fun Database.Transaction.insertVasuTemplate(
-    name: String,
-    valid: FiniteDateRange,
-    content: VasuContent
-): UUID {
-    // language=sql
-    val sql = """
-        INSERT INTO vasu_template (valid, name, content) 
-        VALUES (:valid, :name, :content)
-        RETURNING id
-    """.trimIndent()
-
-    return createQuery(sql)
-        .bind("name", name)
-        .bind("valid", valid)
-        .bind("content", content)
-        .mapTo<UUID>()
-        .one()
-}
-
-fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate? {
-    // language=sql
-    val sql = """
-        SELECT *
-        FROM vasu_template
-        WHERE id =:id
-    """.trimIndent()
-
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<VasuTemplate>()
-        .firstOrNull()
-}
-
-fun Database.Read.getVasuTemplates(): List<VasuTemplateSummary> {
-    return createQuery("SELECT id, name, valid FROM vasu_template")
-        .mapTo<VasuTemplateSummary>()
-        .list()
-}
 
 fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UUID {
     // language=sql
@@ -95,20 +54,6 @@ fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
         UPDATE vasu_content
         SET content = :content
         WHERE id IN (SELECT vd.content_id FROM vasu_document vd WHERE vd.id = :id)
-    """.trimIndent()
-
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("content", content)
-        .updateExactlyOne()
-}
-
-fun Database.Transaction.updateVasuTemplateContent(id: UUID, content: VasuContent) {
-    // language=sql
-    val sql = """
-        UPDATE vasu_template
-        SET content = :content
-        WHERE id = :id
     """.trimIndent()
 
     createUpdate(sql)

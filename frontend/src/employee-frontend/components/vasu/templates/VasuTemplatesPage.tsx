@@ -17,17 +17,23 @@ import {
   Tr
 } from '../../../../lib-components/layout/Table'
 import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import { createVasuTemplate, getVasuTemplateSummaries } from '../../../api/vasu'
 import { Loading, Result } from '../../../../lib-common/api'
-import { VasuTemplateSummary } from '../../../types/vasu'
 import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
 import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
 import { useHistory } from 'react-router'
-import styled from 'styled-components'
 import { useTranslation } from '../../../state/i18n'
 import { AddButtonRow } from '../../../../lib-components/atoms/buttons/AddButton'
 import FiniteDateRange from '../../../../lib-common/finite-date-range'
 import LocalDate from '../../../../lib-common/local-date'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
+import { faCopy, faPen, faTrash } from '../../../../lib-icons'
+import {
+  createVasuTemplate,
+  deleteVasuTemplate,
+  getVasuTemplateSummaries,
+  VasuTemplateSummary
+} from './api'
 
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
@@ -68,17 +74,37 @@ export default React.memo(function VasuTemplatesPage() {
                 <Tr>
                   <Th>{t.name}</Th>
                   <Th>{t.valid}</Th>
+                  <Th>{t.documentCount}</Th>
+                  <Th />
                 </Tr>
               </Thead>
               <Tbody>
                 {templates.value.map((template) => (
-                  <LinkTr
-                    key={template.id}
-                    onClick={() => h.push(`/vasu-templates/${template.id}`)}
-                  >
+                  <Tr key={template.id}>
                     <Td>{template.name}</Td>
                     <Td>{template.valid.format()}</Td>
-                  </LinkTr>
+                    <Td>{template.documentCount}</Td>
+                    <Td>
+                      <FixedSpaceRow spacing="s">
+                        <IconButton icon={faCopy} disabled={true} />
+                        <IconButton
+                          icon={faPen}
+                          onClick={() =>
+                            h.push(`/vasu-templates/${template.id}`)
+                          }
+                        />
+                        <IconButton
+                          icon={faTrash}
+                          disabled={template.documentCount > 0}
+                          onClick={() => {
+                            void deleteVasuTemplate(template.id).then(
+                              loadSummaries
+                            )
+                          }}
+                        />
+                      </FixedSpaceRow>
+                    </Td>
+                  </Tr>
                 ))}
               </Tbody>
             </Table>
@@ -88,7 +114,3 @@ export default React.memo(function VasuTemplatesPage() {
     </Container>
   )
 })
-
-const LinkTr = styled(Tr)`
-  cursor: pointer;
-`
