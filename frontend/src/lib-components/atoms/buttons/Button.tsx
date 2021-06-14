@@ -11,7 +11,7 @@ import { defaultButtonTextStyle } from './button-commons'
 
 export const StyledButton = styled.button`
   min-height: 45px;
-  padding: 0 27px;
+  padding: 0 24px;
   min-width: 100px;
 
   display: block;
