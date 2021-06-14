@@ -74,6 +74,9 @@ test('voucher value decisions are toggled and sent', async (t) => {
     .eql('success')
   await runPendingAsyncJobs()
 
+  // wait until draft has disappeared and ui is stable
+  await t.expect(page.valueDecisionRows.count).eql(0)
+
   await page.valueDecisionsStatusFilterSent.click()
   await t.expect(page.valueDecisionRows.count).eql(1)
 })

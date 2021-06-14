@@ -90,6 +90,7 @@ function InlineButton({
       disabled={disabled}
       aria-label={altText}
       color={color}
+      type="button"
     >
       {icon && !iconRight && <FontAwesomeIcon icon={icon} />}
       <span>{text}</span>

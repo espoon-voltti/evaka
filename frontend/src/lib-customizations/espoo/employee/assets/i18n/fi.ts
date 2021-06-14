@@ -26,7 +26,8 @@ export const fi = {
     createUnit: 'Luo uusi yksikkö',
     employeePinCode: 'PIN-koodin hallinta',
     welcomePage: 'Tervetuloa eVakaan',
-    vasuPage: 'Vasu 2021'
+    vasuPage: 'Vasu 2021',
+    vasuTemplates: 'Vasu-pohjat'
   },
   common: {
     yes: 'Kyllä',
@@ -2515,6 +2516,30 @@ export const fi = {
           reject: 'Peruuta'
         }
       }
+    }
+  },
+  vasuTemplates: {
+    title: 'Vasu-pohjat',
+    name: 'Nimi',
+    valid: 'Käytössä aikavälillä',
+    documentCount: 'Vasu-dokumentteja',
+    addNewTemplate: 'Lisää uusi vasu-pohja',
+    addNewSection: 'Lisää uusi osio',
+    addNewQuestion: 'Lisää uusi kysymys',
+    questionModal: {
+      title: 'Uusi kysymys',
+      type: 'Kysymyksen tyyppi',
+      name: 'Kysymysteksti',
+      options: 'Vaihtoehdot',
+      addNewOption: 'Lisää vaihtoehto',
+      multiline: 'Monirivinen',
+      minSelections: 'Valittava vähintään'
+    },
+    questionTypes: {
+      TEXT: 'Tekstimuotoinen',
+      CHECKBOX: 'Rasti',
+      RADIO_GROUP: 'Valitse yksi',
+      MULTISELECT: 'Monivalinta'
     }
   },
   roles: {

@@ -252,7 +252,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                     {i18n.employees.title}
                   </Link>
                 </RequireRole>
-                {featureFlags.financeBasicsPage ? (
+                {featureFlags.financeBasicsPage && (
                   <RequireRole oneOf={['FINANCE_ADMIN']}>
                     <Link
                       to="/finance/basics"
@@ -262,7 +262,18 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                       {i18n.financeBasics.title}
                     </Link>
                   </RequireRole>
-                ) : null}
+                )}
+                {featureFlags.vasu && (
+                  <RequireRole oneOf={['ADMIN']}>
+                    <Link
+                      to="/vasu-templates"
+                      onClick={() => setPopupVisible(false)}
+                      data-qa="user-popup-vasu-templates"
+                    >
+                      {i18n.vasuTemplates.title}
+                    </Link>
+                  </RequireRole>
+                )}
                 <Link
                   to={`/pin-code`}
                   onClick={() => setPopupVisible(false)}

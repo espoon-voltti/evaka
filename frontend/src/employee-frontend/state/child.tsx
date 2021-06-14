@@ -18,7 +18,7 @@ import { PersonDetails } from '../types/person'
 import { Parentship } from '../types/fridge'
 import { ApplicationSummary } from '../types/application'
 import { Recipient } from 'employee-frontend/components/messages/types'
-import { VasuDocumentSummary } from '../types/vasu'
+import { VasuDocumentSummary } from '../components/vasu/api'
 
 export interface ChildState {
   person: Result<PersonDetails>
