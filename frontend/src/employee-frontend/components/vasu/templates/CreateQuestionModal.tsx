@@ -18,7 +18,7 @@ import InlineButton from '../../../../lib-components/atoms/buttons/InlineButton'
 import {
   VasuQuestion,
   VasuQuestionType,
-  VasuQuestionTypes
+  vasuQuestionTypes
 } from '../vasu-content'
 
 interface Props {
@@ -31,6 +31,7 @@ export default React.memo(function CreateQuestionModal({
   onSave
 }: Props) {
   const { i18n } = useTranslation()
+  const t = i18n.vasuTemplates.questionModal
   const [type, setType] = useState<VasuQuestionType>('TEXT')
   const [name, setName] = useState('')
   const [options, setOptions] = useState([''])
@@ -41,7 +42,7 @@ export default React.memo(function CreateQuestionModal({
         return {
           type: 'TEXT',
           name: name,
-          multiline: false,
+          multiline: false, // TODO: add to form
           value: ''
         }
       case 'CHECKBOX':
@@ -62,7 +63,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'MULTISELECT',
           name: name,
           optionNames: options,
-          minSelections: 0,
+          minSelections: 0, // TODO: add to form
           maxSelections: null,
           value: []
         }
@@ -73,7 +74,7 @@ export default React.memo(function CreateQuestionModal({
 
   return (
     <FormModal
-      title="Uusi kysymys"
+      title={t.title}
       resolve={{
         action: () => onSave(createQuestion()),
         label: i18n.common.confirm
@@ -85,23 +86,23 @@ export default React.memo(function CreateQuestionModal({
     >
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
-          <Label>Kysymyksen tyyppi</Label>
+          <Label>{t.type}</Label>
           <Combobox
-            items={VasuQuestionTypes}
+            items={[...vasuQuestionTypes]}
             selectedItem={type}
-            onChange={(t) => {
-              if (t) setType(t)
+            onChange={(value) => {
+              if (value) setType(value)
             }}
-            getItemDataQa={(t) => t.toString()}
+            getItemLabel={(option) => i18n.vasuTemplates.questionTypes[option]}
           />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
-          <Label>Kysymys</Label>
+          <Label>{t.name}</Label>
           <InputField value={name} onChange={setName} />
         </FixedSpaceColumn>
         {(type === 'RADIO_GROUP' || type === 'MULTISELECT') && (
           <FixedSpaceColumn spacing="xxs">
-            <Label>Vaihtoehdot</Label>
+            <Label>{t.options}</Label>
             {options.map((opt, i) => (
               <FixedSpaceRow spacing="xs" key={`opt-${i}`}>
                 <InputField
@@ -130,7 +131,7 @@ export default React.memo(function CreateQuestionModal({
             ))}
             <InlineButton
               onClick={() => setOptions([...options, ''])}
-              text={'Lisää vaihtoehto'}
+              text={t.addNewOption}
             />
           </FixedSpaceColumn>
         )}

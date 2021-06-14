@@ -11,14 +11,14 @@ export interface VasuSection {
   questions: VasuQuestion[]
 }
 
-export const VasuQuestionTypes = [
+export const vasuQuestionTypes = [
   'TEXT',
   'CHECKBOX',
   'RADIO_GROUP',
   'MULTISELECT'
-]
+] as const
 
-export type VasuQuestionType = typeof VasuQuestionTypes[number]
+export type VasuQuestionType = typeof vasuQuestionTypes[number]
 
 interface VasuQuestionCommon {
   type: VasuQuestionType

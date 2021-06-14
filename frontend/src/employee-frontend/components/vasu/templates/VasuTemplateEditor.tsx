@@ -302,7 +302,9 @@ export default React.memo(function VasuTemplateEditor() {
         {template.isSuccess && (
           <>
             <H1 noMargin>{template.value.name}</H1>
-            <div>Käytössä: {template.value.valid.format()}</div>
+            <div>
+              {i18n.vasuTemplates.valid}: {template.value.valid.format()}
+            </div>
 
             <Gap />
 
@@ -410,7 +412,7 @@ export default React.memo(function VasuTemplateEditor() {
                                   questionIndex + 1
                                 ])
                               }
-                              text={'Lisää uusi kysymys'}
+                              text={i18n.vasuTemplates.addNewQuestion}
                               icon={faPlus}
                             />
                           </AddNewContainer>
@@ -421,7 +423,7 @@ export default React.memo(function VasuTemplateEditor() {
                       <AddNewContainer showOnHover={false}>
                         <InlineButton
                           onClick={() => setAddingQuestion([sectionIndex, 0])}
-                          text={'Lisää uusi kysymys'}
+                          text={i18n.vasuTemplates.addNewQuestion}
                           icon={faPlus}
                         />
                       </AddNewContainer>
@@ -434,7 +436,7 @@ export default React.memo(function VasuTemplateEditor() {
                   >
                     <InlineButton
                       onClick={() => addSection(sectionIndex + 1)}
-                      text={'Lisää uusi osio'}
+                      text={i18n.vasuTemplates.addNewSection}
                       icon={faPlus}
                     />
                   </AddNewContainer>
@@ -445,7 +447,7 @@ export default React.memo(function VasuTemplateEditor() {
               <AddNewContainer showOnHover={false}>
                 <InlineButton
                   onClick={() => addSection(0)}
-                  text={'Lisää uusi osio'}
+                  text={i18n.vasuTemplates.addNewSection}
                   icon={faPlus}
                 />
               </AddNewContainer>

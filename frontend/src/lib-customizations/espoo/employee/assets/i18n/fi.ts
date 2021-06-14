@@ -2522,7 +2522,23 @@ export const fi = {
     title: 'Vasu-pohjat',
     name: 'Nimi',
     valid: 'Käytössä aikavälillä',
-    documentCount: 'Vasu-dokumentteja'
+    documentCount: 'Vasu-dokumentteja',
+    addNewTemplate: 'Lisää uusi vasu-pohja',
+    addNewSection: 'Lisää uusi osio',
+    addNewQuestion: 'Lisää uusi kysymys',
+    questionModal: {
+      title: 'Uusi kysymys',
+      type: 'Kysymyksen tyyppi',
+      name: 'Kysymysteksti',
+      options: 'Vaihtoehdot',
+      addNewOption: 'Lisää vaihtoehto'
+    },
+    questionTypes: {
+      TEXT: 'Tekstimuotoinen',
+      CHECKBOX: 'Rasti',
+      RADIO_GROUP: 'Valitse yksi',
+      MULTISELECT: 'Monivalinta'
+    }
   },
   roles: {
     adRoles: {

@@ -59,6 +59,7 @@ export default React.memo(function VasuTemplatesPage() {
           <>
             <AddButtonRow
               onClick={() => {
+                // todo: get data from user
                 void createVasuTemplate(
                   'Nimetön varhaiskasvatussuunnitelma',
                   new FiniteDateRange(
@@ -67,7 +68,7 @@ export default React.memo(function VasuTemplatesPage() {
                   )
                 ).then(() => loadSummaries())
               }}
-              text={'Lisää uusi vasu-pohja'}
+              text={t.addNewTemplate}
             />
             <Table>
               <Thead>
