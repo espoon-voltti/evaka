@@ -149,6 +149,10 @@ function stopPropagation(e: React.SyntheticEvent) {
   e.stopPropagation()
 }
 
+function preventDefault(e: React.SyntheticEvent) {
+  e.preventDefault()
+}
+
 function ensureElementIsInView(element: HTMLElement) {
   computeScrollIntoView(element, {
     block: 'end',
@@ -287,11 +291,11 @@ export default function Combobox<T>(props: Props<T>) {
     <Root
       data-qa={dataQa}
       className={classNames({ active: isOpen, 'full-width': fullWidth })}
+      onClick={enabled ? toggleMenu : undefined}
     >
       <InputWrapper
         {...getComboboxProps({
           disabled,
-          onClick: enabled ? toggleMenu : undefined,
           className: classNames({ active: isOpen })
         })}
       >
@@ -311,14 +315,14 @@ export default function Combobox<T>(props: Props<T>) {
           data-qa="toggle"
           {...getToggleButtonProps({
             disabled,
-            // avoid toggling the menu again in parent onClick handle
-            onClick: stopPropagation
+            // avoid toggling the menu twice
+            onClick: preventDefault
           })}
         >
           <FontAwesomeIcon icon={faChevronDown} />
         </Button>
       </InputWrapper>
-      <MenuWrapper>
+      <MenuWrapper onClick={stopPropagation}>
         <Menu
           className={classNames({ closed: !isOpen })}
           {...getMenuProps({
