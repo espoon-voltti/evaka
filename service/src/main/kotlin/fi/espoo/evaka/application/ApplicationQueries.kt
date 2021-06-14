@@ -245,6 +245,8 @@ fun Database.Read.fetchApplicationSummaries(
             child.social_security_number,
             f.document,
             f.document ->> 'type' as type,
+            f.document -> 'serviceNeedOption' ->> 'id' as serviceNeedId,
+            f.document -> 'serviceNeedOption' ->> 'name' as serviceNeedName,
             a.duedate,
             f.document ->> 'preferredStartDate' as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
@@ -346,6 +348,9 @@ fun Database.Read.fetchApplicationSummaries(
                     dateOfBirth = row.mapColumn("date_of_birth"),
                     type = row.mapColumn("type"),
                     placementType = mapRequestedPlacementType(row, "document"),
+                    serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
+                        ServiceNeedOption(UUID.fromString(it), row.mapColumn("serviceNeedName"))
+                    },
                     dueDate = row.mapColumn("duedate"),
                     startDate = row.mapColumn("preferredStartDate"),
                     preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
@@ -642,6 +647,8 @@ fun Database.Read.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUni
         SELECT
             a.id,
             f.document ->> 'type' AS type,
+            f.document -> 'serviceNeedOption' ->> 'id' AS serviceNeedId,
+            f.document -> 'serviceNeedOption' ->> 'name' AS serviceNeedName,
             f.document,
             (f.document ->> 'preferredStartDate')::date as preferred_start_date,
             (array_position((
@@ -681,6 +688,9 @@ fun Database.Read.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUni
                 guardianPhone = row.mapColumn("guardian_phone"),
                 guardianEmail = row.mapColumn("guardian_email"),
                 requestedPlacementType = mapRequestedPlacementType(row, "document"),
+                serviceNeed = row.mapColumn<String?>("serviceNeedId")?.let {
+                    ServiceNeedOption(UUID.fromString(it), row.mapColumn("serviceNeedName"))
+                },
                 preferredStartDate = row.mapColumn("preferred_start_date"),
                 preferenceOrder = row.mapColumn("preference_order"),
                 status = row.mapColumn("status")

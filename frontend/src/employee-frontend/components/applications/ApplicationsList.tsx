@@ -278,7 +278,10 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <PlacementCircle
           type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
-          label={i18n.placement.type[application.placementType]}
+          label={
+            application?.serviceNeed?.name ??
+            i18n.placement.type[application.placementType]
+          }
         />
       </Td>
       <Td>

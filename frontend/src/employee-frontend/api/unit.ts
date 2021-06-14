@@ -31,7 +31,10 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { ApplicationStatus } from 'lib-common/api-types/application/enums'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import {
+  PlacementType,
+  ServiceNeedOptionSummary
+} from 'lib-common/api-types/serviceNeed/common'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -134,6 +137,7 @@ export type ApplicationUnitSummary = {
   guardianPhone: string | null
   guardianEmail: string | null
   requestedPlacementType: PlacementType
+  serviceNeed: ServiceNeedOptionSummary | null
   preferredStartDate: LocalDate
   preferenceOrder: number
   status: ApplicationStatus
