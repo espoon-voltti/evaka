@@ -2392,7 +2392,8 @@ export const fi = {
     },
     sidePanel: {
       ownMessages: 'Omat viestit',
-      groupsMessages: 'Ryhmien viestit'
+      groupsMessages: 'Ryhmien viestit',
+      noAccountAccess: 'Sinulla ei ole käyttöoikeutta yhteenkään ryhmään.'
     },
     messageBoxes: {
       names: {

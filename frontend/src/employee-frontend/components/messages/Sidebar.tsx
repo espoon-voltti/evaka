@@ -64,6 +64,10 @@ const AccountHeader = styled.div`
   font-weight: 600;
 `
 
+const NoAccounts = styled.div`
+  padding: ${defaultMargins.s};
+`
+
 const UnitSelection = styled.div`
   padding: 0 ${defaultMargins.s};
 `
@@ -138,6 +142,10 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsParams) {
 
   return (
     <>
+      {accounts.length === 0 && (
+        <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
+      )}
+
       {personalAccount && (
         <AccountSection>
           <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
@@ -196,6 +204,7 @@ export default React.memo(function Sidebar({
     MessageContext
   )
 
+  const newMessageEnabled = accounts.isSuccess && accounts.value.length > 0
   return (
     <Container>
       <AccountContainer>
@@ -229,6 +238,7 @@ export default React.memo(function Sidebar({
       <ButtonContainer>
         <Button
           primary
+          disabled={!newMessageEnabled}
           text={i18n.messages.messageBoxes.newMessage}
           onClick={showEditor}
           data-qa="new-message-btn"
