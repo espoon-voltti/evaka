@@ -33,8 +33,6 @@ export async function createVasuDocument(
   childId: UUID,
   templateId: UUID
 ): Promise<Result<null>> {
-  childId = '7430ca76-ca76-11eb-a754-47fa65662af6'
-  templateId = '6fce7cbc-ca76-11eb-a754-2bd0c56972db'
   return client
     .post(`/vasu`, { childId, templateId })
     .then((res) => {

@@ -2531,7 +2531,9 @@ export const fi = {
       type: 'Kysymyksen tyyppi',
       name: 'Kysymysteksti',
       options: 'Vaihtoehdot',
-      addNewOption: 'Lisää vaihtoehto'
+      addNewOption: 'Lisää vaihtoehto',
+      multiline: 'Monirivinen',
+      minSelections: 'Valittava vähintään'
     },
     questionTypes: {
       TEXT: 'Tekstimuotoinen',

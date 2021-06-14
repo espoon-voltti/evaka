@@ -146,7 +146,6 @@ function defaultGetItemLabel<T>(item: T) {
 }
 
 function stopPropagation(e: React.SyntheticEvent) {
-  e.preventDefault()
   e.stopPropagation()
 }
 
@@ -310,6 +309,7 @@ export default function Combobox<T>(props: Props<T>) {
         <Separator>&nbsp;</Separator>
         <Button
           data-qa="toggle"
+          type="button"
           {...getToggleButtonProps({
             disabled,
             // avoid toggling the menu again in parent onClick handle

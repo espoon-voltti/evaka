@@ -20,6 +20,7 @@ import {
   VasuQuestionType,
   vasuQuestionTypes
 } from '../vasu-content'
+import Checkbox from '../../../../lib-components/atoms/form/Checkbox'
 
 interface Props {
   onSave: (question: VasuQuestion) => void
@@ -35,6 +36,8 @@ export default React.memo(function CreateQuestionModal({
   const [type, setType] = useState<VasuQuestionType>('TEXT')
   const [name, setName] = useState('')
   const [options, setOptions] = useState([''])
+  const [multiline, setMultiline] = useState(false)
+  const [minSelections, setMinSelections] = useState(0)
 
   function createQuestion(): VasuQuestion {
     switch (type) {
@@ -42,7 +45,7 @@ export default React.memo(function CreateQuestionModal({
         return {
           type: 'TEXT',
           name: name,
-          multiline: false, // TODO: add to form
+          multiline: multiline,
           value: ''
         }
       case 'CHECKBOX':
@@ -63,12 +66,10 @@ export default React.memo(function CreateQuestionModal({
           type: 'MULTISELECT',
           name: name,
           optionNames: options,
-          minSelections: 0, // TODO: add to form
+          minSelections: minSelections,
           maxSelections: null,
           value: []
         }
-      default:
-        throw Error('Unexpected type')
     }
   }
 
@@ -96,10 +97,22 @@ export default React.memo(function CreateQuestionModal({
             getItemLabel={(option) => i18n.vasuTemplates.questionTypes[option]}
           />
         </FixedSpaceColumn>
+
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
           <InputField value={name} onChange={setName} />
         </FixedSpaceColumn>
+
+        {type === 'TEXT' && (
+          <FixedSpaceColumn spacing="xxs">
+            <Checkbox
+              label={t.multiline}
+              checked={multiline}
+              onChange={setMultiline}
+            />
+          </FixedSpaceColumn>
+        )}
+
         {(type === 'RADIO_GROUP' || type === 'MULTISELECT') && (
           <FixedSpaceColumn spacing="xxs">
             <Label>{t.options}</Label>
@@ -132,6 +145,19 @@ export default React.memo(function CreateQuestionModal({
             <InlineButton
               onClick={() => setOptions([...options, ''])}
               text={t.addNewOption}
+            />
+          </FixedSpaceColumn>
+        )}
+
+        {type === 'MULTISELECT' && (
+          <FixedSpaceColumn spacing="xxs">
+            <Label>{t.minSelections}</Label>
+            <InputField
+              value={minSelections.toString(10)}
+              onChange={(v) => setMinSelections(parseInt(v))}
+              type="number"
+              step={1}
+              min={0}
             />
           </FixedSpaceColumn>
         )}
