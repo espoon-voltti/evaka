@@ -59,8 +59,7 @@ INSERT INTO voucher_value_decision (
     final_co_payment,
     base_value,
     age_coefficient,
-    voucher_value,
-    sent_at
+    voucher_value
 ) VALUES (
     :id,
     :status::voucher_value_decision_status,
@@ -90,8 +89,7 @@ INSERT INTO voucher_value_decision (
     :finalCoPayment,
     :baseValue,
     :ageCoefficient,
-    :voucherValue,
-    :sentAt
+    :voucherValue
 ) ON CONFLICT (id) DO UPDATE SET
     status = :status::voucher_value_decision_status,
     decision_number = :decisionNumber,

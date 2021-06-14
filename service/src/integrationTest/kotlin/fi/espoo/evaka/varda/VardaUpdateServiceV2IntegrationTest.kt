@@ -567,10 +567,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                     PlacementType.DAYCARE,
                     snDefaultDaycare.toFeeDecisionServiceNeed()
                 )
-            ),
-            sentAt = sentAt
+            )
         )
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(fd)) }
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(fd))
+            tx.setFeeDecisionSentAt(fd.id, sentAt)
+        }
 
         return fd.id
     }
@@ -605,10 +607,10 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
                     snDefaultDaycare.feeDescriptionSv,
                     snDefaultDaycare.voucherValueDescriptionFi,
                     snDefaultDaycare.voucherValueDescriptionSv
-                ),
-                sentAt = sentAt
+                )
             )
             it.upsertValueDecisions(listOf(decision))
+            it.setVoucherValueDecisionSentAt(decision.id, sentAt)
             decision
         }
     }
@@ -629,3 +631,21 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNee
     descriptionSv = this.feeDescriptionSv,
     missing = false
 )
+
+private fun Database.Transaction.setFeeDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
+    """
+UPDATE new_fee_decision SET sent_at = :sentAt
+WHERE id = :id 
+        """
+).bind("id", id)
+    .bind("sentAt", sentAt)
+    .execute()
+
+private fun Database.Transaction.setVoucherValueDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
+    """
+UPDATE voucher_value_decision SET sent_at = :sentAt
+WHERE id = :id 
+        """
+).bind("id", id)
+    .bind("sentAt", sentAt)
+    .execute()

@@ -9,8 +9,6 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
-import fi.espoo.evaka.invoicing.domain.FeeDecision
-import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -128,13 +126,13 @@ fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
             val errors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
             if (errors.isNotEmpty()) {
                 logger.error(errors.joinToString(","))
-                db.transaction { it.markServiceNeedUpdateFailed(serviceNeedId, errors) }
+                db.transaction { it.markVardaServiceNeedUpdateFailed(serviceNeedId, errors) }
             } else {
                 db.transaction { it.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId) }
             }
         }
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went from while trying to delete varda service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: manual check needed: something went wrong while trying to delete varda service need $serviceNeedId data: ${e.localizedMessage}")
     }
 }
 
@@ -145,7 +143,7 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
         if (deleteErrors.isNotEmpty()) {
             logger.error(deleteErrors.joinToString(","))
             db.transaction {
-                it.markServiceNeedUpdateFailed(serviceNeedId, deleteErrors)
+                it.markVardaServiceNeedUpdateFailed(serviceNeedId, deleteErrors)
             }
         } else {
             val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
@@ -153,13 +151,13 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
             if (addErrors.isNotEmpty()) {
                 logger.error(addErrors.joinToString(","))
                 db.transaction {
-                    it.markServiceNeedUpdateFailed(serviceNeedId, addErrors)
+                    it.markVardaServiceNeedUpdateFailed(serviceNeedId, addErrors)
                 }
             }
         }
         db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went from while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
     }
 }
 
@@ -167,19 +165,17 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
     try {
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
         val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(evakaServiceNeed.childId, evakaServiceNeed)
-        db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
-
         val errors = addServiceNeedDataToVarda(db, client, evakaServiceNeed, newVardaServiceNeed)
         db.transaction { it.upsertVardaServiceNeed(newVardaServiceNeed) }
 
         if (errors.isNotEmpty()) {
             logger.error(errors.joinToString(","))
             db.transaction {
-                it.markServiceNeedUpdateFailed(serviceNeedId, errors)
+                it.markVardaServiceNeedUpdateFailed(serviceNeedId, errors)
             }
         }
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went from while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
     }
 }
 
@@ -222,13 +218,10 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
             newVardaServiceNeed.vardaDecisionId = createDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = createPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
             newVardaServiceNeed.vardaFeeDataIds = serviceNeedFeeData.feeDecisionIds.map { fdId ->
-                val feeDecision = db.read { it.getFeeDecisionsByIds(listOf(fdId)) }.first()
-                createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, feeDecision)
+                createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, fdId)
             }.plus(
                 serviceNeedFeeData.voucherValueDecisionIds.map { vvdId ->
-                    val voucherValueDecision = db.read { it.getVoucherValueDecision(vvdId) }
-                        ?: throw Exception("VardaUpdate: cannot create voucher fee data: voucher $vvdId not found for ${evakaServiceNeed.id}")
-                    createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, voucherValueDecision)
+                    createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, vvdId)
                 }
             )
         }
@@ -269,8 +262,9 @@ fun createFeeDataToVardaFromFeeDecision(
     client: VardaClient,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    decision: FeeDecision
+    decisionId: UUID
 ): Long {
+    val decision = db.read { it.getFeeDecisionsByIds(listOf(decisionId)) }.first()
     val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
     if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
@@ -295,7 +289,7 @@ fun createFeeDataToVardaFromFeeDecision(
         throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
 
-    if (res == null) throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
+    if (res == null) throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null")
     return res.id
 }
 
@@ -304,8 +298,11 @@ fun createFeeDataToVardaFromVoucherValueDecision(
     client: VardaClient,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    decision: VoucherValueDecisionDetailed
+    id: UUID
 ): Long {
+    val decision = db.read { it.getVoucherValueDecision(id) }
+        ?: throw Exception("VardaUpdate: cannot create voucher fee data: voucher $id not found")
+
     val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
     if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
 
@@ -328,7 +325,7 @@ fun createFeeDataToVardaFromVoucherValueDecision(
         throw Exception("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
 
-    if (res == null) throw Exception("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
+    if (res == null) throw Exception("VardaUpdate: cannot create voucher fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null")
     return res.id
 }
 
@@ -359,19 +356,20 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, star
         )
     }
 
-    return additionsAndChangesToVardaByChild.plus(
-        evakaServiceNeedDeletionsByChild.filterNot {
-            additionsAndChangesToVardaByChild.containsKey(it.key)
-        }.entries.associate { childServiceNeedDeletions ->
-            childServiceNeedDeletions.key to
-                VardaChildCalculatedServiceNeedChanges(
-                    childId = childServiceNeedDeletions.key,
-                    additions = emptyList(),
-                    updates = emptyList(),
-                    deletes = childServiceNeedDeletions.value
-                )
-        }
-    )
+    // Above misses the case when only change for a child has been a service need delete from evaka
+    val deletedEvakaServiceNeedsByChild = evakaServiceNeedDeletionsByChild.filterNot {
+        additionsAndChangesToVardaByChild.containsKey(it.key)
+    }.entries.associate { childServiceNeedDeletions ->
+        childServiceNeedDeletions.key to
+            VardaChildCalculatedServiceNeedChanges(
+                childId = childServiceNeedDeletions.key,
+                additions = emptyList(),
+                updates = emptyList(),
+                deletes = childServiceNeedDeletions.value
+            )
+    }
+
+    return additionsAndChangesToVardaByChild.plus(deletedEvakaServiceNeedsByChild)
 }
 
 data class VardaChildCalculatedServiceNeedChanges(
@@ -457,7 +455,7 @@ WHERE evaka_service_need_id = :serviceNeedId
 ).bind("serviceNeedId", serviceNeedId)
     .execute()
 
-fun Database.Transaction.markServiceNeedUpdateFailed(serviceNeedId: UUID, errors: List<String>) = createUpdate(
+fun Database.Transaction.markVardaServiceNeedUpdateFailed(serviceNeedId: UUID, errors: List<String>) = createUpdate(
     """
 UPDATE varda_service_need
 SET update_failed = true, errors = :errors
