@@ -4,10 +4,9 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-# For log tagging (allow for local fallback)
-
-HOST_IP=$(wget -qO- http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')
-export HOST_IP
+# For log tagging (with a default value and error logging without crashing)
+# shellcheck disable=SC2155
+export HOST_IP=$(curl --silent --fail --show-error http://169.254.169.254/latest/meta-data/local-ipv4 || printf 'UNAVAILABLE')
 
 if [ "${STATIC_FILES_ENDPOINT_URL:-X}" = 'X' ]; then
   echo 'ERROR: STATIC_FILES_ENDPOINT_URL must be a non-empty string!'
