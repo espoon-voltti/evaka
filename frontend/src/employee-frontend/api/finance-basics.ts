@@ -6,16 +6,21 @@ import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { JsonOf } from 'lib-common/json'
 import { client } from './client'
-import { FeeThresholds } from '../types/finance-basics'
+import { FeeThresholdsWithId, FeeThresholds } from '../types/finance-basics'
 
-export async function getFeeThresholds(): Promise<Result<FeeThresholds[]>> {
+export async function getFeeThresholds(): Promise<
+  Result<FeeThresholdsWithId[]>
+> {
   return client
-    .get<JsonOf<FeeThresholds[]>>('/finance-basics/fee-thresholds')
+    .get<JsonOf<FeeThresholdsWithId[]>>('/finance-basics/fee-thresholds')
     .then((res) =>
       Success.of(
         res.data.map((json) => ({
           ...json,
-          validDuring: DateRange.parseJson(json.validDuring)
+          thresholds: {
+            ...json.thresholds,
+            validDuring: DateRange.parseJson(json.thresholds.validDuring)
+          }
         }))
       )
     )
@@ -23,15 +28,20 @@ export async function getFeeThresholds(): Promise<Result<FeeThresholds[]>> {
 }
 
 export async function createFeeThresholds(
-  payload: Omit<FeeThresholds, 'id'>
+  thresholds: FeeThresholds
 ): Promise<Result<void>> {
-  try {
-    const response = await client.post(
-      '/finance-basics/fee-thresholds',
-      payload
-    )
-    return Success.of(response.data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+  return client
+    .post('/finance-basics/fee-thresholds', thresholds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateFeeThresholds(
+  id: string,
+  thresholds: FeeThresholds
+): Promise<Result<void>> {
+  return client
+    .put(`/finance-basics/fee-thresholds/${id}`, thresholds)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

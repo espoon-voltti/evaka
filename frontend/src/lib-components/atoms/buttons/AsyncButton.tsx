@@ -18,8 +18,11 @@ type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: () => Promise<void | Result | (void | Result)[]>
+  onClick: () => Promise<
+    void | Result | (void | Result)[] | 'AsyncButton.cancel'
+  >
   onSuccess: () => void
+  onFailure?: () => void
   primary?: boolean
   disabled?: boolean
   className?: string
@@ -39,6 +42,7 @@ export default React.memo(function AsyncButton({
   disabled,
   onClick,
   onSuccess,
+  onFailure,
   ...props
 }: Props) {
   const { colors } = useTheme()
@@ -46,34 +50,48 @@ export default React.memo(function AsyncButton({
   const [showSuccess, setShowSuccess] = useState(false)
   const [showFailure, setShowFailure] = useState(false)
   const onSuccessRef = useRef(onSuccess)
+  const onFailureRef = useRef(onFailure)
+
+  const handleFailure = () => {
+    setShowFailure(true)
+    onFailure && onFailure()
+  }
 
   const callback = () => {
     setInProgress(true)
     onClick()
-      .then((result: void | Result | (void | Result)[]) => {
+      .then((result) => {
+        if (result === 'AsyncButton.cancel') {
+          return
+        }
+
         if (Array.isArray(result)) {
           let failure = false
           for (const elem of result) {
             if (elem && elem.isFailure) {
               failure = true
             }
-            failure ? setShowFailure(true) : setShowSuccess(true)
+            failure ? handleFailure() : setShowSuccess(true)
           }
         } else {
           if (result && result.isFailure) {
-            setShowFailure(true)
+            handleFailure()
           } else {
             setShowSuccess(true)
           }
         }
       })
-      .catch(() => setShowFailure(true))
+      .catch(() => handleFailure())
       .finally(() => setInProgress(false))
   }
 
   useEffect(() => {
     onSuccessRef.current = onSuccess
   }, [onSuccess, onSuccessRef])
+
+  useEffect(() => {
+    onFailureRef.current = onFailure
+  }, [onFailure, onFailureRef])
 
   useEffect(() => {
     const runOnSuccess = showSuccess

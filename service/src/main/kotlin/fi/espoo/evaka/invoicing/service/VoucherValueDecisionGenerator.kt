@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForChild
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
-import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
@@ -28,7 +28,6 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
-import fi.espoo.evaka.invoicing.domain.getFeeDecisionThresholds
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -98,7 +97,7 @@ private fun generateNewValueDecisions(
     partner: PersonData.JustId?,
     familySize: Int,
     allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PlacementWithServiceNeed>>>>,
-    prices: List<FeeThresholdsWithValidity>,
+    prices: List<FeeThresholds>,
     voucherValues: List<Pair<DateRange, Int>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
@@ -150,13 +149,13 @@ private fun generateNewValueDecisions(
                 ?.takeIf { placement -> serviceVoucherUnits.any { unit -> unit == placement.unitId } }
                 ?.let { placement ->
                     val familyIncomes = partner?.let { listOf(income, partnerIncome) } ?: listOf(income)
-                    val baseCoPayment = calculateBaseFee(price.withoutDates(), familySize, familyIncomes)
+                    val baseCoPayment = calculateBaseFee(price, familySize, familyIncomes)
 
                     val siblingIndex = periodPlacements
                         .sortedByDescending { (child, _) -> child.dateOfBirth }
                         .indexOfFirst { (child, _) -> child == voucherChild }
 
-                    val siblingDiscountMultiplier = price.withoutDates().siblingDiscountMultiplier(siblingIndex + 1)
+                    val siblingDiscountMultiplier = price.siblingDiscountMultiplier(siblingIndex + 1)
                     val coPaymentBeforeAlterations =
                         calculateFeeBeforeFeeAlterations(baseCoPayment, placement.serviceNeed.feeCoefficient, siblingDiscountMultiplier, price.minFee)
                     val relevantFeeAlterations = feeAlterations.filter {
@@ -191,7 +190,7 @@ private fun generateNewValueDecisions(
                             placement.serviceNeed.voucherValueDescriptionSv
                         ),
                         baseCoPayment = baseCoPayment,
-                        siblingDiscount = price.withoutDates().siblingDiscountPercent(siblingIndex + 1),
+                        siblingDiscount = price.siblingDiscountPercent(siblingIndex + 1),
                         coPayment = coPaymentBeforeAlterations,
                         feeAlterations = toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
                         finalCoPayment = finalCoPayment,

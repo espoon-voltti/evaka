@@ -7,8 +7,12 @@ import DateRange from 'lib-common/date-range'
 export const familySizes = ['2', '3', '4', '5', '6'] as const
 export type FamilySize = typeof familySizes[number]
 
-export interface FeeThresholds {
+export interface FeeThresholdsWithId {
   id: string
+  thresholds: FeeThresholds
+}
+
+export interface FeeThresholds {
   validDuring: DateRange
   maxFee: number
   minFee: number

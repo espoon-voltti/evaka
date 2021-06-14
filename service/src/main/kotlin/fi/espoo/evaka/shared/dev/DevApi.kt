@@ -36,7 +36,7 @@ import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
-import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
@@ -305,7 +305,7 @@ class DevApi(
     }
 
     @PostMapping("/pricing")
-    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholdsWithValidity): ResponseEntity<UUID> =
+    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholds): ResponseEntity<UUID> =
         db.transaction {
             ResponseEntity.ok(
                 it.insertTestPricing(feeThresholds)

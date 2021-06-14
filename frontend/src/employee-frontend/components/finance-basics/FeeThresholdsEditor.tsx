@@ -8,8 +8,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
+import colors from 'lib-customizations/common'
 import { H3LikeLabel, H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import {
@@ -22,30 +24,64 @@ import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import {
+  createFeeThresholds,
+  updateFeeThresholds
+} from '../../api/finance-basics'
 import { Translations } from '../../state/i18n'
 import {
   familySizes,
   FamilySize,
-  FeeThresholds
+  FeeThresholds,
+  FeeThresholdsWithId
 } from '../../types/finance-basics'
 import { isValidCents, parseCents, parseCentsOrThrow } from '../../utils/money'
 import { FormState } from './FeesSection'
-import { createFeeThresholds } from 'employee-frontend/api/finance-basics'
-import colors from 'lib-customizations/common'
 
-export default React.memo(function FeeThresholdsItemEditor({
+export default React.memo(function FeeThresholdsEditor({
   i18n,
+  id,
   initialState,
   close,
-  reloadData
+  reloadData,
+  toggleSaveRetroactiveWarning,
+  existingThresholds
 }: {
   i18n: Translations
+  id: string | undefined
   initialState: FormState
   close: () => void
   reloadData: () => void
+  toggleSaveRetroactiveWarning: (cbs: {
+    resolve: () => void
+    reject: () => void
+  }) => void
+  existingThresholds: Result<FeeThresholdsWithId[]>
 }) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
-  const validationResult = validateForm(i18n, editorState)
+  const validationResult = validateForm(
+    i18n,
+    editorState,
+    existingThresholds.map((ts) => ts.filter((t) => t.id !== id))
+  )
+  const [saveError, setSaveError] = useState<string>()
+
+  const handleSaveErrors = async (promise: Promise<Result<unknown>>) => {
+    let result
+    try {
+      result = await promise
+    } catch (e) {
+      setSaveError('unknown')
+      throw e
+    }
+
+    if (result.isFailure) {
+      setSaveError(result.errorCode)
+      throw Error(result.message)
+    } else {
+      setSaveError(undefined)
+    }
+  }
 
   const validationErrorInfo = (
     prop: keyof FormState
@@ -55,6 +91,14 @@ export default React.memo(function FeeThresholdsItemEditor({
           status: 'warning',
           text: ''
         }
+      : undefined
+
+  const dateOverlapInputInfo =
+    'errors' in validationResult && validationResult.errors.dateOverlap
+      ? ({
+          status: 'warning',
+          text: ''
+        } as const)
       : undefined
 
   return (
@@ -71,7 +115,7 @@ export default React.memo(function FeeThresholdsItemEditor({
               validFrom
             }))
           }
-          info={validationErrorInfo('validFrom')}
+          info={validationErrorInfo('validFrom') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
         />
         <span>-</span>
@@ -84,10 +128,15 @@ export default React.memo(function FeeThresholdsItemEditor({
               validTo
             }))
           }
-          info={validationErrorInfo('validTo')}
+          info={validationErrorInfo('validTo') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
         />
       </RowWithMargin>
+      {'errors' in validationResult && validationResult.errors.dateOverlap ? (
+        <ErrorDescription>
+          {validationResult.errors.dateOverlap}
+        </ErrorDescription>
+      ) : null}
       <H4>{i18n.financeBasics.fees.thresholds}</H4>
       <RowWithMargin spacing="XL">
         <FixedSpaceColumn spacing="xxs">
@@ -294,16 +343,37 @@ export default React.memo(function FeeThresholdsItemEditor({
           />
         </FixedSpaceColumn>
       </RowWithMargin>
+      {saveError ? (
+        <SaveError>
+          {i18n.financeBasics.fees.errors[saveError] ??
+            i18n.common.error.unknown}
+        </SaveError>
+      ) : null}
       <ButtonRow>
         <Button text={i18n.common.cancel} onClick={close} />
         <AsyncButton
           primary
           text={i18n.common.save}
-          onClick={() =>
-            'payload' in validationResult
-              ? createFeeThresholds(validationResult.payload)
-              : Promise.resolve()
-          }
+          onClick={async () => {
+            if (!('payload' in validationResult)) {
+              return
+            }
+
+            const resolved = await new Promise((resolve) =>
+              toggleSaveRetroactiveWarning({
+                resolve: () => resolve(true),
+                reject: () => resolve(false)
+              })
+            )
+
+            if (!resolved) return 'AsyncButton.cancel'
+
+            return await handleSaveErrors(
+              id === undefined
+                ? createFeeThresholds(validationResult.payload)
+                : updateFeeThresholds(id, validationResult.payload)
+            )
+          }}
           onSuccess={() => {
             close()
             reloadData()
@@ -331,14 +401,24 @@ const ButtonRow = styled(FixedSpaceRow)`
   margin: ${defaultMargins.L} 0;
 `
 
-const MaxFeeError = styled.span`
+const ErrorDescription = styled.span`
   color: ${colors.greyscale.dark};
   font-style: italic;
+`
+
+const MaxFeeError = styled(ErrorDescription)`
   margin-left: ${defaultMargins.s};
 `
 
-type ValidationErrors = Partial<Record<keyof FormState, string>> &
-  Partial<Record<`maxFee${FamilySize}`, number>>
+const SaveError = styled.span`
+  color: ${colors.accents.red};
+`
+
+type ValidationErrors = Partial<
+  Record<keyof FormState, string> &
+    Record<`maxFee${FamilySize}`, number> &
+    Record<'dateOverlap', string>
+>
 type FeeThresholdsPayload = Omit<FeeThresholds, 'id'>
 
 const centProps: readonly (keyof FormState)[] = [
@@ -366,7 +446,8 @@ const centProps: readonly (keyof FormState)[] = [
 
 function validateForm(
   i18n: Translations,
-  form: FormState
+  form: FormState,
+  existingThresholds: Result<FeeThresholdsWithId[]>
 ): { errors: ValidationErrors } | { payload: FeeThresholdsPayload } {
   const validationErrors: ValidationErrors = {}
 
@@ -376,12 +457,49 @@ function validateForm(
     }
   })
 
-  if (LocalDate.parseFiOrNull(form.validFrom) === null) {
+  const parsedValidFrom = LocalDate.parseFiOrNull(form.validFrom)
+  if (parsedValidFrom === null) {
     validationErrors.validFrom = i18n.validationError.dateRange
   }
 
-  if (form.validTo && LocalDate.parseFiOrNull(form.validTo) === null) {
+  const parsedValidTo = LocalDate.parseFiOrNull(form.validTo)
+  if (form.validTo && parsedValidTo === null) {
     validationErrors.validTo = i18n.validationError.dateRange
+  }
+
+  if (
+    parsedValidFrom !== null &&
+    parsedValidTo !== null &&
+    parsedValidTo.isBefore(parsedValidFrom)
+  ) {
+    validationErrors.validFrom = i18n.validationError.invertedDateRange
+    validationErrors.validTo = i18n.validationError.invertedDateRange
+  }
+
+  const dateOverlap =
+    existingThresholds
+      .map((ts) =>
+        ts.filter((t) => {
+          if (parsedValidFrom === null) {
+            return false
+          }
+
+          const dateRange = new DateRange(parsedValidFrom, parsedValidTo)
+
+          if (t.thresholds.validDuring.end === null) {
+            return t.thresholds.validDuring.start.isEqualOrAfter(
+              dateRange.start
+            )
+          }
+
+          return t.thresholds.validDuring.overlapsWith(dateRange)
+        })
+      )
+      .getOrElse([]).length > 0
+
+  if (dateOverlap) {
+    validationErrors.dateOverlap =
+      i18n.financeBasics.fees.errors['date-overlap']
   }
 
   familySizes.forEach((n) => {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 export interface Response<T> {
   data: T
@@ -57,24 +57,35 @@ export class Loading<T> {
 export class Failure<T> {
   readonly message: string
   readonly statusCode?: number
+  readonly errorCode?: string
 
   readonly isLoading = false
   readonly isFailure = true
   readonly isSuccess = false
 
-  private constructor(message: string, statusCode?: number) {
+  private constructor(
+    message: string,
+    statusCode?: number,
+    errorCode?: string
+  ) {
     this.message = message
     this.statusCode = statusCode
+    this.errorCode = errorCode
     return this
   }
 
-  static of<T>(p: { message: string; statusCode?: number }): Failure<T> {
-    return new Failure(p.message, p.statusCode)
+  static of<T>(p: {
+    message: string
+    statusCode?: number
+    errorCode?: string
+  }): Failure<T> {
+    return new Failure(p.message, p.statusCode, p.errorCode)
   }
 
   static fromError<T>(e: Error): Failure<T> {
     if (axios.isAxiosError(e)) {
-      return new Failure(e.message, e.response?.status)
+      const response = e.response as AxiosResponse<{ errorCode?: string }>
+      return new Failure(e.message, response.status, response?.data.errorCode)
     }
     return new Failure(e.message)
   }

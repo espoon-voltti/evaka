@@ -21,7 +21,7 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
@@ -520,8 +520,7 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     insertTestPricing(
-        FeeThresholdsWithValidity(
-            id = UUID.randomUUID(),
+        FeeThresholds(
             validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
             minIncomeThreshold2 = 210200,
             minIncomeThreshold3 = 271300,

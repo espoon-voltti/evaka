@@ -5,17 +5,23 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.invoicing.domain.FeeThresholdsWithValidity
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.Nested
+import org.postgresql.util.PSQLState
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -26,67 +32,65 @@ import java.util.UUID
 @RequestMapping("/finance-basics")
 class FinanceBasicsController {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithValidity> {
+    fun getFeeThresholds(db: Database.Connection, user: AuthenticatedUser): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
-        return db.read { it.getFeeThresholds().sortedByDescending { it.validDuring.start } }
+        return db.read { it.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } }
     }
 
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody body: CreateFeeThresholdsBody
+        @RequestBody body: FeeThresholds
     ) {
         Audit.FinanceBasicsFeeThresholdsCreate.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         validateFeeThresholds(body)
-        db.transaction {
-            val latestThreshold = it.getFeeThresholds().maxByOrNull { it.validDuring.start }
+        db.transaction { tx ->
+            val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
-            if (latestThreshold != null) {
-                if (latestThreshold.validDuring.end != null && latestThreshold.validDuring.overlaps(body.validDuring))
-                    throw BadRequest("New fee thresholds over lap with existing fee thresholds")
+            if (latest != null) {
+                if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
+                    throwDateOverlapEx()
 
-                if (latestThreshold.validDuring.end == null)
-                    it.updateFeeThresholdsValidity(
-                        latestThreshold.id,
-                        latestThreshold.validDuring.copy(end = body.validDuring.start.minusDays(1))
+                if (latest.thresholds.validDuring.end == null)
+                    tx.updateFeeThresholdsValidity(
+                        latest.id,
+                        latest.thresholds.validDuring.copy(end = body.validDuring.start.minusDays(1))
                     )
             }
 
-            it.insertNewFeeThresholds(body)
+            mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
+        }
+    }
+
+    @PutMapping("/fee-thresholds/{id}")
+    fun updateFeeThresholds(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody thresholds: FeeThresholds
+    ) {
+        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
+
+        validateFeeThresholds(thresholds)
+        db.transaction { tx ->
+            mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
         }
     }
 }
 
-data class CreateFeeThresholdsBody(
-    val validDuring: DateRange,
-    val minIncomeThreshold2: Int,
-    val minIncomeThreshold3: Int,
-    val minIncomeThreshold4: Int,
-    val minIncomeThreshold5: Int,
-    val minIncomeThreshold6: Int,
-    val incomeMultiplier2: BigDecimal,
-    val incomeMultiplier3: BigDecimal,
-    val incomeMultiplier4: BigDecimal,
-    val incomeMultiplier5: BigDecimal,
-    val incomeMultiplier6: BigDecimal,
-    val maxIncomeThreshold2: Int,
-    val maxIncomeThreshold3: Int,
-    val maxIncomeThreshold4: Int,
-    val maxIncomeThreshold5: Int,
-    val maxIncomeThreshold6: Int,
-    val incomeThresholdIncrease6Plus: Int,
-    val siblingDiscount2: BigDecimal,
-    val siblingDiscount2Plus: BigDecimal,
-    val maxFee: Int,
-    val minFee: Int
+data class FeeThresholdsWithId(
+    val id: UUID,
+    @Nested
+    val thresholds: FeeThresholds
 )
 
-private fun validateFeeThresholds(thresholds: CreateFeeThresholdsBody) {
+private fun validateFeeThresholds(thresholds: FeeThresholds) {
     val allMaxFeesMatch = listOf(
         calculateMaxFeeFromThresholds(
             thresholds.minIncomeThreshold2,
@@ -115,19 +119,19 @@ private fun validateFeeThresholds(thresholds: CreateFeeThresholdsBody) {
         )
     ).all { it == thresholds.maxFee }
 
-    if (!allMaxFeesMatch) throw BadRequest("Inconsistent max fees from income thresholds")
+    if (!allMaxFeesMatch) throw BadRequest("Inconsistent max fees from income thresholds", "inconsistent-thresholds")
 }
 
 private fun calculateMaxFeeFromThresholds(minThreshold: Int, maxThreshold: Int, multiplier: BigDecimal): Int {
     return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
 }
 
-fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithValidity> =
+fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
     createQuery("SELECT * FROM fee_thresholds")
-        .mapTo<FeeThresholdsWithValidity>()
+        .mapTo<FeeThresholdsWithId>()
         .toList()
 
-fun Database.Transaction.insertNewFeeThresholds(thresholds: CreateFeeThresholdsBody) =
+fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds) =
     createUpdate(
         """
 INSERT INTO fee_thresholds (
@@ -188,3 +192,50 @@ fun Database.Transaction.updateFeeThresholdsValidity(id: UUID, newValidity: Date
         .bind("id", id)
         .bind("validDuring", newValidity)
         .execute()
+
+fun Database.Transaction.updateFeeThresholds(id: UUID, feeThresholds: FeeThresholds) =
+    createUpdate(
+        """
+UPDATE fee_thresholds
+SET
+    valid_during = :validDuring,
+    min_income_threshold_2 = :minIncomeThreshold2,
+    min_income_threshold_3 = :minIncomeThreshold3,
+    min_income_threshold_4 = :minIncomeThreshold4,
+    min_income_threshold_5 = :minIncomeThreshold5,
+    min_income_threshold_6 = :minIncomeThreshold6,
+    income_multiplier_2 = :incomeMultiplier2,
+    income_multiplier_3 = :incomeMultiplier3,
+    income_multiplier_4 = :incomeMultiplier4,
+    income_multiplier_5 = :incomeMultiplier5,
+    income_multiplier_6 = :incomeMultiplier6,
+    max_income_threshold_2 = :maxIncomeThreshold2,
+    max_income_threshold_3 = :maxIncomeThreshold3,
+    max_income_threshold_4 = :maxIncomeThreshold4,
+    max_income_threshold_5 = :maxIncomeThreshold5,
+    max_income_threshold_6 = :maxIncomeThreshold6,
+    income_threshold_increase_6_plus = :incomeThresholdIncrease6Plus,
+    sibling_discount_2 = :siblingDiscount2,
+    sibling_discount_2_plus = :siblingDiscount2Plus,
+    max_fee = :maxFee,
+    min_fee = :minFee
+WHERE id = :id
+"""
+    )
+        .bindKotlin(feeThresholds)
+        .bind("id", id)
+        .execute()
+
+fun <T> mapConstraintExceptions(fn: () -> T): T {
+    return try {
+        fn()
+    } catch (e: JdbiException) {
+        when (e.psqlCause()?.sqlState) {
+            PSQLState.EXCLUSION_VIOLATION.state -> throwDateOverlapEx()
+            else -> throw e
+        }
+    }
+}
+
+fun throwDateOverlapEx(): Nothing =
+    throw BadRequest("Fee thresholds over lap with existing fee thresholds", "date-overlap")

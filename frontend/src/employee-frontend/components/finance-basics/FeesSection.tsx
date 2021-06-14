@@ -6,8 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
+import { faCopy, faPen, faQuestion } from 'lib-icons'
 import { Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -20,14 +21,21 @@ import {
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Td, Tr } from 'lib-components/layout/Table'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { getFeeThresholds } from '../../api/finance-basics'
-import { familySizes, FeeThresholds } from '../../types/finance-basics'
+import {
+  familySizes,
+  FeeThresholds,
+  FeeThresholdsWithId
+} from '../../types/finance-basics'
 import { Translations, useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
-import FeeThresholdsItemEditor from './FeeThresholdsItemEditor'
+import StatusLabel from '../common/StatusLabel'
+import FeeThresholdsEditor from './FeeThresholdsEditor'
 
 export default React.memo(function FeesSection() {
   const { i18n } = useTranslation()
@@ -35,14 +43,77 @@ export default React.memo(function FeesSection() {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => setOpen((isOpen) => !isOpen), [setOpen])
 
-  const [data, setData] = useState<Result<FeeThresholds[]>>(Loading.of())
+  const [data, setData] = useState<Result<FeeThresholdsWithId[]>>(Loading.of())
   const loadData = useRestApi(getFeeThresholds, setData)
   useEffect(() => {
     void loadData()
   }, [loadData])
 
+  const [modal, setModal] = useState<{
+    type: 'editRetroactive' | 'saveRetroactive'
+    resolve: () => void
+    reject?: () => void
+  }>()
+
+  const toggleEditRetroactiveWarning = useCallback(
+    (resolve: () => void) => {
+      setModal({
+        type: 'editRetroactive',
+        resolve
+      })
+    },
+    [setModal]
+  )
+
+  const toggleSaveRetroactiveWarning = useCallback(
+    ({ resolve, reject }: { resolve: () => void; reject: () => void }) => {
+      setModal({
+        type: 'saveRetroactive',
+        resolve,
+        reject
+      })
+    },
+    [setModal]
+  )
+
   const [editorState, setEditorState] = useState<EditorState>({})
   const closeEditor = useCallback(() => setEditorState({}), [setEditorState])
+
+  const lastThresholdsEndDate = useMemo(
+    () =>
+      data
+        .map((ps) => ps[0]?.thresholds.validDuring.end ?? undefined)
+        .getOrElse(undefined),
+    [data]
+  )
+
+  const createNewThresholds = useCallback(
+    () =>
+      setEditorState({
+        editing: 'new',
+        form: emptyForm(lastThresholdsEndDate)
+      }),
+    [setEditorState, lastThresholdsEndDate]
+  )
+
+  const copyThresholds = useCallback(
+    (item: FeeThresholds) =>
+      setEditorState({
+        editing: 'new',
+        form: {
+          ...copyForm(item),
+          validFrom: lastThresholdsEndDate?.format() ?? '',
+          validTo: ''
+        }
+      }),
+    [setEditorState, lastThresholdsEndDate]
+  )
+
+  const editThresholds = useCallback(
+    (id: string, item: FeeThresholds) =>
+      setEditorState({ editing: id, form: copyForm(item) }),
+    [setEditorState]
+  )
 
   return (
     <CollapsibleContentArea
@@ -52,25 +123,19 @@ export default React.memo(function FeesSection() {
       toggleOpen={toggleOpen}
     >
       <AddButtonRow
-        onClick={() =>
-          setEditorState({
-            editing: 'new',
-            form: emptyForm(
-              data
-                .map((ps) => ps[0]?.validDuring?.end ?? undefined)
-                .getOrElse(undefined)
-            )
-          })
-        }
+        onClick={createNewThresholds}
         text={i18n.financeBasics.fees.add}
         disabled={'editing' in editorState}
       />
       {editorState.editing === 'new' ? (
-        <FeeThresholdsItemEditor
+        <FeeThresholdsEditor
           i18n={i18n}
+          id={undefined}
           initialState={editorState.form}
           close={closeEditor}
           reloadData={loadData}
+          toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
+          existingThresholds={data}
         />
       ) : null}
       {data.mapAll({
@@ -83,36 +148,109 @@ export default React.memo(function FeesSection() {
         success(feeThresholdsList) {
           return (
             <>
-              {feeThresholdsList.map((feeThresholds) => (
-                <FeeThresholdsItem
-                  key={feeThresholds.id}
-                  i18n={i18n}
-                  feeThresholds={feeThresholds}
-                />
-              ))}
+              {feeThresholdsList.map((feeThresholds) =>
+                editorState.editing === feeThresholds.id ? (
+                  <FeeThresholdsEditor
+                    key={feeThresholds.id}
+                    i18n={i18n}
+                    id={feeThresholds.id}
+                    initialState={editorState.form}
+                    close={closeEditor}
+                    reloadData={loadData}
+                    toggleSaveRetroactiveWarning={toggleSaveRetroactiveWarning}
+                    existingThresholds={data}
+                  />
+                ) : (
+                  <FeeThresholdsItem
+                    key={feeThresholds.id}
+                    i18n={i18n}
+                    id={feeThresholds.id}
+                    feeThresholds={feeThresholds.thresholds}
+                    copyThresholds={copyThresholds}
+                    editThresholds={editThresholds}
+                    editing={!!editorState.editing}
+                    toggleEditRetroactiveWarning={toggleEditRetroactiveWarning}
+                  />
+                )
+              )}
             </>
           )
         }
       })}
+      {modal ? (
+        <InfoModal
+          icon={faQuestion}
+          iconColour="red"
+          title={i18n.financeBasics.fees.modals[modal.type].title}
+          text={i18n.financeBasics.fees.modals[modal.type].text}
+          reject={{
+            action: () => {
+              setModal(undefined)
+              modal.reject?.()
+            },
+            label: i18n.financeBasics.fees.modals[modal.type].reject
+          }}
+          resolve={{
+            action: () => {
+              setModal(undefined)
+              modal.resolve()
+            },
+            label: i18n.financeBasics.fees.modals[modal.type].resolve
+          }}
+        />
+      ) : null}
     </CollapsibleContentArea>
   )
 })
 
 const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   i18n,
-  feeThresholds
+  id,
+  feeThresholds,
+  copyThresholds,
+  editThresholds,
+  editing,
+  toggleEditRetroactiveWarning
 }: {
   i18n: Translations
+  id: string
   feeThresholds: FeeThresholds
+  copyThresholds: (feeThresholds: FeeThresholds) => void
+  editThresholds: (id: string, feeThresholds: FeeThresholds) => void
+  editing: boolean
+  toggleEditRetroactiveWarning: (resolve: () => void) => void
 }) {
   return (
     <>
       <div className="separator large" />
-      <H3>
-        {i18n.financeBasics.fees.validDuring}{' '}
-        {feeThresholds.validDuring.format()}
-      </H3>
-      <H4>{i18n.financeBasics.fees.thresholds}</H4>
+      <TitleContainer>
+        <H3>
+          {i18n.financeBasics.fees.validDuring}{' '}
+          {feeThresholds.validDuring.format()}
+        </H3>
+        <FixedSpaceRow>
+          <IconButton
+            icon={faCopy}
+            onClick={() => copyThresholds(feeThresholds)}
+            disabled={editing}
+          />
+          <IconButton
+            icon={faPen}
+            onClick={() => {
+              if (feeThresholds.validDuring.start.isAfter(LocalDate.today())) {
+                editThresholds(id, feeThresholds)
+              } else {
+                toggleEditRetroactiveWarning(() =>
+                  editThresholds(id, feeThresholds)
+                )
+              }
+            }}
+            disabled={editing}
+          />
+          <StatusLabel dateRange={feeThresholds.validDuring} />
+        </FixedSpaceRow>
+      </TitleContainer>
+      <H4>{i18n.financeBasics.fees.thresholds} </H4>
       <RowWithMargin spacing="XL">
         <FixedSpaceColumn>
           <Label>{i18n.financeBasics.fees.maxFee}</Label>
@@ -190,6 +328,13 @@ const FeeThresholdsItem = React.memo(function FeeThresholdsItem({
   )
 })
 
+const TitleContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`
+
 const TableWithMargin = styled(Table)`
   margin: ${defaultMargins.m} 0;
 `
@@ -218,7 +363,7 @@ type EditorState =
     }
 
 export type FormState = {
-  [k in keyof Omit<FeeThresholds, 'id' | 'validDuring'>]: string
+  [k in keyof Omit<FeeThresholds, 'validDuring'>]: string
 } & {
   validFrom: string
   validTo: string
@@ -247,4 +392,33 @@ const emptyForm = (latestEndDate?: LocalDate): FormState => ({
   incomeThresholdIncrease6Plus: '',
   siblingDiscount2: '',
   siblingDiscount2Plus: ''
+})
+
+const formatMulti = (multi: number) =>
+  (multi * 100).toString().replace('.', ',')
+
+const copyForm = (feeThresholds: FeeThresholds): FormState => ({
+  validFrom: feeThresholds.validDuring.start.format() ?? '',
+  validTo: feeThresholds.validDuring.end?.format() ?? '',
+  maxFee: formatCents(feeThresholds.maxFee) ?? '',
+  minFee: formatCents(feeThresholds.minFee) ?? '',
+  minIncomeThreshold2: formatCents(feeThresholds.minIncomeThreshold2) ?? '',
+  minIncomeThreshold3: formatCents(feeThresholds.minIncomeThreshold3) ?? '',
+  minIncomeThreshold4: formatCents(feeThresholds.minIncomeThreshold4) ?? '',
+  minIncomeThreshold5: formatCents(feeThresholds.minIncomeThreshold5) ?? '',
+  minIncomeThreshold6: formatCents(feeThresholds.minIncomeThreshold6) ?? '',
+  maxIncomeThreshold2: formatCents(feeThresholds.maxIncomeThreshold2) ?? '',
+  maxIncomeThreshold3: formatCents(feeThresholds.maxIncomeThreshold3) ?? '',
+  maxIncomeThreshold4: formatCents(feeThresholds.maxIncomeThreshold4) ?? '',
+  maxIncomeThreshold5: formatCents(feeThresholds.maxIncomeThreshold5) ?? '',
+  maxIncomeThreshold6: formatCents(feeThresholds.maxIncomeThreshold6) ?? '',
+  incomeMultiplier2: formatMulti(feeThresholds.incomeMultiplier2),
+  incomeMultiplier3: formatMulti(feeThresholds.incomeMultiplier3),
+  incomeMultiplier4: formatMulti(feeThresholds.incomeMultiplier4),
+  incomeMultiplier5: formatMulti(feeThresholds.incomeMultiplier5),
+  incomeMultiplier6: formatMulti(feeThresholds.incomeMultiplier6),
+  incomeThresholdIncrease6Plus:
+    formatCents(feeThresholds.incomeThresholdIncrease6Plus) ?? '',
+  siblingDiscount2: formatMulti(feeThresholds.siblingDiscount2),
+  siblingDiscount2Plus: formatMulti(feeThresholds.siblingDiscount2Plus)
 })
