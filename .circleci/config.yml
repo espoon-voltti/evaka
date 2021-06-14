@@ -285,11 +285,11 @@ commands:
             ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:
-          name: Collect error logs
+          name: Collect docker-compose logs
           command: |
             cd /home/circleci/repo/compose
             ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
-          when: on_fail
+          when: always
       - store_artifacts:
           path: /tmp/docker-compose-logs.txt
           destination: docker-compose-logs.txt
@@ -344,11 +344,11 @@ commands:
             ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:
-          name: Collect error logs
+          name: Collect docker-compose logs
           command: |
             cd /home/circleci/repo/compose
             ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
-          when: on_fail
+          when: always
       - store_artifacts:
           path: /tmp/docker-compose-logs.txt
           destination: docker-compose-logs.txt
