@@ -52,5 +52,8 @@ tasks.withType<KotlinCompile> {
 tasks {
     test {
         useJUnitPlatform()
+        filter {
+            setFailOnNoMatchingTests(false)
+        }
     }
 }

@@ -179,6 +179,9 @@ tasks {
     test {
         useJUnitPlatform()
         systemProperty("spring.profiles.active", "test")
+        filter {
+            setFailOnNoMatchingTests(false)
+        }
     }
 
     create("integrationTest", Test::class) {

@@ -874,21 +874,48 @@ jobs:
 
   service_test:
     executor: service_test_executor
+    parallelism: 4
     steps:
       - *restore_repo
       - attach_root_workspace
       - *restore_service_gradle
       - run:
+          name: gradle test
           working_directory: *workspace_service
-          command: ./gradlew test
+          command: |
+            # Get list of classnames of tests that should run on this node
+            CLASSNAMES=$(circleci tests glob \
+                "src/test/kotlin/**/*{Test,Tests}.kt" \
+                "../service-lib/src/test/kotlin/**/*{Test,Tests}.kt" \
+                | sed 's/.*src\/test\/kotlin\///' \
+                | sed 's@/@.@g' \
+                | sed 's/.kt//' \
+                | circleci tests split --split-by=timings --timings-type=classname)
+            # Format the arguments for Gradle
+            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
+            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
+            ./gradlew test $GRADLE_ARGS
       - store_test_results:
           path: /home/circleci/repo/service/build/test-results/test/
       - store_test_results:
           path: /home/circleci/repo/service-lib/build/test-results/test/
       - login_docker_hub
       - run:
+          name: gradle integrationTest
           working_directory: *workspace_service
-          command: ./gradlew integrationTest
+          command: |
+            # Get list of classnames of tests that should run on this node
+            CLASSNAMES=$(circleci tests glob \
+                "src/integrationTest/kotlin/**/*{Test,Tests}.kt" \
+                "../service-lib/src/integrationTest/kotlin/**/*{Test,Tests}.kt" \
+                | sed 's/.*src\/integrationTest\/kotlin\///' \
+                | sed 's@/@.@g' \
+                | sed 's/.kt//' \
+                | circleci tests split --split-by=timings --timings-type=classname)
+            # Format the arguments for Gradle
+            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
+            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
+            ./gradlew integrationTest $GRADLE_ARGS
       - store_test_results:
           path: /home/circleci/repo/service/build/test-results/integrationTest/
       - store_artifacts:
@@ -897,9 +924,21 @@ jobs:
           path: /home/circleci/repo/service-lib/build/reports/
       - run:
           working_directory: *workspace_service
+          name: gradle custom-ktlint-rules test
           command: |
             cd custom-ktlint-rules
-            ./gradlew test
+            # Get list of classnames of tests that should run on this node
+            CLASSNAMES=$(circleci tests glob \
+                "src/test/kotlin/**/*{Test,Tests}.kt" \
+                "../service-lib/src/test/kotlin/**/*{Test,Tests}.kt" \
+                | sed 's/.*src\/test\/kotlin\///' \
+                | sed 's@/@.@g' \
+                | sed 's/.kt//' \
+                | circleci tests split --split-by=timings --timings-type=classname)
+            # Format the arguments for Gradle
+            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
+            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
+            ./gradlew test $GRADLE_ARGS
       - store_test_results:
           path: /home/circleci/repo/service/custom-ktlint-rules/build/test-results/test/
       - notify_slack
