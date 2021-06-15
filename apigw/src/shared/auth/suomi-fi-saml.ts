@@ -31,6 +31,7 @@ interface SuomiFiProfile {
 }
 
 const dummySuomiFiProfile: SuomiFiProfile = {
+  nameID: 'dummyid',
   [SUOMI_FI_SSN_KEY]: '070644-937X',
   [SUOMI_FI_GIVEN_NAME_KEY]: 'Seppo',
   [SUOMI_FI_SURNAME_KEY]: 'Sorsa'
