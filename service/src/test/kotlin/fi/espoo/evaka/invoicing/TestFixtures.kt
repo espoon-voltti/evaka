@@ -48,7 +48,7 @@ val testChild1 = PersonData.WithDateOfBirth(uuid4, LocalDate.of(2016, 1, 1))
 
 val testChild2 = testChild1.copy(id = uuid5, dateOfBirth = testChild1.dateOfBirth.plusDays(1))
 
-val oldTestPricingAsThresholds = FeeThresholds(
+val oldTestFeeThresholds = FeeThresholds(
     validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
     maxFee = 250000,
     minFee = 27000,
@@ -72,7 +72,7 @@ val oldTestPricingAsThresholds = FeeThresholds(
     siblingDiscount2Plus = BigDecimal("0.2")
 )
 
-val testPricing = FeeThresholds(
+val testFeeThresholds = FeeThresholds(
     validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
     maxFee = 28900,
     minFee = 2700,
@@ -130,7 +130,7 @@ val testDecision1 = FeeDecision(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = 3,
-    pricing = testPricing.getFeeDecisionThresholds(3),
+    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
     children = listOf(testDecisionChild1, testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500)),
     created = Instant.now()
 )
@@ -240,7 +240,7 @@ fun createFeeDecisionFixture(
     period: DateRange,
     headOfFamilyId: UUID,
     children: List<FeeDecisionChild>,
-    pricing: FeeDecisionThresholds = testPricing.getFeeDecisionThresholds(children.size + 1),
+    feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
     id = UUID.randomUUID(),
@@ -252,7 +252,7 @@ fun createFeeDecisionFixture(
     headOfFamilyIncome = headOfFamilyIncome,
     partnerIncome = null,
     familySize = children.size + 1,
-    pricing = pricing,
+    feeThresholds = feeThresholds,
     children = children
 )
 
@@ -284,7 +284,7 @@ fun createVoucherValueDecisionFixture(
     headOfFamilyIncome = null,
     partnerIncome = null,
     familySize = familySize,
-    pricing = testPricing.getFeeDecisionThresholds(familySize),
+    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(familySize),
     child = PersonData.WithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
     placement = VoucherValueDecisionPlacement(UnitData.JustId(unitId), placementType),
     serviceNeed = serviceNeed,

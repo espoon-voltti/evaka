@@ -34,7 +34,7 @@ data class FeeDecision(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: FeeDecisionThresholds,
+    val feeThresholds: FeeDecisionThresholds,
     val documentKey: String? = null,
     @Nested("approved_by")
     val approvedBy: PersonData.JustId? = null,
@@ -55,7 +55,7 @@ data class FeeDecision(
             this.headOfFamilyIncome == decision.headOfFamilyIncome &&
             this.partnerIncome == decision.partnerIncome &&
             this.familySize == decision.familySize &&
-            this.pricing == decision.pricing
+            this.feeThresholds == decision.feeThresholds
     }
 
     override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
@@ -136,7 +136,7 @@ data class FeeDecisionDetailed(
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
-    val pricing: FeeDecisionThresholds,
+    val feeThresholds: FeeDecisionThresholds,
     val documentKey: String? = null,
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
@@ -183,11 +183,13 @@ data class FeeDecisionDetailed(
         return isRetroactive(this.validDuring.start, LocalDate.from(sentAtLocalDate ?: LocalDate.now()))
     }
 
+    // TODO: remove
     @JsonProperty("minThreshold")
-    fun minThreshold(): Int = pricing.minIncomeThreshold
+    fun minThreshold(): Int = feeThresholds.minIncomeThreshold
 
+    // TODO: remove
     @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = pricing.incomeMultiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
+    fun feePercent(): BigDecimal = feeThresholds.incomeMultiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
 }
 
 fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {
@@ -251,19 +253,21 @@ fun useMaxFee(incomes: List<DecisionIncome?>): Boolean = incomes.filterNotNull()
 }
 
 fun calculateBaseFee(
-    pricing: FeeThresholds,
+    feeThresholds: FeeThresholds,
     familySize: Int,
     incomes: List<DecisionIncome?>
 ): Int {
     check(familySize > 1) { "Family size should not be less than 2" }
 
-    val multiplier = pricing.incomeMultiplier(familySize)
+    val multiplier = feeThresholds.incomeMultiplier(familySize)
 
     val feeInCents = if (useMaxFee(incomes)) {
-        multiplier * BigDecimal(pricing.maxIncomeThreshold(familySize) - pricing.minIncomeThreshold(familySize))
+        multiplier * BigDecimal(
+            feeThresholds.maxIncomeThreshold(familySize) - feeThresholds.minIncomeThreshold(familySize)
+        )
     } else {
-        val minThreshold = pricing.minIncomeThreshold(familySize)
-        val maxThreshold = pricing.maxIncomeThreshold(familySize)
+        val minThreshold = feeThresholds.minIncomeThreshold(familySize)
+        val maxThreshold = feeThresholds.maxIncomeThreshold(familySize)
         val totalIncome = incomes.filterNotNull().map { it.total }.sum()
         val totalSurplus = minOf(maxOf(totalIncome - minThreshold, 0), maxThreshold - minThreshold)
         multiplier * BigDecimal(totalSurplus)

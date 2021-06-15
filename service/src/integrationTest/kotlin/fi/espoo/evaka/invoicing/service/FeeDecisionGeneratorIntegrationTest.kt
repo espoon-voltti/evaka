@@ -20,8 +20,8 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.merge
-import fi.espoo.evaka.invoicing.oldTestPricingAsThresholds
-import fi.espoo.evaka.invoicing.testPricing
+import fi.espoo.evaka.invoicing.oldTestFeeThresholds
+import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType.CLUB
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
@@ -1640,7 +1640,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `zero euro fee decisions get an updated draft when pricing changes`() {
+    fun `zero euro fee decisions get an updated draft when fee thresholds change`() {
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertIncome(adultId = testAdult_1.id, amount = 0, period = period)
         createFeeDecisionFixture(
@@ -1648,7 +1648,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
             period = period,
-            pricing = oldTestPricingAsThresholds.getFeeDecisionThresholds(2),
+            feeThresholds = oldTestFeeThresholds.getFeeDecisionThresholds(2),
             headOfFamilyIncome = DecisionIncome(
                 effect = IncomeEffect.INCOME,
                 data = mapOf(IncomeType.MAIN_INCOME to 0),
@@ -1682,7 +1682,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(period.start, sent.validFrom)
         assertEquals(period.end, sent.validTo)
         assertEquals(1, sent.children.size)
-        assertEquals(oldTestPricingAsThresholds.getFeeDecisionThresholds(2), sent.pricing)
+        assertEquals(oldTestFeeThresholds.getFeeDecisionThresholds(2), sent.feeThresholds)
         assertEquals(0, sent.totalFee())
 
         val draft = decisions.find { it.status == FeeDecisionStatus.DRAFT }!!
@@ -1690,7 +1690,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(period.start, draft.validFrom)
         assertEquals(period.end, draft.validTo)
         assertEquals(0, draft.children.size)
-        assertEquals(testPricing.getFeeDecisionThresholds(1), draft.pricing)
+        assertEquals(testFeeThresholds.getFeeDecisionThresholds(1), draft.feeThresholds)
         assertEquals(0, draft.totalFee())
     }
 

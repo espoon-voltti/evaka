@@ -73,11 +73,15 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
           },
           {
             label: i18n.valueDecision.summary.income.feePercent,
-            value: `${formatPercent(decision.feePercent) ?? ''} %`
+            value: `${
+              formatPercent(decision.feeThresholds.incomeMultiplier * 100) ?? ''
+            } %`
           },
           {
             label: i18n.valueDecision.summary.income.minThreshold,
-            value: `${formatCents(decision.minThreshold) ?? ''} €`
+            value: `${
+              formatCents(decision.feeThresholds.minIncomeThreshold) ?? ''
+            } €`
           }
         ]}
       />

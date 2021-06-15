@@ -41,7 +41,7 @@ export interface FeeDecision {
   validDuring: DateRange
   headOfFamily: { id: UUID }
   familySize: number
-  pricing: FeeDecisionThresholds
+  feeThresholds: FeeDecisionThresholds
   children: [
     {
       child: {
@@ -83,7 +83,7 @@ export interface VoucherValueDecision {
   validTo: ISODate
   headOfFamily: { id: UUID }
   familySize: number
-  pricing: FeeDecisionThresholds
+  feeThresholds: FeeDecisionThresholds
   child: {
     id: UUID
     dateOfBirth: string

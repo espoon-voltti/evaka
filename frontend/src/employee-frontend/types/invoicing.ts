@@ -241,6 +241,7 @@ export interface FeeDecisionDetailed {
   partner: PersonDetailed | null
   headOfFamilyIncome: Income | null
   partnerIncome: Income | null
+  feeThresholds: FeeDecisionThresholds
   familySize: number
   children: FeeDecisionChildDetailed[]
   documentKey: string | null
@@ -249,8 +250,6 @@ export interface FeeDecisionDetailed {
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
   approvedBy: { firstName: string; lastName: string } | null
-  minThreshold: number
-  feePercent: number
   totalFee: number
   incomeEffect: IncomeEffect | 'NOT_AVAILABLE'
   totalIncome: number | null
@@ -272,6 +271,14 @@ export interface FeeDecisionSummary {
   created: Date
 }
 
+export interface FeeDecisionThresholds {
+  minIncomeThreshold: number
+  maxIncomeThreshold: number
+  minFee: number
+  maxFee: number
+  incomeMultiplier: number
+}
+
 export interface VoucherValueDecisionDetailed {
   id: UUID
   status: VoucherValueDecisionStatus
@@ -282,6 +289,7 @@ export interface VoucherValueDecisionDetailed {
   partner: PersonDetailed | null
   headOfFamilyIncome: Income | null
   partnerIncome: Income | null
+  feeThresholds: FeeDecisionThresholds
   familySize: number
   child: PersonDetailed
   placement: VoucherValueDecisionPlacement
@@ -301,8 +309,6 @@ export interface VoucherValueDecisionDetailed {
   created: Date
   financeDecisionHandlerFirstName: string | null
   financeDecisionHandlerLastName: string | null
-  minThreshold: number
-  feePercent: number
   incomeEffect: IncomeEffect | 'NOT_AVAILABLE'
   totalIncome: number | null
   requiresManualSending: boolean

@@ -31,7 +31,7 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
     headOfFamilyIncome = feeDecision.headOfFamilyIncome,
     partnerIncome = feeDecision.partnerIncome,
     familySize = feeDecision.familySize,
-    pricing = feeDecision.pricing,
+    feeThresholds = feeDecision.feeThresholds,
     children = feeDecision.children.map { child ->
         FeeDecisionChildDetailed(
             child = allChildren.find { it.id == child.child.id }!!,
