@@ -1237,6 +1237,14 @@ const en: Translations = {
     timeFormat: 'Valid time format is hh:mm',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match'
+  },
+  login: {
+    failedModal: {
+      header: 'Login failed',
+      message:
+        'The identification process failed or was stopped. To log in, go back and try again.',
+      returnMessage: 'Go back'
+    }
   }
 }
 

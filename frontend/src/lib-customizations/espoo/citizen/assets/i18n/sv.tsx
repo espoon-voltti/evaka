@@ -1183,6 +1183,14 @@ const sv: Translations = {
     timeFormat: 'Ange i format hh:mm',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika'
+  },
+  login: {
+    failedModal: {
+      header: 'Inloggningen misslyckades',
+      message:
+        'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
+      returnMessage: 'Gå tillbaka till inloggningen'
+    }
   }
 }
 

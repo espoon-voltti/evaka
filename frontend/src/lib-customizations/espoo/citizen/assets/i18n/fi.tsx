@@ -1170,5 +1170,13 @@ export default {
     timeFormat: 'Anna muodossa hh:mm',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää'
+  },
+  login: {
+    failedModal: {
+      header: 'Kirjautuminen epäonnistui',
+      message:
+        'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
+      returnMessage: 'Palaa takaisin'
+    }
   }
 }

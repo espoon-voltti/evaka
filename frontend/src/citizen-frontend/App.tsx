@@ -17,6 +17,7 @@ import ApplicationReadView from './applications/read-view/ApplicationReadView'
 import GlobalInfoDialog from './overlay/Info'
 import MapView from './map/MapView'
 import { Authentication } from './auth'
+import { LoginErrorModal } from './auth/LoginErrorModal'
 import requireAuth from './auth/requireAuth'
 import MessagesPage from './messages/MessagesPage'
 import { featureFlags } from './config'
@@ -80,6 +81,7 @@ export default function App() {
                 </Main>
                 <GlobalInfoDialog />
                 <GlobalErrorDialog />
+                <LoginErrorModal />
               </MessageContextProvider>
             </OverlayContextProvider>
           </Localization>
