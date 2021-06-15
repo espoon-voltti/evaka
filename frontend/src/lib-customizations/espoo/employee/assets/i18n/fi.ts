@@ -837,7 +837,7 @@ export const fi = {
         REVIEWED: 'Arvioitu',
         CLOSED: 'Päättynyt'
       },
-      errorInitializing: 'Varhaiskasvatussuunitelman luonti ei onnistunut'
+      errorInitializing: 'Vasun luonti epäonnistui'
     }
   },
   personSearch: {
