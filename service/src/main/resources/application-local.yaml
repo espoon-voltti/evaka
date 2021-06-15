@@ -81,7 +81,6 @@ fi:
       document:
         bucket:
           attachments: evaka-attachments-dev
-          clubdecision: evaka-clubdecisions-dev
           daycaredecision: evaka-daycaredecisions-dev
           paymentdecision: evaka-paymentdecisions-dev
           vouchervaluedecision: evaka-vouchervaluedecisions-dev
