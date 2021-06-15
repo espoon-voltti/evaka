@@ -422,10 +422,9 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA)
         updateChildData(db, vardaClient, since)
-
         assertVardaElementCounts(1, 1, 0)
-        updateChildData(db, vardaClient, since)
 
+        updateChildData(db, vardaClient, since)
         assertVardaElementCounts(1, 1, 2)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
@@ -458,6 +457,9 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             ),
             mockEndpoint.feeData.values.elementAt(1)
         )
+
+        // There should be no failed uploads after the retry
+        assertEquals(0, db.read { it.createQuery("SELECT update_failed FROM varda_service_need WHERE update_failed = true").mapTo<Boolean>().list() }.size)
     }
 
     private fun createServiceNeedAndFeeData(
@@ -476,24 +478,6 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
     private fun asVardaGuardian(g: PersonData.Detailed): VardaGuardian = VardaGuardian(henkilotunnus = g.ssn ?: "", etunimet = g.firstName, sukunimi = g.lastName)
 
-    /*
-    TODO assert these
-    data class VardaDecision(
-    @JsonProperty("pikakasittely_kytkin")
-    val urgent: Boolean,
-    @JsonProperty("tilapainen_vaka_kytkin")
-    val temporary: Boolean,
-    @JsonProperty("paivittainen_vaka_kytkin")
-    val daily: Boolean,
-    @JsonProperty("vuorohoito_kytkin")
-    val shiftCare: Boolean,
-    @JsonProperty("jarjestamismuoto_koodi")
-    val providerTypeCode: String,
-) {
-    @JsonProperty("kokopaivainen_vaka_kytkin")
-    val fullDay: Boolean = hoursPerWeek >= 25
-}
-     */
     private fun assertVardaDecision(
         vardaDecision: VardaDecision,
         expectedStartDate: LocalDate,

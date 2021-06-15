@@ -153,9 +153,10 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
                 db.transaction {
                     it.markVardaServiceNeedUpdateFailed(serviceNeedId, addErrors)
                 }
+            } else {
+                db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed.copy(updateFailed = false, errors = mutableListOf())) }
             }
         }
-        db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
     } catch (e: Exception) {
         logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
     }
