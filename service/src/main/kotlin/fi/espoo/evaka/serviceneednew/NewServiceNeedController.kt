@@ -134,7 +134,7 @@ class NewServiceNeedController(
         db: Database.Connection,
         user: AuthenticatedUser
     ): ResponseEntity<List<ServiceNeedOption>> {
-        Audit.MessagingSenderOptionsRead.log()
+        Audit.PlacementServiceNeedOptionsRead.log()
         user.requireAnyEmployee()
 
         return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
