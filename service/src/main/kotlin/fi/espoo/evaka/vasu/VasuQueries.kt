@@ -61,3 +61,25 @@ fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
         .bind("content", content)
         .updateExactlyOne()
 }
+
+fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSummary> {
+    // language=sql
+    val sql = """
+        SELECT 
+            vd.id,
+            vt.name AS name,
+            vc.updated AS modified_at,
+            -- TODO published at logic
+            'DRAFT' as state           -- TODO implement document state
+        FROM vasu_document vd
+        JOIN vasu_content vc on vd.content_id = vc.id
+        JOIN vasu_template vt on vd.template_id = vt.id
+        JOIN child c on c.id = vd.child_id
+        WHERE c.id = :childId
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .mapTo<VasuDocumentSummary>()
+        .list()
+}

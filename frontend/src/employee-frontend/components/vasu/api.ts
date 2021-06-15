@@ -32,13 +32,10 @@ export interface VasuDocumentResponse {
 export async function createVasuDocument(
   childId: UUID,
   templateId: UUID
-): Promise<Result<null>> {
+): Promise<Result<UUID>> {
   return client
-    .post(`/vasu`, { childId, templateId })
-    .then((res) => {
-      console.log('createRes: ', res)
-      return Success.of(null)
-    })
+    .post<VasuDocumentResponse>(`/vasu`, { childId, templateId })
+    .then((res) => Success.of(res.data.id))
     .catch((e) => Failure.fromError(e))
 }
 

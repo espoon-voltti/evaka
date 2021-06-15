@@ -836,7 +836,8 @@ export const fi = {
         CREATED: 'Laadittu',
         REVIEWED: 'Arvioitu',
         CLOSED: 'Päättynyt'
-      }
+      },
+      errorInitializing: 'Varhaiskasvatussuunitelman luonti ei onnistunut'
     }
   },
   personSearch: {

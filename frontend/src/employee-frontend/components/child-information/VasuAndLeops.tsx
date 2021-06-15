@@ -4,9 +4,11 @@
 
 import Loader from 'lib-components/atoms/Loader'
 import React, { useContext, useEffect, useState } from 'react'
+import { useHistory } from 'react-router'
 import styled from 'styled-components'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import { AddButtonRow } from '../../../lib-components/atoms/buttons/AddButton'
+import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
 import { StaticChip } from '../../../lib-components/atoms/Chip'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 import { Table, Tbody, Td, Tr } from '../../../lib-components/layout/Table'
@@ -14,13 +16,16 @@ import { H2 } from '../../../lib-components/typography'
 import colors from '../../../lib-customizations/common'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
+import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
 import { formatDate } from '../../utils/date'
 import {
+  createVasuDocument,
   getVasuDocumentSummaries,
   VasuDocumentState,
   VasuDocumentSummary
 } from '../vasu/api'
+import { getVasuTemplateSummaries } from '../vasu/templates/api'
 
 const StateCell = styled(Td)`
   display: flex;
@@ -51,16 +56,18 @@ interface Props {
 }
 
 const VasuAndLeops = React.memo(function VasuAndLeops({
-  id,
+  id: childId,
   startOpen
 }: Props) {
   const { i18n } = useTranslation()
   const { vasus, setVasus } = useContext(ChildContext)
+  const history = useHistory()
+  const { setErrorMessage } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
 
   const loadVasus = useRestApi(getVasuDocumentSummaries, setVasus)
-  useEffect(() => loadVasus(id), [id, loadVasus])
+  useEffect(() => loadVasus(childId), [childId, loadVasus])
 
   const getDates = ({ modifiedAt, publishedAt }: VasuDocumentSummary): string =>
     [
@@ -79,7 +86,12 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
       .map((value) =>
         value.map((vasu) => (
           <Tr key={vasu.id}>
-            <Td>{vasu.name}</Td>
+            <Td>
+              <InlineButton
+                onClick={() => history.push(`/vasu/${vasu.id}`)}
+                text={vasu.name}
+              />
+            </Td>
             <Td>{getDates(vasu)}</Td>
             <StateCell>
               <StateChip
@@ -87,15 +99,45 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
                 labels={i18n.childInformation.vasu.states}
               />
             </StateCell>
-            <Td>{i18n.common.edit}</Td>
+            <Td>
+              <InlineButton
+                onClick={() => history.push(`/vasu/${vasu.id}`)}
+                text={i18n.common.edit}
+              />
+            </Td>
           </Tr>
         ))
       )
       .getOrElse(null)
 
-  const initializeNewVasuDocument = () => {
-    // TODO implementation
+  const [initializing, setInitializing] = useState(false)
+
+  const setInitializationError = () => {
+    setInitializing(false)
+    setErrorMessage({
+      type: 'error',
+      title: i18n.childInformation.vasu.errorInitializing,
+      text: i18n.common.tryAgain,
+      resolveLabel: i18n.common.ok
+    })
   }
+
+  const initializeNewVasuDocument = () => {
+    setInitializing(true)
+    // TODO replace with "get current template" or "initialize new document for child" -call
+    void getVasuTemplateSummaries().then((templates) => {
+      if (templates.isFailure) setInitializationError()
+      else if (templates.isSuccess) {
+        const templateId = templates.value[0]?.id
+        if (!templateId) return setInitializationError()
+        void createVasuDocument(childId, templateId).then((res) => {
+          if (res.isFailure) setInitializationError()
+          else if (res.isSuccess) history.push(`/vasu/${res.value}`)
+        })
+      }
+    })
+  }
+
   return (
     <div>
       <CollapsibleContentArea
@@ -107,7 +149,7 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
       >
         <AddButtonRow
           onClick={initializeNewVasuDocument}
-          disabled={true}
+          disabled={initializing}
           text={i18n.childInformation.vasu.createNew}
         />
         <Table>
