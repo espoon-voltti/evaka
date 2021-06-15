@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForChildrenPlacedInUnit
@@ -22,6 +23,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.toHelsinkiDateTime
 import fi.espoo.evaka.shared.utils.dateNow
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import mu.KotlinLogging
@@ -214,7 +216,7 @@ class ChildAttendanceController(
         return db.read { tx ->
             val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
-            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildOngoingAttendance(childId, unitId)
             if (attendance == null) {
                 throw Conflict("Cannot depart, has not yet arrived")
             } else if (attendance.departed != null) {
@@ -222,8 +224,11 @@ class ChildAttendanceController(
             }
 
             val arrived = LocalTime.ofInstant(attendance.arrived, europeHelsinki)
+
+            // temporary hotfix for case where scheduled job was missing and child arrived yesterday
+            val forgottenToDepart = attendance.arrived.toHelsinkiDateTime().toLocalDate() != LocalDate.now(helsinkiZone)
             DepartureInfoResponse(
-                absentFrom = getPartialAbsenceCareTypes(placementBasics, arrived, time)
+                absentFrom = if (forgottenToDepart) emptySet() else getPartialAbsenceCareTypes(placementBasics, arrived, time)
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -248,7 +253,14 @@ class ChildAttendanceController(
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
-                throw Conflict("Cannot depart, has not yet arrived")
+                // temporary hotfix for case where scheduled job was missing and child arrived yesterday
+                val forgottenAttendance: ChildAttendance = tx.getChildOngoingAttendance(childId, unitId)
+                    ?: throw Conflict("Cannot depart, has not yet arrived")
+                tx.updateAttendanceEnd(
+                    attendanceId = forgottenAttendance.id,
+                    departed = forgottenAttendance.arrived.toHelsinkiDateTime().withTime(LocalTime.of(23, 59)).toInstant()
+                )
+                return@transaction tx.getAttendancesResponse(unitId)
             } else if (attendance.departed != null) {
                 throw Conflict("Cannot depart, already departed")
             }
