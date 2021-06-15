@@ -501,23 +501,32 @@ function Group({
                 <Thead>
                   <Tr>
                     {(isNotProduction() || isPilotUnit(unit.id)) && (
-                      <Th>
-                        <IconContainer>
-                          <Tooltip
-                            up
-                            tooltip={
-                              <span>
-                                {i18n.unit.groups.daycareDailyNote.header}
-                              </span>
-                            }
-                          >
-                            <FontAwesomeIcon
-                              icon={faStickyNote}
-                              color={colors.greyscale.dark}
-                            />
-                          </Tooltip>
-                        </IconContainer>
-                      </Th>
+                      <RequireRole
+                        oneOf={[
+                          'ADMIN',
+                          'UNIT_SUPERVISOR',
+                          'STAFF',
+                          'SPECIAL_EDUCATION_TEACHER'
+                        ]}
+                      >
+                        <Th>
+                          <IconContainer>
+                            <Tooltip
+                              up
+                              tooltip={
+                                <span>
+                                  {i18n.unit.groups.daycareDailyNote.header}
+                                </span>
+                              }
+                            >
+                              <FontAwesomeIcon
+                                icon={faStickyNote}
+                                color={colors.greyscale.dark}
+                              />
+                            </Tooltip>
+                          </IconContainer>
+                        </Th>
+                      </RequireRole>
                     )}
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
@@ -543,9 +552,18 @@ function Group({
                         data-qa={`group-placement-row-${placement.child.id}`}
                       >
                         {(isNotProduction() || isPilotUnit(unit.id)) && (
-                          <Td data-qa="daily-note">
-                            {renderDaycareDailyNote(placement)}
-                          </Td>
+                          <RequireRole
+                            oneOf={[
+                              'ADMIN',
+                              'UNIT_SUPERVISOR',
+                              'STAFF',
+                              'SPECIAL_EDUCATION_TEACHER'
+                            ]}
+                          >
+                            <Td data-qa="daily-note">
+                              {renderDaycareDailyNote(placement)}
+                            </Td>
+                          </RequireRole>
                         )}
                         <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
@@ -642,29 +660,40 @@ function Group({
                 </Tbody>
               </Table>
               {(isNotProduction() || isPilotUnit(unit.id)) && (
-                <GroupNoteLinkContainer>
-                  <InlineButton
-                    icon={getGroupNote(group.id) ? farStickyNote : faStickyNote}
-                    text={
-                      getGroupNote(group.id)
-                        ? i18n.unit.groups.daycareDailyNote
-                            .groupNoteModalModifyLink
-                        : i18n.unit.groups.daycareDailyNote
-                            .groupNoteModalAddLink
-                    }
-                    onClick={() => {
-                      setSelectedDaycareDailyNote({
-                        daycareDailyNote: getGroupNote(group.id) ?? null,
-                        groupId: group.id,
-                        childId: null,
-                        childFirstName: '',
-                        childLastName: ''
-                      })
-                      toggleUiMode(`daycare-daily-note-edit-${group.id}`)
-                    }}
-                    data-qa="btn-create-group-note"
-                  />
-                </GroupNoteLinkContainer>
+                <RequireRole
+                  oneOf={[
+                    'ADMIN',
+                    'UNIT_SUPERVISOR',
+                    'STAFF',
+                    'SPECIAL_EDUCATION_TEACHER'
+                  ]}
+                >
+                  <GroupNoteLinkContainer>
+                    <InlineButton
+                      icon={
+                        getGroupNote(group.id) ? farStickyNote : faStickyNote
+                      }
+                      text={
+                        getGroupNote(group.id)
+                          ? i18n.unit.groups.daycareDailyNote
+                              .groupNoteModalModifyLink
+                          : i18n.unit.groups.daycareDailyNote
+                              .groupNoteModalAddLink
+                      }
+                      onClick={() => {
+                        setSelectedDaycareDailyNote({
+                          daycareDailyNote: getGroupNote(group.id) ?? null,
+                          groupId: group.id,
+                          childId: null,
+                          childFirstName: '',
+                          childLastName: ''
+                        })
+                        toggleUiMode(`daycare-daily-note-edit-${group.id}`)
+                      }}
+                      data-qa="btn-create-group-note"
+                    />
+                  </GroupNoteLinkContainer>
+                </RequireRole>
               )}
             </div>
           ) : (
