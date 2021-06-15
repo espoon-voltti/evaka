@@ -18,8 +18,10 @@ declare global {
   namespace NodeJS {
     interface Global {
       evaka?: {
-        saveScreenshotsAndVideos(namePrefix: string): Promise<void>
-        deleteVideoFiles(): void
+        captureScreenshots: (namePrefix: string) => Promise<void>
+        saveVideos: (namePrefix: string) => Promise<void>
+        deleteTemporaryVideos: () => Promise<void>
+        promises: Promise<void>[]
       }
     }
   }
@@ -43,12 +45,21 @@ beforeAll(async () => {
   browser = await playwright[config.playwright.browser].launch({
     headless: config.playwright.headless
   })
-  global.evaka = { saveScreenshotsAndVideos, deleteVideoFiles }
+  global.evaka = {
+    captureScreenshots,
+    saveVideos,
+    deleteTemporaryVideos,
+    promises: []
+  }
 })
 
 afterEach(async () => {
   for (const ctx of browser?.contexts() ?? []) {
     await ctx.close()
+  }
+  if (global.evaka) {
+    await Promise.all(global.evaka.promises)
+    global.evaka.promises = []
   }
 })
 
@@ -62,7 +73,13 @@ const injected = fs.readFileSync(
   'utf-8'
 )
 
-async function saveScreenshotsAndVideos(namePrefix: string): Promise<void> {
+async function forEachPage(
+  fn: (pageInfo: {
+    ctxIndex: number
+    pageIndex: number
+    page: Page
+  }) => Promise<void>
+): Promise<void> {
   if (!browser) return
   const pages = browser.contexts().flatMap((ctx, ctxIndex) =>
     ctx.pages().map((page, pageIndex) => ({
@@ -71,7 +88,13 @@ async function saveScreenshotsAndVideos(namePrefix: string): Promise<void> {
       page
     }))
   )
-  for (const { ctxIndex, pageIndex, page } of pages) {
+  for (const pageInfo of pages) {
+    await fn(pageInfo)
+  }
+}
+
+async function captureScreenshots(namePrefix: string): Promise<void> {
+  await forEachPage(async ({ ctxIndex, pageIndex, page }) => {
     await page.screenshot({
       type: 'png',
       path: `screenshots/${namePrefix}.${ctxIndex}.${pageIndex}.png`
@@ -81,23 +104,21 @@ async function saveScreenshotsAndVideos(namePrefix: string): Promise<void> {
       path: `screenshots/${namePrefix}.${ctxIndex}.full.${pageIndex}.png`,
       fullPage: true
     })
-
-    // The video is only available after the browser context is closed, so don't
-    // await the promise here.
-    void page
-      .video()
-      ?.saveAs(`videos/${namePrefix}.${ctxIndex}.${pageIndex}.webm`)
-  }
+  })
 }
 
-function deleteVideoFiles(): void {
-  if (!browser) return
-  const pages = browser.contexts().flatMap((ctx) => ctx.pages())
-  for (const page of pages) {
-    // The deletion only happens after the browser context is closed, so don't
-    // await the promise here.
-    void page.video()?.delete()
-  }
+async function saveVideos(namePrefix: string): Promise<void> {
+  await forEachPage(async ({ ctxIndex, pageIndex, page }) => {
+    await page
+      .video()
+      ?.saveAs(`videos/${namePrefix}.${ctxIndex}.${pageIndex}.webm`)
+  })
+}
+
+async function deleteTemporaryVideos(): Promise<void> {
+  await forEachPage(async ({ page }) => {
+    await page.video()?.delete()
+  })
 }
 
 function configurePage(page: Page) {
