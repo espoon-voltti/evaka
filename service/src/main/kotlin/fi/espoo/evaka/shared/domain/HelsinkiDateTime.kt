@@ -61,6 +61,10 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     fun isAfter(other: HelsinkiDateTime): Boolean = this.instant.isAfter(other.instant)
     fun isBefore(other: HelsinkiDateTime): Boolean = this.instant.isBefore(other.instant)
 
+    fun withTime(time: LocalTime): HelsinkiDateTime = update {
+        it.withHour(time.hour).withMinute(time.minute).withSecond(time.second)
+    }
+
     /**
      * Returns the Europe/Helsinki local date+time at the point in time represented by this timestamp
      */

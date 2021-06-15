@@ -80,7 +80,22 @@ fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): Chi
         .bind("todayStart", LocalDate.now(europeHelsinki).atStartOfDay(europeHelsinki).toInstant())
         .bind("todayEnd", LocalDate.now(europeHelsinki).plusDays(1).atStartOfDay(europeHelsinki).toInstant())
         .mapTo<ChildAttendance>()
-        .list()
+        .firstOrNull()
+}
+
+fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+    // language=sql
+    val sql =
+        """
+        SELECT id, child_id, unit_id, arrived, departed
+        FROM child_attendance
+        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .mapTo<ChildAttendance>()
         .firstOrNull()
 }
 
