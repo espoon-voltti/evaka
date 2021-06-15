@@ -65,6 +65,8 @@ import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { isNotProduction, isPilotUnit } from '../../../../constants'
+import { featureFlags } from '../../../../config'
+import { RequireRole } from 'employee-frontend/utils/roles'
 
 interface Props {
   unit: Unit
@@ -417,14 +419,25 @@ function Group({
               <Gap size="s" horizontal />
             </>
           ) : null}
-          <Link to={`/absences/${group.id}`}>
-            <InlineButton
-              icon={faCalendarAlt}
-              text={i18n.unit.groups.diaryButton}
-              onClick={() => undefined}
-              data-qa="open-absence-diary-button"
-            />
-          </Link>
+          <RequireRole
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER',
+              'FINANCE_ADMIN',
+              'UNIT_SUPERVISOR',
+              'STAFF',
+              'SPECIAL_EDUCATION_TEACHER'
+            ]}
+          >
+            <Link to={`/absences/${group.id}`}>
+              <InlineButton
+                icon={faCalendarAlt}
+                text={i18n.unit.groups.diaryButton}
+                onClick={() => undefined}
+                data-qa="open-absence-diary-button"
+              />
+            </Link>
+          </RequireRole>
         </Toolbar>
       </TitleBar>
       {open ? (

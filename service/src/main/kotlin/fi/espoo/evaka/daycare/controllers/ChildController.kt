@@ -40,7 +40,7 @@ class ChildController(private val acl: AccessControlList) {
         @RequestBody data: AdditionalInformation
     ): ResponseEntity<Unit> {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         db.transaction { it.upsertAdditionalInformation(childId, data) }
         return noContent()
     }

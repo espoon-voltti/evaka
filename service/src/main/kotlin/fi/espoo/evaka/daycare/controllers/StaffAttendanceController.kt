@@ -40,7 +40,7 @@ class StaffAttendanceController(
     ): ResponseEntity<Wrapper<StaffAttendanceGroup>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE, UserRole.SPECIAL_EDUCATION_TEACHER)
         val result = staffAttendanceService.getAttendancesByMonth(db, year, month, groupId)
         return ResponseEntity.ok(Wrapper(result))
     }

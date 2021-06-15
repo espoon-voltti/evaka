@@ -159,14 +159,7 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']}>
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -183,14 +176,7 @@ function Reports() {
               </Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
-          >
+          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']}>
             <ReportItem>
               <TitleRow>
                 <RoundIcon

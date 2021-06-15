@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
-import { range } from 'lodash'
+import React, { useContext, useEffect, useState } from 'react'
+import { cloneDeep, range } from 'lodash'
 import { UUID } from '../../types'
 import { Loading, Result } from 'lib-common/api'
 import {
@@ -17,10 +17,17 @@ import { useTranslation } from '../../state/i18n'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { formatName } from '../../utils'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import SimpleSelect from 'lib-components/atoms/form/SimpleSelect'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 import { H2 } from '../../../lib-components/typography'
+import InputField from 'lib-components/atoms/form/InputField'
+import { patchPersonDetails } from 'employee-frontend/api/person'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { UserContext } from 'employee-frontend/state/user'
 
 interface FamilyContactsProps {
   id: UUID
@@ -30,8 +37,10 @@ interface FamilyContactsProps {
 function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
   const { i18n } = useTranslation()
   const [result, setResult] = useState<Result<FamilyContact[]>>(Loading.of())
-
+  const [dirty, setDirty] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [open, setOpen] = useState(startOpen)
+  const { roles } = useContext(UserContext)
 
   const loadContacts = useRestApi(getFamilyContacts, setResult)
   useEffect(() => loadContacts(id), [id, loadContacts])
@@ -49,6 +58,45 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
     })
     .getOrElse([1])
     .map((v: number) => ({ label: String(v), value: String(v) }))
+
+  function onCancel() {
+    loadContacts(id)
+  }
+
+  function onSubmit(personId: UUID) {
+    setSubmitting(true)
+    result.map((data) => {
+      data
+        .filter((row) => row.id === personId)
+        .map((person) => {
+          void patchPersonDetails(personId, {
+            firstName: undefined,
+            lastName: undefined,
+            dateOfBirth: undefined,
+            streetAddress: undefined,
+            postalCode: undefined,
+            postOffice: undefined,
+            email: person.email ?? undefined,
+            phone: person.phone ?? undefined,
+            backupPhone: person.backupPhone ?? undefined
+          }).then(() => {
+            loadContacts(id)
+          })
+        })
+    })
+    setDirty(false)
+    setSubmitting(false)
+  }
+
+  const editableContacts = roles.find((r) =>
+    [
+      'ADMIN',
+      'SERVICE_WORKER',
+      'UNIT_SUPERVISOR',
+      'FINANCE_ADMIN',
+      'STAFF'
+    ].includes(r)
+  )
 
   return (
     <CollapsibleContentArea
@@ -70,6 +118,7 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
               <Th>{i18n.childInformation.familyContacts.contact}</Th>
               <Th>{i18n.childInformation.familyContacts.contactPerson}</Th>
               <Th>{i18n.childInformation.familyContacts.address}</Th>
+              <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -80,16 +129,88 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
                 <Td>{formatName(row.firstName, row.lastName, i18n, true)}</Td>
                 <Td>{i18n.childInformation.familyContacts.roles[row.role]}</Td>
                 <Td>
-                  <FixedSpaceColumn spacing="xs">
-                    {row.email && <span>{row.email}</span>}
-                    {row.phone && <span>{row.phone}</span>}
-                    {row.backupPhone && (
-                      <span>
-                        {row.backupPhone}{' '}
-                        {`(${i18n.childInformation.familyContacts.backupPhone})`}
-                      </span>
-                    )}
-                  </FixedSpaceColumn>
+                  {editableContacts ? (
+                    <FixedSpaceColumn spacing="xs">
+                      {row.email && (
+                        <span>
+                          <InputField
+                            value={row.email}
+                            onChange={(value) => {
+                              setDirty(true)
+                              setResult((prev) => {
+                                return prev.map((prevData) => {
+                                  const clone = cloneDeep(prevData)
+                                  clone.map((cloneRow) => {
+                                    if (cloneRow.id === row.id) {
+                                      cloneRow.email = value
+                                    }
+                                    return cloneRow
+                                  })
+                                  return clone
+                                })
+                              })
+                            }}
+                          />
+                        </span>
+                      )}
+                      {row.phone && (
+                        <span>
+                          <InputField
+                            value={row.phone}
+                            onChange={(value) => {
+                              setDirty(true)
+                              setResult((prev) => {
+                                return prev.map((prevData) => {
+                                  const clone = cloneDeep(prevData)
+                                  clone.map((cloneRow) => {
+                                    if (cloneRow.id === row.id) {
+                                      cloneRow.phone = value
+                                    }
+                                    return cloneRow
+                                  })
+                                  return clone
+                                })
+                              })
+                            }}
+                          />
+                        </span>
+                      )}
+                      {row.backupPhone && (
+                        <span>
+                          <InputField
+                            value={row.backupPhone}
+                            onChange={(value) => {
+                              setResult((prev) => {
+                                setDirty(true)
+                                return prev.map((prevData) => {
+                                  const clone = cloneDeep(prevData)
+                                  clone.map((cloneRow) => {
+                                    if (cloneRow.id === row.id) {
+                                      cloneRow.backupPhone = value
+                                    }
+                                    return cloneRow
+                                  })
+                                  return clone
+                                })
+                              })
+                            }}
+                          />{' '}
+                          {`(${i18n.childInformation.familyContacts.backupPhone})`}
+                        </span>
+                      )}
+                    </FixedSpaceColumn>
+                  ) : (
+                    <FixedSpaceColumn spacing="xs">
+                      {row.email && <span>{row.email}</span>}
+                      {row.phone && <span>{row.phone}</span>}
+                      {row.backupPhone && (
+                        <span>
+                          {row.backupPhone}{' '}
+                          {`(${i18n.childInformation.familyContacts.backupPhone})`}
+                        </span>
+                      )}
+                    </FixedSpaceColumn>
+                  )}
                 </Td>
                 <Td>
                   {row.role !== 'LOCAL_SIBLING' ? (
@@ -112,6 +233,22 @@ function FamilyContacts({ id, startOpen }: FamilyContactsProps) {
                   ) : null}
                 </Td>
                 <Td>{`${row.streetAddress}, ${row.postalCode} ${row.postOffice}`}</Td>
+                <Td>
+                  <FixedSpaceRow justifyContent="flex-end" spacing="m">
+                    {dirty && (
+                      <InlineButton
+                        onClick={onCancel}
+                        text={i18n.common.cancel}
+                        disabled={submitting}
+                      />
+                    )}
+                    <InlineButton
+                      onClick={() => onSubmit(row.id)}
+                      text={i18n.common.save}
+                      disabled={submitting || !dirty}
+                    />
+                  </FixedSpaceRow>
+                </Td>
               </Tr>
             ))}
           </Tbody>

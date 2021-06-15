@@ -220,6 +220,7 @@ export interface PatchPersonRequest {
   streetAddress: string | undefined
   postalCode: string | undefined
   postOffice: string | undefined
+  backupPhone: string | undefined
 }
 
 export async function mergePeople(

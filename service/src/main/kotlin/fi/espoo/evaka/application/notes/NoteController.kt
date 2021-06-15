@@ -36,7 +36,7 @@ class NoteController(private val acl: AccessControlList) {
     ): ResponseEntity<List<NoteJSON>> {
         Audit.NoteRead.log(targetId = search.applicationIds)
         search.applicationIds.forEach { applicationId ->
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
         }
 
         val notes = db.read {
