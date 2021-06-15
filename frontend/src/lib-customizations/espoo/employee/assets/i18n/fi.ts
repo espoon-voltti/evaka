@@ -2356,7 +2356,8 @@ export const fi = {
       financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu',
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
-      ophOrganizationOid: 'Organisaation OID puuttuu'
+      ophOrganizationOid: 'Organisaation OID puuttuu',
+      openingDateIsAfterClosingDate: 'Aloituspäivä on päättymispäivän jälkeen'
     }
   },
   fileUpload: {

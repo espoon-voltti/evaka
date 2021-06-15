@@ -363,6 +363,14 @@ function validateForm(
   if (form.invoicedByMunicipality && !form.financeDecisionHandlerId) {
     errors.push(i18n.unitEditor.error.financeDecisionHandler)
   }
+  if (
+    form.openingDate != null &&
+    form.closingDate != null &&
+    form.openingDate.isAfter(form.closingDate)
+  ) {
+    errors.push(i18n.unitEditor.error.openingDateIsAfterClosingDate)
+  }
+
   const {
     openingDate,
     closingDate,
@@ -609,6 +617,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               }}
               onChange={(openingDate) => updateForm({ openingDate })}
               className="inline-block"
+              maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
             />
           ) : (
             form.openingDate?.format()
@@ -623,6 +632,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               onCleared={() => updateForm({ closingDate: null })}
               onChange={(closingDate) => updateForm({ closingDate })}
               className="inline-block"
+              minDate={form.openingDate ?? LocalDate.of(1960, 0, 0)}
             />
           ) : (
             form.closingDate?.format()
