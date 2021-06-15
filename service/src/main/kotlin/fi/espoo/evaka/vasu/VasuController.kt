@@ -4,7 +4,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 @RestController
@@ -79,35 +77,6 @@ class VasuController {
     ): List<VasuDocumentSummary> {
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        return listOf(
-            VasuDocumentSummary(
-                id = UUID.randomUUID(),
-                name = "Varhaiskasvatussuunnitelma 2021-2022",
-                state = VasuDocumentState.DRAFT,
-                modifiedAt = HelsinkiDateTime.now(),
-            ),
-            VasuDocumentSummary(
-                id = UUID.randomUUID(),
-                name = "Varhaiskasvatussuunnitelma 2020-2021",
-                state = VasuDocumentState.CREATED,
-                modifiedAt = HelsinkiDateTime.of(
-                    LocalDateTime.of(2020, 10, 5, 7, 13)
-                ),
-                publishedAt = HelsinkiDateTime.of(
-                    LocalDateTime.of(2020, 9, 1, 12, 0)
-                ),
-            ),
-            VasuDocumentSummary(
-                id = UUID.randomUUID(),
-                name = "Varhaiskasvatussuunnitelma 2019-2020",
-                state = VasuDocumentState.CLOSED,
-                modifiedAt = HelsinkiDateTime.of(
-                    LocalDateTime.of(2019, 9, 24, 12, 45)
-                ),
-                publishedAt = HelsinkiDateTime.of(
-                    LocalDateTime.of(2020, 8, 7, 15, 0)
-                ),
-            )
-        )
+        return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
     }
 }

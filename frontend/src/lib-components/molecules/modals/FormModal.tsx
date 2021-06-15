@@ -66,7 +66,7 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   padding-right: ${defaultMargins.XXL};
   margin-left: ${defaultMargins.xxs};
   margin-right: ${defaultMargins.xxs};
-  overflow-y: scroll;
+  overflow-y: auto;
 
   @media (max-width: ${tabletMin}) {
     padding-left: ${defaultMargins.XL};
