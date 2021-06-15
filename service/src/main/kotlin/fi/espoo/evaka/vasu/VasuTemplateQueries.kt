@@ -9,18 +9,20 @@ import java.util.UUID
 fun Database.Transaction.insertVasuTemplate(
     name: String,
     valid: FiniteDateRange,
+    language: VasuLanguage,
     content: VasuContent
 ): UUID {
     // language=sql
     val sql = """
-        INSERT INTO vasu_template (valid, name, content) 
-        VALUES (:valid, :name, :content)
+        INSERT INTO vasu_template (valid, language, name, content) 
+        VALUES (:valid, :language, :name, :content)
         RETURNING id
     """.trimIndent()
 
     return createQuery(sql)
         .bind("name", name)
         .bind("valid", valid)
+        .bind("language", language)
         .bind("content", content)
         .mapTo<UUID>()
         .one()
@@ -47,6 +49,7 @@ fun Database.Read.getVasuTemplates(): List<VasuTemplateSummary> {
             id,
             name,
             valid,
+            language,
             (SELECT count(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
         FROM vasu_template vt
     """

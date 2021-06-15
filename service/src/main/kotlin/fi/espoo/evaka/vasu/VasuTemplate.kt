@@ -8,6 +8,7 @@ data class VasuTemplate(
     val id: UUID,
     val name: String,
     val valid: DateRange,
+    val language: VasuLanguage,
     @Json
     val content: VasuContent
 )
@@ -16,9 +17,6 @@ data class VasuTemplateSummary(
     val id: UUID,
     val name: String,
     val valid: DateRange,
+    val language: VasuLanguage,
     val documentCount: Int
-)
-
-val defaultTemplateContent = VasuContent(
-    sections = emptyList()
 )

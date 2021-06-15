@@ -28,7 +28,9 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.varda.VardaServiceNeed
+import fi.espoo.evaka.vasu.QuestionOption
 import fi.espoo.evaka.vasu.VasuContent
+import fi.espoo.evaka.vasu.VasuLanguage
 import fi.espoo.evaka.vasu.VasuQuestion
 import fi.espoo.evaka.vasu.VasuSection
 import fi.espoo.evaka.vasu.insertVasuTemplate
@@ -68,6 +70,7 @@ fun Database.Transaction.ensureDevData() {
         insertVasuTemplate(
             name = "Varhaiskasvatussuunnitelma 2020-2021",
             valid = FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 8, 31)),
+            language = VasuLanguage.FI,
             content = VasuContent(
                 sections = listOf(
                     VasuSection(
@@ -89,19 +92,19 @@ fun Database.Transaction.ensureDevData() {
                         questions = listOf(
                             VasuQuestion.RadioGroupQuestion(
                                 name = "Lapsen lempiväri",
-                                optionNames = listOf(
-                                    "Punainen",
-                                    "Vihreä",
-                                    "Sininen"
+                                options = listOf(
+                                    QuestionOption("Punainen", "Punainen"),
+                                    QuestionOption("Vihreä", "Vihreä"),
+                                    QuestionOption("Sininen", "Sininen")
                                 ),
                                 value = null
                             ),
                             VasuQuestion.MultiSelectQuestion(
                                 name = "Tavoitteet vuodelle",
-                                optionNames = listOf(
-                                    "Oppii sitomaan kengännauhat",
-                                    "Ei pure muita",
-                                    "Ratkaisee toisen asteen polynomin"
+                                options = listOf(
+                                    QuestionOption("Oppii sitomaan kengännauhat", "Oppii sitomaan kengännauhat"),
+                                    QuestionOption("Ei pure muita", "Ei pure muita"),
+                                    QuestionOption("Ratkaisee toisen asteen polynomin", "Ratkaisee toisen asteen polynomin")
                                 ),
                                 minSelections = 1,
                                 maxSelections = null,

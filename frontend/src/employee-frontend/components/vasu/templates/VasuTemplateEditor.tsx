@@ -251,8 +251,8 @@ export default React.memo(function VasuTemplateEditor() {
         <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
           question.name
         }`}</H3>
-        {question.optionNames.map((opt) => (
-          <Radio checked={false} label={opt} key={opt} />
+        {question.options.map((opt) => (
+          <Radio checked={false} label={opt.name} key={opt.key} />
         ))}
       </FixedSpaceColumn>
     )
@@ -268,8 +268,8 @@ export default React.memo(function VasuTemplateEditor() {
         <H3 noMargin>{`${sectionIndex + 1}.${questionIndex + 1}. ${
           question.name
         }`}</H3>
-        {question.optionNames.map((opt) => (
-          <Checkbox checked={false} label={opt} key={opt} />
+        {question.options.map((opt) => (
+          <Checkbox checked={false} label={opt.name} key={opt.key} />
         ))}
       </FixedSpaceColumn>
     )
@@ -389,6 +389,7 @@ export default React.memo(function VasuTemplateEditor() {
                               />
                               <IconButton
                                 icon={faTrash}
+                                disabled={question.ophKey !== null}
                                 onClick={() =>
                                   removeQuestion(sectionIndex, questionIndex)
                                 }

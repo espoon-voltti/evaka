@@ -20,7 +20,8 @@ import java.util.UUID
 class VasuTemplateController {
     data class CreateTemplateRequest(
         val name: String,
-        val valid: FiniteDateRange
+        val valid: FiniteDateRange,
+        val language: VasuLanguage
     )
     @PostMapping
     fun postTemplate(
@@ -34,7 +35,8 @@ class VasuTemplateController {
             it.insertVasuTemplate(
                 name = body.name,
                 valid = body.valid,
-                content = defaultTemplateContent
+                language = body.language,
+                content = getDefaultTemplateContent(body.language)
             )
         }
     }

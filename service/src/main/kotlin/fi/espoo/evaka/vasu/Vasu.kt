@@ -14,6 +14,11 @@ enum class VasuDocumentState {
     CLOSED
 }
 
+enum class VasuLanguage {
+    FI,
+    SV
+}
+
 data class VasuDocumentSummary(
     val id: UUID,
     val name: String,
@@ -58,35 +63,45 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.MultiSelectQuestion::class, name = "MULTISELECT"),
 )
 sealed class VasuQuestion(
-    val type: VasuQuestionType,
+    val type: VasuQuestionType
 ) {
     abstract val name: String
+    abstract val ophKey: OphQuestionKey?
 
     data class TextQuestion(
         override val name: String,
+        override val ophKey: OphQuestionKey? = null,
         val multiline: Boolean,
         val value: String
     ) : VasuQuestion(VasuQuestionType.TEXT)
 
     data class CheckboxQuestion(
         override val name: String,
+        override val ophKey: OphQuestionKey? = null,
         val value: Boolean
     ) : VasuQuestion(VasuQuestionType.CHECKBOX)
 
     data class RadioGroupQuestion(
         override val name: String,
-        val optionNames: List<String>,
-        val value: Int?
+        override val ophKey: OphQuestionKey? = null,
+        val options: List<QuestionOption>,
+        val value: String?
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP)
 
     data class MultiSelectQuestion(
         override val name: String,
-        val optionNames: List<String>,
+        override val ophKey: OphQuestionKey? = null,
+        val options: List<QuestionOption>,
         val minSelections: Int,
         val maxSelections: Int?,
-        val value: List<Int>
+        val value: List<String>
     ) : VasuQuestion(VasuQuestionType.MULTISELECT)
 }
+
+data class QuestionOption(
+    val key: String,
+    val name: String
+)
 
 enum class VasuQuestionType {
     TEXT,
