@@ -19,7 +19,10 @@ import {
   ApplicationOrigin,
   ApplicationStatus
 } from 'lib-common/api-types/application/enums'
-import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import {
+  PlacementType,
+  ServiceNeedOptionSummary
+} from 'lib-common/api-types/serviceNeed/common'
 
 export interface ApplicationSummary {
   applicationId: UUID
@@ -60,6 +63,7 @@ export interface ApplicationListSummary {
   dateOfBirth: LocalDate | null
   type: string
   placementType: PlacementType
+  serviceNeed: ServiceNeedOptionSummary | null
   dueDate: LocalDate | null
   startDate: LocalDate | null
   preferredUnits: Unit[]

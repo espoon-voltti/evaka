@@ -78,7 +78,10 @@ function TabApplications() {
                         ? 'half'
                         : 'full'
                     }
-                    label={i18n.placement.type[row.requestedPlacementType]}
+                    label={
+                      row?.serviceNeed?.name ??
+                      i18n.placement.type[row.requestedPlacementType]
+                    }
                   />
                 </Td>
                 <Td data-qa="preference-order">{`${row.preferenceOrder}.`}</Td>

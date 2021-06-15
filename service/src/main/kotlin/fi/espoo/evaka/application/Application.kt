@@ -29,6 +29,7 @@ data class ApplicationSummary(
     val dateOfBirth: String? = null,
     val type: ApplicationType,
     val placementType: PlacementType,
+    val serviceNeed: ServiceNeedOption?,
     val dueDate: String?,
     val startDate: String?,
     val preferredUnits: List<PreferredUnit>,
@@ -166,6 +167,7 @@ data class ApplicationUnitSummary(
     val guardianPhone: String?,
     val guardianEmail: String?,
     val requestedPlacementType: PlacementType,
+    val serviceNeed: ServiceNeedOption?,
     val preferredStartDate: LocalDate,
     val preferenceOrder: Int,
     val status: ApplicationStatus
