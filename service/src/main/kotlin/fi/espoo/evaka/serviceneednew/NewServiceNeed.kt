@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
@@ -27,7 +28,8 @@ data class NewServiceNeed(
     val option: ServiceNeedOptionSummary,
     val shiftCare: Boolean,
     @Nested("confirmed")
-    val confirmed: ServiceNeedConfirmation
+    val confirmed: ServiceNeedConfirmation,
+    val updated: Instant
 )
 
 data class NewServiceNeedChildRange(
@@ -38,7 +40,8 @@ data class NewServiceNeedChildRange(
 
 data class ServiceNeedOptionSummary(
     val id: UUID,
-    val name: String
+    val name: String,
+    val updated: Instant
 )
 
 data class ServiceNeedConfirmation(
@@ -68,7 +71,8 @@ data class ServiceNeedOption(
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
-    val voucherValueDescriptionSv: String
+    val voucherValueDescriptionSv: String,
+    val updated: HelsinkiDateTime = HelsinkiDateTime.now()
 )
 
 fun validateServiceNeed(

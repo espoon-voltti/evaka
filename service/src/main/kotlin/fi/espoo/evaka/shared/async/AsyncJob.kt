@@ -35,6 +35,7 @@ enum class AsyncJobType {
     SEND_APPLICATION_EMAIL,
     GARBAGE_COLLECT_PAIRING,
     VARDA_UPDATE,
+    VARDA_UPDATE_V2,
     SEND_PENDING_DECISION_EMAIL,
     SEND_UNREAD_MESSAGE_NOTIFICATION,
     RUN_DAILY_JOB
@@ -158,6 +159,11 @@ data class VTJRefresh(val personId: UUID, val requestingUserId: UUID) : AsyncJob
 
 class VardaUpdate : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.VARDA_UPDATE
+    override val user: AuthenticatedUser? = null
+}
+
+class VardaUpdateV2 : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.VARDA_UPDATE_V2
     override val user: AuthenticatedUser? = null
 }
 

@@ -107,3 +107,4 @@ V106__create_varda_organizer_child.sql
 V107__scheduled_tasks.sql
 V108__person_freetext_search.sql
 V109__fee_thresholds_default_id.sql
+V110__varda_service_need.sql

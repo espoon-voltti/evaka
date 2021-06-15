@@ -12,7 +12,6 @@ import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneednew.NewServiceNeed
 import fi.espoo.evaka.serviceneednew.NewServiceNeedController
-import fi.espoo.evaka.serviceneednew.ServiceNeedOptionSummary
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -70,7 +69,8 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
                 assertEquals(testDate(1), sn.startDate)
                 assertEquals(testDate(30), sn.endDate)
                 assertEquals(placementId, sn.placementId)
-                assertEquals(ServiceNeedOptionSummary(snDefaultDaycare.id, snDefaultDaycare.name), sn.option)
+                assertEquals(snDefaultDaycare.id, sn.option.id)
+                assertEquals(snDefaultDaycare.name, sn.option.name)
             }
         }
     }
@@ -158,7 +158,8 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
                 assertEquals(testDate(1), sn.startDate)
                 assertEquals(testDate(30), sn.endDate)
                 assertEquals(placementId, sn.placementId)
-                assertEquals(ServiceNeedOptionSummary(snDaycareFullDay35.id, snDaycareFullDay35.name), sn.option)
+                assertEquals(snDaycareFullDay35.id, sn.option.id)
+                assertEquals(snDaycareFullDay35.name, sn.option.name)
             }
         }
     }

@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/varda-dev")
 class VardaDevController(
-    private val vardaUpdateService: VardaUpdateService
+    private val vardaUpdateService: VardaUpdateService,
+    private val vardaUpdateServiceV2: VardaUpdateServiceV2,
 ) {
     @DeleteMapping("/child/{vardaChildId}")
     fun deleteChild(
@@ -38,6 +39,17 @@ class VardaDevController(
     ): ResponseEntity<Unit> {
         if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
             vardaUpdateService.scheduleVardaUpdate(db, runNow = true)
+            return ResponseEntity.noContent().build()
+        }
+        return ResponseEntity.notFound().build()
+    }
+
+    @PostMapping("/run-update-all-v2")
+    fun runFullVardaUpdate(
+        db: Database.Connection
+    ): ResponseEntity<Unit> {
+        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
+            vardaUpdateServiceV2.scheduleVardaUpdate(db, runNow = true)
             return ResponseEntity.noContent().build()
         }
         return ResponseEntity.notFound().build()

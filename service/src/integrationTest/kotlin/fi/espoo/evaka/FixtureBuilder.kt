@@ -7,11 +7,14 @@ package fi.espoo.evaka
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneednew.ServiceNeedOption
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
@@ -23,6 +26,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.util.UUID
@@ -39,6 +43,7 @@ class FixtureBuilder(
         private val fixtureBuilder: FixtureBuilder
     ) {
         private var dateOfBirth: LocalDate? = null
+        private var person: PersonData.Detailed? = null
 
         fun withDateOfBirth(dateOfBirth: LocalDate) = this.apply {
             this.dateOfBirth = dateOfBirth
@@ -47,6 +52,8 @@ class FixtureBuilder(
         fun withAge(years: Int, months: Int = 0, days: Int = 0) = this.apply {
             this.dateOfBirth = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
         }
+
+        fun usePerson(person: PersonData.Detailed) = this.apply { this.person = person }
 
         fun save(): FixtureBuilder {
             doInsert()
@@ -62,12 +69,12 @@ class FixtureBuilder(
         }
 
         private fun doInsert(): UUID {
-            val childId = tx.insertTestPerson(
+            val childId = person?.id ?: tx.insertTestPerson(
                 DevPerson(
                     dateOfBirth = dateOfBirth ?: throw IllegalStateException("date of birth not set")
                 )
             )
-            tx.insertTestChild(DevChild(childId))
+            if (person == null) tx.insertTestChild(DevChild(childId))
             return childId
         }
     }
@@ -307,25 +314,36 @@ class FixtureBuilder(
         private var from: LocalDate? = null
         private var to: LocalDate? = null
         private var optionId: UUID? = null
+        private var serviceNeedOption: ServiceNeedOption? = null
         private var employeeId: UUID? = null
+        private var updated: HelsinkiDateTime = HelsinkiDateTime.now()
+        private var id: UUID? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun withOption(id: UUID) = this.apply { this.optionId = id }
+        fun withOption(serviceNeedOption: ServiceNeedOption) = this.apply { this.serviceNeedOption = serviceNeedOption }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
+        fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }
+        fun withId(id: UUID) = this.apply { this.id = id }
 
         fun save(): PlacementFixture {
+            if (serviceNeedOption != null) tx.insertServiceNeedOption(serviceNeedOption!!)
+
             tx.insertTestNewServiceNeed(
                 confirmedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
                 placementId = placementFixture.placementId,
-                optionId = optionId ?: throw IllegalStateException("option not set"),
+                optionId = optionId ?: serviceNeedOption?.id ?: throw IllegalStateException("option not set"),
                 period = FiniteDateRange(
                     from ?: placementFixture.placementPeriod.start,
                     to ?: placementFixture.placementPeriod.end
-                )
+                ),
+                updated = updated,
+                id = id ?: UUID.randomUUID()
             )
+
             return placementFixture
         }
     }

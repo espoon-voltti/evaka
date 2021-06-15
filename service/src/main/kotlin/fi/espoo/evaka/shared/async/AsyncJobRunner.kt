@@ -96,6 +96,9 @@ class AsyncJobRunner(
     var vardaUpdate: (db: Database, msg: VardaUpdate) -> Unit = noHandler
 
     @Volatile
+    var vardaUpdateV2: (db: Database, msg: VardaUpdateV2) -> Unit = noHandler
+
+    @Volatile
     var sendPendingDecisionEmail: (db: Database, msg: SendPendingDecisionEmail) -> Unit = noHandler
 
     @Volatile
@@ -217,6 +220,7 @@ class AsyncJobRunner(
                     AsyncJobType.SEND_APPLICATION_EMAIL -> it.runJob(job, this.sendApplicationEmail)
                     AsyncJobType.GARBAGE_COLLECT_PAIRING -> it.runJob(job, this.garbageCollectPairing)
                     AsyncJobType.VARDA_UPDATE -> it.runJob(job, this.vardaUpdate)
+                    AsyncJobType.VARDA_UPDATE_V2 -> it.runJob(job, this.vardaUpdateV2)
                     AsyncJobType.SCHEDULE_KOSKI_UPLOADS -> it.runJob(job, this.scheduleKoskiUploads)
                     AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
                     AsyncJobType.SEND_UNREAD_MESSAGE_NOTIFICATION -> it.runJob(job, this.sendMessageNotificationEmail)

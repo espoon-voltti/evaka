@@ -137,6 +137,7 @@ INSERT INTO voucher_value_decision (
             .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed.feeDescriptionFi)
             .bind("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed.voucherValueDescriptionFi)
             .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed.voucherValueDescriptionFi)
+            .bind("sentAt", decision.sentAt)
             .add()
     }
     batch.execute()
