@@ -94,6 +94,7 @@ aliases:
       key: yarn-cache-frontend-v1-{{ checksum "frontend/yarn.lock" }}
       paths:
         - frontend/.yarn/cache
+        - frontend/node_modules
 
   - &restore_service_gradle
     restore_cache:
@@ -276,6 +277,10 @@ commands:
               && chromedriver --version
       - *restore_frontend_deps
       - run:
+          name: Install frontend dependencies from Yarn cache
+          working_directory: *workspace_frontend
+          command: yarn install --immutable --immutable-cache
+      - run:
           name: Run e2e tests against compose
           working_directory: *workspace_frontend
           command: |
@@ -334,6 +339,10 @@ commands:
             sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
             yarn --version
       - *restore_frontend_deps
+      - run:
+          name: Install frontend dependencies from Yarn cache
+          working_directory: *workspace_frontend
+          command: yarn install --immutable --immutable-cache
       - run:
           name: Install Playwright dependencies
           command: |
@@ -696,7 +705,6 @@ jobs:
           paths:
             - frontend/dist
             - frontend/storybook-build
-            - frontend/node_modules
       - run:
           working_directory: *workspace_frontend
           command: yarn lint-strict
