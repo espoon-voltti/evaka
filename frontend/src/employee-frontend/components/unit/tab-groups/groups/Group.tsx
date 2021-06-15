@@ -65,7 +65,6 @@ import DaycareDailyNoteModal from '../daycare-daily-notes/DaycareDailyNoteModal'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { isNotProduction, isPilotUnit } from '../../../../constants'
-import { featureFlags } from '../../../../config'
 import { RequireRole } from 'employee-frontend/utils/roles'
 
 interface Props {
