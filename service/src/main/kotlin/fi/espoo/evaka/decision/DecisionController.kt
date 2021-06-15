@@ -39,7 +39,7 @@ class DecisionController(
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
 
-        return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
+        return ResponseEntity.ok(DecisionListResponse(decisions))
     }
 
     @GetMapping("/by-child")
@@ -52,7 +52,7 @@ class DecisionController(
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
 
-        return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
+        return ResponseEntity.ok(DecisionListResponse(decisions))
     }
 
     @GetMapping("/by-application")
@@ -65,7 +65,7 @@ class DecisionController(
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) }
 
-        return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
+        return ResponseEntity.ok(DecisionListResponse(decisions))
     }
 
     @GetMapping("/units")
@@ -114,10 +114,6 @@ class DecisionController(
                 .body(document.getBytes())
         }
     }
-}
-
-fun withPublicDocumentUri(decisions: List<Decision>) = decisions.map { decision ->
-    decision.copy(documentUri = "/api/internal/decisions2/${decision.id}/download") // do not expose direct s3 uri
 }
 
 data class DecisionListResponse(

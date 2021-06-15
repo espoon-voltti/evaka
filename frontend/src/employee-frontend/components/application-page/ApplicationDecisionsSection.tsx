@@ -33,7 +33,7 @@ const isBlocked = (decisions: Decision[], decision: Decision) =>
   )
 
 const isDownloadAvailable = (decision: Decision) =>
-  decision.documentUri !== null
+  decision.documentKey !== null
 
 type Props = {
   applicationId: UUID

@@ -369,7 +369,7 @@ WHERE id = :unitId
             assertNull(row.resolved)
             assertNull(row.resolvedBy)
             assertNotNull(row.sentDate)
-            assertNotNull(row.documentUri)
+            assertNotNull(row.documentKey)
         }
         db.read { r ->
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, r.getApplicationStatus(applicationId))

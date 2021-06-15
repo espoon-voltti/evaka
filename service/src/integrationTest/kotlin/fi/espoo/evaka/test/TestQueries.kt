@@ -37,7 +37,7 @@ data class DecisionTableRow(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val status: DecisionStatus,
-    val documentUri: String?,
+    val documentKey: String?,
     val requestedStartDate: LocalDate?,
     val resolved: Instant?,
     val resolvedBy: UUID?

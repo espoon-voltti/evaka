@@ -901,12 +901,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             assertEquals(1, decisionsByApplication.size)
             val decision = decisionsByApplication.first()
             assertNotNull(decision.sentDate)
-            assertNotNull(decision.documentUri)
+            assertNotNull(decision.documentKey)
 
             if (secondDecisionTo == null) {
-                assertNull(decision.otherGuardianDocumentUri)
+                assertNull(decision.otherGuardianDocumentKey)
             } else {
-                assertNotNull(decision.otherGuardianDocumentUri)
+                assertNotNull(decision.otherGuardianDocumentKey)
             }
         }
 
@@ -1041,8 +1041,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             assertEquals(2, decisionsByApplication.size)
             decisionsByApplication.forEach { decision ->
                 assertNotNull(decision.sentDate)
-                assertNotNull(decision.documentUri)
-                assertNull(decision.otherGuardianDocumentUri)
+                assertNotNull(decision.documentKey)
+                assertNull(decision.otherGuardianDocumentKey)
             }
             val messages = MockEvakaMessageClient.getMessages()
             assertEquals(2, messages.size)

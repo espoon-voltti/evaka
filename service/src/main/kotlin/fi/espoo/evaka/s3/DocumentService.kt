@@ -17,7 +17,7 @@ data class DocumentWrapper(private val name: String, private val bytes: ByteArra
     override fun getBytes() = bytes
 }
 
-data class DocumentLocation(val uri: URI)
+data class DocumentLocation(val bucket: String, val key: String)
 
 interface DocumentService {
     /**
@@ -44,6 +44,4 @@ interface DocumentService {
      * Delete a document from S3
      */
     fun delete(bucketName: String, key: String)
-
-    fun parseUri(uri: String): Pair<String, String>
 }

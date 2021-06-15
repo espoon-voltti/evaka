@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
-import java.net.URI
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.ZoneId
@@ -23,7 +22,7 @@ import java.util.UUID
 private val decisionSelector =
     """
         SELECT 
-            d.id, d.type, d.start_date, d.end_date, d.document_uri, d.other_guardian_document_uri, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved,
+            d.id, d.type, d.start_date, d.end_date, d.document_key, d.other_guardian_document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved,
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
             u.street_address, u.postal_code, u.post_office,
             u.phone,
@@ -45,8 +44,8 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
     type = DecisionType.valueOf(rs.getString("type")),
     startDate = rs.getDate("start_date").toLocalDate(),
     endDate = rs.getDate("end_date").toLocalDate(),
-    documentUri = rs.getString("document_uri"),
-    otherGuardianDocumentUri = rs.getString("other_guardian_document_uri"),
+    documentKey = rs.getString("document_key"),
+    otherGuardianDocumentKey = rs.getString("other_guardian_document_key"),
     decisionNumber = rs.getLong("number"),
     sentDate = rs.getDate("sent_date").toLocalDate(),
     status = DecisionStatus.valueOf(rs.getString("status")),
@@ -210,19 +209,19 @@ fun Database.Transaction.insertDecision(
         .execute()
 }
 
-fun Database.Transaction.updateDecisionGuardianDocumentUri(decisionId: UUID, pdfUri: URI) {
+fun Database.Transaction.updateDecisionGuardianDocumentKey(decisionId: UUID, documentKey: String) {
     // language=SQL
-    createUpdate("UPDATE decision SET document_uri = :uri WHERE id = :id")
+    createUpdate("UPDATE decision SET document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
-        .bind("uri", pdfUri.toString())
+        .bind("documentKey", documentKey)
         .execute()
 }
 
-fun Database.Transaction.updateDecisionOtherGuardianDocumentUri(decisionId: UUID, pdfUri: URI) {
+fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(decisionId: UUID, documentKey: String) {
     // language=SQL
-    createUpdate("UPDATE decision SET other_guardian_document_uri = :uri WHERE id = :id")
+    createUpdate("UPDATE decision SET other_guardian_document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
-        .bind("uri", pdfUri.toString())
+        .bind("documentKey", documentKey)
         .execute()
 }
 

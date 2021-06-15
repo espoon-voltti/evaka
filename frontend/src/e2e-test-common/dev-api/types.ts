@@ -391,7 +391,8 @@ export interface PlacementPlan {
 export interface SuomiFiMessage {
   messageId: string
   documentId: string
-  documentUri: string
+  documentBucket: string
+  documentKey: string
   documentDisplayName: string
   ssn: string
   firstName: string
@@ -472,7 +473,7 @@ export interface Decision {
   applicationId: UUID
   childId: UUID
   childName: string
-  documentUri: string
+  documentKey: string | null
   decisionNumber: number
   sentDate: LocalDate
   status: DecisionStatus
