@@ -56,7 +56,7 @@ aliases:
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2048m"'
       GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
-      _JAVA_OPTIONS: "-Xmx2048m"
+      JAVA_TOOL_OPTIONS: "-Xmx2048m"
 
   - &restore_repo
     restore_cache:
