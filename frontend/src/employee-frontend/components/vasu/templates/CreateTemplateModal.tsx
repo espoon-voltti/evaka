@@ -9,11 +9,11 @@ import { Label } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import Combobox from '../../../../lib-components/atoms/form/Combobox'
-import {UUID} from "../../../../lib-common/types";
-import LocalDate from "../../../../lib-common/local-date";
-import {createVasuTemplate, VasuLanguage, vasuLanguages} from "./api";
-import FiniteDateRange from "../../../../lib-common/finite-date-range";
-import {DatePickerDeprecated} from "../../../../lib-components/molecules/DatePickerDeprecated";
+import { UUID } from '../../../../lib-common/types'
+import LocalDate from '../../../../lib-common/local-date'
+import { createVasuTemplate, VasuLanguage, vasuLanguages } from './api'
+import FiniteDateRange from '../../../../lib-common/finite-date-range'
+import { DatePickerDeprecated } from '../../../../lib-components/molecules/DatePickerDeprecated'
 
 interface Props {
   onSuccess: (templateId: UUID) => void
@@ -30,20 +30,28 @@ export default React.memo(function CreateTemplateModal({
   const [startDate, setStartDate] = useState(LocalDate.today())
   const [endDate, setEndDate] = useState(LocalDate.today().addYears(1))
   const [language, setLanguage] = useState<VasuLanguage>('FI')
+  const [submitting, setSubmitting] = useState(false)
 
   return (
     <FormModal
       title={t.newTemplateModal.title}
       resolve={{
         action: () => {
-          void createVasuTemplate(name, new FiniteDateRange(startDate, endDate), language).then(res => {
-            if(res.isSuccess) {
+          setSubmitting(true)
+          void createVasuTemplate(
+            name,
+            new FiniteDateRange(startDate, endDate),
+            language
+          ).then((res) => {
+            setSubmitting(false)
+            if (res.isSuccess) {
               onSuccess(res.value)
             }
           })
         },
         label: i18n.common.confirm,
-        disabled: endDate.isBefore(startDate) || name.trim().length === 0
+        disabled:
+          submitting || endDate.isBefore(startDate) || name.trim().length === 0
       }}
       reject={{
         action: onCancel,
@@ -70,18 +78,12 @@ export default React.memo(function CreateTemplateModal({
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.newTemplateModal.validStart}</Label>
-          <DatePickerDeprecated
-            date={startDate}
-            onChange={setStartDate}
-          />
+          <DatePickerDeprecated date={startDate} onChange={setStartDate} />
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.newTemplateModal.validEnd}</Label>
-          <DatePickerDeprecated
-            date={endDate}
-            onChange={setEndDate}
-          />
+          <DatePickerDeprecated date={endDate} onChange={setEndDate} />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </FormModal>

@@ -31,7 +31,7 @@ import {
   getVasuTemplateSummaries,
   VasuTemplateSummary
 } from './api'
-import CreateTemplateModal from "./CreateTemplateModal";
+import CreateTemplateModal from './CreateTemplateModal'
 
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
@@ -107,7 +107,7 @@ export default React.memo(function VasuTemplatesPage() {
 
         {createModalOpen && (
           <CreateTemplateModal
-            onSuccess={id => h.push(`/vasu-templates/${id}`)}
+            onSuccess={(id) => h.push(`/vasu-templates/${id}`)}
             onCancel={() => setCreateModalOpen(false)}
           />
         )}

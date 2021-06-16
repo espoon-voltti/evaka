@@ -61,7 +61,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'RADIO_GROUP',
           ophKey: null,
           name: name,
-          options: options.map(opt => ({
+          options: options.map((opt) => ({
             key: opt,
             name: opt
           })),
@@ -72,7 +72,7 @@ export default React.memo(function CreateQuestionModal({
           type: 'MULTISELECT',
           ophKey: null,
           name: name,
-          options: options.map(opt => ({
+          options: options.map((opt) => ({
             key: opt,
             name: opt
           })),
