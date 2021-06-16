@@ -76,7 +76,7 @@ export async function getStaffAttendances(
 ): Promise<Result<StaffAttendanceGroup>> {
   return client
     .get<JsonOf<Response<StaffAttendanceGroup>>>(
-      `/staff-attendances/${groupId}`,
+      `/staff-attendances/group/${groupId}`,
       {
         params
       }
@@ -105,7 +105,10 @@ export async function postStaffAttendance(
   staffAttendance: StaffAttendance
 ): Promise<Result<void>> {
   return client
-    .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
+    .post(
+      `/staff-attendances/group/${staffAttendance.groupId}`,
+      staffAttendance
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

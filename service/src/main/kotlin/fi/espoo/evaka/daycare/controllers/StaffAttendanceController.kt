@@ -30,7 +30,7 @@ class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
     private val acl: AccessControlList
 ) {
-    @GetMapping("/{groupId}")
+    @GetMapping("/group/{groupId}")
     fun getAttendancesByGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
@@ -45,7 +45,7 @@ class StaffAttendanceController(
         return ResponseEntity.ok(Wrapper(result))
     }
 
-    @PostMapping("/{groupId}")
+    @PostMapping("/group/{groupId}")
     fun upsertStaffAttendance(
         db: Database.Connection,
         user: AuthenticatedUser,
@@ -58,8 +58,7 @@ class StaffAttendanceController(
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
-        staffAttendance.groupId = groupId
-        staffAttendanceService.upsertStaffAttendance(db, staffAttendance)
+        staffAttendanceService.upsertStaffAttendance(db, staffAttendance.copy(groupId = groupId))
         return ResponseEntity.noContent().build()
     }
 }

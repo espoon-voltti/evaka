@@ -64,7 +64,7 @@ data class StaffAttendanceGroup(
 )
 
 data class StaffAttendance(
-    var groupId: UUID,
+    val groupId: UUID,
     val date: LocalDate,
     val count: Double?,
     val countOther: Double?
