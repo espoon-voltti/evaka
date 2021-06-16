@@ -83,28 +83,14 @@ function CreatePlacementModal({ childId, reload }: Props) {
     )
   }, [units, setActiveUnits, form.startDate, form.endDate])
 
-  useEffect(() => {
-    if (
-      activeUnits.isSuccess &&
-      (!form.unitId || !activeUnits.value.some((u) => u.id === form.unitId))
-    ) {
-      const defaultUnit = activeUnits.value.sort((a, b) =>
-        a.name < b.name ? -1 : 1
-      )[0]
-      setForm((old) => ({
-        ...old,
-        unitId: defaultUnit.id,
-        ghostUnit: defaultUnit.ghostUnit || false
-      }))
-    }
-  }, [activeUnits, form.unitId])
-
   const submitForm = () => {
+    if (!form.unitId) return
+
     setSubmitting(true)
     createPlacement({
       childId: childId,
       type: form.type,
-      unitId: form.unitId || '',
+      unitId: form.unitId,
       startDate: form.startDate,
       endDate: form.endDate
     })
