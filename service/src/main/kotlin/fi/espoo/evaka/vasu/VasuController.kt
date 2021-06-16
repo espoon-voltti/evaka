@@ -1,5 +1,6 @@
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -27,6 +28,7 @@ class VasuController {
         user: AuthenticatedUser,
         @RequestBody body: CreateDocumentRequest
     ): VasuDocumentResponse {
+        Audit.VasuDocumentCreate.log(body.childId)
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.transaction { tx ->
@@ -48,6 +50,7 @@ class VasuController {
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): VasuDocumentResponse {
+        Audit.VasuDocumentRead.log(id)
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.read { tx ->
@@ -65,6 +68,7 @@ class VasuController {
         @PathVariable id: UUID,
         @RequestBody body: UpdateDocumentRequest
     ) {
+        Audit.VasuDocumentUpdate.log(id)
         user.requireOneOfRoles(UserRole.ADMIN)
 
         db.transaction { tx -> tx.updateVasuDocument(id, body.content) }
@@ -76,6 +80,7 @@ class VasuController {
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): List<VasuDocumentSummary> {
+        Audit.ChildVasuDocumentsRead.log(childId)
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
