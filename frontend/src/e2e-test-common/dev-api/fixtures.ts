@@ -627,7 +627,7 @@ export const feeDecisionsFixture = (
   ),
   headOfFamily: { id: adult.id },
   familySize: 2,
-  pricing: feeThresholds,
+  feeThresholds: feeThresholds,
   children: [
     {
       child: { id: child.id, dateOfBirth: child.dateOfBirth },
@@ -665,7 +665,7 @@ export const voucherValueDecisionsFixture = (
   validTo,
   headOfFamily: { id: adultId },
   familySize: 2,
-  pricing: feeThresholds,
+  feeThresholds: feeThresholds,
   child: { id: childId, dateOfBirth: '2017-06-30' },
   placement: {
     unit: { id: daycareId },

@@ -85,7 +85,7 @@ fun Database.Read.getNewServiceNeed(id: UUID): NewServiceNeed {
 fun Database.Read.getNewServiceNeedChildRange(id: UUID): NewServiceNeedChildRange {
     // language=sql
     val sql = """
-        SELECT p.child_id, sn.start_date, sn.end_date
+        SELECT p.child_id, daterange(sn.start_date, sn.end_date, '[]')
         FROM new_service_need sn
         JOIN placement p on sn.placement_id = p.id
         WHERE sn.id = :id

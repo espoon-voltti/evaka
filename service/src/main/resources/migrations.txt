@@ -109,3 +109,4 @@ V108__person_freetext_search.sql
 V109__fee_thresholds_default_id.sql
 V110__varda_service_need.sql
 V111__drop_bulletin_tables.sql
+V112__drop_pricing.sql

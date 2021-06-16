@@ -6,10 +6,11 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.pis.getTransferablePersonReferences
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -37,7 +38,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
         val feeAffectingDateRange = tx.createQuery(feeAffectingDatesSQL)
             .bind("id_duplicate", duplicate)
             .map { rs, _ ->
-                Pair(
+                DateRange(
                     rs.getDate("min_date").toLocalDate(),
                     rs.getDate("max_date")?.toLocalDate()
                         ?.takeIf { it.isBefore(LocalDate.of(2200, 1, 1)) } // infinity -> null
@@ -90,7 +91,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
                 .bind("id", master)
                 .map { rs, _ -> rs.getUUID("head_of_child") }
                 .forEach { parentId ->
-                    sendFamilyUpdatedMessage(tx, parentId, feeAffectingDateRange.first, feeAffectingDateRange.second)
+                    sendFamilyUpdatedMessage(tx, parentId, feeAffectingDateRange)
                 }
         }
     }
@@ -130,7 +131,7 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner) {
         tx.createUpdate(sql2).bind("id", id).execute()
     }
 
-    private fun sendFamilyUpdatedMessage(tx: Database.Transaction, adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
-        asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+    private fun sendFamilyUpdatedMessage(tx: Database.Transaction, adultId: UUID, dateRange: DateRange) {
+        asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(adultId, dateRange)))
     }
 }

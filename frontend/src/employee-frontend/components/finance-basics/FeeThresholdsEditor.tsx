@@ -117,6 +117,7 @@ export default React.memo(function FeeThresholdsEditor({
           }
           info={validationErrorInfo('validFrom') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
+          data-qa="valid-from"
         />
         <span>-</span>
         <DatePicker
@@ -130,6 +131,7 @@ export default React.memo(function FeeThresholdsEditor({
           }
           info={validationErrorInfo('validTo') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
+          data-qa="valid-to"
         />
       </RowWithMargin>
       {'errors' in validationResult && validationResult.errors.dateOverlap ? (
@@ -155,6 +157,7 @@ export default React.memo(function FeeThresholdsEditor({
             symbol={'€'}
             info={validationErrorInfo('maxFee')}
             hideErrorsBeforeTouched
+            data-qa="max-fee"
           />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
@@ -173,6 +176,7 @@ export default React.memo(function FeeThresholdsEditor({
             symbol={'€'}
             info={validationErrorInfo('minFee')}
             hideErrorsBeforeTouched
+            data-qa="min-fee"
           />
         </FixedSpaceColumn>
       </RowWithMargin>
@@ -221,6 +225,7 @@ export default React.memo(function FeeThresholdsEditor({
                       ) ?? maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
+                    data-qa={`min-income-threshold-${n}`}
                   />
                 </Td>
                 <Td>
@@ -244,6 +249,7 @@ export default React.memo(function FeeThresholdsEditor({
                       ) ?? maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
+                    data-qa={`income-multiplier-${n}`}
                   />
                 </Td>
                 <Td>
@@ -267,8 +273,9 @@ export default React.memo(function FeeThresholdsEditor({
                       ) ?? maxFeeErrorInputInfo
                     }
                     hideErrorsBeforeTouched
+                    data-qa={`max-income-threshold-${n}`}
                   />
-                  <MaxFeeError>
+                  <MaxFeeError data-qa={`max-fee-error-${n}`}>
                     {maxFeeError
                       ? `${i18n.financeBasics.fees.maxFeeError} (${maxFeeError} €)`
                       : null}
@@ -302,6 +309,7 @@ export default React.memo(function FeeThresholdsEditor({
           symbol={'€'}
           info={validationErrorInfo('incomeThresholdIncrease6Plus')}
           hideErrorsBeforeTouched
+          data-qa="income-threshold-increase"
         />
       </ColumnWithMargin>
       <H4>{i18n.financeBasics.fees.siblingDiscounts}</H4>
@@ -322,6 +330,7 @@ export default React.memo(function FeeThresholdsEditor({
             symbol={'%'}
             info={validationErrorInfo('siblingDiscount2')}
             hideErrorsBeforeTouched
+            data-qa="sibling-discount-2"
           />
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
@@ -340,6 +349,7 @@ export default React.memo(function FeeThresholdsEditor({
             symbol={'%'}
             info={validationErrorInfo('siblingDiscount2Plus')}
             hideErrorsBeforeTouched
+            data-qa="sibling-discount-2-plus"
           />
         </FixedSpaceColumn>
       </RowWithMargin>
@@ -379,6 +389,7 @@ export default React.memo(function FeeThresholdsEditor({
             reloadData()
           }}
           disabled={'errors' in validationResult}
+          data-qa="save"
         />
       </ButtonRow>
     </>

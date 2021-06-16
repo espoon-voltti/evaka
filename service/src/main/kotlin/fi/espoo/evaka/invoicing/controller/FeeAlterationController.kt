@@ -11,7 +11,7 @@ import fi.espoo.evaka.invoicing.data.getFeeAlterationsForPerson
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFeeAlterationUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -53,10 +53,9 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
             asyncJobRunner.plan(
                 tx,
                 listOf(
-                    NotifyFeeAlterationUpdated(
+                    GenerateFinanceDecisions.forChild(
                         feeAlteration.personId,
-                        feeAlteration.validFrom,
-                        feeAlteration.validTo
+                        DateRange(feeAlteration.validFrom, feeAlteration.validTo)
                     )
                 )
             )
@@ -79,10 +78,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
                 DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
             } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
-            asyncJobRunner.plan(
-                tx,
-                listOf(NotifyFeeAlterationUpdated(feeAlteration.personId, expandedPeriod.start, expandedPeriod.end))
-            )
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)))
         }
 
         asyncJobRunner.scheduleImmediateRun()
@@ -101,7 +97,12 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
             existing?.let {
                 asyncJobRunner.plan(
                     tx,
-                    listOf(NotifyFeeAlterationUpdated(existing.personId, existing.validFrom, existing.validTo))
+                    listOf(
+                        GenerateFinanceDecisions.forChild(
+                            existing.personId,
+                            DateRange(existing.validFrom, existing.validTo)
+                        )
+                    )
                 )
             }
         }

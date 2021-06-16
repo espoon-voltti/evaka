@@ -7,7 +7,7 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
-import fi.espoo.evaka.invoicing.data.getPricing
+import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
@@ -53,29 +53,29 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `get pricing works when from is same as validFrom`() {
+    fun `getFeeThresholds works when from is same as validFrom`() {
         val from = LocalDate.of(2000, 1, 1)
-        val result = db.read { it.getPricing(from) }
+        val result = db.read { it.getFeeThresholds(from) }
 
         assertEquals(1, result.size)
-        result[0].let { pricing ->
-            assertEquals(from, pricing.validDuring.start)
-            assertEquals(null, pricing.validDuring.end)
-            assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier2)
-            assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier(2))
+        result[0].let { feeThresholds ->
+            assertEquals(from, feeThresholds.validDuring.start)
+            assertEquals(null, feeThresholds.validDuring.end)
+            assertEquals(BigDecimal("0.1070"), feeThresholds.incomeMultiplier2)
+            assertEquals(BigDecimal("0.1070"), feeThresholds.incomeMultiplier(2))
         }
     }
 
     @Test
-    fun `get pricing works as expected when from is before any pricing configuration`() {
+    fun `getFeeThresholds works as expected when from is before any fee thresholds configuration`() {
         val from = LocalDate.of(1990, 1, 1)
-        val result = db.read { it.getPricing(from) }
+        val result = db.read { it.getFeeThresholds(from) }
 
         assertEquals(1, result.size)
-        result[0].let { pricing ->
-            assertEquals(LocalDate.of(2000, 1, 1), pricing.validDuring.start)
-            assertEquals(null, pricing.validDuring.end)
-            assertEquals(BigDecimal("0.1070"), pricing.incomeMultiplier2)
+        result[0].let { feeThresholds ->
+            assertEquals(LocalDate.of(2000, 1, 1), feeThresholds.validDuring.start)
+            assertEquals(null, feeThresholds.validDuring.end)
+            assertEquals(BigDecimal("0.1070"), feeThresholds.incomeMultiplier2)
         }
     }
 
@@ -87,7 +87,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
+        db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id, period) }
 
         val feeDecisions = getAllFeeDecisions()
         assertEquals(1, feeDecisions.size)

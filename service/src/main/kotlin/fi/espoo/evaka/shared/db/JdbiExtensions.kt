@@ -162,7 +162,7 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapp
         headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
         partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
         familySize = rs.getInt("family_size"),
-        pricing = mapper.readValue(rs.getString("pricing")),
+        feeThresholds = mapper.readValue(rs.getString("fee_thresholds")),
         // child is not nullable so if it's missing there was nothing to join to the decision
         children = rs.getString("child_id")?.let {
             listOf(
@@ -234,7 +234,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
         headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
         partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
         familySize = rs.getInt("family_size"),
-        pricing = mapper.readValue(rs.getString("pricing")),
+        feeThresholds = mapper.readValue(rs.getString("fee_thresholds")),
         // child is not nullable so if it's missing there was nothing to join to the decision
         children = rs.getString("child_id")?.let {
             listOf(

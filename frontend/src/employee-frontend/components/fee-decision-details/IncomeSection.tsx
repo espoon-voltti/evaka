@@ -72,11 +72,15 @@ export default React.memo(function Incomesection({ decision }: Props) {
           },
           {
             label: i18n.feeDecision.form.summary.income.feePercent,
-            value: `${formatPercent(decision.feePercent) ?? ''} %`
+            value: `${
+              formatPercent(decision.feeThresholds.incomeMultiplier * 100) ?? ''
+            } %`
           },
           {
             label: i18n.feeDecision.form.summary.income.minThreshold,
-            value: `${formatCents(decision.minThreshold) ?? ''} €`
+            value: `${
+              formatCents(decision.feeThresholds.minIncomeThreshold) ?? ''
+            } €`
           }
         ]}
       />

@@ -5,12 +5,12 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.messaging.planFinanceDecisionGeneration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import org.jdbi.v3.core.kotlin.mapTo
+import fi.espoo.evaka.shared.domain.DateRange
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -41,20 +41,7 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner)
     }
 
     private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
-        db.transaction { tx ->
-            val heads = if (targetHeads.isEmpty()) {
-                tx.createQuery("SELECT head_of_child FROM fridge_child WHERE end_date >= :from AND conflict = false")
-                    .bind("from", starting)
-                    .mapTo<UUID>()
-                    .list()
-            } else targetHeads
-
-            val jobs = heads.distinct().map { headId ->
-                NotifyFamilyUpdated(headId, starting, null)
-            }
-
-            asyncJobRunner.plan(tx, jobs)
-        }
+        db.transaction { planFinanceDecisionGeneration(it, asyncJobRunner, DateRange(starting, null), targetHeads) }
         asyncJobRunner.scheduleImmediateRun()
     }
 }

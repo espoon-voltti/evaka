@@ -17,7 +17,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
-import fi.espoo.evaka.invoicing.testPricing
+import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -61,7 +61,7 @@ class PdfServiceTest {
         headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
         partnerIncome = testDecisionIncome.copy(total = 413195),
         familySize = 3,
-        pricing = testPricing.getFeeDecisionThresholds(3),
+        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),
@@ -137,7 +137,7 @@ class PdfServiceTest {
         financeDecisionHandlerFirstName = null,
         financeDecisionHandlerLastName = null,
         familySize = 3,
-        pricing = testPricing.getFeeDecisionThresholds(3),
+        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         headOfFamilyIncome = testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
         partnerIncome = testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
         child = PersonData.Detailed(
@@ -213,7 +213,7 @@ class PdfServiceTest {
             "totalIncome" to "6273,54",
             "feePercent" to "10,7",
             "familySize" to 3,
-            "pricingMinThreshold" to "-2713,00",
+            "incomeMinThreshold" to "-2713,00",
             "showValidTo" to true,
             "approverFirstName" to "Pirkko",
             "approverLastName" to "Päättäjä",
@@ -259,7 +259,7 @@ class PdfServiceTest {
             "totalIncome" to "6273,54",
             "feePercent" to "10,7",
             "familySize" to 3,
-            "pricingMinThreshold" to "-2713,00",
+            "incomeMinThreshold" to "-2713,00",
             "showValidTo" to true,
             "approverFirstName" to "Pirkko",
             "approverLastName" to "Päättäjä",

@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
-fun Database.Read.getPricing(from: LocalDate? = null): List<FeeThresholds> {
+fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> {
     return createQuery("SELECT * FROM fee_thresholds WHERE valid_during && daterange(:from, null)")
         .bindNullable("from", from)
         .mapTo<FeeThresholds>()

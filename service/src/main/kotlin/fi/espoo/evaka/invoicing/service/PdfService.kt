@@ -229,7 +229,7 @@ class PDFService(
             "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },
             "validFrom" to dateFmt(decision.validDuring.start),
             "feePercent" to decision.feePercent().toDecimalString(),
-            "pricingMinThreshold" to formatCents(-1 * decision.minThreshold()),
+            "incomeMinThreshold" to formatCents(-1 * decision.minThreshold()),
             "familySize" to decision.familySize,
             "showValidTo" to (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false),
             "approverFirstName" to (

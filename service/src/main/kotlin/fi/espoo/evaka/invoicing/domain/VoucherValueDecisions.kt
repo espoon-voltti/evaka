@@ -31,7 +31,7 @@ data class VoucherValueDecision(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: FeeDecisionThresholds,
+    val feeThresholds: FeeDecisionThresholds,
     @Nested("child")
     val child: PersonData.WithDateOfBirth,
     @Nested("placement")
@@ -112,7 +112,7 @@ data class VoucherValueDecisionDetailed(
     val partnerIncome: DecisionIncome?,
     val familySize: Int,
     @Json
-    val pricing: FeeDecisionThresholds,
+    val feeThresholds: FeeDecisionThresholds,
     @Nested("child")
     val child: PersonData.Detailed,
     @Nested("placement")
@@ -164,12 +164,6 @@ data class VoucherValueDecisionDetailed(
         val retroThreshold = LocalDate.from(sentAtLocalDate ?: LocalDate.now()).withDayOfMonth(1)
         return this.validFrom.isBefore(retroThreshold)
     }
-
-    @JsonProperty("minThreshold")
-    fun minThreshold(): Int = pricing.minIncomeThreshold
-
-    @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = pricing.incomeMultiplier
 }
 
 data class VoucherValueDecisionSummary(

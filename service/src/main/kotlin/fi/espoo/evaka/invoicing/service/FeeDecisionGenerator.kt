@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.data.deleteFeeDecisions
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
+import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
-import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -48,7 +48,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     children: List<PersonData.WithDateOfBirth>
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
-    val prices = getPricing(from)
+    val prices = getFeeThresholds(from)
     val incomes = getIncomesFrom(objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
@@ -188,7 +188,7 @@ private fun generateNewFeeDecisions2(
                 headOfFamilyIncome = income,
                 partnerIncome = partnerIncome,
                 familySize = familySize,
-                pricing = price.getFeeDecisionThresholds(familySize),
+                feeThresholds = price.getFeeDecisionThresholds(familySize),
                 children = children.sortedBy { it.siblingDiscount }
             )
         }

@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.async
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.dvv.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
@@ -36,21 +37,6 @@ class AsyncJobRunner(
     private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(threadPoolSize)
     private var periodicRunner: ScheduledFuture<*>? = null
     private val runningCount: AtomicInteger = AtomicInteger(0)
-
-    @Volatile
-    var notifyPlacementPlanApplied: (db: Database, msg: NotifyPlacementPlanApplied) -> Unit = noHandler
-
-    @Volatile
-    var notifyServiceNeedUpdated: (db: Database, msg: NotifyServiceNeedUpdated) -> Unit = noHandler
-
-    @Volatile
-    var notifyFamilyUpdated: (db: Database, msg: NotifyFamilyUpdated) -> Unit = noHandler
-
-    @Volatile
-    var notifyFeeAlterationUpdated: (db: Database, msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
-
-    @Volatile
-    var notifyIncomeUpdated: (db: Database, msg: NotifyIncomeUpdated) -> Unit = noHandler
 
     @Volatile
     var notifyDecisionCreated: (db: Database, msg: NotifyDecisionCreated) -> Unit = noHandler
@@ -106,6 +92,12 @@ class AsyncJobRunner(
 
     @Volatile
     var runDailyJob: (db: Database, msg: RunDailyJob) -> Unit = noHandler
+
+    @Volatile
+    var notifyFeeThresholdsUpdated: (db: Database, msg: NotifyFeeThresholdsUpdated) -> Unit = noHandler
+
+    @Volatile
+    var generateFinanceDecisions: (db: Database, msg: GenerateFinanceDecisions) -> Unit = noHandler
 
     fun plan(
         tx: Database.Transaction,
@@ -182,6 +174,7 @@ class AsyncJobRunner(
         } while (job != null && remaining > 0)
     }
 
+    @Suppress("DEPRECATION")
     private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef) {
         val logMeta = mapOf(
             "jobId" to job.jobId,
@@ -196,11 +189,6 @@ class AsyncJobRunner(
             val completed = db.transaction {
                 it.setLockTimeout(Duration.ofSeconds(5))
                 when (job.jobType) {
-                    AsyncJobType.PLACEMENT_PLAN_APPLIED -> it.runJob(job, this.notifyPlacementPlanApplied)
-                    AsyncJobType.SERVICE_NEED_UPDATED -> it.runJob(job, this.notifyServiceNeedUpdated)
-                    AsyncJobType.FAMILY_UPDATED -> it.runJob(job, this.notifyFamilyUpdated)
-                    AsyncJobType.FEE_ALTERATION_UPDATED -> it.runJob(job, this.notifyFeeAlterationUpdated)
-                    AsyncJobType.INCOME_UPDATED -> it.runJob(job, this.notifyIncomeUpdated)
                     AsyncJobType.DECISION_CREATED -> it.runJob(job, this.notifyDecisionCreated)
                     AsyncJobType.SEND_DECISION -> it.runJob(job, this.sendDecision)
                     AsyncJobType.FEE_DECISION_APPROVED -> it.runJob(job, this.notifyFeeDecisionApproved)
@@ -226,6 +214,40 @@ class AsyncJobRunner(
                     AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
                     AsyncJobType.SEND_UNREAD_MESSAGE_NOTIFICATION -> it.runJob(job, this.sendMessageNotificationEmail)
                     AsyncJobType.RUN_DAILY_JOB -> it.runJob(job, this.runDailyJob)
+                    AsyncJobType.FEE_THRESHOLDS_UPDATED -> it.runJob(job, this.notifyFeeThresholdsUpdated)
+                    AsyncJobType.GENERATE_FINANCE_DECISIONS -> it.runJob(job, this.generateFinanceDecisions)
+
+                    // Deprecated, delete when no more jobs of this type in the database
+                    AsyncJobType.PLACEMENT_PLAN_APPLIED -> it.runJob(job) { db, msg: NotifyPlacementPlanApplied ->
+                        this.generateFinanceDecisions(
+                            db,
+                            GenerateFinanceDecisions.forChild(msg.childId, DateRange(msg.startDate, msg.endDate))
+                        )
+                    }
+                    AsyncJobType.SERVICE_NEED_UPDATED -> it.runJob(job) { db, msg: NotifyServiceNeedUpdated ->
+                        this.generateFinanceDecisions(
+                            db,
+                            GenerateFinanceDecisions.forChild(msg.childId, DateRange(msg.startDate, msg.endDate))
+                        )
+                    }
+                    AsyncJobType.FAMILY_UPDATED -> it.runJob(job) { db, msg: NotifyFamilyUpdated ->
+                        this.generateFinanceDecisions(
+                            db,
+                            GenerateFinanceDecisions.forAdult(msg.adultId, DateRange(msg.startDate, msg.endDate))
+                        )
+                    }
+                    AsyncJobType.FEE_ALTERATION_UPDATED -> it.runJob(job) { db, msg: NotifyFeeAlterationUpdated ->
+                        this.generateFinanceDecisions(
+                            db,
+                            GenerateFinanceDecisions.forChild(msg.personId, DateRange(msg.startDate, msg.endDate))
+                        )
+                    }
+                    AsyncJobType.INCOME_UPDATED -> it.runJob(job) { db, msg: NotifyIncomeUpdated ->
+                        this.generateFinanceDecisions(
+                            db,
+                            GenerateFinanceDecisions.forAdult(msg.personId, DateRange(msg.startDate, msg.endDate))
+                        )
+                    }
                 }.exhaust()
             }
             if (completed) {

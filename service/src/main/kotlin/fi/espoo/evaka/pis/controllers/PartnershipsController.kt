@@ -11,11 +11,12 @@ import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.pis.service.PartnershipService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -48,7 +49,10 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
             return db
                 .transaction { tx ->
                     val partnership = partnershipService.createPartnership(tx, personId1, personId2, startDate, endDate)
-                    asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(personId2, startDate, endDate)))
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(GenerateFinanceDecisions.forAdult(personId2, DateRange(startDate, endDate)))
+                    )
                     partnership
                 }
                 .also { asyncJobRunner.scheduleImmediateRun() }
@@ -98,7 +102,12 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
                 val partnership = partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
                 asyncJobRunner.plan(
                     tx,
-                    listOf(NotifyFamilyUpdated(partnership.partners.last().id, partnership.startDate, partnership.endDate))
+                    listOf(
+                        GenerateFinanceDecisions.forAdult(
+                            partnership.partners.last().id,
+                            DateRange(partnership.startDate, partnership.endDate)
+                        )
+                    )
                 )
                 partnership
             }
@@ -117,7 +126,12 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
         db.transaction { tx ->
             partnershipService.retryPartnership(tx, partnershipId)?.let {
-                asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(it.partners.first().id, it.startDate, it.endDate)))
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        GenerateFinanceDecisions.forAdult(it.partners.first().id, DateRange(it.startDate, it.endDate))
+                    )
+                )
             }
         }
         asyncJobRunner.scheduleImmediateRun()
@@ -137,7 +151,9 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
             partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
                 asyncJobRunner.plan(
                     tx,
-                    partnership.partners.map { NotifyFamilyUpdated(it.id, partnership.startDate, partnership.endDate) }
+                    partnership.partners.map {
+                        GenerateFinanceDecisions.forAdult(it.id, DateRange(partnership.startDate, partnership.endDate))
+                    }
                 )
             }
         }

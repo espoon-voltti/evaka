@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.shared.async
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.daily.DailyJob
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.Duration
 import java.time.LocalDate
@@ -38,7 +40,9 @@ enum class AsyncJobType {
     VARDA_UPDATE_V2,
     SEND_PENDING_DECISION_EMAIL,
     SEND_UNREAD_MESSAGE_NOTIFICATION,
-    RUN_DAILY_JOB
+    RUN_DAILY_JOB,
+    FEE_THRESHOLDS_UPDATED,
+    GENERATE_FINANCE_DECISIONS
 }
 
 interface AsyncJobPayload {
@@ -76,18 +80,21 @@ data class UploadToKoski(val key: KoskiStudyRightKey) : AsyncJobPayload {
     override val user: AuthenticatedUser? = null
 }
 
+@Deprecated("Use GenerateFinanceDecisions instead")
 data class NotifyPlacementPlanApplied(val childId: UUID, val startDate: LocalDate, val endDate: LocalDate) :
     AsyncJobPayload {
     override val asyncJobType = AsyncJobType.PLACEMENT_PLAN_APPLIED
     override val user: AuthenticatedUser? = null
 }
 
+@Deprecated("Use GenerateFinanceDecisions instead")
 data class NotifyServiceNeedUpdated(val childId: UUID, val startDate: LocalDate, val endDate: LocalDate?) :
     AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SERVICE_NEED_UPDATED
     override val user: AuthenticatedUser? = null
 }
 
+@Deprecated("Use GenerateFinanceDecisions instead")
 data class NotifyFamilyUpdated(
     val adultId: UUID,
     val startDate: LocalDate,
@@ -97,6 +104,7 @@ data class NotifyFamilyUpdated(
     override val user: AuthenticatedUser? = null
 }
 
+@Deprecated("Use GenerateFinanceDecisions instead")
 data class NotifyFeeAlterationUpdated(
     val personId: UUID,
     val startDate: LocalDate,
@@ -106,6 +114,7 @@ data class NotifyFeeAlterationUpdated(
     override val user: AuthenticatedUser? = null
 }
 
+@Deprecated("Use GenerateFinanceDecisions instead")
 data class NotifyIncomeUpdated(
     val personId: UUID,
     val startDate: LocalDate,
@@ -170,6 +179,28 @@ class VardaUpdateV2 : AsyncJobPayload {
 data class RunDailyJob(val dailyJob: DailyJob) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.RUN_DAILY_JOB
     override val user: AuthenticatedUser? = null
+}
+
+data class NotifyFeeThresholdsUpdated(val dateRange: DateRange) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.FEE_THRESHOLDS_UPDATED
+    override val user: AuthenticatedUser? = null
+}
+
+data class GenerateFinanceDecisions private constructor(val person: Person, val dateRange: DateRange) :
+    AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.GENERATE_FINANCE_DECISIONS
+    override val user: AuthenticatedUser? = null
+
+    companion object {
+        fun forAdult(personId: UUID, dateRange: DateRange) = GenerateFinanceDecisions(Person.Adult(personId), dateRange)
+        fun forChild(personId: UUID, dateRange: DateRange) = GenerateFinanceDecisions(Person.Child(personId), dateRange)
+    }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+    sealed class Person {
+        data class Adult(val adultId: UUID) : Person()
+        data class Child(val childId: UUID) : Person()
+    }
 }
 
 data class JobParams<T : AsyncJobPayload>(
