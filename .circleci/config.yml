@@ -99,12 +99,12 @@ aliases:
   - &restore_service_gradle
     restore_cache:
       keys:
-        - gradle-home-service-v4-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+        - gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
         - gradle-home-service-v4-
 
   - &store_service_gradle
     save_cache:
-      key: gradle-home-service-v4-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+      key: gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
       paths:
         - service/.gradle
         - .gradle-user-home
@@ -819,7 +819,7 @@ jobs:
       - *restore_service_gradle
       - run:
           working_directory: *workspace_service
-          command: ./gradlew assemble
+          command: ./gradlew assemble compileIntegrationTestKotlin
       - *store_service_gradle
       - persist_to_workspace:
           root: *workspace_root
@@ -927,18 +927,7 @@ jobs:
           name: gradle custom-ktlint-rules test
           command: |
             cd custom-ktlint-rules
-            # Get list of classnames of tests that should run on this node
-            CLASSNAMES=$(circleci tests glob \
-                "src/test/kotlin/**/*{Test,Tests}.kt" \
-                "../service-lib/src/test/kotlin/**/*{Test,Tests}.kt" \
-                | sed 's/.*src\/test\/kotlin\///' \
-                | sed 's@/@.@g' \
-                | sed 's/.kt//' \
-                | circleci tests split --split-by=timings --timings-type=classname)
-            # Format the arguments for Gradle
-            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
-            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
-            ./gradlew test $GRADLE_ARGS
+            ./gradlew test
       - store_test_results:
           path: /home/circleci/repo/service/custom-ktlint-rules/build/test-results/test/
       - notify_slack
