@@ -194,6 +194,7 @@ class AsyncJobRunner(
             runningCount.incrementAndGet()
             logger.info(logMeta) { "Running async job $job" }
             val completed = db.transaction {
+                it.setLockTimeout(Duration.ofSeconds(5))
                 when (job.jobType) {
                     AsyncJobType.PLACEMENT_PLAN_APPLIED -> it.runJob(job, this.notifyPlacementPlanApplied)
                     AsyncJobType.SERVICE_NEED_UPDATED -> it.runJob(job, this.notifyServiceNeedUpdated)
@@ -260,3 +261,7 @@ class AsyncJobRunner(
         this.executor.shutdownNow()
     }
 }
+
+private fun Database.Transaction.setLockTimeout(duration: Duration) = createUpdate(
+    "SET LOCAL lock_timeout = <durationInMs>"
+).define("durationInMs", "'${duration.toMillis()}ms'").execute()

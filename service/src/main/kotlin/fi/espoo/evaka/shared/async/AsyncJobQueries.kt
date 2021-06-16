@@ -83,7 +83,7 @@ WITH started_job AS (
   FROM async_job
   WHERE id = :jobId
   AND claimed_by = :txId
-  FOR UPDATE SKIP LOCKED
+  FOR UPDATE
 )
 UPDATE async_job
 SET started_at = clock_timestamp()
