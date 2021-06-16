@@ -637,7 +637,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
 private fun Database.Read.getChildIdByServiceNeedId(serviceNeedId: UUID): UUID? = createQuery(
     """
-SELECT p.child_id FROM placement p LEFT JOIN new_service_need sn ON p.id = sn.placement_id
+SELECT p.child_id FROM placement p LEFT JOIN service_need sn ON p.id = sn.placement_id
 WHERE sn.id = :serviceNeedId
         """
 ).bind("serviceNeedId", serviceNeedId)
@@ -653,7 +653,7 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNee
 
 private fun Database.Transaction.setFeeDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
     """
-UPDATE new_fee_decision SET sent_at = :sentAt
+UPDATE fee_decision SET sent_at = :sentAt
 WHERE id = :id 
         """
 ).bind("id", id)

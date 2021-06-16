@@ -495,7 +495,7 @@ private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids
 FROM varda_service_need
 WHERE evaka_service_need_id NOT IN (
-    SELECT id FROM new_service_need
+    SELECT id FROM service_need
 )
 GROUP BY evaka_child_id"""
         )
