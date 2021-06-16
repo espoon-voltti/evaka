@@ -1055,6 +1055,11 @@ export const fi = {
         sum: 'Yhteensä',
         entrepreneur: 'Yrittäjä',
         echa: 'Euroopan kemikaalivirasto',
+        source: 'Lähde',
+        createdFromUnknownApplication:
+          'Luotu automaattisesti tuntemattomalta hakemukselta',
+        createdFromApplication: 'Luotu automaattisesti hakemukselta',
+        application: 'Hakemus',
         incomeTypes: {
           MAIN_INCOME: 'Päätulot',
           SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
