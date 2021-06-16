@@ -60,6 +60,25 @@ class VardaUpdateServiceV2(
         val client = VardaClient(tokenProvider, fuel, env, mapper)
         db.connect { updateAllVardaData(it, client, organizer) }
     }
+
+    fun clearAllExistingVardaChildDataFromVarda(db: Database.Connection, vardaChildId: Long) {
+        val vardaClient = VardaClient(tokenProvider, fuel, env, mapper)
+
+        try {
+            val feeDataIds = vardaClient.getFeeDataByChild(vardaChildId)
+            deleteFeeData(db, vardaClient, feeDataIds)
+
+            val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
+            val placementIds = decisionIds.flatMap {
+                vardaClient.getPlacementsByDecision(it)
+            }
+            deletePlacements(db, vardaClient, placementIds)
+            deleteDecisions(db, vardaClient, decisionIds)
+            deleteChild(db, vardaClient, vardaChildId)
+        } catch (e: Exception) {
+            logger.error("VardaUpdate: could not delete old varda data for child $vardaChildId: ${e.localizedMessage}")
+        }
+    }
 }
 
 fun updateAllVardaData(
@@ -153,9 +172,10 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
                 db.transaction {
                     it.markVardaServiceNeedUpdateFailed(serviceNeedId, addErrors)
                 }
+            } else {
+                db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed.copy(updateFailed = false, errors = mutableListOf())) }
             }
         }
-        db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
     } catch (e: Exception) {
         logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
     }
