@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.async.VardaUpdate
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
+import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -36,6 +37,8 @@ internal val vardaDecisionTypes = arrayOf(
     DecisionType.DAYCARE_PART_TIME,
     DecisionType.PRESCHOOL_DAYCARE
 )
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaUpdateService(
@@ -102,6 +105,7 @@ fun updateAll(
     personService: PersonService,
     organizer: String
 ) {
+    logger.info("Varda update service: starting updateAll")
     removeMarkedFeeDataFromVarda(db, client)
     removeMarkedPlacementsFromVarda(db, client)
     removeMarkedDecisionsFromVarda(db, client)
@@ -111,4 +115,5 @@ fun updateAll(
     updateDecisions(db, client)
     updatePlacements(db, client)
     updateFeeData(db, client, personService)
+    logger.info("Varda update service: finished updateAll")
 }
