@@ -2006,9 +2006,6 @@ export const fi = {
         'attachment.uploaded_by_person': 'Liitteitä',
         'backup_care.child_id': 'Vara- sijoituksia',
         'backup_pickup.child_id': 'Vara- hakijoita',
-        'bulletin_instance.receiver_person_id':
-          'Saatuja tiedotteita aikuisena (poistuu)',
-        'bulletin_receiver.child_id': 'Saatuja tiedotteita lapsena (poistuu)',
         'child_attendance.child_id': 'Läsnäoloja',
         'daily_service_time.child_id': 'Varhais- kasvatus- aikoja',
         'daycare_daily_note.child_id': 'Muistiin- panoja',

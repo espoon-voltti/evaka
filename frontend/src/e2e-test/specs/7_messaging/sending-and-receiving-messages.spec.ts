@@ -44,8 +44,8 @@ let fixtures: AreaAndPersonFixtures
 let daycarePlacementFixture: DaycarePlacement
 let daycareGroupPlacementFixture: DaycareGroupPlacement
 
-fixture('Sending and receiving bulletins')
-  .meta({ type: 'regression', subType: 'bulletins' })
+fixture('Sending and receiving messages')
+  .meta({ type: 'regression', subType: 'messages' })
   .beforeEach(async () => {
     await resetDatabase()
     fixtures = await initializeAreaAndPersonData()
