@@ -25,7 +25,6 @@ import {
   VasuDocumentState,
   VasuDocumentSummary
 } from '../vasu/api'
-import { getVasuTemplateSummaries } from '../vasu/templates/api'
 
 const StateCell = styled(Td)`
   display: flex;
@@ -112,28 +111,19 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
 
   const [initializing, setInitializing] = useState(false)
 
-  const setInitializationError = () => {
-    setInitializing(false)
-    setErrorMessage({
-      type: 'error',
-      title: i18n.childInformation.vasu.errorInitializing,
-      text: i18n.common.tryAgain,
-      resolveLabel: i18n.common.ok
-    })
-  }
-
   const initializeNewVasuDocument = () => {
     setInitializing(true)
-    // TODO replace with "get current template" or "initialize new document for child" -call
-    void getVasuTemplateSummaries().then((templates) => {
-      if (templates.isFailure) setInitializationError()
-      else if (templates.isSuccess) {
-        const templateId = templates.value[0]?.id
-        if (!templateId) return setInitializationError()
-        void createVasuDocument(childId, templateId).then((res) => {
-          if (res.isFailure) setInitializationError()
-          else if (res.isSuccess) history.push(`/vasu/${res.value}`)
+    void createVasuDocument(childId).then((res) => {
+      if (res.isFailure) {
+        setInitializing(false)
+        setErrorMessage({
+          type: 'error',
+          title: i18n.childInformation.vasu.errorInitializing,
+          text: i18n.common.tryAgain,
+          resolveLabel: i18n.common.ok
         })
+      } else if (res.isSuccess) {
+        history.push(`/vasu/${res.value}`)
       }
     })
   }

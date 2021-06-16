@@ -4,6 +4,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.LocalDate
 import java.util.UUID
 
 fun Database.Transaction.insertVasuTemplate(
@@ -53,6 +54,20 @@ fun Database.Read.getVasuTemplates(): List<VasuTemplateSummary> {
     )
         .mapTo<VasuTemplateSummary>()
         .list()
+}
+
+fun Database.Read.getVasuTemplateForDate(date: LocalDate): VasuTemplate? {
+    // language=sql
+    val sql = """
+        SELECT *
+        FROM vasu_template
+        WHERE valid @> :date
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("date", date)
+        .mapTo<VasuTemplate>()
+        .firstOrNull()
 }
 
 fun Database.Transaction.updateVasuTemplateContent(id: UUID, content: VasuContent) {

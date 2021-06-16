@@ -3,7 +3,7 @@ package fi.espoo.evaka.vasu
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -11,15 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 import java.util.UUID
 
 @RestController
 class VasuController {
 
     data class CreateDocumentRequest(
-        val childId: UUID,
-        val templateId: UUID
+        val childId: UUID
     )
     @PostMapping("/vasu")
     fun createDocument(
@@ -30,13 +28,10 @@ class VasuController {
         user.requireOneOfRoles(UserRole.ADMIN)
 
         return db.transaction { tx ->
-            tx.getVasuTemplate(body.templateId)?.let { template ->
-                if (!template.valid.includes(LocalDate.now())) {
-                    throw BadRequest("Template is not currently valid")
-                }
-            } ?: throw NotFound("template ${body.templateId} not found")
+            val template = tx.getVasuTemplateForDate(HelsinkiDateTime.now().toLocalDate())
+                ?: throw NotFound("template not found")
 
-            val id = tx.insertVasuDocument(body.childId, body.templateId)
+            val id = tx.insertVasuDocument(body.childId, template.id)
             tx.getVasuDocumentResponse(id)!!
         }
     }
