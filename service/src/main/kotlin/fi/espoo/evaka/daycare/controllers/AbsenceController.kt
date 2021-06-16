@@ -41,7 +41,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceGroup>> {
         Audit.AbsenceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         val absences = db.read { absenceService.getAbsencesByMonth(it, groupId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
@@ -55,9 +55,9 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         absences.data.map { it.childId }.forEach {
-            acl.getRolesForChild(user, it).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            acl.getRolesForChild(user, it).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         }
 
         db.transaction { absenceService.upsertAbsences(it, absences.data, user.id) }

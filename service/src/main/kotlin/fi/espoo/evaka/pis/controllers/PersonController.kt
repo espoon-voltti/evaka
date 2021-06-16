@@ -133,7 +133,7 @@ class PersonController(
         @RequestBody contactInfo: ContactInfo
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
         return if (db.transaction { it.updatePersonContactInfo(personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
@@ -149,7 +149,7 @@ class PersonController(
         @RequestBody data: PersonPatch
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF)
         return db.transaction { personService.patchUserDetails(it, personId, data) }
             .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }

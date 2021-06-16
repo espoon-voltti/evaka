@@ -115,7 +115,9 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                 'SERVICE_WORKER',
                 'FINANCE_ADMIN',
                 'UNIT_SUPERVISOR',
-                'ADMIN'
+                'ADMIN',
+                'STAFF',
+                'SPECIAL_EDUCATION_TEACHER'
               ]}
             >
               <InlineButton

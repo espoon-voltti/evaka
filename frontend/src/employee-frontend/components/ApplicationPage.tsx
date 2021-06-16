@@ -25,7 +25,7 @@ import ApplicationNotes from '../components/application-page/ApplicationNotes'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { isSsnValid, isTimeValid } from '../utils/validation/validations'
 import { UserContext } from '../state/user'
-import { hasRole } from '../utils/roles'
+import { hasRole, RequireRole } from '../utils/roles'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { PublicUnit } from 'lib-common/api-types/units/PublicUnit'
 import { featureFlags } from 'lib-customizations/employee'
@@ -193,9 +193,13 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
           <ApplicationArea opaque>
             {renderResult(application, renderApplication)}
           </ApplicationArea>
-          <NotesArea opaque={false}>
-            <ApplicationNotes applicationId={applicationId} />
-          </NotesArea>
+          <RequireRole
+            oneOf={['ADMIN', 'SERVICE_WORKER', 'SPECIAL_EDUCATION_TEACHER']}
+          >
+            <NotesArea opaque={false}>
+              <ApplicationNotes applicationId={applicationId} />
+            </NotesArea>
+          </RequireRole>
         </FixedSpaceRow>
       </Container>
 
