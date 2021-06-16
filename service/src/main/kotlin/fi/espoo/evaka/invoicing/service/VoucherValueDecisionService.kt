@@ -78,13 +78,13 @@ class VoucherValueDecisionService(
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(langWithDefault(lang))
         val messageContent = messageProvider.getVoucherValueDecisionContent(langWithDefault(lang))
-        val documentUri = s3Client.getDocumentUri(bucket, decision.documentKey)
         messageClient.send(
             SuomiFiMessage(
                 messageId = decision.id.toString(),
                 documentId = decision.id.toString(),
                 documentDisplayName = documentDisplayName,
-                documentUri = documentUri,
+                documentBucket = bucket,
+                documentKey = decision.documentKey,
                 language = lang,
                 firstName = decision.headOfFamily.firstName,
                 lastName = decision.headOfFamily.lastName,

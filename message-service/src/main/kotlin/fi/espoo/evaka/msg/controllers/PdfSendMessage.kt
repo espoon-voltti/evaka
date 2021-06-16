@@ -6,7 +6,8 @@ package fi.espoo.evaka.msg.controllers
 
 data class PdfSendMessage(
     val messageId: String?, // FIXME: nullable only to support legacy clients
-    val documentUri: String, // Uri to S3 document: s3://<bucket name>/<document key>
+    val documentBucket: String,
+    val documentKey: String,
     val documentId: String, // This is sent to suomi.fi as reference id (UUID)
     val documentDisplayName: String, // Document name is shown to end user
     val ssn: String,
@@ -23,6 +24,6 @@ data class PdfSendMessage(
     val emailContent: String?
 ) {
     override fun toString(): String {
-        return "PdfSendMessage(documentUri='$documentUri', documentId='$documentId')"
+        return "PdfSendMessage(documentBucket='$documentBucket', documentKey='$documentKey', documentId='$documentId')"
     }
 }

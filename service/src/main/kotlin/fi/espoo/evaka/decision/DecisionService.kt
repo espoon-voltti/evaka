@@ -34,7 +34,6 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
-import java.net.URI
 import java.util.Locale
 import java.util.UUID
 
@@ -78,11 +77,11 @@ class DecisionService(
             ?: error("Child not found with id: ${application.childId}")
         val unitManager = tx.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
-        val guardianDecisionURI = createAndUploadDecision(
+        val guardianDecisionLocation = createAndUploadDecision(
             decision, application, guardian, child, decisionLanguage, unitManager
         )
 
-        tx.updateDecisionGuardianDocumentUri(decisionId, guardianDecisionURI)
+        tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
 
         if (application.otherGuardianId != null &&
             isDecisionForSecondGuardianRequired(decision, application, tx)
@@ -90,12 +89,12 @@ class DecisionService(
             val otherGuardian = personService.getUpToDatePerson(tx, user, application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
-            val otherGuardianDecisionURI = createAndUploadDecision(
+            val otherGuardianDecisionLocation = createAndUploadDecision(
                 decision, application, otherGuardian, child, decisionLanguage, unitManager
             )
-            tx.updateDecisionOtherGuardianDocumentUri(
+            tx.updateDecisionOtherGuardianDocumentKey(
                 decisionId,
-                otherGuardianDecisionURI
+                otherGuardianDecisionLocation.key
             )
         }
     }
@@ -107,7 +106,7 @@ class DecisionService(
         child: PersonDTO,
         decisionLanguage: String,
         unitManager: DaycareManager
-    ): URI {
+    ): DocumentLocation {
         val decisionBytes = createDecisionPdf(
             messageProvider,
             templateProvider,
@@ -124,7 +123,7 @@ class DecisionService(
             decisionBucket,
             constructObjectKey(decision, guardian, decisionLanguage),
             decisionBytes
-        ).uri
+        )
     }
 
     private fun isDecisionForSecondGuardianRequired(
@@ -167,7 +166,7 @@ class DecisionService(
             DocumentWrapper(name = key, bytes = document),
             "application/pdf"
         ).also {
-            logger.debug { "PDF (object name: $key) uploaded to S3 with URL ${it.uri}." }
+            logger.debug { "PDF (object name: $key) uploaded to S3 with $it." }
         }
 
     fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: UUID) {
@@ -183,13 +182,13 @@ class DecisionService(
             ?: error("Guardian not found with id: ${application.guardianId}")
 
         if (currentVtjGuardianIds.contains(applicationGuardian.id)) {
-            deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentUri.toString())
+            deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentKey!!)
         } else {
             logger.warn("Skipping sending decision $decisionId to application guardian ${applicationGuardian.id} - not a current VTJ guardian")
         }
 
         if (application.otherGuardianId != null &&
-            !decision.otherGuardianDocumentUri.isNullOrBlank() &&
+            !decision.otherGuardianDocumentKey.isNullOrBlank() &&
             !applicationGuardian.restrictedDetailsEnabled
         ) {
             val otherGuardian = tx.getPersonById(application.otherGuardianId)
@@ -200,7 +199,7 @@ class DecisionService(
                     tx,
                     decision,
                     otherGuardian,
-                    decision.otherGuardianDocumentUri.toString()
+                    decision.otherGuardianDocumentKey
                 )
             } else {
                 logger.warn("Skipping sending decision $decisionId to application other guardian ${application.otherGuardianId} - not a current VTJ guardian")
@@ -212,7 +211,7 @@ class DecisionService(
         tx: Database.Transaction,
         decision: Decision,
         guardian: PersonDTO,
-        documentUri: String
+        documentKey: String
     ) {
         if (guardian.identity !is ExternalIdentifier.SSN) {
             logger.info { "Cannot deliver daycare decision ${decision.id} to guardian. SSN is missing." }
@@ -227,7 +226,8 @@ class DecisionService(
             messageId = uniqueId,
             documentId = uniqueId,
             documentDisplayName = calculateDecisionFileName(tx, decision, lang),
-            documentUri = documentUri,
+            documentBucket = decisionBucket,
+            documentKey = documentKey,
             firstName = guardian.firstName!!,
             lastName = guardian.lastName!!,
             streetAddress = sendAddress.street,
@@ -246,15 +246,14 @@ class DecisionService(
         val decision = tx.getDecision(decisionId)
             ?: throw NotFound("No decision $decisionId found")
         val lang = tx.getDecisionLanguage(decisionId)
-        return decision.documentUri
-            ?.let(URI::create)
-            ?.let(s3Client::get)
+        return decision.documentKey
+            ?.let { key -> s3Client.get(decisionBucket, key) }
             ?.let {
                 DocumentWrapper(
                     name = calculateDecisionFileName(tx, decision, lang),
                     bytes = it.getBytes()
                 )
-            } ?: throw NotFound("Decision S3 URL is not set for $decisionId. Document generation is still in progress.")
+            } ?: throw NotFound("Decision S3 key is not set for $decisionId. Document generation is still in progress.")
     }
 
     private fun calculateDecisionFileName(tx: Database.Read, decision: Decision, lang: String): String {

@@ -68,9 +68,7 @@ class S3DocumentClient(
         return s3Object.objectContent.readBytes()
     }
 
-    fun getFeeDecisionDocumentUri(documentKey: String): String = "s3://$feeDecisionBucket/$documentKey"
-
-    fun getDocumentUri(bucket: String, key: String): String = "s3://$bucket/$key"
+    fun getFeeDecisionBucket(): String = feeDecisionBucket
 }
 
 data class Document(val key: String, val bytes: ByteArray)

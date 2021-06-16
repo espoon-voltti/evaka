@@ -140,7 +140,6 @@ class SharedIntegrationTestConfig {
             .build()
 
         client.createBucket(mockS3Bucket)
-        client.createBucket("evaka-clubdecisions-it")
         client.createBucket("evaka-daycaredecisions-it")
         client.createBucket("evaka-paymentdecisions-it")
         client.createBucket("evaka-vouchervaluedecisions-it")

@@ -37,7 +37,6 @@ class AwsConfig {
         @Value("\${fi.espoo.voltti.s3mock.url}") s3MockUrl: String,
         @Value("\${fi.espoo.voltti.document.bucket.paymentdecision}") feeDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.vouchervaluedecision}") voucherValueDecisionBucket: String,
-        @Value("\${fi.espoo.voltti.document.bucket.clubdecision}") clubDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}") daycareDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.attachments}") attachmentsBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.data}") dataBucket: String
@@ -50,7 +49,6 @@ class AwsConfig {
             .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("foo", "bar")))
             .build()
 
-        client.createBucket(clubDecisionBucket)
         client.createBucket(daycareDecisionBucket)
         client.createBucket(feeDecisionBucket)
         client.createBucket(voucherValueDecisionBucket)

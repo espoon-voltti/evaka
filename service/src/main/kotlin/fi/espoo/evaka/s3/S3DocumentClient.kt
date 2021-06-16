@@ -46,7 +46,8 @@ class S3DocumentClient(private val s3Client: AmazonS3) : DocumentService {
 
         s3Client.putObject(request)
         return DocumentLocation(
-            uri = s3Client.getUrl(bucketName, key).toURI()
+            bucket = bucketName,
+            key = key
         )
     }
 

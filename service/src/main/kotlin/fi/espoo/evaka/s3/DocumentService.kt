@@ -17,7 +17,7 @@ data class DocumentWrapper(private val name: String, private val bytes: ByteArra
     override fun getBytes() = bytes
 }
 
-data class DocumentLocation(val uri: URI)
+data class DocumentLocation(val bucket: String, val key: String)
 
 interface DocumentService {
     /**

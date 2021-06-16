@@ -21,7 +21,8 @@ interface IEvakaMessageClient {
 data class SuomiFiMessage(
     val messageId: String,
     val documentId: String, // This is sent to suomi.fi as reference id (UUID)
-    val documentUri: String, // Uri to S3 document: s3://<bucket name>/<document key>
+    val documentBucket: String,
+    val documentKey: String,
     val documentDisplayName: String, // Document name is shown to end user
     val ssn: String,
     val firstName: String,

@@ -27,7 +27,7 @@ class AsyncJobs(
     }
 
     fun sendMessagePDF(details: PdfSendMessage) {
-        val pdfBytes = docService.getDocument(details.documentUri)
+        val pdfBytes = docService.getDocument(details.documentBucket, details.documentKey)
         val messageDetails = toPdfMessageDetails(pdfBytes, details)
         sfiClient.sendMessage(ISfiClientService.MessageMetadata(messageDetails))
     }
