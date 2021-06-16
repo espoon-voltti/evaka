@@ -828,7 +828,7 @@ export const fi = {
     },
     vasu: {
       title: 'Vasu ja Leops',
-      createNew: 'Luo uusi varhaiskasvatussuunnitelma',
+      createNew: 'Luo uusi vasu',
       modified: 'Muokattu',
       published: 'Julkaistu',
       states: {

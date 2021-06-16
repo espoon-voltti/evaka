@@ -9,10 +9,11 @@ import { defaultMargins, SpacingSize } from '../../white-space'
 
 const spinnerSize = '50px'
 
-const Spinner = styled.div`
+export const Spinner = styled.div<{ zIndex?: number }>`
   border-radius: 50%;
   width: ${spinnerSize};
   height: ${spinnerSize};
+  ${({ zIndex }) => (zIndex ? `z-index: ${zIndex};` : '')}
 
   border: 5px solid
     ${({ theme: { colors } }) => transparentize(0.8, colors.main.primary)};

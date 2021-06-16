@@ -11,10 +11,12 @@ import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import { AddButtonRow } from '../../../lib-components/atoms/buttons/AddButton'
 import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
 import { StaticChip } from '../../../lib-components/atoms/Chip'
+import Radio from '../../../lib-components/atoms/form/Radio'
 import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '../../../lib-components/atoms/state/Spinner'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 import { Table, Tbody, Td, Tr } from '../../../lib-components/layout/Table'
+import { FullScreenDimmedSpinner } from '../../../lib-components/molecules/FullScreenDimmedSpinner'
+import FormModal from '../../../lib-components/molecules/modals/FormModal'
 import { H2, H3 } from '../../../lib-components/typography'
 import { defaultMargins } from '../../../lib-components/white-space'
 import colors from '../../../lib-customizations/common'
@@ -55,6 +57,46 @@ interface StateChipProps {
 
 function StateChip({ labels, state }: StateChipProps) {
   return <StaticChip color={chipColors[state]}>{labels[state]}</StaticChip>
+}
+
+interface TemplateSelectionModalProps {
+  loading: boolean
+  onClose: () => void
+  onSelect: (id: UUID) => void
+  templates: VasuTemplateSummary[]
+}
+
+function TemplateSelectionModal({
+  loading,
+  onClose,
+  onSelect,
+  templates
+}: TemplateSelectionModalProps) {
+  const { i18n } = useTranslation()
+  const [templateId, setTemplateId] = useState('')
+  return (
+    <FormModal
+      resolve={{
+        action: () => onSelect(templateId),
+        disabled: !templateId || loading,
+        label: i18n.common.select
+      }}
+      reject={{ action: onClose, label: i18n.common.cancel }}
+    >
+      <H3>{i18n.childInformation.vasu.init.chooseTemplate}</H3>
+      <div>
+        {templates.map((t) => (
+          <Radio
+            key={t.id}
+            disabled={loading}
+            checked={t.id === templateId}
+            label={`${t.name} (${t.valid.format()})`}
+            onChange={() => setTemplateId(t.id)}
+          />
+        ))}
+      </div>
+    </FormModal>
+  )
 }
 
 const InitializationContainer = styled.div`
@@ -106,42 +148,29 @@ function VasuInitialization({ childId }: { childId: UUID }) {
 
   return (
     <InitializationContainer>
-      {!templates && (
-        <AddButtonRow
-          onClick={loadTemplates}
-          disabled={templates}
-          text={i18n.childInformation.vasu.createNew}
-        />
-      )}
+      <AddButtonRow
+        onClick={loadTemplates}
+        disabled={!!templates}
+        text={i18n.childInformation.vasu.createNew}
+      />
       {templates?.mapAll({
         failure() {
           return <ErrorSegment title={i18n.childInformation.vasu.init.error} />
         },
         loading() {
-          return <SpinnerSegment />
+          return <FullScreenDimmedSpinner />
         },
-        success(v) {
-          if (v.length === 0) {
+        success(value) {
+          if (value.length === 0) {
             return <div>{i18n.childInformation.vasu.init.noTemplates}</div>
           }
           return (
-            <div>
-              <H3>{i18n.childInformation.vasu.init.chooseTemplate}</H3>
-              <div>
-                {initializing ? (
-                  <SpinnerSegment />
-                ) : (
-                  v.map((template) => (
-                    <div key={template.id}>
-                      <InlineButton
-                        text={`${template.name} (${template.valid.format()})`}
-                        onClick={() => createVasu(template.id)}
-                      />
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            <TemplateSelectionModal
+              loading={initializing}
+              onClose={() => setTemplates(undefined)}
+              onSelect={(id) => createVasu(id)}
+              templates={value}
+            />
           )
         }
       })}
