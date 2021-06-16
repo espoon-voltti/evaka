@@ -3,16 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import Loader from 'lib-components/atoms/Loader'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
+import { Result } from '../../../lib-common/api'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import { AddButtonRow } from '../../../lib-components/atoms/buttons/AddButton'
 import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
 import { StaticChip } from '../../../lib-components/atoms/Chip'
+import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '../../../lib-components/atoms/state/Spinner'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
 import { Table, Tbody, Td, Tr } from '../../../lib-components/layout/Table'
-import { H2 } from '../../../lib-components/typography'
+import { H2, H3 } from '../../../lib-components/typography'
+import { defaultMargins } from '../../../lib-components/white-space'
 import colors from '../../../lib-customizations/common'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
@@ -25,6 +29,10 @@ import {
   VasuDocumentState,
   VasuDocumentSummary
 } from '../vasu/api'
+import {
+  getVasuTemplateSummaries,
+  VasuTemplateSummary
+} from '../vasu/templates/api'
 
 const StateCell = styled(Td)`
   display: flex;
@@ -49,6 +57,98 @@ function StateChip({ labels, state }: StateChipProps) {
   return <StaticChip color={chipColors[state]}>{labels[state]}</StaticChip>
 }
 
+const InitializationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom: ${defaultMargins.s};
+`
+
+function VasuInitialization({ childId }: { childId: UUID }) {
+  const { i18n } = useTranslation()
+  const { setErrorMessage } = useContext(UIContext)
+  const history = useHistory()
+
+  const [templates, setTemplates] = useState<Result<VasuTemplateSummary[]>>()
+  const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
+
+  const [initializing, setInitializing] = useState(false)
+
+  const createVasu = useCallback(
+    (templateId: UUID) => {
+      if (initializing) return
+      setInitializing(true)
+      void createVasuDocument(childId, templateId).then((res) => {
+        if (res.isFailure) {
+          setInitializing(false)
+          setErrorMessage({
+            type: 'error',
+            title: i18n.childInformation.vasu.init.error,
+            text: i18n.common.tryAgain,
+            resolveLabel: i18n.common.ok
+          })
+        } else if (res.isSuccess) {
+          history.push(`/vasu/${res.value}`)
+        }
+      })
+    },
+    [childId, history, i18n, setErrorMessage, initializing]
+  )
+
+  useEffect(
+    function autoSelectTemplate() {
+      if (templates?.isSuccess && templates.value.length === 1) {
+        createVasu(templates.value[0].id)
+      }
+    },
+    [createVasu, templates]
+  )
+
+  return (
+    <InitializationContainer>
+      {!templates && (
+        <AddButtonRow
+          onClick={loadTemplates}
+          disabled={templates}
+          text={i18n.childInformation.vasu.createNew}
+        />
+      )}
+      {templates?.mapAll({
+        failure() {
+          return <ErrorSegment title={i18n.childInformation.vasu.init.error} />
+        },
+        loading() {
+          return <SpinnerSegment />
+        },
+        success(v) {
+          if (v.length === 0) {
+            return <div>{i18n.childInformation.vasu.init.noTemplates}</div>
+          }
+          return (
+            <div>
+              <H3>{i18n.childInformation.vasu.init.chooseTemplate}</H3>
+              <div>
+                {initializing ? (
+                  <SpinnerSegment />
+                ) : (
+                  v.map((template) => (
+                    <div key={template.id}>
+                      <InlineButton
+                        text={`${template.name} (${template.valid.format()})`}
+                        onClick={() => createVasu(template.id)}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )
+        }
+      })}
+    </InitializationContainer>
+  )
+}
+
 interface Props {
   id: UUID
   startOpen: boolean
@@ -61,7 +161,6 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
   const { i18n } = useTranslation()
   const { vasus, setVasus } = useContext(ChildContext)
   const history = useHistory()
-  const { setErrorMessage } = useContext(UIContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -109,25 +208,6 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
       )
       .getOrElse(null)
 
-  const [initializing, setInitializing] = useState(false)
-
-  const initializeNewVasuDocument = () => {
-    setInitializing(true)
-    void createVasuDocument(childId).then((res) => {
-      if (res.isFailure) {
-        setInitializing(false)
-        setErrorMessage({
-          type: 'error',
-          title: i18n.childInformation.vasu.errorInitializing,
-          text: i18n.common.tryAgain,
-          resolveLabel: i18n.common.ok
-        })
-      } else if (res.isSuccess) {
-        history.push(`/vasu/${res.value}`)
-      }
-    })
-  }
-
   return (
     <div>
       <CollapsibleContentArea
@@ -137,11 +217,7 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
         opaque
         paddingVertical="L"
       >
-        <AddButtonRow
-          onClick={initializeNewVasuDocument}
-          disabled={initializing}
-          text={i18n.childInformation.vasu.createNew}
-        />
+        <VasuInitialization childId={childId} />
         <Table>
           <Tbody>{renderSummaries()}</Tbody>
         </Table>
