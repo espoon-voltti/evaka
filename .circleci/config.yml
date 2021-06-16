@@ -72,26 +72,26 @@ aliases:
   - &restore_apigw_deps
     restore_cache:
       keys:
-        - yarn-cache-apigw-v1-{{ checksum "apigw/yarn.lock" }}
+        - yarn-cache-apigw-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "apigw/yarn.lock" }}
         - yarn-cache-apigw-v1-
         - yarn-cache-apigw-
 
   - &store_apigw_deps
     save_cache:
-      key: yarn-cache-apigw-v1-{{ checksum "apigw/yarn.lock" }}
+      key: yarn-cache-apigw-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "apigw/yarn.lock" }}
       paths:
         - apigw/.yarn/cache
 
   - &restore_frontend_deps
     restore_cache:
       keys:
-        - yarn-cache-frontend-v1-{{ checksum "frontend/yarn.lock" }}
+        - yarn-cache-frontend-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
         - yarn-cache-frontend-v1-
         - yarn-cache-frontend-
 
   - &store_frontend_deps
     save_cache:
-      key: yarn-cache-frontend-v1-{{ checksum "frontend/yarn.lock" }}
+      key: yarn-cache-frontend-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
       paths:
         - frontend/.yarn/cache
         - frontend/node_modules
@@ -112,12 +112,12 @@ aliases:
   - &restore_message_service_gradle
     restore_cache:
       keys:
-        - gradle-home-message-service-v4-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+        - gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
         - gradle-home-message-service-v4-
 
   - &store_message_service_gradle
     save_cache:
-      key: gradle-home-message-service-v4-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+      key: gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
       paths:
         - message-service/.gradle
         - .gradle-user-home
