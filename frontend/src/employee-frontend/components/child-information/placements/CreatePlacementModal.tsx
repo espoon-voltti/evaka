@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import ReactSelect from 'react-select'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from '../../../types'
@@ -21,6 +22,7 @@ import { Unit } from '../../../types/unit'
 import { getDaycares } from '../../../api/unit'
 import { useRestApi } from '../../../../lib-common/utils/useRestApi'
 import DateRange from 'lib-common/date-range'
+import colors from 'lib-customizations/common'
 
 export interface Props {
   childId: UUID
@@ -51,7 +53,6 @@ function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
-  const [activeUnits, setActiveUnits] = useState<Result<Unit[]>>(Loading.of())
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unitId: undefined,
@@ -61,27 +62,39 @@ function CreatePlacementModal({ childId, reload }: Props) {
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
 
-  // todo: could validate form for inverted date range
-  const errors = []
+  const activeUnits = useMemo(() => {
+    if (form.startDate.isAfter(form.endDate)) return units
+
+    return units.map((list) =>
+      list.filter((u) =>
+        new DateRange(
+          u.openingDate ?? LocalDate.of(1900, 1, 1),
+          u.closingDate
+        ).overlapsWith(new DateRange(form.startDate, form.endDate))
+      )
+    )
+  }, [units, form.startDate, form.endDate])
+
+  const errors = useMemo(() => {
+    const errors = []
+    if (!form.unitId) {
+      errors.push(i18n.childInformation.placements.createPlacement.unitMissing)
+    }
+
+    if (form.ghostUnit) {
+      errors.push(i18n.childInformation.placements.warning.ghostUnit)
+    }
+
+    if (form.startDate.isAfter(form.endDate)) {
+      errors.push(i18n.validationError.invertedDateRange)
+    }
+
+    return errors
+  }, [i18n, form])
 
   const loadUnits = useRestApi(getDaycares, setUnits)
 
   useEffect(loadUnits, [loadUnits])
-
-  useEffect(() => {
-    if (form.startDate.isAfter(form.endDate)) return
-
-    setActiveUnits(
-      units.map((list) =>
-        list.filter((u) =>
-          new DateRange(
-            u.openingDate ?? LocalDate.of(1900, 1, 1),
-            u.closingDate
-          ).overlapsWith(new DateRange(form.startDate, form.endDate))
-        )
-      )
-    )
-  }, [units, setActiveUnits, form.startDate, form.endDate])
 
   const submitForm = () => {
     if (!form.unitId) return
@@ -114,13 +127,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
       resolve={{
         action: submitForm,
         label: i18n.common.confirm,
-        disabled: errors.length > 0 || submitting || form.ghostUnit,
-        info: form.ghostUnit
-          ? {
-              text: i18n.childInformation.placements.warning.ghostUnit,
-              status: 'warning'
-            }
-          : undefined
+        disabled: errors.length > 0 || submitting
       }}
       reject={{
         action: clearUiMode,
@@ -213,9 +220,18 @@ function CreatePlacementModal({ childId, reload }: Props) {
             }
           />
         ) : null}
+
+        {errors.map((error) => (
+          <ValidationError key={error}>{error}</ValidationError>
+        ))}
       </FixedSpaceColumn>
     </FormModal>
   )
 }
+
+const ValidationError = styled.div`
+  font-size: 0.9em;
+  color: ${colors.accents.red};
+`
 
 export default CreatePlacementModal
