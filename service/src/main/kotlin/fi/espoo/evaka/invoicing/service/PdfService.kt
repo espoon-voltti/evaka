@@ -228,8 +228,10 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },
             "validFrom" to dateFmt(decision.validDuring.start),
-            "feePercent" to decision.feePercent().toDecimalString(),
-            "incomeMinThreshold" to formatCents(-1 * decision.minThreshold()),
+            "feePercent" to (decision.feeThresholds.incomeMultiplier * BigDecimal(100))
+                .setScale(1, RoundingMode.HALF_UP)
+                .toDecimalString(),
+            "incomeMinThreshold" to formatCents(-1 * decision.feeThresholds.minIncomeThreshold),
             "familySize" to decision.familySize,
             "showValidTo" to (decision.validDuring.end?.isBefore(LocalDate.now()) ?: false),
             "approverFirstName" to (
