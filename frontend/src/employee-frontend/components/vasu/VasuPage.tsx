@@ -106,22 +106,22 @@ export default React.memo(function VasuPage({
         <Gap size={'m'} />
         <FixedSpaceColumn>
           {vasuDocument.isSuccess &&
-            question.optionNames.map((optionName, optionIndex) => {
+            question.options.map((option) => {
               const question1 = vasuDocument.value.content.sections[
                 sectionIndex
               ].questions[questionIndex] as RadioGroupQuestion
               return (
                 <Radio
-                  key={optionName}
-                  checked={question1.value === optionIndex}
-                  label={optionName}
+                  key={option.key}
+                  checked={question1.value === option.key}
+                  label={option.name}
                   onChange={() => {
                     setVasuDocument((prev) => {
                       return prev.map((prevData) => {
                         const clone = cloneDeep(prevData)
                         const question1 = clone.content.sections[sectionIndex]
                           .questions[questionIndex] as RadioGroupQuestion
-                        question1.value = optionIndex
+                        question1.value = option.key
                         return clone
                       })
                     })
@@ -144,26 +144,26 @@ export default React.memo(function VasuPage({
         <Gap size={'m'} />
         <FixedSpaceColumn>
           {vasuDocument.isSuccess &&
-            question.optionNames.map((optionName, optionIndex) => {
+            question.options.map((option) => {
               const question1 = vasuDocument.value.content.sections[
                 sectionIndex
               ].questions[questionIndex] as MultiSelectQuestion
               return (
                 <Checkbox
-                  key={optionName}
-                  checked={question1.value.includes(optionIndex)}
-                  label={optionName}
+                  key={option.key}
+                  checked={question1.value.includes(option.key)}
+                  label={option.name}
                   onChange={(checked) => {
                     setVasuDocument((prev) => {
                       return prev.map((prevData) => {
                         const clone = cloneDeep(prevData)
                         const question1 = clone.content.sections[sectionIndex]
                           .questions[questionIndex] as MultiSelectQuestion
-                        if (checked && !question1.value.includes(optionIndex))
-                          question1.value.push(optionIndex)
+                        if (checked && !question1.value.includes(option.key))
+                          question1.value.push(option.key)
                         if (!checked)
                           question1.value = question1.value.filter(
-                            (i) => i !== optionIndex
+                            (i) => i !== option.key
                           )
                         return clone
                       })

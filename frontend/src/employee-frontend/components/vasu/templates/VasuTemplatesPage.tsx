@@ -23,17 +23,15 @@ import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
 import { useHistory } from 'react-router'
 import { useTranslation } from '../../../state/i18n'
 import { AddButtonRow } from '../../../../lib-components/atoms/buttons/AddButton'
-import FiniteDateRange from '../../../../lib-common/finite-date-range'
-import LocalDate from '../../../../lib-common/local-date'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
 import { faCopy, faPen, faTrash } from '../../../../lib-icons'
 import {
-  createVasuTemplate,
   deleteVasuTemplate,
   getVasuTemplateSummaries,
   VasuTemplateSummary
 } from './api'
+import CreateTemplateModal from './CreateTemplateModal'
 
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
@@ -43,6 +41,8 @@ export default React.memo(function VasuTemplatesPage() {
   const [templates, setTemplates] = useState<Result<VasuTemplateSummary[]>>(
     Loading.of()
   )
+
+  const [createModalOpen, setCreateModalOpen] = useState(false)
 
   const loadSummaries = useRestApi(getVasuTemplateSummaries, setTemplates)
   useEffect(loadSummaries, [loadSummaries])
@@ -58,16 +58,7 @@ export default React.memo(function VasuTemplatesPage() {
         {templates.isSuccess && (
           <>
             <AddButtonRow
-              onClick={() => {
-                // todo: get data from user
-                void createVasuTemplate(
-                  'Nimetön varhaiskasvatussuunnitelma',
-                  new FiniteDateRange(
-                    LocalDate.today(),
-                    LocalDate.today().addYears(1)
-                  )
-                ).then(() => loadSummaries())
-              }}
+              onClick={() => setCreateModalOpen(true)}
               text={t.addNewTemplate}
             />
             <Table>
@@ -75,6 +66,7 @@ export default React.memo(function VasuTemplatesPage() {
                 <Tr>
                   <Th>{t.name}</Th>
                   <Th>{t.valid}</Th>
+                  <Th>{t.language}</Th>
                   <Th>{t.documentCount}</Th>
                   <Th />
                 </Tr>
@@ -84,6 +76,7 @@ export default React.memo(function VasuTemplatesPage() {
                   <Tr key={template.id}>
                     <Td>{template.name}</Td>
                     <Td>{template.valid.format()}</Td>
+                    <Td>{t.languages[template.language]}</Td>
                     <Td>{template.documentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
@@ -110,6 +103,13 @@ export default React.memo(function VasuTemplatesPage() {
               </Tbody>
             </Table>
           </>
+        )}
+
+        {createModalOpen && (
+          <CreateTemplateModal
+            onSuccess={(id) => h.push(`/vasu-templates/${id}`)}
+            onCancel={() => setCreateModalOpen(false)}
+          />
         )}
       </ContentArea>
     </Container>

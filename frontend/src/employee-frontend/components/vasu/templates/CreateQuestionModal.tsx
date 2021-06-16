@@ -44,6 +44,7 @@ export default React.memo(function CreateQuestionModal({
       case 'TEXT':
         return {
           type: 'TEXT',
+          ophKey: null,
           name: name,
           multiline: multiline,
           value: ''
@@ -51,21 +52,30 @@ export default React.memo(function CreateQuestionModal({
       case 'CHECKBOX':
         return {
           type: 'CHECKBOX',
+          ophKey: null,
           name: name,
           value: false
         }
       case 'RADIO_GROUP':
         return {
           type: 'RADIO_GROUP',
+          ophKey: null,
           name: name,
-          optionNames: options,
+          options: options.map((opt) => ({
+            key: opt,
+            name: opt
+          })),
           value: null
         }
       case 'MULTISELECT':
         return {
           type: 'MULTISELECT',
+          ophKey: null,
           name: name,
-          optionNames: options,
+          options: options.map((opt) => ({
+            key: opt,
+            name: opt
+          })),
           minSelections: minSelections,
           maxSelections: null,
           value: []

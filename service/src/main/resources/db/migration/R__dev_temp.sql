@@ -1,12 +1,16 @@
 DROP TABLE IF EXISTS vasu_document;
 DROP TABLE IF EXISTS vasu_content;
 DROP TABLE IF EXISTS vasu_template;
+DROP TYPE IF EXISTS vasu_language;
+
+CREATE TYPE vasu_language AS ENUM ('FI', 'SV');
 
 CREATE TABLE vasu_template(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     created timestamp with time zone NOT NULL DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     valid daterange NOT NULL,
+    language vasu_language NOT NULL,
     name text NOT NULL,
     content jsonb NOT NULL
 );

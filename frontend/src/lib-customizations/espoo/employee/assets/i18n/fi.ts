@@ -2526,8 +2526,18 @@ export const fi = {
     title: 'Vasu-pohjat',
     name: 'Nimi',
     valid: 'Käytössä aikavälillä',
+    language: 'Kieli',
+    languages: {
+      FI: 'Suomenkielinen',
+      SV: 'Ruotsinkielinen'
+    },
     documentCount: 'Vasu-dokumentteja',
     addNewTemplate: 'Lisää uusi vasu-pohja',
+    newTemplateModal: {
+      title: 'Uusi vasu-pohja',
+      validStart: 'Toimintavuosi alkaa',
+      validEnd: 'Toimintavuosi päättyy'
+    },
     addNewSection: 'Lisää uusi osio',
     addNewQuestion: 'Lisää uusi kysymys',
     questionModal: {

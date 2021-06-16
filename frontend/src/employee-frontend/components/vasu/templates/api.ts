@@ -13,6 +13,7 @@ export interface VasuTemplateSummary {
   id: UUID
   name: string
   valid: FiniteDateRange
+  language: VasuLanguage
   documentCount: number
 }
 
@@ -20,19 +21,26 @@ export interface VasuTemplate {
   id: UUID
   name: string
   valid: FiniteDateRange
+  language: VasuLanguage
   content: VasuContent
 }
 
+export const vasuLanguages = ['FI', 'SV'] as const
+
+export type VasuLanguage = typeof vasuLanguages[number]
+
 export async function createVasuTemplate(
   name: string,
-  valid: FiniteDateRange
-): Promise<Result<null>> {
+  valid: FiniteDateRange,
+  language: VasuLanguage
+): Promise<Result<UUID>> {
   return client
-    .post(`/vasu/templates`, {
+    .post<UUID>(`/vasu/templates`, {
       name,
-      valid
+      valid,
+      language
     })
-    .then(() => Success.of(null))
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 

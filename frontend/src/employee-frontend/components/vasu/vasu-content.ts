@@ -23,6 +23,7 @@ export type VasuQuestionType = typeof vasuQuestionTypes[number]
 interface VasuQuestionCommon {
   type: VasuQuestionType
   name: string
+  ophKey: string | null
 }
 
 export interface TextQuestion extends VasuQuestionCommon {
@@ -35,15 +36,20 @@ export interface CheckboxQuestion extends VasuQuestionCommon {
 }
 
 export interface RadioGroupQuestion extends VasuQuestionCommon {
-  optionNames: string[]
-  value: number | null
+  options: QuestionOption[]
+  value: string | null
 }
 
 export interface MultiSelectQuestion extends VasuQuestionCommon {
-  optionNames: string[]
+  options: QuestionOption[]
   minSelections: number
   maxSelections: number | null
-  value: number[]
+  value: string[]
+}
+
+export interface QuestionOption {
+  key: string
+  name: string
 }
 
 export type VasuQuestion =
