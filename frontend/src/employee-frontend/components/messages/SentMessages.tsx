@@ -31,7 +31,10 @@ function MessageContent({
 function SentMessage({ message: message }: { message: SentMessage }) {
   const [expanded, setExpanded] = useState(false)
   return (
-    <MessageRow onClick={() => setExpanded(!expanded)}>
+    <MessageRow
+      onClick={() => setExpanded(!expanded)}
+      data-qa="sent-message-row"
+    >
       <ParticipantsAndPreview>
         <Participants>{message.recipientNames.join(', ')}</Participants>
         <MessageContent expanded={expanded}>

@@ -213,8 +213,34 @@ test('Application main page is visible', async (t) => {
 
 #### Run all tests locally
 
+E2E-tests are implemented using testcafe (legacy) and playwright.
+Testcafe tests can be run via the following command:
+
 ```sh
 yarn e2e
+```
+
+If you don't want to wipe data from your dev environment,
+then start the dev server by running the following commands in
+the `service` directory before running the playwright tests:
+
+```sh
+pm2 stop service
+./gradlew bootRunTest
+```
+
+Playwright tests can be started with:
+
+```sh
+yarn e2e-playwright
+```
+
+You can run a single spec by specifying the corresponding subdirectory. For example,
+in order to only run tests related to messaging, use the following command:
+
+```sh
+yarn jest --testTimeout 600000 --runInBand src/e2e-playwright/specs/7_messaging
+```
 
 #### Run tests by fixture or test meta data
 

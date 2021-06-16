@@ -56,6 +56,11 @@ function getLoginUser(role: UserRole): DevLoginUser | string {
   }
 }
 
+export async function enduserLogin(page: Page) {
+  await page.goto(config.enduserUrl)
+  await page.click('[data-qa="login-btn"]')
+}
+
 export async function employeeLogin(page: Page, role: UserRole) {
   const authUrl = `${config.apiUrl}/auth/saml/login/callback?RelayState=%2Femployee`
   const user = getLoginUser(role)
