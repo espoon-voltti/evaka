@@ -25,11 +25,7 @@ export async function createServiceNeed(
   data: ServiceNeedCreateRequest
 ): Promise<Result<null>> {
   return client
-    .post('/service-needs', {
-      ...data,
-      startDate: data.startDate.toJSON(),
-      endDate: data.endDate.toJSON()
-    })
+    .post('/service-needs', data)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
@@ -46,11 +42,7 @@ export async function updateServiceNeed(
   data: ServiceNeedUpdateRequest
 ): Promise<Result<null>> {
   return client
-    .put(`/service-needs/${id}`, {
-      ...data,
-      startDate: data.startDate.toJSON(),
-      endDate: data.endDate.toJSON()
-    })
+    .put(`/service-needs/${id}`, data)
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }

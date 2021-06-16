@@ -463,7 +463,7 @@ fun Database.Transaction.insertTestServiceNeed(
 ALTER TABLE service_need DISABLE TRIGGER set_timestamp;
 INSERT INTO service_need (id, placement_id, start_date, end_date, option_id, shift_care, confirmed_by, confirmed_at, updated)
 VALUES (:id, :placementId, :startDate, :endDate, :optionId, :shiftCare, :confirmedBy, :confirmedAt, :updated);
-ALTER TABLE new_service_need ENABLE TRIGGER set_timestamp;
+ALTER TABLE service_need ENABLE TRIGGER set_timestamp;
 """
     )
         .bind("id", id)

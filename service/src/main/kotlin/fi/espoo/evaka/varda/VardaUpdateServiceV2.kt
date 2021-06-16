@@ -529,7 +529,7 @@ SELECT
     option.id AS evakaServiceNeedOptionId,
     sn.updated AS evakaServiceNeedUpdated,
     option.updated AS evakaServiceNeedOptionUpdated
-FROM new_service_need sn
+FROM service_need sn
 LEFT JOIN service_need_option option ON sn.option_id = option.id
 LEFT JOIN placement ON sn.placement_id = placement.id
 WHERE (sn.updated >= :startingFrom OR option.updated >= :startingFrom)
@@ -571,14 +571,14 @@ WITH child_fees AS (
     fd.id AS fee_decision_id,
     fdc.child_id,
     fd.valid_during
-  FROM new_fee_decision fd JOIN new_fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
+  FROM fee_decision fd JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
   ${if (startingFrom != null) " WHERE fd.sent_at >= :startingFrom" else ""}  
 ), service_need_fees AS (
   SELECT
     sn.id AS service_need_id,
     p.child_id AS child_id,
     array_agg(child_fees.fee_decision_id) AS fee_decision_ids
-  FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
+  FROM service_need sn JOIN placement p ON p.id = sn.placement_id
     JOIN child_fees ON p.child_id = child_fees.child_id 
       AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
   GROUP BY service_need_id, p.child_id
@@ -587,7 +587,7 @@ SELECT
     sn.id AS service_need_id,
     p.child_id AS child_id,
     array_agg(vvd.id) AS voucher_value_decision_ids
-FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
+FROM service_need sn JOIN placement p ON p.id = sn.placement_id
   JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
     AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
 ${if (startingFrom != null) " WHERE vvd.sent_at >= :startingFrom" else ""}      
@@ -700,7 +700,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: UUID): EvakaServiceNeedInf
             sn.updated AS service_need_updated,
             sno.updated AS service_need_option_updated,
             sno.id AS optionId
-        FROM new_service_need sn
+        FROM service_need sn
         JOIN service_need_option sno on sn.option_id = sno.id
         JOIN employee e on e.id = sn.confirmed_by
         JOIN placement p ON p.id = sn.placement_id
@@ -726,10 +726,10 @@ fun Database.Read.getUnsuccessfullyUploadVardaServiceNeeds(): List<Unsuccessfull
         """
 SELECT 
     vsn.evaka_service_need_id, 
-    EXISTS(SELECT 1 FROM new_service_need sn WHERE sn.id = vsn.evaka_service_need_id ) AS exists_in_evaka,
+    EXISTS(SELECT 1 FROM service_need sn WHERE sn.id = vsn.evaka_service_need_id ) AS exists_in_evaka,
     p.child_id
 FROM varda_service_need vsn 
-    LEFT JOIN new_service_need sn ON sn.id = vsn.evaka_service_need_id
+    LEFT JOIN service_need sn ON sn.id = vsn.evaka_service_need_id
     LEFT JOIN placement p ON p.id = sn.placement_id
 WHERE update_failed = true"""
     )
