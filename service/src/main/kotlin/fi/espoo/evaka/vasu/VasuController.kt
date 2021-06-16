@@ -4,6 +4,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 import java.util.UUID
 
 @RestController
@@ -31,11 +31,12 @@ class VasuController {
 
         return db.transaction { tx ->
             tx.getVasuTemplate(body.templateId)?.let { template ->
-                if (!template.valid.includes(LocalDate.now())) {
+                if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
                     throw BadRequest("Template is not currently valid")
                 }
             } ?: throw NotFound("template ${body.templateId} not found")
 
+            // TODO we could just return the id, check frontend
             val id = tx.insertVasuDocument(body.childId, body.templateId)
             tx.getVasuDocumentResponse(id)!!
         }

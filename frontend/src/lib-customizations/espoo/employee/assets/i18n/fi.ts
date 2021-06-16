@@ -837,7 +837,11 @@ export const fi = {
         REVIEWED: 'Arvioitu',
         CLOSED: 'Päättynyt'
       },
-      errorInitializing: 'Vasun luonti epäonnistui'
+      init: {
+        chooseTemplate: 'Valitse vasupohja',
+        noTemplates: 'Yhtään vasupohjaa ei löytynyt',
+        error: 'Vasun luonti epäonnistui'
+      }
     }
   },
   personSearch: {
