@@ -66,12 +66,7 @@ export default React.memo(function UnitPage() {
   const loadUnitData = useRestApi(getUnitData, setUnitData)
   const loadUnitDataWithFixedPosition = () => {
     savePosition()
-    loadUnitData(
-      id,
-      filters.startDate,
-      filters.endDate,
-      query.has('missingGroupPlacementsV2')
-    )
+    loadUnitData(id, filters.startDate, filters.endDate)
   }
 
   useEffect(() => {
