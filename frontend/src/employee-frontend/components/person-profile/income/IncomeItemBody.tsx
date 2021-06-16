@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
+import { Link } from 'react-router-dom'
+
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'
 import Title from 'lib-components/atoms/Title'
@@ -10,6 +12,7 @@ import IncomeTable from './IncomeTable'
 import { Income } from '../../../types/income'
 import { useTranslation } from '../../../state/i18n'
 import { formatDate } from '../../../utils/date'
+import { UserContext } from 'employee-frontend/state/user'
 
 interface Props {
   income: Income
@@ -17,6 +20,9 @@ interface Props {
 
 const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
   const { i18n } = useTranslation()
+  const { roles } = useContext(UserContext)
+
+  const applicationLinkVisible = roles.find((r) => ['ADMIN'].includes(r))
 
   return (
     <>
@@ -43,6 +49,32 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
             ? i18n.personProfile.income.details.originApplication
             : income.updatedBy}
         </span>
+        {income.notes === 'created automatically from application' &&
+          !income.applicationId && (
+            <>
+              <Label>{i18n.personProfile.income.details.source}</Label>
+              <span>
+                {
+                  i18n.personProfile.income.details
+                    .createdFromUnknownApplication
+                }
+              </span>
+            </>
+          )}
+        {income.applicationId && (
+          <>
+            <Label>{i18n.personProfile.income.details.source}</Label>
+            <span>
+              {applicationLinkVisible ? (
+                <Link to={`/applications/${income.applicationId}`}>
+                  {i18n.personProfile.income.details.application}
+                </Link>
+              ) : (
+                i18n.personProfile.income.details.createdFromApplication
+              )}
+            </span>
+          </>
+        )}
       </ListGrid>
       {income.effect === 'INCOME' ? (
         <>

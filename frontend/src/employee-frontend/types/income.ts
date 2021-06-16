@@ -27,6 +27,7 @@ export interface Income extends PartialIncome {
   updatedAt: Date
   updatedBy: string
   applicationId: UUID | null
+  notes: string
 }
 
 export const deserializeIncome = (json: JsonOf<Income>): Income => ({
