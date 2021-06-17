@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.LocalDate
-import java.time.format.DateTimeParseException
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DvvModificationsResponse(
@@ -170,11 +169,7 @@ data class DvvDate(
     val arvo: String,
     val tarkkuus: String
 ) {
-    fun asLocalDate(): LocalDate? {
-        return try {
-            LocalDate.parse(arvo)
-        } catch (e: DateTimeParseException) {
-            null
-        }
+    fun asLocalDate(): LocalDate {
+        return LocalDate.parse(arvo)
     }
 }

@@ -104,15 +104,19 @@ class DvvModificationsService(
         }
     }
 
-    private fun handleDeath(db: Database, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) = db.transaction { tx ->
-        tx.getPersonBySSN(ssn)?.let { person ->
-            val dateOfDeath = deathDvvInfoGroup.kuolinpv?.asLocalDate() ?: LocalDate.now()
-            logger.info("Dvv modification for ${person.id}: marking dead since $dateOfDeath")
-            tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
+    private fun handleDeath(db: Database, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
+        if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
 
-            endFamilyRelations(tx, person.id, dateOfDeath)
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))))
-            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))))
+        db.transaction { tx ->
+            tx.getPersonBySSN(ssn)?.let { person ->
+                val dateOfDeath = deathDvvInfoGroup.kuolinpv.asLocalDate()
+                logger.info("Dvv modification for ${person.id}: marking dead since $dateOfDeath")
+                tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
+
+                endFamilyRelations(tx, person.id, dateOfDeath)
+                asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))))
+                asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))))
+            }
         }
     }
 
