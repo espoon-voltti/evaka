@@ -64,7 +64,7 @@ class VardaDevController(
         db: Database.Connection
     ) {
         if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
-            db.read { it.createQuery("SELECT varda_child_id FROM varda_child").mapTo<Long>().list() }.forEach {
+            db.read { it.createQuery("SELECT varda_child_id FROM varda_child").mapTo<Long>().list() }.filterNotNull().forEach {
                 logger.info("VardaDevController: wiping out varda child $it from varda")
                 vardaUpdateServiceV2.clearAllExistingVardaChildDataFromVarda(db, it)
             }

@@ -86,10 +86,11 @@ fun updateAllVardaData(
     client: VardaClient,
     organizer: String
 ) {
-    logger.info("VardaUpdate: running varda update")
+    val since = HelsinkiDateTime.now().minusHours(24)
+    logger.info("VardaUpdate: running varda update for data modified since $since")
     updateOrganizer(db, client, organizer)
     updateUnits(db, client, organizer)
-    updateChildData(db, client, HelsinkiDateTime.now().minusHours(24))
+    updateChildData(db, client, since)
 }
 
 /*
@@ -246,7 +247,9 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
             )
         }
     } catch (e: Exception) {
-        errors.add("VardaUpdate: error creating a new varda decision for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
+        errors.add("VardaUpdate: error creating a new varda decision for service need ${evakaServiceNeed.id}: ${e.message}")
+        // TODO: remove once everything works
+        logger.error("VardaUpdate: new varda decision errored with: ".plus(e.stackTrace.joinToString(",")))
     }
 
     return errors
@@ -587,6 +590,7 @@ SELECT
 FROM new_service_need sn JOIN placement p ON p.id = sn.placement_id
   JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
     AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+${if (startingFrom != null) " WHERE vvd.sent_at >= :startingFrom" else ""}      
 GROUP BY service_need_id, p.child_id
 )
 SELECT
