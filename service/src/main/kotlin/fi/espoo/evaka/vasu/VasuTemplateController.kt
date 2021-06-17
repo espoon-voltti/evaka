@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -46,12 +47,13 @@ class VasuTemplateController {
     @GetMapping
     fun getTemplates(
         db: Database.Connection,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         Audit.VasuTemplateRead.log()
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        return db.read { tx -> tx.getVasuTemplates() }
+        return db.read { tx -> tx.getVasuTemplates(validOnly) }
     }
 
     @GetMapping("/{id}")
