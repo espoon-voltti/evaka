@@ -84,8 +84,9 @@ export class Failure<T> {
 
   static fromError<T>(e: Error): Failure<T> {
     if (axios.isAxiosError(e)) {
-      const response = e.response as AxiosResponse<{ errorCode?: string }>
-      return new Failure(e.message, response.status, response?.data.errorCode)
+      const response: AxiosResponse<{ errorCode?: string }> | undefined =
+        e.response
+      return new Failure(e.message, response?.status, response?.data.errorCode)
     }
     return new Failure(e.message)
   }
