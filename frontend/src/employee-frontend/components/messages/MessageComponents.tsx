@@ -7,8 +7,11 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import React from 'react'
 import styled from 'styled-components'
-import { DATE_FORMAT_NO_YEAR, DATE_FORMAT_TIME_ONLY } from '../../constants'
-import { formatDate } from '../../utils/date'
+import {
+  DATE_FORMAT_NO_YEAR,
+  DATE_FORMAT_TIME_ONLY,
+  formatDate
+} from 'lib-common/date'
 
 export const MessageRow = styled.div<{ unread?: boolean }>`
   display: flex;

@@ -7,8 +7,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { ServiceNeed } from '../../../../types/child'
 import { useTranslation } from '../../../../state/i18n'
-import { formatDate } from '../../../../utils/date'
-import { DATE_FORMAT_DATE_TIME } from '../../../../constants'
+import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import Toolbar from '../../../common/Toolbar'
 
 interface ServiceNeedReadRowProps {

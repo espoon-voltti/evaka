@@ -21,7 +21,7 @@ import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable from './IncomeTable'
 import { useTranslation } from '../../../state/i18n'
 import { incomeEffects, Income, PartialIncome } from '../../../types/income'
-import { formatDate } from '../../../utils/date'
+import { formatDate } from 'lib-common/date'
 import { Gap } from 'lib-components/white-space'
 
 const ButtonsContainer = styled(FixedSpaceRow)`

@@ -9,7 +9,6 @@ import { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 import styled from 'styled-components'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { formatDate } from '../util'
 import { Status, applicationStatusIcon } from '../decisions/shared'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -32,6 +31,7 @@ import { noop } from 'lodash'
 import { removeUnprocessedApplication } from '../applications/api'
 import { OverlayContext } from '../overlay/state'
 import { isEqual } from 'date-fns'
+import { formatDate } from 'lib-common/date'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};

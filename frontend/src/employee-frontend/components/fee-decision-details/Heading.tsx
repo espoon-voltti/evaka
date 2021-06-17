@@ -19,7 +19,7 @@ import {
   PersonDetailed
 } from '../../types/invoicing'
 import colors from 'lib-customizations/common'
-import { formatDate } from '../../utils/date'
+import { formatDate } from 'lib-common/date'
 import { formatName } from '../../utils'
 
 interface TypeSelectProps {

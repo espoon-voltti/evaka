@@ -2,18 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { format } from 'date-fns'
 import LocalDate from 'lib-common/local-date'
-import { DATE_FORMAT_DEFAULT, MAX_DATE } from '../constants'
+import { MAX_DATE } from '../constants'
 import { StatusLabelType } from '../components/common/StatusLabel'
-import _ from 'lodash'
-
-export function formatDate(
-  date: Date | null | undefined,
-  dateFormat = DATE_FORMAT_DEFAULT
-): string {
-  return date ? format(date, dateFormat) : ''
-}
 
 export function isActiveDateRange(
   startDate: LocalDate,

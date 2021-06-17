@@ -24,8 +24,7 @@ import {
   OccupancyReportType
 } from '../../api/reports'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { formatDate } from '../../utils/date'
-import { DATE_FORMAT_ISO } from '../../constants'
+import { DATE_FORMAT_ISO, formatDate } from 'lib-common/date'
 import { SelectOptionProps } from '../common/Select'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'

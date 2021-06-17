@@ -16,10 +16,10 @@ import {
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { useTranslation } from '../localization'
-import { formatDate } from '../util'
 import { MessageContainer } from './MessageComponents'
 import { MessageTypeChip } from './MessageTypeChip'
 import { MessageContext } from './state'
+import { formatDate } from 'lib-common/date'
 
 const TitleRow = styled.div`
   display: flex;
