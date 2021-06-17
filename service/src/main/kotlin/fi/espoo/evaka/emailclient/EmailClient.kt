@@ -4,21 +4,21 @@
 
 package fi.espoo.evaka.emailclient
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailService
-import com.amazonaws.services.simpleemail.model.AccountSendingPausedException
-import com.amazonaws.services.simpleemail.model.Body
-import com.amazonaws.services.simpleemail.model.ConfigurationSetDoesNotExistException
-import com.amazonaws.services.simpleemail.model.ConfigurationSetSendingPausedException
-import com.amazonaws.services.simpleemail.model.Content
-import com.amazonaws.services.simpleemail.model.Destination
-import com.amazonaws.services.simpleemail.model.MailFromDomainNotVerifiedException
-import com.amazonaws.services.simpleemail.model.Message
-import com.amazonaws.services.simpleemail.model.SendEmailRequest
 import mu.KotlinLogging
+import software.amazon.awssdk.services.ses.SesClient
+import software.amazon.awssdk.services.ses.model.AccountSendingPausedException
+import software.amazon.awssdk.services.ses.model.Body
+import software.amazon.awssdk.services.ses.model.ConfigurationSetDoesNotExistException
+import software.amazon.awssdk.services.ses.model.ConfigurationSetSendingPausedException
+import software.amazon.awssdk.services.ses.model.Content
+import software.amazon.awssdk.services.ses.model.Destination
+import software.amazon.awssdk.services.ses.model.MailFromDomainNotVerifiedException
+import software.amazon.awssdk.services.ses.model.Message
+import software.amazon.awssdk.services.ses.model.SendEmailRequest
 
 private val logger = KotlinLogging.logger {}
 
-class EmailClient(private val client: AmazonSimpleEmailService, private val whitelist: List<Regex>?) : IEmailClient {
+class EmailClient(private val client: SesClient, private val whitelist: List<Regex>?) : IEmailClient {
     private val charset = "UTF-8"
 
     override fun sendEmail(traceId: String, toAddress: String, fromAddress: String, subject: String, htmlBody: String, textBody: String) {
@@ -26,18 +26,21 @@ class EmailClient(private val client: AmazonSimpleEmailService, private val whit
 
         if (validateToAddress(traceId, toAddress) && checkWhitelist(toAddress)) {
             try {
-                val request = SendEmailRequest()
-                    .withDestination(Destination(listOf(toAddress)))
-                    .withMessage(
-                        Message()
-                            .withBody(
-                                Body()
-                                    .withHtml(Content().withCharset(charset).withData(htmlBody))
-                                    .withText(Content().withCharset(charset).withData(textBody))
+                val request = SendEmailRequest.builder()
+                    .destination(Destination.builder().toAddresses(toAddress).build())
+                    .message(
+                        Message.builder()
+                            .body(
+                                Body.builder()
+                                    .html(Content.builder().charset(charset).data(htmlBody).build())
+                                    .text(Content.builder().charset(charset).data(textBody).build())
+                                    .build()
                             )
-                            .withSubject(Content().withCharset(charset).withData(subject))
+                            .subject(Content.builder().charset(charset).data(subject).build())
+                            .build()
                     )
-                    .withSource(fromAddress)
+                    .source(fromAddress)
+                    .build()
 
                 client.sendEmail(request)
                 logger.info { "Email sent (traceId: $traceId)" }

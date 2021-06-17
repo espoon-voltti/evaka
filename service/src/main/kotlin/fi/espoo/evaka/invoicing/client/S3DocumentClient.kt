@@ -4,35 +4,33 @@
 
 package fi.espoo.evaka.invoicing.client
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
-import com.amazonaws.services.s3.model.PutObjectRequest
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
 @Service("invoicingS3DocumentClient")
 class S3DocumentClient(
-    private val s3Client: AmazonS3,
+    private val s3Client: S3Client,
     @Value("\${fi.espoo.voltti.document.bucket.paymentdecision}")
     private val feeDecisionBucket: String
 ) {
     fun upload(bucketName: String, document: Document, contentType: String) {
-        val metadata = ObjectMetadata()
-        metadata.contentType = contentType
-        metadata.contentLength = document.bytes.size.toLong()
         val key = document.key
-        val request = PutObjectRequest(
-            bucketName,
-            key,
-            document.bytes.inputStream(),
-            metadata
-        )
+        val request = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .contentType(contentType)
+            .contentLength(document.bytes.size.toLong())
+            .build()
 
-        s3Client.putObject(request)
+        s3Client.putObject(request, RequestBody.fromBytes(document.bytes))
     }
 
     fun uploadPdfToS3(bucket: String, key: String, documentBytes: ByteArray) {
@@ -58,14 +56,14 @@ class S3DocumentClient(
     }
 
     fun getPdf(bucket: String, key: String): ByteArray {
-        val s3Object = s3Client.getObject(bucket, key)
-        return s3Object.objectContent.readBytes()
+        val request = GetObjectRequest.builder().bucket(bucket).key(key).build()
+        return s3Client.getObjectAsBytes(request).asByteArray()
     }
 
     fun getFeeDecisionPdf(documentKey: String): ByteArray {
         logger.debug { "Getting fee decision PDF for $documentKey." }
-        val s3Object = s3Client.getObject(feeDecisionBucket, documentKey)
-        return s3Object.objectContent.readBytes()
+        val request = GetObjectRequest.builder().bucket(feeDecisionBucket).key(documentKey).build()
+        return s3Client.getObjectAsBytes(request).asByteArray()
     }
 
     fun getFeeDecisionBucket(): String = feeDecisionBucket

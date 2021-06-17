@@ -4,32 +4,26 @@
 
 package fi.espoo.evaka.shared.config
 
-import com.amazonaws.ClientConfigurationFactory
-import com.amazonaws.Protocol
-import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailService
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import software.amazon.awssdk.services.ses.SesClient
+import java.net.URI
 
 @Configuration
 class AwsConfig {
     @Bean
-    @Profile("local")
-    fun staticCredentialsProvider(): AWSCredentialsProvider =
-        AWSStaticCredentialsProvider(BasicAWSCredentials("", ""))
-
-    @Bean
     @Profile("production")
-    fun containerCredentialsProvider() = DefaultAWSCredentialsProviderChain()
+    fun containerCredentialsProvider() = DefaultCredentialsProvider.create()
 
     @Bean
     @Profile("local")
@@ -40,20 +34,20 @@ class AwsConfig {
         @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}") daycareDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.attachments}") attachmentsBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.data}") dataBucket: String
-    ): AmazonS3 {
-        val client = AmazonS3ClientBuilder
-            .standard()
-            .enablePathStyleAccess()
-            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(s3MockUrl, "us-east-1"))
-            .withClientConfiguration(ClientConfigurationFactory().config.withProtocol(Protocol.HTTP))
-            .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("foo", "bar")))
+    ): S3Client {
+        val client = S3Client.builder()
+            .region(Region.US_EAST_1)
+            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+            .endpointOverride(URI.create(s3MockUrl))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+            )
             .build()
 
-        client.createBucket(daycareDecisionBucket)
-        client.createBucket(feeDecisionBucket)
-        client.createBucket(voucherValueDecisionBucket)
-        client.createBucket(attachmentsBucket)
-        client.createBucket(dataBucket)
+        for (bucket in listOf(daycareDecisionBucket, feeDecisionBucket, voucherValueDecisionBucket, attachmentsBucket, dataBucket)) {
+            val request = CreateBucketRequest.builder().bucket(bucket).build()
+            client.createBucket(request)
+        }
 
         return client
     }
@@ -62,21 +56,18 @@ class AwsConfig {
     @Profile("production")
     fun amazonS3Prod(
         @Value("\${aws.region}") region: String,
-        credentialsProvider: AWSCredentialsProvider
-    ): AmazonS3 =
-        AmazonS3ClientBuilder.standard()
-            .withRegion(region)
-            .withCredentials(credentialsProvider)
-            .build()
+        credentialsProvider: AwsCredentialsProvider
+    ): S3Client = S3Client.builder()
+        .region(Region.of(region))
+        .credentialsProvider(credentialsProvider)
+        .build()
 
     @Bean
     fun amazonSES(
         @Value("\${aws.region}") region: String,
-        awsCredentialsProvider: AWSCredentialsProvider?
-    ): AmazonSimpleEmailService? =
-        AmazonSimpleEmailServiceClientBuilder
-            .standard()
-            .withCredentials(awsCredentialsProvider)
-            .withRegion(region)
-            .build()
+        awsCredentialsProvider: AwsCredentialsProvider?
+    ): SesClient = SesClient.builder()
+        .credentialsProvider(awsCredentialsProvider)
+        .region(Region.of(region))
+        .build()
 }
