@@ -1,6 +1,7 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class VasuController {
+class VasuController(
+    private val acl: AccessControlList
+) {
 
     data class CreateDocumentRequest(
         val childId: UUID,
@@ -29,7 +32,9 @@ class VasuController {
         @RequestBody body: CreateDocumentRequest
     ): VasuDocumentResponse {
         Audit.VasuDocumentCreate.log(body.childId)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        acl.getRolesForChild(user, body.childId).requireOneOfRoles(
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
+        )
 
         return db.transaction { tx ->
             tx.getVasuTemplate(body.templateId)?.let { template ->
@@ -51,7 +56,9 @@ class VasuController {
         @PathVariable id: UUID
     ): VasuDocumentResponse {
         Audit.VasuDocumentRead.log(id)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
+        )
 
         return db.read { tx ->
             tx.getVasuDocumentResponse(id) ?: throw NotFound("template $id not found")
@@ -69,7 +76,9 @@ class VasuController {
         @RequestBody body: UpdateDocumentRequest
     ) {
         Audit.VasuDocumentUpdate.log(id)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
+        )
 
         db.transaction { tx -> tx.updateVasuDocument(id, body.content) }
     }
@@ -81,7 +90,9 @@ class VasuController {
         @PathVariable childId: UUID
     ): List<VasuDocumentSummary> {
         Audit.ChildVasuDocumentsRead.log(childId)
-        user.requireOneOfRoles(UserRole.ADMIN)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
+        )
 
         return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
     }
