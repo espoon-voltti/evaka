@@ -6,16 +6,24 @@ package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
+import fi.espoo.evaka.pis.getParentships
+import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.updateParentshipDuration
+import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -23,7 +31,8 @@ private val logger = KotlinLogging.logger {}
 class DvvModificationsService(
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
     private val personService: PersonService,
-    private val fridgeFamilyService: FridgeFamilyService
+    private val fridgeFamilyService: FridgeFamilyService,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
 
     fun updatePersonsFromDvv(db: Database, ssns: List<String>): Int {
@@ -96,11 +105,39 @@ class DvvModificationsService(
     }
 
     private fun handleDeath(db: Database, ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) = db.transaction { tx ->
-        tx.getPersonBySSN(ssn)?.let {
+        tx.getPersonBySSN(ssn)?.let { person ->
             val dateOfDeath = deathDvvInfoGroup.kuolinpv?.asLocalDate() ?: LocalDate.now()
-            logger.info("Dvv modification for ${it.id}: marking dead since $dateOfDeath")
-            tx.updatePersonFromVtj(it.copy(dateOfDeath = dateOfDeath))
+            logger.info("Dvv modification for ${person.id}: marking dead since $dateOfDeath")
+            tx.updatePersonFromVtj(person.copy(dateOfDeath = dateOfDeath))
+
+            endFamilyRelations(tx, person.id, dateOfDeath)
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(person.id, DateRange(dateOfDeath, null))))
+            asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forChild(person.id, DateRange(dateOfDeath, null))))
         }
+    }
+
+    private fun endFamilyRelations(tx: Database.Transaction, personId: UUID, dateOfDeath: LocalDate) {
+        tx
+            .getPartnersForPerson(personId, includeConflicts = true, period = DateRange(dateOfDeath, dateOfDeath))
+            .forEach { tx.updatePartnershipDuration(it.partnershipId, it.startDate, dateOfDeath) }
+
+        tx
+            .getParentships(
+                headOfChildId = personId,
+                childId = null,
+                includeConflicts = true,
+                period = DateRange(dateOfDeath, dateOfDeath)
+            )
+            .forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
+
+        tx
+            .getParentships(
+                headOfChildId = null,
+                childId = personId,
+                includeConflicts = true,
+                period = DateRange(dateOfDeath, dateOfDeath)
+            )
+            .forEach { tx.updateParentshipDuration(it.id, it.startDate, dateOfDeath) }
     }
 
     private fun handleRestrictedInfo(
