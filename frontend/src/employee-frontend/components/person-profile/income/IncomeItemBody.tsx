@@ -45,7 +45,7 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
         <span>{formatDate(income.updatedAt)}</span>
         <Label>{i18n.personProfile.income.details.handler}</Label>
         <span>
-          {income.applicationId
+          {income.applicationId && !income.updatedBy
             ? i18n.personProfile.income.details.originApplication
             : income.updatedBy}
         </span>
