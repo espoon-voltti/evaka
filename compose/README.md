@@ -140,6 +140,11 @@ Access the frontends at
 - <http://localhost:9999/employee> – Frontend for the employee
 - <http://localhost:9999/employee/mobile> – Frontend for the employee mobile
 
+## Database dump
+
+To dump local database run `./db.sh dump` and restore it with `./db.sh restore`.
+Optional dump path can be given to script, example `./db.sh dump /tmp/my.dump`.
+
 ## Troubleshooting
 
 ### Database
