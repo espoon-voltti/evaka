@@ -756,7 +756,8 @@ export const fi = {
         title: 'Uusi sijoitus',
         text:
           'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
-        temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!'
+        temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!',
+        unitMissing: 'Yksikkö puuttuu'
       },
       error: {
         conflict: {
