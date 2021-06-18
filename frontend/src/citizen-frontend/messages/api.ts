@@ -37,8 +37,11 @@ export async function getMessageAccount(): Promise<Result<UUID>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export async function markThreadRead(id: string): Promise<void> {
-  return client.put(`/citizen/messages/threads/${id}/read`)
+export async function markThreadRead(id: string): Promise<Result<void>> {
+  return client
+    .put(`/citizen/messages/threads/${id}/read`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getUnreadMessagesCount(): Promise<Result<number>> {

@@ -134,33 +134,45 @@ export const getGuardianApplications = async (): Promise<
 export async function createApplication(
   childId: string,
   type: ApplicationType
-): Promise<string> {
-  const { data: applicationId } = await client.post<string>(
-    '/citizen/applications',
-    {
-      childId,
-      type: type.toUpperCase()
-    }
-  )
-  return applicationId
+): Promise<Result<string>> {
+  try {
+    const { data: applicationId } = await client.post<string>(
+      '/citizen/applications',
+      {
+        childId,
+        type: type.toUpperCase()
+      }
+    )
+    return Success.of(applicationId)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }
 
 export async function getDuplicateApplications(
   childId: string
-): Promise<Record<ApplicationType, boolean>> {
-  const { data } = await client.get<Record<ApplicationType, boolean>>(
-    `/citizen/applications/duplicates/${childId}`
-  )
-  return data
+): Promise<Result<Record<ApplicationType, boolean>>> {
+  try {
+    const { data } = await client.get<Record<ApplicationType, boolean>>(
+      `/citizen/applications/duplicates/${childId}`
+    )
+    return Success.of(data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }
 
 export async function getActivePlacementsByApplicationType(
   childId: string
-): Promise<Record<ApplicationType, boolean>> {
-  const { data } = await client.get<Record<ApplicationType, boolean>>(
-    `/citizen/applications/active-placements/${childId}`
-  )
-  return data
+): Promise<Result<Record<ApplicationType, boolean>>> {
+  try {
+    const { data } = await client.get<Record<ApplicationType, boolean>>(
+      `/citizen/applications/active-placements/${childId}`
+    )
+    return Success.of(data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }
 
 export async function saveAttachment(
