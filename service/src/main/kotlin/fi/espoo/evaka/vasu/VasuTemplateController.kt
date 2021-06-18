@@ -51,7 +51,7 @@ class VasuTemplateController {
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         Audit.VasuTemplateRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF)
 
         return db.read { tx -> tx.getVasuTemplates(validOnly) }
     }

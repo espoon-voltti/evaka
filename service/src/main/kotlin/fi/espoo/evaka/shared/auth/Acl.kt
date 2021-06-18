@@ -244,6 +244,20 @@ WHERE dn.id = :noteId
             ).bind("userId", user.id).bind("noteId", noteId).mapTo<UserRole>().toSet()
         }
     )
+
+    fun getRolesForVasuDocument(user: AuthenticatedUser, documentId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM vasu_document
+JOIN child_acl_view ON vasu_document.child_id = child_acl_view.child_id
+WHERE employee_id = :userId AND vasu_document.id = :documentId
+                """.trimIndent()
+            ).bind("userId", user.id).bind("documentId", documentId).mapTo<UserRole>().toSet()
+        }
+    )
 }
 
 private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<UUID> =
