@@ -12,14 +12,14 @@ import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H4 } from 'lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
-import { NewServiceNeed, Placement } from '../../../types/child'
+import { ServiceNeed, Placement } from '../../../types/child'
 import { ChildContext } from '../../../state'
-import { deleteNewServiceNeed } from '../../../api/child/new-service-needs'
+import { deleteServiceNeed } from '../../../api/child/service-needs'
 import { DateRange } from '../../../utils/date'
 import { RequireRole } from '../../../utils/roles'
-import NewServiceNeedEditorRow from './new-service-needs/NewServiceNeedEditorRow'
-import NewServiceNeedReadRow from './new-service-needs/NewServiceNeedReadRow'
-import MissingServiceNeedRow from './new-service-needs/MissingServiceNeedRow'
+import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
+import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
+import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import FiniteDateRange from '../../../../lib-common/finite-date-range'
 
 interface Props {
@@ -27,7 +27,7 @@ interface Props {
   reload: () => void
 }
 
-function NewServiceNeeds({ placement, reload }: Props) {
+function ServiceNeeds({ placement, reload }: Props) {
   const { serviceNeeds, type: placementType } = placement
 
   const { i18n } = useTranslation()
@@ -102,7 +102,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
         </Thead>
         <Tbody>
           {creatingNew === true && (
-            <NewServiceNeedEditorRow
+            <ServiceNeedEditorRow
               placement={placement}
               options={options}
               initialForm={{
@@ -124,7 +124,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
           {_.orderBy(rows, ['startDate'], ['desc']).map((sn) =>
             'id' in sn ? (
               editingId === sn.id ? (
-                <NewServiceNeedEditorRow
+                <ServiceNeedEditorRow
                   key={sn.id}
                   placement={placement}
                   options={options}
@@ -142,7 +142,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
                   editingId={editingId}
                 />
               ) : (
-                <NewServiceNeedReadRow
+                <ServiceNeedReadRow
                   key={sn.id}
                   serviceNeed={sn}
                   onEdit={() => setEditingId(sn.id)}
@@ -152,7 +152,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
               )
             ) : creatingNew instanceof LocalDate &&
               sn.startDate.isEqual(creatingNew) ? (
-              <NewServiceNeedEditorRow
+              <ServiceNeedEditorRow
                 key={sn.startDate.toJSON()}
                 placement={placement}
                 options={options}
@@ -187,7 +187,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
           iconColour={'orange'}
           icon={faQuestion}
           resolve={{
-            action: () => deleteNewServiceNeed(deletingId).then(reload),
+            action: () => deleteServiceNeed(deletingId).then(reload),
             label: t.deleteServiceNeed.btn
           }}
           reject={{
@@ -200,7 +200,7 @@ function NewServiceNeeds({ placement, reload }: Props) {
   )
 }
 
-type ServiceNeedOrGap = NewServiceNeed | DateRange
+type ServiceNeedOrGap = ServiceNeed | DateRange
 
 const HeaderRow = styled.div`
   display: flex;
@@ -208,4 +208,4 @@ const HeaderRow = styled.div`
   align-items: center;
 `
 
-export default NewServiceNeeds
+export default ServiceNeeds

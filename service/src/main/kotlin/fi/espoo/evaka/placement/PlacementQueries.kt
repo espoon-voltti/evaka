@@ -156,7 +156,7 @@ fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, Loca
 
     createUpdate(
         //language=SQL
-        """DELETE FROM new_service_need WHERE placement_id = :id""".trimIndent()
+        """DELETE FROM service_need WHERE placement_id = :id""".trimIndent()
     )
         .bind("id", id)
         .execute()
@@ -245,10 +245,10 @@ fun Database.Read.getDaycarePlacements(
                 ELSE (
                     SELECT count(*)
                     FROM generate_series(greatest(pl.start_date, '2020-03-01'::date), pl.end_date, '1 day') t
-                    LEFT JOIN new_service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
+                    LEFT JOIN service_need sn ON pl.id = sn.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                     WHERE sn.id IS NULL
                 )
-            END AS missing_new_service_need
+            END AS missing_service_need
         FROM placement pl
         LEFT OUTER JOIN daycare d on pl.unit_id = d.id
         LEFT OUTER JOIN person ch on pl.child_id = ch.id
@@ -533,6 +533,6 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
         startDate = rs.getDate("start_date").toLocalDate(),
         endDate = rs.getDate("end_date").toLocalDate(),
         type = rs.getEnum("type"),
-        missingNewServiceNeedDays = rs.getInt("missing_new_service_need")
+        missingServiceNeedDays = rs.getInt("missing_service_need")
     )
 }

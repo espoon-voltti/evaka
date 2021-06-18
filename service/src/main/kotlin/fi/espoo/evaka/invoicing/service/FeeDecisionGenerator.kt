@@ -57,7 +57,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     val invoicedUnits = getUnitsThatAreInvoiced()
 
     val newDrafts =
-        generateNewFeeDecisions2(
+        generateFeeDecisions2(
             from,
             headOfFamily,
             partner,
@@ -88,7 +88,7 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     upsertFeeDecisions(updatedDecisions)
 }
 
-private fun generateNewFeeDecisions2(
+private fun generateFeeDecisions2(
     from: LocalDate,
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
@@ -213,7 +213,7 @@ internal fun Database.Read.getPaidPlacements(
         val serviceNeeds = createQuery(
             """
 SELECT daterange(sn.start_date, sn.end_date, '[]') AS range, sno.id, sno.fee_coefficient, sno.voucher_value_coefficient, sno.fee_description_fi, sno.fee_description_sv, sno.voucher_value_description_fi, sno.voucher_value_description_sv
-FROM new_service_need sn
+FROM service_need sn
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
 """

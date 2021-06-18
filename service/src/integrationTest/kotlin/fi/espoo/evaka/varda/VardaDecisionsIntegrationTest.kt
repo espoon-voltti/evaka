@@ -18,14 +18,14 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.serviceneednew.deleteNewServiceNeed
+import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultPreschool
@@ -396,7 +396,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val beforeDelete = getVardaDecisions()
         assertEquals(1, beforeDelete.size)
 
-        db.transaction { it.deleteNewServiceNeed(serviceNeedId) }
+        db.transaction { it.deleteServiceNeed(serviceNeedId) }
         updateDecisions(db, vardaClient)
         val result = getVardaDecisions()
         assertEquals(0, result.size)
@@ -887,7 +887,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun updateServiceNeed(id: UUID, updatedAt: Instant) = db.transaction {
-        it.createUpdate("UPDATE new_service_need SET updated = :updatedAt WHERE id = :id")
+        it.createUpdate("UPDATE service_need SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)
             .bind("updatedAt", updatedAt)
             .execute()
@@ -905,7 +905,7 @@ internal fun insertServiceNeed(
     optionId: UUID
 ): UUID {
     return db.transaction {
-        it.insertTestNewServiceNeed(
+        it.insertTestServiceNeed(
             confirmedBy = testDecisionMaker_1.id,
             placementId = placementId,
             period = period,
@@ -984,7 +984,7 @@ fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detai
             startDate = period.start,
             endDate = period.end
         )
-        it.insertTestNewServiceNeed(
+        it.insertTestServiceNeed(
             confirmedBy = testDecisionMaker_1.id,
             placementId = placementId,
             period = period,

@@ -24,7 +24,7 @@ data class UnitBackupCare(
     @Nested("group_")
     val group: BackupCareGroup?,
     val period: FiniteDateRange,
-    val missingNewServiceNeedDays: Int
+    val missingServiceNeedDays: Int
 )
 
 data class GroupBackupCare(

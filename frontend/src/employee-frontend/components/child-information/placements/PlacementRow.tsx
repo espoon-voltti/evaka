@@ -32,7 +32,7 @@ import {
   updatePlacement
 } from '../../../api/child/placements'
 import { InputWarning } from '../../common/InputWarning'
-import NewServiceNeeds from './NewServiceNeeds'
+import ServiceNeeds from './ServiceNeeds'
 
 interface Props {
   placement: Placement
@@ -190,9 +190,9 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             }
             dataQaDelete="btn-remove-placement"
             warning={
-              placement.missingNewServiceNeedDays > 0
+              placement.missingServiceNeedDays > 0
                 ? {
-                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingNewServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
+                    text: `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`,
                     tooltipId: `tooltip_missing-service-need_${placement.id}`
                   }
                 : undefined
@@ -318,7 +318,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
 
         <Gap size="s" />
 
-        <NewServiceNeeds placement={placement} reload={onRefreshNeeded} />
+        <ServiceNeeds placement={placement} reload={onRefreshNeeded} />
       </ToolbarAccordion>
       {confirmingDelete && (
         <InfoModal

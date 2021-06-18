@@ -17,12 +17,12 @@ import { Placement } from '../../../../types/child'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import {
-  createNewServiceNeed,
-  updateNewServiceNeed
-} from '../../../../api/child/new-service-needs'
+  createServiceNeed,
+  updateServiceNeed
+} from '../../../../api/child/service-needs'
 import { UUID } from '../../../../types'
 
-interface NewServiceNeedCreateRowProps {
+interface ServiceNeedCreateRowProps {
   placement: Placement
   options: DropdownOption[]
   initialForm: FormData
@@ -30,14 +30,14 @@ interface NewServiceNeedCreateRowProps {
   onCancel: () => void
   editingId?: string
 }
-function NewServiceNeedEditorRow({
+function ServiceNeedEditorRow({
   placement,
   options,
   initialForm,
   onSuccess,
   onCancel,
   editingId
-}: NewServiceNeedCreateRowProps) {
+}: ServiceNeedCreateRowProps) {
   const { i18n } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
 
@@ -76,13 +76,13 @@ function NewServiceNeedEditorRow({
       setSubmitting(true)
 
       const request = editingId
-        ? updateNewServiceNeed(editingId, {
+        ? updateServiceNeed(editingId, {
             startDate: form.startDate,
             endDate: form.endDate,
             optionId: form.optionId,
             shiftCare: form.shiftCare
           })
-        : createNewServiceNeed({
+        : createServiceNeed({
             placementId: placement.id,
             startDate: form.startDate,
             endDate: form.endDate,
@@ -198,4 +198,4 @@ const StyledTd = styled(Td)`
   vertical-align: middle;
 `
 
-export default NewServiceNeedEditorRow
+export default ServiceNeedEditorRow

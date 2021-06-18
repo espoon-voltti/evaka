@@ -100,7 +100,7 @@ LEFT JOIN daycare_caretaker dc on dg.id = dc.group_id AND daterange(dc.start_dat
 LEFT JOIN staff_attendance sa on dg.id = sa.group_id AND sa.date = t::date
 LEFT JOIN backup_care bc on bc.child_id = p.id AND daterange(bc.start_date, bc.end_date, '[]') @> t::date
 LEFT JOIN daycare bcu on bc.unit_id = bcu.id
-LEFT JOIN new_service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
+LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
 LEFT JOIN service_need_option sno on sn.option_id = sno.id
 LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
 LEFT JOIN assistance_need an on an.child_id = p.id AND daterange(an.start_date, an.end_date, '[]') @> t::date

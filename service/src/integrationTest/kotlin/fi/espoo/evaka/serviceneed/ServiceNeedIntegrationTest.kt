@@ -10,13 +10,11 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.serviceneednew.NewServiceNeed
-import fi.espoo.evaka.serviceneednew.NewServiceNeedController
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
@@ -32,7 +30,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class NewServiceNeedIntegrationTest : FullApplicationTest() {
+class ServiceNeedIntegrationTest : FullApplicationTest() {
     private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
 
     lateinit var placementId: UUID
@@ -54,7 +52,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
     @Test
     fun `post first service need`() {
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(1),
                 endDate = testDate(30),
@@ -78,7 +76,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
     @Test
     fun `post service need with inverted range`() {
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(5),
                 endDate = testDate(3),
@@ -92,7 +90,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
     @Test
     fun `post service need with range outside placement`() {
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(1),
                 endDate = testDate(31),
@@ -106,7 +104,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
     @Test
     fun `post service need with invalid option`() {
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(1),
                 endDate = testDate(31),
@@ -122,7 +120,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(1, 15, placementId)
 
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(16),
                 endDate = testDate(30),
@@ -143,7 +141,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(10, 20, placementId)
 
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(1),
                 endDate = testDate(30),
@@ -169,7 +167,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(1, 30, placementId)
 
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(16),
                 endDate = testDate(30),
@@ -190,7 +188,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(10, 30, placementId)
 
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(1),
                 endDate = testDate(20),
@@ -211,7 +209,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(1, 30, placementId)
 
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(10),
                 endDate = testDate(20),
@@ -235,7 +233,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         givenServiceNeed(20, 30, placementId)
 
         postServiceNeed(
-            NewServiceNeedController.NewServiceNeedCreateRequest(
+            ServiceNeedController.ServiceNeedCreateRequest(
                 placementId = placementId,
                 startDate = testDate(5),
                 endDate = testDate(25),
@@ -275,7 +273,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
 
         putServiceNeed(
             idToUpdate,
-            NewServiceNeedController.NewServiceNeedUpdateRequest(
+            ServiceNeedController.ServiceNeedUpdateRequest(
                 startDate = testDate(5),
                 endDate = testDate(25),
                 optionId = snDaycareFullDay25to35.id,
@@ -295,7 +293,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun givenServiceNeed(start: Int, end: Int, placementId: UUID, optionId: UUID = snDefaultDaycare.id): UUID {
         return db.transaction { tx ->
-            tx.insertTestNewServiceNeed(
+            tx.insertTestServiceNeed(
                 confirmedBy = unitSupervisor.id,
                 placementId = placementId,
                 period = FiniteDateRange(testDate(start), testDate(end)),
@@ -304,8 +302,8 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun postServiceNeed(request: NewServiceNeedController.NewServiceNeedCreateRequest, expectedStatus: Int = 204) {
-        val (_, res, _) = http.post("/new-service-needs")
+    private fun postServiceNeed(request: ServiceNeedController.ServiceNeedCreateRequest, expectedStatus: Int = 204) {
+        val (_, res, _) = http.post("/service-needs")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(unitSupervisor)
             .response()
@@ -313,7 +311,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun getServiceNeeds(childId: UUID, placementId: UUID): List<NewServiceNeed> {
+    private fun getServiceNeeds(childId: UUID, placementId: UUID): List<ServiceNeed> {
         val (_, res, result) = http.get("/placements?childId=$childId")
             .asUser(unitSupervisor)
             .responseObject<List<DaycarePlacementWithDetails>>(objectMapper)
@@ -322,8 +320,8 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
         return result.get().first { it.id == placementId }.serviceNeeds
     }
 
-    private fun putServiceNeed(id: UUID, request: NewServiceNeedController.NewServiceNeedUpdateRequest, expectedStatus: Int = 204) {
-        val (_, res, _) = http.put("/new-service-needs/$id")
+    private fun putServiceNeed(id: UUID, request: ServiceNeedController.ServiceNeedUpdateRequest, expectedStatus: Int = 204) {
+        val (_, res, _) = http.put("/service-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
             .asUser(unitSupervisor)
             .response()
@@ -332,7 +330,7 @@ class NewServiceNeedIntegrationTest : FullApplicationTest() {
     }
 
     private fun deleteServiceNeed(id: UUID) {
-        val (_, res, _) = http.delete("/new-service-needs/$id")
+        val (_, res, _) = http.delete("/service-needs/$id")
             .asUser(unitSupervisor)
             .response()
 

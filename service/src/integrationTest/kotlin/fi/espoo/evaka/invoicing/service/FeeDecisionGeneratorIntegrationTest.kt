@@ -34,11 +34,11 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay25to35
@@ -374,7 +374,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
 
         db.transaction { tx ->
-            tx.execute("DELETE FROM new_service_need WHERE placement_id = ?", placementId)
+            tx.execute("DELETE FROM service_need WHERE placement_id = ?", placementId)
             generator.generateNewDecisionsForChild(tx, testChild_1.id, serviceNeedPeriod.asDateRange())
         }
 
@@ -1773,7 +1773,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         optionId: UUID
     ) {
         db.transaction { tx ->
-            tx.insertTestNewServiceNeed(
+            tx.insertTestServiceNeed(
                 testDecisionMaker_1.id,
                 placementId,
                 period,

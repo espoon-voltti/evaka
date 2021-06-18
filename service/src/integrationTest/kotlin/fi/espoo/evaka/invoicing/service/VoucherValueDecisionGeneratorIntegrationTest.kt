@@ -10,9 +10,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFiveYearOldsFullDayPartWeek25
@@ -295,7 +295,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
         optionId: UUID
     ) {
         db.transaction { tx ->
-            tx.insertTestNewServiceNeed(
+            tx.insertTestServiceNeed(
                 testDecisionMaker_1.id,
                 placementId,
                 period,

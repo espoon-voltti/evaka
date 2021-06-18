@@ -48,8 +48,6 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     @AfterEach
     internal fun tearDown() {
         db.transaction {
-            it.execute("DELETE FROM assistance_need")
-            it.execute("DELETE FROM service_need")
             it.execute("DELETE FROM person WHERE id = '$childId'")
         }
     }

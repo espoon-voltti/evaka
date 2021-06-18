@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.dvv
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
@@ -20,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 @Profile("enable_mock_dvv_api")
 @RestController
 @RequestMapping("/mock-integration/dvv/api")
-class MockDvvModificationsService(private val mapper: ObjectMapper) {
+class MockDvvModificationsService {
 
     @GetMapping("/v1/kirjausavain/{date}")
     fun getApiKey(@PathVariable("date") date: String?): ResponseEntity<String> {

@@ -11,8 +11,8 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultDaycare
@@ -515,7 +515,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 startDate = oldPlacement.startDate,
                 endDate = oldPlacement.endDate
             )
-            it.insertTestNewServiceNeed(
+            it.insertTestServiceNeed(
                 confirmedBy = testDecisionMaker_1.id,
                 placementId = oldPlacement.id,
                 period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
@@ -542,7 +542,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         assertEquals(LocalDate.of(year, month, 15), groupPlacementEndDates.first())
 
         val serviceNeedEndDates = db.read {
-            it.createQuery("SELECT end_date FROM new_service_need WHERE placement_id = :id")
+            it.createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
                 .bind("id", oldPlacement.id)
                 .mapTo<LocalDate>()
                 .list()
@@ -572,7 +572,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                 startDate = oldPlacement.startDate,
                 endDate = oldPlacement.endDate
             )
-            it.insertTestNewServiceNeed(
+            it.insertTestServiceNeed(
                 confirmedBy = testDecisionMaker_1.id,
                 placementId = oldPlacement.id,
                 period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate),
@@ -609,7 +609,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         assertEquals(LocalDate.of(year, month, 14), groupPlacements.first().endDate)
 
         val serviceNeeds = db.read {
-            it.createQuery("SELECT start_date, end_date FROM new_service_need WHERE placement_id = :id")
+            it.createQuery("SELECT start_date, end_date FROM service_need WHERE placement_id = :id")
                 .bind("id", oldPlacement.id)
                 .mapTo<QueryResult>()
                 .list()
@@ -759,7 +759,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
-                    missingNewServiceNeedDays = 6,
+                    missingServiceNeedDays = 6,
                     groupPlacements = listOf(
                         DaycareGroupPlacement(
                             id = null,
@@ -835,7 +835,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
-                    missingNewServiceNeedDays = 20,
+                    missingServiceNeedDays = 20,
                     groupPlacements = listOf(
                         DaycareGroupPlacement(
                             id = null,

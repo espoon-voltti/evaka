@@ -5,25 +5,25 @@
 import React from 'react'
 import { Td, Tr } from 'lib-components/layout/Table'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { NewServiceNeed } from '../../../../types/child'
+import { ServiceNeed } from '../../../../types/child'
 import { useTranslation } from '../../../../state/i18n'
 import { formatDate } from '../../../../utils/date'
 import { DATE_FORMAT_DATE_TIME } from '../../../../constants'
 import Toolbar from '../../../common/Toolbar'
 
-interface NewServiceNeedReadRowProps {
-  serviceNeed: NewServiceNeed
+interface ServiceNeedReadRowProps {
+  serviceNeed: ServiceNeed
   onEdit: () => void
   onDelete: () => void
   disabled?: boolean
 }
 
-function NewServiceNeedReadRow({
+function ServiceNeedReadRow({
   serviceNeed,
   onEdit,
   onDelete,
   disabled
-}: NewServiceNeedReadRowProps) {
+}: ServiceNeedReadRowProps) {
   const { i18n } = useTranslation()
   return (
     <Tr>
@@ -57,4 +57,4 @@ function NewServiceNeedReadRow({
   )
 }
 
-export default NewServiceNeedReadRow
+export default ServiceNeedReadRow

@@ -13,12 +13,6 @@ export type UnitWithDistance = UnitWithStraightDistance & {
   drivingDistance: number | null
 }
 
-// approximate worst case driving distance from straight distance
-export const approximateDrivingDistance = (
-  distance: number | null
-): number | null =>
-  distance !== null ? 2 * Math.sqrt((distance * distance) / 2) : null
-
 // source https://www.movable-type.co.uk/scripts/latlong.html
 export const calcStraightDistance = (
   { lon: lon1, lat: lat1 }: Coordinate,

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.shared.dev
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
@@ -97,7 +96,6 @@ private val fakeAdmin = AuthenticatedUser.Employee(
 @RestController
 @RequestMapping("/dev-api")
 class DevApi(
-    private val objectMapper: ObjectMapper,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
     private val placementPlanService: PlacementPlanService,

@@ -7,7 +7,7 @@ package fi.espoo.evaka
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneednew.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import java.math.BigDecimal
 import java.util.UUID
 

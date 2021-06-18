@@ -241,7 +241,7 @@ export async function getServiceNeedOptionPublicInfos(
 ): Promise<Result<ServiceNeedOptionPublicInfo[]>> {
   return client
     .get<JsonOf<ServiceNeedOptionPublicInfo[]>>(
-      '/public/new-service-needs/options',
+      '/public/service-needs/options',
       { params: { placementTypes: placementTypes.join() } }
     )
     .then((res) => Success.of(res.data))

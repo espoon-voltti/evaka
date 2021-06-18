@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.serviceneednew
+package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.placement.PlacementType
@@ -26,12 +26,12 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class NewServiceNeedController(
+class ServiceNeedController(
     private val acl: AccessControlList,
     private val asyncJobRunner: AsyncJobRunner
 ) {
 
-    data class NewServiceNeedCreateRequest(
+    data class ServiceNeedCreateRequest(
         val placementId: UUID,
         val startDate: LocalDate,
         val endDate: LocalDate,
@@ -39,17 +39,17 @@ class NewServiceNeedController(
         val shiftCare: Boolean
     )
 
-    @PostMapping("/new-service-needs")
+    @PostMapping("/service-needs")
     fun postServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody body: NewServiceNeedCreateRequest
+        @RequestBody body: ServiceNeedCreateRequest
     ): ResponseEntity<Unit> {
         Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
         acl.getRolesForPlacement(user, body.placementId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
-            createNewServiceNeed(
+            createServiceNeed(
                 tx = tx,
                 user = user,
                 placementId = body.placementId,
@@ -59,7 +59,7 @@ class NewServiceNeedController(
                 shiftCare = body.shiftCare,
                 confirmedAt = HelsinkiDateTime.now()
             )
-                .let { id -> tx.getNewServiceNeedChildRange(id) }
+                .let { id -> tx.getServiceNeedChildRange(id) }
                 .let { notifyServiceNeedUpdated(tx, asyncJobRunner, it) }
         }
         asyncJobRunner.scheduleImmediateRun()
@@ -67,26 +67,26 @@ class NewServiceNeedController(
         return ResponseEntity.noContent().build()
     }
 
-    data class NewServiceNeedUpdateRequest(
+    data class ServiceNeedUpdateRequest(
         val startDate: LocalDate,
         val endDate: LocalDate,
         val optionId: UUID,
         val shiftCare: Boolean
     )
 
-    @PutMapping("/new-service-needs/{id}")
+    @PutMapping("/service-needs/{id}")
     fun putServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
-        @RequestBody body: NewServiceNeedUpdateRequest
+        @RequestBody body: ServiceNeedUpdateRequest
     ): ResponseEntity<Unit> {
         Audit.PlacementServiceNeedUpdate.log(targetId = id)
-        acl.getRolesForNewServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
-            val oldRange = tx.getNewServiceNeedChildRange(id)
-            updateNewServiceNeed(
+            val oldRange = tx.getServiceNeedChildRange(id)
+            updateServiceNeed(
                 tx = tx,
                 user = user,
                 id = id,
@@ -99,7 +99,7 @@ class NewServiceNeedController(
             notifyServiceNeedUpdated(
                 tx,
                 asyncJobRunner,
-                NewServiceNeedChildRange(
+                ServiceNeedChildRange(
                     childId = oldRange.childId,
                     dateRange = FiniteDateRange(
                         minOf(oldRange.dateRange.start, body.startDate),
@@ -113,18 +113,18 @@ class NewServiceNeedController(
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/new-service-needs/{id}")
+    @DeleteMapping("/service-needs/{id}")
     fun deleteServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.PlacementServiceNeedDelete.log(targetId = id)
-        acl.getRolesForNewServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForServiceNeed(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
-            val childRange = tx.getNewServiceNeedChildRange(id)
-            tx.deleteNewServiceNeed(id)
+            val childRange = tx.getServiceNeedChildRange(id)
+            tx.deleteServiceNeed(id)
             notifyServiceNeedUpdated(tx, asyncJobRunner, childRange)
         }
         asyncJobRunner.scheduleImmediateRun()
@@ -132,7 +132,7 @@ class NewServiceNeedController(
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping("/new-service-needs/options")
+    @GetMapping("/service-needs/options")
     fun getServiceNeedOptions(
         db: Database.Connection,
         user: AuthenticatedUser
@@ -143,7 +143,7 @@ class NewServiceNeedController(
         return db.read { it.getServiceNeedOptions() }.let { ResponseEntity.ok(it) }
     }
 
-    @GetMapping("/public/new-service-needs/options")
+    @GetMapping("/public/service-needs/options")
     fun getServiceNeedOptionPublicInfos(
         db: Database.Connection,
         @RequestParam(required = true) placementTypes: List<PlacementType>

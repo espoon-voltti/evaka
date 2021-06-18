@@ -11,8 +11,6 @@ import fi.espoo.evaka.daycare.service.AbsenceChildMinimal
 import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
-import fi.espoo.evaka.daycare.service.AbsenceType
-import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -108,8 +106,3 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         return ResponseEntity.ok(absences)
     }
 }
-
-data class AbsenceBody(
-    val absenceType: AbsenceType,
-    val careType: CareType
-)

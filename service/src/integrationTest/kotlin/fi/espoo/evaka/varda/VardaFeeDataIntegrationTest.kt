@@ -29,8 +29,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDaycareFullDay35
@@ -368,7 +368,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
         db.transaction {
             it.execute(
-                "UPDATE new_fee_decision SET status = ? WHERE id = ?",
+                "UPDATE fee_decision SET status = ? WHERE id = ?",
                 FeeDecisionStatus.ANNULLED,
                 feeDecision.id
             )
@@ -396,13 +396,13 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         val originalRows = getVardaFeeDataRows(db)
         assertEquals(1, originalRows.size)
 
-        val newFeeDecision = insertFeeDecision(db, listOf(testChild_1, testChild_2), testPeriod).send()
+        val feeDecision = insertFeeDecision(db, listOf(testChild_1, testChild_2), testPeriod).send()
         updateAll()
 
         val newSentData = mockEndpoint.feeData.toMap()
         assertEquals(1, newSentData.size)
         newSentData.values.first().let { data ->
-            assertEquals(newFeeDecision.familySize, data.perheen_koko)
+            assertEquals(feeDecision.familySize, data.perheen_koko)
         }
         val newRows = getVardaFeeDataRows(db)
         assertEquals(1, newRows.size)
@@ -426,7 +426,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(1, originalRows.size)
 
         val periodEndHalf = testPeriod.copy(start = testPeriod.start.plusDays(8))
-        val newFeeDecision = insertFeeDecision(
+        val feeDecision = insertFeeDecision(
             db,
             listOf(testChild_1, testChild_2),
             periodEndHalf
@@ -443,7 +443,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(periodEndHalf.start.minusDays(1), data.paattymis_pvm)
         }
         newSentData.values.last().let { data ->
-            assertEquals(newFeeDecision.familySize, data.perheen_koko)
+            assertEquals(feeDecision.familySize, data.perheen_koko)
             assertEquals(periodEndHalf.start, data.alkamis_pvm)
             assertEquals(periodEndHalf.end, data.paattymis_pvm)
         }
@@ -491,7 +491,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         val newRows = getVardaFeeDataRows(db)
         assertEquals(2, newRows.size)
 
-        val newFeeDecision = insertFeeDecision(
+        val feeDecision = insertFeeDecision(
             db,
             listOf(testChild_1, testChild_2),
             newPeriod
@@ -501,7 +501,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         val updatedSentData = mockEndpoint.feeData.toMap()
         assertEquals(2, updatedSentData.size)
         updatedSentData.values.last().let { data ->
-            assertEquals(newFeeDecision.familySize, data.perheen_koko)
+            assertEquals(feeDecision.familySize, data.perheen_koko)
             assertEquals(newPeriod.start, data.alkamis_pvm)
             assertEquals(newPeriod.end, data.paattymis_pvm)
         }
@@ -681,7 +681,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 startDate = period.start,
                 endDate = period.end
             )
-            it.insertTestNewServiceNeed(
+            it.insertTestServiceNeed(
                 confirmedBy = testDecisionMaker_1.id,
                 placementId = placementId,
                 period = period,

@@ -371,7 +371,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     val serviceNeeds = this.createQuery(
         """
 SELECT sn.placement_id, sno.occupancy_coefficient, daterange(sn.start_date, sn.end_date, '[]') AS period
-FROM new_service_need sn
+FROM service_need sn
 JOIN service_need_option sno ON sn.option_id = sno.id
 WHERE sn.placement_id = ANY(:placementIds)
 """

@@ -251,7 +251,7 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) last_placement ON TRUE
 JOIN LATERAL (
-    SELECT sno.daycare_hours_per_week, sno.part_week, sn.shift_care, sn.updated FROM new_service_need sn
+    SELECT sno.daycare_hours_per_week, sno.part_week, sn.shift_care, sn.updated FROM service_need sn
     JOIN service_need_option sno ON sn.option_id = sno.id
     WHERE sn.placement_id = last_placement.id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
@@ -363,7 +363,7 @@ LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted_at IS
 JOIN daycare u ON p.unit_id = u.id
 JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
 JOIN LATERAL (
-    SELECT sno.daycare_hours_per_week, sno.part_week, sn.shift_care, sn.updated FROM new_service_need sn
+    SELECT sno.daycare_hours_per_week, sno.part_week, sn.shift_care, sn.updated FROM service_need sn
     JOIN service_need_option sno ON sn.option_id = sno.id
     WHERE sn.placement_id = p.id
     ORDER BY sn.start_date DESC

@@ -17,8 +17,8 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
-import fi.espoo.evaka.shared.dev.insertTestNewServiceNeed
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
@@ -140,7 +140,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                     endDate = period.end.plusYears(1)
                 )
             )
-            tx.insertTestNewServiceNeed(
+            tx.insertTestServiceNeed(
                 confirmedBy = testDecisionMaker_1.id,
                 period = serviceNeedPeriod,
                 placementId = placementId,
@@ -175,7 +175,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                         name = groupName
                     ),
                     period = period,
-                    missingNewServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
+                    missingServiceNeedDays = ChronoUnit.DAYS.between(period.start, serviceNeedPeriod.start).toInt()
                 )
             ),
             backupCares
