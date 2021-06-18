@@ -959,6 +959,12 @@ export const fi = {
         conflict:
           'Osapuolilta löytyy aktiivinen suhde annetulta aikaväliltä. Nykyinen aktiivinen suhde tulee päättää ennen uuden luomista'
       },
+      validation: {
+        deadPerson:
+          'Suhteen päättymispäivä ei voi olla henkilön kuolinpäivän jälkeen',
+        deadPartner:
+          'Suhteen päättymispäivä ei voi olla puolison kuolinpäivän jälkeen'
+      },
       searchTitle: 'Hetu tai nimi'
     },
     fridgeChild: {
@@ -979,6 +985,12 @@ export const fi = {
         },
         conflict:
           'Kyseisellä lapselta löytyy jo tällä aikavälillä päämies. Olemassa oleva päämiessuhde täytyy päättää ensin'
+      },
+      validation: {
+        deadAdult:
+          'Suhteen päättymispäivä ei voi olla aikuisen kuolinpäivän jälkeen',
+        deadChild:
+          'Suhteen päättymispäivä ei voi olla lapsen kuolinpäivän jälkeen'
       },
       searchTitle: 'Hetu tai nimi'
     },
