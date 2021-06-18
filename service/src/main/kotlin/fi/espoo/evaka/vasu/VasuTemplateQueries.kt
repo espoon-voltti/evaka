@@ -42,7 +42,7 @@ fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate? {
         .firstOrNull()
 }
 
-fun Database.Read.getVasuTemplates(): List<VasuTemplateSummary> {
+fun Database.Read.getVasuTemplates(validOnly: Boolean): List<VasuTemplateSummary> {
     return createQuery(
         """
         SELECT 
@@ -52,6 +52,7 @@ fun Database.Read.getVasuTemplates(): List<VasuTemplateSummary> {
             language,
             (SELECT count(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
         FROM vasu_template vt
+        ${if (validOnly) "WHERE valid @> NOW()::date" else ""}
     """
     )
         .mapTo<VasuTemplateSummary>()

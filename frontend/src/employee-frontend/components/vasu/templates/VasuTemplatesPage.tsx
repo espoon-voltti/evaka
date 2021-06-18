@@ -2,12 +2,19 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import React, { useEffect, useState } from 'react'
+import { useHistory } from 'react-router'
+import { Loading, Result } from '../../../../lib-common/api'
+import { useRestApi } from '../../../../lib-common/utils/useRestApi'
+import { AddButtonRow } from '../../../../lib-components/atoms/buttons/AddButton'
+import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
+import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
 import Container, {
   ContentArea
 } from '../../../../lib-components/layout/Container'
-import { Gap } from '../../../../lib-components/white-space'
 import {
   Table,
   Tbody,
@@ -16,16 +23,9 @@ import {
   Thead,
   Tr
 } from '../../../../lib-components/layout/Table'
-import { useRestApi } from '../../../../lib-common/utils/useRestApi'
-import { Loading, Result } from '../../../../lib-common/api'
-import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
-import { useHistory } from 'react-router'
-import { useTranslation } from '../../../state/i18n'
-import { AddButtonRow } from '../../../../lib-components/atoms/buttons/AddButton'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import IconButton from '../../../../lib-components/atoms/buttons/IconButton'
+import { Gap } from '../../../../lib-components/white-space'
 import { faCopy, faPen, faTrash } from '../../../../lib-icons'
+import { useTranslation } from '../../../state/i18n'
 import {
   deleteVasuTemplate,
   getVasuTemplateSummaries,
@@ -44,8 +44,8 @@ export default React.memo(function VasuTemplatesPage() {
 
   const [createModalOpen, setCreateModalOpen] = useState(false)
 
-  const loadSummaries = useRestApi(getVasuTemplateSummaries, setTemplates)
-  useEffect(loadSummaries, [loadSummaries])
+  const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
+  useEffect(loadTemplates, [loadTemplates])
 
   return (
     <Container>
@@ -91,8 +91,8 @@ export default React.memo(function VasuTemplatesPage() {
                           icon={faTrash}
                           disabled={template.documentCount > 0}
                           onClick={() => {
-                            void deleteVasuTemplate(template.id).then(
-                              loadSummaries
+                            void deleteVasuTemplate(template.id).then(() =>
+                              loadTemplates()
                             )
                           }}
                         />

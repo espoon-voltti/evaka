@@ -106,13 +106,15 @@ const InitializationContainer = styled.div`
   margin-bottom: ${defaultMargins.s};
 `
 
+const getValidVasuTemplateSummaries = () => getVasuTemplateSummaries(true)
+
 function VasuInitialization({ childId }: { childId: UUID }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const history = useHistory()
 
   const [templates, setTemplates] = useState<Result<VasuTemplateSummary[]>>()
-  const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
+  const loadTemplates = useRestApi(getValidVasuTemplateSummaries, setTemplates)
 
   const [initializing, setInitializing] = useState(false)
 
@@ -163,6 +165,9 @@ function VasuInitialization({ childId }: { childId: UUID }) {
         success(value) {
           if (value.length === 0) {
             return <div>{i18n.childInformation.vasu.init.noTemplates}</div>
+          }
+          if (value.length === 1) {
+            return null // the template is selected automatically
           }
           return (
             <TemplateSelectionModal

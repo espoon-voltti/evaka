@@ -44,11 +44,13 @@ export async function createVasuTemplate(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getVasuTemplateSummaries(): Promise<
-  Result<VasuTemplateSummary[]>
-> {
+export async function getVasuTemplateSummaries(
+  validOnly = false
+): Promise<Result<VasuTemplateSummary[]>> {
   return client
-    .get<JsonOf<VasuTemplateSummary[]>>(`/vasu/templates`)
+    .get<JsonOf<VasuTemplateSummary[]>>(`/vasu/templates`, {
+      params: { validOnly }
+    })
     .then((res) =>
       Success.of(
         res.data.map((tmp) => ({

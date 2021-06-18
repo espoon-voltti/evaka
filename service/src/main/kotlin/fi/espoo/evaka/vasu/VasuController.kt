@@ -27,7 +27,7 @@ class VasuController {
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: CreateDocumentRequest
-    ): VasuDocumentResponse {
+    ): UUID {
         Audit.VasuDocumentCreate.log(body.childId)
         user.requireOneOfRoles(UserRole.ADMIN)
 
@@ -38,9 +38,7 @@ class VasuController {
                 }
             } ?: throw NotFound("template ${body.templateId} not found")
 
-            // TODO we could just return the id, check frontend
-            val id = tx.insertVasuDocument(body.childId, body.templateId)
-            tx.getVasuDocumentResponse(id)!!
+            tx.insertVasuDocument(body.childId, body.templateId)
         }
     }
 
