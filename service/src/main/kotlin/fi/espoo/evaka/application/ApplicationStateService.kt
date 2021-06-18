@@ -675,8 +675,9 @@ class ApplicationStateService(
                 .identity is ExternalIdentifier.SSN && personService.getUpToDatePerson(tx, user, application.childId)!!
                 .identity is ExternalIdentifier.SSN
             )
-        val guardianIsVtjGuardian =
-            personService.getGuardians(tx, user, application.childId).any { it.id == application.guardianId }
+        val guardianIsVtjGuardian = personService.getGuardians(tx, user, application.childId)
+            .filter { it.dateOfDeath == null }
+            .any { it.id == application.guardianId }
 
         return hasSsn && guardianIsVtjGuardian
     }
