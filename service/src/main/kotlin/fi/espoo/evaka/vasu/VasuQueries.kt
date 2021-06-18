@@ -13,8 +13,8 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
             SELECT vt.content FROM vasu_template vt WHERE vt.id = :templateId
             RETURNING id
         )
-        INSERT INTO vasu_document (child_id, template_id, content_id) 
-        SELECT :childId, :templateId, ct.id FROM content ct
+        INSERT INTO vasu_document (child_id, template_id, content_id, document_state, modified_at) 
+        SELECT :childId, :templateId, ct.id, 'DRAFT', now() FROM content ct
         RETURNING id
     """.trimIndent()
 
@@ -50,15 +50,19 @@ fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse? {
 
 fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
     // language=sql
-    val sql = """
+    val updateContentSql = """
         UPDATE vasu_content
         SET content = :content
         WHERE id IN (SELECT vd.content_id FROM vasu_document vd WHERE vd.id = :id)
     """.trimIndent()
 
-    createUpdate(sql)
+    createUpdate(updateContentSql)
         .bind("id", id)
         .bind("content", content)
+        .updateExactlyOne()
+
+    createUpdate("UPDATE vasu_document SET modified_at = NOW() WHERE id = :id")
+        .bind("id", id)
         .updateExactlyOne()
 }
 
@@ -67,10 +71,10 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
     val sql = """
         SELECT 
             vd.id,
-            vt.name AS name,
-            vc.updated AS modified_at,
-            -- TODO published at logic
-            'DRAFT' as state           -- TODO implement document state
+            vt.name,
+            vd.modified_at,
+            vd.published_at,
+            vd.document_state
         FROM vasu_document vd
         JOIN vasu_content vc on vd.content_id = vc.id
         JOIN vasu_template vt on vd.template_id = vt.id

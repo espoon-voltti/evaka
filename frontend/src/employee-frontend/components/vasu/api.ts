@@ -12,7 +12,7 @@ export type VasuDocumentState = 'DRAFT' | 'CREATED' | 'REVIEWED' | 'CLOSED'
 
 export interface VasuDocumentSummary {
   name: string
-  state: VasuDocumentState
+  documentState: VasuDocumentState
   modifiedAt: Date
   publishedAt: Date | null
   id: UUID
