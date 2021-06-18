@@ -222,7 +222,7 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
             <Td>{getDates(vasu)}</Td>
             <StateCell>
               <StateChip
-                state={vasu.state}
+                state={vasu.documentState}
                 labels={i18n.childInformation.vasu.states}
               />
             </StateCell>

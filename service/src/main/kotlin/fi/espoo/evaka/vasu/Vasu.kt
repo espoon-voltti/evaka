@@ -22,7 +22,7 @@ enum class VasuLanguage {
 data class VasuDocumentSummary(
     val id: UUID,
     val name: String,
-    val state: VasuDocumentState,
+    val documentState: VasuDocumentState,
     val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime? = null
 )
