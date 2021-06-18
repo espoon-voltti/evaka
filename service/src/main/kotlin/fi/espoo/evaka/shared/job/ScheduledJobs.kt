@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.shared.daily
+package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Component
 
-enum class DailyJob(val fn: (DailyJobs, Database.Connection) -> Unit) {
-    EndOfDayAttendanceUpkeep(DailyJobs::endOfDayAttendanceUpkeep),
+enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection) -> Unit) {
+    EndOfDayAttendanceUpkeep(ScheduledJobs::endOfDayAttendanceUpkeep),
 }
 
 @Component
-class DailyJobs(asyncJobRunner: AsyncJobRunner) {
+class ScheduledJobs(asyncJobRunner: AsyncJobRunner) {
     init {
-        asyncJobRunner.runDailyJob = { db, msg ->
-            db.connect { msg.dailyJob.fn(this, it) }
+        asyncJobRunner.runScheduledJob = { db, msg ->
+            db.connect { msg.job.fn(this, it) }
         }
     }
 

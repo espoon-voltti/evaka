@@ -91,7 +91,7 @@ class AsyncJobRunner(
     var sendMessageNotificationEmail: (db: Database, msg: SendMessageNotificationEmail) -> Unit = noHandler
 
     @Volatile
-    var runDailyJob: (db: Database, msg: RunDailyJob) -> Unit = noHandler
+    var runScheduledJob: (db: Database, msg: RunScheduledJob) -> Unit = noHandler
 
     @Volatile
     var notifyFeeThresholdsUpdated: (db: Database, msg: NotifyFeeThresholdsUpdated) -> Unit = noHandler
@@ -213,7 +213,7 @@ class AsyncJobRunner(
                     AsyncJobType.SCHEDULE_KOSKI_UPLOADS -> it.runJob(job, this.scheduleKoskiUploads)
                     AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
                     AsyncJobType.SEND_UNREAD_MESSAGE_NOTIFICATION -> it.runJob(job, this.sendMessageNotificationEmail)
-                    AsyncJobType.RUN_DAILY_JOB -> it.runJob(job, this.runDailyJob)
+                    AsyncJobType.RUN_SCHEDULED_JOB -> it.runJob(job, this.runScheduledJob)
                     AsyncJobType.FEE_THRESHOLDS_UPDATED -> it.runJob(job, this.notifyFeeThresholdsUpdated)
                     AsyncJobType.GENERATE_FINANCE_DECISIONS -> it.runJob(job, this.generateFinanceDecisions)
 

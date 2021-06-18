@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.shared.daily
+package fi.espoo.evaka.shared.job
 
+import com.github.kagkarlsson.scheduler.task.schedule.Schedule
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.resetDatabase
@@ -18,12 +19,12 @@ import java.time.Instant
 import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicReference
 
-class DailyJobRunnerTest : PureJdbiTest() {
+class ScheduledJobRunnerTest : PureJdbiTest() {
     private lateinit var asyncJobRunner: AsyncJobRunner
     private val testTime = LocalTime.of(1, 0)
-    private val testSchedule = object : DailySchedule {
-        override fun getTimeForJob(job: DailyJob): LocalTime? = if (job == DailyJob.EndOfDayAttendanceUpkeep) {
-            testTime
+    private val testSchedule = object : JobSchedule {
+        override fun getScheduleForJob(job: ScheduledJob): Schedule? = if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
+            JobSchedule.daily(testTime)
         } else null
     }
 
@@ -35,9 +36,9 @@ class DailyJobRunnerTest : PureJdbiTest() {
 
     @Test
     fun `a job specified by DailySchedule is scheduled and executed correctly`() {
-        DailyJobRunner(jdbi, asyncJobRunner, getTestDataSource(), testSchedule).use { runner ->
+        ScheduledJobRunner(jdbi, asyncJobRunner, getTestDataSource(), testSchedule).use { runner ->
             runner.scheduler.start()
-            val exec = runner.getScheduledExecutionsForTask(DailyJob.EndOfDayAttendanceUpkeep).singleOrNull()!!
+            val exec = runner.getScheduledExecutionsForTask(ScheduledJob.EndOfDayAttendanceUpkeep).singleOrNull()!!
             assertEquals(exec.executionTime.atZone(helsinkiZone).toLocalTime(), testTime)
 
             runner.scheduler.reschedule(exec.taskInstance, Instant.EPOCH)
@@ -51,12 +52,12 @@ class DailyJobRunnerTest : PureJdbiTest() {
             }
         }
 
-        val executedJob = AtomicReference<DailyJob?>(null)
-        asyncJobRunner.runDailyJob = { _, msg ->
-            val previous = executedJob.getAndSet(msg.dailyJob)
+        val executedJob = AtomicReference<ScheduledJob?>(null)
+        asyncJobRunner.runScheduledJob = { _, msg ->
+            val previous = executedJob.getAndSet(msg.job)
             assertNull(previous)
         }
         asyncJobRunner.runPendingJobsSync()
-        assertEquals(executedJob.get(), DailyJob.EndOfDayAttendanceUpkeep)
+        assertEquals(executedJob.get(), ScheduledJob.EndOfDayAttendanceUpkeep)
     }
 }

@@ -8,12 +8,12 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.daily.DailyJobs
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -29,7 +29,7 @@ import java.util.UUID
 
 class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
     @Autowired
-    private lateinit var dailyJobs: DailyJobs
+    private lateinit var scheduledJobs: ScheduledJobs
 
     private val groupId = UUID.randomUUID()
     private val daycarePlacementId = UUID.randomUUID()
@@ -76,7 +76,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest() {
             )
         }
 
-        dailyJobs.endOfDayAttendanceUpkeep(db)
+        scheduledJobs.endOfDayAttendanceUpkeep(db)
 
         val attendances = db.read {
             it.createQuery(

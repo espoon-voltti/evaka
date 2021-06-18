@@ -5,8 +5,8 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.daily.DailyJobRunner
-import fi.espoo.evaka.shared.daily.DailySchedule
+import fi.espoo.evaka.shared.job.JobSchedule
+import fi.espoo.evaka.shared.job.ScheduledJobRunner
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
@@ -17,17 +17,17 @@ import javax.sql.DataSource
 
 @Configuration
 @Profile("production")
-class DailyJobConfig {
+class ScheduledJobConfig {
     @Bean
-    fun dailyJobRunner(
+    fun scheduledJobRunner(
         jdbi: Jdbi,
         asyncJobRunner: AsyncJobRunner,
         dataSource: DataSource,
-        schedule: DailySchedule
-    ) = DailyJobRunner(jdbi, asyncJobRunner, dataSource, schedule)
+        schedule: JobSchedule
+    ) = ScheduledJobRunner(jdbi, asyncJobRunner, dataSource, schedule)
 
     @Bean
-    fun dailyJobRunnerStart(runner: DailyJobRunner) = object {
+    fun scheduledJobRunnerStart(runner: ScheduledJobRunner) = object {
         @EventListener
         fun onApplicationReady(@Suppress("UNUSED_PARAMETER") event: ApplicationReadyEvent) {
             runner.scheduler.start()
