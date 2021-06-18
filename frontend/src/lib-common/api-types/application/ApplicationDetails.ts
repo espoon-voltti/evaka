@@ -46,6 +46,7 @@ export interface ApplicationDetails {
   otherGuardianLivesInSameAddress: boolean | null
   childRestricted: boolean
   guardianRestricted: boolean
+  guardianDateOfDeath: LocalDate | null
   checkedByAdmin: boolean
   createdDate: Date | null
   modifiedDate: Date | null
@@ -93,6 +94,7 @@ export const deserializeApplicationDetails = (
       )
     }
   },
+  guardianDateOfDeath: LocalDate.parseNullableIso(json.guardianDateOfDeath),
   createdDate: json.createdDate ? new Date(json.createdDate) : null,
   modifiedDate: json.modifiedDate ? new Date(json.modifiedDate) : null,
   sentDate: LocalDate.parseNullableIso(json.sentDate),

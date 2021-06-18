@@ -757,6 +757,7 @@ fun Database.Transaction.insertApplication(
         childRestricted = false,
         guardianId = guardian.id,
         guardianRestricted = false,
+        guardianDateOfDeath = null,
         createdDate = OffsetDateTime.now(),
         modifiedDate = OffsetDateTime.now(),
         sentDate = null,

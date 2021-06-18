@@ -319,7 +319,8 @@ export const fi = {
         RIGHT_TO_GET_NOTIFIED: 'Tiedonsaantioikeus',
         NOT_SET: 'Huoltajat asuvat samassa osoitteessa'
       },
-      noOtherChildren: 'Ei muita lapsia'
+      noOtherChildren: 'Ei muita lapsia',
+      applicantDead: 'Hakija kuollut'
     },
     serviceNeed: {
       title: 'Palvelun tarve',

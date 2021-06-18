@@ -12,6 +12,7 @@ const RoundLabel = styled.div<{ background: string; color: string }>`
   text-align: center;
   line-height: 30px;
   font-weight: 600;
+  white-space: nowrap;
 
   background: ${({ background }) => background};
   color: ${({ color }) => color};
