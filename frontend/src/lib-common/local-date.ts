@@ -201,6 +201,20 @@ export default class LocalDate {
     }
     return result
   }
+
+  /** Generate all dates in [start, end] */
+  static range(start: LocalDate, end: LocalDate): LocalDate[] {
+    const result: LocalDate[] = []
+    for (
+      let value = start;
+      value.isEqualOrBefore(end);
+      value = value.addDays(1)
+    ) {
+      result.push(value)
+    }
+    return result
+  }
+
   private static tryCreate(
     year: number,
     month: number,
