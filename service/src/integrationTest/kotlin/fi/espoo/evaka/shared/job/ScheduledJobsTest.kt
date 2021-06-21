@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.shared.controllers
+package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStateService
@@ -47,9 +47,9 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
 
-class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
+class ScheduledJobsTest : FullApplicationTest() {
     @Autowired
-    private lateinit var scheduledOperationController: ScheduledOperationController
+    private lateinit var scheduledJobs: ScheduledJobs
 
     @Autowired
     private lateinit var applicationStateService: ApplicationStateService
@@ -88,7 +88,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             assertEquals(1, it.getApplicationAttachments(id_not_to_be_deleted).size)
         }
 
-        scheduledOperationController.removeOldDraftApplications(db)
+        scheduledJobs.removeOldDraftApplications(db)
 
         db.read {
             assertNull(it.fetchApplicationDetails(id_to_be_deleted))
@@ -111,7 +111,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val preferredStartDate = LocalDate.now().plusMonths(1)
         val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -122,7 +122,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val preferredStartDate = LocalDate.now().plusMonths(1)
         val applicationId = createNormalApplication(ApplicationType.DAYCARE, preferredStartDate)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -135,7 +135,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -148,7 +148,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.plusMonths(1), preferredStartDate.plusMonths(2))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -161,7 +161,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -174,7 +174,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusMonths(1))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -187,7 +187,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now())
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -200,7 +200,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusDays(1))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -213,7 +213,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -227,7 +227,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -240,7 +240,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PREPARATORY, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -253,7 +253,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL_DAYCARE, dateRange)
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.SENT, applicationStatus)
@@ -279,7 +279,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             )
         }
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
@@ -310,7 +310,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             applicationStateService.sendDecisionsWithoutProposal(it, serviceWorker, applicationId)
         }
 
-        scheduledOperationController.cancelOutdatedTransferApplications(db)
+        scheduledJobs.cancelOutdatedTransferApplications(db)
 
         val applicationStatus = getApplicationStatus(applicationId)
         assertEquals(ApplicationStatus.WAITING_CONFIRMATION, applicationStatus)
@@ -365,7 +365,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             )
         }
 
-        scheduledOperationController.removeOldDaycareDailyNotes(db)
+        scheduledJobs.removeOldDaycareDailyNotes(db)
 
         db.read {
             val notesAfterCleanup = it.getChildDaycareDailyNotes(testChild_1.id)
@@ -427,7 +427,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             )
         }
 
-        scheduledOperationController.removeOldDaycareDailyNotes(db)
+        scheduledJobs.removeOldDaycareDailyNotes(db)
 
         db.read {
             val notesAfterCleanup = it.getChildDaycareDailyNotes(testChild_1.id)

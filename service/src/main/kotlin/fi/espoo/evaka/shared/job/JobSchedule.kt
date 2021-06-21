@@ -21,6 +21,17 @@ interface JobSchedule {
 
 class DefaultJobSchedule : JobSchedule {
     override fun getScheduleForJob(job: ScheduledJob): Schedule? = when (job) {
+        ScheduledJob.VardaUpdate -> JobSchedule.daily(LocalTime.of(23, 0))
         ScheduledJob.EndOfDayAttendanceUpkeep -> JobSchedule.daily(LocalTime.of(0, 0))
+        ScheduledJob.KoskiUpdate -> JobSchedule.daily(LocalTime.of(0, 0))
+        ScheduledJob.RemoveOldDraftApplications -> JobSchedule.daily(LocalTime.of(0, 30))
+        ScheduledJob.CancelOutdatedTransferApplications -> JobSchedule.daily(LocalTime.of(0, 35))
+        ScheduledJob.EndOutdatedVoucherValueDecisions -> JobSchedule.daily(LocalTime.of(1, 0))
+        ScheduledJob.RemoveOldAsyncJobs -> JobSchedule.daily(LocalTime.of(3, 0))
+        ScheduledJob.DvvUpdate -> JobSchedule.daily(LocalTime.of(6, 0))
+        ScheduledJob.RemoveOldDaycareDailyNotes -> JobSchedule.daily(LocalTime.of(6, 30))
+        ScheduledJob.SendPendingDecisionReminderEmails -> JobSchedule.daily(LocalTime.of(7, 0))
+
+        ScheduledJob.FreezeVoucherValueReports -> JobSchedule.cron("0 0 0 25 * ?") // Monthly on 25th
     }
 }

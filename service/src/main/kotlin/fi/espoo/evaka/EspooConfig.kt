@@ -6,10 +6,10 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
-import fi.espoo.evaka.shared.message.EvakaMessageProvider
-import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.job.DefaultJobSchedule
 import fi.espoo.evaka.shared.job.JobSchedule
+import fi.espoo.evaka.shared.message.EvakaMessageProvider
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
