@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { Loading, Result } from 'lib-common/api'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
@@ -40,18 +41,19 @@ export default React.memo(function ApplicationCreation() {
   const [selectedType, setSelectedType] = useState<ApplicationType>()
 
   const [duplicates, setDuplicates] = useState<
-    Record<ApplicationType, boolean>
-  >(duplicatesDefault)
+    Result<Record<ApplicationType, boolean>>
+  >(Loading.of())
   useEffect(() => {
     void getDuplicateApplications(childId).then(setDuplicates)
   }, [childId])
 
   const duplicateExists =
-    selectedType !== undefined && duplicates[selectedType] === true
+    selectedType !== undefined &&
+    duplicates.map((ds) => ds[selectedType] === true).getOrElse(false)
 
   const [transferApplicationTypes, setTransferApplicationTypes] = useState<
-    Record<ApplicationType, boolean>
-  >(duplicatesDefault)
+    Result<Record<ApplicationType, boolean>>
+  >(Loading.of())
   useEffect(() => {
     void getActivePlacementsByApplicationType(childId).then(
       setTransferApplicationTypes
@@ -60,7 +62,9 @@ export default React.memo(function ApplicationCreation() {
 
   const shouldUseTransferApplication =
     (selectedType === 'DAYCARE' || selectedType === 'PRESCHOOL') &&
-    transferApplicationTypes[selectedType] === true
+    transferApplicationTypes
+      .map((ts) => ts[selectedType] === true)
+      .getOrElse(false)
 
   if (child === undefined) {
     return <Redirect to="/applications" />
@@ -157,12 +161,11 @@ export default React.memo(function ApplicationCreation() {
               disabled={selectedType === undefined || duplicateExists}
               onClick={() =>
                 selectedType !== undefined
-                  ? createApplication(
-                      childId,
-                      selectedType
-                    ).then((applicationId) =>
-                      history.push(`/applications/${applicationId}/edit`)
-                    )
+                  ? createApplication(childId, selectedType).then((result) => {
+                      if (result.isSuccess) {
+                        history.push(`/applications/${result.value}/edit`)
+                      }
+                    })
                   : Promise.resolve()
               }
               onSuccess={() => undefined}
@@ -179,12 +182,6 @@ export default React.memo(function ApplicationCreation() {
     </>
   )
 })
-
-const duplicatesDefault: Record<ApplicationType, boolean> = {
-  CLUB: false,
-  DAYCARE: false,
-  PRESCHOOL: false
-}
 
 const PreschoolDaycareInfo = styled.p`
   margin: 0;
