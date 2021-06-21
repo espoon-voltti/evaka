@@ -41,6 +41,7 @@ export default React.memo(function ApplicationTitle({ application }: Props) {
             text={`${
               i18n.application.person.applicantDead
             } ${application.guardianDateOfDeath.format()}`}
+            data-qa="applicant-dead"
           />
         ) : null}
       </TitleRow>

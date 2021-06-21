@@ -7,7 +7,6 @@ import config from '../config'
 import {
   Application,
   ApplicationForm,
-  ApplicationPersonDetail,
   BackupCare,
   CareArea,
   Child,
@@ -21,6 +20,7 @@ import {
   Invoice,
   OtherGuardianAgreementStatus,
   PersonDetail,
+  PersonDetailWithDependantsAndGuardians,
   PlacementPlan,
   VoucherValueDecision,
   UUID,
@@ -35,8 +35,7 @@ import {
   insertEmployeeFixture,
   insertEmployeePins,
   insertPersonFixture,
-  insertVtjPersonFixture,
-  PersonDetailWithDependantsAndGuardians
+  insertVtjPersonFixture
 } from './index'
 import LocalDate from 'lib-common/local-date'
 import DateRange from 'lib-common/date-range'
@@ -151,7 +150,7 @@ export const preschoolFixture: Daycare = {
   }
 }
 
-export const enduserGuardianFixture: ApplicationPersonDetail = {
+export const enduserGuardianFixture: PersonDetail = {
   id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
   ssn: '070644-937X',
   firstName: 'Johannes Olavi Antero Tapio',
@@ -168,7 +167,7 @@ export const enduserGuardianFixture: ApplicationPersonDetail = {
   restrictedDetailsEndDate: null
 }
 
-export const enduserChildFixtureJari: ApplicationPersonDetail = {
+export const enduserChildFixtureJari: PersonDetail = {
   id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
   ssn: '070714A9126',
   firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
@@ -185,7 +184,7 @@ export const enduserChildFixtureJari: ApplicationPersonDetail = {
   restrictedDetailsEndDate: null
 }
 
-export const enduserChildFixtureKaarina: ApplicationPersonDetail = {
+export const enduserChildFixtureKaarina: PersonDetail = {
   id: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
   ssn: '160616A978U',
   firstName: 'Kaarina Veera Nelli',
@@ -202,7 +201,7 @@ export const enduserChildFixtureKaarina: ApplicationPersonDetail = {
   restrictedDetailsEndDate: null
 }
 
-export const enduserChildFixturePorriHatterRestricted: ApplicationPersonDetail = {
+export const enduserChildFixturePorriHatterRestricted: PersonDetail = {
   id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
   ssn: '160620A999J',
   firstName: 'Porri Hatter',
@@ -219,7 +218,7 @@ export const enduserChildFixturePorriHatterRestricted: ApplicationPersonDetail =
   restrictedDetailsEndDate: null
 }
 
-export const enduserChildJariOtherGuardianFixture: ApplicationPersonDetail = {
+export const enduserChildJariOtherGuardianFixture: PersonDetail = {
   id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
   ssn: '311299-999E',
   firstName: 'Ville',
@@ -412,6 +411,48 @@ export const familyWithRestrictedDetailsGuardian = {
   }))
 }
 
+const deadGuardian = {
+  id: 'faacfd43-878f-4a70-9e74-2051a18480e6',
+  ssn: '080581-999A',
+  firstName: 'Kuisma',
+  lastName: 'Kuollut',
+  email: 'kuisma@example.com',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: '1981-05-08',
+  dateOfDeath: '2021-05-01',
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+
+const deadGuardianChild = {
+  id: '1ad3469b-593d-45e4-a68b-a09f759bd029',
+  firstName: 'Kuopus',
+  lastName: 'Kuollut',
+  dateOfBirth: '2019-09-09',
+  ssn: '090917A998M',
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo'
+}
+
+export const familyWithDeadGuardian = {
+  guardian: {
+    ...deadGuardian,
+    dependants: [deadGuardianChild]
+  },
+  children: [
+    {
+      ...deadGuardianChild,
+      guardians: [deadGuardian]
+    }
+  ]
+}
+
 export const personFixtureChildZeroYearOld: PersonDetail = {
   id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
   ssn: undefined,
@@ -550,9 +591,9 @@ const applicationForm = (
 
 export const applicationFixtureId = '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
 export const applicationFixture = (
-  child: ApplicationPersonDetail,
-  guardian: ApplicationPersonDetail,
-  otherGuardian: ApplicationPersonDetail | undefined = undefined,
+  child: PersonDetail,
+  guardian: PersonDetail,
+  otherGuardian: PersonDetail | undefined = undefined,
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
@@ -614,8 +655,8 @@ export const decisionFixture = (
 
 export const feeDecisionsFixture = (
   status: FeeDecisionStatus,
-  adult: ApplicationPersonDetail,
-  child: ApplicationPersonDetail,
+  adult: PersonDetail,
+  child: PersonDetail,
   daycareId: UUID
 ): FeeDecision => ({
   id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',

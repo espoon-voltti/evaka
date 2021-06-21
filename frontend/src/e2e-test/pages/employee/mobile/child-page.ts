@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  ApplicationPersonDetail,
   DaycareDailyNote,
   DaycareDailyNoteLevel,
-  DaycareDailyNoteReminder
+  DaycareDailyNoteReminder,
+  PersonDetail
 } from 'e2e-test-common/dev-api/types'
 import { t, Selector } from 'testcafe'
 import { AbsenceType } from '../absences/absences-page'
@@ -63,7 +63,7 @@ export default class ChildPage {
   readonly absence = Selector('[data-qa="absence"]')
 
   async markPresent(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage,
     time: string
   ) {
@@ -80,7 +80,7 @@ export default class ChildPage {
   }
 
   async markDeparted(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage,
     time: string
   ) {
@@ -100,7 +100,7 @@ export default class ChildPage {
   }
 
   async markAbsent(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage
   ) {
     await t.click(mobileGroupsPage.comingTab)
@@ -117,7 +117,7 @@ export default class ChildPage {
   }
 
   async returnToComing(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage
   ) {
     await t.click(mobileGroupsPage.presentTab)
@@ -130,7 +130,7 @@ export default class ChildPage {
   }
 
   async returnToPresent(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage
   ) {
     await t.click(mobileGroupsPage.departedTab)
@@ -143,7 +143,7 @@ export default class ChildPage {
   }
 
   async markDepartedAbsence(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage,
     time: string
   ) {
@@ -162,7 +162,7 @@ export default class ChildPage {
   }
 
   async createDailyNote(
-    childFixture: ApplicationPersonDetail,
+    childFixture: PersonDetail,
     mobileGroupsPage: MobileGroupsPage,
     dailyNote: DaycareDailyNote
   ) {
