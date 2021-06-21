@@ -48,7 +48,7 @@ const features: Features = {
     attachments: true,
     evakaLogin: true,
     messaging: true,
-    financeBasicsPage: false,
+    financeBasicsPage: true,
     vasu: false
   },
   prod: {
