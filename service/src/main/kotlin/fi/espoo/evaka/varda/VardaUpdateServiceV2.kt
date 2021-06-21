@@ -109,6 +109,8 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
     val feeAndVoucherDiffsByServiceNeed = db.read { it.getServiceNeedFeeData(startingFrom, null) }.groupBy { it.serviceNeedId }
     val processedServiceNeedIds = mutableSetOf<UUID>()
 
+    logger.info("VardaUpdate: found ${serviceNeedDiffsByChild.entries.size} children with changed service need data")
+
     serviceNeedDiffsByChild.entries.forEach { serviceNeedDiffByChild ->
         serviceNeedDiffByChild.value.deletes.forEach { deletedServiceNeedId ->
             processedServiceNeedIds.add(deletedServiceNeedId)
@@ -128,7 +130,10 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
 
     // Handle fee data only -changes (no changes in service need). If there was any service need change, all related
     // fee data has already been sent to / deleted from varda, so we filter those service needs out here
-    feeAndVoucherDiffsByServiceNeed.filterNot { processedServiceNeedIds.contains(it.key) }.entries.forEach {
+    val unprocessedChangedFeeData = feeAndVoucherDiffsByServiceNeed.filterNot { processedServiceNeedIds.contains(it.key) }
+    if (unprocessedChangedFeeData.entries.size > 0) logger.info("VardaUpdate: found ${unprocessedChangedFeeData.entries.size} unprocessed fee data")
+
+    unprocessedChangedFeeData.entries.forEach {
         val serviceNeedId = it.key
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
         if (vardaServiceNeed != null) {
@@ -202,6 +207,10 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
 
 fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient) {
     val unsuccessfullyUploadedServiceNeeds = db.read { it.getUnsuccessfullyUploadVardaServiceNeeds() }
+
+    if (unsuccessfullyUploadedServiceNeeds.size > 0)
+        logger.info("VardaUpdate: retrying failed varda uploads: ${unsuccessfullyUploadedServiceNeeds.size}")
+
     unsuccessfullyUploadedServiceNeeds.forEach {
         try {
             if (it.existsInEvaka && it.childId != null)
