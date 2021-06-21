@@ -832,18 +832,22 @@ export const fi = {
       createNew: 'Luo uusi vasu',
       modified: 'Muokattu',
       published: 'Julkaistu',
-      states: {
-        DRAFT: 'Luonnos',
-        CREATED: 'Laadittu',
-        REVIEWED: 'Arvioitu',
-        CLOSED: 'Päättynyt'
-      },
       init: {
         chooseTemplate: 'Valitse vasupohja',
         noTemplates: 'Yhtään vasupohjaa ei löytynyt',
         error: 'Vasun luonti epäonnistui'
       }
     }
+  },
+  vasu: {
+    states: {
+      DRAFT: 'Luonnos',
+      CREATED: 'Laadittu',
+      REVIEWED: 'Arvioitu',
+      CLOSED: 'Päättynyt'
+    },
+    confidential: 'Salassapidettävä',
+    confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',

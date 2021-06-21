@@ -17,6 +17,7 @@ import Radio from 'lib-components/atoms/form/Radio'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { UUID } from 'lib-common/types'
 import { RouteComponentProps } from 'react-router-dom'
+import { VasuHeader } from './sections/VasuHeader'
 import {
   CheckboxQuestion,
   isCheckboxQuestion,
@@ -184,48 +185,53 @@ export default React.memo(function VasuPage({
     <Container>
       <Gap size={'L'} />
 
-      {vasuDocument.isSuccess &&
-        vasuDocument.value.content.sections.map((section, sectionIndex) => {
-          return (
-            <Fragment key={section.name}>
-              <ContentArea opaque>
-                <h2>{section.name}</h2>
-                {section.questions.map((question, questionIndex) => (
-                  <Fragment key={question.name}>
-                    {isTextQuestion(question)
-                      ? renderTextQuestion(
-                          question,
-                          sectionIndex,
-                          questionIndex
-                        )
-                      : isCheckboxQuestion(question)
-                      ? renderCheckboxQuestion(
-                          question,
-                          sectionIndex,
-                          questionIndex
-                        )
-                      : isRadioGroupQuestion(question)
-                      ? renderRadioGroupQuestion(
-                          question,
-                          sectionIndex,
-                          questionIndex
-                        )
-                      : isMultiSelectQuestion(question)
-                      ? renderMultiSelectQuestion(
-                          question,
-                          sectionIndex,
-                          questionIndex
-                        )
-                      : undefined}
-                    <Gap size={'L'} />
-                  </Fragment>
-                ))}
-              </ContentArea>
-              <Gap size={'L'} />
-            </Fragment>
-          )
-        })}
-      <Button text={'submit'} onClick={submit} />
+      {vasuDocument.isSuccess && (
+        <>
+          <VasuHeader document={vasuDocument.value} />
+          <Gap size={'s'} />
+          {vasuDocument.value.content.sections.map((section, sectionIndex) => {
+            return (
+              <Fragment key={section.name}>
+                <ContentArea opaque>
+                  <h2>{section.name}</h2>
+                  {section.questions.map((question, questionIndex) => (
+                    <Fragment key={question.name}>
+                      {isTextQuestion(question)
+                        ? renderTextQuestion(
+                            question,
+                            sectionIndex,
+                            questionIndex
+                          )
+                        : isCheckboxQuestion(question)
+                        ? renderCheckboxQuestion(
+                            question,
+                            sectionIndex,
+                            questionIndex
+                          )
+                        : isRadioGroupQuestion(question)
+                        ? renderRadioGroupQuestion(
+                            question,
+                            sectionIndex,
+                            questionIndex
+                          )
+                        : isMultiSelectQuestion(question)
+                        ? renderMultiSelectQuestion(
+                            question,
+                            sectionIndex,
+                            questionIndex
+                          )
+                        : undefined}
+                      <Gap size={'L'} />
+                    </Fragment>
+                  ))}
+                </ContentArea>
+                <Gap size={'L'} />
+              </Fragment>
+            )
+          })}
+          <Button text={'submit'} onClick={submit} />
+        </>
+      )}
     </Container>
   )
 })

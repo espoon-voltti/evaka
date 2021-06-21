@@ -30,6 +30,7 @@ fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse? {
     val sql = """
         SELECT 
             vd.id,
+            vd.document_state,
             vd.child_id,
             p.first_name AS child_first_name,
             p.last_name AS child_last_name,

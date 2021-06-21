@@ -29,6 +29,7 @@ data class VasuDocumentSummary(
 
 data class VasuDocumentResponse(
     val id: UUID,
+    val documentState: VasuDocumentState,
     @Nested("child")
     val child: VasuDocumentResponseChild,
     val templateName: String,
