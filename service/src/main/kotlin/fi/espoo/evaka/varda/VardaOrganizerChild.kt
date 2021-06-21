@@ -26,11 +26,11 @@ fun getOrCreateVardaChildByOrganizer(
             return@transaction createVardaPersonAndChild(tx, client, evakaPersonId, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
         }
 
-        val vardaPersonOid = rowsByChild.first().vardaPersonOid
+        val vardaPerson = rowsByChild.first()
 
         val rowsByChildAndOrganizer = rowsByChild.filter { row -> row.organizerOid == organizerOid }
         if (rowsByChildAndOrganizer.isEmpty()) {
-            return@transaction createVardaChildWhenPersonExists(tx, client, evakaPersonId, vardaPersonOid, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
+            return@transaction createVardaChildWhenPersonExists(tx, client, evakaPersonId, vardaPerson.vardaPersonId, vardaPerson.vardaPersonOid, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
         }
 
         return@transaction rowsByChildAndOrganizer.first().vardaChildId
@@ -39,6 +39,7 @@ fun getOrCreateVardaChildByOrganizer(
 
 data class VardaChildOrganizerRow(
     val evakaPersonId: UUID,
+    val vardaPersonId: Int,
     val vardaPersonOid: String,
     val vardaChildId: Long,
     val organizerOid: String
@@ -49,7 +50,7 @@ private fun getVardaOrganizationChildRows(
     evakaPersonId: UUID,
 ): List<VardaChildOrganizerRow> {
     val sql = """
-        SELECT evaka_person_id, varda_person_oid, varda_child_id, organizer_oid
+        SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid
         FROM varda_organizer_child
         WHERE evaka_person_id = :evakaPersonId
     """.trimIndent()
@@ -78,13 +79,14 @@ private fun createVardaPersonAndChild(
 ): Long {
     val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
 
-    val vardaPersonOid = client.createPerson(personPayload)?.personOid ?: error("Couldn't create Varda person (nor child)")
+    val vardaPerson = client.createPerson(personPayload) ?: error("Couldn't create Varda person (nor child)")
 
     return createVardaChildWhenPersonExists(
         tx,
         client,
         evakaPersonId,
-        vardaPersonOid,
+        vardaPerson.vardaId,
+        vardaPerson.personOid,
         municipalOrganizerOid,
         organizerOid,
         isPaosChild,
@@ -93,12 +95,14 @@ private fun createVardaPersonAndChild(
 }
 
 data class VardaChildPayload(
+    val personUrl: String,
     val personOid: String,
     val organizerOid: String,
     val sourceSystem: String
 )
 
 data class VardaPaosChildPayload(
+    val personUrl: String,
     val personOid: String,
     val organizerOid: String,
     val paosOrganizationOid: String,
@@ -109,6 +113,7 @@ private fun createVardaChildWhenPersonExists(
     tx: Database.Transaction,
     client: VardaClient,
     evakaPersonId: UUID,
+    vardaPersonId: Int,
     vardaPersonOid: String,
     municipalOrganizerOid: String,
     organizerOid: String,
@@ -117,6 +122,7 @@ private fun createVardaChildWhenPersonExists(
 ): Long {
     return if (isPaosChild) {
         val vardaChildPayload = VardaPaosChildPayload(
+            personUrl = client.getPersonUrl(vardaPersonId.toLong()),
             personOid = vardaPersonOid,
             organizerOid = municipalOrganizerOid,
             paosOrganizationOid = organizerOid,
@@ -130,6 +136,7 @@ private fun createVardaChildWhenPersonExists(
             tx,
             evakaPersonId,
             vardaChildId,
+            vardaPersonId,
             vardaPersonOid,
             organizerOid
         )
@@ -137,6 +144,7 @@ private fun createVardaChildWhenPersonExists(
         vardaChildId
     } else {
         val vardaChildPayload = VardaChildPayload(
+            personUrl = client.getPersonUrl(vardaPersonId.toLong()),
             personOid = vardaPersonOid,
             organizerOid = organizerOid,
             sourceSystem = sourceSystem
@@ -149,6 +157,7 @@ private fun createVardaChildWhenPersonExists(
             tx,
             evakaPersonId,
             vardaChildId,
+            vardaPersonId,
             vardaPersonOid,
             organizerOid
         )
@@ -181,18 +190,20 @@ fun insertVardaOrganizerChild(
     tx: Database.Transaction,
     evakaPersonId: UUID,
     vardaChildId: Long,
+    vardaPersonId: Int,
     vardaPersonOid: String,
     organizerOid: String
 ) {
     //language=SQL
     val sql = """
-    INSERT INTO varda_organizer_child (evaka_person_id, varda_child_id, varda_person_oid, organizer_oid)
-    VALUES (:evakaPersonId, :vardaChildId, :vardaPersonOid, :organizerOid)
+    INSERT INTO varda_organizer_child (evaka_person_id, varda_child_id, varda_person_id, varda_person_oid, organizer_oid)
+    VALUES (:evakaPersonId, :vardaChildId, :vardaPersonId, :vardaPersonOid, :organizerOid)
     """.trimIndent()
 
     tx.createUpdate(sql)
         .bind("evakaPersonId", evakaPersonId)
         .bind("vardaChildId", vardaChildId)
+        .bind("vardaPersonId", vardaPersonId)
         .bind("vardaPersonOid", vardaPersonOid)
         .bind("organizerOid", organizerOid)
         .execute()
