@@ -41,10 +41,10 @@ import { useTranslation } from '../../state/i18n'
 import FreeTextSearch from '../common/FreeTextSearch'
 import TopBar from '../common/TopBar'
 import BottomNavbar, { NavItem } from '../common/BottomNavbar'
-import { StaffAttendanceGroup } from 'lib-common/api-types/staffAttendances'
-import { Loading, Result, combine, Success } from 'lib-common/api'
-import { getStaffAttendances } from 'employee-mobile-frontend/api/staffAttendances'
-import LocalDate from 'lib-common/local-date'
+import { UnitStaffAttendance } from 'lib-common/api-types/staffAttendances'
+import { Loading, Result, combine } from 'lib-common/api'
+import { getUnitStaffAttendances } from 'employee-mobile-frontend/api/staffAttendances'
+import { staffAttendanceForGroupOrUnit } from '../../utils/staffAttendances'
 
 export interface Props {
   onNavigate: (page: NavItem) => void
@@ -69,7 +69,7 @@ export default React.memo(function AttendancePageWrapper({
     AttendanceUIContext
   )
   const [staffAttendancesResponse, setStaffAttendancesResponse] = useState<
-    Result<StaffAttendanceGroup | undefined>
+    Result<UnitStaffAttendance>
   >(Loading.of())
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
@@ -84,7 +84,7 @@ export default React.memo(function AttendancePageWrapper({
     setAttendanceResponse
   )
   const loadStaffAttendances = useRestApi(
-    getStaffAttendances,
+    getUnitStaffAttendances,
     setStaffAttendancesResponse
   )
 
@@ -92,17 +92,9 @@ export default React.memo(function AttendancePageWrapper({
     loadDaycareAttendances(unitId)
   }, [loadDaycareAttendances, groupIdOrAll, unitId, currentPage])
 
-  const today = LocalDate.today()
   useEffect(() => {
-    if (groupIdOrAll !== 'all') {
-      loadStaffAttendances(groupIdOrAll, {
-        year: today.year,
-        month: today.month
-      })
-    } else {
-      setStaffAttendancesResponse(Success.of(undefined))
-    }
-  }, [groupIdOrAll, today.year, today.month, loadStaffAttendances])
+    loadStaffAttendances(unitId)
+  }, [unitId, loadStaffAttendances])
 
   useEffect(() => {
     if (freeText === '') {
@@ -241,7 +233,15 @@ export default React.memo(function AttendancePageWrapper({
 
   const containerSpring = useSpring<{ x: number }>({ x: showSearch ? 1 : 0 })
 
-  return combine(attendanceResponse, staffAttendancesResponse).mapAll({
+  return combine(
+    attendanceResponse,
+    staffAttendancesResponse.map((staffAttendances) =>
+      staffAttendanceForGroupOrUnit(
+        staffAttendances,
+        groupIdOrAll === 'all' ? undefined : groupIdOrAll
+      )
+    )
+  ).mapAll({
     failure() {
       return <ErrorSegment />
     },
@@ -249,7 +249,6 @@ export default React.memo(function AttendancePageWrapper({
       return <Loader />
     },
     success([attendance, staffAttendances]) {
-      const staffAttendance = staffAttendances?.attendances[today.toString()]
       return (
         <>
           <SearchBar
@@ -340,14 +339,7 @@ export default React.memo(function AttendancePageWrapper({
           </ContentArea>
           <BottomNavbar
             selected="child"
-            staffCount={
-              staffAttendance
-                ? {
-                    count: staffAttendance.count ?? 0,
-                    countOther: staffAttendance.countOther ?? 0
-                  }
-                : undefined
-            }
+            staffCount={staffAttendances}
             onChange={onNavigate}
           />
         </>

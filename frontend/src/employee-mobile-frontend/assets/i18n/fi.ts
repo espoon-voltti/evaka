@@ -222,7 +222,12 @@ export const fi = {
     title: 'Henkilökunnan määrä tänään',
     daycareResponsible: 'Kasvatusvastuullisia',
     other: 'Muita (esim. avustajat, opiskelijat, veot)',
-    realizedOccupancy: 'Ryhmän käyttöaste tänään'
+    cancel: 'Peru muokkaus',
+    realizedGroupOccupancy: 'Ryhmän käyttöaste tänään',
+    realizedUnitOccupancy: 'Yksikön käyttöaste tänään',
+    notUpdated: 'Tietoja ei ole päivitetty',
+    updatedToday: 'Tiedot päivitetty tänään',
+    updated: 'Tiedot päivitetty'
   },
   mobile: {
     landerText1:
