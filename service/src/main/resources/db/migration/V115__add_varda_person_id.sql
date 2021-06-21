@@ -1,0 +1,1 @@
+ALTER TABLE varda_organizer_child ADD COLUMN varda_person_id bigint NOT NULL;

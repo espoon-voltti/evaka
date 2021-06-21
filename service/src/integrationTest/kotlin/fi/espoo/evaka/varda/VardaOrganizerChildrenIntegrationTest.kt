@@ -32,9 +32,10 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `getOrCreateVardaChildByOrganizer returns without api calls if child exists`() {
         val vardaChildId = 31415L
+        val vardaPersonId = 31245
         val vardaPersonOid = "1.2.3.4.5"
         db.transaction {
-            insertVardaOrganizerChild(it, testChild_1.id, vardaChildId, vardaPersonOid, defaultMunicipalOrganizerOid)
+            insertVardaOrganizerChild(it, testChild_1.id, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
         }
 
         val result = getOrCreateVardaChildByOrganizer(db, vardaClient, testChild_1.id, defaultMunicipalOrganizerOid, "")
@@ -47,7 +48,7 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `getOrCreateVardaChildByOrganizer creates child when person exists`() {
         db.transaction {
-            insertVardaOrganizerChild(it, testChild_1.id, 31415L, "3.1.4.1.5", defaultMunicipalOrganizerOid)
+            insertVardaOrganizerChild(it, testChild_1.id, 31415L, 31415, "3.1.4.1.5", defaultMunicipalOrganizerOid)
         }
 
         val result = getOrCreateVardaChildByOrganizer(db, vardaClient, testChild_1.id, "otherOrganizerOid", "")
