@@ -27,3 +27,4 @@ fabric.properties
 .DS_Store
 # binaries
 *.jar
+backup
