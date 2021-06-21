@@ -2,20 +2,30 @@
 
 set -e
 
-dump_path="${2:-/tmp/evaka-service.dump}"
-local_postgres_password=postgres
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+backup_path="./backup"
+backup_remote_path="/backup"
+
+backup_name="${2:-"evaka-service.dump"}"
+dump_local_path="${backup_path}/${backup_name}"
+dump_remote_path="${backup_remote_path}/${backup_name}"
+
+#local_postgres_password=postgres # password is set in docker-compose.dbdump.yml environment variables
 local_postgres_user=postgres
-local_host=localhost
+local_host=db
 local_port=5432
 local_database=evaka_local
 
+mkdir -p ./backup
+
 if [ "$1" = "dump" ]; then
-  PGPASSWORD="$local_postgres_password" pg_dump -Fc -h "$local_host" -p "$local_port" -U "$local_postgres_user" -f "$dump_path" "$local_database"
-  echo "Wrote dump to $dump_path"
+  docker-compose -f docker-compose.yml -f docker-compose.dbdump.yml run dbdump pg_dump -Fc -h "$local_host" -p "$local_port" -U "$local_postgres_user" -f "$dump_remote_path" "$local_database"
+  echo "Wrote dump to $dump_remote_path -> $dump_local_path"
 elif [ "$1" = "restore" ]; then
   date_string="$(date +%Y%m%d%H%M)"
 
-  PGPASSWORD="$local_postgres_password" psql -h "$local_host" -U "$local_postgres_user" postgres <<EOSQL
+  docker-compose -f docker-compose.yml -f docker-compose.dbdump.yml run dbdump psql -h "$local_host" -U "$local_postgres_user" postgres <<EOSQL
     SELECT
         pg_terminate_backend(pid)
     FROM
@@ -27,7 +37,7 @@ elif [ "$1" = "restore" ]; then
 EOSQL
 
   echo "Restoring"
-  PGPASSWORD="$local_postgres_password" pg_restore \
+  docker-compose -f docker-compose.yml -f docker-compose.dbdump.yml run dbdump pg_restore \
     -Fc \
     --verbose \
     --host="$local_host" \
@@ -36,7 +46,7 @@ EOSQL
     --dbname="postgres" \
     --no-comments \
     --create \
-    "$dump_path"
+    "$dump_remote_path"
 else
-  echo "Usage ./db.sh (dump|restore) [<dump-path>]"
+  echo "Usage ./db.sh (dump|restore) [<dump-name>]"
 fi
