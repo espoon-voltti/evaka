@@ -130,7 +130,7 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
     // fee data has already been sent to / deleted from varda, so we filter those service needs out here
     feeAndVoucherDiffsByServiceNeed.filterNot { processedServiceNeedIds.contains(it.key) }.entries.forEach {
         val serviceNeedId = it.key
-        val vardaServiceNeed = db.read { it.getVardaServiceNeed(serviceNeedId) }
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
         if (vardaServiceNeed != null) {
             handleUpdatedEvakaServiceNeed(db, client, serviceNeedId)
         } else {
@@ -141,7 +141,7 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
 
 fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: UUID) {
     try {
-        val vardaServiceNeed = db.read { it.getVardaServiceNeed(serviceNeedId) }
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
         if (vardaServiceNeed != null) {
             val errors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
             if (errors.isNotEmpty()) {
@@ -156,29 +156,29 @@ fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
     }
 }
 
-fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: UUID) {
+fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: UUID) {
     try {
-        val vardaServiceNeed = db.read { it.getVardaServiceNeed(serviceNeedId) } ?: throw Exception("VardaUpdate: cannot update service need $serviceNeedId: varda service need missing")
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) } ?: throw Exception("VardaUpdate: cannot update service need $evakaServiceNeedId: varda service need missing")
         val deleteErrors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
         if (deleteErrors.isNotEmpty()) {
             logger.error(deleteErrors.joinToString(","))
             db.transaction {
-                it.markVardaServiceNeedUpdateFailed(serviceNeedId, deleteErrors)
+                it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, deleteErrors)
             }
         } else {
-            val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
+            val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(evakaServiceNeedId) }
             val addErrors = addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed)
             if (addErrors.isNotEmpty()) {
                 logger.error(addErrors.joinToString(","))
                 db.transaction {
-                    it.markVardaServiceNeedUpdateFailed(serviceNeedId, addErrors)
+                    it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, addErrors)
                 }
             } else {
                 db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed.copy(updateFailed = false, errors = mutableListOf())) }
             }
         }
     } catch (e: Exception) {
-        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $serviceNeedId data: ${e.localizedMessage}")
+        logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $evakaServiceNeedId data: ${e.localizedMessage}")
     }
 }
 
@@ -234,6 +234,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(null, evakaServiceNeed.id) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
             if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_orginizer_id is null or empty")
+            if (db.read { it.personHasSsn(evakaServiceNeed.childId) }.not()) throw Exception("VardaUpdate: cannot create service need ${evakaServiceNeed.id} for child ${evakaServiceNeed.childId} because child has no ssn")
 
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = createDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
@@ -551,7 +552,7 @@ WHERE evaka_child_id = :evakaChildId
         .mapTo<VardaServiceNeed>()
         .list()
 
-fun Database.Read.getVardaServiceNeed(eVakaServiceNeedId: UUID): VardaServiceNeed? =
+fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(eVakaServiceNeedId: UUID): VardaServiceNeed? =
     createQuery(
         """
 SELECT *
@@ -735,3 +736,8 @@ WHERE update_failed = true"""
     )
         .mapTo<UnsuccessfullyUploadedServiceNeed>()
         .list()
+
+fun Database.Read.personHasSsn(id: UUID): Boolean = createQuery("SELECT CASE WHEN (social_security_number IS NOT NULL AND social_security_number <> '') THEN 'True' ELSE 'False' END FROM person WHERE id = :id")
+    .bind("id", id)
+    .mapTo<Boolean>()
+    .firstOrNull() ?: false
