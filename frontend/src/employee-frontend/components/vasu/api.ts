@@ -66,10 +66,15 @@ export async function getVasuDocument(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function putVasuDocument(
-  documentId: UUID,
+export interface PutVasuDocumentParams {
+  documentId: UUID
   content: VasuContent
-): Promise<Result<null>> {
+}
+
+export async function putVasuDocument({
+  documentId,
+  content
+}: PutVasuDocumentParams): Promise<Result<null>> {
   return client
     .put(`/vasu/${documentId}`, { content })
     .then(() => Success.of(null))
