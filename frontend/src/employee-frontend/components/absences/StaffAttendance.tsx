@@ -12,12 +12,12 @@ import React, {
 } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { Td, Tr } from 'lib-components/layout/Table'
-import { DisabledCell } from '../../components/absences/AbsenceCell'
+import { DisabledCell } from './AbsenceCell'
 import { useTranslation } from '../../state/i18n'
 import { AbsencesContext } from '../../state/absence'
 import {
-  StaffAttendance,
-  StaffAttendanceGroup
+  GroupStaffAttendance,
+  GroupStaffAttendanceForDates
 } from 'lib-common/api-types/staffAttendances'
 import { Loading, Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
@@ -41,100 +41,104 @@ export default memo(function StaffAttendance({
   operationDays
 }: Props) {
   const isMountedRef = useRef(true)
-  const { selectedDate } = useContext(AbsencesContext)
-
-  const [attendance, setAttendance] = useState<Result<StaffAttendanceGroup>>(
-    Loading.of()
+  useEffect(
+    () => () => {
+      isMountedRef.current = false
+    },
+    []
   )
 
-  const refreshAttendances = useCallback(() => {
-    isMountedRef.current = true
+  const { selectedDate } = useContext(AbsencesContext)
 
-    void getStaffAttendances(groupId, {
-      year: selectedDate.getYear(),
-      month: selectedDate.getMonth()
-    }).then((r) => {
+  const [attendance, setAttendance] = useState<
+    Result<GroupStaffAttendanceForDates>
+  >(Loading.of())
+
+  const refreshAttendances = useCallback(() => {
+    const year = selectedDate.getYear()
+    const month = selectedDate.getMonth()
+
+    void getStaffAttendances(groupId, { year, month }).then((r) => {
       if (isMountedRef.current) {
         setAttendance(r)
       }
     })
-
-    return () => {
-      isMountedRef.current = false
-    }
   }, [groupId, selectedDate])
 
   useEffect(() => {
-    isMountedRef.current = true
+    refreshAttendances()
+  }, [refreshAttendances])
 
-    if (isMountedRef.current) {
-      refreshAttendances()
-    }
+  const updateAttendance = (date: LocalDate, count: number) =>
+    postStaffAttendance({
+      groupId,
+      date,
+      count,
+      countOther: null
+    }).then(refreshAttendances)
 
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [groupId, selectedDate]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const updateAttendances = (attendance: StaffAttendance) =>
-    postStaffAttendance(attendance).then(refreshAttendances)
+  const firstOfMonth = LocalDate.of(selectedDate.year, selectedDate.month, 1)
+  const lastOfMonth = firstOfMonth.lastDayOfMonth()
+  const daysOfMonth = LocalDate.range(firstOfMonth, lastOfMonth)
 
   return attendance.isSuccess ? (
     <StaffAttendanceRow
       emptyCols={emptyCols}
       attendanceGroup={attendance.value}
-      updateAttendances={updateAttendances}
+      updateAttendance={updateAttendance}
+      daysOfMonth={daysOfMonth}
       operationDays={operationDays}
     />
   ) : null
 })
 
 interface StaffAttendanceRowProps {
-  attendanceGroup: StaffAttendanceGroup
+  attendanceGroup: GroupStaffAttendanceForDates
   emptyCols: number[]
-  updateAttendances: (staffAttendance: StaffAttendance) => Promise<() => void>
+  updateAttendance: (date: LocalDate, count: number) => Promise<void>
+  daysOfMonth: LocalDate[]
   operationDays: LocalDate[]
 }
 
 const StaffAttendanceRow = memo(function StaffAttendanceRow({
   emptyCols,
   attendanceGroup,
-  updateAttendances,
+  updateAttendance,
+  daysOfMonth,
   operationDays
 }: StaffAttendanceRowProps) {
   const { i18n } = useTranslation()
   const attendanceMap = attendanceGroup.attendances
 
-  const isDisabled = (attendance: StaffAttendance): boolean => {
-    return attendance.date < attendanceGroup.startDate
-      ? true
-      : !attendanceGroup.endDate
-      ? false
-      : attendance.date > attendanceGroup.endDate
-  }
+  const isActive = (date: LocalDate): boolean =>
+    date.isEqualOrAfter(attendanceGroup.startDate) &&
+    (!attendanceGroup.endDate || date.isEqualOrBefore(attendanceGroup.endDate))
+
+  const isOperational = (date: LocalDate) =>
+    operationDays.some((operationDay) => operationDay.isEqual(date))
 
   return (
     <Tr className={'staff-attendance-row'}>
       <Td colSpan={2}>{i18n.absences.table.staffRow}</Td>
-      {Object.keys(attendanceMap)
-        .sort()
-        .map((key) => {
-          return operationDays.some((operationDay) =>
-            operationDay.isEqual(attendanceMap[key].date)
-          ) ? (
-            <Td key={key}>
-              <StaffAttendanceCell
-                updateAttendances={updateAttendances}
-                attendance={attendanceMap[key]}
-                disabled={isDisabled(attendanceMap[key])}
-              />
-            </Td>
-          ) : (
-            <Td key={key}>
+      {daysOfMonth.map((date) => {
+        const attendance = attendanceMap.get(date.toString())
+        return (
+          <Td key={date.toString()}>
+            {!isOperational(date) ? (
               <DisabledCell />
-            </Td>
-          )
-        })}
+            ) : !isActive(date) ? (
+              <InactiveCell date={date} />
+            ) : (
+              <StaffAttendanceCell
+                updateAttendance={(count: number) =>
+                  updateAttendance(date, count)
+                }
+                attendance={attendance}
+              />
+            )}
+          </Td>
+        )
+      })}
       {emptyCols.map((item) => (
         <Td key={item}>
           <DisabledCell />
@@ -144,48 +148,56 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
   )
 })
 
-interface StaffAttendanceCellProps {
-  attendance: StaffAttendance
-  updateAttendances: (attendance: StaffAttendance) => Promise<() => void>
-  disabled: boolean
-}
-
 const DisabledStaffIcon = styled(FontAwesomeIcon)`
   font-size: 15px;
   color: ${colors.greyscale.dark};
 `
 
+const InactiveCell = ({ date }: { date: LocalDate }) => {
+  const { i18n } = useTranslation()
+  return (
+    <div className={'absence-cell disabled-staff-cell-container'}>
+      <Tooltip
+        tooltipId={`tooltip_disabled-staff-cell-${date.formatIso()}`}
+        tooltipText={i18n.absences.table.disabledStaffCellTooltip}
+        place={'top'}
+      >
+        <DisabledStaffIcon icon={faTimes} />
+      </Tooltip>
+    </div>
+  )
+}
+
+interface StaffAttendanceCellProps {
+  attendance: GroupStaffAttendance | undefined
+  updateAttendance: (count: number) => Promise<void>
+}
+
 const StaffAttendanceCell = memo(function StaffAttendanceCell({
   attendance,
-  updateAttendances,
-  disabled
+  updateAttendance
 }: StaffAttendanceCellProps) {
-  const [inputValue, setInputValue] = useState(formatDecimal(attendance.count))
+  const initial: number | undefined = attendance?.count
+  const [inputValue, setInputValue] = useState(formatDecimal(initial))
   const [updatedValue, setUpdatedValue] = useState<number>()
   const [editing, setEditing] = useState(false)
-  const { i18n } = useTranslation()
 
   useEffect(() => {
     if (!editing) {
-      setInputValue(formatDecimal(attendance.count))
+      setInputValue(formatDecimal(initial))
     }
-  }, [attendance, editing])
+  }, [initial, editing])
 
   const debouncedValue = useDebounce(updatedValue, 400)
 
   useEffect(() => {
     if (debouncedValue !== undefined) {
-      updateAttendances({
-        ...attendance,
-        count: debouncedValue
-      }).catch((e) => {
-        console.error(e)
-        setInputValue(formatDecimal(attendance.count))
+      updateAttendance(debouncedValue).catch(() => {
+        setInputValue(formatDecimal(initial))
       })
-
       setUpdatedValue(undefined)
     }
-  }, [debouncedValue]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [updateAttendance, debouncedValue, initial])
 
   const update = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUpdatedValue(parseFloat(event.target.value.replace(',', '.')) || 0)
@@ -197,34 +209,18 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
     editing
   ])
 
-  const DisabledStaffCell = () => (
-    <div className={'absence-cell disabled-staff-cell-container'}>
-      <Tooltip
-        tooltipId={`tooltip_disabled-staff-cell-${attendance.date.formatIso()}`}
-        tooltipText={i18n.absences.table.disabledStaffCellTooltip}
-        place={'top'}
-      >
-        <DisabledStaffIcon icon={faTimes} />
-      </Tooltip>
-    </div>
-  )
-
   return (
     <div className={'field staff-attendance-cell'}>
       {/*input component from styleguide needs to be updated to include onKey events*/}
       <div className={'control'}>
-        {disabled ? (
-          <DisabledStaffCell />
-        ) : (
-          <input
-            className={'input'}
-            value={inputValue ? inputValue + '' : ''}
-            onChange={update}
-            onFocus={toggleEditing}
-            onBlur={toggleEditing}
-            data-qa="staff-attendance-input"
-          />
-        )}
+        <input
+          className={'input'}
+          value={inputValue ? inputValue + '' : ''}
+          onChange={update}
+          onFocus={toggleEditing}
+          onBlur={toggleEditing}
+          data-qa="staff-attendance-input"
+        />
       </div>
     </div>
   )

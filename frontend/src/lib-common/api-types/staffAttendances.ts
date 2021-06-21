@@ -5,17 +5,34 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-export interface StaffAttendance {
+export interface StaffAttendanceUpdate {
   groupId: UUID
   date: LocalDate
-  count: number | null
+  count: number
   countOther: number | null
 }
 
-export interface StaffAttendanceGroup {
+export interface GroupStaffAttendance {
+  groupId: UUID
+  date: LocalDate
+  count: number
+  countOther: number
+  updated: Date
+}
+
+export interface UnitStaffAttendance {
+  date: LocalDate
+  count: number
+  countOther: number
+  updated: Date | null
+  groups: GroupStaffAttendance[]
+}
+
+// The `attendances` object only contains days that have staff attendances
+export interface GroupStaffAttendanceForDates {
   groupId: UUID
   groupName: string
   startDate: LocalDate
   endDate: LocalDate | null
-  attendances: { [key: string]: StaffAttendance }
+  attendances: Map<string, GroupStaffAttendance>
 }
