@@ -22,7 +22,6 @@ import { useTranslation } from '../../state/i18n'
 export interface Props {
   unitName: string
   selectedGroup: Group | undefined
-  allowAllGroups?: boolean
   onChangeGroup: (group: Group | undefined) => void
   onSearch?: () => void
 }
@@ -30,7 +29,6 @@ export interface Props {
 export default function TopBar({
   unitName,
   selectedGroup,
-  allowAllGroups = true,
   onChangeGroup,
   onSearch
 }: Props) {
@@ -64,7 +62,6 @@ export default function TopBar({
         />
         <GroupSelector
           selectedGroup={selectedGroup}
-          allowAllGroups={allowAllGroups}
           onChangeGroup={(group) => {
             onChangeGroup(group)
             setShowGroupSelector(false)
