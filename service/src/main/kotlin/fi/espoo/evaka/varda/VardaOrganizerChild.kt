@@ -76,7 +76,8 @@ private fun createVardaPersonAndChild(
     isPaosChild: Boolean,
     sourceSystem: String
 ): Long {
-    val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
+    val personPayload = getVardaPersonRequestPayload(tx, evakaPersonId, organizerOid)
+        ?: throw error("Varda person payload could not be formed for $evakaPersonId and $organizerOid")
 
     val vardaPersonOid = client.createPerson(personPayload)?.personOid ?: error("Couldn't create Varda person (nor child)")
 
@@ -157,7 +158,7 @@ private fun createVardaChildWhenPersonExists(
     }
 }
 
-private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID, organizerOid: String) =
+private fun getVardaPersonRequestPayload(tx: Database.Transaction, evakaPersonId: UUID, organizerOid: String): VardaPersonRequest? =
     tx.createQuery(
         """
             SELECT 
@@ -169,13 +170,14 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaPersonId: UUID,
                 :organizerOid
             FROM person p
             WHERE id = :evakaPersonId
+            AND updated_from_vtj IS NOT null
         """.trimIndent()
     )
         .bind("evakaPersonId", evakaPersonId)
         .bind("organizerOid", organizerOid)
         .mapTo<VardaPersonRequest>()
         .toList()
-        .first()
+        .firstOrNull()
 
 fun insertVardaOrganizerChild(
     tx: Database.Transaction,
