@@ -194,7 +194,6 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
 }
 
 const val communityProductCodeLength = 12
-const val communityCostCenterLength = 5
 const val communitySubCostCenterLength = 2
 
 private fun invoiceRow(
@@ -215,9 +214,6 @@ private fun invoiceRow(
     require(productCode.length <= communityProductCodeLength) {
         "Community product code can be at most $communityProductCodeLength characters long, was '$productCode'"
     }
-    require(costC.length <= communityCostCenterLength) {
-        "Community cost center should be at most $communityCostCenterLength characters long, was '$costC'"
-    }
     require(subCostC?.length ?: 0 <= communitySubCostCenterLength) {
         "Community sub cost center should be at most $communitySubCostCenterLength characters long, was '$subCostC'"
     }
@@ -234,7 +230,7 @@ private fun invoiceRow(
             else localizedProduct(lang, product)
             ).take(communityDescriptionMaxLength),
         account = acc,
-        costCenter = costC.padStart(communityCostCenterLength, '0'),
+        costCenter = costC,
         subCostCenter1 =
         if (subCostC.isNullOrBlank()) null
         else subCostC.padStart(communitySubCostCenterLength, '0')
