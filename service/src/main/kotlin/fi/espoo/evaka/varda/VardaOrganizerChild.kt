@@ -79,7 +79,7 @@ private fun createVardaPersonAndChild(
 ): Long {
     val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
 
-    val vardaPerson = client.createPerson(personPayload) ?: error("Couldn't create Varda person (nor child)")
+    val vardaPerson = client.createPerson(personPayload) ?: error("VardaUpdate: Couldn't create Varda person $personPayload")
 
     return createVardaChildWhenPersonExists(
         tx = tx,
@@ -130,7 +130,7 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload))?.id?.toLong()
-            ?: error("Couldn't create Varda PAOS child for $vardaChildPayload")
+            ?: error("VardaUpdate: Couldn't create Varda PAOS child for $vardaChildPayload")
 
         insertVardaOrganizerChild(
             tx,
@@ -151,7 +151,7 @@ private fun createVardaChildWhenPersonExists(
         )
 
         val vardaChildId = client.createChild(convertToVardaChildRequest(evakaPersonId, vardaChildPayload))?.id?.toLong()
-            ?: error("Couldn't create Varda child for $vardaChildPayload")
+            ?: error("VardaUpdate: Couldn't create Varda child for $vardaChildPayload")
 
         insertVardaOrganizerChild(
             tx,

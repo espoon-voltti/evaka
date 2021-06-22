@@ -626,18 +626,6 @@ data class FeeDataByServiceNeed(
     val voucherValueDecisionIds: List<UUID> = emptyList()
 )
 
-data class VardaChild(
-    val id: UUID,
-    val personId: UUID,
-    val vardaPersonId: Long,
-    val vardaPersonOid: String,
-    val vardaChildId: Long?,
-    val ophOrganizerOid: String,
-    val createdAt: Instant?,
-    val modifiedAt: Instant?,
-    val uploadedAt: Instant?
-)
-
 private fun evakaServiceNeedToVardaServiceNeed(childId: UUID, evakaServiceNeed: EvakaServiceNeedInfoForVarda): VardaServiceNeed =
     VardaServiceNeed(
         evakaChildId = childId,
@@ -696,7 +684,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: UUID): EvakaServiceNeedInf
     // language=sql
     val sql = """
         SELECT
-            sn.id, p.child_id AS child_id, COALESCE(a.preferredstartdate, sn.start_date) AS application_date, sn.start_date, sn.end_date,
+            sn.id, p.child_id AS child_id, LEAST(COALESCE(a.sentdate, a.created::date), sn.start_date) AS application_date, sn.start_date, sn.end_date,
             COALESCE(a.urgent, false) AS urgent, sno.daycare_hours_per_week AS hours_per_week,
             CASE 
                 WHEN sno.valid_placement_type = 'TEMPORARY_DAYCARE' OR sno.valid_placement_type = 'TEMPORARY_DAYCARE_PART_DAY' THEN true
