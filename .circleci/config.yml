@@ -1015,7 +1015,6 @@ jobs:
 
   message_service_integration_test:
     executor: service_test_executor
-    parallelism: 4
     steps:
       - *restore_repo
       - *restore_message_service_gradle
@@ -1023,19 +1022,7 @@ jobs:
       - run:
           name: gradle integrationTest
           working_directory: *workspace_message_service
-          command: |
-            # Get list of classnames of tests that should run on this node
-            CLASSNAMES=$(circleci tests glob \
-                "src/integrationTest/kotlin/**/*{Test,Tests}.kt" \
-                "../service-lib/src/integrationTest/kotlin/**/*{Test,Tests}.kt" \
-                | sed 's/.*src\/integrationTest\/kotlin\///' \
-                | sed 's@/@.@g' \
-                | sed 's/.kt//' \
-                | circleci tests split --split-by=timings --timings-type=classname)
-            # Format the arguments for Gradle
-            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
-            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
-            ./gradlew integrationTest $GRADLE_ARGS
+          command: ./gradlew integrationTest
       - store_test_results:
           path: /home/circleci/repo/message-service/build/test-results/integrationTest/
       - store_artifacts:
