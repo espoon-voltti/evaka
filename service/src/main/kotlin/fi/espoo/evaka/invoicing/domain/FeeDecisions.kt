@@ -182,14 +182,6 @@ data class FeeDecisionDetailed(
         val sentAtLocalDate = sentAt?.atZone(ZoneId.of("UTC"))
         return isRetroactive(this.validDuring.start, LocalDate.from(sentAtLocalDate ?: LocalDate.now()))
     }
-
-    // TODO: remove
-    @JsonProperty("minThreshold")
-    fun minThreshold(): Int = feeThresholds.minIncomeThreshold
-
-    // TODO: remove
-    @JsonProperty("feePercent")
-    fun feePercent(): BigDecimal = feeThresholds.incomeMultiplier.multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_UP)
 }
 
 fun isRetroactive(decisionValidFrom: LocalDate, sentAt: LocalDate): Boolean {

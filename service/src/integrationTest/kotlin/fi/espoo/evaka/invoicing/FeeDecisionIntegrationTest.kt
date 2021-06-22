@@ -43,7 +43,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -600,21 +599,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             decision.let(::toDetailed),
             deserializeResult(result.get()).data
         )
-    }
-
-    @Test
-    fun `fee percent and minimum threshold works when getting one decision`() {
-        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-        val decision = testDecisions[0]
-
-        val (_, _, result) = http.get("/decisions/${decision.id}")
-            .asUser(user)
-            .responseString()
-
-        val resultObject = deserializeResult(result.get()).data
-
-        assertEquals(BigDecimal.valueOf(10.7), resultObject.feePercent())
-        assertEquals(271300, resultObject.minThreshold())
     }
 
     @Test
