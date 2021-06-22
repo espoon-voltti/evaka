@@ -451,7 +451,7 @@ fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload):
     return VardaChildRequest(
         id = evakaPersonId,
         henkilo = payload.personUrl,
-        henkilo_oid = payload.organizerOid,
+        henkilo_oid = payload.personOid,
         vakatoimija_oid = payload.organizerOid,
         oma_organisaatio_oid = null,
         paos_organisaatio_oid = null,
@@ -463,7 +463,7 @@ fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaPaosChildPaylo
     return VardaChildRequest(
         id = evakaPersonId,
         henkilo = payload.personUrl,
-        henkilo_oid = payload.organizerOid,
+        henkilo_oid = payload.personOid,
         vakatoimija_oid = null,
         oma_organisaatio_oid = payload.organizerOid,
         paos_organisaatio_oid = payload.paosOrganizationOid,

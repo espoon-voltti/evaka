@@ -12,6 +12,8 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -74,5 +76,10 @@ class VardaOrganizerChildrenIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, mockEndpoint.people.values.size)
         assertEquals(1, mockEndpoint.children.values.size)
+
+        val sentChild = mockEndpoint.children.values.first()
+        assertNotNull(sentChild.henkilo)
+        assertTrue(sentChild.henkilo!!.contains("mock-integration/varda/api/v1/henkilot/1/"))
+        assertEquals("1.2.246.562.24.1", sentChild.henkilo_oid)
     }
 }
