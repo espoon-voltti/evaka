@@ -888,7 +888,7 @@ jobs:
 
   service_test:
     executor: service_test_executor
-    parallelism: 8
+    parallelism: 2
     steps:
       - *restore_repo
       - attach_root_workspace
