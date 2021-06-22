@@ -4,13 +4,6 @@
 
 package fi.espoo.evaka.shared.config
 
-import com.amazonaws.ClientConfigurationFactory
-import com.amazonaws.Protocol
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariConfig
@@ -33,6 +26,13 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import redis.clients.jedis.JedisPool
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import java.net.URI
 import javax.sql.DataSource
 
 fun isCiEnvironment() = System.getenv("CI") == "true"
@@ -121,30 +121,24 @@ class SharedIntegrationTestConfig {
         }
 
     @Bean
-    fun s3Client(): AmazonS3 {
+    fun s3Client(): S3Client {
         val port = when (isCiEnvironment()) {
             true -> S3Container.getInstance().getMappedPort(9090)
             false -> 9876
         }
-        val client = AmazonS3ClientBuilder
-            .standard()
-            .enablePathStyleAccess()
-            .withEndpointConfiguration(
-                AwsClientBuilder.EndpointConfiguration(
-                    "http://s3.127.0.0.1.nip.io:$port",
-                    "us-east-1"
-                )
+        val client = S3Client.builder()
+            .region(Region.US_EAST_1)
+            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+            .endpointOverride(URI.create("http://localhost:$port"))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
             )
-            .withClientConfiguration(ClientConfigurationFactory().config.withProtocol(Protocol.HTTP))
-            .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("foo", "bar")))
             .build()
 
-        client.createBucket(mockS3Bucket)
-        client.createBucket("evaka-daycaredecisions-it")
-        client.createBucket("evaka-paymentdecisions-it")
-        client.createBucket("evaka-vouchervaluedecisions-it")
-        client.createBucket("evaka-attachments-it")
-        client.createBucket("evaka-data-it")
+        for (bucket in listOf(mockS3Bucket, "evaka-daycaredecisions-it", "evaka-paymentdecisions-it", "evaka-vouchervaluedecisions-it", "evaka-attachments-it", "evaka-data-it")) {
+            val request = CreateBucketRequest.builder().bucket(bucket).build()
+            client.createBucket(request)
+        }
         return client
     }
 

@@ -4,17 +4,14 @@
 
 package fi.espoo.evaka.msg.service.attachments
 
-import com.amazonaws.services.s3.AmazonS3
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 
 @Service
-class S3DocumentService(private val s3: AmazonS3) : DocumentService {
+class S3DocumentService(private val s3: S3Client) : DocumentService {
     override fun getDocument(bucket: String, key: String): ByteArray {
-        if (!s3.doesBucketExistV2(bucket)) {
-            throw IllegalArgumentException("Bucket [$bucket] does not exist")
-        }
-
-        val s3Object = s3.getObject(bucket, key)
-        return s3Object.objectContent.readBytes()
+        val request = GetObjectRequest.builder().bucket(bucket).key(key).build()
+        return s3.getObjectAsBytes(request).asByteArray()
     }
 }

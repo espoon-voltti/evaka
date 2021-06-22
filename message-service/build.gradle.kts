@@ -93,8 +93,8 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
 
     // AWS SDK
-    implementation("com.amazonaws:aws-java-sdk-s3")
-    implementation("com.amazonaws:aws-java-sdk-sts")
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:sts")
 
     // Database-related dependencies
     implementation("com.zaxxer:HikariCP")
@@ -123,7 +123,6 @@ dependencies {
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
-
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin")
     testImplementation("net.bytebuddy:byte-buddy")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

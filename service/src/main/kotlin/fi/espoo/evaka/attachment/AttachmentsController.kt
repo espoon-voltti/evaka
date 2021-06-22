@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attachment
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.AttachmentType
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import software.amazon.awssdk.services.s3.model.S3Exception
 import java.util.UUID
 
 @RestController
@@ -133,8 +133,8 @@ class AttachmentsController(
                     .contentType(MediaType.valueOf(attachment.contentType))
                     .body(document.getBytes())
             }
-        } catch (e: AmazonS3Exception) {
-            if (e.statusCode == 403) throw NotFound("Attachment $attachmentId not available, scanning in progress or failed")
+        } catch (e: S3Exception) {
+            if (e.statusCode() == 403) throw NotFound("Attachment $attachmentId not available, scanning in progress or failed")
             throw e
         }
     }

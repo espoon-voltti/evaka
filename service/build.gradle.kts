@@ -105,9 +105,9 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
 
     // AWS SDK
-    implementation("com.amazonaws:aws-java-sdk-s3")
-    implementation("com.amazonaws:aws-java-sdk-sts")
-    implementation("com.amazonaws:aws-java-sdk-ses")
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:sts")
+    implementation("software.amazon.awssdk:ses")
 
     // Voltti
     implementation(project(":service-lib"))

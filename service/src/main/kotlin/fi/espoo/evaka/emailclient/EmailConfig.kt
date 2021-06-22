@@ -4,16 +4,16 @@
 
 package fi.espoo.evaka.emailclient
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.core.env.getProperty
+import software.amazon.awssdk.services.ses.SesClient
 
 @Configuration
 class EmailConfig {
     @Bean
-    fun emailClient(client: AmazonSimpleEmailService, env: Environment): IEmailClient =
+    fun emailClient(client: SesClient, env: Environment): IEmailClient =
         when (env.getProperty("application.email.enabled", Boolean::class.java, false)) {
             true -> EmailClient(
                 client = client,
