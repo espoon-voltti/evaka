@@ -829,6 +829,11 @@ jobs:
       - run:
           working_directory: *workspace_service
           command: ./gradlew assemble compileIntegrationTestKotlin
+      - run:
+          working_directory: *workspace_service
+          command: |
+            cd custom-ktlint-rules
+            ./gradlew assemble
       - *store_service_gradle
       - persist_to_workspace:
           root: *workspace_root
