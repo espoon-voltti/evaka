@@ -106,8 +106,13 @@ aliases:
     save_cache:
       key: gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
       paths:
+        - service/buildSrc/.gradle
         - service/.gradle
-        - .gradle-user-home
+        - service/custom-ktlint-rules/.gradle
+        - service-lib/.gradle
+        - evaka-bom/.gradle
+        - .gradle-user-home/wrapper
+        - .gradle-user-home/caches
 
   - &restore_message_service_gradle
     restore_cache:
@@ -119,8 +124,12 @@ aliases:
     save_cache:
       key: gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
       paths:
+        - message-service/buildSrc/.gradle
         - message-service/.gradle
-        - .gradle-user-home
+        - service-lib/.gradle
+        - evaka-bom/.gradle
+        - .gradle-user-home/wrapper
+        - .gradle-user-home/caches
 
 executors:
   aws_executor:
