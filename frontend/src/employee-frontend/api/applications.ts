@@ -16,16 +16,14 @@ import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { CreatePersonBody } from '../api/person'
 import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
-import {
-  PlacementPlanConfirmationStatus,
-  PlacementPlanRejectReason
-} from '../types/unit'
+import { PlacementPlanConfirmationStatus } from '../types/unit'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDetails,
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 export async function getApplication(
   id: UUID

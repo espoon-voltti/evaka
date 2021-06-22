@@ -46,5 +46,6 @@ enum class PlacementPlanConfirmationStatus {
 enum class PlacementPlanRejectReason {
     OTHER,
     REASON_1,
-    REASON_2
+    REASON_2,
+    REASON_3
 }

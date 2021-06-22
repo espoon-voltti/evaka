@@ -29,6 +29,12 @@ export type AssistanceMeasure =
   | 'CHILD_ACCULTURATION_SUPPORT'
   | 'TRANSPORT_BENEFIT'
 
+export type PlacementPlanRejectReason =
+  | 'OTHER'
+  | 'REASON_1'
+  | 'REASON_2'
+  | 'REASON_3'
+
 export interface CommonCustomizations {
   theme: Theme
 }
@@ -79,4 +85,5 @@ export interface EmployeeCustomizations {
   }
   featureFlags: FeatureFlags
   assistanceMeasures: AssistanceMeasure[]
+  placementPlanRejectReasons: PlacementPlanRejectReason[]
 }

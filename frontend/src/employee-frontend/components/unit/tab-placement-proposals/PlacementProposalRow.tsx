@@ -9,8 +9,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
-  PlacementPlanConfirmationStatus,
-  PlacementPlanRejectReason
+  PlacementPlanConfirmationStatus
 } from '../../../types/unit'
 import { careTypesFromPlacementType } from '../../../components/common/CareTypeLabel'
 import { formatName } from '../../../utils'
@@ -30,6 +29,8 @@ import InputField from 'lib-components/atoms/form/InputField'
 import { Gap } from 'lib-components/white-space'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import { isPartDayPlacement } from '../../../utils/placements'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
+import { placementPlanRejectReasons } from 'lib-customizations/employee'
 
 const CenteredDiv = styled.div`
   display: flex;
@@ -89,24 +90,17 @@ export default React.memo(function PlacementProposalRow({
           }}
         >
           <FixedSpaceColumn>
-            <Radio
-              data-qa="proposal-reject-reason"
-              checked={reason === 'REASON_1'}
-              onChange={() => setReason('REASON_1')}
-              label={i18n.unit.placementProposals.rejectReasons.REASON_1}
-            />
-            <Radio
-              data-qa="proposal-reject-reason"
-              checked={reason === 'REASON_2'}
-              onChange={() => setReason('REASON_2')}
-              label={i18n.unit.placementProposals.rejectReasons.REASON_2}
-            />
-            <Radio
-              data-qa="proposal-reject-reason"
-              checked={reason === 'OTHER'}
-              onChange={() => setReason('OTHER')}
-              label={i18n.unit.placementProposals.rejectReasons.OTHER}
-            />
+            {placementPlanRejectReasons.map((option) => {
+              return (
+                <Radio
+                  key={option}
+                  data-qa="proposal-reject-reason"
+                  checked={reason === option}
+                  onChange={() => setReason(option)}
+                  label={i18n.unit.placementProposals.rejectReasons[option]}
+                />
+              )
+            })}
             <InputField
               data-qa="proposal-reject-reason-input"
               value={otherReason}

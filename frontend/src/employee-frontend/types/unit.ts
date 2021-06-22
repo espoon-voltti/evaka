@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import DateRange from 'lib-common/date-range'
 import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 export interface CareArea {
   id: UUID
@@ -133,8 +134,6 @@ export type PlacementPlanConfirmationStatus =
   | 'PENDING'
   | 'ACCEPTED'
   | 'REJECTED'
-
-export type PlacementPlanRejectReason = 'OTHER' | 'REASON_1' | 'REASON_2'
 
 export interface DaycarePlacementPlan {
   id: UUID
