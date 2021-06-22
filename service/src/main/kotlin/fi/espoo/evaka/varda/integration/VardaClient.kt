@@ -450,7 +450,7 @@ private fun logRequestError(request: Request, error: FuelError) {
 fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload): VardaChildRequest {
     return VardaChildRequest(
         id = evakaPersonId,
-        henkilo = null,
+        henkilo = payload.personUrl,
         henkilo_oid = payload.organizerOid,
         vakatoimija_oid = payload.organizerOid,
         oma_organisaatio_oid = null,
@@ -462,7 +462,7 @@ fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaChildPayload):
 fun convertToVardaChildRequest(evakaPersonId: UUID, payload: VardaPaosChildPayload): VardaChildRequest {
     return VardaChildRequest(
         id = evakaPersonId,
-        henkilo = null,
+        henkilo = payload.personUrl,
         henkilo_oid = payload.organizerOid,
         vakatoimija_oid = null,
         oma_organisaatio_oid = payload.organizerOid,
