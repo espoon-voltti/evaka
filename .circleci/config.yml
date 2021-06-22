@@ -106,21 +106,13 @@ aliases:
     save_cache:
       key: gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
       paths:
+        # Actual Gradle files
         - service/buildSrc/.gradle
         - service/.gradle
         - service/custom-ktlint-rules/.gradle
         - .gradle-user-home/wrapper
         - .gradle-user-home/caches
-
-  - &restore_service_build
-    restore_cache:
-      keys:
-        - gradle-build-service-v4-{{ .Revision }}
-
-  - &store_service_build
-    save_cache:
-      key: gradle-build-service-v4-{{ .Revision }}
-      paths:
+        # Build files
         - service/build
         - service/buildSrc/build
         - service/custom-ktlint-rules/build
@@ -137,20 +129,12 @@ aliases:
     save_cache:
       key: gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
       paths:
+        # Actual Gradle files
         - message-service/buildSrc/.gradle
         - message-service/.gradle
         - .gradle-user-home/wrapper
         - .gradle-user-home/caches
-
-  - &restore_message_service_build
-    restore_cache:
-      keys:
-        - gradle-build-message-service-v4-{{ .Revision }}
-
-  - &store_message_service_build
-    save_cache:
-      key: gradle-build-message-service-v4-{{ .Revision }}
-      paths:
+        # Build files
         - message-service/build
         - message-service/buildSrc/build
         - message-service-lib/build
@@ -853,13 +837,16 @@ jobs:
       - run:
           working_directory: *workspace_service
           command: ./gradlew assemble compileIntegrationTestKotlin
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - service/build/libs/
       - run:
           working_directory: *workspace_service
           command: |
             cd custom-ktlint-rules
             ./gradlew assemble
       - *store_service_gradle
-      - *store_service_build
       - run:
           working_directory: *workspace_service
           command: ./gradlew lintKotlin
@@ -890,7 +877,6 @@ jobs:
     steps:
       - *restore_repo
       - attach_root_workspace
-      - *restore_service_build
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: true
@@ -912,7 +898,6 @@ jobs:
     executor: service_test_executor
     steps:
       - *restore_repo
-      - *restore_service_build
       - *restore_service_gradle
       - run:
           name: gradle test
@@ -941,7 +926,6 @@ jobs:
     parallelism: 4
     steps:
       - *restore_repo
-      - *restore_service_build
       - *restore_service_gradle
       - login_docker_hub
       - run:
@@ -988,8 +972,11 @@ jobs:
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew assemble compileIntegrationTestKotlin
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - message-service/build/libs/
       - *store_message_service_gradle
-      - *store_message_service_build
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew lintKotlin
@@ -1016,7 +1003,6 @@ jobs:
     executor: service_test_executor
     steps:
       - *restore_repo
-      - *restore_message_service_build
       - *restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
@@ -1032,7 +1018,6 @@ jobs:
     parallelism: 4
     steps:
       - *restore_repo
-      - *restore_message_service_build
       - *restore_message_service_gradle
       - login_docker_hub
       - run:
@@ -1064,7 +1049,6 @@ jobs:
     steps:
       - *restore_repo
       - attach_root_workspace
-      - *restore_message_service_build
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: true
