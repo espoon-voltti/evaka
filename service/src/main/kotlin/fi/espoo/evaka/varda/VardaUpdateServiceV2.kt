@@ -298,7 +298,10 @@ fun createFeeDataToVardaFromFeeDecision(
     decisionId: UUID
 ): Long {
     val decision = db.read { it.getFeeDecisionsByIds(listOf(decisionId)) }.first()
-    val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
+
+    // Varda wants real guardians, not the fridge family members who pay the bill
+    // val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
+    val guardians = getChildVardaGuardians(db, evakaServiceNeedInfoForVarda.childId)
     if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
         ?: throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
@@ -307,7 +310,8 @@ fun createFeeDataToVardaFromFeeDecision(
     try {
         res = client.createFeeData(
             VardaFeeData(
-                huoltajat = guardians.map { guardian -> VardaGuardian(guardian.identity.toString(), guardian.firstName ?: "", guardian.lastName ?: "") },
+                // huoltajat = guardians.map { guardian -> VardaGuardian(guardian.identity.toString(), guardian.firstName ?: "", guardian.lastName ?: "") },
+                huoltajat = guardians,
                 lapsi = client.getChildUrl(vardaChildId),
                 maksun_peruste_koodi = vardaFeeBasisByPlacementType(childPart.placement.type),
                 asiakasmaksu = childPart.finalFee.div(100.0),
@@ -322,8 +326,17 @@ fun createFeeDataToVardaFromFeeDecision(
         throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     }
 
-    if (res == null) throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null")
+    if (res == null) throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
     return res.id
+}
+
+fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardian> {
+    return db.read {
+        it.createQuery("select first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
+            .bind("id", childId)
+            .mapTo<VardaGuardian>()
+            .list()
+    }
 }
 
 fun createFeeDataToVardaFromVoucherValueDecision(
