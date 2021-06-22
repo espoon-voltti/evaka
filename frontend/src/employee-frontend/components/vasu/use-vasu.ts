@@ -47,27 +47,31 @@ export function useVasu(id: string): Vasu {
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
 
-  useEffect(() => {
-    setStatus((prev) => ({ ...prev, state: 'loading' }))
-    void getVasuDocument(id).then((res) => {
-      if (res.isSuccess) {
-        setStatus({ state: 'clean' })
-        const { content, ...meta } = res.value
-        setVasu(meta)
-        setContent(content)
-      } else if (res.isFailure) {
-        setStatus({ state: 'loading-error' })
-      }
-    })
-  }, [id])
+  useEffect(
+    function loadVasuDocument() {
+      setStatus({ state: 'loading' })
+      void getVasuDocument(id).then((res) =>
+        res.mapAll({
+          loading: () => null,
+          failure: () => setStatus({ state: 'loading-error' }),
+          success: ({ content, ...meta }) => {
+            setStatus({ state: 'clean' })
+            setVasu(meta)
+            setContent(content)
+          }
+        })
+      )
+    },
+    [id]
+  )
 
-  const save = useRestApi(putVasuDocument, (res) => {
-    if (res.isSuccess) {
-      setStatus({ state: 'clean', savedAt: new Date() })
-    } else if (res.isFailure) {
-      setStatus((prev) => ({ ...prev, state: 'save-error' }))
-    }
-  })
+  const save = useRestApi(putVasuDocument, (res) =>
+    res.mapAll({
+      loading: () => null,
+      failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
+      success: () => setStatus({ state: 'clean', savedAt: new Date() })
+    })
+  )
   const saveNow = useCallback(
     (params: PutVasuDocumentParams) => {
       setStatus((prev) => ({ ...prev, state: 'saving' }))
@@ -78,12 +82,14 @@ export function useVasu(id: string): Vasu {
   const debounceInterval = isAutomatedTest ? 200 : 2000
   const debouncedSave = useDebouncedCallback(saveNow, debounceInterval)
 
-  // save dirty content with debounce
-  useEffect(() => {
-    if (status.state === 'dirty') {
-      debouncedSave({ documentId: id, content })
-    }
-  }, [debouncedSave, status.state, content, id])
+  useEffect(
+    function saveDirtyContent() {
+      if (status.state === 'dirty') {
+        debouncedSave({ documentId: id, content })
+      }
+    },
+    [debouncedSave, status.state, content, id]
+  )
 
   const setContentCallback = useCallback(
     (draft: SetStateAction<VasuContent>) => {
