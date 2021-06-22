@@ -31,7 +31,7 @@ aliases:
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202104-01
-  - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:18.04-809ad64eaee48225fba439142026079a49d0f1d5
+  - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:18.04-853d39120a28cf475e0c8aa5b25a5973e198b27a
 
   - &default_contexts
     context:
