@@ -1025,10 +1025,32 @@ jobs:
           path: /home/circleci/repo/message-service/build/test-results/test/
       - store_test_results:
           path: /home/circleci/repo/service-lib/build/test-results/test/
+      - notify_slack
+
+  message_service_integration_test:
+    executor: service_test_executor
+    parallelism: 4
+    steps:
+      - *restore_repo
+      - *restore_message_service_build
+      - *restore_message_service_gradle
       - login_docker_hub
       - run:
+          name: gradle integrationTest
           working_directory: *workspace_message_service
-          command: ./gradlew integrationTest
+          command: |
+            # Get list of classnames of tests that should run on this node
+            CLASSNAMES=$(circleci tests glob \
+                "src/integrationTest/kotlin/**/*{Test,Tests}.kt" \
+                "../service-lib/src/integrationTest/kotlin/**/*{Test,Tests}.kt" \
+                | sed 's/.*src\/integrationTest\/kotlin\///' \
+                | sed 's@/@.@g' \
+                | sed 's/.kt//' \
+                | circleci tests split --split-by=timings --timings-type=classname)
+            # Format the arguments for Gradle
+            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
+            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
+            ./gradlew integrationTest $GRADLE_ARGS
       - store_test_results:
           path: /home/circleci/repo/message-service/build/test-results/integrationTest/
       - store_artifacts:
@@ -1185,11 +1207,16 @@ workflows:
           <<: *default_contexts
           requires:
             - message_service_build
+      - message_service_integration_test:
+          <<: *default_contexts
+          requires:
+            - message_service_build
       - message_service_build_and_push_image:
           <<: *aws_contexts
           requires:
             - build_base_image
             - message_service_test
+            - message_service_integration_test
 
       - clone_infra_repo:
           <<: *aws_contexts
