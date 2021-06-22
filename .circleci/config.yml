@@ -883,7 +883,7 @@ jobs:
 
   service_test:
     executor: service_test_executor
-    parallelism: 4
+    parallelism: 8
     steps:
       - *restore_repo
       - attach_root_workspace
@@ -908,6 +908,27 @@ jobs:
           path: /home/circleci/repo/service/build/test-results/test/
       - store_test_results:
           path: /home/circleci/repo/service-lib/build/test-results/test/
+      - store_artifacts:
+          path: /home/circleci/repo/service/build/reports/
+      - store_artifacts:
+          path: /home/circleci/repo/service-lib/build/reports/
+      - run:
+          working_directory: *workspace_service
+          name: gradle custom-ktlint-rules test
+          command: |
+            cd custom-ktlint-rules
+            ./gradlew test
+      - store_test_results:
+          path: /home/circleci/repo/service/custom-ktlint-rules/build/test-results/test/
+      - notify_slack
+
+  service_integration_test:
+    executor: service_test_executor
+    parallelism: 8
+    steps:
+      - *restore_repo
+      - attach_root_workspace
+      - *restore_service_gradle
       - login_docker_hub
       - run:
           name: gradle integrationTest
@@ -931,14 +952,6 @@ jobs:
           path: /home/circleci/repo/service/build/reports/
       - store_artifacts:
           path: /home/circleci/repo/service-lib/build/reports/
-      - run:
-          working_directory: *workspace_service
-          name: gradle custom-ktlint-rules test
-          command: |
-            cd custom-ktlint-rules
-            ./gradlew test
-      - store_test_results:
-          path: /home/circleci/repo/service/custom-ktlint-rules/build/test-results/test/
       - notify_slack
 
   service_push_image:
@@ -1141,11 +1154,16 @@ workflows:
           <<: *default_contexts
           requires:
             - service_build
+      - service_integration_test:
+          <<: *default_contexts
+          requires:
+            - service_build
       - service_push_image:
           <<: *aws_contexts
           requires:
             - service_build_image
             - service_test
+            - service_integration_test
 
       - message_service_build:
           <<: *default_contexts
