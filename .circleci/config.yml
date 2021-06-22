@@ -987,7 +987,7 @@ jobs:
       - *restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
-          command: ./gradlew assemble
+          command: ./gradlew assemble compileIntegrationTestKotlin
       - *store_message_service_gradle
       - *store_message_service_build
       - run:
