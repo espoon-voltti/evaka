@@ -109,10 +109,23 @@ aliases:
         - service/buildSrc/.gradle
         - service/.gradle
         - service/custom-ktlint-rules/.gradle
-        - service-lib/.gradle
-        - evaka-bom/.gradle
         - .gradle-user-home/wrapper
         - .gradle-user-home/caches
+
+  - &restore_service_build
+    restore_cache:
+      keys:
+        - gradle-build-service-v4-{{ .Revision }}
+
+  - &store_service_build
+    save_cache:
+      key: gradle-build-service-v4-{{ .Revision }}
+      paths:
+        - service/build
+        - service/buildSrc/build
+        - service/custom-ktlint-rules/build
+        - service/vtjclient/build
+        - service-lib/build
 
   - &restore_message_service_gradle
     restore_cache:
@@ -126,10 +139,21 @@ aliases:
       paths:
         - message-service/buildSrc/.gradle
         - message-service/.gradle
-        - service-lib/.gradle
-        - evaka-bom/.gradle
         - .gradle-user-home/wrapper
         - .gradle-user-home/caches
+
+  - &restore_message_service_build
+    restore_cache:
+      keys:
+        - gradle-build-message-service-v4-{{ .Revision }}
+
+  - &store_message_service_build
+    save_cache:
+      key: gradle-build-message-service-v4-{{ .Revision }}
+      paths:
+        - message-service/build
+        - message-service/buildSrc/build
+        - message-service-lib/build
 
 executors:
   aws_executor:
@@ -835,10 +859,7 @@ jobs:
             cd custom-ktlint-rules
             ./gradlew assemble
       - *store_service_gradle
-      - persist_to_workspace:
-          root: *workspace_root
-          paths:
-            - service/build
+      - *store_service_build
       - run:
           working_directory: *workspace_service
           command: ./gradlew lintKotlin
@@ -869,6 +890,7 @@ jobs:
     steps:
       - *restore_repo
       - attach_root_workspace
+      - *restore_service_build
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: true
@@ -890,7 +912,7 @@ jobs:
     executor: service_test_executor
     steps:
       - *restore_repo
-      - attach_root_workspace
+      - *restore_service_build
       - *restore_service_gradle
       - run:
           name: gradle test
@@ -919,7 +941,7 @@ jobs:
     parallelism: 4
     steps:
       - *restore_repo
-      - attach_root_workspace
+      - *restore_service_build
       - *restore_service_gradle
       - login_docker_hub
       - run:
@@ -967,10 +989,7 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew assemble
       - *store_message_service_gradle
-      - persist_to_workspace:
-          root: *workspace_root
-          paths:
-            - message-service/build
+      - *store_message_service_build
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew lintKotlin
@@ -997,7 +1016,7 @@ jobs:
     executor: service_test_executor
     steps:
       - *restore_repo
-      - attach_root_workspace
+      - *restore_message_service_build
       - *restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
@@ -1023,6 +1042,7 @@ jobs:
     steps:
       - *restore_repo
       - attach_root_workspace
+      - *restore_message_service_build
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: true
