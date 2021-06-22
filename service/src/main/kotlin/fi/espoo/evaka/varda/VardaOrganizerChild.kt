@@ -82,15 +82,15 @@ private fun createVardaPersonAndChild(
     val vardaPerson = client.createPerson(personPayload) ?: error("Couldn't create Varda person (nor child)")
 
     return createVardaChildWhenPersonExists(
-        tx,
-        client,
-        evakaPersonId,
-        vardaPerson.vardaId,
-        vardaPerson.personOid,
-        municipalOrganizerOid,
-        organizerOid,
-        isPaosChild,
-        sourceSystem
+        tx = tx,
+        client = client,
+        evakaPersonId = evakaPersonId,
+        vardaPersonId = vardaPerson.vardaId,
+        vardaPersonOid = vardaPerson.personOid,
+        municipalOrganizerOid = municipalOrganizerOid,
+        organizerOid = organizerOid,
+        isPaosChild = isPaosChild,
+        sourceSystem = sourceSystem
     )
 }
 
