@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.europeHelsinki
 import fi.espoo.evaka.varda.VardaUpdateService
+import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -56,6 +57,8 @@ class ScheduledJobs(
 
     init {
         asyncJobRunner.runScheduledJob = { db, msg ->
+            val logMeta = mapOf("jobName" to msg.job.name)
+            logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
             db.connect { msg.job.fn(this, it) }
         }
     }

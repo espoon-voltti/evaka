@@ -10,6 +10,8 @@ import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.RunScheduledJob
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.voltti.logging.loggers.info
+import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import java.time.Duration
 import javax.sql.DataSource
@@ -17,6 +19,8 @@ import javax.sql.DataSource
 private const val SCHEDULER_THREADS = 1
 private const val ASYNC_JOB_RETRY_COUNT = 12
 private val POLLING_INTERVAL = Duration.ofMinutes(1)
+
+private val logger = KotlinLogging.logger { }
 
 class ScheduledJobRunner(
     private val jdbi: Jdbi,
@@ -29,6 +33,8 @@ class ScheduledJobRunner(
             ScheduledJob.values()
                 .mapNotNull { job -> schedule.getScheduleForJob(job)?.let { Pair(job, it) } }
                 .map { (job, schedule) ->
+                    val logMeta = mapOf("jobName" to job.name)
+                    logger.info(logMeta) { "Scheduling job ${job.name}: $schedule" }
                     Tasks.recurring(job.name, schedule).execute { _, _ ->
                         Database(jdbi).connect { this.planAsyncJob(it, job) }
                     }
@@ -39,6 +45,8 @@ class ScheduledJobRunner(
         .build()
 
     private fun planAsyncJob(db: Database.Connection, job: ScheduledJob) {
+        val logMeta = mapOf("jobName" to job.name)
+        logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         db.transaction { tx ->
             asyncJobRunner.plan(tx, listOf(RunScheduledJob(job)), retryCount = ASYNC_JOB_RETRY_COUNT)
         }
