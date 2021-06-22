@@ -214,7 +214,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
 SELECT $keyColumns, t::date AS date, coalesce($caretakersSum, 0.0) AS caretaker_count
 FROM generate_series(:start, :end, '1 day') t
 CROSS JOIN daycare_group g
-JOIN daycare u ON g.daycare_id = u.id AND t BETWEEN g.start_date AND g.end_date AND NOT 'CLUB'::care_types = ANY(u.type)
+JOIN daycare u ON g.daycare_id = u.id AND t BETWEEN g.start_date AND g.end_date
 LEFT JOIN $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
