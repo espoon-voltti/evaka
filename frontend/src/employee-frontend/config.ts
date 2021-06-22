@@ -57,7 +57,7 @@ const features: Features = {
     attachments: false,
     evakaLogin: true,
     messaging: true,
-    financeBasicsPage: false,
+    financeBasicsPage: true,
     vasu: false
   }
 }

@@ -369,14 +369,20 @@ export default React.memo(function FeeThresholdsEditor({
               return
             }
 
-            const resolved = await new Promise((resolve) =>
-              toggleSaveRetroactiveWarning({
-                resolve: () => resolve(true),
-                reject: () => resolve(false)
-              })
-            )
+            if (
+              validationResult.payload.validDuring.start.isBefore(
+                LocalDate.today()
+              )
+            ) {
+              const resolved = await new Promise((resolve) =>
+                toggleSaveRetroactiveWarning({
+                  resolve: () => resolve(true),
+                  reject: () => resolve(false)
+                })
+              )
 
-            if (!resolved) return 'AsyncButton.cancel'
+              if (!resolved) return 'AsyncButton.cancel'
+            }
 
             return await handleSaveErrors(
               id === undefined
@@ -498,8 +504,9 @@ function validateForm(
           const dateRange = new DateRange(parsedValidFrom, parsedValidTo)
 
           if (t.thresholds.validDuring.end === null) {
-            return t.thresholds.validDuring.start.isEqualOrAfter(
-              dateRange.start
+            return (
+              t.thresholds.validDuring.overlapsWith(dateRange) &&
+              !t.thresholds.validDuring.start.isBefore(parsedValidFrom)
             )
           }
 
