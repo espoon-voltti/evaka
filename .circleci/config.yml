@@ -888,7 +888,6 @@ jobs:
 
   service_test:
     executor: service_test_executor
-    parallelism: 2
     steps:
       - *restore_repo
       - attach_root_workspace
@@ -896,19 +895,7 @@ jobs:
       - run:
           name: gradle test
           working_directory: *workspace_service
-          command: |
-            # Get list of classnames of tests that should run on this node
-            CLASSNAMES=$(circleci tests glob \
-                "src/test/kotlin/**/*{Test,Tests}.kt" \
-                "../service-lib/src/test/kotlin/**/*{Test,Tests}.kt" \
-                | sed 's/.*src\/test\/kotlin\///' \
-                | sed 's@/@.@g' \
-                | sed 's/.kt//' \
-                | circleci tests split --split-by=timings --timings-type=classname)
-            # Format the arguments for Gradle
-            GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
-            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
-            ./gradlew test $GRADLE_ARGS
+          command: ./gradlew test
       - store_test_results:
           path: /home/circleci/repo/service/build/test-results/test/
       - store_test_results:
@@ -929,7 +916,7 @@ jobs:
 
   service_integration_test:
     executor: service_test_executor
-    parallelism: 8
+    parallelism: 4
     steps:
       - *restore_repo
       - attach_root_workspace
