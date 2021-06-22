@@ -498,8 +498,9 @@ function validateForm(
           const dateRange = new DateRange(parsedValidFrom, parsedValidTo)
 
           if (t.thresholds.validDuring.end === null) {
-            return t.thresholds.validDuring.start.isEqualOrAfter(
-              dateRange.start
+            return (
+              t.thresholds.validDuring.overlapsWith(dateRange) &&
+              !t.thresholds.validDuring.start.isBefore(parsedValidFrom)
             )
           }
 
