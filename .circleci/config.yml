@@ -25,7 +25,7 @@ aliases:
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
 
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
-  - &remote_docker_version "19.03.13"
+  - &remote_docker_version "20.10.6"
   - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
   - &nodejs_image cimg/node:14.15
