@@ -2,18 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isToday } from 'date-fns'
 import { cloneDeep } from 'lodash'
 import React, { Fragment } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from '../../../lib-common/date'
 import { UUID } from '../../../lib-common/types'
-import { useDebounce } from '../../../lib-common/utils/useDebounce'
 import Button from '../../../lib-components/atoms/buttons/Button'
 import Checkbox from '../../../lib-components/atoms/form/Checkbox'
 import { TextArea } from '../../../lib-components/atoms/form/InputField'
 import Radio from '../../../lib-components/atoms/form/Radio'
+import Spinner from '../../../lib-components/atoms/state/Spinner'
 import ButtonContainer from '../../../lib-components/layout/ButtonContainer'
 import '../../../lib-components/layout/ButtonContainer'
 import {
@@ -38,11 +37,23 @@ import {
   TextQuestion
 } from './vasu-content'
 
-const FooterContent = styled.div`
+const FooterContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: ${defaultMargins.s};
+`
+
+const StatusContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  ${Spinner} {
+    margin: ${defaultMargins.xs};
+    height: ${defaultMargins.s};
+    width: ${defaultMargins.s};
+  }
 `
 
 export default React.memo(function VasuPage({
@@ -54,26 +65,24 @@ export default React.memo(function VasuPage({
 
   function formatVasuStatus(status: VasuStatus): string | null {
     switch (status.state) {
-      case 'loading':
-        return null
       case 'loading-error':
         return i18n.common.error.unknown
+      case 'save-error':
+        return i18n.common.error.saveFailed
+      case 'loading':
+      case 'saving':
       case 'dirty':
       case 'clean':
-        return status.savedAt && isToday(status.savedAt)
+        return status.savedAt
           ? `${i18n.common.saved} ${formatDate(
               status.savedAt,
               DATE_FORMAT_TIME_ONLY
             )}`
           : null
-      case 'saving':
-        return `${i18n.common.saving}...`
-      case 'save-error':
-        return i18n.common.error.saveFailed
     }
   }
-
-  const textualVasuStatus = useDebounce(() => formatVasuStatus(status), 250)
+  const textualVasuStatus = formatVasuStatus(status)
+  const showSpinner = status.state === 'saving'
 
   // TODO: move these to their own components when the spec is more stable
   function renderTextQuestion(
@@ -255,12 +264,15 @@ export default React.memo(function VasuPage({
         </>
       )}
       <StickyFooter>
-        <FooterContent>
-          <Dimmed>{textualVasuStatus}</Dimmed>
+        <FooterContainer>
+          <StatusContainer>
+            <Dimmed>{textualVasuStatus}</Dimmed>
+            {showSpinner && <Spinner />}
+          </StatusContainer>
           <ButtonContainer>
             <Button text={'TODO'} />
           </ButtonContainer>
-        </FooterContent>
+        </FooterContainer>
       </StickyFooter>
     </Container>
   )
