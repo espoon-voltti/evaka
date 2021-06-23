@@ -90,7 +90,7 @@ private fun ssnQuery(tablePrefixes: List<String>, params: Collection<String>): S
     return params
         .mapIndexed { index, _ ->
             tablePrefixes
-                .map { table -> "$table.social_security_number = :${ssnParamName(index)}" }
+                .map { table -> "lower($table.social_security_number) = lower(:${ssnParamName(index)})" }
                 .joinToString(" OR ", "(", ")")
         }
         .joinToString(" AND ", "(", ")")
