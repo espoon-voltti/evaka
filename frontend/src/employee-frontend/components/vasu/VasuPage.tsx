@@ -24,6 +24,7 @@ import StickyFooter from '../../../lib-components/layout/StickyFooter'
 import { Dimmed, Label } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
+import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
 import {
@@ -261,6 +262,8 @@ export default React.memo(function VasuPage({
               </Fragment>
             )
           })}
+          <VasuEvents document={vasu} />
+          <Gap size={'L'} />
         </>
       )}
       <StickyFooter>

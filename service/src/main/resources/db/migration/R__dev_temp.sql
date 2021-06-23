@@ -43,7 +43,11 @@ CREATE TABLE vasu_document(
     content_id uuid NOT NULL REFERENCES vasu_content(id),
     document_state vasu_document_state NOT NULL,
     modified_at timestamp with time zone NOT NULL,
-    published_at timestamp with time zone
+    published_at timestamp with time zone,
+    moved_to_ready_at timestamp with time zone,
+    moved_to_reviewed_at timestamp with time zone,
+    vasu_discussion_at timestamp with time zone,
+    evaluation_discussion_at timestamp with time zone
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON vasu_document FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
