@@ -168,7 +168,6 @@ executors:
     <<: *node_config
     machine:
       image: *ubuntu_machine_image
-      docker_layer_caching: true
       resource_class: large
   service_executor:
     <<: *jvm_config
@@ -709,7 +708,7 @@ jobs:
 
   e2e-test-testcafe:
     executor: e2e_executor
-    parallelism: 8
+    parallelism: 16
     steps:
       - e2e_test
       - notify_slack
