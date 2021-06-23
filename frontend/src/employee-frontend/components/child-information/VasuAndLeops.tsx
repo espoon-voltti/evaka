@@ -98,34 +98,32 @@ function VasuInitialization({ childId }: { childId: UUID }) {
 
   const [initializing, setInitializing] = useState(false)
 
-  const createVasu = useCallback(
-    (templateId: UUID) => {
-      if (initializing) return
-      setInitializing(true)
-      void createVasuDocument(childId, templateId).then((res) => {
-        if (res.isFailure) {
-          setInitializing(false)
+  const handleVasuResult = useCallback(
+    (res: Result<UUID>) =>
+      res.mapAll({
+        failure: () => {
           setErrorMessage({
             type: 'error',
             title: i18n.childInformation.vasu.init.error,
             text: i18n.common.tryAgain,
             resolveLabel: i18n.common.ok
           })
-        } else if (res.isSuccess) {
-          history.push(`/vasu/${res.value}`)
-        }
-      })
-    },
-    [childId, history, i18n, setErrorMessage, initializing]
+          setInitializing(false)
+        },
+        loading: () => setInitializing(true),
+        success: (id) => history.push(`/vasu/${id}`)
+      }),
+    [history, i18n, setErrorMessage]
   )
+  const createVasu = useRestApi(createVasuDocument, handleVasuResult)
 
   useEffect(
     function autoSelectTemplate() {
       if (templates?.isSuccess && templates.value.length === 1) {
-        createVasu(templates.value[0].id)
+        createVasu(childId, templates.value[0].id)
       }
     },
-    [createVasu, templates]
+    [childId, createVasu, templates]
   )
 
   return (
@@ -153,7 +151,7 @@ function VasuInitialization({ childId }: { childId: UUID }) {
             <TemplateSelectionModal
               loading={initializing}
               onClose={() => setTemplates(undefined)}
-              onSelect={(id) => createVasu(id)}
+              onSelect={(id) => createVasu(childId, id)}
               templates={value}
             />
           )
