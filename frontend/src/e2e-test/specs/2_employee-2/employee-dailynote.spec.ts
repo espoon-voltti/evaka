@@ -44,7 +44,7 @@ let careArea: CareAreaBuilder
 
 const employeeHome = new EmployeeHome()
 
-fixture('Mobile daily notes')
+fixture('Mobile employee daily notes')
   .meta({ type: 'regression', subType: 'mobile' })
   .beforeEach(async () => {
     await resetDatabase()
