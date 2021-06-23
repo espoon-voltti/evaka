@@ -341,9 +341,8 @@ commands:
             fi
       - run:
           name: Collect docker-compose logs
-          command: |
-            cd << pipeline.parameters.workspace_root >>/compose
-            ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
+          working_directory: *workspace_compose
+          command: ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
           when: always
       - store_artifacts:
           path: /tmp/docker-compose-logs.txt
