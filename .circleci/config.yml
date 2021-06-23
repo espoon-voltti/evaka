@@ -98,13 +98,12 @@ aliases:
   - &restore_service_gradle
     restore_cache:
       keys:
-        - gradle-home-service-v3-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
-        - gradle-home-service-v3-
-        - gradle-home-service-
+        - gradle-home-service-v4-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+        - gradle-home-service-v4-
 
   - &store_service_gradle
     save_cache:
-      key: gradle-home-service-v3-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+      key: gradle-home-service-v4-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
       paths:
         - service/.gradle
         - .gradle-user-home
@@ -112,13 +111,12 @@ aliases:
   - &restore_message_service_gradle
     restore_cache:
       keys:
-        - gradle-home-message-service-v3-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
-        - gradle-home-message-service-v3-
-        - gradle-home-message-service-
+        - gradle-home-message-service-v4-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+        - gradle-home-message-service-v4-
 
   - &store_message_service_gradle
     save_cache:
-      key: gradle-home-message-service-v3-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+      key: gradle-home-message-service-v4-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
       paths:
         - message-service/.gradle
         - .gradle-user-home
