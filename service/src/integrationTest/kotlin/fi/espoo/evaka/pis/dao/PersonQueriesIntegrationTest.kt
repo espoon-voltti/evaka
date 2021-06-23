@@ -176,6 +176,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
     }
 
     @Test
+    fun `person can be found by case-insensitive ssn`() {
+        val created = db.transaction { createVtjPerson(it, "230601A329J") }
+        val persons = db.read { it.searchPeople(adminUser, "230601a329J", "last_name", "ASC") }
+        Assertions.assertEquals(1, persons.size)
+        Assertions.assertEquals(persons[0].identity, created.identity)
+    }
+
+    @Test
     fun `person can be found by first part of address`() {
         val created = db.transaction { createVtjPerson(it) }
         val persons = db.read { it.searchPeople(adminUser, "Jokutie", "last_name", "ASC") }
@@ -313,8 +321,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest() {
         Assertions.assertEquals(persons[0].identity, created.identity)
     }
 
-    private fun createVtjPerson(tx: Database.Transaction): PersonDTO {
-        val validSSN = "010199-8137"
+    private fun createVtjPerson(tx: Database.Transaction, validSSN: String = "010199-8137"): PersonDTO {
         val inputPerson = testPerson(validSSN)
         return tx.createPersonFromVtj(inputPerson)
     }
