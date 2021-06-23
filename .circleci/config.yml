@@ -112,6 +112,7 @@ aliases:
         - service/custom-ktlint-rules/.gradle
         - .gradle-user-home/wrapper
         - .gradle-user-home/caches
+        - .gradle-user-home/notifications
         # Build files
         - service/build
         - service/buildSrc/build
@@ -134,6 +135,7 @@ aliases:
         - message-service/.gradle
         - .gradle-user-home/wrapper
         - .gradle-user-home/caches
+        - .gradle-user-home/notifications
         # Build files
         - message-service/build
         - message-service/buildSrc/build
