@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.Wrapper
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
@@ -25,6 +26,8 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -324,6 +327,38 @@ class IncomeIntegrationTest : FullApplicationTest() {
             listOf(updated.copy(data = emptyMap(), updatedBy = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}")),
             deserializeResult(result.get()).data
         )
+    }
+
+    @Test
+    fun `updateIncome nullify application_id`() {
+        val testIncome = testIncome()
+        db.transaction { tx ->
+            val application = tx.insertApplication()
+            tx.upsertIncome(mapper, testIncome.copy(applicationId = application.id), financeUser.id)
+        }
+
+        val (_, responseBeforeUpdate, resultBeforeUpdate) = http.get("/incomes?personId=${testAdult_1.id}")
+            .asUser(financeUser)
+            .responseString()
+        assertEquals(200, responseBeforeUpdate.statusCode)
+
+        val beforeUpdate = deserializeResult(resultBeforeUpdate.get()).data.first()
+        assertNotNull(beforeUpdate.applicationId)
+
+        val updated = with(testIncome) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
+        val (_, putResponse, _) = http.put("/incomes/${updated.id}?personId=${testAdult_1.id}")
+            .asUser(financeUser)
+            .jsonBody(objectMapper.writeValueAsString(updated))
+            .responseString()
+        assertEquals(204, putResponse.statusCode)
+
+        val (_, responseAfterUpdate, resultAfterUpdate) = http.get("/incomes?personId=${testAdult_1.id}")
+            .asUser(financeUser)
+            .responseString()
+        assertEquals(200, responseAfterUpdate.statusCode)
+
+        val afterUpdate = deserializeResult(resultAfterUpdate.get()).data.first()
+        assertNull(afterUpdate.applicationId)
     }
 
     @Test

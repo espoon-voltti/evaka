@@ -55,7 +55,8 @@ fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, upda
             valid_to = :valid_to,
             notes = :notes,
             updated_at = now(),
-            updated_by = :updated_by
+            updated_by = :updated_by,
+            application_id = :application_id
     """
 
     val update = createUpdate(sql)

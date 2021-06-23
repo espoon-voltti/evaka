@@ -89,7 +89,7 @@ class IncomeController(
 
         db.transaction { tx ->
             val existing = tx.getIncome(mapper, parseUUID(incomeId))
-            val validIncome = income.copy(id = parseUUID(incomeId)).let(::validateIncome)
+            val validIncome = income.copy(id = parseUUID(incomeId), applicationId = null).let(::validateIncome)
             tx.upsertIncome(mapper, validIncome, user.id)
 
             val expandedPeriod = existing?.let {
