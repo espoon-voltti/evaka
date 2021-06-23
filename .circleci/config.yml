@@ -250,6 +250,7 @@ commands:
     parameters:
       suite:
         type: string
+        default: ""
       yarn_version:
         type: string
         default: *yarn_version
@@ -318,12 +319,26 @@ commands:
           working_directory: *workspace_frontend
           command: yarn install --immutable --immutable-cache
       - run:
+          name: Wait for compose stack to be up
+          working_directory: *workspace_frontend
+          command: |
+            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
+      - run:
           name: Run e2e tests against compose
           working_directory: *workspace_frontend
           command: |
             nvm use
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
-            yarn << parameters.suite >>
+
+            if [ "<< parameters.suite >>" != "" ]; then
+              yarn "<< parameters.suite >>"
+            else
+              # Get list of test files that should run on this node
+              TESTFILES=$(circleci tests glob "src/e2e-test/**/*.spec.ts" \
+                  | circleci tests split --split-by=timings --timings-type=filename)
+              echo "Prepared arguments for yarn: $TESTFILES"
+
+              yarn e2e-ci-base $TESTFILES
+            fi
       - run:
           name: Collect docker-compose logs
           command: |
@@ -694,13 +709,10 @@ jobs:
   # E2E JOBS
 
   e2e-test-testcafe:
-    parameters:
-      suite:
-        type: string
     executor: e2e_executor
+    parallelism: 8
     steps:
-      - e2e_test:
-          suite: e2e-ci-<< parameters.suite >>
+      - e2e_test
       - notify_slack
 
   e2e-test-playwright:
@@ -1024,20 +1036,10 @@ workflows:
 
       - e2e-test-testcafe:
           <<: *default_contexts
-          name: e2e-test-<< matrix.suite >>
           requires:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
-          matrix:
-            parameters:
-              suite:
-                - citizen
-                - invoicing
-                - employee
-                - employee-2
-                - mobile
-                - messaging
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
@@ -1100,12 +1102,7 @@ workflows:
           <<: *aws_contexts
           requires:
             - lint_scripts
-            - e2e-test-citizen
-            - e2e-test-invoicing
-            - e2e-test-employee
-            - e2e-test-employee-2
-            - e2e-test-mobile
-            - e2e-test-messaging
+            - e2e-test-testcafe
             - e2e-test-playwright
             - apigw_push_image
             - proxy_build_and_push_image
