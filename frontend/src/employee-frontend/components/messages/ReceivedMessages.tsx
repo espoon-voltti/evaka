@@ -61,6 +61,7 @@ export function ReceivedMessages({
                 key={t.id}
                 unread={unread}
                 onClick={() => onSelectThread(t)}
+                data-qa="received-message-row"
               >
                 <ParticipantsAndPreview>
                   <Participants unread={unread}>

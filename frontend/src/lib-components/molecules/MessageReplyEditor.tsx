@@ -145,6 +145,7 @@ export function MessageReplyEditor({
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             onUpdateContent(e.target.value)
           }
+          data-qa={'message-reply-content'}
         />
       </EditorRow>
       <EditorRow>
