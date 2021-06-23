@@ -417,6 +417,25 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `updateChildData sends child service need to varda without the fee data if head of family is not a guardian`() {
+        insertVardaChild(db, testChild_1.id)
+        val since = HelsinkiDateTime.now()
+        val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+
+        val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
+        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        createFeeDecision(db, testChild_1, testAdult_2.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
+
+        updateChildData(db, vardaClient, since)
+
+        assertVardaElementCounts(1, 1, 0)
+
+        val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
+        assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
+    }
+
+    @Test
     fun `updateChildData sends new voucher fee data to varda`() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
