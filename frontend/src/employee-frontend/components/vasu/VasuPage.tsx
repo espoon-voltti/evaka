@@ -2,22 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useState } from 'react'
-
-import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Gap } from 'lib-components/white-space'
-import { Label } from 'lib-components/typography'
-
-import { TextArea } from 'lib-components/atoms/form/InputField'
-import Checkbox from 'lib-components/atoms/form/Checkbox'
-import Button from 'lib-components/atoms/buttons/Button'
-import { Loading, Result } from 'lib-common/api'
 import { cloneDeep } from 'lodash'
-import Radio from 'lib-components/atoms/form/Radio'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { UUID } from 'lib-common/types'
+import React, { Fragment } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
+import styled from 'styled-components'
+import { DATE_FORMAT_TIME_ONLY, formatDate } from '../../../lib-common/date'
+import { UUID } from '../../../lib-common/types'
+import Button from '../../../lib-components/atoms/buttons/Button'
+import Checkbox from '../../../lib-components/atoms/form/Checkbox'
+import { TextArea } from '../../../lib-components/atoms/form/InputField'
+import Radio from '../../../lib-components/atoms/form/Radio'
+import Spinner from '../../../lib-components/atoms/state/Spinner'
+import ButtonContainer from '../../../lib-components/layout/ButtonContainer'
+import '../../../lib-components/layout/ButtonContainer'
+import {
+  Container,
+  ContentArea
+} from '../../../lib-components/layout/Container'
+import { FixedSpaceColumn } from '../../../lib-components/layout/flex-helpers'
+import StickyFooter from '../../../lib-components/layout/StickyFooter'
+import { Dimmed, Label } from '../../../lib-components/typography'
+import { defaultMargins, Gap } from '../../../lib-components/white-space'
+import { useTranslation } from '../../state/i18n'
 import { VasuHeader } from './sections/VasuHeader'
+import { useVasu, VasuStatus } from './use-vasu'
 import {
   CheckboxQuestion,
   isCheckboxQuestion,
@@ -28,21 +36,53 @@ import {
   RadioGroupQuestion,
   TextQuestion
 } from './vasu-content'
-import { getVasuDocument, putVasuDocument, VasuDocumentResponse } from './api'
+
+const FooterContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${defaultMargins.s};
+`
+
+const StatusContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  ${Spinner} {
+    margin: ${defaultMargins.xs};
+    height: ${defaultMargins.s};
+    width: ${defaultMargins.s};
+  }
+`
 
 export default React.memo(function VasuPage({
   match
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
-  function submit() {
-    if (vasuDocument.isSuccess) {
-      void putVasuDocument(vasuDocument.value.id, vasuDocument.value.content)
+  const { i18n } = useTranslation()
+  const { vasu, content, setContent, status } = useVasu(id)
+
+  function formatVasuStatus(status: VasuStatus): string | null {
+    switch (status.state) {
+      case 'loading-error':
+        return i18n.common.error.unknown
+      case 'save-error':
+        return i18n.common.error.saveFailed
+      case 'loading':
+      case 'saving':
+      case 'dirty':
+      case 'clean':
+        return status.savedAt
+          ? `${i18n.common.saved} ${formatDate(
+              status.savedAt,
+              DATE_FORMAT_TIME_ONLY
+            )}`
+          : null
     }
   }
-
-  useEffect(() => {
-    void getVasuDocument(id).then(setVasuDocument)
-  }, [id])
+  const textualVasuStatus = formatVasuStatus(status)
+  const showSpinner = status.state === 'saving'
 
   // TODO: move these to their own components when the spec is more stable
   function renderTextQuestion(
@@ -55,17 +95,16 @@ export default React.memo(function VasuPage({
         <Label>{question.name}</Label>
         <TextArea
           value={question.value}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            setVasuDocument((prev) => {
-              return prev.map((prevData) => {
-                const clone = cloneDeep(prevData)
-                const question1 = clone.content.sections[sectionIndex]
-                  .questions[questionIndex] as TextQuestion
-                question1.value = e.target.value
-                return clone
-              })
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setContent((prev) => {
+              const clone = cloneDeep(prev)
+              const question1 = clone.sections[sectionIndex].questions[
+                questionIndex
+              ] as TextQuestion
+              question1.value = e.target.value
+              return clone
             })
-          }}
+          }
         />
       </>
     )
@@ -81,21 +120,21 @@ export default React.memo(function VasuPage({
         <Checkbox
           checked={question.value}
           label={question.name}
-          onChange={(checked) => {
-            setVasuDocument((prev) => {
-              return prev.map((prevData) => {
-                const clone = cloneDeep(prevData)
-                const question1 = clone.content.sections[sectionIndex]
-                  .questions[questionIndex] as CheckboxQuestion
-                question1.value = checked
-                return clone
-              })
+          onChange={(checked) =>
+            setContent((prev) => {
+              const clone = cloneDeep(prev)
+              const question1 = clone.sections[sectionIndex].questions[
+                questionIndex
+              ] as CheckboxQuestion
+              question1.value = checked
+              return clone
             })
-          }}
+          }
         />
       </>
     )
   }
+
   function renderRadioGroupQuestion(
     question: RadioGroupQuestion,
     sectionIndex: number,
@@ -106,34 +145,33 @@ export default React.memo(function VasuPage({
         <Label>{question.name}</Label>
         <Gap size={'m'} />
         <FixedSpaceColumn>
-          {vasuDocument.isSuccess &&
-            question.options.map((option) => {
-              const question1 = vasuDocument.value.content.sections[
-                sectionIndex
-              ].questions[questionIndex] as RadioGroupQuestion
-              return (
-                <Radio
-                  key={option.key}
-                  checked={question1.value === option.key}
-                  label={option.name}
-                  onChange={() => {
-                    setVasuDocument((prev) => {
-                      return prev.map((prevData) => {
-                        const clone = cloneDeep(prevData)
-                        const question1 = clone.content.sections[sectionIndex]
-                          .questions[questionIndex] as RadioGroupQuestion
-                        question1.value = option.key
-                        return clone
-                      })
-                    })
-                  }}
-                />
-              )
-            })}
+          {question.options.map((option) => {
+            const question1 = content.sections[sectionIndex].questions[
+              questionIndex
+            ] as RadioGroupQuestion
+            return (
+              <Radio
+                key={option.key}
+                checked={question1.value === option.key}
+                label={option.name}
+                onChange={() =>
+                  setContent((prev) => {
+                    const clone = cloneDeep(prev)
+                    const question1 = clone.sections[sectionIndex].questions[
+                      questionIndex
+                    ] as RadioGroupQuestion
+                    question1.value = option.key
+                    return clone
+                  })
+                }
+              />
+            )
+          })}
         </FixedSpaceColumn>
       </>
     )
   }
+
   function renderMultiSelectQuestion(
     question: MultiSelectQuestion,
     sectionIndex: number,
@@ -144,52 +182,46 @@ export default React.memo(function VasuPage({
         <Label>{question.name}</Label>
         <Gap size={'m'} />
         <FixedSpaceColumn>
-          {vasuDocument.isSuccess &&
-            question.options.map((option) => {
-              const question1 = vasuDocument.value.content.sections[
-                sectionIndex
-              ].questions[questionIndex] as MultiSelectQuestion
-              return (
-                <Checkbox
-                  key={option.key}
-                  checked={question1.value.includes(option.key)}
-                  label={option.name}
-                  onChange={(checked) => {
-                    setVasuDocument((prev) => {
-                      return prev.map((prevData) => {
-                        const clone = cloneDeep(prevData)
-                        const question1 = clone.content.sections[sectionIndex]
-                          .questions[questionIndex] as MultiSelectQuestion
-                        if (checked && !question1.value.includes(option.key))
-                          question1.value.push(option.key)
-                        if (!checked)
-                          question1.value = question1.value.filter(
-                            (i) => i !== option.key
-                          )
-                        return clone
-                      })
-                    })
-                  }}
-                />
-              )
-            })}
+          {question.options.map((option) => {
+            const question1 = content.sections[sectionIndex].questions[
+              questionIndex
+            ] as MultiSelectQuestion
+            return (
+              <Checkbox
+                key={option.key}
+                checked={question1.value.includes(option.key)}
+                label={option.name}
+                onChange={(checked) =>
+                  setContent((prev) => {
+                    const clone = cloneDeep(prev)
+                    const question1 = clone.sections[sectionIndex].questions[
+                      questionIndex
+                    ] as MultiSelectQuestion
+                    if (checked && !question1.value.includes(option.key))
+                      question1.value.push(option.key)
+                    if (!checked)
+                      question1.value = question1.value.filter(
+                        (i) => i !== option.key
+                      )
+                    return clone
+                  })
+                }
+              />
+            )
+          })}
         </FixedSpaceColumn>
       </>
     )
   }
 
-  const [vasuDocument, setVasuDocument] = useState<
-    Result<VasuDocumentResponse>
-  >(Loading.of())
   return (
     <Container>
       <Gap size={'L'} />
-
-      {vasuDocument.isSuccess && (
+      {vasu && (
         <>
-          <VasuHeader document={vasuDocument.value} />
-          <Gap size={'s'} />
-          {vasuDocument.value.content.sections.map((section, sectionIndex) => {
+          <VasuHeader document={vasu} />
+          <Gap size={'L'} />
+          {content.sections.map((section, sectionIndex) => {
             return (
               <Fragment key={section.name}>
                 <ContentArea opaque>
@@ -229,9 +261,19 @@ export default React.memo(function VasuPage({
               </Fragment>
             )
           })}
-          <Button text={'submit'} onClick={submit} />
         </>
       )}
+      <StickyFooter>
+        <FooterContainer>
+          <StatusContainer>
+            <Dimmed>{textualVasuStatus}</Dimmed>
+            {showSpinner && <Spinner />}
+          </StatusContainer>
+          <ButtonContainer>
+            <Button text={'TODO'} />
+          </ButtonContainer>
+        </FooterContainer>
+      </StickyFooter>
     </Container>
   )
 })

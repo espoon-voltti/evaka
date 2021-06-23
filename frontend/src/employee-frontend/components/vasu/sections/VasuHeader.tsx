@@ -36,7 +36,10 @@ const Confidential = styled.div`
 `
 
 interface Props {
-  document: VasuDocumentResponse
+  document: Pick<
+    VasuDocumentResponse,
+    'child' | 'documentState' | 'templateName'
+  >
 }
 export function VasuHeader({
   document: {
