@@ -345,12 +345,23 @@ commands:
             if [ "<< parameters.suite >>" != "" ]; then
               yarn "<< parameters.suite >>"
             else
-              # Get list of test files that should run on this node
-              TESTFILES=$(circleci tests glob "src/e2e-test/**/*.spec.ts" \
-                  | circleci tests split --split-by=timings --timings-type=filename)
-              echo "Prepared arguments for yarn: $TESTFILES"
+              # Get list of test files that should run on this node.
+              # NOTE: Currently testcafe-reporter-junit doesn't provide
+              # filenames in its output so they can't be used for splitting
+              # -> use fixture names instead.
+              FIXTURE_NAMES=$(git grep '^\w*fixture(' -- src/e2e-test/specs/ \
+                | awk -F "'" '{print $2}' \
+                | sort -h | uniq \
+                | circleci tests split --split-by=timings --timings-type classname)
+              # NOTE: This is extremely brittle but necessary as Testcafe
+              # doesn't support multiple --fixture arguments (+ the above
+              # report issue) -> everything must be a single regex.
+              TESTCAFE_FIXTURE_REGEX=$(echo "$FIXTURE_NAMES" | sed 's/[^-A-Za-z0-9_]/\\&/g' | awk '{print "^"$0"$"}' | tr '\n' '|')
+              # Strip the last "|"
+              TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
+              echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
 
-              yarn e2e-ci-base $TESTFILES
+              yarn e2e-ci-base --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" -- src/e2e-test/specs/
             fi
       - run:
           name: Collect docker-compose logs
