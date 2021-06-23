@@ -2,21 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useMemo } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from '../../../../lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  allPropertiesTrue,
-  isDateRangeValid
-} from '../../../utils/validation/validations'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQuestionCircle } from 'lib-icons'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Partnership } from '../../../types/fridge'
 import { UUID } from '../../../types'
-import { Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { faPen, faUser } from 'lib-icons'
 import { formatName } from '../../../utils'
 import PersonSearch from '../../../components/common/PersonSearch'
@@ -25,6 +19,7 @@ import {
   DatePickerClearableDeprecated
 } from 'lib-components/molecules/DatePickerDeprecated'
 import { addPartnership, updatePartnership } from '../../../api/partnerships'
+import { getPersonDetails } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 
 interface Props {
@@ -39,18 +34,12 @@ export interface FridgePartnerForm {
   endDate: LocalDate | null
 }
 
-interface FormValidationResult {
-  valid: boolean
-  fields: {
-    dateRange: boolean
-    partner: boolean
-  }
-}
-
 function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-
+  const [personData, setPersonData] = useState<Result<PersonDetails>>(
+    Loading.of()
+  )
   const initialForm: FridgePartnerForm = {
     partner:
       partnership &&
@@ -60,22 +49,47 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   }
   const [form, setForm] = useState(initialForm)
 
-  const [
-    validationResult,
-    setValidationResult
-  ] = useState<FormValidationResult>()
+  const validationErrors = useMemo(() => {
+    const errors = []
+
+    if (form.endDate && form.startDate.isAfter(form.endDate)) {
+      errors.push(i18n.validationError.invertedDateRange)
+    }
+
+    if (
+      form.partner?.dateOfDeath &&
+      (!form.endDate || form.endDate.isAfter(form.partner.dateOfDeath))
+    ) {
+      errors.push(
+        `${
+          i18n.personProfile.fridgePartner.validation.deadPartner
+        } (${form.partner.dateOfDeath.format()})`
+      )
+    }
+
+    const headDateOfDeath = personData
+      .map((p) => p.dateOfDeath)
+      .getOrElse(undefined)
+
+    if (
+      headDateOfDeath &&
+      (!form.endDate || form.endDate.isAfter(headDateOfDeath))
+    ) {
+      errors.push(
+        `${
+          i18n.personProfile.fridgePartner.validation.deadPerson
+        } (${headDateOfDeath.format()})`
+      )
+    }
+
+    return errors
+  }, [i18n, personData, form])
+
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
   useEffect(() => {
-    const fieldsValid = {
-      dateRange: isDateRangeValid(form.startDate, form.endDate),
-      partner: !!form.partner
-    }
-    setValidationResult({
-      valid: allPropertiesTrue(fieldsValid),
-      fields: fieldsValid
-    })
-  }, [form])
+    void getPersonDetails(headPersonId).then(setPersonData)
+  }, [headPersonId, setPersonData])
 
   const onSubmit = () => {
     if (!form.partner) return
@@ -119,86 +133,77 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   }
 
   return (
-    <>
-      {validationResult && (
-        <FormModal
-          title={
-            partnership
-              ? i18n.personProfile.fridgePartner.editPartner
-              : i18n.personProfile.fridgePartner.newPartner
-          }
-          icon={partnership ? faPen : faUser}
-          iconColour={'blue'}
-          resolve={{
-            action: onSubmit,
-            label: i18n.common.confirm,
-            disabled: !validationResult.valid
-          }}
-          reject={{
-            action: clearUiMode,
-            label: i18n.common.cancel
-          }}
-        >
-          {errorStatusCode === 409 && (
-            <section className="error">
-              {i18n.personProfile.fridgePartner.error.conflict}
-            </section>
-          )}
-          <section>
-            {partnership ? (
-              <div>
-                {form.partner
-                  ? `${formatName(
-                      form.partner.firstName,
-                      form.partner.lastName,
-                      i18n
-                    )} (${form.partner.socialSecurityNumber ?? ''})`
-                  : ''}
-              </div>
-            ) : (
-              <>
-                <div className="bold">
-                  {i18n.personProfile.fridgePartner.searchTitle}
-                </div>
-                <PersonSearch
-                  onResult={(person: PersonDetails | undefined) =>
-                    assignFridgePartnerForm({ partner: person })
-                  }
-                  onlyAdults
-                />
-              </>
-            )}
-          </section>
-          <section>
-            <div className="bold">{i18n.common.form.startDate}</div>
-            <DatePickerDeprecated
-              date={form.startDate}
-              onChange={(startDate) => assignFridgePartnerForm({ startDate })}
-              type="full-width"
-            />
-          </section>
-          <section>
-            <div className="bold">{i18n.common.form.endDate}</div>
-            <DatePickerClearableDeprecated
-              date={form.endDate}
-              onChange={(endDate) => assignFridgePartnerForm({ endDate })}
-              onCleared={() => assignFridgePartnerForm({ endDate: null })}
-              type="full-width"
-            />
-            {!validationResult.fields.dateRange && (
-              <div className="error">
-                {i18n.validationError.dateRange}{' '}
-                <FontAwesomeIcon
-                  size="lg"
-                  icon={faQuestionCircle}
-                  title={i18n.validationError.invertedDateRange}
-                />
-              </div>
-            )}
-          </section>
-        </FormModal>
+    <FormModal
+      title={
+        partnership
+          ? i18n.personProfile.fridgePartner.editPartner
+          : i18n.personProfile.fridgePartner.newPartner
+      }
+      icon={partnership ? faPen : faUser}
+      iconColour={'blue'}
+      resolve={{
+        action: onSubmit,
+        label: i18n.common.confirm,
+        disabled: !form.partner || validationErrors.length > 0
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
+    >
+      {errorStatusCode === 409 && (
+        <section className="error">
+          {i18n.personProfile.fridgePartner.error.conflict}
+        </section>
       )}
-    </>
+      <section>
+        {partnership ? (
+          <div>
+            {form.partner
+              ? `${formatName(
+                  form.partner.firstName,
+                  form.partner.lastName,
+                  i18n
+                )} (${form.partner.socialSecurityNumber ?? ''})`
+              : ''}
+          </div>
+        ) : (
+          <>
+            <div className="bold">
+              {i18n.personProfile.fridgePartner.searchTitle}
+            </div>
+            <PersonSearch
+              onResult={(person: PersonDetails | undefined) =>
+                assignFridgePartnerForm({ partner: person })
+              }
+              onlyAdults
+            />
+          </>
+        )}
+      </section>
+      <section>
+        <div className="bold">{i18n.common.form.startDate}</div>
+        <DatePickerDeprecated
+          date={form.startDate}
+          onChange={(startDate) => assignFridgePartnerForm({ startDate })}
+          type="full-width"
+        />
+      </section>
+      <section>
+        <div className="bold">{i18n.common.form.endDate}</div>
+        <DatePickerClearableDeprecated
+          date={form.endDate}
+          onChange={(endDate) => assignFridgePartnerForm({ endDate })}
+          onCleared={() => assignFridgePartnerForm({ endDate: null })}
+          type="full-width"
+        />
+        {validationErrors.map((error) => (
+          <div className="error" key={error}>
+            {error}
+          </div>
+        ))}
+      </section>
+    </FormModal>
   )
 }
 

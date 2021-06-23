@@ -238,13 +238,10 @@ export interface BackupCare {
   }
 }
 
-export interface ApplicationPersonDetail extends PersonDetail {
-  ssn: string
-}
-
 export interface PersonDetail {
   id: string
   dateOfBirth: string
+  dateOfDeath?: string
   firstName: string
   lastName: string
   ssn?: string
@@ -258,6 +255,17 @@ export interface PersonDetail {
   nationalities?: string[]
   restrictedDetailsEnabled?: boolean
   restrictedDetailsEndDate?: string | null
+}
+
+export interface PersonDetailWithDependantsAndGuardians extends PersonDetail {
+  dependants?: PersonDetailWithDependantsAndGuardians[]
+  guardians?: PersonDetailWithDependantsAndGuardians[]
+}
+
+export interface Family {
+  guardian: PersonDetailWithDependantsAndGuardians
+  otherGuardian?: PersonDetailWithDependantsAndGuardians
+  children: PersonDetailWithDependantsAndGuardians[]
 }
 
 export interface EmployeeDetail {

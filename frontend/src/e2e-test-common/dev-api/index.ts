@@ -34,7 +34,8 @@ import {
   FridgeChild,
   FridgePartner,
   EmployeePin,
-  UserRole
+  UserRole,
+  PersonDetailWithDependantsAndGuardians
 } from './types'
 import { JsonOf } from 'lib-common/json'
 import {
@@ -441,11 +442,6 @@ export async function cleanUpMessages(): Promise<void> {
   }
 }
 
-export type PersonDetailWithDependantsAndGuardians = PersonDetail & {
-  dependants?: PersonDetailWithDependantsAndGuardians[]
-  guardians?: PersonDetailWithDependantsAndGuardians[]
-}
-
 const toVtjPerson = (
   person: PersonDetailWithDependantsAndGuardians
 ): VtjPerson => ({
@@ -461,7 +457,7 @@ const toVtjPerson = (
   },
   dependants: person.dependants?.map(toVtjPerson) ?? [],
   guardians: person.guardians?.map(toVtjPerson) ?? [],
-  dateOfDeath: null,
+  dateOfDeath: person.dateOfDeath ?? null,
   nationalities: [],
   nativeLanguage: null,
   residenceCode:

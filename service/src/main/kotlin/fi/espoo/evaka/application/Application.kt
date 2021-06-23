@@ -88,6 +88,7 @@ data class ApplicationDetails(
     val otherGuardianLivesInSameAddress: Boolean?,
     val childRestricted: Boolean,
     val guardianRestricted: Boolean,
+    val guardianDateOfDeath: LocalDate?,
     val checkedByAdmin: Boolean,
     val createdDate: OffsetDateTime?,
     val modifiedDate: OffsetDateTime?,

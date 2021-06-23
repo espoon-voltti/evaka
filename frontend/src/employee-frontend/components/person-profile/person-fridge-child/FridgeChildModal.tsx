@@ -2,39 +2,27 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useMemo } from 'react'
 import LocalDate from 'lib-common/local-date'
 import { UpdateStateFn } from '../../../../lib-common/form-state'
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import {
-  allPropertiesTrue,
-  isDateRangeValid
-} from '../../../utils/validation/validations'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQuestionCircle } from 'lib-icons'
 import FormModal from 'lib-components/molecules/modals/FormModal'
 import { Parentship } from '../../../types/fridge'
 import { UUID } from '../../../types'
-import { Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import { faChild } from 'lib-icons'
 import { formatName } from '../../../utils'
 import PersonSearch from '../../../components/common/PersonSearch'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { addParentship, updateParentship } from '../../../api/parentships'
+import { getPersonDetails } from '../../../api/person'
 import { PersonDetails } from '../../../types/person'
 
 interface Props {
   headPersonId: UUID
   onSuccess: () => void
   parentship?: Parentship
-}
-
-interface FormValidationResult {
-  valid: boolean
-  fields: {
-    [field: string]: boolean
-  }
 }
 
 export interface FridgeChildForm {
@@ -46,7 +34,9 @@ export interface FridgeChildForm {
 function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-
+  const [personData, setPersonData] = useState<Result<PersonDetails>>(
+    Loading.of()
+  )
   const initialForm: FridgeChildForm = {
     child: parentship && parentship.child,
     startDate: parentship ? parentship.startDate : LocalDate.today(),
@@ -54,23 +44,44 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   }
   const [form, setForm] = useState<FridgeChildForm>(initialForm)
 
-  const [errorStatusCode, setErrorStatusCode] = useState<number>()
-  const [
-    validationResult,
-    setValidationResult
-  ] = useState<FormValidationResult>()
+  const validationErrors = useMemo(() => {
+    const errors = []
 
-  useEffect(() => {
-    const fieldsValid = {
-      dateRange: isDateRangeValid(form.startDate, form.endDate),
-      childId: !!form.child
+    if (form.startDate.isAfter(form.endDate)) {
+      errors.push(i18n.validationError.invertedDateRange)
     }
 
-    setValidationResult({
-      valid: allPropertiesTrue(fieldsValid),
-      fields: fieldsValid
-    })
-  }, [form])
+    if (
+      form.child?.dateOfDeath &&
+      form.endDate.isAfter(form.child.dateOfDeath)
+    ) {
+      errors.push(
+        `${
+          i18n.personProfile.fridgeChild.validation.deadChild
+        } (${form.child.dateOfDeath.format()})`
+      )
+    }
+
+    const headDateOfDeath = personData
+      .map((p) => p.dateOfDeath)
+      .getOrElse(undefined)
+
+    if (headDateOfDeath && form.endDate.isAfter(headDateOfDeath)) {
+      errors.push(
+        `${
+          i18n.personProfile.fridgeChild.validation.deadAdult
+        } (${headDateOfDeath.format()})`
+      )
+    }
+
+    return errors
+  }, [i18n, personData, form])
+
+  const [errorStatusCode, setErrorStatusCode] = useState<number>()
+
+  useEffect(() => {
+    void getPersonDetails(headPersonId).then(setPersonData)
+  }, [headPersonId, setPersonData])
 
   const childFormActions = () => {
     if (!form.child) return
@@ -108,7 +119,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
 
   return (
     <>
-      {validationResult && (
+      {validationErrors && (
         <FormModal
           title={
             parentship
@@ -120,7 +131,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           resolve={{
             action: childFormActions,
             label: i18n.common.confirm,
-            disabled: !validationResult.valid
+            disabled: !form.child || validationErrors.length > 0
           }}
           reject={{
             action: clearUiMode,
@@ -179,16 +190,11 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               type="full-width"
             />
           </section>
-          {!validationResult.fields.dateRange && (
-            <div className="error">
-              {i18n.validationError.dateRange}{' '}
-              <FontAwesomeIcon
-                size="lg"
-                icon={faQuestionCircle}
-                title={i18n.validationError.invertedDateRange}
-              />
+          {validationErrors.map((error) => (
+            <div className="error" key={error}>
+              {error}
             </div>
-          )}
+          ))}
         </FormModal>
       )}{' '}
     </>

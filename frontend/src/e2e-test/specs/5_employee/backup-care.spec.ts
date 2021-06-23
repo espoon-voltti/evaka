@@ -17,10 +17,7 @@ import UnitPage, {
 } from '../../pages/employee/units/unit-page'
 import { logConsoleMessages } from '../../utils/fixture'
 import GroupPlacementModal from '../../pages/employee/units/group-placement-modal'
-import {
-  ApplicationPersonDetail,
-  BackupCare
-} from 'e2e-test-common/dev-api/types'
+import { BackupCare, PersonDetail } from 'e2e-test-common/dev-api/types'
 import {
   insertBackupCareFixtures,
   insertDaycareGroupFixtures,
@@ -35,7 +32,7 @@ const employeeHome = new EmployeeHome()
 const unitPage = new UnitPage()
 const groupPlacementModal = new GroupPlacementModal()
 let fixtures: AreaAndPersonFixtures
-let childFixture: ApplicationPersonDetail
+let childFixture: PersonDetail
 let backupCareFixture: BackupCare
 
 fixture('Employee - Backup care')

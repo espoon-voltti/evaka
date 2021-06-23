@@ -52,7 +52,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv"
         requestCustomizerMock = mock()
         dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), env, mockDvvBaseUrl)
-        dvvModificationsService = DvvModificationsService(dvvModificationsServiceClient, personService, fridgeFamilyService)
+        dvvModificationsService = DvvModificationsService(dvvModificationsServiceClient, personService, fridgeFamilyService, asyncJobRunner)
     }
 
     fun noCertCheckFuelManager() = FuelManager().apply {

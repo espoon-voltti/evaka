@@ -19,7 +19,7 @@ import {
 import { employeeLogin, seppoAdmin } from '../../config/users'
 import ChildInformationPage from '../../pages/employee/child-information/child-information-page'
 import ApplicationEditView from '../../pages/employee/applications/application-edit-view'
-import { ApplicationPersonDetail } from 'e2e-test-common/dev-api/types'
+import { PersonDetail } from 'e2e-test-common/dev-api/types'
 
 const employeeHome = new EmployeeHome()
 const childInforationPage = new ChildInformationPage()
@@ -42,14 +42,14 @@ fixture('Employee - paper application')
   })
   .afterEach(logConsoleMessages)
 
-const formatPersonName = (person: ApplicationPersonDetail) =>
+const formatPersonName = (person: PersonDetail) =>
   `${person.lastName} ${person.firstName}`
 
 const formatPersonAddress = ({
   streetAddress,
   postalCode,
   postOffice
-}: ApplicationPersonDetail) =>
+}: PersonDetail) =>
   `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
 
 test('Paper application can be created for guardian and child with ssn', async () => {

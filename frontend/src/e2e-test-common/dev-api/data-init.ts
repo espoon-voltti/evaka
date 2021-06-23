@@ -17,7 +17,8 @@ import {
   personFixtureChildZeroYearOld,
   familyWithRestrictedDetailsGuardian,
   Fixture,
-  enduserChildFixturePorriHatterRestricted
+  enduserChildFixturePorriHatterRestricted,
+  familyWithDeadGuardian
 } from './fixtures'
 import * as devApi from '.'
 
@@ -35,7 +36,8 @@ const areaAndPersonFixtures = {
   familyWithSeparatedGuardians,
   restrictedPersonFixture,
   personFixtureChildZeroYearOld,
-  familyWithRestrictedDetailsGuardian
+  familyWithRestrictedDetailsGuardian,
+  familyWithDeadGuardian
 }
 
 export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
@@ -131,12 +133,20 @@ export const initializeAreaAndPersonData = async (): Promise<
     .with(areaAndPersonFixtures.personFixtureChildZeroYearOld)
     .save()
 
+  await Fixture.person()
+    .with(areaAndPersonFixtures.familyWithDeadGuardian.guardian)
+    .saveAndUpdateMockVtj()
+  await Fixture.person()
+    .with(areaAndPersonFixtures.familyWithDeadGuardian.children[0])
+    .saveAndUpdateMockVtj()
+
   await devApi.insertChildFixtures([
     areaAndPersonFixtures.enduserChildFixtureJari,
     areaAndPersonFixtures.enduserChildFixtureKaarina,
     ...areaAndPersonFixtures.familyWithTwoGuardians.children,
     ...areaAndPersonFixtures.familyWithSeparatedGuardians.children,
     ...areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children,
+    ...areaAndPersonFixtures.familyWithDeadGuardian.children,
     personFixtureChildZeroYearOld
   ])
 

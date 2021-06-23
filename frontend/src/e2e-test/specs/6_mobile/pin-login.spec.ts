@@ -32,11 +32,11 @@ import {
 } from 'e2e-test-common/dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
 import {
-  ApplicationPersonDetail,
   BackupPickup,
   Child,
   DaycarePlacement,
-  FamilyContact
+  FamilyContact,
+  PersonDetail
 } from 'e2e-test-common/dev-api/types'
 import LocalDate from '../../../lib-common/local-date'
 import { mobileLogin } from '../../config/users'
@@ -52,7 +52,7 @@ let daycare: DaycareBuilder
 let careArea: CareAreaBuilder
 let employee: EmployeeBuilder
 
-let child: ApplicationPersonDetail
+let child: PersonDetail
 let employeePin: EmployeePinBuilder
 
 const pin = '2580'
