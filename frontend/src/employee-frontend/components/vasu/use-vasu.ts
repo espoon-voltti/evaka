@@ -9,6 +9,7 @@ import {
   useEffect,
   useState
 } from 'react'
+import { Result } from '../../../lib-common/api'
 import { isAutomatedTest } from '../../../lib-common/utils/helpers'
 import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
@@ -42,6 +43,8 @@ interface Vasu {
   status: VasuStatus
 }
 
+const debounceInterval = isAutomatedTest ? 200 : 2000
+
 export function useVasu(id: string): Vasu {
   const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
@@ -65,13 +68,16 @@ export function useVasu(id: string): Vasu {
     [id]
   )
 
-  const save = useRestApi(putVasuDocument, (res) =>
-    res.mapAll({
-      loading: () => null,
-      failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
-      success: () => setStatus({ state: 'clean', savedAt: new Date() })
-    })
+  const handleSaveResult = useCallback(
+    (res: Result<unknown>) =>
+      res.mapAll({
+        loading: () => null,
+        failure: () => setStatus((prev) => ({ ...prev, state: 'save-error' })),
+        success: () => setStatus({ state: 'clean', savedAt: new Date() })
+      }),
+    []
   )
+  const save = useRestApi(putVasuDocument, handleSaveResult)
   const saveNow = useCallback(
     (params: PutVasuDocumentParams) => {
       setStatus((prev) => ({ ...prev, state: 'saving' }))
@@ -79,7 +85,6 @@ export function useVasu(id: string): Vasu {
     },
     [save]
   )
-  const debounceInterval = isAutomatedTest ? 200 : 2000
   const debouncedSave = useDebouncedCallback(saveNow, debounceInterval)
 
   useEffect(
