@@ -33,7 +33,7 @@ class StaffAttendanceController(
     private val acl: AccessControlList
 ) {
     @GetMapping("/unit/{unitId}")
-    fun getAttendancesByGroup(
+    fun getAttendancesByUnit(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID
