@@ -11,15 +11,19 @@ orbs:
   slack: circleci/slack@4.1.3
   owasp: entur/owasp@0.0.14
 
+parameters:
+  workspace_root:
+    type: string
+    default: /home/circleci/repo
+
 aliases:
-  - &workspace_root /home/circleci/repo
-  - &workspace_evaka_base /home/circleci/repo/evaka-base
-  - &workspace_apigw /home/circleci/repo/apigw
-  - &workspace_frontend /home/circleci/repo/frontend
-  - &workspace_proxy /home/circleci/repo/proxy
-  - &workspace_service /home/circleci/repo/service
-  - &workspace_message_service /home/circleci/repo/message-service
-  - &workspace_compose /home/circleci/repo/compose
+  - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
+  - &workspace_apigw << pipeline.parameters.workspace_root >>/apigw
+  - &workspace_frontend << pipeline.parameters.workspace_root >>/frontend
+  - &workspace_proxy << pipeline.parameters.workspace_root >>/proxy
+  - &workspace_service << pipeline.parameters.workspace_root >>/service
+  - &workspace_message_service << pipeline.parameters.workspace_root >>/message-service
+  - &workspace_compose << pipeline.parameters.workspace_root >>/compose
 
   # SSH key fingerprint for checking out other eVaka repositories
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
@@ -43,7 +47,7 @@ aliases:
       - org-global
 
   - &default_config
-    working_directory: *workspace_root
+    working_directory: << pipeline.parameters.workspace_root >>
 
   - &node_config
     <<: *default_config
@@ -55,7 +59,7 @@ aliases:
     <<: *default_config
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2048m"'
-      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
+      GRADLE_USER_HOME: << pipeline.parameters.workspace_root >>/.gradle-user-home
       JAVA_TOOL_OPTIONS: "-Xmx2048m"
 
   - &restore_repo
@@ -188,13 +192,13 @@ executors:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
-    working_directory: *workspace_root
+    working_directory: << pipeline.parameters.workspace_root >>
 
 commands:
   attach_root_workspace:
     steps:
       - attach_workspace:
-          at: *workspace_root
+          at: << pipeline.parameters.workspace_root >>
 
   login_docker_hub:
     description: Log in to Docker Hub for authenticated pulls
@@ -304,12 +308,12 @@ commands:
           working_directory: *workspace_frontend
           command: |
             nvm use
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
+            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:
           name: Collect docker-compose logs
           command: |
-            cd /home/circleci/repo/compose
+            cd << pipeline.parameters.workspace_root >>/compose
             ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
           when: always
       - store_artifacts:
@@ -371,12 +375,12 @@ commands:
           working_directory: *workspace_frontend
           command: |
             nvm use
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
+            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:
           name: Collect docker-compose logs
           command: |
-            cd /home/circleci/repo/compose
+            cd << pipeline.parameters.workspace_root >>/compose
             ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
           when: always
       - store_artifacts:
@@ -427,7 +431,7 @@ commands:
     steps:
       - run:
           name: Deploy (<< parameters.from >>)
-          working_directory: /home/circleci/repo/<< parameters.from >>
+          working_directory: << pipeline.parameters.workspace_root >>/<< parameters.from >>
           command: |
             aws s3 cp ./index.html s3://evaka-static-<< parameters.target_env >>/<< parameters.to >>/index.html \
               --acl public-read \
@@ -454,7 +458,7 @@ commands:
     steps:
       - run:
           name: Deploy Storybook
-          working_directory: /home/circleci/repo/frontend
+          working_directory: << pipeline.parameters.workspace_root >>/frontend
           command: |
             if [ "<< parameters.target_env >>" = "dev" ]; then
               aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read
@@ -464,7 +468,7 @@ commands:
     steps:
       - run:
           name: Load base image
-          working_directory: *workspace_root
+          working_directory: << pipeline.parameters.workspace_root >>
           command: docker load -i evaka-base.tar
 
   build_docker_image:
@@ -593,7 +597,7 @@ jobs:
           command: |
             ./init-pro-icons.sh
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - frontend/vendor/fortawesome/*
       - notify_slack
@@ -607,7 +611,7 @@ jobs:
       - attach_root_workspace
       - run: git clone git@github.com:espoon-voltti/evaka-infra.git
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - evaka-infra
       - notify_slack
@@ -634,14 +638,14 @@ jobs:
       - setup_authenticated_remote_docker
       - run:
           name: Build base image
-          working_directory: *workspace_evaka_base
+          working_directory: << pipeline.parameters.workspace_root >>/evaka-base
           command: ./build.sh
       - run:
           name: Save base image
-          working_directory: *workspace_root
+          working_directory: << pipeline.parameters.workspace_root >>
           command: docker save evaka-base > evaka-base.tar
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - evaka-base.tar
       - notify_slack
@@ -659,7 +663,7 @@ jobs:
           working_directory: *workspace_apigw
           command: yarn build
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - apigw/dist
       - run:
@@ -669,7 +673,7 @@ jobs:
           working_directory: *workspace_apigw
           command: yarn test-ci
       - store_test_results:
-          path: /home/circleci/repo/apigw/build/test-reports
+          path: << pipeline.parameters.workspace_root >>/apigw/build/test-reports
       - notify_slack
 
   apigw_build_image:
@@ -685,7 +689,7 @@ jobs:
           image: evaka/api-gateway
           dir: *workspace_apigw
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - apigw/image.tar
       - notify_slack
@@ -720,7 +724,7 @@ jobs:
       - build_maintenance_page
       - build_storybook
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - frontend/dist
             - frontend/storybook-build
@@ -734,7 +738,7 @@ jobs:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
       - store_test_results:
-          path: /home/circleci/repo/frontend/test-results
+          path: << pipeline.parameters.workspace_root >>/frontend/test-results
       - notify_slack
 
   # E2E JOBS
@@ -840,7 +844,7 @@ jobs:
           working_directory: *workspace_service
           command: ./gradlew assemble compileIntegrationTestKotlin
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - service/build/libs/
       - run:
@@ -864,14 +868,14 @@ jobs:
           working_directory: *workspace_service
           command: ./gradlew dependencyCheckUpdate
       - owasp/store_owasp_cache:
-          cve_data_directory: /home/circleci/repo/.gradle-user-home/dependency-check-data
+          cve_data_directory: << pipeline.parameters.workspace_root >>/.gradle-user-home/dependency-check-data
           cache_key: gradle-v1-cache-key
       - run:
           name: Run OWASP Dependency-Check Analyzer
           working_directory: *workspace_service
           command: ./gradlew dependencyCheckAnalyze
       - store_artifacts:
-          path: /home/circleci/repo/service/build/reports/
+          path: << pipeline.parameters.workspace_root >>/service/build/reports/
       - notify_slack
 
   service_build_image:
@@ -891,7 +895,7 @@ jobs:
           image: evaka/service
           dir: *workspace_service
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - service/image.tar
       - notify_slack
@@ -906,13 +910,13 @@ jobs:
           working_directory: *workspace_service
           command: ./gradlew test
       - store_test_results:
-          path: /home/circleci/repo/service/build/test-results/test/
+          path: << pipeline.parameters.workspace_root >>/service/build/test-results/test/
       - store_test_results:
-          path: /home/circleci/repo/service-lib/build/test-results/test/
+          path: << pipeline.parameters.workspace_root >>/service-lib/build/test-results/test/
       - store_artifacts:
-          path: /home/circleci/repo/service/build/reports/
+          path: << pipeline.parameters.workspace_root >>/service/build/reports/
       - store_artifacts:
-          path: /home/circleci/repo/service-lib/build/reports/
+          path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
       - run:
           working_directory: *workspace_service
           name: gradle custom-ktlint-rules test
@@ -920,7 +924,7 @@ jobs:
             cd custom-ktlint-rules
             ./gradlew test
       - store_test_results:
-          path: /home/circleci/repo/service/custom-ktlint-rules/build/test-results/test/
+          path: << pipeline.parameters.workspace_root >>/service/custom-ktlint-rules/build/test-results/test/
       - notify_slack
 
   service_integration_test:
@@ -947,11 +951,11 @@ jobs:
             echo "Prepared arguments for Gradle: $GRADLE_ARGS"
             ./gradlew integrationTest $GRADLE_ARGS
       - store_test_results:
-          path: /home/circleci/repo/service/build/test-results/integrationTest/
+          path: << pipeline.parameters.workspace_root >>/service/build/test-results/integrationTest/
       - store_artifacts:
-          path: /home/circleci/repo/service/build/reports/
+          path: << pipeline.parameters.workspace_root >>/service/build/reports/
       - store_artifacts:
-          path: /home/circleci/repo/service-lib/build/reports/
+          path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
       - notify_slack
 
   service_push_image:
@@ -975,7 +979,7 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew assemble compileIntegrationTestKotlin
       - persist_to_workspace:
-          root: *workspace_root
+          root: << pipeline.parameters.workspace_root >>
           paths:
             - message-service/build/libs/
       - *store_message_service_gradle
@@ -991,14 +995,14 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew dependencyCheckUpdate
       - owasp/store_owasp_cache:
-          cve_data_directory: /home/circleci/repo/.gradle-user-home/dependency-check-data
+          cve_data_directory: << pipeline.parameters.workspace_root >>/.gradle-user-home/dependency-check-data
           cache_key: gradle-v1-cache-key
       - run:
           name: Run OWASP Dependency-Check Analyzer
           working_directory: *workspace_message_service
           command: ./gradlew dependencyCheckAnalyze
       - store_artifacts:
-          path: /home/circleci/repo/message-service/build/reports/
+          path: << pipeline.parameters.workspace_root >>/message-service/build/reports/
       - notify_slack
 
   message_service_test:
@@ -1010,9 +1014,9 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew test
       - store_test_results:
-          path: /home/circleci/repo/message-service/build/test-results/test/
+          path: << pipeline.parameters.workspace_root >>/message-service/build/test-results/test/
       - store_test_results:
-          path: /home/circleci/repo/service-lib/build/test-results/test/
+          path: << pipeline.parameters.workspace_root >>/service-lib/build/test-results/test/
       - notify_slack
 
   message_service_integration_test:
@@ -1026,11 +1030,11 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew integrationTest
       - store_test_results:
-          path: /home/circleci/repo/message-service/build/test-results/integrationTest/
+          path: << pipeline.parameters.workspace_root >>/message-service/build/test-results/integrationTest/
       - store_artifacts:
-          path: /home/circleci/repo/message-service/build/reports/
+          path: << pipeline.parameters.workspace_root >>/message-service/build/reports/
       - store_artifacts:
-          path: /home/circleci/repo/service-lib/build/reports/
+          path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
       - notify_slack
 
   message_service_build_and_push_image:
