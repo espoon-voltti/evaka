@@ -168,7 +168,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.getByName<Jar>("jar") {
-    enabled = true
+    archiveClassifier.set("")
 }
 
 tasks.getByName<BootJar>("bootJar") {
