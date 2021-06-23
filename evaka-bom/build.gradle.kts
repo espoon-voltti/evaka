@@ -13,6 +13,10 @@ object Version {
     const val mockito = "3.9.0"
 }
 
+repositories {
+    mavenCentral()
+}
+
 javaPlatform {
     allowDependencies()
 }
