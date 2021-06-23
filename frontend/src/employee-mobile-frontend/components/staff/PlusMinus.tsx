@@ -12,6 +12,7 @@ import { formatDecimal } from 'lib-common/utils/number'
 import colors from 'lib-customizations/common'
 
 interface Props {
+  editable: boolean
   value: number
   disabled?: boolean
   onPlus?: () => void
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function PlusMinus({
+  editable,
   value,
   disabled,
   onPlus,
@@ -29,13 +31,29 @@ export default function PlusMinus({
   const str = formatDecimal(value)
   return (
     <Root data-qa={dataQa}>
-      <TextButton disabled={disabled} onClick={onMinus} data-qa="minus-button">
-        -
-      </TextButton>
+      {editable && (
+        <>
+          <TextButton
+            disabled={disabled}
+            onClick={onMinus}
+            data-qa="minus-button"
+          >
+            -
+          </TextButton>
+        </>
+      )}
       <Value data-qa="value">{str}</Value>
-      <TextButton disabled={disabled} onClick={onPlus} data-qa="plus-button">
-        +
-      </TextButton>
+      {editable && (
+        <>
+          <TextButton
+            disabled={disabled}
+            onClick={onPlus}
+            data-qa="plus-button"
+          >
+            +
+          </TextButton>
+        </>
+      )}
     </Root>
   )
 }

@@ -8,7 +8,7 @@ import { Label } from 'lib-components/typography'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { useTranslation } from '../../state/i18n'
-import { formatDate } from '../../utils/date'
+import { DATE_FORMAT_DATE_TIME, formatDate } from 'lib-common/date'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 
 interface Props {
@@ -43,7 +43,7 @@ export default React.memo(function ApplicationStatusSection({
         <Label>{i18n.application.state.modified}</Label>
         <span data-qa="application-modified-date">
           {application.modifiedDate
-            ? formatDate(application.modifiedDate, 'dd.MM.yyyy HH:mm')
+            ? formatDate(application.modifiedDate, DATE_FORMAT_DATE_TIME)
             : ''}
         </span>
 

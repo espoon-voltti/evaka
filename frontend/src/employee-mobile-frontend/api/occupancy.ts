@@ -9,16 +9,16 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { client } from './client'
 
-export type OccupancyResponseGroupLevel = Array<{
-  groupId: UUID
-  occupancies: OccupancyResponse
-}>
-
 interface OccupancyResponse {
   occupancies: OccupancyPeriod[]
   max: OccupancyPeriod | null
   min: OccupancyPeriod | null
 }
+
+export type OccupancyResponseGroupLevel = Array<{
+  groupId: UUID
+  occupancies: OccupancyResponse
+}>
 
 interface OccupancyPeriod {
   period: FiniteDateRange
@@ -28,7 +28,41 @@ interface OccupancyPeriod {
   percentage: number
 }
 
-export async function getRealizedOccupanciesToday(
+export async function getRealizedOccupancyToday(
+  unitId: string,
+  groupId: string | undefined
+): Promise<Result<number>> {
+  if (groupId) {
+    return (await getRealizedGroupOccupanciesToday(unitId)).map(
+      (response: OccupancyResponseGroupLevel) => {
+        // There's only one occupancy, because we only fetch today's occupancy, so we can use `min`
+        const percentage = response.find((group) => group.groupId === groupId)
+          ?.occupancies.min?.percentage
+        return percentage ?? 0
+      }
+    )
+  } else {
+    return (await getRealizedUnitOccupancyToday(unitId)).map(
+      (response) => response.min?.percentage ?? 0
+    )
+  }
+}
+
+async function getRealizedUnitOccupancyToday(
+  unitId: UUID
+): Promise<Result<OccupancyResponse>> {
+  const today = LocalDate.today().toString()
+  return await client
+    .get<JsonOf<OccupancyResponse>>(`/occupancy/by-unit/${unitId}`, {
+      params: { from: today, to: today, type: 'REALIZED' }
+    })
+    .then((res) => res.data)
+    .then(mapOccupancyResponse)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getRealizedGroupOccupanciesToday(
   unitId: UUID
 ): Promise<Result<OccupancyResponseGroupLevel>> {
   const today = LocalDate.today().toString()
@@ -42,15 +76,21 @@ export async function getRealizedOccupanciesToday(
       (data): OccupancyResponseGroupLevel =>
         data.map((group) => ({
           ...group,
-          occupancies: {
-            occupancies: group.occupancies.occupancies.map(mapOccupancyPeriod),
-            max: mapOccupancyPeriod(group.occupancies.max),
-            min: mapOccupancyPeriod(group.occupancies.min)
-          }
+          occupancies: mapOccupancyResponse(group.occupancies)
         }))
     )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
+}
+
+function mapOccupancyResponse(
+  response: JsonOf<OccupancyResponse>
+): OccupancyResponse {
+  return {
+    occupancies: response.occupancies.map(mapOccupancyPeriod),
+    max: mapOccupancyPeriod(response.max),
+    min: mapOccupancyPeriod(response.min)
+  }
 }
 
 function mapOccupancyPeriod(

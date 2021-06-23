@@ -36,7 +36,7 @@ import {
 import { H1 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { getEmployeeUrlPrefix } from '../../constants'
-import { formatDate } from '../../utils/date'
+import { formatDate } from 'lib-common/date'
 import ApplicationActions from '../../components/applications/ApplicationActions'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { ApplicationUIContext } from '../../state/application-ui'

@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useState, createContext } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
 import { AttendanceResponse } from '../api/attendances'
-import { StaffAttendanceGroup } from 'lib-common/api-types/staffAttendances'
+import { UnitStaffAttendance } from 'lib-common/api-types/staffAttendances'
 
 interface UIState {
   attendanceResponse: Result<AttendanceResponse>
@@ -36,7 +36,7 @@ export const AttendanceUIContextProvider = React.memo(
     >(Loading.of())
 
     const [staffAttendanceResponse, setStaffAttendanceResponse] = useState<
-      Result<StaffAttendanceGroup>
+      Result<UnitStaffAttendance>
     >(Loading.of())
 
     const reset = useCallback(() => {

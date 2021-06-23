@@ -11,7 +11,7 @@ import Title from 'lib-components/atoms/Title'
 import IncomeTable from './IncomeTable'
 import { Income } from '../../../types/income'
 import { useTranslation } from '../../../state/i18n'
-import { formatDate } from '../../../utils/date'
+import { formatDate } from 'lib-common/date'
 import { UserContext } from 'employee-frontend/state/user'
 
 interface Props {

@@ -16,7 +16,7 @@ import colors from 'lib-customizations/common'
 import { defaultMargins } from 'lib-components/white-space'
 import { farStickyNote, farUser } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
-import { formatDateTimeOnly } from '../../utils/date'
+import { DATE_FORMAT_TIME_ONLY, formatDate } from 'lib-common/date'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { Link } from 'react-router-dom'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -168,9 +168,15 @@ export default React.memo(function ChildListItem({
                 )}
               <Time>
                 {attendanceChild.status === 'PRESENT' &&
-                  formatDateTimeOnly(attendanceChild.attendance?.arrived)}
+                  formatDate(
+                    attendanceChild.attendance?.arrived,
+                    DATE_FORMAT_TIME_ONLY
+                  )}
                 {attendanceChild.status === 'DEPARTED' &&
-                  formatDateTimeOnly(attendanceChild.attendance?.departed)}
+                  formatDate(
+                    attendanceChild.attendance?.departed,
+                    DATE_FORMAT_TIME_ONLY
+                  )}
               </Time>
             </div>
             {attendanceChild.backup && (

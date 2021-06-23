@@ -128,7 +128,9 @@ export class Success<T> {
     return this
   }
 
-  static of<T>(v: T): Success<T> {
+  static of(): Success<void>
+  static of<T>(v: T): Success<T>
+  static of<T>(v?: T): Success<T | undefined> {
     return new Success(v)
   }
 

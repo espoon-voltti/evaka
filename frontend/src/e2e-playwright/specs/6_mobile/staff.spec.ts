@@ -71,9 +71,24 @@ afterEach(async () => {
 })
 
 describe('Staff page', () => {
-  test('Set group staff', async () => {
+  test('Staff for all groups is read-only', async () => {
     await waitUntilEqual(() => staffPage.staffCount, '0')
     await waitUntilEqual(() => staffPage.staffOtherCount, '0')
+    await waitUntilEqual(() => staffPage.updated, 'Tietoja ei ole päivitetty')
+
+    await waitUntilEqual(() => staffPage.incDecButtonsVisible(), [
+      false,
+      false,
+      false,
+      false
+    ])
+  })
+
+  test('Set group staff', async () => {
+    await nav.selectGroup(daycareGroupFixture.id)
+    await waitUntilEqual(() => staffPage.staffCount, '0')
+    await waitUntilEqual(() => staffPage.staffOtherCount, '0')
+    await waitUntilEqual(() => staffPage.updated, 'Tietoja ei ole päivitetty')
 
     await staffPage.incStaffCount()
     await staffPage.incStaffCount()
@@ -87,10 +102,14 @@ describe('Staff page', () => {
       () => staffPage.occupancy,
       'Ryhmän käyttöaste tänään 9,5 %'
     )
+    await waitUntilTrue(async () =>
+      (await staffPage.updated).startsWith('Tiedot päivitetty tänään ')
+    )
     await waitUntilEqual(() => nav.staffCount, '1,5+0,5')
   })
 
   test('Cancel resets the form', async () => {
+    await nav.selectGroup(daycareGroupFixture.id)
     await staffPage.incStaffCount()
     await staffPage.confirm()
 
@@ -103,6 +122,7 @@ describe('Staff page', () => {
   })
 
   test('Button state', async () => {
+    await nav.selectGroup(daycareGroupFixture.id)
     await waitUntilTrue(() => staffPage.buttonsDisabled)
 
     await staffPage.incStaffCount()
@@ -119,6 +139,7 @@ describe('Staff page', () => {
   })
 
   test('Change between groups', async () => {
+    await nav.selectGroup(daycareGroupFixture.id)
     await staffPage.incStaffCount()
     await staffPage.confirm()
 
@@ -129,5 +150,8 @@ describe('Staff page', () => {
 
     await nav.selectGroup(daycareGroupFixture.id)
     await waitUntilEqual(() => nav.staffCount, '0,5+0')
+
+    await nav.selectGroup('all')
+    await waitUntilEqual(() => nav.staffCount, '0,5+0,5')
   })
 })

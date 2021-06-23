@@ -5,8 +5,9 @@
 import { client } from './client'
 import { Failure, Result, Success, Response } from 'lib-common/api'
 import {
-  StaffAttendanceGroup,
-  StaffAttendance
+  GroupStaffAttendance,
+  GroupStaffAttendanceForDates,
+  StaffAttendanceUpdate
 } from 'lib-common/api-types/staffAttendances'
 import {
   Group,
@@ -73,10 +74,10 @@ export async function deleteGroupAbsences(
 export async function getStaffAttendances(
   groupId: UUID,
   params: SearchParams
-): Promise<Result<StaffAttendanceGroup>> {
+): Promise<Result<GroupStaffAttendanceForDates>> {
   return client
-    .get<JsonOf<Response<StaffAttendanceGroup>>>(
-      `/staff-attendances/${groupId}`,
+    .get<JsonOf<Response<GroupStaffAttendanceForDates>>>(
+      `/staff-attendances/group/${groupId}`,
       {
         params
       }
@@ -87,14 +88,15 @@ export async function getStaffAttendances(
       startDate: LocalDate.parseIso(group.startDate),
       endDate: LocalDate.parseNullableIso(group.endDate),
       attendances: Object.entries(group.attendances).reduce(
-        (attendanceMap, [key, attendance]) => ({
-          ...attendanceMap,
-          [key]: {
+        (attendanceMap, [key, attendance]) => {
+          attendanceMap.set(key, {
             ...attendance,
-            date: LocalDate.parseIso(attendance.date)
-          }
-        }),
-        {}
+            date: LocalDate.parseIso(attendance.date),
+            updated: new Date(attendance.updated)
+          })
+          return attendanceMap
+        },
+        new Map<string, GroupStaffAttendance>()
       )
     }))
     .then((v) => Success.of(v))
@@ -102,10 +104,13 @@ export async function getStaffAttendances(
 }
 
 export async function postStaffAttendance(
-  staffAttendance: StaffAttendance
+  staffAttendance: StaffAttendanceUpdate
 ): Promise<Result<void>> {
   return client
-    .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
+    .post(
+      `/staff-attendances/group/${staffAttendance.groupId}`,
+      staffAttendance
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

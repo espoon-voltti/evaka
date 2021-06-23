@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,11 +27,14 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var staffAttendanceService: StaffAttendanceService
 
-    val areaId = UUID.randomUUID()
-    val daycareId = UUID.randomUUID()
-    val groupId = UUID.randomUUID()
+    val areaId: UUID = UUID.randomUUID()
+    val daycareId: UUID = UUID.randomUUID()
+    val groupId: UUID = UUID.randomUUID()
     val groupName = "Testiryhmä"
-    val groupStartDate = LocalDate.of(2019, 1, 1)
+    val groupStartDate: LocalDate = LocalDate.of(2019, 1, 1)
+
+    val groupId2: UUID = UUID.randomUUID()
+    val groupName2 = "Koekaniinit"
 
     @BeforeEach
     protected fun insertDaycareGroup() {
@@ -40,104 +45,167 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = groupStartDate)
             )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(daycareId = daycareId, id = groupId2, name = groupName2, startDate = groupStartDate)
+            )
         }
     }
 
     @Test
-    fun `get attendances for every day of month`() {
+    fun `get empty attendances`() {
         val result =
-            staffAttendanceService.getAttendancesByMonth(db, groupStartDate.year, groupStartDate.monthValue, groupId)
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                groupStartDate.year,
+                groupStartDate.monthValue,
+                groupId
+            )
 
-        assertEquals(result.groupId, groupId)
-        assertEquals(result.groupName, groupName)
-        assertEquals(result.attendances.size, groupStartDate.month.length(false))
-    }
-
-    @Test
-    fun `attendances are composed correctly`() {
-        val attendanceDate = groupStartDate
-        val result =
-            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
-
-        assertEquals(result.groupId, groupId)
-        assertEquals(result.groupName, groupName)
-        assertEquals(result.startDate, groupStartDate)
-        assertEquals(result.attendances.size, attendanceDate.month.length(false))
-
-        result.attendances.forEach { attendance ->
-            assertEquals(attendance.value?.date, attendance.key)
-            assertEquals(attendance.value?.groupId, groupId)
-            assertEquals(attendance.value?.count, null)
-        }
+        assertEquals(groupId, result.groupId)
+        assertEquals(groupName, result.groupName)
+        assertEquals(groupStartDate, result.startDate)
+        assertEquals(0, result.attendances.size)
     }
 
     @Test
     fun `create attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
 
         val result =
-            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
 
-        assertEquals(result.attendances.size, attendanceDate.month.length(false))
-        assertEquals(result.attendances[attendanceDate]?.count, 1.0)
-        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
+        assertEquals(1, result.attendances.size)
+        assertEquals(1.0, result.attendances[attendanceDate]?.count)
+        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
     }
 
     @Test
     fun `creating an attendance with null countOther sets countOther to 0`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, null))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, null))
 
         val result =
-            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
 
-        assertEquals(result.attendances.size, attendanceDate.month.length(false))
-        assertEquals(result.attendances[attendanceDate]?.count, 1.0)
-        assertEquals(result.attendances[attendanceDate]?.countOther, 0.0)
+        assertEquals(1, result.attendances.size)
+        assertEquals(1.0, result.attendances[attendanceDate]?.count)
+        assertEquals(0.0, result.attendances[attendanceDate]?.countOther)
     }
 
     @Test
     fun `modify attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
 
         var result =
-            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
-        assertEquals(result.attendances[attendanceDate]?.count, 1.0)
-        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
+        assertEquals(1.0, result.attendances[attendanceDate]?.count)
+        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 2.5, 0.0))
-        result = staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
-        assertEquals(result.attendances[attendanceDate]?.count, 2.5)
-        assertEquals(result.attendances[attendanceDate]?.countOther, 0.0)
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 2.5, 0.0))
+        result = staffAttendanceService.getGroupAttendancesByMonth(
+            db,
+            attendanceDate.year,
+            attendanceDate.monthValue,
+            groupId
+        )
+        assertEquals(2.5, result.attendances[attendanceDate]?.count)
+        assertEquals(0.0, result.attendances[attendanceDate]?.countOther)
     }
 
     @Test
     fun `modifying attendance with null countOther doesn't change countOther`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
 
         var result =
-            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
-        assertEquals(result.attendances[attendanceDate]?.count, 1.0)
-        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
+        assertEquals(1.0, result.attendances[attendanceDate]?.count)
+        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 2.5, null))
-        result = staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
-        assertEquals(result.attendances[attendanceDate]?.count, 2.5)
-        assertEquals(result.attendances[attendanceDate]?.countOther, 0.5)
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 2.5, null))
+        result = staffAttendanceService.getGroupAttendancesByMonth(
+            db,
+            attendanceDate.year,
+            attendanceDate.monthValue,
+            groupId
+        )
+        assertEquals(2.5, result.attendances[attendanceDate]?.count)
+        assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
     }
 
     @Test
     fun `create attendance for a date when group is not operating`() {
         val attendanceDate = groupStartDate.minusDays(1)
         assertThrows<BadRequest> {
-            staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0, 0.5))
+            staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
         }
 
         val result =
-            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
-        assertEquals(result.attendances[attendanceDate]?.count, null)
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
+        assertEquals(null, result.attendances[attendanceDate])
+    }
+
+    @Test
+    fun `get unit attendances`() {
+        val firstDay = groupStartDate
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, firstDay, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId2, firstDay, 2.0, 1.5))
+
+        val secondDay = groupStartDate.plusDays(5)
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, secondDay, 6.5, null))
+
+        val unitResult = staffAttendanceService.getUnitAttendancesForDate(db, daycareId, firstDay)
+        assertEquals(firstDay, unitResult.date)
+        assertEquals(3.0, unitResult.count)
+        assertEquals(2.0, unitResult.countOther)
+        assertEquals(2, unitResult.groups.size)
+        assertEquals(
+            db.read {
+                it.createQuery("SELECT MAX(updated) FROM staff_attendance WHERE date = :date")
+                    .bind("date", firstDay)
+                    .mapTo<HelsinkiDateTime>()
+                    .one()
+            },
+            unitResult.updated
+        )
+
+        val groupResult = unitResult.groups.find { it.groupId == groupId }!!
+        assertEquals(1.0, groupResult.count)
+        assertEquals(0.5, groupResult.countOther)
+        val group2Result = unitResult.groups.find { it.groupId == groupId2 }!!
+        assertEquals(2.0, group2Result.count)
+        assertEquals(1.5, group2Result.countOther)
+
+        val unitResult2 = staffAttendanceService.getUnitAttendancesForDate(db, daycareId, secondDay)
+        assertEquals(secondDay, unitResult2.date)
+        assertEquals(6.5, unitResult2.count)
+        assertEquals(0.0, unitResult2.countOther)
     }
 }

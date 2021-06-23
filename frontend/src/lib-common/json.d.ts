@@ -16,6 +16,8 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
   ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> }
   : T extends DateRange
   ? { start: JsonOf<LocalDate>; end: JsonOf<LocalDate> | null }
+  : T extends Map<string, infer U>
+  ? { [key: string]: JsonOf<U> }
   : T extends Set<infer U>
   ? Array<JsonOf<U>>
   : T extends Array<infer U>

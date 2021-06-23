@@ -22,7 +22,7 @@ import {
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import ReportDownload from '../../components/reports/ReportDownload'
-import { formatDate } from '../../utils/date'
+import { formatDate } from 'lib-common/date'
 import { fi } from 'date-fns/locale'
 import { CareArea } from '../../types/unit'
 import { getAreas } from '../../api/daycare'

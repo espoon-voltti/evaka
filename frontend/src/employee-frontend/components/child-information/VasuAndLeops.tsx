@@ -24,7 +24,8 @@ import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
-import { formatDate } from '../../utils/date'
+import { formatDate } from 'lib-common/date'
+
 import {
   createVasuDocument,
   getVasuDocumentSummaries,

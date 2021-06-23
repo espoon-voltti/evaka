@@ -7,7 +7,7 @@ import { fi } from 'date-fns/locale'
 import { defaults, Line } from 'react-chartjs-2'
 import { OccupancyResponse } from '../../../../api/unit'
 import colors from 'lib-customizations/common'
-import { formatDate } from '../../../../utils/date'
+import { formatDate } from 'lib-common/date'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 defaults.global.animation = false

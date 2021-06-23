@@ -18,7 +18,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import Loader from 'lib-components/atoms/Loader'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import FormModal from 'lib-components/molecules/modals/FormModal'
-import { formatDate } from '../../utils/date'
+import { formatDate } from 'lib-common/date'
 import {
   getPersonFeeDecisions,
   createRetroactiveDecisions

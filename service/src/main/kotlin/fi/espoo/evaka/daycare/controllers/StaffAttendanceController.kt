@@ -6,9 +6,10 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.Wrapper
-import fi.espoo.evaka.daycare.service.StaffAttendance
-import fi.espoo.evaka.daycare.service.StaffAttendanceGroup
+import fi.espoo.evaka.daycare.service.StaffAttendanceForDates
 import fi.espoo.evaka.daycare.service.StaffAttendanceService
+import fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
+import fi.espoo.evaka.daycare.service.UnitStaffAttendance
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.util.UUID
 
 @RestController
@@ -30,26 +32,38 @@ class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
     private val acl: AccessControlList
 ) {
-    @GetMapping("/{groupId}")
+    @GetMapping("/unit/{unitId}")
+    fun getAttendancesByUnit(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID
+    ): ResponseEntity<UnitStaffAttendance> {
+        Audit.UnitStaffAttendanceRead.log(targetId = unitId)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.MOBILE)
+        val result = staffAttendanceService.getUnitAttendancesForDate(db, unitId, LocalDate.now())
+        return ResponseEntity.ok(result)
+    }
+
+    @GetMapping("/group/{groupId}")
     fun getAttendancesByGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @PathVariable groupId: UUID
-    ): ResponseEntity<Wrapper<StaffAttendanceGroup>> {
+    ): ResponseEntity<Wrapper<StaffAttendanceForDates>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.MOBILE, UserRole.SPECIAL_EDUCATION_TEACHER)
-        val result = staffAttendanceService.getAttendancesByMonth(db, year, month, groupId)
+        val result = staffAttendanceService.getGroupAttendancesByMonth(db, year, month, groupId)
         return ResponseEntity.ok(Wrapper(result))
     }
 
-    @PostMapping("/{groupId}")
+    @PostMapping("/group/{groupId}")
     fun upsertStaffAttendance(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody staffAttendance: StaffAttendance,
+        @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: UUID
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
@@ -58,8 +72,7 @@ class StaffAttendanceController(
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
-        staffAttendance.groupId = groupId
-        staffAttendanceService.upsertStaffAttendance(db, staffAttendance)
+        staffAttendanceService.upsertStaffAttendance(db, staffAttendance.copy(groupId = groupId))
         return ResponseEntity.noContent().build()
     }
 }

@@ -7,6 +7,7 @@ package fi.espoo.evaka.daycare.service
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -15,7 +16,13 @@ import java.util.UUID
 
 @Service
 class StaffAttendanceService {
-    fun getAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: UUID): StaffAttendanceGroup {
+    fun getUnitAttendancesForDate(db: Database.Connection, unitId: UUID, date: LocalDate): UnitStaffAttendance {
+        return db.read { tx ->
+            tx.getUnitStaffAttendanceForDate(unitId, date)
+        }
+    }
+
+    fun getGroupAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: UUID): StaffAttendanceForDates {
         val rangeStart = LocalDate.of(year, month, 1)
         val rangeEnd = rangeStart.with(lastDayOfMonth())
 
@@ -24,13 +31,13 @@ class StaffAttendanceService {
             val endDate = groupInfo.endDate.let { if (it.isBefore(maxDate)) it else null }
 
             val attendanceList = tx.getStaffAttendanceByRange(rangeStart, rangeEnd, groupId)
-            val attendanceMap = composeAttendanceMap(rangeStart, rangeEnd, groupId, attendanceList)
+            val attendanceMap = attendanceList.associateBy { it.date }
 
-            StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
+            StaffAttendanceForDates(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
         }
     }
 
-    fun upsertStaffAttendance(db: Database.Connection, staffAttendance: StaffAttendance) {
+    fun upsertStaffAttendance(db: Database.Connection, staffAttendance: StaffAttendanceUpdate) {
         db.transaction { tx ->
             if (!tx.isValidStaffAttendanceDate(staffAttendance)) {
                 throw BadRequest("Error: Upserting staff count failed. Group is not operating in given date")
@@ -38,36 +45,30 @@ class StaffAttendanceService {
             tx.upsertStaffAttendance(staffAttendance)
         }
     }
-
-    private fun composeAttendanceMap(
-        rangeStart: LocalDate,
-        rangeEnd: LocalDate,
-        groupId: UUID,
-        attendanceList: List<StaffAttendance>
-    ): Map<LocalDate, StaffAttendance?> = generateSequence(rangeStart) { it.plusDays(1) }
-        .takeWhile { !it.isAfter(rangeEnd) }
-        .map {
-            it to (
-                attendanceList
-                    .firstOrNull { attendance -> attendance.date.isEqual(it) } ?: StaffAttendance(groupId, it, null, null)
-                )
-        }
-        .toMap()
 }
 
-data class StaffAttendanceGroup(
+data class GroupStaffAttendance(
+    val groupId: UUID,
+    val date: LocalDate,
+    val count: Double,
+    val countOther: Double,
+    val updated: HelsinkiDateTime
+)
+
+data class UnitStaffAttendance(
+    val date: LocalDate,
+    val count: Double,
+    val countOther: Double,
+    val updated: HelsinkiDateTime?,
+    val groups: List<GroupStaffAttendance>
+)
+
+data class StaffAttendanceForDates(
     val groupId: UUID,
     val groupName: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val attendances: Map<LocalDate, StaffAttendance?>
-)
-
-data class StaffAttendance(
-    var groupId: UUID,
-    val date: LocalDate,
-    val count: Double?,
-    val countOther: Double?
+    val attendances: Map<LocalDate, GroupStaffAttendance>
 )
 
 data class GroupInfo(
@@ -75,6 +76,13 @@ data class GroupInfo(
     val groupName: String,
     val startDate: LocalDate,
     val endDate: LocalDate
+)
+
+data class StaffAttendanceUpdate(
+    val groupId: UUID,
+    val date: LocalDate,
+    val count: Double?,
+    val countOther: Double?
 )
 
 fun Database.Read.getGroupInfo(groupId: UUID): GroupInfo? {
@@ -92,7 +100,7 @@ fun Database.Read.getGroupInfo(groupId: UUID): GroupInfo? {
         .firstOrNull()
 }
 
-fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendance): Boolean {
+fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpdate): Boolean {
     //language=SQL
     val sql =
         """
@@ -108,7 +116,7 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendance): 
         .mapToMap().list().size > 0
 }
 
-fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendance) {
+fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
     //language=SQL
     val sql = if (staffAttendance.countOther != null) {
         """
@@ -135,20 +143,54 @@ fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendance)
         .execute()
 }
 
-fun Database.Read.getStaffAttendanceByRange(rangeStart: LocalDate, rangeEnd: LocalDate, groupId: UUID): List<StaffAttendance> {
+fun Database.Read.getStaffAttendanceByRange(
+    rangeStart: LocalDate,
+    rangeEnd: LocalDate,
+    groupId: UUID
+): List<GroupStaffAttendance> {
     //language=SQL
     val sql =
         """
-        SELECT group_id, date, count, count_other
+        SELECT group_id, date, count, count_other, updated
         FROM staff_attendance
         WHERE group_id = :groupId
-            AND date BETWEEN :rangeStart AND :rangeEnd;
+          AND date BETWEEN :rangeStart AND :rangeEnd
         """.trimIndent()
 
     return createQuery(sql)
         .bind("groupId", groupId)
         .bind("rangeStart", rangeStart)
         .bind("rangeEnd", rangeEnd)
-        .mapTo<StaffAttendance>()
+        .mapTo<GroupStaffAttendance>()
         .list()
+}
+
+fun Database.Read.getUnitStaffAttendanceForDate(unitId: UUID, date: LocalDate): UnitStaffAttendance {
+    //language=SQL
+    val sql =
+        """
+        SELECT group_id, date, count, count_other, updated
+        FROM staff_attendance sa
+        JOIN daycare_group dg on sa.group_id = dg.id
+        WHERE dg.daycare_id = :unitId
+          AND sa.date = :date
+        """.trimIndent()
+
+    val groupAttendances = createQuery(sql)
+        .bind("unitId", unitId)
+        .bind("date", date)
+        .mapTo<GroupStaffAttendance>()
+        .list()
+
+    val count = groupAttendances.sumOf { it.count }
+    val countOther = groupAttendances.sumOf { it.countOther }
+    val updated = groupAttendances.maxOfOrNull { it.updated }
+
+    return UnitStaffAttendance(
+        date = date,
+        count = count,
+        countOther = countOther,
+        groups = groupAttendances,
+        updated = updated
+    )
 }

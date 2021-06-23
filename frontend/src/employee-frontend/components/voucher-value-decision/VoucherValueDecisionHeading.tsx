@@ -10,7 +10,7 @@ import { Gap } from 'lib-components/white-space'
 import { H1 } from 'lib-components/typography'
 import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
-import { formatDate } from '../../utils/date'
+import { formatDate } from 'lib-common/date'
 import {
   VoucherValueDecisionStatus,
   PersonDetailed
