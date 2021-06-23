@@ -6,6 +6,7 @@ import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
   deserializeMessageThread,
   deserializeReplyResponse,
+  MessageAccount,
   MessageThread,
   ReplyResponse
 } from 'lib-common/api-types/messaging/message'
@@ -30,6 +31,13 @@ export async function getReceivedMessages(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function getReceivers(): Promise<Result<MessageAccount[]>> {
+  return client
+    .get<MessageAccount[]>(`/citizen/messages/receivers`)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getMessageAccount(): Promise<Result<UUID>> {
   return client
     .get<UUID>(`/citizen/messages/my-account`)
@@ -51,10 +59,25 @@ export async function getUnreadMessagesCount(): Promise<Result<number>> {
     .catch((e) => Failure.fromError(e))
 }
 
+export interface SendMessageParams {
+  title: string
+  content: string
+  recipients: MessageAccount[]
+}
+
 export interface ReplyToThreadParams {
   messageId: UUID
   content: string
   recipientAccountIds: UUID[]
+}
+
+export async function sendMessage(
+  message: SendMessageParams
+): Promise<Result<UUID[]>> {
+  return client
+    .post<JsonOf<UUID[]>>(`/citizen/messages/send`, message)
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function replyToThread({
