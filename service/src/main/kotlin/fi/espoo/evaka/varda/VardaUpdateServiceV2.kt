@@ -248,7 +248,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
             newVardaServiceNeed.vardaDecisionId = createDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
             newVardaServiceNeed.vardaPlacementId = createPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
-            newVardaServiceNeed.vardaFeeDataIds = serviceNeedFeeData.feeDecisionIds.map { fdId ->
+            newVardaServiceNeed.vardaFeeDataIds = serviceNeedFeeData.feeDecisionIds.mapNotNull { fdId ->
                 createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, fdId)
             }.plus(
                 serviceNeedFeeData.voucherValueDecisionIds.map { vvdId ->
@@ -296,22 +296,25 @@ fun createFeeDataToVardaFromFeeDecision(
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
     decisionId: UUID
-): Long {
+): Long? {
     val decision = db.read { it.getFeeDecisionsByIds(listOf(decisionId)) }.first()
-
-    // Varda wants real guardians, not the fridge family members who pay the bill
-    // val guardians = db.read { listOfNotNull(it.getPersonById(decision.headOfFamily.id), if (decision.partner?.id != null) it.getPersonById(decision.partner.id) else null) }
-    val guardians = getChildVardaGuardians(db, evakaServiceNeedInfoForVarda.childId)
-    if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
         ?: throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: fee ${decision.id} has no part for child ${evakaServiceNeedInfoForVarda.childId}")
+
+    val guardians = getChildVardaGuardians(db, evakaServiceNeedInfoForVarda.childId)
+    if (guardians.isEmpty()) throw Exception("VardaUpdate: could not create fee data for ${evakaServiceNeedInfoForVarda.id}: child has no guardians")
+
+    // If head of family is not a guardian, fee data is not supposed to be sent to varda (https://wiki.eduuni.fi/display/OPHPALV/Huoltajan+tiedot)
+    if (guardians.none { it.id == decision.headOfFamily.id }) {
+        logger.info("VardaUpdate: will not send fee data for service need ${evakaServiceNeedInfoForVarda.id} child ${evakaServiceNeedInfoForVarda.childId}: head of family is not a guardian")
+        return null
+    }
 
     val res: VardaFeeDataResponse?
     try {
         res = client.createFeeData(
             VardaFeeData(
-                // huoltajat = guardians.map { guardian -> VardaGuardian(guardian.identity.toString(), guardian.firstName ?: "", guardian.lastName ?: "") },
-                huoltajat = guardians,
+                huoltajat = guardians.map { it.toVardaGuardian() },
                 lapsi = client.getChildUrl(vardaChildId),
                 maksun_peruste_koodi = vardaFeeBasisByPlacementType(childPart.placement.type),
                 asiakasmaksu = childPart.finalFee.div(100.0),
@@ -330,11 +333,24 @@ fun createFeeDataToVardaFromFeeDecision(
     return res.id
 }
 
-fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardian> {
+data class VardaGuardianWithId(
+    val id: UUID,
+    val henkilotunnus: String,
+    val etunimet: String,
+    val sukunimi: String
+) {
+    fun toVardaGuardian(): VardaGuardian = VardaGuardian(
+        henkilotunnus = henkilotunnus,
+        etunimet = etunimet,
+        sukunimi = sukunimi
+    )
+}
+
+fun getChildVardaGuardians(db: Database.Connection, childId: UUID): List<VardaGuardianWithId> {
     return db.read {
-        it.createQuery("select first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
+        it.createQuery("select id, first_name AS etunimet, last_name as sukunimi, social_security_number AS henkilotunnus FROM person where id IN (SELECT guardian_id FROM guardian WHERE child_id = :id)")
             .bind("id", childId)
-            .mapTo<VardaGuardian>()
+            .mapTo<VardaGuardianWithId>()
             .list()
     }
 }
