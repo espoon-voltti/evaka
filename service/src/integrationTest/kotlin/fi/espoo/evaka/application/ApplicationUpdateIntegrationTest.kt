@@ -151,7 +151,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
-        assertEquals(2, beforeClearingUrgency!!.attachments.size)
+        assertEquals(2, beforeClearingUrgency.attachments.size)
 
         // when
         val updatedApplication =
@@ -166,8 +166,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         // then
         val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
-        assertEquals(0, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(1, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(0, afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(1, afterClearingUrgency.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
     }
 
     @Test
@@ -181,7 +181,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
-        assertEquals(2, beforeClearingUrgency!!.attachments.size)
+        assertEquals(2, beforeClearingUrgency.attachments.size)
 
         // when
         val updatedApplication =
@@ -196,8 +196,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         // then
         val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
-        assertEquals(0, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(1, afterClearingUrgency!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(0, afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(1, afterClearingUrgency.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
     }
 
     @Test
@@ -211,7 +211,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingShiftCare!!.form.preferences.urgent)
-        assertEquals(2, beforeClearingShiftCare!!.attachments.size)
+        assertEquals(2, beforeClearingShiftCare.attachments.size)
 
         // when
         val updatedApplication =
@@ -230,8 +230,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
-        assertEquals(1, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(0, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(1, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(0, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
     }
 
     @Test
@@ -245,7 +245,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
-        assertEquals(2, beforeClearingShiftCare!!.attachments.size)
+        assertEquals(2, beforeClearingShiftCare.attachments.size)
 
         // when
         val updatedApplication =
@@ -264,8 +264,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
-        assertEquals(1, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(0, afterClearingShiftCare!!.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(1, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size)
+        assertEquals(0, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
     }
 
     private fun insertSentApplication(
