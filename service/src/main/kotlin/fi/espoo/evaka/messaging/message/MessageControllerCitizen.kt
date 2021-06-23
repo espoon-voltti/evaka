@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -64,7 +65,7 @@ class MessageControllerCitizen(
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, false) }
     }
 
     @GetMapping("/sent")
@@ -77,6 +78,16 @@ class MessageControllerCitizen(
         Audit.MessagingSentMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
         return db.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+    }
+
+    @GetMapping("/receivers")
+    fun getReceivers(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+    ): List<MessageAccount> {
+        Audit.MessagingSentMessagesRead.log()
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.read { it.getCitizenReceivers(accountId) }
     }
 
     data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<UUID>)
@@ -98,6 +109,32 @@ class MessageControllerCitizen(
             recipientAccountIds = body.recipientAccountIds,
             content = body.content
         )
+    }
+
+    @PostMapping("/send")
+    fun newMessage(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: CitizenMessage,
+    ): List<UUID> {
+        val accountId = requireMessageAccountAccess(db, user)
+        return db.transaction { tx ->
+            val contentId = tx.insertMessageContent(body.content, accountId)
+            val sentAt = HelsinkiDateTime.now()
+            body.recipients.map {
+                val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
+                val messageId =
+                    tx.insertMessage(
+                        contentId = contentId,
+                        threadId = threadId,
+                        sender = accountId,
+                        sentAt = sentAt,
+                        recipientNames = listOf(it.name)
+                    )
+                tx.insertRecipients(setOf(it.id), messageId)
+                threadId
+            }
+        }
     }
 
     private fun requireMessageAccountAccess(

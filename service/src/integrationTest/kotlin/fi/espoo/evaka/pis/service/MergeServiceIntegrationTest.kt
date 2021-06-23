@@ -262,7 +262,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         }
         assertEquals(
             listOf(0, 1),
-            receivedMessageCounts(receiverAccount, receiverDuplicateAccount)
+            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
         )
 
         db.transaction {
@@ -272,12 +272,12 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
         assertEquals(
             listOf(1, 0),
-            receivedMessageCounts(receiverAccount, receiverDuplicateAccount)
+            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
         )
     }
 
-    private fun receivedMessageCounts(vararg accountIds: UUID): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1).total }
+    private fun receivedMessageCounts(accountIds: List<UUID>, isEmployee: Boolean): List<Int> = db.read { tx ->
+        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
     }
 
     @Test

@@ -50,7 +50,7 @@ class MessageController(
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log(accountId)
         requireMessageAccountAccess(db, user, accountId)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
     }
 
     @GetMapping("/{accountId}/sent")

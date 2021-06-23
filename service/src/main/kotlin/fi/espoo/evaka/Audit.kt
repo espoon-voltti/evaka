@@ -133,6 +133,7 @@ enum class Audit(
     MessagingMessageReceiversRead("messaging.message.receivers.read"),
     MessagingReceivedMessagesRead("messaging.messages.received-messages.read"),
     MessagingSentMessagesRead("messaging.messages.sent-messages.read"),
+    MessagingGetReceivers("messaging.messages.receivers.read"),
     MessagingNewMessageWrite("messaging.messages.new-message.write"),
     MessagingDraftsRead("messaging.messages.drafts.read"),
     MessagingCreateDraft("messaging.messages.new-draft.write"),

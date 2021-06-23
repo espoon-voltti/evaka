@@ -138,6 +138,16 @@ const en: Translations = {
     types: {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'
+    },
+    messageEditor: {
+      newMessage: 'New message',
+      receivers: 'Receivers',
+      title: 'Title',
+      message: 'Message',
+      deleteDraft: 'Delete draft',
+      send: 'Send',
+      search: 'Search',
+      noResults: 'No results'
     }
   },
   applications: {
