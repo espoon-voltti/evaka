@@ -11,8 +11,7 @@ import Title from 'lib-components/atoms/Title'
 import { useTranslation } from '../../../state/i18n'
 import {
   DaycarePlacementPlan,
-  PlacementPlanConfirmationStatus,
-  PlacementPlanRejectReason
+  PlacementPlanConfirmationStatus
 } from '../../../types/unit'
 import { Gap } from 'lib-components/white-space'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -24,6 +23,7 @@ import { UIContext } from '../../../state/ui'
 import PlacementProposalRow from '../../../components/unit/tab-placement-proposals/PlacementProposalRow'
 import { UUID } from '../../../types'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 const ButtonRow = styled.div`
   display: flex;

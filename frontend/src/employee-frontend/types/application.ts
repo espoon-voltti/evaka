@@ -6,10 +6,7 @@ import { UUID } from '../types/index'
 import LocalDate from 'lib-common/local-date'
 import { Decision } from '../types/decision'
 import { PersonDetails } from '../types/person'
-import {
-  PlacementPlanConfirmationStatus,
-  PlacementPlanRejectReason
-} from '../types/unit'
+import { PlacementPlanConfirmationStatus } from '../types/unit'
 import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,
@@ -23,6 +20,7 @@ import {
   PlacementType,
   ServiceNeedOptionSummary
 } from 'lib-common/api-types/serviceNeed/common'
+import { PlacementPlanRejectReason } from 'lib-customizations/types'
 
 export interface ApplicationSummary {
   applicationId: UUID

@@ -1234,6 +1234,7 @@ export const fi = {
           'TILARAJOITE, sovittu varhaiskasvatuksen aluepäällikön kanssa.',
         REASON_2:
           'YKSIKÖN KOKONAISTILANNE, sovittu varhaiskasvatuksen aluepäällikön kanssa.',
+        REASON_3: '',
         OTHER: 'Muu syy'
       },
       infoBoxTitle: 'Ohje yksikön johtajalle',

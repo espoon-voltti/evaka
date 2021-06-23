@@ -13,9 +13,15 @@ import { merge } from 'lodash'
 const {
   cityLogo,
   featureFlags,
-  assistanceMeasures
+  assistanceMeasures,
+  placementPlanRejectReasons
 }: EmployeeCustomizations = customizations
-export { cityLogo, featureFlags, assistanceMeasures }
+export {
+  cityLogo,
+  featureFlags,
+  assistanceMeasures,
+  placementPlanRejectReasons
+}
 
 export type Lang = 'fi'
 
