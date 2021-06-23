@@ -21,8 +21,7 @@ import {
 } from 'lib-common/api-types/staffAttendances'
 import { Loading, Result } from 'lib-common/api'
 import { getStaffAttendances, postStaffAttendance } from '../../api/absences'
-import { useDebounce } from 'lib-common/utils/useDebounce'
-import { formatDecimal } from 'lib-common/utils/number'
+import { formatDecimal, stringToNumber } from 'lib-common/utils/number'
 import { faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
@@ -177,48 +176,50 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
   attendance,
   updateAttendance
 }: StaffAttendanceCellProps) {
-  const initial: number | undefined = attendance?.count
-  const [inputValue, setInputValue] = useState(formatDecimal(initial))
-  const [updatedValue, setUpdatedValue] = useState<number>()
-  const [editing, setEditing] = useState(false)
+  const mountedRef = useRef(true)
+  useEffect(
+    () => () => {
+      mountedRef.current = false
+    },
+    []
+  )
 
-  useEffect(() => {
-    if (!editing) {
-      setInputValue(formatDecimal(initial))
+  const initialValue: string = formatDecimal(attendance?.count) ?? ''
+  const [value, setValue] = useState(initialValue)
+
+  const save = useCallback(() => {
+    if (value !== initialValue) {
+      const numberValue = stringToNumber(value)
+      if (numberValue !== undefined) {
+        updateAttendance(numberValue).catch(() => {
+          if (mountedRef.current) {
+            setValue(initialValue)
+          }
+        })
+      }
     }
-  }, [initial, editing])
+  }, [value, initialValue, updateAttendance])
 
-  const debouncedValue = useDebounce(updatedValue, 400)
-
+  // Save after a timeout
   useEffect(() => {
-    if (debouncedValue !== undefined) {
-      updateAttendance(debouncedValue).catch(() => {
-        setInputValue(formatDecimal(initial))
-      })
-      setUpdatedValue(undefined)
+    const handle = setTimeout(() => {
+      void save()
+    }, 2000)
+    return () => {
+      clearTimeout(handle)
     }
-  }, [updateAttendance, debouncedValue, initial])
-
-  const update = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUpdatedValue(parseFloat(event.target.value.replace(',', '.')) || 0)
-    setInputValue(event.target.value)
-  }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const toggleEditing = useCallback(() => setEditing((prev) => !prev), [
-    editing
-  ])
+  }, [save])
 
   return (
-    <div className={'field staff-attendance-cell'}>
-      {/*input component from styleguide needs to be updated to include onKey events*/}
-      <div className={'control'}>
+    <div className="field staff-attendance-cell">
+      <div className="control">
         <input
-          className={'input'}
-          value={inputValue ? inputValue + '' : ''}
-          onChange={update}
-          onFocus={toggleEditing}
-          onBlur={toggleEditing}
+          className="input"
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value)
+          }}
+          onBlur={() => save()}
           data-qa="staff-attendance-input"
         />
       </div>
