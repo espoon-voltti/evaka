@@ -130,7 +130,7 @@ function VasuInitialization({ childId }: { childId: UUID }) {
     <InitializationContainer>
       <AddButtonRow
         onClick={loadTemplates}
-        disabled={!!templates}
+        disabled={templates?.isSuccess || templates?.isLoading}
         text={i18n.childInformation.vasu.createNew}
       />
       {templates?.mapAll({
