@@ -198,7 +198,7 @@ fun Database.Read.fetchApplicationSummaries(
                 ApplicationBasis.CLUB_CARE -> "(f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean = true"
                 ApplicationBasis.DAYCARE -> "(f.document ->> 'wasOnDaycare')::boolean = true"
                 ApplicationBasis.EXTENDED_CARE -> "(f.document ->> 'extendedCare')::boolean = true"
-                ApplicationBasis.DUPLICATE_APPLICATION -> "array_length(duplicates.duplicate_application_ids, 1) > 0"
+                ApplicationBasis.DUPLICATE_APPLICATION -> "has_duplicates"
                 ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
                 ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
             }
@@ -267,7 +267,7 @@ fun Database.Read.fetchApplicationSummaries(
             COALESCE((f.document ->> 'urgent')::boolean, false) as urgent,
             (SELECT COALESCE(array_length(attachments.attachment_ids, 1), 0)) AS attachmentCount,
             COALESCE((f.document ->> 'extendedCare')::boolean, false) as extendedCare,
-            (SELECT COALESCE(array_length(duplicates.duplicate_application_ids, 1), 0) > 0) AS has_duplicates,
+            has_duplicates,
             pp.unit_confirmation_status,
             pp.unit_reject_reason,
             pp.unit_reject_other_reason,
@@ -291,19 +291,18 @@ fun Database.Read.fetchApplicationSummaries(
         ) ppd ON ppd.application_id = a.id
         JOIN daycare d ON COALESCE(ppd.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
         JOIN care_area ca ON d.care_area_id = ca.id
-        LEFT JOIN (
-            SELECT
-                l.id, array_agg(r.id) AS duplicate_application_ids
-            FROM
-                application l, application r
-            WHERE
+        JOIN (
+            SELECT l.id, EXISTS(
+              SELECT 1
+              FROM application r
+              WHERE
                 l.child_id = r.child_id
                 AND l.id <> r.id
                 AND l.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
                 AND r.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
-            GROUP by
-                l.id
-        ) duplicates ON a.id = duplicates.id
+            ) as has_duplicates
+            FROM application l
+        ) duplicates ON duplicates.id = a.id
         LEFT JOIN (
             SELECT
                 appl.id, array_agg(att.id) AS attachment_ids
