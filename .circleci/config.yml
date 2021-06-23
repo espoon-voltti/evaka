@@ -100,6 +100,19 @@ aliases:
         - frontend/.yarn/cache
         - frontend/node_modules
 
+  - &restore_frontend_comm_deps
+    restore_cache:
+      keys:
+        - frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
+        - frontend-comm-deps-v1-
+        - frontend-comm-deps-
+
+  - &store_frontend_comm_deps
+    save_cache:
+      key: frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
+      paths:
+        - frontend/vendor/fortawesome
+
   - &restore_service_gradle
     restore_cache:
       keys:
@@ -313,6 +326,7 @@ commands:
                 command: |
                   sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
       - *restore_frontend_deps
+      - *restore_frontend_comm_deps
       - run:
           name: Install frontend dependencies from Yarn cache
           working_directory: *workspace_frontend
@@ -553,16 +567,14 @@ jobs:
     executor: aws_executor
     steps:
       - *restore_repo
+      - *restore_frontend_comm_deps
       - run: replace-credentials
       - run:
           name: Fetch commercial frontend dependencies
           working_directory: *workspace_frontend
           command: |
             ./init-pro-icons.sh
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - frontend/vendor/fortawesome/*
+      - *store_frontend_comm_deps
       - notify_slack
 
   clone_infra_repo:
@@ -672,8 +684,8 @@ jobs:
     executor: frontend_executor
     steps:
       - *restore_repo
-      - attach_root_workspace
       - *restore_frontend_deps
+      - *restore_frontend_comm_deps
       - run:
           working_directory: *workspace_frontend
           command: yarn install --immutable
