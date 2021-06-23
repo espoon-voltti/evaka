@@ -20,6 +20,7 @@ export interface VasuDocumentSummary {
 
 export interface VasuDocumentResponse {
   id: UUID
+  documentState: VasuDocumentState
   child: {
     id: UUID
     firstName: string

@@ -7,10 +7,10 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
 import styled from 'styled-components'
 import { Result } from '../../../lib-common/api'
+import { formatDate } from '../../../lib-common/date'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import { AddButtonRow } from '../../../lib-components/atoms/buttons/AddButton'
 import InlineButton from '../../../lib-components/atoms/buttons/InlineButton'
-import { StaticChip } from '../../../lib-components/atoms/Chip'
 import Radio from '../../../lib-components/atoms/form/Radio'
 import ErrorSegment from '../../../lib-components/atoms/state/ErrorSegment'
 import { CollapsibleContentArea } from '../../../lib-components/layout/Container'
@@ -19,17 +19,14 @@ import { FullScreenDimmedSpinner } from '../../../lib-components/molecules/FullS
 import FormModal from '../../../lib-components/molecules/modals/FormModal'
 import { H2, H3 } from '../../../lib-components/typography'
 import { defaultMargins } from '../../../lib-components/white-space'
-import colors from '../../../lib-customizations/common'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { UUID } from '../../types'
-import { formatDate } from 'lib-common/date'
-
+import { VasuStateChip } from '../common/VasuStateChip'
 import {
   createVasuDocument,
   getVasuDocumentSummaries,
-  VasuDocumentState,
   VasuDocumentSummary
 } from '../vasu/api'
 import {
@@ -41,24 +38,6 @@ const StateCell = styled(Td)`
   display: flex;
   justify-content: flex-end;
 `
-
-const chipColors: Record<VasuDocumentState, string> = {
-  DRAFT: colors.accents.emerald,
-  CREATED: colors.accents.violet,
-  REVIEWED: colors.primary,
-  CLOSED: colors.greyscale.medium
-}
-
-type ChipLabels = Record<VasuDocumentState, string>
-
-interface StateChipProps {
-  state: VasuDocumentState
-  labels: ChipLabels
-}
-
-function StateChip({ labels, state }: StateChipProps) {
-  return <StaticChip color={chipColors[state]}>{labels[state]}</StaticChip>
-}
 
 interface TemplateSelectionModalProps {
   loading: boolean
@@ -227,9 +206,9 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
             </Td>
             <Td>{getDates(vasu)}</Td>
             <StateCell>
-              <StateChip
+              <VasuStateChip
                 state={vasu.documentState}
-                labels={i18n.childInformation.vasu.states}
+                labels={i18n.vasu.states}
               />
             </StateCell>
             <Td>
