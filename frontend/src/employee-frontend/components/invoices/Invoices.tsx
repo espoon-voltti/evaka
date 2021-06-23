@@ -35,6 +35,7 @@ import { SortByInvoices } from '../../api/invoicing'
 import Pagination from 'lib-components/Pagination'
 import { InvoicesActions } from './invoices-state'
 import LocalDate from 'lib-common/local-date'
+import { uniqBy } from 'lodash'
 
 interface Props {
   actions: InvoicesActions
@@ -287,7 +288,12 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
             <NameWithSsn {...item.headOfFamily} i18n={i18n} />
           </Td>
           <Td>
-            <ChildrenCell people={item.rows.map(({ child }) => child)} />
+            <ChildrenCell
+              people={uniqBy(
+                item.rows.map(({ child }) => child),
+                ({ id }) => id
+              )}
+            />
           </Td>
           <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
           <Td data-qa="invoice-created-at">
