@@ -13,5 +13,6 @@ interface DailySchedule {
 class DefaultDailySchedule : DailySchedule {
     override fun getTimeForJob(job: DailyJob): LocalTime? = when (job) {
         DailyJob.EndOfDayAttendanceUpkeep -> LocalTime.of(0, 0)
+        DailyJob.InactivePeopleCleanup -> LocalTime.of(3, 0)
     }
 }

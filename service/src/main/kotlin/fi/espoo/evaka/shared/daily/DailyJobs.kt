@@ -4,12 +4,15 @@
 
 package fi.espoo.evaka.shared.daily
 
+import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 
 enum class DailyJob(val fn: (DailyJobs, Database.Connection) -> Unit) {
     EndOfDayAttendanceUpkeep(DailyJobs::endOfDayAttendanceUpkeep),
+    InactivePeopleCleanup(DailyJobs::inactivePeopleCleanup),
 }
 
 @Component
@@ -31,5 +34,9 @@ class DailyJobs(asyncJobRunner: AsyncJobRunner) {
                 """.trimIndent()
             ).execute()
         }
+    }
+
+    fun inactivePeopleCleanup(db: Database.Connection) {
+        db.transaction { cleanUpInactivePeople(it, LocalDate.now()) }
     }
 }
