@@ -693,46 +693,14 @@ jobs:
 
   # E2E JOBS
 
-  e2e-test-citizen:
+  e2e-test-testcafe:
+    parameters:
+      suite:
+        type: string
     executor: e2e_executor
     steps:
       - e2e_test:
-          suite: e2e-ci-citizen
-      - notify_slack
-
-  e2e-test-invoicing:
-    executor: e2e_executor
-    steps:
-      - e2e_test:
-          suite: e2e-ci-invoicing
-      - notify_slack
-
-  e2e-test-employee:
-    executor: e2e_executor
-    steps:
-      - e2e_test:
-          suite: e2e-ci-employee
-      - notify_slack
-
-  e2e-test-employee-2:
-    executor: e2e_executor
-    steps:
-      - e2e_test:
-          suite: e2e-ci-employee-2
-      - notify_slack
-
-  e2e-test-mobile:
-    executor: e2e_executor
-    steps:
-      - e2e_test:
-          suite: e2e-ci-mobile
-      - notify_slack
-
-  e2e-test-messaging:
-    executor: e2e_executor
-    steps:
-      - e2e_test:
-          suite: e2e-ci-messaging
+          suite: e2e-ci-<< parameters.suite >>
       - notify_slack
 
   e2e-test-playwright:
@@ -1053,42 +1021,23 @@ workflows:
             - sentry-release
           requires:
             - fetch_private_dependencies
-      - e2e-test-citizen:
+
+      - e2e-test-testcafe:
           <<: *default_contexts
+          name: e2e-test-<< matrix.suite >>
           requires:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
-      - e2e-test-invoicing:
-          <<: *default_contexts
-          requires:
-            - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
-      - e2e-test-employee:
-          <<: *default_contexts
-          requires:
-            - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
-      - e2e-test-employee-2:
-          <<: *default_contexts
-          requires:
-            - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
-      - e2e-test-mobile:
-          <<: *default_contexts
-          requires:
-            - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
-      - e2e-test-messaging:
-          <<: *default_contexts
-          requires:
-            - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
+          matrix:
+            parameters:
+              suite:
+                - citizen
+                - invoicing
+                - employee
+                - employee-2
+                - mobile
+                - messaging
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
