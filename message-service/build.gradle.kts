@@ -64,8 +64,10 @@ idea {
 val ktlint by configurations.creating
 
 dependencies {
+    api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
+    runtimeOnly(platform(project(":evaka-bom")))
     integrationTestImplementation(platform(project(":evaka-bom")))
 
     // Kotlin + core
