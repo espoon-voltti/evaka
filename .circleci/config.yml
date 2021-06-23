@@ -253,6 +253,9 @@ commands:
       yarn_version:
         type: string
         default: *yarn_version
+      install_browsers:
+        type: boolean
+        default: true
     steps:
       - *restore_repo
       - attach_root_workspace
@@ -279,25 +282,36 @@ commands:
             echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
             sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
             yarn --version
-      - run:
-          name: Install chrome
-          command: |
-            curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-              && (sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)  \
-              && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
-              && sudo sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
-                  "/opt/google/chrome/google-chrome" \
-              && google-chrome --version
-            CHROME_VERSION="$(google-chrome --version)" \
-              && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} \
-              && CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) \
-              && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
-              && cd /tmp \
-              && unzip chromedriver_linux64.zip \
-              && rm -rf chromedriver_linux64.zip \
-              && sudo mv chromedriver /usr/local/bin/chromedriver \
-              && sudo chmod +x /usr/local/bin/chromedriver \
-              && chromedriver --version
+      - when:
+          condition: << parameters.install_browsers >>
+          steps:
+            - run:
+                name: Install browsers
+                command: |
+                  curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+                    && (sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)  \
+                    && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
+                    && sudo sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
+                        "/opt/google/chrome/google-chrome" \
+                    && google-chrome --version
+                  CHROME_VERSION="$(google-chrome --version)" \
+                    && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} \
+                    && CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) \
+                    && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
+                    && cd /tmp \
+                    && unzip chromedriver_linux64.zip \
+                    && rm -rf chromedriver_linux64.zip \
+                    && sudo mv chromedriver /usr/local/bin/chromedriver \
+                    && sudo chmod +x /usr/local/bin/chromedriver \
+                    && chromedriver --version
+      - when:
+          condition:
+            not: << parameters.install_browsers >>
+          steps:
+            - run:
+                name: Install Playwright dependencies
+                command: |
+                  sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
       - *restore_frontend_deps
       - run:
           name: Install frontend dependencies from Yarn cache
@@ -325,70 +339,6 @@ commands:
       - store_artifacts:
           path: frontend/videos
           destination: videos
-      - store_test_results:
-          path: frontend/test-results
-
-  e2e_test_playwright:
-    parameters:
-      suite:
-        type: string
-      yarn_version:
-        type: string
-        default: *yarn_version
-    steps:
-      - *restore_repo
-      - attach_root_workspace
-      - run:
-          name: Load docker images
-          command: |
-            docker load -i apigw/image.tar
-            docker load -i service/image.tar
-      - login_docker_hub
-      - run:
-          name: Start up compose stack
-          working_directory: *workspace_compose
-          command: |
-            docker-compose build
-            CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
-      - run:
-          name: Install Node.js and yarn
-          command: |
-            export DEBIAN_FRONTEND=noninteractive
-            nvm install
-            node --version
-
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
-            yarn --version
-      - *restore_frontend_deps
-      - run:
-          name: Install frontend dependencies from Yarn cache
-          working_directory: *workspace_frontend
-          command: yarn install --immutable --immutable-cache
-      - run:
-          name: Install Playwright dependencies
-          command: |
-            sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
-      - run:
-          name: Run e2e tests against compose
-          working_directory: *workspace_frontend
-          command: |
-            nvm use
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
-            yarn << parameters.suite >>
-      - run:
-          name: Collect docker-compose logs
-          command: |
-            cd << pipeline.parameters.workspace_root >>/compose
-            ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
-          when: always
-      - store_artifacts:
-          path: /tmp/docker-compose-logs.txt
-          destination: docker-compose-logs.txt
-      - store_artifacts:
-          path: frontend/screenshots
-          destination: screenshots
       - store_test_results:
           path: frontend/test-results
 
@@ -788,8 +738,10 @@ jobs:
   e2e-test-playwright:
     executor: e2e_executor
     steps:
-      - e2e_test_playwright:
+      - e2e_test:
           suite: e2e-ci-playwright
+          # Playwright doesn't need Chrome externally installed
+          install_browsers: false
       - notify_slack
 
   # DEPLOY JOBS
