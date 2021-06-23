@@ -163,7 +163,7 @@ private fun generateNewValueDecisions(
                     }
                     val feeAlterationsWithEffects =
                         toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
-                    val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumBy { it.effect }
+                    val finalCoPayment = coPaymentBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
                     val ageCoefficient = getAgeCoefficient(period, voucherChild.dateOfBirth)
                     val value = calculateVoucherValue(baseValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)

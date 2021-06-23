@@ -260,7 +260,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,
                     lastName = "Meikäläinen",
-                    email = "${firstName.toLowerCase()}.meikalainen@example.com",
+                    email = "${firstName.lowercase()}.meikalainen@example.com",
                     language = "fi"
                 )
             )

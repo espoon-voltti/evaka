@@ -202,7 +202,7 @@ fun createFeeDecisionChildFixture(
     siblingDiscount = siblingDiscount,
     fee = fee,
     feeAlterations = feeAlterations,
-    finalFee = fee + feeAlterations.sumBy { it.effect }
+    finalFee = fee + feeAlterations.sumOf { it.effect }
 )
 
 fun createFeeDecisionFixture(
@@ -266,7 +266,7 @@ fun createVoucherValueDecisionFixture(
     siblingDiscount = siblingDiscount,
     coPayment = coPayment,
     feeAlterations = feeAlterations,
-    finalCoPayment = coPayment + feeAlterations.sumBy { it.effect }
+    finalCoPayment = coPayment + feeAlterations.sumOf { it.effect }
 )
 
 fun createInvoiceRowFixture(childId: UUID) = InvoiceRow(

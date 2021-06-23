@@ -74,7 +74,7 @@ class MessageNotificationEmailService(
     }
 
     private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr?.toLowerCase()) {
+        return when (languageStr?.lowercase()) {
             "sv" -> Language.sv
             "en" -> Language.en
             else -> Language.fi

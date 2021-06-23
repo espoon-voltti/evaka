@@ -156,7 +156,7 @@ private fun generateFeeDecisions2(
                         }
                         val feeAlterationsWithEffects =
                             toFeeAlterationsWithEffects(feeBeforeAlterations, relevantFeeAlterations)
-                        val finalFee = feeBeforeAlterations + feeAlterationsWithEffects.sumBy { it.effect }
+                        val finalFee = feeBeforeAlterations + feeAlterationsWithEffects.sumOf { it.effect }
 
                         FeeDecisionChild(
                             child,

@@ -26,4 +26,4 @@ enum class MessageLanguage {
 }
 
 fun langWithDefault(lang: String): MessageLanguage =
-    if (lang.toLowerCase() == "sv") MessageLanguage.SV else MessageLanguage.FI
+    if (lang.lowercase() == "sv") MessageLanguage.SV else MessageLanguage.FI
