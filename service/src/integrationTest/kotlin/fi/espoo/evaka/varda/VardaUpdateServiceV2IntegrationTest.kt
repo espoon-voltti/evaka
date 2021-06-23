@@ -59,6 +59,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
             it.insertGeneralTestFixtures()
         }
         insertVardaUnit(db)
+        db.transaction {
+            it.createUpdate("INSERT INTO guardian(guardian_id, child_id) VALUES (:guardianId, :childId)")
+                .bind("guardianId", testAdult_1.id)
+                .bind("childId", testChild_1.id)
+                .execute()
+        }
         mockEndpoint.cleanUp()
     }
 
