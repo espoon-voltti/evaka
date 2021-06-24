@@ -47,7 +47,7 @@ data class KoskiUnitRaw(
             perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
         ),
         toimipiste = Toimipiste(ophUnitOid),
-        suorituskieli = Suorituskieli(daycareLanguage.toUpperCase()),
+        suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
         tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY)
     )
     else Suoritus(
@@ -56,7 +56,7 @@ data class KoskiUnitRaw(
             perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
         ),
         toimipiste = Toimipiste(ophUnitOid),
-        suorituskieli = Suorituskieli(daycareLanguage.toUpperCase()),
+        suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
         tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PRESCHOOL)
     )
 

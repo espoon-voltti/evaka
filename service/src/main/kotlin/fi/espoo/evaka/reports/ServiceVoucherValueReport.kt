@@ -57,7 +57,7 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
                     ServiceVoucherValueUnitAggregate(
                         unit = unit,
                         childCount = rows.map { it.childId }.distinct().size,
-                        monthlyPaymentSum = rows.sumBy { row -> row.realizedAmount }
+                        monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount }
                     )
                 }
 
@@ -98,7 +98,7 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
                 ServiceVoucherUnitReport(
                     locked = snapshotTime,
                     rows = rows,
-                    voucherTotal = rows.sumBy { it.realizedAmount }
+                    voucherTotal = rows.sumOf { it.realizedAmount }
                 )
             )
         }

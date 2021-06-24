@@ -12,7 +12,7 @@ GIT_SHA=$(git rev-parse HEAD)
 
 rm -rf target
 ./gradlew -q assemble
-unzip -oq build/libs/*.jar -d target
+unzip -oq build/libs/evaka-message-service.jar -d target
 
 docker build --build-arg commit="$GIT_SHA" --build-arg build=local -t "${DOCKER_IMAGE}:${DOCKER_TAG}" .
 docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${DOCKER_IMAGE}:${GIT_SHA}"

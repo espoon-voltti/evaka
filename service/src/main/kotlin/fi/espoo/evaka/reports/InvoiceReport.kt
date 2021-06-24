@@ -57,7 +57,7 @@ private fun Database.Read.getInvoiceReportWithRows(period: DateRange): InvoiceRe
             InvoiceReportRow(
                 areaCode = agreementType,
                 amountOfInvoices = invoices.size,
-                totalSumCents = invoices.sumBy { it.totalPrice() },
+                totalSumCents = invoices.sumOf { it.totalPrice() },
                 amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
                 amountWithoutAddress = invoices.count { withoutAddress(it) },
                 amountWithZeroPrice = invoices.count { it.totalPrice() == 0 }
@@ -90,9 +90,9 @@ data class InvoiceReportRow(
 data class InvoiceReport(
     val reportRows: List<InvoiceReportRow>
 ) {
-    val totalAmountOfInvoices: Int = reportRows.sumBy { it.amountOfInvoices }
-    val totalSumCents: Int = reportRows.sumBy { it.totalSumCents }
-    val totalAmountWithoutSSN: Int = reportRows.sumBy { it.amountWithoutSSN }
-    val totalAmountWithoutAddress: Int = reportRows.sumBy { it.amountWithoutAddress }
-    val totalAmountWithZeroPrice: Int = reportRows.sumBy { it.amountWithZeroPrice }
+    val totalAmountOfInvoices: Int = reportRows.sumOf { it.amountOfInvoices }
+    val totalSumCents: Int = reportRows.sumOf { it.totalSumCents }
+    val totalAmountWithoutSSN: Int = reportRows.sumOf { it.amountWithoutSSN }
+    val totalAmountWithoutAddress: Int = reportRows.sumOf { it.amountWithoutAddress }
+    val totalAmountWithZeroPrice: Int = reportRows.sumOf { it.amountWithZeroPrice }
 }

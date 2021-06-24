@@ -121,11 +121,11 @@ class FridgeFamilyService(
 
         val sameStreetAddress = set1
             .filter { it.streetAddress.isNotEmpty() }
-            .map { Pair(it.streetAddress.toLowerCase(), it.city.toLowerCase()) }
+            .map { Pair(it.streetAddress.lowercase(), it.city.lowercase()) }
             .intersect(
                 set2
                     .filter { it.streetAddress.isNotEmpty() }
-                    .map { Pair(it.streetAddress.toLowerCase(), it.city.toLowerCase()) }
+                    .map { Pair(it.streetAddress.lowercase(), it.city.lowercase()) }
             )
             .isNotEmpty()
 

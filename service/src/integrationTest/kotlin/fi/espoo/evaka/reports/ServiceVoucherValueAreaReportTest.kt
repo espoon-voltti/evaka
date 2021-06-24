@@ -137,7 +137,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
             createVoucherDecision(janFirst, testDaycare.id, 87000, 28800, testAdult_1.id, testChild_1),
             createVoucherDecision(janFirst, testDaycare.id, 52200, 28800, testAdult_2.id, testChild_2),
             createVoucherDecision(janFirst, testDaycare.id, 134850, 0, testAdult_3.id, testChild_3)
-        ).sumBy { decision ->
+        ).sumOf { decision ->
             decision.voucherValue - decision.coPayment
         }
     }

@@ -30,7 +30,7 @@ dependencies {
 }
 
 project.wsdl2javaExt {
-    cxfVersion = "3.3.7"
+    cxfVersion = "3.4.4"
 }
 
 tasks {

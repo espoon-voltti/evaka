@@ -73,7 +73,7 @@ class PersonService(
             !person1.restrictedDetailsEnabled && !person2.restrictedDetailsEnabled &&
             !person1.streetAddress.isNullOrBlank() && !person2.streetAddress.isNullOrBlank() &&
             !person1.postalCode.isNullOrBlank() && !person2.postalCode.isNullOrBlank() &&
-            person1.streetAddress.toLowerCase().equals(person2.streetAddress.toLowerCase()) &&
+            person1.streetAddress.lowercase().equals(person2.streetAddress.lowercase()) &&
             person1.postalCode.equals(person2.postalCode)
     }
 
