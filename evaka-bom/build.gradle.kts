@@ -8,6 +8,7 @@ plugins {
 
 object Version {
     const val bouncyCastle = "1.69"
+    const val cxf = "3.4.4"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
     const val mockito = "3.11.2"
@@ -39,6 +40,7 @@ dependencies {
         api("net.bytebuddy:byte-buddy:1.11.5")
         api("net.logstash.logback:logstash-logback-encoder:6.6")
         api("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:2.7.1")
+        api("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:${Version.cxf}") // not included in cxf-bom
         api("org.apache.commons:commons-pool2:2.10.0")
         api("org.apache.commons:commons-text:1.9")
         api("org.apache.wss4j:wss4j-ws-security-dom:2.3.0")
@@ -59,6 +61,7 @@ dependencies {
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.12.3"))
+    api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
     api(platform("org.jdbi:jdbi3-bom:3.20.1"))
     api(platform("org.jetbrains.kotlin:kotlin-bom:1.5.10"))
     api(platform("org.junit:junit-bom:5.7.2"))
