@@ -675,6 +675,7 @@ const en: Translations = {
         },
         assistanceNeed: 'Support need',
         assistanceNeeded: 'The child needs support',
+        assistanceNeedLabel: 'Description',
         assistanceNeedPlaceholder:
           'Describe the need for support for the child.',
         assistanceNeedInstructions: {

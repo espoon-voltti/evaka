@@ -17,7 +17,8 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H2, Label } from 'lib-components/typography'
-import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import LocalDate from 'lib-common/local-date'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'

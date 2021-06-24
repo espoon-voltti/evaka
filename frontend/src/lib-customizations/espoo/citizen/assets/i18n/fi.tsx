@@ -624,6 +624,7 @@ export default {
         },
         assistanceNeed: 'Tuen tarve',
         assistanceNeeded: 'Lapsella on tuen tarve',
+        assistanceNeedLabel: 'Tuen tarpeen kuvaus',
         assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
         assistanceNeedInstructions: {
           DAYCARE:

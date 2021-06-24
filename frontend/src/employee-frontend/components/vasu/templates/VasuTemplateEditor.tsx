@@ -31,9 +31,8 @@ import {
   TextQuestion,
   VasuQuestion
 } from '../vasu-content'
-import InputField, {
-  TextArea
-} from '../../../../lib-components/atoms/form/InputField'
+import InputField from '../../../../lib-components/atoms/form/InputField'
+import TextArea from '../../../../lib-components/atoms/form/TextArea'
 import colors from '../../../../lib-customizations/common'
 import {
   FixedSpaceColumn,
