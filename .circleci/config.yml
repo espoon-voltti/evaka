@@ -35,7 +35,9 @@ aliases:
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202104-01
-  - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:18.04-853d39120a28cf475e0c8aa5b25a5973e198b27a
+  - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
+  - &builder_aws_docker_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:docker-bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
+  - &builder_aws_terraform_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:terraform-bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
 
   - &default_contexts
     context:
@@ -159,10 +161,18 @@ aliases:
         - message-service-lib/build
 
 executors:
-  aws_executor:
+  aws_core_executor:
     <<: *default_config
     docker:
-      - image: *builder_aws_image
+      - image: *builder_aws_core_image
+  aws_docker_executor:
+    <<: *default_config
+    docker:
+      - image: *builder_aws_docker_image
+  aws_terraform_executor:
+    <<: *default_config
+    docker:
+      - image: *builder_aws_terraform_image
   apigw_executor:
     <<: *node_config
     docker:
@@ -575,7 +585,7 @@ jobs:
       - notify_slack
 
   fetch_private_dependencies:
-    executor: aws_executor
+    executor: aws_core_executor
     steps:
       - *restore_repo
       - *restore_frontend_comm_deps
@@ -589,7 +599,7 @@ jobs:
       - notify_slack
 
   clone_infra_repo:
-    executor: aws_executor
+    executor: aws_terraform_executor
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -663,7 +673,7 @@ jobs:
       - notify_slack
 
   apigw_build_image:
-    executor: aws_executor
+    executor: aws_docker_executor
     steps:
       - *restore_repo
       - attach_root_workspace
@@ -681,7 +691,7 @@ jobs:
       - notify_slack
 
   apigw_push_image:
-    executor: aws_executor
+    executor: aws_docker_executor
     steps:
       - attach_root_workspace
       - setup_remote_docker:
@@ -748,7 +758,7 @@ jobs:
   # DEPLOY JOBS
 
   services_deploy:
-    executor: aws_executor
+    executor: aws_terraform_executor
     parameters:
       target_env:
         type: string
@@ -758,7 +768,7 @@ jobs:
       - notify_slack
 
   frontend_deploy:
-    executor: aws_executor
+    executor: aws_core_executor
     parameters:
       target_env:
         type: string
@@ -768,7 +778,7 @@ jobs:
       - notify_slack
 
   proxy_build_and_push_image:
-    executor: aws_executor
+    executor: aws_docker_executor
     steps:
       - *restore_repo
       - setup_authenticated_remote_docker
@@ -832,7 +842,7 @@ jobs:
       - notify_slack
 
   service_build_image:
-    executor: aws_executor
+    executor: aws_docker_executor
     steps:
       - *restore_repo
       - attach_root_workspace
@@ -912,7 +922,7 @@ jobs:
       - notify_slack
 
   service_push_image:
-    executor: aws_executor
+    executor: aws_docker_executor
     steps:
       - *restore_repo
       - attach_root_workspace
@@ -991,7 +1001,7 @@ jobs:
       - notify_slack
 
   message_service_build_and_push_image:
-    executor: aws_executor
+    executor: aws_docker_executor
     steps:
       - *restore_repo
       - attach_root_workspace
