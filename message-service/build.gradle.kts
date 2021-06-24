@@ -158,7 +158,7 @@ tasks.getByName<Jar>("jar") {
 }
 
 project.wsdl2javaExt {
-    cxfVersion = "3.4.2"
+    cxfVersion = "3.4.4"
 }
 
 tasks {
