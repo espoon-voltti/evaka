@@ -64,17 +64,6 @@ aliases:
       GRADLE_USER_HOME: << pipeline.parameters.workspace_root >>/.gradle-user-home
       JAVA_TOOL_OPTIONS: "-Xmx2048m"
 
-  - &restore_repo
-    restore_cache:
-      keys:
-        - repo-v1-{{ .Branch }}-{{ .Revision }}
-
-  - &store_repo
-    save_cache:
-      key: repo-v1-{{ .Branch }}-{{ .Revision }}
-      paths:
-        - .
-
   - &restore_apigw_deps
     restore_cache:
       keys:
@@ -222,6 +211,59 @@ commands:
       - attach_workspace:
           at: << pipeline.parameters.workspace_root >>
 
+  # Caching commands
+
+  store_repo:
+    steps:
+      - save_cache:
+          key: repo-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - .
+  restore_repo:
+    steps:
+      - restore_cache:
+          keys:
+            - repo-v1-{{ .Branch }}-{{ .Revision }}
+  store_docker_image:
+    parameters:
+      dir:
+        type: string
+    steps:
+      - save_cache:
+          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          paths:
+            - << pipeline.parameters.workspace_root >>/<< parameters.dir >>/image.tar
+  restore_docker_image:
+    parameters:
+      dir:
+        type: string
+    steps:
+      - restore_cache:
+          key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+      - run: docker load -i << parameters.dir >>/image.tar
+  store_service_build:
+    steps:
+      - save_cache:
+          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          paths:
+            - << pipeline.parameters.workspace_root >>/service/build/libs/
+  restore_service_build:
+    steps:
+      - restore_cache:
+          key: service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  store_message_service_build:
+    steps:
+      - save_cache:
+          key: message-service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+          paths:
+            - << pipeline.parameters.workspace_root >>/message-service/build/libs/
+  restore_message_service_build:
+    steps:
+      - restore_cache:
+          key: message-service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+
+  # Misc commands
+
   login_docker_hub:
     description: Log in to Docker Hub for authenticated pulls
     steps:
@@ -280,13 +322,12 @@ commands:
         type: boolean
         default: true
     steps:
-      - *restore_repo
+      - restore_repo
       - attach_root_workspace
-      - run:
-          name: Load docker images
-          command: |
-            docker load -i apigw/image.tar
-            docker load -i service/image.tar
+      - restore_docker_image:
+          dir: apigw
+      - restore_docker_image:
+          dir: service
       - login_docker_hub
       - run:
           name: Start up compose stack
@@ -456,7 +497,7 @@ commands:
     steps:
       - run:
           name: Deploy Storybook
-          working_directory: << pipeline.parameters.workspace_root >>/frontend
+          working_directory: *workspace_frontend
           command: |
             if [ "<< parameters.target_env >>" = "dev" ]; then
               aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read
@@ -475,7 +516,7 @@ commands:
         type: string
       dir:
         type: string
-      push_after:
+      save_image:
         type: boolean
         default: false
     steps:
@@ -488,21 +529,15 @@ commands:
               --build-arg "build=${CIRCLE_BUILD_NUM}" \
               --build-arg "commit=${CIRCLE_SHA1}" \
               .
-      - when:
-          condition: << parameters.push_after >>
-          steps:
-            - run:
-                name: Push docker image
-                command: |
-                  ecr-login
-                  ecr-push << parameters.image >>
-      - unless:
-          condition: << parameters.push_after >>
-          steps:
-            - run:
-                name: Save docker image
-                working_directory: << parameters.dir >>
-                command: docker save << parameters.image >> > image.tar
+      - run:
+          name: Push docker image
+          command: |
+            ecr-login
+            ecr-push << parameters.image >>
+      - run:
+          name: Save docker image
+          working_directory: << parameters.dir >>
+          command: docker save << parameters.image >> > image.tar
 
   push_docker_image:
     parameters:
@@ -581,13 +616,13 @@ jobs:
     executor: apigw_executor
     steps:
       - checkout
-      - *store_repo
+      - store_repo
       - notify_slack
 
   fetch_private_dependencies:
     executor: aws_core_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_frontend_comm_deps
       - run: replace-credentials
       - run:
@@ -615,7 +650,7 @@ jobs:
   lint_scripts:
     executor: shellcheck
     steps:
-      - *restore_repo
+      - restore_repo
       - run:
           name: Install dependencies
           command: apk add curl jq git
@@ -630,7 +665,7 @@ jobs:
   build_base_image:
     executor: apigw_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - setup_authenticated_remote_docker
       - run:
           name: Build base image
@@ -649,7 +684,7 @@ jobs:
   apigw_build_and_test:
     executor: apigw_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_apigw_deps
       - run:
           working_directory: *workspace_apigw
@@ -672,10 +707,10 @@ jobs:
           path: << pipeline.parameters.workspace_root >>/apigw/build/test-reports
       - notify_slack
 
-  apigw_build_image:
+  apigw_build_and_push_image:
     executor: aws_docker_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - attach_root_workspace
       - setup_remote_docker:
           version: *remote_docker_version
@@ -684,27 +719,15 @@ jobs:
       - build_docker_image:
           image: evaka/api-gateway
           dir: *workspace_apigw
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - apigw/image.tar
-      - notify_slack
-
-  apigw_push_image:
-    executor: aws_docker_executor
-    steps:
-      - attach_root_workspace
-      - setup_remote_docker:
-          version: *remote_docker_version
-      - push_docker_image:
-          image: evaka/api-gateway
-          dir: *workspace_apigw
+          save_image: true
+      - store_docker_image:
+          dir: apigw
       - notify_slack
 
   frontend_build_and_test:
     executor: frontend_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_frontend_deps
       - *restore_frontend_comm_deps
       - run:
@@ -780,7 +803,7 @@ jobs:
   proxy_build_and_push_image:
     executor: aws_docker_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - setup_authenticated_remote_docker
       - run:
           name: Test proxy image configuration
@@ -795,21 +818,17 @@ jobs:
       - build_docker_image:
           image: evaka/proxy
           dir: *workspace_proxy
-          push_after: true
       - notify_slack
 
   service_build:
     executor: service_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_service_gradle
       - run:
           working_directory: *workspace_service
           command: ./gradlew assemble compileIntegrationTestKotlin
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - service/build/libs/
+      - store_service_build
       - run:
           working_directory: *workspace_service
           command: |
@@ -841,11 +860,12 @@ jobs:
           path: << pipeline.parameters.workspace_root >>/service/build/reports/
       - notify_slack
 
-  service_build_image:
+  service_build_and_push_image:
     executor: aws_docker_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - attach_root_workspace
+      - restore_service_build
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: true
@@ -856,17 +876,16 @@ jobs:
       - load_base_image
       - build_docker_image:
           image: evaka/service
-          dir: *workspace_service
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - service/image.tar
+          dir: << pipeline.parameters.workspace_root >>/service
+          save_image: true
+      - store_docker_image:
+          dir: service
       - notify_slack
 
   service_test:
     executor: service_test_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_service_gradle
       - run:
           name: gradle test
@@ -894,7 +913,7 @@ jobs:
     executor: service_test_executor
     parallelism: 4
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_service_gradle
       - login_docker_hub
       - run:
@@ -921,30 +940,15 @@ jobs:
           path: << pipeline.parameters.workspace_root >>/service-lib/build/reports/
       - notify_slack
 
-  service_push_image:
-    executor: aws_docker_executor
-    steps:
-      - *restore_repo
-      - attach_root_workspace
-      - setup_remote_docker:
-          version: *remote_docker_version
-      - push_docker_image:
-          image: evaka/service
-          dir: *workspace_service
-      - notify_slack
-
   message_service_build:
     executor: service_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew assemble compileIntegrationTestKotlin
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - message-service/build/libs/
+      - store_message_service_build
       - *store_message_service_gradle
       - run:
           working_directory: *workspace_message_service
@@ -971,7 +975,7 @@ jobs:
   message_service_test:
     executor: service_test_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
@@ -985,7 +989,7 @@ jobs:
   message_service_integration_test:
     executor: service_test_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - *restore_message_service_gradle
       - login_docker_hub
       - run:
@@ -1003,8 +1007,9 @@ jobs:
   message_service_build_and_push_image:
     executor: aws_docker_executor
     steps:
-      - *restore_repo
+      - restore_repo
       - attach_root_workspace
+      - restore_message_service_build
       - setup_remote_docker:
           version: *remote_docker_version
           docker_layer_caching: true
@@ -1016,7 +1021,6 @@ jobs:
       - build_docker_image:
           image: evaka/message-service
           dir: *workspace_message_service
-          push_after: true
       - notify_slack
 
 workflows:
@@ -1047,15 +1051,11 @@ workflows:
           <<: *default_contexts
           requires:
             - checkout_repo
-      - apigw_build_image:
+      - apigw_build_and_push_image:
           <<: *aws_contexts
           requires:
             - build_base_image
             - apigw_build_and_test
-      - apigw_push_image:
-          <<: *aws_contexts
-          requires:
-            - apigw_build_image
 
       - frontend_build_and_test:
           context:
@@ -1069,14 +1069,14 @@ workflows:
           <<: *default_contexts
           requires:
             - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
+            - apigw_build_and_push_image
+            - service_build_and_push_image
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
             - frontend_build_and_test
-            - apigw_build_image
-            - service_build_image
+            - apigw_build_and_push_image
+            - service_build_and_push_image
 
       - proxy_build_and_push_image:
           context:
@@ -1090,7 +1090,7 @@ workflows:
           <<: *default_contexts
           requires:
             - checkout_repo
-      - service_build_image:
+      - service_build_and_push_image:
           <<: *aws_contexts
           requires:
             - build_base_image
@@ -1103,12 +1103,6 @@ workflows:
           <<: *default_contexts
           requires:
             - service_build
-      - service_push_image:
-          <<: *aws_contexts
-          requires:
-            - service_build_image
-            - service_test
-            - service_integration_test
 
       - message_service_build:
           <<: *default_contexts
@@ -1135,9 +1129,9 @@ workflows:
             - lint_scripts
             - e2e-test-testcafe
             - e2e-test-playwright
-            - apigw_push_image
+            - apigw_build_and_push_image
             - proxy_build_and_push_image
-            - service_push_image
+            - service_build_and_push_image
             - message_service_build_and_push_image
           filters:
             branches:
