@@ -731,7 +731,7 @@ jobs:
 
   e2e-test-testcafe:
     executor: e2e_executor
-    parallelism: 16
+    parallelism: 8
     steps:
       - e2e_test
       - notify_slack
