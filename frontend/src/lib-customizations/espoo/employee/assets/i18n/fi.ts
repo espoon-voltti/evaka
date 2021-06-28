@@ -552,7 +552,7 @@ export const fi = {
         friday: 'Perjantai'
       },
       errors: {
-        required: 'Arvo puuttuu'
+        required: 'Pakollinen tieto'
       }
     },
     assistance: {
