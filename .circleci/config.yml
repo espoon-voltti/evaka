@@ -274,6 +274,10 @@ commands:
               && sudo mv chromedriver /usr/local/bin/chromedriver \
               && sudo chmod +x /usr/local/bin/chromedriver \
               && chromedriver --version
+      - run:
+        name: Install Playwright dependencies
+        command: |
+          sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
       - *restore_frontend_deps
       - run:
           name: Run e2e tests against compose
