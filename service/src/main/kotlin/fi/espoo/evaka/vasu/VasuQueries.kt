@@ -28,10 +28,16 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
 fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocumentResponse? {
     // language=sql
     val sql = """
-        SELECT 
+        SELECT
             vd.id,
             vd.document_state,
             vd.child_id,
+            vd.modified_at AS event_modified_at,
+            vd.published_at AS event_published_at,
+            vd.moved_to_ready_at AS event_moved_to_ready_state_at,
+            vd.moved_to_reviewed_at AS event_moved_to_reviewed_state_at,
+            vd.vasu_discussion_at AS event_vasu_discussion_at,
+            vd.evaluation_discussion_at AS event_evaluation_discussion_at,
             p.first_name AS child_first_name,
             p.last_name AS child_last_name,
             vt.name AS template_name,

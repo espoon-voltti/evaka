@@ -27,9 +27,20 @@ data class VasuDocumentSummary(
     val publishedAt: HelsinkiDateTime? = null
 )
 
+data class VasuDocumentResponseEvents(
+    val modifiedAt: HelsinkiDateTime,
+    val publishedAt: HelsinkiDateTime? = null,
+    val movedToReadyStateAt: HelsinkiDateTime? = null,
+    val movedToReviewedStateAt: HelsinkiDateTime? = null,
+    val vasuDiscussionAt: HelsinkiDateTime? = null,
+    val evaluationDiscussionAt: HelsinkiDateTime? = null,
+)
+
 data class VasuDocumentResponse(
     val id: UUID,
     val documentState: VasuDocumentState,
+    @Nested("event")
+    val events: VasuDocumentResponseEvents,
     @Nested("child")
     val child: VasuDocumentResponseChild,
     val templateName: String,

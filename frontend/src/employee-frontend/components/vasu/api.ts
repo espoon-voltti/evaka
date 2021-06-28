@@ -18,9 +18,19 @@ export interface VasuDocumentSummary {
   id: UUID
 }
 
+export interface VasuDocumentEvents {
+  modifiedAt: Date
+  publishedAt?: Date
+  movedToReadyStateAt?: Date
+  movedToReviewedStateAt?: Date
+  vasuDiscussionAt?: Date
+  evaluationDiscussionAt?: Date
+}
+
 export interface VasuDocumentResponse {
   id: UUID
   documentState: VasuDocumentState
+  events: VasuDocumentEvents
   child: {
     id: UUID
     firstName: string
@@ -29,6 +39,28 @@ export interface VasuDocumentResponse {
   templateName: string
   content: VasuContent
 }
+export const mapVasuDocumentResponse = ({
+  events,
+  ...rest
+}: JsonOf<VasuDocumentResponse>): VasuDocumentResponse => ({
+  ...rest,
+  events: {
+    modifiedAt: new Date(events.modifiedAt),
+    publishedAt: events.publishedAt ? new Date(events.publishedAt) : undefined,
+    movedToReadyStateAt: events.movedToReadyStateAt
+      ? new Date(events.movedToReadyStateAt)
+      : undefined,
+    movedToReviewedStateAt: events.movedToReviewedStateAt
+      ? new Date(events.movedToReviewedStateAt)
+      : undefined,
+    evaluationDiscussionAt: events.evaluationDiscussionAt
+      ? new Date(events.evaluationDiscussionAt)
+      : undefined,
+    vasuDiscussionAt: events.vasuDiscussionAt
+      ? new Date(events.vasuDiscussionAt)
+      : undefined
+  }
+})
 
 export async function createVasuDocument(
   childId: UUID,
@@ -62,7 +94,7 @@ export async function getVasuDocument(
 ): Promise<Result<VasuDocumentResponse>> {
   return client
     .get<JsonOf<VasuDocumentResponse>>(`/vasu/${id}`)
-    .then((res) => Success.of(res.data))
+    .then((res) => Success.of(mapVasuDocumentResponse(res.data)))
     .catch((e) => Failure.fromError(e))
 }
 

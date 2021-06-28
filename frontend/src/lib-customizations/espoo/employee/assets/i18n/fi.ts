@@ -848,7 +848,16 @@ export const fi = {
       CLOSED: 'Päättynyt'
     },
     confidential: 'Salassapidettävä',
-    confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.'
+    confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
+    state: 'Suunnitelman tila',
+    events: 'Varhaiskasvatussuunnitelman tapahtumat',
+    noRecord: 'Ei merkintää',
+    modifiedAt: 'Viimeisin muokkauspäivämäärä',
+    publishedAt: 'Viimeksi julkaistu huoltajalle',
+    vasuDiscussionAt: 'Vasukeskustelu',
+    evaluationDiscussionAt: 'Arviointikeskustelu',
+    movedToReadyStateAt: 'Julkaistu Laadittu-tilaan',
+    movedToReviewedStateAt: 'Julkaistu Arvioitu-tilaan'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',
