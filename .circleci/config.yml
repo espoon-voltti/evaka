@@ -9,7 +9,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.1.3
-  owasp: entur/owasp@0.0.14
+  owasp: entur/owasp@0.0.15
 
 parameters:
   workspace_root:
