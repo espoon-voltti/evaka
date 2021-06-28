@@ -917,7 +917,7 @@ jobs:
       - notify_slack
 
   service_test:
-    executor: service_test_executor
+    executor: service_executor
     steps:
       - restore_repo
       - restore_service_gradle
@@ -1010,7 +1010,7 @@ jobs:
       - notify_slack
 
   message_service_test:
-    executor: service_test_executor
+    executor: service_executor
     steps:
       - restore_repo
       - restore_message_service_gradle
