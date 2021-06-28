@@ -1159,7 +1159,7 @@ export default {
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
   },
   validationErrors: {
-    required: 'Arvo puuttuu',
+    required: 'Pakollinen tieto',
     requiredSelection: 'Valinta puuttuu',
     format: 'Anna oikeassa muodossa',
     ssn: 'Virheellinen henkilötunnus',
