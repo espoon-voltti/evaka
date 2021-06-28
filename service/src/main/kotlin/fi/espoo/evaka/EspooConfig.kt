@@ -34,5 +34,5 @@ class EspooConfig {
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
     @Bean
-    fun dailySchedule(): JobSchedule = DefaultJobSchedule()
+    fun jobSchedule(env: Environment): JobSchedule = DefaultJobSchedule.fromEnvironment(env)
 }
