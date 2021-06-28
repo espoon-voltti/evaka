@@ -267,7 +267,8 @@ commands:
   store_service_build_cache:
     steps:
       - save_cache:
-          key: gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
+          name: Store build cache
+          key: gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - service/build
             - service/buildSrc/build
@@ -277,13 +278,15 @@ commands:
   restore_service_build_cache:
     steps:
       - restore_cache:
+          name: Restore build cache
           keys:
-            - gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
+            - gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
             - gradle-service-build-cache-v2-
   store_message_service_build_cache:
     steps:
       - save_cache:
-          key: gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
+          name: Store build cache
+          key: gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - message-service/build
             - message-service/buildSrc/build
@@ -291,8 +294,9 @@ commands:
   restore_message_service_build_cache:
     steps:
       - restore_cache:
+          name: Restore build cache
           keys:
-            - gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
+            - gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
             - gradle-message-service-build-cache-v2-
 
   # Misc commands
