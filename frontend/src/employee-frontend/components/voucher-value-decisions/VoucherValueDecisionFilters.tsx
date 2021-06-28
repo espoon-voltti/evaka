@@ -90,12 +90,12 @@ export default React.memo(function VoucherValueDecisionFilters() {
   )
 
   const selectUnit = useCallback(
-    (unit: string) => setSearchFilters((filters) => ({ ...filters, unit })),
+    (unit?: string) => setSearchFilters((filters) => ({ ...filters, unit })),
     [setSearchFilters]
   )
 
   const selectFinanceDecisionHandler = useCallback(
-    (financeDecisionHandlerId: string) =>
+    (financeDecisionHandlerId?: string) =>
       setSearchFilters((filters) => ({ ...filters, financeDecisionHandlerId })),
     [setSearchFilters]
   )

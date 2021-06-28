@@ -44,6 +44,7 @@ import { Label, LabelText } from '../../components/common/styled/common'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { featureFlags } from 'lib-customizations/employee'
+import Combobox from '../../../lib-components/atoms/form/Combobox'
 
 interface Props {
   freeText: string
@@ -259,7 +260,7 @@ export function AreaFilter({
 interface UnitFilterProps {
   units: { id: string; label: string }[]
   selected?: { id: string; label: string }
-  select: (unit: string) => void
+  select: (unit?: string) => void
 }
 
 export const UnitFilter = React.memo(function UnitFilter({
@@ -273,13 +274,14 @@ export const UnitFilter = React.memo(function UnitFilter({
     <>
       <Label>
         <LabelText>{i18n.filters.unit}</LabelText>
-        <ReactSelect
+        <Combobox
+          items={options}
           placeholder={i18n.filters.unitPlaceholder}
-          options={options}
-          onChange={(option) =>
-            option && 'id' in option ? select(option.id) : undefined
-          }
-          value={selected}
+          selectedItem={selected ?? null}
+          onChange={(option) => select(option?.id)}
+          clearable
+          fullWidth
+          getItemLabel={(item) => item.label}
         />
       </Label>
     </>
@@ -289,7 +291,7 @@ export const UnitFilter = React.memo(function UnitFilter({
 interface FinanceDecisionHandlerFilterProps {
   financeDecisionHandlers: FinanceDecisionHandlerOption[]
   selected?: FinanceDecisionHandlerOption
-  select: (decisionHandler: string) => void
+  select: (decisionHandler?: string) => void
 }
 
 export const FinanceDecisionHandlerFilter = React.memo(
@@ -311,13 +313,14 @@ export const FinanceDecisionHandlerFilter = React.memo(
       <>
         <Label>
           <LabelText>{i18n.filters.financeDecisionHandler}</LabelText>
-          <ReactSelect
+          <Combobox
+            items={options}
             placeholder={i18n.filters.financeDecisionHandlerPlaceholder}
-            options={options}
-            value={selected}
-            onChange={(option) =>
-              option && 'value' in option ? select(option.value) : undefined
-            }
+            selectedItem={selected ?? null}
+            onChange={(option) => select(option?.value)}
+            clearable
+            fullWidth
+            getItemLabel={(item) => item.label}
           />
         </Label>
       </>

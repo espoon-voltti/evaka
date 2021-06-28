@@ -63,7 +63,7 @@ function InvoiceFilters() {
         })
   }
 
-  const selectUnit = (id: string) =>
+  const selectUnit = (id?: string) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
 
   const toggleStatus = (id: InvoiceStatus) => () => {

@@ -90,10 +90,10 @@ function FeeDecisionFilters() {
         })
   }
 
-  const selectUnit = (id: string) =>
+  const selectUnit = (id?: string) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
 
-  const selectFinanceDecisionHandler = (id: string) =>
+  const selectFinanceDecisionHandler = (id?: string) =>
     setSearchFilters((filters) => ({
       ...filters,
       financeDecisionHandlerId: id
