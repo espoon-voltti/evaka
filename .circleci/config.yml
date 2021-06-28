@@ -967,7 +967,7 @@ jobs:
 
   service_integration_test:
     executor: service_test_executor
-    parallelism: 4
+    parallelism: 8
     steps:
       - restore_repo
       - restore_service_gradle
