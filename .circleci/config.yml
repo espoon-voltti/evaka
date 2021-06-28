@@ -64,91 +64,6 @@ aliases:
       GRADLE_USER_HOME: << pipeline.parameters.workspace_root >>/.gradle-user-home
       JAVA_TOOL_OPTIONS: "-Xmx2048m"
 
-  - &restore_apigw_deps
-    restore_cache:
-      keys:
-        - yarn-cache-apigw-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "apigw/yarn.lock" }}
-        - yarn-cache-apigw-v1-
-        - yarn-cache-apigw-
-
-  - &store_apigw_deps
-    save_cache:
-      key: yarn-cache-apigw-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "apigw/yarn.lock" }}
-      paths:
-        - apigw/.yarn/cache
-
-  - &restore_frontend_deps
-    restore_cache:
-      keys:
-        - yarn-cache-frontend-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
-        - yarn-cache-frontend-v1-
-        - yarn-cache-frontend-
-
-  - &store_frontend_deps
-    save_cache:
-      key: yarn-cache-frontend-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
-      paths:
-        - frontend/.yarn/cache
-        - frontend/node_modules
-
-  - &restore_frontend_comm_deps
-    restore_cache:
-      keys:
-        - frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
-        - frontend-comm-deps-v1-
-        - frontend-comm-deps-
-
-  - &store_frontend_comm_deps
-    save_cache:
-      key: frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
-      paths:
-        - frontend/vendor/fortawesome
-
-  - &restore_service_gradle
-    restore_cache:
-      keys:
-        - gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
-        - gradle-home-service-v4-
-
-  - &store_service_gradle
-    save_cache:
-      key: gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
-      paths:
-        # Actual Gradle files
-        - service/buildSrc/.gradle
-        - service/.gradle
-        - service/custom-ktlint-rules/.gradle
-        - .gradle-user-home/wrapper
-        - .gradle-user-home/caches
-        - .gradle-user-home/notifications
-        # Build files
-        - service/build
-        - service/buildSrc/build
-        - service/custom-ktlint-rules/build
-        - service/vtjclient/build
-        - service-lib/build
-
-  - &restore_message_service_gradle
-    restore_cache:
-      keys:
-        - gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
-        - gradle-home-message-service-v4-
-
-  - &store_message_service_gradle
-    save_cache:
-      key: gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
-      paths:
-        # Actual Gradle files
-        - message-service/buildSrc/.gradle
-        - message-service/.gradle
-        - .gradle-user-home/wrapper
-        - .gradle-user-home/caches
-        - .gradle-user-home/notifications
-        # Build files
-        - message-service/build
-        - message-service/buildSrc/build
-        - message-service-lib/build
-
 executors:
   aws_core_executor:
     <<: *default_config
@@ -224,6 +139,7 @@ commands:
       - restore_cache:
           keys:
             - repo-v1-{{ .Branch }}-{{ .Revision }}
+
   store_docker_image:
     parameters:
       dir:
@@ -241,6 +157,7 @@ commands:
       - restore_cache:
           key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
       - run: docker load -i << parameters.dir >>/image.tar
+
   store_service_build:
     steps:
       - save_cache:
@@ -261,6 +178,96 @@ commands:
     steps:
       - restore_cache:
           key: message-service-build-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+
+  restore_apigw_deps:
+    steps:
+      - restore_cache:
+          keys:
+            - yarn-cache-apigw-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "apigw/yarn.lock" }}
+            - yarn-cache-apigw-v1-
+            - yarn-cache-apigw-
+  store_apigw_deps:
+    steps:
+      - save_cache:
+          key: yarn-cache-apigw-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "apigw/yarn.lock" }}
+          paths:
+            - apigw/.yarn/cache
+
+  restore_frontend_deps:
+    steps:
+      - restore_cache:
+          keys:
+            - yarn-cache-frontend-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
+            - yarn-cache-frontend-v1-
+            - yarn-cache-frontend-
+  store_frontend_deps:
+    steps:
+      - save_cache:
+          key: yarn-cache-frontend-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
+          paths:
+            - frontend/.yarn/cache
+            - frontend/node_modules
+
+  restore_frontend_comm_deps:
+    steps:
+      - restore_cache:
+          keys:
+            - frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
+            - frontend-comm-deps-v1-
+            - frontend-comm-deps-
+  store_frontend_comm_deps:
+    steps:
+      - save_cache:
+          key: frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
+          paths:
+            - frontend/vendor/fortawesome
+
+  restore_service_gradle:
+    steps:
+      - restore_cache:
+          keys:
+            - gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+            - gradle-home-service-v4-
+  store_service_gradle:
+    steps:
+      - save_cache:
+          key: gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+          paths:
+            # Actual Gradle files
+            - service/buildSrc/.gradle
+            - service/.gradle
+            - service/custom-ktlint-rules/.gradle
+            - .gradle-user-home/wrapper
+            - .gradle-user-home/caches
+            - .gradle-user-home/notifications
+            # Build files
+            - service/build
+            - service/buildSrc/build
+            - service/custom-ktlint-rules/build
+            - service/vtjclient/build
+            - service-lib/build
+
+  restore_message_service_gradle:
+    steps:
+      - restore_cache:
+          keys:
+            - gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+            - gradle-home-message-service-v4-
+  store_message_service_gradle:
+    steps:
+      - save_cache:
+          key: gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+          paths:
+            # Actual Gradle files
+            - message-service/buildSrc/.gradle
+            - message-service/.gradle
+            - .gradle-user-home/wrapper
+            - .gradle-user-home/caches
+            - .gradle-user-home/notifications
+            # Build files
+            - message-service/build
+            - message-service/buildSrc/build
+            - message-service-lib/build
 
   # Misc commands
 
@@ -376,8 +383,8 @@ commands:
                 name: Install Playwright dependencies
                 command: |
                   sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
-      - *restore_frontend_deps
-      - *restore_frontend_comm_deps
+      - restore_frontend_deps
+      - restore_frontend_comm_deps
       - run:
           name: Install frontend dependencies from Yarn cache
           working_directory: *workspace_frontend
@@ -623,14 +630,14 @@ jobs:
     executor: aws_core_executor
     steps:
       - restore_repo
-      - *restore_frontend_comm_deps
+      - restore_frontend_comm_deps
       - run: replace-credentials
       - run:
           name: Fetch commercial frontend dependencies
           working_directory: *workspace_frontend
           command: |
             ./init-pro-icons.sh
-      - *store_frontend_comm_deps
+      - store_frontend_comm_deps
       - notify_slack
 
   clone_infra_repo:
@@ -685,11 +692,11 @@ jobs:
     executor: apigw_executor
     steps:
       - restore_repo
-      - *restore_apigw_deps
+      - restore_apigw_deps
       - run:
           working_directory: *workspace_apigw
           command: yarn install --immutable
-      - *store_apigw_deps
+      - store_apigw_deps
       - run:
           working_directory: *workspace_apigw
           command: yarn build
@@ -728,8 +735,8 @@ jobs:
     executor: frontend_executor
     steps:
       - restore_repo
-      - *restore_frontend_deps
-      - *restore_frontend_comm_deps
+      - restore_frontend_deps
+      - restore_frontend_comm_deps
       - run:
           working_directory: *workspace_frontend
           command: yarn install --immutable
@@ -738,7 +745,7 @@ jobs:
           working_directory: *workspace_frontend
           command: |
             ./unpack-pro-icons.sh
-      - *store_frontend_deps
+      - store_frontend_deps
       - build_frontend
       - build_maintenance_page
       - build_storybook
@@ -824,7 +831,7 @@ jobs:
     executor: service_executor
     steps:
       - restore_repo
-      - *restore_service_gradle
+      - restore_service_gradle
       - run:
           working_directory: *workspace_service
           command: ./gradlew assemble compileIntegrationTestKotlin
@@ -834,7 +841,7 @@ jobs:
           command: |
             cd custom-ktlint-rules
             ./gradlew assemble
-      - *store_service_gradle
+      - store_service_gradle
       - run:
           working_directory: *workspace_service
           command: ./gradlew lintKotlin
@@ -886,7 +893,7 @@ jobs:
     executor: service_test_executor
     steps:
       - restore_repo
-      - *restore_service_gradle
+      - restore_service_gradle
       - run:
           name: gradle test
           working_directory: *workspace_service
@@ -914,7 +921,7 @@ jobs:
     parallelism: 4
     steps:
       - restore_repo
-      - *restore_service_gradle
+      - restore_service_gradle
       - login_docker_hub
       - run:
           name: gradle integrationTest
@@ -944,12 +951,12 @@ jobs:
     executor: service_executor
     steps:
       - restore_repo
-      - *restore_message_service_gradle
+      - restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew assemble compileIntegrationTestKotlin
       - store_message_service_build
-      - *store_message_service_gradle
+      - store_message_service_gradle
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew lintKotlin
@@ -976,7 +983,7 @@ jobs:
     executor: service_test_executor
     steps:
       - restore_repo
-      - *restore_message_service_gradle
+      - restore_message_service_gradle
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew test
@@ -990,7 +997,7 @@ jobs:
     executor: service_test_executor
     steps:
       - restore_repo
-      - *restore_message_service_gradle
+      - restore_message_service_gradle
       - login_docker_hub
       - run:
           name: gradle integrationTest
