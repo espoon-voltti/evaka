@@ -233,7 +233,7 @@ commands:
   store_service_gradle:
     steps:
       - save_cache:
-          key: gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+          key: gradle-home-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
           paths:
             - service/buildSrc/.gradle
             - service/.gradle
@@ -245,12 +245,12 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - gradle-home-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
-            - gradle-home-service-v4-
+            - gradle-home-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+            - gradle-home-service-v5-
   store_message_service_gradle:
     steps:
       - save_cache:
-          key: gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+          key: gradle-home-message-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
           paths:
             - message-service/buildSrc/.gradle
             - message-service/.gradle
@@ -261,13 +261,13 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - gradle-home-message-service-v4-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
-            - gradle-home-message-service-v4-
+            - gradle-home-message-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+            - gradle-home-message-service-v5-
 
   store_service_build_cache:
     steps:
       - save_cache:
-          key: gradle-service-build-cache-v1-{{ .Environment.CIRCLE_SHA1 }}
+          key: gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - service/build
             - service/buildSrc/build
@@ -278,12 +278,12 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - gradle-service-build-cache-v1-{{ .Environment.CIRCLE_SHA1 }}
-            - gradle-service-build-cache-v1-
+            - gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
+            - gradle-service-build-cache-v2-
   store_message_service_build_cache:
     steps:
       - save_cache:
-          key: gradle-message-service-build-cache-v1-{{ .Environment.CIRCLE_SHA1 }}
+          key: gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - message-service/build
             - message-service/buildSrc/build
@@ -292,8 +292,8 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - gradle-message-service-build-cache-v1-{{ .Environment.CIRCLE_SHA1 }}
-            - gradle-message-service-build-cache-v1-
+            - gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}
+            - gradle-message-service-build-cache-v2-
 
   # Misc commands
 
