@@ -335,6 +335,10 @@ commands:
             yarn --version
       - *restore_frontend_deps
       - run:
+          name: Install Playwright dependencies
+          command: |
+            sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
+      - run:
           name: Run e2e tests against compose
           working_directory: *workspace_frontend
           command: |
