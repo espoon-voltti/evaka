@@ -841,9 +841,20 @@ export const fi = {
     }
   },
   vasu: {
+    modifiedAt: 'Viimeisin muokkauspäivämäärä',
+    vasuDiscussion: 'Vasukeskustelu',
+    evaluationDiscussion: 'Arviointikeskustelu',
+    eventTypes: {
+      PUBLISHED: 'Julkaistu huoltajalle',
+      MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
+      RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
+      MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
+      RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
+      MOVED_TO_CLOSED: 'Päättynyt'
+    },
     states: {
       DRAFT: 'Luonnos',
-      CREATED: 'Laadittu',
+      READY: 'Laadittu',
       REVIEWED: 'Arvioitu',
       CLOSED: 'Päättynyt'
     },
@@ -851,13 +862,7 @@ export const fi = {
     confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
     state: 'Suunnitelman tila',
     events: 'Varhaiskasvatussuunnitelman tapahtumat',
-    noRecord: 'Ei merkintää',
-    modifiedAt: 'Viimeisin muokkauspäivämäärä',
-    publishedAt: 'Viimeksi julkaistu huoltajalle',
-    vasuDiscussionAt: 'Vasukeskustelu',
-    evaluationDiscussionAt: 'Arviointikeskustelu',
-    movedToReadyStateAt: 'Julkaistu Laadittu-tilaan',
-    movedToReviewedStateAt: 'Julkaistu Arvioitu-tilaan'
+    noRecord: 'Ei merkintää'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',

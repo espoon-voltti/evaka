@@ -9,7 +9,7 @@ import { VasuDocumentState } from '../vasu/api'
 
 const vasuStateChip: Record<VasuDocumentState, string> = {
   DRAFT: colors.accents.emerald,
-  CREATED: colors.accents.violet,
+  READY: colors.accents.violet,
   REVIEWED: colors.primary,
   CLOSED: colors.greyscale.medium
 }

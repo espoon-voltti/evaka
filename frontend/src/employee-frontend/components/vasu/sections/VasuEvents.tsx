@@ -12,7 +12,8 @@ import { Dimmed, H2, Label } from '../../../../lib-components/typography'
 import { defaultMargins } from '../../../../lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
-import { VasuDocumentEvents, VasuDocumentResponse } from '../api'
+import { VasuDocument } from '../api'
+import { getLastPublished } from '../events'
 
 const labelWidth = '320px'
 
@@ -26,16 +27,6 @@ const Container = styled(ContentArea)`
 const ChipContainer = styled.div`
   display: inline-flex;
 `
-
-type EventKey = keyof VasuDocumentEvents
-
-const topSectionEvents: EventKey[] = ['modifiedAt', 'publishedAt']
-const bottomSectionEvents: EventKey[] = [
-  'vasuDiscussionAt',
-  'movedToReadyStateAt',
-  'evaluationDiscussionAt',
-  'movedToReviewedStateAt'
-]
 
 function EventRow({ label, date }: { label: string; date?: Date }) {
   const { i18n } = useTranslation()
@@ -53,11 +44,28 @@ function EventRow({ label, date }: { label: string; date?: Date }) {
 }
 
 interface Props {
-  document: Pick<VasuDocumentResponse, 'documentState' | 'events'>
+  document: Pick<
+    VasuDocument,
+    | 'documentState'
+    | 'evaluationDiscussionDate'
+    | 'events'
+    | 'modifiedAt'
+    | 'vasuDiscussionDate'
+  >
 }
 
-export function VasuEvents({ document: { documentState, events } }: Props) {
+export function VasuEvents({
+  document: {
+    documentState,
+    evaluationDiscussionDate,
+    events,
+    modifiedAt,
+    vasuDiscussionDate
+  }
+}: Props) {
   const { i18n } = useTranslation()
+  const lastPublished = getLastPublished(events)
+
   return (
     <Container opaque>
       <H2>{i18n.vasu.events}</H2>
@@ -66,16 +74,28 @@ export function VasuEvents({ document: { documentState, events } }: Props) {
         <ChipContainer>
           <VasuStateChip state={documentState} labels={i18n.vasu.states} />
         </ChipContainer>
-        {topSectionEvents.map((key) => (
-          <EventRow key={key} label={i18n.vasu[key]} date={events[key]} />
-        ))}
+        <EventRow label={i18n.vasu.modifiedAt} date={modifiedAt} />
+        <EventRow label={i18n.vasu.eventTypes.PUBLISHED} date={lastPublished} />
+        <EventRow label={i18n.vasu.vasuDiscussion} date={vasuDiscussionDate} />
+        <EventRow
+          label={i18n.vasu.evaluationDiscussion}
+          date={evaluationDiscussionDate}
+        />
       </ListGrid>
-      <HorizontalLine slim />
-      <ListGrid labelWidth={labelWidth}>
-        {bottomSectionEvents.map((key) => (
-          <EventRow key={key} label={i18n.vasu[key]} date={events[key]} />
-        ))}
-      </ListGrid>
+      {events.length > 0 && (
+        <>
+          <HorizontalLine slim />
+          <ListGrid labelWidth={labelWidth}>
+            {events.map(({ id, eventType, created }) => (
+              <EventRow
+                key={id}
+                label={i18n.vasu.eventTypes[eventType]}
+                date={created}
+              />
+            ))}
+          </ListGrid>
+        </>
+      )}
     </Container>
   )
 }

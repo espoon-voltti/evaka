@@ -8,29 +8,40 @@ import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { VasuContent } from './vasu-content'
 
-export type VasuDocumentState = 'DRAFT' | 'CREATED' | 'REVIEWED' | 'CLOSED'
+export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
+export type VasuDocumentEventType =
+  | 'PUBLISHED'
+  | 'MOVED_TO_READY'
+  | 'RETURNED_TO_READY'
+  | 'MOVED_TO_REVIEWED'
+  | 'RETURNED_TO_REVIEWED'
+  | 'MOVED_TO_CLOSED'
 
-export interface VasuDocumentSummary {
+export interface VasuDocumentEvent {
+  id: UUID
+  created: Date
+  eventType: VasuDocumentEventType
+}
+const mapVasuDocumentEvent = (
+  e: JsonOf<VasuDocumentEvent>
+): VasuDocumentEvent => ({ ...e, created: new Date(e.created) })
+
+interface VasuDocumentSummaryResponse {
+  id: UUID
   name: string
-  documentState: VasuDocumentState
   modifiedAt: Date
-  publishedAt: Date | null
-  id: UUID
+  events: VasuDocumentEvent[]
+}
+export interface VasuDocumentSummary extends VasuDocumentSummaryResponse {
+  documentState: VasuDocumentState
 }
 
-export interface VasuDocumentEvents {
-  modifiedAt: Date
-  publishedAt?: Date
-  movedToReadyStateAt?: Date
-  movedToReviewedStateAt?: Date
-  vasuDiscussionAt?: Date
-  evaluationDiscussionAt?: Date
-}
-
-export interface VasuDocumentResponse {
+interface VasuDocumentResponse {
   id: UUID
-  documentState: VasuDocumentState
-  events: VasuDocumentEvents
+  events: VasuDocumentEvent[]
+  modifiedAt: Date
+  vasuDiscussionDate?: Date
+  evaluationDiscussionDate?: Date
   child: {
     id: UUID
     firstName: string
@@ -39,27 +50,46 @@ export interface VasuDocumentResponse {
   templateName: string
   content: VasuContent
 }
-export const mapVasuDocumentResponse = ({
+
+export interface VasuDocument extends VasuDocumentResponse {
+  documentState: VasuDocumentState
+}
+
+const getDocumentState = (
+  events: JsonOf<VasuDocumentEvent>[]
+): VasuDocumentState =>
+  events.reduce<VasuDocumentState>((acc, { eventType }) => {
+    switch (eventType) {
+      case 'PUBLISHED':
+        return acc
+      case 'MOVED_TO_READY':
+      case 'RETURNED_TO_READY':
+        return 'READY'
+      case 'MOVED_TO_REVIEWED':
+      case 'RETURNED_TO_REVIEWED':
+        return 'REVIEWED'
+      case 'MOVED_TO_CLOSED':
+        return 'CLOSED'
+    }
+  }, 'DRAFT')
+
+const mapVasuDocumentResponse = ({
+  evaluationDiscussionDate,
   events,
+  modifiedAt,
+  vasuDiscussionDate,
   ...rest
-}: JsonOf<VasuDocumentResponse>): VasuDocumentResponse => ({
+}: JsonOf<VasuDocumentResponse>): VasuDocument => ({
   ...rest,
-  events: {
-    modifiedAt: new Date(events.modifiedAt),
-    publishedAt: events.publishedAt ? new Date(events.publishedAt) : undefined,
-    movedToReadyStateAt: events.movedToReadyStateAt
-      ? new Date(events.movedToReadyStateAt)
-      : undefined,
-    movedToReviewedStateAt: events.movedToReviewedStateAt
-      ? new Date(events.movedToReviewedStateAt)
-      : undefined,
-    evaluationDiscussionAt: events.evaluationDiscussionAt
-      ? new Date(events.evaluationDiscussionAt)
-      : undefined,
-    vasuDiscussionAt: events.vasuDiscussionAt
-      ? new Date(events.vasuDiscussionAt)
-      : undefined
-  }
+  events: events.map(mapVasuDocumentEvent),
+  documentState: getDocumentState(events),
+  modifiedAt: new Date(modifiedAt),
+  evaluationDiscussionDate: evaluationDiscussionDate
+    ? new Date(evaluationDiscussionDate)
+    : undefined,
+  vasuDiscussionDate: vasuDiscussionDate
+    ? new Date(vasuDiscussionDate)
+    : undefined
 })
 
 export async function createVasuDocument(
@@ -76,24 +106,25 @@ export async function getVasuDocumentSummaries(
   childId: UUID
 ): Promise<Result<VasuDocumentSummary[]>> {
   return client
-    .get<JsonOf<VasuDocumentSummary[]>>(`/children/${childId}/vasu-summaries`)
+    .get<JsonOf<VasuDocumentSummaryResponse[]>>(
+      `/children/${childId}/vasu-summaries`
+    )
     .then((res) =>
       Success.of(
-        res.data.map((doc) => ({
-          ...doc,
-          modifiedAt: new Date(doc.modifiedAt),
-          publishedAt: doc.publishedAt ? new Date(doc.publishedAt) : null
+        res.data.map(({ events, modifiedAt, ...rest }) => ({
+          ...rest,
+          documentState: getDocumentState(events),
+          events: events.map(mapVasuDocumentEvent),
+          modifiedAt: new Date(modifiedAt)
         }))
       )
     )
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getVasuDocument(
-  id: UUID
-): Promise<Result<VasuDocumentResponse>> {
+export async function getVasuDocument(id: UUID): Promise<Result<VasuDocument>> {
   return client
-    .get<JsonOf<VasuDocumentResponse>>(`/vasu/${id}`)
+    .get<JsonOf<VasuDocument>>(`/vasu/${id}`)
     .then((res) => Success.of(mapVasuDocumentResponse(res.data)))
     .catch((e) => Failure.fromError(e))
 }

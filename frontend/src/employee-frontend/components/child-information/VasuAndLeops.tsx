@@ -29,6 +29,7 @@ import {
   getVasuDocumentSummaries,
   VasuDocumentSummary
 } from '../vasu/api'
+import { getLastPublished } from '../vasu/events'
 import {
   getVasuTemplateSummaries,
   VasuTemplateSummary
@@ -179,8 +180,9 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
   const loadVasus = useRestApi(getVasuDocumentSummaries, setVasus)
   useEffect(() => loadVasus(childId), [childId, loadVasus])
 
-  const getDates = ({ modifiedAt, publishedAt }: VasuDocumentSummary): string =>
-    [
+  const getDates = ({ modifiedAt, events }: VasuDocumentSummary): string => {
+    const publishedAt = getLastPublished(events)
+    return [
       `${i18n.childInformation.vasu.modified}: ${formatDate(modifiedAt)}`,
       ...(publishedAt
         ? [
@@ -190,6 +192,7 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
           ]
         : [])
     ].join(', ')
+  }
 
   const renderSummaries = () =>
     vasus

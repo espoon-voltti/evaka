@@ -17,7 +17,7 @@ import {
   getVasuDocument,
   putVasuDocument,
   PutVasuDocumentParams,
-  VasuDocumentResponse
+  VasuDocument
 } from './api'
 import { VasuContent } from './vasu-content'
 
@@ -34,7 +34,7 @@ export interface VasuStatus {
   savedAt?: Date
 }
 
-type VasuMetadata = Omit<VasuDocumentResponse, 'content'>
+type VasuMetadata = Omit<VasuDocument, 'content'>
 
 interface Vasu {
   vasu: VasuMetadata | undefined

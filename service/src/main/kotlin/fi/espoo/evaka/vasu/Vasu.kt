@@ -5,14 +5,23 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
+import java.time.LocalDate
 import java.util.UUID
 
-enum class VasuDocumentState {
-    DRAFT,
-    CREATED,
-    REVIEWED,
-    CLOSED
+enum class VasuDocumentEventType {
+    PUBLISHED,
+    MOVED_TO_READY,
+    RETURNED_TO_READY,
+    MOVED_TO_REVIEWED,
+    RETURNED_TO_REVIEWED,
+    MOVED_TO_CLOSED
 }
+
+data class VasuDocumentEvent(
+    val id: UUID,
+    val created: HelsinkiDateTime,
+    val eventType: VasuDocumentEventType
+)
 
 enum class VasuLanguage {
     FI,
@@ -22,32 +31,24 @@ enum class VasuLanguage {
 data class VasuDocumentSummary(
     val id: UUID,
     val name: String,
-    val documentState: VasuDocumentState,
     val modifiedAt: HelsinkiDateTime,
-    val publishedAt: HelsinkiDateTime? = null
+    val events: List<VasuDocumentEvent> = listOf(),
 )
 
-data class VasuDocumentResponseEvents(
-    val modifiedAt: HelsinkiDateTime,
-    val publishedAt: HelsinkiDateTime? = null,
-    val movedToReadyStateAt: HelsinkiDateTime? = null,
-    val movedToReviewedStateAt: HelsinkiDateTime? = null,
-    val vasuDiscussionAt: HelsinkiDateTime? = null,
-    val evaluationDiscussionAt: HelsinkiDateTime? = null,
-)
-
-data class VasuDocumentResponse(
+data class VasuDocument(
     val id: UUID,
-    val documentState: VasuDocumentState,
-    @Nested("event")
-    val events: VasuDocumentResponseEvents,
+    val modifiedAt: HelsinkiDateTime,
+    @Json
+    val events: List<VasuDocumentEvent> = listOf(),
     @Nested("child")
-    val child: VasuDocumentResponseChild,
+    val child: VasuDocumentChild,
     val templateName: String,
     @Json
-    val content: VasuContent
+    val content: VasuContent,
+    val vasuDiscussionDate: LocalDate? = null,
+    val evaluationDiscussionDate: LocalDate? = null,
 )
-data class VasuDocumentResponseChild(
+data class VasuDocumentChild(
     val id: UUID,
     val firstName: String,
     val lastName: String
