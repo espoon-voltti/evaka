@@ -131,12 +131,14 @@ commands:
   store_repo:
     steps:
       - save_cache:
+          name: Store repo
           key: repo-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - .
   restore_repo:
     steps:
       - restore_cache:
+          name: Restore repo
           keys:
             - repo-v1-{{ .Branch }}-{{ .Revision }}
 
@@ -146,6 +148,7 @@ commands:
         type: string
     steps:
       - save_cache:
+          name: Store Docker image in cache
           key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
           paths:
             - << pipeline.parameters.workspace_root >>/<< parameters.dir >>/image.tar
@@ -155,6 +158,7 @@ commands:
         type: string
     steps:
       - restore_cache:
+          name: Restore Docker image from cache
           key: << parameters.dir >>-image-v1-{{ .Environment.CIRCLE_WORKFLOW_ID }}
       - run: docker load -i << parameters.dir >>/image.tar
 
@@ -219,12 +223,14 @@ commands:
   store_frontend_comm_deps:
     steps:
       - save_cache:
+          name: Store commercial dependencies
           key: frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
           paths:
             - frontend/vendor/fortawesome
   restore_frontend_comm_deps:
     steps:
       - restore_cache:
+          name: Restore commercial dependencies
           keys:
             - frontend-comm-deps-v1-{{ checksum ".circleci/config.yml" }}-{{ checksum "frontend/yarn.lock" }}
             - frontend-comm-deps-v1-
@@ -233,6 +239,7 @@ commands:
   store_service_gradle:
     steps:
       - save_cache:
+          name: Store Gradle cache
           key: gradle-home-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
           paths:
             - service/buildSrc/.gradle
@@ -244,12 +251,14 @@ commands:
   restore_service_gradle:
     steps:
       - restore_cache:
+          name: Restore Gradle cache
           keys:
             - gradle-home-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
             - gradle-home-service-v5-
   store_message_service_gradle:
     steps:
       - save_cache:
+          name: Store Gradle cache
           key: gradle-home-message-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
           paths:
             - message-service/buildSrc/.gradle
@@ -260,6 +269,7 @@ commands:
   restore_message_service_gradle:
     steps:
       - restore_cache:
+          name: Restore Gradle cache
           keys:
             - gradle-home-message-service-v5-{{ checksum ".circleci/config.yml" }}-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
             - gradle-home-message-service-v5-
