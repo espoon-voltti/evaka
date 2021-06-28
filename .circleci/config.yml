@@ -59,10 +59,10 @@ aliases:
 
   - &jvm_config
     <<: *default_config
-    environment:
-      GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2048m"'
+    environment: &jvm_env
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-XX:MaxRAMPercentage=80"'
       GRADLE_USER_HOME: << pipeline.parameters.workspace_root >>/.gradle-user-home
-      JAVA_TOOL_OPTIONS: "-Xmx2048m"
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=80"
 
 executors:
   aws_core_executor:
@@ -108,6 +108,13 @@ executors:
     machine:
       image: *ubuntu_machine_image
       resource_class: large
+    environment:
+      # YAML anchors don't merge nested keys, so re-referencing is required
+      <<: *jvm_env
+      # Leave more memory for testcontainers than the default 20%.
+      # With large instances, this will still be 7.5GB for Gradle/services.
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-XX:MaxRAMPercentage=50"'
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50"
   shellcheck:
     parameters:
       shellcheck_image_version:
@@ -278,7 +285,7 @@ commands:
     steps:
       - save_cache:
           name: Store build cache
-          key: gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
+          key: gradle-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - service/build
             - service/buildSrc/build
@@ -290,13 +297,13 @@ commands:
       - restore_cache:
           name: Restore build cache
           keys:
-            - gradle-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
+            - gradle-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/config.yml" }}
             - gradle-service-build-cache-v2-
   store_message_service_build_cache:
     steps:
       - save_cache:
           name: Store build cache
-          key: gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
+          key: gradle-message-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - message-service/build
             - message-service/buildSrc/build
@@ -306,7 +313,7 @@ commands:
       - restore_cache:
           name: Restore build cache
           keys:
-            - gradle-message-service-build-cache-v2-{{ .Environment.CIRCLE_SHA1 }}-{{ checksum ".circleci/config.yml" }}
+            - gradle-message-service-build-cache-v2-{{ .Branch }}-{{ .Revision }}-{{ checksum ".circleci/config.yml" }}
             - gradle-message-service-build-cache-v2-
 
   # Misc commands
