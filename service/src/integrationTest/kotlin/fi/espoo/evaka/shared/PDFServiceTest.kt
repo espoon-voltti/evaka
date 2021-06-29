@@ -15,6 +15,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.test.validPreschoolApplication
@@ -108,6 +109,8 @@ private val manager = DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paiva
 
 @TestConfiguration
 class PDFServiceTestConfiguration {
+    @Bean
+    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
     @Bean
     fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 }

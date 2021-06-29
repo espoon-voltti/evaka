@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.shared.message.EvakaMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -23,7 +25,7 @@ class PeopleTest {
 
     @Test
     fun `MailAddress basic case`() {
-        val address = MailAddress.fromPerson(testPerson)
+        val address = MailAddress.fromPerson(testPerson, EvakaMessageProvider())
         val expected = MailAddress(
             testPerson.streetAddress!!,
             testPerson.postalCode!!,
@@ -43,8 +45,9 @@ class PeopleTest {
         )
 
         testPeople.forEach {
-            val address = MailAddress.fromPerson(it)
-            assertEquals(MailAddress.defaultAddress, address)
+            val messageProvider = EvakaMessageProvider();
+            val address = MailAddress.fromPerson(it, messageProvider)
+            assertEquals(messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI), address)
         }
     }
 }
