@@ -36,6 +36,7 @@ import {
   createAssistanceNeed,
   updateAssistanceNeed
 } from '../../../api/child/assistance-needs'
+import ExpandingInfo2 from '../../../../lib-components/molecules/ExpandingInfo2'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -268,36 +269,40 @@ function AssistanceNeedForm(props: Props) {
             label: i18n.childInformation.assistanceNeed.fields.capacityFactor,
             value: (
               <>
-                <CoefficientInputContainer>
-                  <InputField
-                    value={form.capacityFactor.toString()}
-                    onChange={(value) =>
-                      updateFormState({
-                        capacityFactor: value
-                      })
-                    }
-                    info={
-                      formErrors.coefficient
-                        ? { text: 'Virheellinen arvo', status: 'warning' }
-                        : undefined
-                    }
-                    data-qa="input-assistance-need-multiplier"
-                  />
-                  <InfoBall
-                    text={
-                      i18n.childInformation.assistanceNeed.fields
-                        .capacityFactorInfo
-                    }
-                  />
-                </CoefficientInputContainer>
-                {formErrors.coefficient && (
-                  <span className="error">
-                    {
-                      i18n.childInformation.assistanceNeed.errors
-                        .invalidCoefficient
-                    }
-                  </span>
-                )}
+                <ExpandingInfo2
+                  info={
+                    i18n.childInformation.assistanceNeed.fields
+                      .capacityFactorInfo
+                  }
+                  ariaLabel={
+                    i18n.childInformation.assistanceNeed.fields.capacityFactor
+                  }
+                >
+                  <CoefficientInputContainer>
+                    <InputField
+                      value={form.capacityFactor.toString()}
+                      onChange={(value) =>
+                        updateFormState({
+                          capacityFactor: value
+                        })
+                      }
+                      info={
+                        formErrors.coefficient
+                          ? { text: 'Virheellinen arvo', status: 'warning' }
+                          : undefined
+                      }
+                      data-qa="input-assistance-need-multiplier"
+                    />
+                  </CoefficientInputContainer>
+                  {formErrors.coefficient && (
+                    <span className="error">
+                      {
+                        i18n.childInformation.assistanceNeed.errors
+                          .invalidCoefficient
+                      }
+                    </span>
+                  )}
+                </ExpandingInfo2>
               </>
             )
           },
