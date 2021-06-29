@@ -10,10 +10,8 @@ import styled from 'styled-components'
 import { getAge } from 'lib-common/utils/local-date'
 
 import { formatName } from '../utils'
-import { triggerDvvBatch } from '../api/hidden'
 import { Gap } from 'lib-components/white-space'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
-import Button from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import {
@@ -48,10 +46,6 @@ const Wrapper = styled.div`
 const ButtonsContainer = styled.div`
   display: flex;
   flex-direction: row;
-`
-
-const HiddenButton = styled(Button)`
-  display: none;
 `
 
 function Search() {
@@ -102,12 +96,6 @@ function Search() {
                 onClick={() => setShowCreatePersonModal(true)}
                 data-qa="create-person-button"
               />
-              <RequireRole oneOf={['ADMIN']}>
-                <HiddenButton
-                  onClick={() => triggerDvvBatch()}
-                  text="DVV-mutp -päivitys"
-                />
-              </RequireRole>
             </ButtonsContainer>
           </RequireRole>
         </TopBar>
