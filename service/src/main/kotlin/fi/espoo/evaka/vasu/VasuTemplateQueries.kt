@@ -33,7 +33,7 @@ fun Database.Read.getVasuTemplate(id: UUID): VasuTemplate? {
     val sql = """
         SELECT *
         FROM vasu_template
-        WHERE id =:id
+        WHERE id = :id
     """.trimIndent()
 
     return createQuery(sql)

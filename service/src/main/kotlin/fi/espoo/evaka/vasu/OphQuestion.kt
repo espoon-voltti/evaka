@@ -59,3 +59,9 @@ private val ophQuestionMap = mapOf(
         )
     )
 )
+
+fun copyTemplateContentWithCurrentlyValidOphSections(template: VasuTemplate): VasuContent {
+    val copyableSections = template.content.sections.filter { section -> section.questions.all { question -> question.ophKey == null } }
+    val defaultSections = getDefaultTemplateContent(template.language).sections
+    return VasuContent(sections = copyableSections + defaultSections)
+}

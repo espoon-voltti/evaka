@@ -2562,8 +2562,9 @@ export const fi = {
     },
     documentCount: 'Vasu-dokumentteja',
     addNewTemplate: 'Lisää uusi vasu-pohja',
-    newTemplateModal: {
-      title: 'Uusi vasu-pohja',
+    templateModal: {
+      createTitle: 'Uusi vasu-pohja',
+      copyTitle: 'Kopioi vasu-pohja',
       validStart: 'Toimintavuosi alkaa',
       validEnd: 'Toimintavuosi päättyy'
     },
