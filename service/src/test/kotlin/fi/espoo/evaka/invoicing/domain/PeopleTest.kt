@@ -45,7 +45,7 @@ class PeopleTest {
         )
 
         testPeople.forEach {
-            val messageProvider = EvakaMessageProvider();
+            val messageProvider = EvakaMessageProvider()
             val address = MailAddress.fromPerson(it, messageProvider)
             assertEquals(messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI), address)
         }
