@@ -19,6 +19,10 @@ parameters:
     type: string
     default: bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
 
+  nodejs_image:
+    type: string
+    default: cimg/node:14.15
+
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
   - &workspace_apigw << pipeline.parameters.workspace_root >>/apigw
@@ -33,9 +37,8 @@ aliases:
 
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
   - &remote_docker_version "20.10.6"
-  - &yarn_version '1.22.\*'
   - &shellcheck_image_version v0.7.2
-  - &nodejs_image cimg/node:14.15
+  - &nodejs_image << pipeline.parameters.nodejs_image >>
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202104-01
   - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
@@ -56,9 +59,6 @@ aliases:
 
   - &node_config
     <<: *default_config
-    environment:
-      # this makes Playwright download browsers to node_modules/playwright instead of $HOME/.cache/ms-playwright
-      PLAYWRIGHT_BROWSERS_PATH: 0
 
   - &jvm_config
     <<: *default_config
@@ -385,14 +385,14 @@ commands:
 
   e2e_test:
     parameters:
-      yarn_version:
-        type: string
-        default: *yarn_version
       test_runner:
         type: enum
         enum:
           - testcafe
           - playwright
+      suite:
+        type: string
+        default: ""
     steps:
       - restore_repo
       - attach_root_workspace
@@ -407,75 +407,21 @@ commands:
           command: |
             docker-compose build
             CI=true LOCAL_DIR='../frontend' ./compose-e2e up -d
-      - run:
-          name: Install Node.js and yarn
-          command: |
-            export DEBIAN_FRONTEND=noninteractive
-            nvm install
-            node --version
-
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
-            yarn --version
-      - when:
-          condition:
-            equal: ["testcafe", "<< parameters.test_runner >>"]
-          steps:
-            - run:
-                name: Install browsers
-                command: |
-                  curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-                    && (sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)  \
-                    && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
-                    && sudo sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
-                        "/opt/google/chrome/google-chrome" \
-                    && google-chrome --version
-                  CHROME_VERSION="$(google-chrome --version)" \
-                    && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} \
-                    && CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) \
-                    && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
-                    && cd /tmp \
-                    && unzip chromedriver_linux64.zip \
-                    && rm -rf chromedriver_linux64.zip \
-                    && sudo mv chromedriver /usr/local/bin/chromedriver \
-                    && sudo chmod +x /usr/local/bin/chromedriver \
-                    && chromedriver --version
-      - when:
-          condition:
-            equal: ["playwright", "<< parameters.test_runner >>"]
-          steps:
-            - run:
-                name: Install Playwright dependencies
-                command: |
-                  sudo apt-get update && sudo apt-get --yes install --no-install-recommends libgbm1
       - restore_frontend_deps
       - restore_frontend_comm_deps
       - run:
-          name: Install frontend dependencies from Yarn cache
-          working_directory: *workspace_frontend
-          command: yarn install --immutable --immutable-cache
-      - run:
-          name: Wait for compose stack to be up
+          name: Split test fixtures by timings
           working_directory: *workspace_frontend
           command: |
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd << pipeline.parameters.workspace_root >>/compose && ./compose-e2e logs && false)
-      - run:
-          name: Run e2e tests against compose
-          working_directory: *workspace_frontend
-          command: |
-            nvm use
-
+            # Get list of test files that should run on this node.
             if [ "<< parameters.test_runner >>" = "playwright" ]; then
-              # Get list of test files that should run on this node.
               FILENAMES=($(circleci tests glob \
                   'src/e2e-playwright/specs/**/*.spec.ts' \
                   | sort -h \
                   | circleci tests split --split-by=timings --timings-type=filename))
               echo -e "Spec files selected for node:\n$(echo "${FILENAMES[@]}" | tr ' ' '\n')"
-              yarn e2e-ci-playwright "${FILENAMES[@]}"
+              echo "${FILENAMES[@]}" > playwright-filenames.txt
             elif [ "<< parameters.test_runner >>" = "testcafe" ]; then
-              # Get list of test files that should run on this node.
               # NOTE: Currently testcafe-reporter-junit doesn't provide
               # filenames in its output so they can't be used for splitting
               # -> use fixture names instead.
@@ -491,13 +437,25 @@ commands:
               # Strip the last "|"
               TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
               echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
-
-              yarn e2e-ci-testcafe --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" -- src/e2e-test/specs/
+              echo "$TESTCAFE_FIXTURE_REGEX" > testcafe-fixture-regex.txt
 
             else
               echo 'ERROR: Invalid test_runner: "<< parameters.test_runner >>"'
               exit 1
             fi
+      - run:
+          name: Run E2E tests against compose inside a Docker container
+          working_directory: << pipeline.parameters.workspace_root >>
+          command: |
+            docker run --rm -it \
+              --volume "${PWD}/bin/circleci-e2e-run.sh":/tmp/circleci-e2e-run.sh:ro \
+              --volume "${PWD}":/repo:rw \
+              --network=compose_default \
+              --env REPO_UID="$UID" \
+              --env CI="$CI" \
+              --entrypoint=/bin/bash \
+              << pipeline.parameters.nodejs_image >>-browsers \
+              /tmp/circleci-e2e-run.sh "<< parameters.test_runner >>"
       - run:
           name: Collect docker-compose logs
           working_directory: *workspace_compose
