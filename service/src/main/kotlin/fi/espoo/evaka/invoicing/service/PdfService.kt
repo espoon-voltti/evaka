@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import org.springframework.stereotype.Component
 import org.thymeleaf.ITemplateEngine
@@ -62,6 +63,7 @@ fun instantFmt(instant: Instant?): String =
 
 @Component
 class PDFService(
+    private val messageProvider: IMessageProvider,
     private val templateProvider: ITemplateProvider,
     private val templateEngine: ITemplateEngine
 ) {
@@ -131,7 +133,7 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, lang.name)
+        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, messageProvider, lang.name)
         return mapOf(
             "child" to decision.child,
             "approvedAt" to instantFmt(decision.approvedAt),
@@ -155,6 +157,7 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
+            "hasPoBox" to (sendAddress.poBox != null),
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
@@ -193,7 +196,7 @@ class PDFService(
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
-        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, lang)
+        val sendAddress = MailAddress.fromPerson(decision.headOfFamily, messageProvider, lang)
 
         val hideTotalIncome =
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||

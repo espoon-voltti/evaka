@@ -6,6 +6,8 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
 import java.util.UUID
@@ -65,30 +67,17 @@ data class MailAddress(
     val poBox: String? = null
 ) {
     companion object {
-        val defaultAddress = MailAddress(
-            "",
-            "02700",
-            "Espoon kaupunki",
-            "PL 30"
-        )
-
-        val defaultAddressSv = MailAddress(
-            "",
-            "02700",
-            "Esbo",
-            "PB 30"
-        )
-
-        fun fromPerson(person: PersonData.Detailed, lang: String? = "fi") = person.let {
-            if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
-                MailAddress(person.streetAddress!!, person.postalCode!!, person.postOffice!!)
-            } else {
-                when (lang) {
-                    "sv" -> defaultAddressSv
-                    else -> defaultAddress
+        fun fromPerson(person: PersonData.Detailed, messageProvider: IMessageProvider, lang: String? = "fi") =
+            person.let {
+                if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
+                    MailAddress(person.streetAddress!!, person.postalCode!!, person.postOffice!!)
+                } else {
+                    when (lang) {
+                        "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+                        else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+                    }
                 }
             }
-        }
     }
 }
 

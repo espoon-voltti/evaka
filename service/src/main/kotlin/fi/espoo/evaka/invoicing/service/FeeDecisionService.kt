@@ -139,7 +139,7 @@ class FeeDecisionService(
 
         val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
-        val sendAddress = MailAddress.fromPerson(recipient, lang)
+        val sendAddress = MailAddress.fromPerson(recipient, messageProvider, lang)
 
         val feeDecisionDisplayName =
             if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
