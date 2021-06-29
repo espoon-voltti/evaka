@@ -157,6 +157,7 @@ class PDFService(
             "showTotalIncome" to !hideTotalIncome,
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
+            "hasPoBox" to (sendAddress.poBox != null),
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
