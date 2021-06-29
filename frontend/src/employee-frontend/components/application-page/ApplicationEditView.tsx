@@ -237,7 +237,7 @@ export default React.memo(function ApplicationEditView({
                 data-qa="checkbox-urgent"
               />
 
-              {urgent && (
+              {urgent && featureFlags.urgencyAttachmentsEnabled && (
                 <FileUploadGridContainer>
                   <FileUpload
                     onUpload={onUploadAttachment('URGENCY')}
