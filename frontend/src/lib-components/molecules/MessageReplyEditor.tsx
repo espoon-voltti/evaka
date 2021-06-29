@@ -13,7 +13,7 @@ import { Result } from '../../lib-common/api'
 import { UUID } from '../../lib-common/types'
 import { faTimes } from '../../lib-icons'
 import Button from '../atoms/buttons/Button'
-import { TextArea } from '../atoms/form/InputField'
+import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'
 import { defaultMargins } from '../white-space'
 

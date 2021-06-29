@@ -16,7 +16,8 @@ import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
+import InputField, { InputInfo } from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import Radio from 'lib-components/atoms/form/Radio'
 import colors from 'lib-customizations/common'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -180,6 +181,15 @@ export default React.memo(function ApplicationEditView({
         )
       return res
     })
+
+  const validationErrorInfo = (field: string): InputInfo | undefined => {
+    return errors[field]
+      ? {
+          text: errors[field],
+          status: 'warning'
+        }
+      : undefined
+  }
 
   return (
     <div data-qa="application-edit-view">
@@ -373,17 +383,9 @@ export default React.memo(function ApplicationEditView({
                             set('form.preferences.serviceNeed.startTime', value)
                           )
                         }
-                        info={
-                          errors['form.preferences.serviceNeed.startTime']
-                            ? {
-                                text:
-                                  errors[
-                                    'form.preferences.serviceNeed.startTime'
-                                  ],
-                                status: 'warning'
-                              }
-                            : undefined
-                        }
+                        info={validationErrorInfo(
+                          'form.preferences.serviceNeed.startTime'
+                        )}
                         data-qa="start-time"
                       />
                       <Gap size="s" horizontal />
@@ -398,17 +400,9 @@ export default React.memo(function ApplicationEditView({
                             set('form.preferences.serviceNeed.endTime', value)
                           )
                         }
-                        info={
-                          errors['form.preferences.serviceNeed.endTime']
-                            ? {
-                                text:
-                                  errors[
-                                    'form.preferences.serviceNeed.endTime'
-                                  ],
-                                status: 'warning'
-                              }
-                            : undefined
-                        }
+                        info={validationErrorInfo(
+                          'form.preferences.serviceNeed.endTime'
+                        )}
                         data-qa="end-time"
                       />
                     </HorizontalContainer>
@@ -503,6 +497,8 @@ export default React.memo(function ApplicationEditView({
                     set('form.child.assistanceDescription', e.target.value)
                   )
                 }}
+                info={validationErrorInfo('form.child.assistanceDescription')}
+                required={true}
               />
             </>
           )}
@@ -973,17 +969,9 @@ export default React.memo(function ApplicationEditView({
                               )
                             )
                           }}
-                          info={
-                            errors['form.otherPartner.socialSecurityNumber']
-                              ? {
-                                  text:
-                                    errors[
-                                      'form.otherPartner.socialSecurityNumber'
-                                    ],
-                                  status: 'warning'
-                                }
-                              : undefined
-                          }
+                          info={validationErrorInfo(
+                            'form.otherPartner.socialSecurityNumber'
+                          )}
                         />
                       </WithLabel>
                     </HorizontalContainer>
@@ -1060,19 +1048,9 @@ export default React.memo(function ApplicationEditView({
                                 )
                               )
                             }}
-                            info={
-                              errors[
-                                `form.otherChildren.${index}.socialSecurityNumber`
-                              ]
-                                ? {
-                                    text:
-                                      errors[
-                                        `form.otherChildren.${index}.socialSecurityNumber`
-                                      ],
-                                    status: 'warning'
-                                  }
-                                : undefined
-                            }
+                            info={validationErrorInfo(
+                              `form.otherChildren.${index}.socialSecurityNumber`
+                            )}
                           />
                         </WithLabel>
                         <Gap size="s" horizontal />

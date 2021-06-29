@@ -636,6 +636,7 @@ const sv: Translations = {
         },
         assistanceNeed: 'Behov av stöd för utveckling och lärande',
         assistanceNeeded: 'Barnet har behov av stöd för utveckling och lärande',
+        assistanceNeedLabel: 'Beskrivning av stödbehov',
         assistanceNeedPlaceholder:
           'Berätta om barnets behov av stöd för utveckling och lärande',
         assistanceNeedInstructions: {

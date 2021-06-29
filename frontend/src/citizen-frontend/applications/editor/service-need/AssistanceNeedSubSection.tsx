@@ -5,16 +5,19 @@
 import React from 'react'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { useTranslation } from '../../../localization'
-import { H3 } from 'lib-components/typography'
-import { TextArea } from 'lib-components/atoms/form/InputField'
+import { H3, Label } from 'lib-components/typography'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { Gap } from 'lib-components/white-space'
 import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import styled from 'styled-components'
+import { errorToInputInfo } from 'citizen-frontend/form-validation'
 
 export default React.memo(function AssistanceNeedSubSection({
   type,
   formData,
+  errors,
+  verificationRequested,
   updateFormData
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
@@ -69,7 +72,9 @@ export default React.memo(function AssistanceNeedSubSection({
       {formData.assistanceNeeded && (
         <>
           <Gap size={'s'} />
-
+          <Label>
+            {t.applications.editor.serviceNeed.assistanceNeedLabel + ' *'}
+          </Label>
           <NarrowTextArea
             value={formData.assistanceDescription}
             data-qa={'assistanceDescription-input'}
@@ -79,6 +84,12 @@ export default React.memo(function AssistanceNeedSubSection({
             placeholder={
               t.applications.editor.serviceNeed.assistanceNeedPlaceholder
             }
+            hideErrorsBeforeTouched={!verificationRequested}
+            info={errorToInputInfo(
+              errors.assistanceDescription,
+              t.validationErrors
+            )}
+            required={true}
           />
         </>
       )}

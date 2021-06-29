@@ -156,7 +156,10 @@ export const validateApplication = (
         (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.endTime) ||
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')
-          : undefined
+          : undefined,
+      assistanceDescription: form.serviceNeed.assistanceNeeded
+        ? required(form.serviceNeed.assistanceDescription)
+        : undefined
     },
     unitPreference: {
       siblingName:

@@ -227,7 +227,7 @@ function validateApplication(
   const errors = {}
 
   const {
-    form: { preferences, otherPartner, otherChildren }
+    form: { child, preferences, otherPartner, otherChildren }
   } = application
 
   if (!preferences.preferredStartDate) {
@@ -285,6 +285,14 @@ function validateApplication(
         i18n.validationError.ssn
     }
   })
+
+  if (
+    child.assistanceNeeded &&
+    child.assistanceDescription.trim().length === 0
+  ) {
+    errors['form.child.assistanceDescription'] =
+      i18n.validationError.mandatoryField
+  }
 
   return errors
 }

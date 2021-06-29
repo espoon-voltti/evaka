@@ -5,7 +5,6 @@
 import React, { RefObject, useState } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
-import TextareaAutosize from 'react-autosize-textarea'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { faTimes } from 'lib-icons'
@@ -98,7 +97,7 @@ const StyledInput = styled.input<StyledInputProps>`
   }
 `
 
-const InputRow = styled.div`
+export const InputRow = styled.div`
   position: relative;
   width: 100%;
 `
@@ -120,7 +119,7 @@ const InputIcon = styled.div`
   }
 `
 
-const InputFieldUnderRow = styled.div`
+export const InputFieldUnderRow = styled.div`
   height: 16px;
   padding: 0 12px;
   margin-top: ${defaultMargins.xxs};
@@ -269,39 +268,5 @@ function InputField({
     </Wrapper>
   )
 }
-
-export const TextArea = styled(TextareaAutosize)`
-  display: block;
-  position: relative;
-  align-items: center;
-  justify-content: flex-start;
-
-  width: 100%;
-  max-width: 100%;
-  height: 38px;
-  min-height: 2.5em;
-  padding: calc(0.5em - 1px) calc(0.625em - 1px) calc(0.5em - 1px);
-
-  font-size: 1rem;
-  font-family: 'Open Sans', Arial, sans-serif;
-  color: #0f0f0f;
-  line-height: 1.5;
-  overflow: hidden;
-  overflow-wrap: break-word;
-  resize: none;
-
-  background-color: transparent;
-  border: 2px solid transparent;
-  border-bottom: 1px solid ${({ theme: { colors } }) => colors.greyscale.medium};
-  border-radius: 0;
-  box-shadow: none;
-
-  outline: none;
-  &:focus {
-    border-width: 2px;
-    border-style: solid;
-    border-color: ${({ theme: { colors } }) => colors.accents.petrol};
-  }
-`
 
 export default InputField

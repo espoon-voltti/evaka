@@ -4,7 +4,7 @@
 
 import { ApplicationType } from 'lib-common/api-types/application/enums'
 import { UpdateStateFn } from 'lib-common/form-state'
-import { TextArea } from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'

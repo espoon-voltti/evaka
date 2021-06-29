@@ -10,7 +10,7 @@ import {
   updateAdditionalInformation
 } from '../../../api/child/additional-information'
 import { ChildContext } from '../../../state/child'
-import { TextArea } from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Loader from 'lib-components/atoms/Loader'

@@ -28,7 +28,8 @@ import {
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import InputField, { TextArea } from 'lib-components/atoms/form/InputField'
+import InputField from 'lib-components/atoms/form/InputField'
+import TextArea from 'lib-components/atoms/form/TextArea'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 
