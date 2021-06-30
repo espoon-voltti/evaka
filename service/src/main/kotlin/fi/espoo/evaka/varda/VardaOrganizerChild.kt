@@ -79,7 +79,7 @@ private fun createVardaPersonAndChild(
 ): Long {
     val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
 
-    val vardaPerson = client.createPerson(personPayload) ?: error("VardaUpdate: Couldn't create Varda person $personPayload")
+    val vardaPerson = client.createPerson(personPayload, tryFetchOnFail = true) ?: error("VardaUpdate: Couldn't create or fetch Varda person $personPayload")
 
     return createVardaChildWhenPersonExists(
         tx = tx,

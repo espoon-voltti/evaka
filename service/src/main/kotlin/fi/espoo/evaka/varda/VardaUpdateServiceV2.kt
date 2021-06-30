@@ -94,11 +94,11 @@ fun updateAllVardaData(
 }
 
 /*
-    0. If there are any existing failed service need updates, try to delete and readd the service need data to varda
+    0. If there are any existing failed service need updates, try to delete and read the service need data to varda
     1. Find out all changed service needs.
-        - For each deleted service need delete all related data from varda
-        - For each new service need IF related fee dataexists, add all related data to varda
-        - For each modified service need delete old related data from varda and add new
+        - For each deleted service need, delete all related data from varda
+        - For each new service need, IF related fee data exists, add all related data to varda
+        - For each modified service need, delete old related data from varda and add new
     2. Find out all changed evaka fee data affecting service needs not yet updated above, and for each service need
        update all service need related data to varda
  */
@@ -242,7 +242,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(null, evakaServiceNeed.id) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
-            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_orginizer_id is null or empty")
+            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_organizer_oid is null or empty")
             if (db.read { it.personHasSsn(evakaServiceNeed.childId) }.not()) throw Exception("VardaUpdate: cannot create service need ${evakaServiceNeed.id} for child ${evakaServiceNeed.childId} because child has no ssn")
 
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
@@ -310,27 +310,36 @@ fun createFeeDataToVardaFromFeeDecision(
         return null
     }
 
-    val res: VardaFeeDataResponse?
-    try {
-        res = client.createFeeData(
-            VardaFeeData(
-                huoltajat = guardians.map { it.toVardaGuardian() },
-                lapsi = client.getChildUrl(vardaChildId),
-                maksun_peruste_koodi = vardaFeeBasisByPlacementType(childPart.placement.type),
-                asiakasmaksu = childPart.finalFee.div(100.0),
-                palveluseteli_arvo = 0.0,
-                perheen_koko = decision.familySize,
-                alkamis_pvm = calculateVardaFeeDataStartDate(decision.validFrom, evakaServiceNeedInfoForVarda.asPeriod),
-                paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
-                lahdejarjestelma = client.sourceSystem
-            )
-        )
+    val requestPayload = VardaFeeData(
+        huoltajat = guardians.map { it.toVardaGuardian() },
+        lapsi = client.getChildUrl(vardaChildId),
+        maksun_peruste_koodi = vardaFeeBasisByPlacementType(childPart.placement.type),
+        asiakasmaksu = childPart.finalFee.div(100.0),
+        palveluseteli_arvo = 0.0,
+        perheen_koko = decision.familySize,
+        alkamis_pvm = calculateVardaFeeDataStartDate(decision.validFrom, evakaServiceNeedInfoForVarda.asPeriod),
+        paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
+        lahdejarjestelma = client.sourceSystem
+    )
+
+    val res: VardaFeeDataResponse = try {
+        client.createFeeData(requestPayload)
+    } catch (e: Exception) {
+        client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getVardaGuardian(client, it.henkilotunnus) }))
     } catch (e: Exception) {
         throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
+    } ?: throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
 
-    if (res == null) throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
     return res.id
+}
+
+fun getVardaGuardian(client: VardaClient, ssn: String): VardaGuardian {
+    val person = client.getPersonFromVardaBySSN(ssn) ?: error("VardaUpdate: Couldn't fetch guardian from Varda")
+    return VardaGuardian(
+        henkilotunnus = ssn,
+        etunimet = person.firstName,
+        sukunimi = person.lastName
+    )
 }
 
 data class VardaGuardianWithId(
@@ -493,13 +502,14 @@ private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, v
 
 fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) = createUpdate(
     """
-INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_placement_id, varda_fee_data_ids, update_failed, errors) 
-VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaPlacementId, :vardaFeeDataIds, :updateFailed, :errors)
+INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_child_id, varda_decision_id, varda_placement_id, varda_fee_data_ids, update_failed, errors) 
+VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaChildId, :vardaDecisionId, :vardaPlacementId, :vardaFeeDataIds, :updateFailed, :errors)
 ON CONFLICT (evaka_service_need_id) DO UPDATE 
     SET evaka_service_need_option_id = :evakaServiceNeedOptionId, 
         evaka_service_need_updated = :evakaServiceNeedUpdated, 
         evaka_service_need_option_updated = :evakaServiceNeedOptionUpdated, 
         evaka_child_id = :evakaChildId, 
+        varda_child_id = :vardaChildId,
         varda_decision_id = :vardaDecisionId, 
         varda_placement_id = :vardaPlacementId, 
         varda_fee_data_ids = :vardaFeeDataIds,

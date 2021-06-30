@@ -50,6 +50,7 @@ class VardaClient(
     private val organizerUrl = "$baseUrl/v1/vakajarjestajat/"
     private val unitUrl = "$baseUrl/v1/toimipaikat/"
     private val personUrl = "$baseUrl/v1/henkilot/"
+    private val personSearchUrl = "$baseUrl/v1/hae-henkilo/"
     private val childUrl = "$baseUrl/v1/lapset/"
     private val decisionUrl = "$baseUrl/v1/varhaiskasvatuspaatokset/"
     private val placementUrl = "$baseUrl/v1/varhaiskasvatussuhteet/"
@@ -121,7 +122,7 @@ class VardaClient(
         }
     }
 
-    fun createPerson(newPerson: VardaPersonRequest): VardaPersonResponse? {
+    fun createPerson(newPerson: VardaPersonRequest, tryFetchOnFail: Boolean = false): VardaPersonResponse? {
         logger.info { "Creating a new person ${newPerson.id} to Varda" }
         val (request, _, result) = fuel.post(personUrl)
             .jsonBody(objectMapper.writeValueAsString(newPerson)).authenticatedResponseStringWithRetries()
@@ -129,6 +130,27 @@ class VardaClient(
         return when (result) {
             is Result.Success -> {
                 logger.info { "Creating a new person ${newPerson.id} to Varda succeeded" }
+                objectMapper.readValue<VardaPersonResponse>(
+                    objectMapper.readTree(result.get()).toString()
+                )
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                if (tryFetchOnFail) getPersonFromVardaBySSN(newPerson.ssn)
+                else null
+            }
+        }
+    }
+
+    fun getPersonFromVardaBySSN(ssn: String): VardaPersonResponse? {
+        logger.info { "Fetching person from Varda" }
+        data class PersonSearchRequest(val henkilotunnus: String)
+        val (request, _, result) = fuel.post(personSearchUrl)
+            .jsonBody(objectMapper.writeValueAsString(PersonSearchRequest(ssn))).authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "Fetching person from Varda succeeded" }
                 objectMapper.readValue<VardaPersonResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )
