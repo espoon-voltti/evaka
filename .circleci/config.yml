@@ -334,6 +334,21 @@ commands:
           docker_layer_caching: true
       - login_docker_hub
 
+  prepare_frontend_build:
+    steps:
+      - restore_repo
+      - restore_frontend_deps
+      - restore_frontend_comm_deps
+      - run:
+          working_directory: *workspace_frontend
+          command: yarn install --immutable
+      - run:
+          name: Unpack commercial frontend dependencies
+          working_directory: *workspace_frontend
+          command: |
+            ./unpack-pro-icons.sh
+      - store_frontend_deps
+
   build_frontend:
     steps:
       - run:
@@ -792,28 +807,27 @@ jobs:
           dir: apigw
       - notify_slack
 
-  frontend_build_and_test:
+  frontend_build_core:
     executor: frontend_executor
     steps:
-      - restore_repo
-      - restore_frontend_deps
-      - restore_frontend_comm_deps
-      - run:
-          working_directory: *workspace_frontend
-          command: yarn install --immutable
-      - run:
-          name: Unpack commercial frontend dependencies
-          working_directory: *workspace_frontend
-          command: |
-            ./unpack-pro-icons.sh
-      - store_frontend_deps
+      - prepare_frontend_build
       - build_frontend
+      - persist_to_workspace:
+          root: << pipeline.parameters.workspace_root >>
+          paths:
+            - frontend/dist
+      - notify_slack
+
+  frontend_build_misc_and_test:
+    executor: frontend_executor
+    steps:
+      - prepare_frontend_build
       - build_maintenance_page
       - build_storybook
       - persist_to_workspace:
           root: << pipeline.parameters.workspace_root >>
           paths:
-            - frontend/dist
+            - frontend/dist/maintenance-page
             - frontend/storybook-build
       - run:
           working_directory: *workspace_frontend
@@ -1132,24 +1146,28 @@ workflows:
             - build_base_image
             - apigw_build_and_test
 
-      - frontend_build_and_test:
+      - frontend_build_core:
           context:
             - voltti-slack
             - voltti-dockerhub
             - sentry-release
           requires:
             - fetch_private_dependencies
+      - frontend_build_misc_and_test:
+          <<: *default_contexts
+          requires:
+            - fetch_private_dependencies
 
       - e2e-test-testcafe:
           <<: *default_contexts
           requires:
-            - frontend_build_and_test
+            - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
       - e2e-test-playwright:
           <<: *default_contexts
           requires:
-            - frontend_build_and_test
+            - frontend_build_core
             - apigw_build_and_push_image
             - service_build_and_push_image
 
@@ -1202,6 +1220,7 @@ workflows:
           <<: *aws_contexts
           requires:
             - lint_scripts
+            - frontend_build_misc_and_test
             - e2e-test-testcafe
             - e2e-test-playwright
             - apigw_build_and_push_image
