@@ -52,7 +52,7 @@ class VasuController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
-    ): VasuDocumentResponse {
+    ): VasuDocument {
         Audit.VasuDocumentRead.log(id)
         acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
             UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF

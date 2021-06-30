@@ -9,7 +9,7 @@ import { H1, H2 } from '../../../../lib-components/typography'
 import { defaultMargins } from '../../../../lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
-import { VasuDocumentResponse } from '../api'
+import { VasuDocument } from '../api'
 
 const HeaderSection = styled(ContentArea)`
   display: flex;
@@ -36,10 +36,7 @@ const Confidential = styled.div`
 `
 
 interface Props {
-  document: Pick<
-    VasuDocumentResponse,
-    'child' | 'documentState' | 'templateName'
-  >
+  document: Pick<VasuDocument, 'child' | 'documentState' | 'templateName'>
 }
 export function VasuHeader({
   document: {
