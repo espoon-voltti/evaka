@@ -32,8 +32,10 @@ System_Boundary(evaka, "eVaka – Espoon varhaiskasvatuksen toiminnanohjausjärj
 
 System_Ext(suomifi, "Suomi.fi -tunnistus")
 System_Ext(espooad, "Espoo AD -tunnistus")
+System_Ext(laskutus, "Kaupungin taloushallinto")
 System_Ext(suomifiviestit, "Suomi.fi-viestit")
 System_Ext(varda, "Varda Varhaiskasvatuksen tietovaranto")
+System_Ext(koski, "Koski tietovaranto")
 System_Ext(vtj, "VTJ Väestötietojärjestelmä")
 
 Rel_L(huoltaja, suomifi, "tunnistautuu", "SAML/HTTPS")
@@ -69,5 +71,9 @@ Rel(evaka_proxy, evaka_static_s3_bucket, "lukee", "HTTPS")
 
 Rel_D(evaka_service, vtj, "lukee", "SOAP/HTTPS")
 Rel_D(evaka_service, varda, "lukee ja kirjoittaa", "REST/HTTPS")
+
+Rel_D(evaka_service, koski, "kirjoittaa", "JSON/HTTPS")
+
+Rel_D(evaka_service, laskutus, "kirjoittaa", "JSON/HTTPS")
 
 @enduml
