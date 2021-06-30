@@ -17,7 +17,7 @@ import {
 import { Loading, Result } from '../../../../lib-common/api'
 import { SpinnerSegment } from '../../../../lib-components/atoms/state/Spinner'
 import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
-import { useParams } from 'react-router-dom'
+import { Prompt, useParams } from 'react-router-dom'
 import { UUID } from '../../../../lib-common/types'
 import styled from 'styled-components'
 import {
@@ -55,6 +55,7 @@ export default React.memo(function VasuTemplateEditor() {
   const h = useHistory()
 
   const [template, setTemplate] = useState<Result<VasuTemplate>>(Loading.of())
+  const [dirty, setDirty] = useState(false)
 
   const [sectionNameEdit, setSectionNameEdit] = useState<number | null>(null)
   const [addingQuestion, setAddingQuestion] = useState<number[] | null>(null) // [section, question]
@@ -62,7 +63,25 @@ export default React.memo(function VasuTemplateEditor() {
   const loadTemplate = useRestApi(getVasuTemplate, setTemplate)
   useEffect(() => loadTemplate(id), [id, loadTemplate])
 
+  useEffect(() => {
+    const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        // Support different browsers: https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event
+        e.preventDefault()
+        e.returnValue = i18n.vasuTemplates.unsavedWarning
+        return i18n.vasuTemplates.unsavedWarning
+      }
+      return
+    }
+
+    window.addEventListener('beforeunload', beforeUnloadHandler)
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnloadHandler)
+    }
+  }, [dirty, i18n])
+
   function moveSection(index: number, dir: 'up' | 'down') {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -83,6 +102,7 @@ export default React.memo(function VasuTemplateEditor() {
     questionIndex: number,
     dir: 'up' | 'down'
   ) {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -106,6 +126,7 @@ export default React.memo(function VasuTemplateEditor() {
   }
 
   function addSection(sectionIndex: number) {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -129,6 +150,7 @@ export default React.memo(function VasuTemplateEditor() {
     sectionIndex: number,
     questionIndex: number
   ) {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -152,6 +174,7 @@ export default React.memo(function VasuTemplateEditor() {
   }
 
   function renameSection(sectionIndex: number, value: string) {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -171,6 +194,7 @@ export default React.memo(function VasuTemplateEditor() {
   }
 
   function removeSection(sectionIndex: number) {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -186,6 +210,7 @@ export default React.memo(function VasuTemplateEditor() {
   }
 
   function removeQuestion(sectionIndex: number, questionIndex: number) {
+    setDirty(true)
     setTemplate((res) =>
       res.map((tmp) => ({
         ...tmp,
@@ -294,6 +319,8 @@ export default React.memo(function VasuTemplateEditor() {
 
   return (
     <Container>
+      <Prompt when={dirty} message={i18n.vasuTemplates.unsavedWarning} />
+
       <Gap size={'L'} />
       <ContentArea opaque>
         {template.isLoading && <SpinnerSegment />}
@@ -463,7 +490,10 @@ export default React.memo(function VasuTemplateEditor() {
                   id,
                   template.value.content
                 ).then((res) => {
-                  if (res.isSuccess) h.goBack()
+                  if (res.isSuccess) {
+                    setDirty(false)
+                    h.goBack()
+                  }
                 })
               }}
             />
