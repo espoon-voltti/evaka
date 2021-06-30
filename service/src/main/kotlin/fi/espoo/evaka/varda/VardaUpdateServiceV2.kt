@@ -493,13 +493,14 @@ private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, v
 
 fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed) = createUpdate(
     """
-INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_decision_id, varda_placement_id, varda_fee_data_ids, update_failed, errors) 
-VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaDecisionId, :vardaPlacementId, :vardaFeeDataIds, :updateFailed, :errors)
+INSERT INTO varda_service_need (evaka_service_need_id, evaka_service_need_option_id, evaka_service_need_updated, evaka_service_need_option_updated, evaka_child_id, varda_child_id, varda_decision_id, varda_placement_id, varda_fee_data_ids, update_failed, errors) 
+VALUES (:evakaServiceNeedId, :evakaServiceNeedOptionId, :evakaServiceNeedUpdated, :evakaServiceNeedOptionUpdated, :evakaChildId, :vardaChildId, :vardaDecisionId, :vardaPlacementId, :vardaFeeDataIds, :updateFailed, :errors)
 ON CONFLICT (evaka_service_need_id) DO UPDATE 
     SET evaka_service_need_option_id = :evakaServiceNeedOptionId, 
         evaka_service_need_updated = :evakaServiceNeedUpdated, 
         evaka_service_need_option_updated = :evakaServiceNeedOptionUpdated, 
         evaka_child_id = :evakaChildId, 
+        varda_child_id = :vardaChildId,
         varda_decision_id = :vardaDecisionId, 
         varda_placement_id = :vardaPlacementId, 
         varda_fee_data_ids = :vardaFeeDataIds,
