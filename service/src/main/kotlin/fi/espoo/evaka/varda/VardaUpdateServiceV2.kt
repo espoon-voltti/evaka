@@ -324,8 +324,7 @@ fun createFeeDataToVardaFromFeeDecision(
 
     val res: VardaFeeDataResponse = try {
         client.createFeeData(requestPayload)
-    } catch (e: Exception) {
-        client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getVardaGuardian(client, it.henkilotunnus) }))
+            ?: client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getVardaGuardian(client, it.henkilotunnus) }))
     } catch (e: Exception) {
         throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
     } ?: throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
