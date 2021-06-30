@@ -12,7 +12,6 @@ import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from '../../../../lib-components/atoms/form/TextArea'
-import InfoBall from '../../../components/common/InfoBall'
 import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
 import { formatDecimal } from 'lib-common/utils/number'
@@ -327,34 +326,52 @@ function AssistanceNeedForm(props: Props) {
             label: i18n.childInformation.assistanceNeed.fields.bases,
             value: (
               <div>
-                {ASSISTANCE_BASIS_LIST.map((basis) => (
-                  <CheckboxRow key={basis}>
-                    <Checkbox
-                      label={
+                {ASSISTANCE_BASIS_LIST.map((basis) =>
+                  i18n.childInformation.assistanceNeed.fields.basisTypes[
+                    `${basis}_INFO`
+                  ] ? (
+                    <ExpandingInfo2
+                      info={String(
                         i18n.childInformation.assistanceNeed.fields.basisTypes[
-                          basis
+                          `${basis}_INFO`
                         ]
-                      }
-                      checked={form.bases.has(basis)}
-                      onChange={(value) => {
-                        const bases = new Set([...form.bases])
-                        if (value) bases.add(basis)
-                        else bases.delete(basis)
-                        updateFormState({ bases: bases })
-                      }}
-                    />
-                    {i18n.childInformation.assistanceNeed.fields.basisTypes[
-                      `${basis}_INFO`
-                    ] && (
-                      <InfoBall
-                        text={String(
+                      )}
+                      ariaLabel={''}
+                    >
+                      <CheckboxRow key={basis}>
+                        <Checkbox
+                          label={
+                            i18n.childInformation.assistanceNeed.fields
+                              .basisTypes[basis]
+                          }
+                          checked={form.bases.has(basis)}
+                          onChange={(value) => {
+                            const bases = new Set([...form.bases])
+                            if (value) bases.add(basis)
+                            else bases.delete(basis)
+                            updateFormState({ bases: bases })
+                          }}
+                        />
+                      </CheckboxRow>
+                    </ExpandingInfo2>
+                  ) : (
+                    <CheckboxRow key={basis}>
+                      <Checkbox
+                        label={
                           i18n.childInformation.assistanceNeed.fields
-                            .basisTypes[`${basis}_INFO`]
-                        )}
+                            .basisTypes[basis]
+                        }
+                        checked={form.bases.has(basis)}
+                        onChange={(value) => {
+                          const bases = new Set([...form.bases])
+                          if (value) bases.add(basis)
+                          else bases.delete(basis)
+                          updateFormState({ bases: bases })
+                        }}
                       />
-                    )}
-                  </CheckboxRow>
-                ))}
+                    </CheckboxRow>
+                  )
+                )}
                 {form.bases.has('OTHER') && (
                   <div style={{ width: '100%' }}>
                     <InputField
