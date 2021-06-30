@@ -183,9 +183,11 @@ function ApplicationReadView({
                   ) : (
                     <>
                       <span>{i18n.application.serviceNeed.isUrgent}</span>
-                      <Dimmed>
-                        {i18n.application.serviceNeed.missingAttachment}
-                      </Dimmed>
+                      {featureFlags.urgencyAttachmentsEnabled && (
+                        <Dimmed>
+                          {i18n.application.serviceNeed.missingAttachment}
+                        </Dimmed>
+                      )}
                     </>
                   )}
                 </AttachmentContainer>
