@@ -13,7 +13,7 @@ import { defaultMargins } from '../../../../lib-components/white-space'
 import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from '../api'
-import { getLastPublished } from '../events'
+import { getLastPublished } from '../vasu-events'
 
 const labelWidth = '320px'
 
@@ -74,8 +74,8 @@ export function VasuEvents({
         <ChipContainer>
           <VasuStateChip state={documentState} labels={i18n.vasu.states} />
         </ChipContainer>
-        <EventRow label={i18n.vasu.modifiedAt} date={modifiedAt} />
-        <EventRow label={i18n.vasu.eventTypes.PUBLISHED} date={lastPublished} />
+        <EventRow label={i18n.vasu.lastModified} date={modifiedAt} />
+        <EventRow label={i18n.vasu.lastPublished} date={lastPublished} />
         <EventRow label={i18n.vasu.vasuDiscussion} date={vasuDiscussionDate} />
         <EventRow
           label={i18n.vasu.evaluationDiscussion}

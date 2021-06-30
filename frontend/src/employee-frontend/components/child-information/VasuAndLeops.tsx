@@ -29,7 +29,7 @@ import {
   getVasuDocumentSummaries,
   VasuDocumentSummary
 } from '../vasu/api'
-import { getLastPublished } from '../vasu/events'
+import { getLastPublished } from '../vasu/vasu-events'
 import {
   getVasuTemplateSummaries,
   VasuTemplateSummary

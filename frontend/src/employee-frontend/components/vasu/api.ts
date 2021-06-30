@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from 'employee-frontend/types'
-import { Result, Success, Failure } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
 import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
+import { getDocumentState } from './vasu-events'
 import { VasuContent } from './vasu-content'
 
 export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
@@ -54,24 +55,6 @@ interface VasuDocumentResponse {
 export interface VasuDocument extends VasuDocumentResponse {
   documentState: VasuDocumentState
 }
-
-const getDocumentState = (
-  events: JsonOf<VasuDocumentEvent>[]
-): VasuDocumentState =>
-  events.reduce<VasuDocumentState>((acc, { eventType }) => {
-    switch (eventType) {
-      case 'PUBLISHED':
-        return acc
-      case 'MOVED_TO_READY':
-      case 'RETURNED_TO_READY':
-        return 'READY'
-      case 'MOVED_TO_REVIEWED':
-      case 'RETURNED_TO_REVIEWED':
-        return 'REVIEWED'
-      case 'MOVED_TO_CLOSED':
-        return 'CLOSED'
-    }
-  }, 'DRAFT')
 
 const mapVasuDocumentResponse = ({
   evaluationDiscussionDate,

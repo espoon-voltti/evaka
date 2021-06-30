@@ -841,7 +841,8 @@ export const fi = {
     }
   },
   vasu: {
-    modifiedAt: 'Viimeisin muokkauspäivämäärä',
+    lastModified: 'Viimeisin muokkauspäivämäärä',
+    lastPublished: 'Viimeksi julkaistu huoltajalle',
     vasuDiscussion: 'Vasukeskustelu',
     evaluationDiscussion: 'Arviointikeskustelu',
     eventTypes: {
