@@ -34,15 +34,16 @@ Boundary(kunnan_tyontekija, "Kunnan työntekijä") {
   Person(palveluohjaaja, "Palveluohjaaja", "Vastaa oman palvelualueensa varhaiskasvatuksen sijoituksista ja päätöksistä")
   Person(yksikon_esimies, "Yksikön esimies", "Vastaa yhdestä tai useammasta toimipisteestä, sekä yksikön henkilökunnasta")
   Person(talouden_henkilo, "Talouden henkilö", "Huolehtii maksupäätöksistä, arvopäätöksistä ja laskuista")
-  Person(henkilokunta, "Henkilökunta", "Vastaa yksikköön sijoitettujen lasten poissaolomerkinnöistä")
+  Person(henkilokunta, "Henkilökunta", "Vastaa yksikköön sijoitettujen lasten merkinnöistä")
   Person(veo, "Varhaiskasvatuksen erityisopettaja", "Arvioi tuen tarpeellisten lasten sijoitukset")
 }
 
 
-Rel_R(hakija, evaka, "Hakee varhaiskasvatuspaikkaa huollettavalleen")
-Rel_L(partner, evaka, "Tunnistautuu")
+Rel_R(hakija, evaka, "Hakee varhaiskasvatuspaikkaa huollettavalleen ja viestii tähän liittyen")
+Rel_R(partner, evaka, "Hyväksyy palvelusetelinyksikköön tehdyt sijoitukset")
+Rel_L(partner, suomifi, "Tunnistautuu")
 Rel_U(hakija, suomifi, "Tunnistautuu")
-Rel_U(evaka, suomifi, "Ohjaa hakijan tunnistautumaan")
+Rel_U(evaka, suomifi, "Ohjaa hakijan ja yksityisen palvelutuottajan tunnistautumaan")
 Rel_R(evaka, ad, "Ohjaa kunnan työntekijän tunnistautumaan")
 Rel_U(evaka, vtj, "Hakee kuntalaisen tiedot ja huollettavat")
 Rel_U(evaka, varda, "Varhaiskasvatuksen tilastointi")
@@ -53,7 +54,7 @@ Rel_L(evaka, suomifiviestit, "Lähettää varhaiskasvatuksen päätökset kuntal
 
 Rel_U(palveluohjaaja, evaka, "Käsittelee hakemuksen, sijoittaa lapsen varhaiskasvatukseen ja tekee päätöksen")
 Rel_U(yksikon_esimies, evaka, "Ryhmittelee, merkitsee palvelutarpeet")
-Rel_U(henkilokunta, evaka, "Merkitsee poissaolot")
+Rel_U(henkilokunta, evaka, "Merkitsee poissaolot ja muistiinpanot")
 Rel_U(talouden_henkilo, evaka, "Luo maksupäätökset ja laskut")
 Rel_U(veo, evaka, "Arvioi tuen tarpeen hakemuksella")
 

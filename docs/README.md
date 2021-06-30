@@ -27,7 +27,8 @@ You can generate PNG, SVG or even AsciiArt files from [PlantUML](https://plantum
 ### Using the command line tool
 
 1. Install Java (e.g. [OpenJDK](https://openjdk.java.net/install/))
-1. Download [PlantUML jar](https://search.maven.org/remotecontent?filepath=net/sourceforge/plantuml/plantuml/1.2020.11/plantuml-1.2020.11.jar) (version `1.2020.11`) from e.g. central Maven repository
+1. Install [Graphviz](https://graphviz.org/)
+1. Download [PlantUML jar](https://search.maven.org/remotecontent?filepath=net/sourceforge/plantuml/plantuml/1.2021.8/plantuml-1.2021.8.jar) (version `1.2021.8`) from e.g. central Maven repository
 1. Generate SVG image from e.g. `source.puml` file by executing following command: `$ java -jar plantuml.jar -tsvg source.puml -o diagrams/svg/`
 1. Check out the generated image from `diagrams/svg/` directory
 
