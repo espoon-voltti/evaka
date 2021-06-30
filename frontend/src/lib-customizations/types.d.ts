@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { Theme } from 'lib-common/theme'
 import {
   Lang as LangCitizen,
@@ -34,20 +35,6 @@ export type PlacementPlanRejectReason =
   | 'REASON_1'
   | 'REASON_2'
   | 'REASON_3'
-
-export type PlacementType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'DAYCARE_FIVE_YEAR_OLDS'
-  | 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY'
-  | 'PREPARATORY_DAYCARE'
-  | 'TEMPORARY_DAYCARE'
-  | 'TEMPORARY_DAYCARE_PART_DAY'
-  | 'SCHOOL_SHIFT_CARE'
 
 export interface CommonCustomizations {
   theme: Theme

@@ -52,8 +52,8 @@ import { Translations, useTranslation } from '../../state/i18n'
 import { PersonDetails } from '../../types/person'
 import { formatName } from '../../utils'
 import { InputWarning } from '../common/InputWarning'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 import { featureFlags } from 'lib-customizations/citizen'
-import { ServiceNeedOptionPublicInfo } from 'employee-frontend/api/child/service-needs'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails

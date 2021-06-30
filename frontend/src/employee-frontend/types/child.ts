@@ -6,8 +6,11 @@ import { UUID } from '../types/index'
 import LocalDate from 'lib-common/local-date'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroupPlacement, ProviderType } from './unit'
-import { AssistanceMeasure, PlacementType } from 'lib-customizations/types'
-import { ServiceNeedOptionSummary } from 'lib-common/api-types/serviceNeed/common'
+import { AssistanceMeasure } from 'lib-customizations/types'
+import {
+  ServiceNeedOptionSummary,
+  PlacementType
+} from 'lib-common/api-types/serviceNeed/common'
 
 export type AssistanceBasis =
   | 'AUTISM'

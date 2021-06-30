@@ -18,7 +18,7 @@ import { faPhone } from 'lib-icons'
 
 import { Child } from '../../../api/attendances'
 import { useTranslation } from '../../../state/i18n'
-import { PlacementType } from 'lib-customizations/types'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 interface Props {
   child: Child | null

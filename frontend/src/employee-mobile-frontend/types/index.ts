@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import LocalDate from 'lib-common/local-date'
 import { Translations } from '../state/i18n'
 
@@ -19,20 +20,6 @@ export type AdRole =
   | 'ADMIN'
   | 'DIRECTOR'
   | 'SPECIAL_EDUCATION_TEACHER'
-
-export type PlacementType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'DAYCARE_FIVE_YEAR_OLDS'
-  | 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY'
-  | 'PREPARATORY_DAYCARE'
-  | 'TEMPORARY_DAYCARE'
-  | 'TEMPORARY_DAYCARE_PART_DAY'
-  | 'SCHOOL_SHIFT_CARE'
 
 export type AbsenceType =
   | 'OTHER_ABSENCE'

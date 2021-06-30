@@ -14,15 +14,13 @@ import FeeSection from '../../applications/editor/FeeSection'
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
 import Loader from 'lib-components/atoms/Loader'
-import {
-  getServiceNeedOptionPublicInfos,
-  ServiceNeedOptionPublicInfo
-} from '../api'
+import { getServiceNeedOptionPublicInfos } from '../api'
 import { featureFlags } from 'lib-customizations/citizen'
 import { Result, Success } from 'lib-common/api'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { useTranslation } from 'citizen-frontend/localization'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/api-types/serviceNeed/common'
 
 export default React.memo(function ApplicationFormDaycare({
   apiData,

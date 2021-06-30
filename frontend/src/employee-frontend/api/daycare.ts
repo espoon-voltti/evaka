@@ -12,7 +12,7 @@ import {
   deserializePublicUnit,
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
-import { PlacementType } from 'lib-customizations/types'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 
 export async function getUnits(
   areas: string[],

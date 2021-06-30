@@ -30,19 +30,16 @@ import {
   PublicUnit
 } from 'lib-common/api-types/units/PublicUnit'
 import { UUID } from 'lib-common/types'
-import { PlacementType } from 'lib-customizations/types'
+import {
+  PlacementType,
+  ServiceNeedOptionPublicInfo
+} from 'lib-common/api-types/serviceNeed/common'
 
 export type ApplicationUnitType =
   | 'CLUB'
   | 'DAYCARE'
   | 'PRESCHOOL'
   | 'PREPARATORY'
-
-export interface ServiceNeedOptionPublicInfo {
-  id: UUID
-  name: string
-  validPlacementType: PlacementType
-}
 
 export async function getApplicationUnits(
   type: ApplicationUnitType,
