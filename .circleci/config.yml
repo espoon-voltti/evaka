@@ -458,6 +458,7 @@ commands:
                 | awk -F "'" '{print $2}' \
                 | sort -h | uniq \
                 | circleci tests split --split-by=timings --timings-type classname)
+              echo "Fixtures selected for node: ${FIXTURE_NAMES}"
               # NOTE: This is extremely brittle but necessary as Testcafe
               # doesn't support multiple --fixture arguments (+ the above
               # report issue) -> everything must be a single regex.
@@ -984,10 +985,11 @@ jobs:
                 | sed 's/.*src\/integrationTest\/kotlin\///' \
                 | sed 's@/@.@g' \
                 | sed 's/.kt//' \
+                | sort -h \
                 | circleci tests split --split-by=timings --timings-type=classname)
             # Format the arguments for Gradle
             GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
-            echo "Prepared arguments for Gradle: $GRADLE_ARGS"
+            echo "Prepared arguments for Gradle:\n$GRADLE_ARGS"
             ./gradlew integrationTest $GRADLE_ARGS
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/service/build/test-results/integrationTest/
