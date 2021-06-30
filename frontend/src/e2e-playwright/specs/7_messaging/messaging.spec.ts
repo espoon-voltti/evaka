@@ -167,4 +167,38 @@ describe('Sending and receiving messages', () => {
     await messagesPage.discardMessage()
     await messagesPage.assertNoDrafts()
   })
+
+  test('Citizen sends a message to the unit supervisor', async () => {
+    const title = 'Otsikko'
+    const content = 'Testiviestin sisältö'
+    const receivers = ['Esimies Essi']
+    await enduserLogin(citizenPage)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.sendNewMessage(title, content, receivers)
+    await employeeLogin(citizenPage, 'UNIT_SUPERVISOR')
+    await citizenPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(citizenPage)
+    await messagesPage.openInbox(1)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.openInbox(2)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
+  })
+
+  test('Citizen sends message to the unit supervisor and the group', async () => {
+    const title = 'Otsikko'
+    const content = 'Testiviestin sisältö'
+    const receivers = ['Esimies Essi', 'Kosmiset vakiot']
+    await enduserLogin(citizenPage)
+    await citizenPage.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+    await citizenMessagesPage.sendNewMessage(title, content, receivers)
+    await employeeLogin(citizenPage, 'UNIT_SUPERVISOR')
+    await citizenPage.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(citizenPage)
+    await messagesPage.openInbox(1)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.openInbox(2)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+  })
 })

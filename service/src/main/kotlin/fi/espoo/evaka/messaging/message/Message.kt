@@ -23,12 +23,6 @@ data class Message(
     val readAt: HelsinkiDateTime? = null
 )
 
-data class CitizenMessage(
-    val recipients: Set<MessageAccount>,
-    val content: String,
-    val title: String
-)
-
 data class MessageThread(
     val id: UUID,
     val type: MessageType,

@@ -20,6 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
+data class CitizenMessageBody(
+    val recipients: Set<MessageAccount>,
+    val content: String,
+    val title: String
+)
+
 @RestController
 @RequestMapping("/citizen/messages")
 class MessageControllerCitizen(
@@ -65,7 +71,7 @@ class MessageControllerCitizen(
     ): Paged<MessageThread> {
         Audit.MessagingReceivedMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
-        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, false) }
+        return db.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
     }
 
     @GetMapping("/sent")
@@ -111,26 +117,26 @@ class MessageControllerCitizen(
         )
     }
 
-    @PostMapping("/send")
+    @PostMapping
     fun newMessage(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestBody body: CitizenMessage,
+        @RequestBody body: CitizenMessageBody,
     ): List<UUID> {
         val accountId = requireMessageAccountAccess(db, user)
         return db.transaction { tx ->
             val contentId = tx.insertMessageContent(body.content, accountId)
             val sentAt = HelsinkiDateTime.now()
+            val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
+            val messageId =
+                tx.insertMessage(
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = accountId,
+                    sentAt = sentAt,
+                    recipientNames = body.recipients.map { it.name }
+                )
             body.recipients.map {
-                val threadId = tx.insertThread(MessageType.MESSAGE, body.title)
-                val messageId =
-                    tx.insertMessage(
-                        contentId = contentId,
-                        threadId = threadId,
-                        sender = accountId,
-                        sentAt = sentAt,
-                        recipientNames = listOf(it.name)
-                    )
                 tx.insertRecipients(setOf(it.id), messageId)
                 threadId
             }
