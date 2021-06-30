@@ -4,7 +4,6 @@
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 buildscript {
     repositories {
@@ -12,10 +11,6 @@ buildscript {
     }
 
     dependencies {
-        // needed by wsdl2java
-        classpath("javax.jws:javax.jws-api:1.1")
-        classpath("javax.xml.ws:jaxws-api:2.3.1")
-
         classpath("com.pinterest:ktlint:${Version.ktlint}")
     }
 }
@@ -29,7 +24,6 @@ plugins {
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
     id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
-    id("no.nils.wsdl2java") version "0.10"
     id("org.owasp.dependencycheck") version Version.GradlePlugin.owasp
 
     idea
@@ -39,14 +33,17 @@ repositories {
     mavenCentral()
 }
 
+val generatedSources = "$buildDir/generated/sources/wsdl2java/java/main"
+
 sourceSets {
     create("integrationTest") {
         compileClasspath += main.get().output + test.get().output
         runtimeClasspath += main.get().output + test.get().output
     }
+    main {
+        java.srcDir(generatedSources)
+    }
 }
-
-sourceSets["main"].java.srcDir("src/main/sfi-messages-client")
 
 val integrationTestImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
@@ -62,7 +59,8 @@ idea {
     }
 }
 
-val ktlint by configurations.creating
+val wsdl2java: Configuration by configurations.creating
+val ktlint: Configuration by configurations.creating
 
 dependencies {
     api(platform(project(":evaka-bom")))
@@ -133,6 +131,13 @@ dependencies {
     integrationTestImplementation("org.testcontainers:postgresql")
 
     ktlint("com.pinterest:ktlint:${Version.ktlint}")
+
+    wsdl2java(platform(project(":evaka-bom")))
+    wsdl2java("org.slf4j:slf4j-simple")
+    wsdl2java("javax.jws:javax.jws-api")
+    wsdl2java("javax.xml.ws:jaxws-api")
+    wsdl2java("org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws")
+    wsdl2java("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb")
 }
 
 allOpen {
@@ -157,26 +162,30 @@ tasks.getByName<Jar>("jar") {
     enabled = false
 }
 
-project.wsdl2javaExt {
-    cxfVersion = "3.4.4"
+val wsdl2javaTask = tasks.register<JavaExec>("wsdl2java") {
+    val wsdl = "$projectDir/src/main/resources/wsdl/Viranomaispalvelut.wsdl"
+
+    mainClass.set("org.apache.cxf.tools.wsdlto.WSDLToJava")
+    classpath = wsdl2java
+    args = arrayListOf(
+        "-d",
+        generatedSources,
+        "-p",
+        "fi.espoo.evaka.msg.sficlient.soap",
+        "-mark-generated",
+        "-autoNameResolution",
+        wsdl
+    )
+    inputs.files(wsdl)
+    outputs.dir(generatedSources)
 }
 
-tasks {
-    wsdl2java {
-        wsdlsToGenerate = arrayListOf(
-            arrayListOf(
-                "-p",
-                "fi.espoo.evaka.msg.sficlient.soap",
-                "-mark-generated",
-                "-autoNameResolution",
-                "$projectDir/src/main/resources/wsdl/Viranomaispalvelut.wsdl"
-            )
-        )
-        generatedWsdlDir = file("$projectDir/src/main/sfi-messages-client")
-        wsdlDir = file("$projectDir/src/main/resources/wsdl")
-        // disable source generation unless the wsdl2java task is triggered directly. It's an ugly hack, we know.
-        enabled = project.gradle.startParameter.taskNames.contains("wsdl2java")
-    }
+tasks.getByName<JavaCompile>("compileJava") {
+    dependsOn(wsdl2javaTask)
+}
+
+tasks.getByName<KotlinCompile>("compileKotlin") {
+    dependsOn(wsdl2javaTask)
 }
 
 tasks {
@@ -200,7 +209,7 @@ tasks {
     }
 
     create("ktlintApplyToIdea", JavaExec::class) {
-        main = "com.pinterest.ktlint.Main"
+        mainClass.set("com.pinterest.ktlint.Main")
         classpath = ktlint
         args = listOf("applyToIDEAProject", "-y")
     }

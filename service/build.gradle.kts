@@ -208,7 +208,7 @@ tasks {
     }
 
     create("ktlintApplyToIdea", JavaExec::class) {
-        main = "com.pinterest.ktlint.Main"
+        mainClass.set("com.pinterest.ktlint.Main")
         classpath = ktlint
         args = listOf("applyToIDEAProject", "-y")
     }
