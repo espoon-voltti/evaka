@@ -3,7 +3,6 @@ DROP TABLE IF EXISTS vasu_document;
 DROP TABLE IF EXISTS vasu_content;
 DROP TABLE IF EXISTS vasu_template;
 DROP TYPE IF EXISTS vasu_language;
-DROP TYPE IF EXISTS vasu_document_state; -- TODO remove
 DROP TYPE IF EXISTS vasu_document_event_type;
 
 CREATE TYPE vasu_language AS ENUM ('FI', 'SV');
@@ -61,7 +60,7 @@ CREATE TABLE vasu_document_event(
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     vasu_document_id uuid NOT NULL REFERENCES vasu_document(id),
-    author_id uuid NOT NULL REFERENCES employee(id),
+    employee_id uuid NOT NULL REFERENCES employee(id),
     event_type vasu_document_event_type NOT NULL
 );
 
