@@ -35,7 +35,7 @@ import {
   createAssistanceNeed,
   updateAssistanceNeed
 } from '../../../api/child/assistance-needs'
-import ExpandingInfo2 from '../../../../lib-components/molecules/ExpandingInfo2'
+import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -268,7 +268,7 @@ function AssistanceNeedForm(props: Props) {
             label: i18n.childInformation.assistanceNeed.fields.capacityFactor,
             value: (
               <>
-                <ExpandingInfo2
+                <ExpandingInfo
                   info={
                     i18n.childInformation.assistanceNeed.fields
                       .capacityFactorInfo
@@ -276,6 +276,7 @@ function AssistanceNeedForm(props: Props) {
                   ariaLabel={
                     i18n.childInformation.assistanceNeed.fields.capacityFactor
                   }
+                  fullWidth={true}
                 >
                   <CoefficientInputContainer>
                     <InputField
@@ -301,7 +302,7 @@ function AssistanceNeedForm(props: Props) {
                       }
                     </span>
                   )}
-                </ExpandingInfo2>
+                </ExpandingInfo>
               </>
             )
           },
@@ -330,13 +331,14 @@ function AssistanceNeedForm(props: Props) {
                   i18n.childInformation.assistanceNeed.fields.basisTypes[
                     `${basis}_INFO`
                   ] ? (
-                    <ExpandingInfo2
+                    <ExpandingInfo
                       info={String(
                         i18n.childInformation.assistanceNeed.fields.basisTypes[
                           `${basis}_INFO`
                         ]
                       )}
                       ariaLabel={''}
+                      fullWidth={true}
                     >
                       <CheckboxRow key={basis}>
                         <Checkbox
@@ -353,7 +355,7 @@ function AssistanceNeedForm(props: Props) {
                           }}
                         />
                       </CheckboxRow>
-                    </ExpandingInfo2>
+                    </ExpandingInfo>
                   ) : (
                     <CheckboxRow key={basis}>
                       <Checkbox

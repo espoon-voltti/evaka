@@ -36,7 +36,7 @@ import {
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
-import ExpandingInfo2 from '../../../../lib-components/molecules/ExpandingInfo2'
+import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -303,12 +303,13 @@ function AssistanceActionForm(props: Props) {
                   i18n.childInformation.assistanceAction.fields.measureTypes[
                     `${measure}_INFO`
                   ] ? (
-                    <ExpandingInfo2
+                    <ExpandingInfo
                       info={String(
                         i18n.childInformation.assistanceAction.fields
                           .measureTypes[`${measure}_INFO`]
                       )}
                       ariaLabel={''}
+                      fullWidth={true}
                     >
                       <CheckboxRow key={measure}>
                         <Checkbox
@@ -325,7 +326,7 @@ function AssistanceActionForm(props: Props) {
                           }}
                         />
                       </CheckboxRow>
-                    </ExpandingInfo2>
+                    </ExpandingInfo>
                   ) : (
                     <CheckboxRow key={measure}>
                       <Checkbox

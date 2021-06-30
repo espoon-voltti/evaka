@@ -12,7 +12,11 @@ import { defaultMargins, SpacingSize } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import IconButton from '../atoms/buttons/IconButton'
 
-const InfoBoxContainer = styled(Container)`
+const InfoBoxContainer = styled(Container)<{
+  fullWidth?: boolean
+}>`
+  ${({ fullWidth }) => fullWidth && `width: 100%;`}
+
   @keyframes open {
     from {
       max-height: 0;
@@ -24,7 +28,10 @@ const InfoBoxContainer = styled(Container)`
 
   background-color: ${({ theme: { colors } }) => colors.main.lighter};
   overflow: hidden;
-  margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};
+  ${({ fullWidth }) =>
+    fullWidth
+      ? `margin: ${defaultMargins.s};`
+      : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
 
   @media (min-width: ${tabletMin}) {
     animation-name: open;
@@ -46,19 +53,20 @@ const InfoContainer = styled.div`
 const RoundIconWithMargin = styled(RoundIcon)<{ margin: SpacingSize }>`
   margin-top: ${({ margin }) => defaultMargins[margin]};
 `
-
 type ExpandingInfoProps = {
   children: React.ReactNode
   info: ReactNode
   ariaLabel: string
   margin?: SpacingSize
+  fullWidth?: boolean
 }
 
-export default function ExpandingInfo({
+export default function ExpandingInfo2({
   children,
   info,
   ariaLabel,
-  margin
+  margin,
+  fullWidth
 }: ExpandingInfoProps) {
   const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
@@ -79,7 +87,7 @@ export default function ExpandingInfo({
         />
       </FixedSpaceRow>
       {expanded && (
-        <InfoBoxContainer>
+        <InfoBoxContainer fullWidth={fullWidth}>
           <InfoBoxContentArea opaque={false}>
             <RoundIcon
               content={fasInfo}
