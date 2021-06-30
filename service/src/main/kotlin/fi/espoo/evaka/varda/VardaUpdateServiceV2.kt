@@ -310,27 +310,36 @@ fun createFeeDataToVardaFromFeeDecision(
         return null
     }
 
-    val res: VardaFeeDataResponse?
-    try {
-        res = client.createFeeData(
-            VardaFeeData(
-                huoltajat = guardians.map { it.toVardaGuardian() },
-                lapsi = client.getChildUrl(vardaChildId),
-                maksun_peruste_koodi = vardaFeeBasisByPlacementType(childPart.placement.type),
-                asiakasmaksu = childPart.finalFee.div(100.0),
-                palveluseteli_arvo = 0.0,
-                perheen_koko = decision.familySize,
-                alkamis_pvm = calculateVardaFeeDataStartDate(decision.validFrom, evakaServiceNeedInfoForVarda.asPeriod),
-                paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
-                lahdejarjestelma = client.sourceSystem
-            )
-        )
+    val requestPayload = VardaFeeData(
+        huoltajat = guardians.map { it.toVardaGuardian() },
+        lapsi = client.getChildUrl(vardaChildId),
+        maksun_peruste_koodi = vardaFeeBasisByPlacementType(childPart.placement.type),
+        asiakasmaksu = childPart.finalFee.div(100.0),
+        palveluseteli_arvo = 0.0,
+        perheen_koko = decision.familySize,
+        alkamis_pvm = calculateVardaFeeDataStartDate(decision.validFrom, evakaServiceNeedInfoForVarda.asPeriod),
+        paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
+        lahdejarjestelma = client.sourceSystem
+    )
+
+    val res: VardaFeeDataResponse = try {
+        client.createFeeData(requestPayload)
+    } catch (e: Exception) {
+        client.createFeeData(requestPayload.copy(huoltajat = guardians.map { getVardaGuardian(client, it.henkilotunnus) }))
     } catch (e: Exception) {
         throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: varda client threw ${e.localizedMessage}")
-    }
+    } ?: throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
 
-    if (res == null) throw Exception("VardaUpdate: cannot create fee data ${decision.id} for service need ${evakaServiceNeedInfoForVarda.id}: create varda fee data response is null (response failed, see logs for the actual reason)")
     return res.id
+}
+
+fun getVardaGuardian(client: VardaClient, ssn: String): VardaGuardian {
+    val person = client.getPersonFromVardaBySSN(ssn) ?: error("VardaUpdate: Couldn't fetch guardian from Varda")
+    return VardaGuardian(
+        henkilotunnus = ssn,
+        etunimet = person.firstName,
+        sukunimi = person.lastName
+    )
 }
 
 data class VardaGuardianWithId(
