@@ -212,6 +212,7 @@ fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClien
         logger.info("VardaUpdate: retrying failed varda uploads: ${unsuccessfullyUploadedServiceNeeds.size}")
 
     unsuccessfullyUploadedServiceNeeds.forEach {
+        if (it.vardaChildId != null) deleteEverythingFromVardaByChildAndDates(vardaClient, it.vardaChildId, it.startDate, it.endDate)
         try {
             if (it.existsInEvaka && it.childId != null)
                 handleUpdatedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
@@ -473,6 +474,24 @@ private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: L
     }.map {
         it.evakaServiceNeedId
     }
+}
+
+private fun deleteEverythingFromVardaByChildAndDates(vardaClient: VardaClient, childId: Long, startDate: LocalDate, endDate: LocalDate?): List<String> {
+    val errors = mutableListOf<String>()
+    try {
+        val decisionIds = vardaClient.getDecisionsByChildAndStartDate(childId, startDate)
+        logger.info { "VardaUpdate: found decision ids for child $childId: $decisionIds" }
+        val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
+        logger.info { "VardaUpdate: found placement ids for child $childId: $placementIds" }
+        val feeIds = placementIds.flatMap { vardaClient.getFeeDataByChildAndDates(childId, startDate, endDate) }
+        logger.info { "VardaUpdate: found fee data ids for child $childId: $feeIds" }
+        feeIds.forEach { vardaClient.deleteFeeData(it) }
+        placementIds.forEach { vardaClient.deletePlacement(it) }
+        decisionIds.forEach { vardaClient.deleteDecision(it) }
+    } catch (e: Exception) {
+        errors.add("VardaUpdate: could not nuke varda data: ${e.localizedMessage}")
+    }
+    return errors
 }
 
 private fun deleteServiceNeedAndRelatedDataFromVarda(vardaClient: VardaClient, vardaServiceNeed: VardaServiceNeed): List<String> {
@@ -754,7 +773,10 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: UUID): EvakaServiceNeedInf
 data class UnsuccessfullyUploadedServiceNeed(
     val evakaServiceNeedId: UUID,
     val existsInEvaka: Boolean,
-    val childId: UUID?
+    val childId: UUID?,
+    val vardaChildId: Long?,
+    val startDate: LocalDate,
+    val endDate: LocalDate?
 )
 
 fun Database.Read.getUnsuccessfullyUploadVardaServiceNeeds(): List<UnsuccessfullyUploadedServiceNeed> =
@@ -763,7 +785,10 @@ fun Database.Read.getUnsuccessfullyUploadVardaServiceNeeds(): List<Unsuccessfull
 SELECT 
     vsn.evaka_service_need_id, 
     EXISTS(SELECT 1 FROM service_need sn WHERE sn.id = vsn.evaka_service_need_id ) AS exists_in_evaka,
-    p.child_id
+    p.child_id,
+    vsn.varda_child_id,
+    sn.start_date,
+    sn.end_date
 FROM varda_service_need vsn 
     LEFT JOIN service_need sn ON sn.id = vsn.evaka_service_need_id
     LEFT JOIN placement p ON p.id = sn.placement_id

@@ -367,6 +367,14 @@ class VardaClient(
         }.map { it.id }
     }
 
+    fun getFeeDataByChildAndDates(vardaChildId: Long, startDate: LocalDate, endDate: LocalDate?): List<Long> {
+        logger.info { "Getting fee data from Varda (child id: $vardaChildId)" }
+        val queryString = "lapsi=$vardaChildId&alkamis_pvm=$startDate" + if (endDate != null) "&lopetus_pvm=$endDate" else ""
+        return getAllPages("$feeDataUrl?$queryString") {
+            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+        }.map { it.id }
+    }
+
     fun getPlacementsByDecision(vardaDecisionId: Long): List<Long> {
         logger.info { "Getting placements from Varda (decision id: $vardaDecisionId)" }
         return getAllPages("$placementUrl?varhaiskasvatuspaatos=$vardaDecisionId") {
@@ -377,6 +385,13 @@ class VardaClient(
     fun getDecisionsByChild(vardaChildId: Long): List<Long> {
         logger.info { "Getting decisions from Varda (child id: $vardaChildId)" }
         return getAllPages("$decisionUrl?lapsi=$vardaChildId") {
+            objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
+        }.map { it.id }
+    }
+
+    fun getDecisionsByChildAndStartDate(vardaChildId: Long, startDate: LocalDate): List<Long> {
+        logger.info { "Getting decisions from Varda (child id: $vardaChildId)" }
+        return getAllPages("$decisionUrl?lapsi=$vardaChildId&alkamis_pvm=$startDate") {
             objectMapper.readValue<PaginatedResponse<VardaResultId>>(it)
         }.map { it.id }
     }
