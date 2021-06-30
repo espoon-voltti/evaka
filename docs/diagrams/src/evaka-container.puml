@@ -9,6 +9,7 @@ title eVakan container-kaavio
 
 Person(huoltaja, "Huoltaja", "Varhaiskasvatuksen, kerhotoiminnan tai esiopetuksen piirissä olevan lapsen huoltaja")
 Person(virkailija, "Virkailija", "Kaupungin työntekijä, jolla on Azure AD -tunnukset")
+Person(psvirkailija, "Palveluntuottaja", "Yksityisen varhaiskasvatuksen palveluseteliyksikön johtaja")
 
 System_Boundary(evaka, "eVaka – Espoon varhaiskasvatuksen toiminnanohjausjärjestelmä") {
   Container(evaka_front, "evaka-frontend\n(huoltaja)", "TypeScript", "SPA-sovellus, joka ajetaan käyttäjän selaimessa ja tarjotaan AWS:n S3:sta. Sovelluksen avulla haetaan paikkaa kerhoon tai varhaiskasvatukseen, sekä ilmoitetaan lapsi esiopetukseen .")
@@ -41,10 +42,14 @@ Rel(huoltaja, evaka_front, "käyttää", "HTTPS")
 Rel(virkailija, espooad, "tunnistautuu", "SAML/HTTPS")
 Rel(virkailija, evaka_admin_front, "käyttää","HTTPS")
 
+Rel_L(psvirkailija, suomifi, "tunnistautuu", "SAML/HTTPS")
+Rel(psvirkailija, evaka_admin_front, "käyttää", "HTTPS")
+
 Rel_U(evaka_front, suomifi, "ohjaa huoltajan tunnistautumaan", "SAML/HTTPS")
 Rel(evaka_front, evaka_proxy, "käyttää", "JSON/HTTPS")
 
 Rel_R(evaka_admin_front, espooad, "ohjaa virkailijan tunnistautumaan", "SAML/HTTPS")
+Rel_R(evaka_admin_front, suomifi, "ohjaa palvelutuottajan tunnistautumaan", "SAML/HTTPS")
 Rel(evaka_admin_front, evaka_proxy, "käyttää", "JSON/HTTPS")
 Rel_D(evaka_service, evaka_s3_bucket, "hakee tiedoston", "HTTPS")
 
