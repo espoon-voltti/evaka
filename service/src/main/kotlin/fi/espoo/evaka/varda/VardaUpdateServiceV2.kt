@@ -94,11 +94,11 @@ fun updateAllVardaData(
 }
 
 /*
-    0. If there are any existing failed service need updates, try to delete and readd the service need data to varda
+    0. If there are any existing failed service need updates, try to delete and read the service need data to varda
     1. Find out all changed service needs.
-        - For each deleted service need delete all related data from varda
-        - For each new service need IF related fee dataexists, add all related data to varda
-        - For each modified service need delete old related data from varda and add new
+        - For each deleted service need, delete all related data from varda
+        - For each new service need, IF related fee data exists, add all related data to varda
+        - For each modified service need, delete old related data from varda and add new
     2. Find out all changed evaka fee data affecting service needs not yet updated above, and for each service need
        update all service need related data to varda
  */
@@ -242,7 +242,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
         // Todo: "nettopalvelu"-unit children do not have fee data
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(null, evakaServiceNeed.id) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
-            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_orginizer_id is null or empty")
+            if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_organizer_oid is null or empty")
             if (db.read { it.personHasSsn(evakaServiceNeed.childId) }.not()) throw Exception("VardaUpdate: cannot create service need ${evakaServiceNeed.id} for child ${evakaServiceNeed.childId} because child has no ssn")
 
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
