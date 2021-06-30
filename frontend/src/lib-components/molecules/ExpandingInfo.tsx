@@ -26,7 +26,7 @@ const InfoBoxContainer = styled(Container)<{
     }
   }
 
-  background-color: ${({ theme: { colors } }) => colors.main.lighter};
+  background-color: ${({ theme: { colors } }) => colors.brand.secondaryLight};
   overflow: hidden;
   ${({ fullWidth }) =>
     fullWidth
@@ -46,7 +46,7 @@ const InfoBoxContentArea = styled(ContentArea)`
 
 const InfoContainer = styled.div`
   flex-grow: 1;
-  color: ${({ theme: { colors } }) => colors.main.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   padding: 0 ${defaultMargins.s};
 `
 
