@@ -35,11 +35,18 @@ export async function createVasuTemplate(
   language: VasuLanguage
 ): Promise<Result<UUID>> {
   return client
-    .post<UUID>(`/vasu/templates`, {
-      name,
-      valid,
-      language
-    })
+    .post<UUID>(`/vasu/templates`, { name, valid, language })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function copyVasuTemplate(
+  id: UUID,
+  name: string,
+  valid: FiniteDateRange
+): Promise<Result<UUID>> {
+  return client
+    .post<UUID>(`/vasu/templates/${id}/copy`, { name, valid })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

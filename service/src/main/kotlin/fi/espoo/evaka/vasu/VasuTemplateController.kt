@@ -44,6 +44,31 @@ class VasuTemplateController {
         }
     }
 
+    data class CopyTemplateRequest(
+        val name: String,
+        val valid: FiniteDateRange
+    )
+    @PostMapping("/{id}/copy")
+    fun copyTemplate(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody body: CopyTemplateRequest
+    ): UUID {
+        Audit.VasuTemplateCopy.log(id)
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        return db.transaction {
+            val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
+            it.insertVasuTemplate(
+                name = body.name,
+                valid = body.valid,
+                language = template.language,
+                content = copyTemplateContentWithCurrentlyValidOphSections(template)
+            )
+        }
+    }
+
     @GetMapping
     fun getTemplates(
         db: Database.Connection,

@@ -235,6 +235,7 @@ enum class Audit(
     VasuDocumentRead("evaka.vasu-document.read"),
     VasuDocumentUpdate("evaka.vasu-document.update"),
     VasuTemplateCreate("evaka.vasu-template.create"),
+    VasuTemplateCopy("evaka.vasu-template.copy"),
     VasuTemplateDelete("evaka.vasu-template.delete"),
     VasuTemplateRead("evaka.vasu-template.read"),
     VasuTemplateUpdate("evaka.vasu-template.update"),

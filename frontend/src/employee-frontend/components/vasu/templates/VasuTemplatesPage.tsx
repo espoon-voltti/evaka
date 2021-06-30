@@ -31,6 +31,7 @@ import {
   getVasuTemplateSummaries,
   VasuTemplateSummary
 } from './api'
+import CopyTemplateModal from './CopyTemplateModal'
 import CreateTemplateModal from './CreateTemplateModal'
 
 export default React.memo(function VasuTemplatesPage() {
@@ -43,6 +44,7 @@ export default React.memo(function VasuTemplatesPage() {
   )
 
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [templateToCopy, setTemplateToCopy] = useState<VasuTemplateSummary>()
 
   const loadTemplates = useRestApi(getVasuTemplateSummaries, setTemplates)
   useEffect(loadTemplates, [loadTemplates])
@@ -80,7 +82,10 @@ export default React.memo(function VasuTemplatesPage() {
                     <Td>{template.documentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
-                        <IconButton icon={faCopy} disabled={true} />
+                        <IconButton
+                          icon={faCopy}
+                          onClick={() => setTemplateToCopy(template)}
+                        />
                         <IconButton
                           icon={faPen}
                           onClick={() =>
@@ -109,6 +114,14 @@ export default React.memo(function VasuTemplatesPage() {
           <CreateTemplateModal
             onSuccess={(id) => h.push(`/vasu-templates/${id}`)}
             onCancel={() => setCreateModalOpen(false)}
+          />
+        )}
+
+        {templateToCopy && (
+          <CopyTemplateModal
+            template={templateToCopy}
+            onSuccess={(id) => h.push(`/vasu-templates/${id}`)}
+            onCancel={() => setTemplateToCopy(undefined)}
           />
         )}
       </ContentArea>
