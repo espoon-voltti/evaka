@@ -2567,6 +2567,7 @@ export const fi = {
       validStart: 'Toimintavuosi alkaa',
       validEnd: 'Toimintavuosi päättyy'
     },
+    unsavedWarning: 'Haluatko varmasti poistua tallentamatta?',
     addNewSection: 'Lisää uusi osio',
     addNewQuestion: 'Lisää uusi kysymys',
     questionModal: {
