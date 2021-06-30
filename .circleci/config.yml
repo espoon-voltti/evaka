@@ -369,15 +369,14 @@ commands:
 
   e2e_test:
     parameters:
-      suite:
-        type: string
-        default: ""
       yarn_version:
         type: string
         default: *yarn_version
-      install_browsers:
-        type: boolean
-        default: true
+      test_runner:
+        type: enum
+        enum:
+          - testcafe
+          - playwright
     steps:
       - restore_repo
       - attach_root_workspace
@@ -404,7 +403,8 @@ commands:
             sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
             yarn --version
       - when:
-          condition: << parameters.install_browsers >>
+          condition:
+            equal: ["testcafe", "<< parameters.test_runner >>"]
           steps:
             - run:
                 name: Install browsers
@@ -427,7 +427,7 @@ commands:
                     && chromedriver --version
       - when:
           condition:
-            not: << parameters.install_browsers >>
+            equal: ["playwright", "<< parameters.test_runner >>"]
           steps:
             - run:
                 name: Install Playwright dependencies
@@ -450,9 +450,15 @@ commands:
           command: |
             nvm use
 
-            if [ "<< parameters.suite >>" != "" ]; then
-              yarn "<< parameters.suite >>"
-            else
+            if [ "<< parameters.test_runner >>" = "playwright" ]; then
+              # Get list of test files that should run on this node.
+              FILENAMES=($(circleci tests glob \
+                  'src/e2e-playwright/specs/**/*.spec.ts' \
+                  | sort -h \
+                  | circleci tests split --split-by=timings --timings-type=filename))
+              echo -e "Spec files selected for node:\n$(echo "${FILENAMES[@]}" | tr ' ' '\n')"
+              yarn e2e-ci-playwright "${FILENAMES[@]}"
+            elif [ "<< parameters.test_runner >>" = "testcafe" ]; then
               # Get list of test files that should run on this node.
               # NOTE: Currently testcafe-reporter-junit doesn't provide
               # filenames in its output so they can't be used for splitting
@@ -461,7 +467,7 @@ commands:
                 | awk -F "'" '{print $2}' \
                 | sort -h | uniq \
                 | circleci tests split --split-by=timings --timings-type classname)
-              echo "Fixtures selected for node: ${FIXTURE_NAMES}"
+              echo -e "Fixtures selected for node:\n${FIXTURE_NAMES[@]}"
               # NOTE: This is extremely brittle but necessary as Testcafe
               # doesn't support multiple --fixture arguments (+ the above
               # report issue) -> everything must be a single regex.
@@ -470,7 +476,11 @@ commands:
               TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
               echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
 
-              yarn e2e-ci-base --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" -- src/e2e-test/specs/
+              yarn e2e-ci-testcafe --fixture-grep "${TESTCAFE_FIXTURE_REGEX}" -- src/e2e-test/specs/
+
+            else
+              echo 'ERROR: Invalid test_runner: "<< parameters.test_runner >>"'
+              exit 1
             fi
       - run:
           name: Collect docker-compose logs
@@ -824,16 +834,16 @@ jobs:
     executor: e2e_executor
     parallelism: 8
     steps:
-      - e2e_test
+      - e2e_test:
+          test_runner: testcafe
       - notify_slack
 
   e2e-test-playwright:
     executor: e2e_executor
+    parallelism: 4
     steps:
       - e2e_test:
-          suite: e2e-ci-playwright
-          # Playwright doesn't need Chrome externally installed
-          install_browsers: false
+          test_runner: playwright
       - notify_slack
 
   # DEPLOY JOBS
@@ -992,7 +1002,7 @@ jobs:
                 | circleci tests split --split-by=timings --timings-type=classname)
             # Format the arguments for Gradle
             GRADLE_ARGS=$(echo "$CLASSNAMES" | awk '{for (i=1; i<=NF; i++) print "--tests",$i}')
-            echo "Prepared arguments for Gradle:\n$GRADLE_ARGS"
+            echo -e "Prepared arguments for Gradle:\n$GRADLE_ARGS"
             ./gradlew integrationTest $GRADLE_ARGS
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/service/build/test-results/integrationTest/
