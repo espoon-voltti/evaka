@@ -15,7 +15,7 @@ const fridgeHeadInformation = new FridgeHeadInformationPage()
 
 let personId: string
 
-fixture('Invoicing - invoices')
+fixture('Invoicing - income')
   .meta({ type: 'regression', subType: 'invoices' })
   .beforeEach(async (t) => {
     await resetDatabase()

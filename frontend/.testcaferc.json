@@ -6,6 +6,10 @@
       "output": "test-results/junit.xml"
     }
   ],
-  "tsConfigPath": "./src/e2e-test/tsconfig.json",
+  "compilerOptions": {
+    "typescript": {
+      "configPath": "./src/e2e-test/tsconfig.json"
+    }
+  },
   "clientScripts": "./src/e2e-test-common/injected.js"
 }

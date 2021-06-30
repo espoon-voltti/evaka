@@ -370,7 +370,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
         val since = HelsinkiDateTime.now()
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
-        val id = createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+        createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
 
         updateChildData(db, vardaClient, since)
         assertVardaElementCounts(0, 0, 0)
@@ -424,7 +424,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         createServiceNeed(db, since, snDefaultDaycare, testChild_1, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
 
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
-        val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
+        DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         createFeeDecision(db, testChild_1, testAdult_2.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
 
         updateChildData(db, vardaClient, since)
@@ -444,7 +444,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         val child = testChild_1
         val adult = testAdult_1
-        val id = createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+        createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
         createFeeDecision(db, child, adult.id, DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end), since.toInstant())
         updateChildData(db, vardaClient, since)
         assertVardaElementCounts(1, 1, 1)
@@ -462,7 +462,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
         val child = testChild_1
         val adult = testAdult_1
-        val id = createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
+        createServiceNeed(db, since, snDefaultDaycare, child, serviceNeedPeriod.start, serviceNeedPeriod.end!!)
         createVoucherDecision(db, voucherDecisionPeriod.start, voucherDecisionPeriod.end, testDaycare.id, VOUCHER_VALUE, VOUCHER_CO_PAYMENT, adult.id, child, since.toInstant())
         updateChildData(db, vardaClient, since)
         assertVardaElementCounts(1, 1, 1)
