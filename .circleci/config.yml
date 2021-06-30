@@ -15,6 +15,9 @@ parameters:
   workspace_root:
     type: string
     default: /home/circleci/repo
+  builder_aws_version:
+    type: string
+    default: bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
 
 aliases:
   - &workspace_evaka_base << pipeline.parameters.workspace_root >>/evaka-base
@@ -35,9 +38,9 @@ aliases:
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202104-01
-  - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
-  - &builder_aws_docker_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:docker-bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
-  - &builder_aws_terraform_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:terraform-bullseye-slim-e2518f5ece6862d780ff4224aad606e13cfe8293
+  - &builder_aws_core_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:core-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_docker_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:docker-<< pipeline.parameters.builder_aws_version >>
+  - &builder_aws_terraform_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:terraform-<< pipeline.parameters.builder_aws_version >>
 
   - &default_contexts
     context:
