@@ -335,6 +335,7 @@ private fun localizedProduct(lang: CommunityLang, product: Product) = when (lang
         Product.SICK_LEAVE_100 -> "Sairaspoissaolo 100%"
         Product.SICK_LEAVE_50 -> "Sairaspoissaolo 50%"
         Product.ABSENCE -> "Poissaolovähennys"
+        Product.SCHOOL_SHIFT_CARE -> "Koululaisten vuorohoito"
         Product.FREE_OF_CHARGE -> "Poissaolovähennys"
     }
     CommunityLang.SV -> when (product) {
@@ -348,6 +349,7 @@ private fun localizedProduct(lang: CommunityLang, product: Product) = when (lang
         Product.SICK_LEAVE_100 -> "Avdrag sjukdom 100%"
         Product.SICK_LEAVE_50 -> "Avdrag sjukdom 50%"
         Product.ABSENCE -> "Avdrag annan frånvaro"
+        Product.SCHOOL_SHIFT_CARE -> "Koululaisten vuorohoito (sv)"
         Product.FREE_OF_CHARGE -> "Avdrag annan frånvaro"
     }
 }

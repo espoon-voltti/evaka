@@ -68,6 +68,7 @@ const asUnitType = (
     case 'DAYCARE_PART_TIME_FIVE_YEAR_OLDS':
     case 'TEMPORARY_DAYCARE':
     case 'TEMPORARY_DAYCARE_PART_DAY':
+    case 'SCHOOL_SHIFT_CARE':
       return 'DAYCARE'
     case 'PRESCHOOL':
     case 'PRESCHOOL_DAYCARE':

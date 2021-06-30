@@ -16,6 +16,7 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
 import java.math.BigDecimal
@@ -148,6 +149,7 @@ enum class Product(val code: String) {
     PRESCHOOL_WITH_DAYCARE_DISCOUNT("01002"),
     PRESCHOOL_WITH_DAYCARE_INCREASE("01002"),
     TEMPORARY_CARE("01005"),
+    SCHOOL_SHIFT_CARE("unsupported"),
     SICK_LEAVE_100("01101"),
     SICK_LEAVE_50("01102"),
     ABSENCE("01103"),
@@ -184,6 +186,7 @@ fun getProductFromActivity(placementType: PlacementType): Product {
         DAYCARE, DAYCARE_PART_TIME, DAYCARE_FIVE_YEAR_OLDS, DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> Product.DAYCARE
         PRESCHOOL_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
         PREPARATORY_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
+        SCHOOL_SHIFT_CARE -> Product.SCHOOL_SHIFT_CARE
         TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY -> Product.TEMPORARY_CARE
         PRESCHOOL, PREPARATORY, CLUB ->
             error("Club and preschool or preparatory without daycare shouldn't be invoiced.")

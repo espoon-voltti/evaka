@@ -1,0 +1,1 @@
+ALTER TYPE placement_type ADD VALUE 'SCHOOL_SHIFT_CARE';

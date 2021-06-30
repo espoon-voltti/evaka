@@ -1561,7 +1561,8 @@ export const fi = {
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
       TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
-      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus'
+      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     }
   },
   product: {
@@ -1843,6 +1844,7 @@ export const fi = {
       PRESENCE: 'Ei poissaoloa'
     },
     careTypes: {
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
       PRESCHOOL: 'Esiopetus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
       DAYCARE_5YO_FREE: '5-vuotiaiden varhaiskasvatus',

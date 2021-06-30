@@ -22,6 +22,7 @@ import { Unit } from '../../../types/unit'
 import { getDaycares } from '../../../api/unit'
 import { useRestApi } from '../../../../lib-common/utils/useRestApi'
 import DateRange from 'lib-common/date-range'
+import { placementTypes } from 'lib-customizations/employee'
 import colors from 'lib-customizations/common'
 
 export interface Props {
@@ -36,18 +37,6 @@ interface Form {
   endDate: LocalDate
   ghostUnit: boolean
 }
-
-const placementTypes: PlacementType[] = [
-  'PRESCHOOL',
-  'PRESCHOOL_DAYCARE',
-  'DAYCARE',
-  'DAYCARE_PART_TIME',
-  'PREPARATORY',
-  'PREPARATORY_DAYCARE',
-  'CLUB',
-  'TEMPORARY_DAYCARE',
-  'TEMPORARY_DAYCARE_PART_DAY'
-]
 
 function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()

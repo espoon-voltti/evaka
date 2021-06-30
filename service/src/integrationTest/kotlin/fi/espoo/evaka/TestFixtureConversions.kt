@@ -18,7 +18,7 @@ fun PlacementType.toApplicationType(): ApplicationType = when (this) {
     PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> ApplicationType.DAYCARE
     PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE,
     PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
-    PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+    PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY, PlacementType.SCHOOL_SHIFT_CARE ->
         error("Unsupported placement type ($this)")
 }
 

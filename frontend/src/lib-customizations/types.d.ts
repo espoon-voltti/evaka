@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { LatLngExpression } from 'leaflet'
+import { PlacementType } from 'lib-common/api-types/serviceNeed/common'
 import { Theme } from 'lib-common/theme'
 import {
   Lang as LangCitizen,
@@ -84,6 +85,7 @@ export interface EmployeeCustomizations {
     alt: string
   }
   featureFlags: FeatureFlags
+  placementTypes: PlacementType[]
   assistanceMeasures: AssistanceMeasure[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
 }

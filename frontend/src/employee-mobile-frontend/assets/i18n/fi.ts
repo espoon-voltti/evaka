@@ -39,7 +39,8 @@ export const fi = {
       PREPARATORY: 'Valmistava',
       PREPARATORY_DAYCARE: 'Valmistava',
       TEMPORARY_DAYCARE: 'Väliaikainen',
-      TEMPORARY_DAYCARE_PART_DAY: 'Väliaikainen osa-aikainen'
+      TEMPORARY_DAYCARE_PART_DAY: 'Väliaikainen osa-aikainen',
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     },
     code: 'Koodi',
     children: 'Lapset',
@@ -77,6 +78,7 @@ export const fi = {
       PRESENCE: 'Ei poissaoloa'
     },
     careTypes: {
+      SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
       PRESCHOOL: 'Esiopetus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
       DAYCARE_5YO_FREE: '5-vuotiaiden varhaiskasvatus',

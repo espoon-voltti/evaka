@@ -14,12 +14,14 @@ const {
   cityLogo,
   featureFlags,
   assistanceMeasures,
+  placementTypes,
   placementPlanRejectReasons
 }: EmployeeCustomizations = customizations
 export {
   cityLogo,
   featureFlags,
   assistanceMeasures,
+  placementTypes,
   placementPlanRejectReasons
 }
 

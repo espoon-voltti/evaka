@@ -27,6 +27,7 @@ class DecisionDraftService {
             PlacementType.CLUB -> planClubDecisionDrafts(placementPlan)
             PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
             PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> planPreschoolDecisionDrafts(placementPlan, application)
+            PlacementType.SCHOOL_SHIFT_CARE -> listOf()
             PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
                 error("Cannot create decision draft from placement of type '${placementPlan.type}'")

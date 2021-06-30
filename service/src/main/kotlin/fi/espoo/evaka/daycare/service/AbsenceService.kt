@@ -146,6 +146,7 @@ class AbsenceService {
 
 fun getAbsenceCareTypes(placementType: PlacementType): List<CareType> = when (placementType) {
     PlacementType.CLUB -> listOf(CareType.CLUB)
+    PlacementType.SCHOOL_SHIFT_CARE -> listOf(CareType.SCHOOL_SHIFT_CARE)
     PlacementType.PRESCHOOL,
     PlacementType.PREPARATORY -> listOf(CareType.PRESCHOOL)
     PlacementType.PRESCHOOL_DAYCARE,
@@ -159,6 +160,7 @@ fun getAbsenceCareTypes(placementType: PlacementType): List<CareType> = when (pl
 }
 
 enum class CareType {
+    SCHOOL_SHIFT_CARE,
     PRESCHOOL,
     PRESCHOOL_DAYCARE,
     DAYCARE_5YO_FREE,

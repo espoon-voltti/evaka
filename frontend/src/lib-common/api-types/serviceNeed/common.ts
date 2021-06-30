@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { UUID } from 'lib-common/types'
+
 export interface ServiceNeedOptionPublicInfo {
   id: UUID
   name: string
@@ -26,3 +27,4 @@ export type PlacementType =
   | 'PREPARATORY_DAYCARE'
   | 'TEMPORARY_DAYCARE'
   | 'TEMPORARY_DAYCARE_PART_DAY'
+  | 'SCHOOL_SHIFT_CARE'
