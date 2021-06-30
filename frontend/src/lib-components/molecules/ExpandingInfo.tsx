@@ -30,7 +30,7 @@ const InfoBoxContainer = styled(Container)<{
   overflow: hidden;
   ${({ fullWidth }) =>
     fullWidth
-      ? `margin: ${defaultMargins.s};`
+      ? `margin: ${defaultMargins.s} 0px ${defaultMargins.s} 0px;`
       : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
 
   @media (min-width: ${tabletMin}) {
@@ -73,7 +73,7 @@ export default function ExpandingInfo2({
 
   return (
     <span aria-live="polite">
-      <FixedSpaceRow spacing="xs">
+      <FixedSpaceRow spacing="xs" alignItems={'center'}>
         <div>{children}</div>
         <RoundIconWithMargin
           margin={margin ?? 'zero'}
