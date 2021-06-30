@@ -36,7 +36,7 @@ let page: Page
 let childId: UUID
 let fixtures: AreaAndPersonFixtures
 
-beforeAll(async () => {
+beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
   await insertDaycareGroupFixtures([daycareGroupFixture])
@@ -78,8 +78,6 @@ beforeAll(async () => {
       endDate: '2028-01-01'
     }
   ])
-})
-beforeEach(async () => {
   page = await (await newBrowserContext()).newPage()
 })
 afterEach(async () => {
@@ -104,6 +102,40 @@ describe('Sending and receiving messages', () => {
     await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
     await page.goto(`${config.employeeUrl}/messages`)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+  })
+
+  test('Citizen sends a message to the unit supervisor', async () => {
+    const title = 'Otsikko'
+    const content = 'Testiviestin sisältö'
+    const receivers = ['Esimies Essi']
+    await enduserLogin(page)
+    await page.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(page)
+    await citizenMessagesPage.sendNewMessage(title, content, receivers)
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    await messagesPage.openInbox(1)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.openInbox(2)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
+  })
+
+  test('Citizen sends message to the unit supervisor and the group', async () => {
+    const title = 'Otsikko'
+    const content = 'Testiviestin sisältö'
+    const receivers = ['Esimies Essi', 'Kosmiset vakiot']
+    await enduserLogin(page)
+    await page.goto(config.enduserMessagesUrl)
+    const citizenMessagesPage = new CitizenMessagesPage(page)
+    await citizenMessagesPage.sendNewMessage(title, content, receivers)
+    await employeeLogin(page, 'UNIT_SUPERVISOR')
+    await page.goto(`${config.employeeUrl}/messages`)
+    const messagesPage = new MessagesPage(page)
+    await messagesPage.openInbox(1)
+    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await messagesPage.openInbox(2)
     await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
   })
 })

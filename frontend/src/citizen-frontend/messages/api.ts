@@ -65,19 +65,19 @@ export interface SendMessageParams {
   recipients: MessageAccount[]
 }
 
-export interface ReplyToThreadParams {
-  messageId: UUID
-  content: string
-  recipientAccountIds: UUID[]
-}
-
 export async function sendMessage(
   message: SendMessageParams
 ): Promise<Result<UUID[]>> {
   return client
-    .post<JsonOf<UUID[]>>(`/citizen/messages/send`, message)
+    .post<JsonOf<UUID[]>>(`/citizen/messages`, message)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
+}
+
+export interface ReplyToThreadParams {
+  messageId: UUID
+  content: string
+  recipientAccountIds: UUID[]
 }
 
 export async function replyToThread({

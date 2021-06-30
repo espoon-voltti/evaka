@@ -123,7 +123,8 @@ export default React.memo(function MessageEditor({
 })
 
 const Container = styled.div`
-  width: 680px;
+  width: 100%;
+  max-width: 680px;
   height: 100%;
   max-height: 700px;
   position: absolute;

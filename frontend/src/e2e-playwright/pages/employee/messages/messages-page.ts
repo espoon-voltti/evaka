@@ -10,10 +10,16 @@ export default class MessagesPage {
   #receiverSelection = new RawElement(this.page, '[data-qa="select-receiver"]')
   #inputTitle = new RawTextInput(this.page, '[data-qa="input-title"]')
   #inputContent = new RawTextInput(this.page, '[data-qa="input-content"]')
-  #sentMessagesBoxRow = new RawTextInput(
+  #sentMessagesBoxRow = new RawElement(
     this.page,
     '[data-qa="message-box-row-SENT"]'
   )
+  #inboxes = this.page.$$('[data-qa="message-box-row-RECEIVED"]')
+
+  async inboxVisible() {
+    const inboxes = await this.#inboxes
+    return inboxes.length > 0
+  }
 
   async getReceivedMessageCount() {
     return this.page.$$eval(
@@ -34,6 +40,10 @@ export default class MessagesPage {
       '[data-qa="sent-message-row"]',
       (sentMessages) => sentMessages.length > 0
     )
+  }
+
+  async openInbox(index: number) {
+    await this.page.click(`:nth-match(:text("Saapuneet"), ${index})`)
   }
 
   async sendNewMessage(title: string, content: string) {

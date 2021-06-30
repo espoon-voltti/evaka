@@ -122,19 +122,8 @@ export const MessageContextProvider = React.memo(
 
     const loadMessages = useRestApi(getReceivedMessages, setMessagesResult)
     const refreshThreads = useCallback(() => {
-      void getReceivedMessages(1).then(
-        (response) =>
-          response.isSuccess &&
-          setThreads((state) => {
-            const { data, pages } = response.value
-            return {
-              ...state,
-              threads: data,
-              loadingResult: Success.of(undefined),
-              pages
-            }
-          })
-      )
+      setThreads({ ...initialThreadState, currentPage: 0 })
+      setThreads((threads) => ({ ...threads, currentPage: 1 }))
     }, [])
 
     useEffect(() => {
@@ -253,7 +242,7 @@ export const MessageContextProvider = React.memo(
         accountId,
         loadAccount,
         threads: threads.threads,
-        refreshThreads: refreshThreads,
+        refreshThreads,
         threadLoadingResult: threads.loadingResult,
         getReplyContent,
         setReplyContent,

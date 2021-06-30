@@ -59,6 +59,7 @@ export default React.memo(function ThreadList({
             text={t.messages.messageEditor.newMessage}
             onClick={() => setEditorVisible(true)}
             primary
+            data-qa="new-message-btn"
           />
           {threadLoadingResult.isSuccess && threads.length === 0 && (
             <span>{t.messages.noMessages}</span>
