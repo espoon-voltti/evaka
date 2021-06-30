@@ -180,7 +180,7 @@ tasks {
         useJUnitPlatform()
         systemProperty("spring.profiles.active", "test")
         filter {
-            setFailOnNoMatchingTests(false)
+            isFailOnNoMatchingTests = false
         }
     }
 
@@ -192,6 +192,9 @@ tasks {
         classpath = sourceSets["integrationTest"].runtimeClasspath
         shouldRunAfter("test")
         outputs.upToDateWhen { false }
+        filter {
+            isFailOnNoMatchingTests = false
+        }
     }
 
     bootRun {

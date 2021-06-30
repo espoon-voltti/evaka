@@ -53,7 +53,7 @@ tasks {
     test {
         useJUnitPlatform()
         filter {
-            setFailOnNoMatchingTests(false)
+            isFailOnNoMatchingTests = false
         }
     }
 }

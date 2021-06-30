@@ -193,7 +193,7 @@ tasks {
         useJUnitPlatform()
         systemProperty("spring.profiles.active", "test")
         filter {
-            setFailOnNoMatchingTests(false)
+            isFailOnNoMatchingTests = false
         }
     }
 
