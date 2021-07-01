@@ -823,13 +823,6 @@ jobs:
     executor: frontend_executor
     steps:
       - prepare_frontend_build
-      - build_maintenance_page
-      - build_storybook
-      - persist_to_workspace:
-          root: << pipeline.parameters.workspace_root >>
-          paths:
-            - frontend/dist/maintenance-page
-            - frontend/storybook-build
       - run:
           working_directory: *workspace_frontend
           command: yarn lint-strict
@@ -839,6 +832,13 @@ jobs:
       - run:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
+      - build_maintenance_page
+      - build_storybook
+      - persist_to_workspace:
+          root: << pipeline.parameters.workspace_root >>
+          paths:
+            - frontend/dist/maintenance-page
+            - frontend/storybook-build
       - store_test_results:
           path: << pipeline.parameters.workspace_root >>/frontend/test-results
       - notify_slack
