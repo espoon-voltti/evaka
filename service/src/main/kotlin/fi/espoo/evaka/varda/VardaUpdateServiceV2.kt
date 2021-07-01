@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaUpdateV2
 import fi.espoo.evaka.shared.db.Database
@@ -61,6 +62,29 @@ class VardaUpdateServiceV2(
         db.connect { updateAllVardaData(it, client, organizer) }
     }
 
+    fun resetChildren(db: Database.Connection) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+
+        val resetChildIds = db.read { it.getVardaChildrenToReset() }
+        logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
+
+        resetChildIds.forEach { childId ->
+            if (resetAllChildVardaData(childId)) {
+                val childServiceNeeds = db.read { it.getServiceNeedsByChild(childId) }
+                try {
+                    childServiceNeeds.forEach { serviceNeed ->
+                        handleNewEvakaServiceNeed(db, client, serviceNeed.id)
+                    }
+                    db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
+                } catch (e: Exception) {
+                    logger.warn("VardaUpdate: could not add service need for reset child $childId: ${e.message} - full reset will be retried next time")
+                }
+            } else {
+                logger.warn("VardaUpdate: could not reset evaka child $childId from varda")
+            }
+        }
+    }
+
     fun clearAllExistingVardaChildDataFromVarda(db: Database.Connection, vardaChildId: Long) {
         val vardaClient = VardaClient(tokenProvider, fuel, env, mapper)
 
@@ -79,6 +103,12 @@ class VardaUpdateServiceV2(
             logger.error("VardaUpdate: could not delete old varda data for child $vardaChildId: ${e.localizedMessage}")
         }
     }
+}
+
+fun resetAllChildVardaData(evakaChildId: UUID): Boolean {
+    // TODO return whether succeeded or not
+    logger.info("VardaUpdate: TODO resetting all varda data for evaka child $evakaChildId")
+    return true
 }
 
 fun updateAllVardaData(
@@ -780,3 +810,17 @@ fun Database.Read.personHasSsn(id: UUID): Boolean = createQuery("SELECT CASE WHE
     .bind("id", id)
     .mapTo<Boolean>()
     .firstOrNull() ?: false
+
+fun Database.Read.getVardaChildrenToReset(): List<UUID> =
+    createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL")
+        .mapTo<UUID>()
+        .list()
+
+fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: UUID, resetTimeStamp: Instant) = createUpdate(
+    """
+UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
+WHERE evaka_child_id = :evakaChildId
+        """
+).bind("evakaChildId", evakaChildId)
+    .bind("resetTimeStamp", resetTimeStamp)
+    .execute()
