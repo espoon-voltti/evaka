@@ -222,6 +222,7 @@ commands:
           paths:
             - frontend/.yarn/cache
             - frontend/node_modules
+            - /home/circleci/.npm/sentry-cli
   restore_frontend_deps:
     steps:
       - restore_cache:
