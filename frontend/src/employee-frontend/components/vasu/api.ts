@@ -134,9 +134,9 @@ interface UpdateDocumentStateParams {
 export async function updateDocumentState({
   documentId,
   eventType
-}: UpdateDocumentStateParams): Promise<Result<VasuDocumentEvent>> {
+}: UpdateDocumentStateParams): Promise<Result<null>> {
   return client
-    .post<VasuDocumentEvent>(`/vasu/${documentId}/update-state`, { eventType })
-    .then((res) => Success.of(res.data))
+    .post(`/vasu/${documentId}/update-state`, { eventType })
+    .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
