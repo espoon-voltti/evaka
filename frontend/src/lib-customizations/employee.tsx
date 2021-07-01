@@ -8,6 +8,7 @@ import customizations from '@evaka/customizations/employee'
 import type { EmployeeCustomizations } from './types'
 import { fi } from './espoo/employee/assets/i18n/fi'
 import { merge } from 'lodash'
+import { ApplicationType } from 'lib-common/api-types/application/enums'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
@@ -32,3 +33,11 @@ export type Translations = typeof fi
 export const translations: { [K in Lang]: Translations } = {
   fi: merge(fi, (customizations as EmployeeCustomizations).translations.fi)
 }
+
+export const applicationTypes: ApplicationType[] = ([
+  'DAYCARE',
+  'PRESCHOOL',
+  'CLUB'
+] as const).filter(
+  (type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL'
+)

@@ -27,13 +27,12 @@ import VtjPersonSearch from '../../components/common/VtjPersonSearch'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import { CreatePersonBody } from '../../api/person'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
+import { applicationTypes } from 'lib-customizations/employee'
 
 interface CreateApplicationModalProps {
   child: PersonDetails
   guardians: PersonDetails[]
 }
-
-const applicationTypes: ApplicationType[] = ['DAYCARE', 'PRESCHOOL', 'CLUB']
 
 type PersonType = 'GUARDIAN' | 'DB_SEARCH' | 'VTJ' | 'NEW_NO_SSN'
 
