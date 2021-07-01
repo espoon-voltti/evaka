@@ -23,7 +23,9 @@ CREATE TABLE vasu_content(
     id uuid PRIMARY KEY DEFAULT ext.uuid_generate_v1mc(),
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
-    content jsonb NOT NULL
+    content jsonb NOT NULL,
+    vasu_discussion_content jsonb NOT NULL,
+    evaluation_discussion_content jsonb NOT NULL
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON vasu_content FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
@@ -35,9 +37,7 @@ CREATE TABLE vasu_document(
     child_id uuid NOT NULL REFERENCES child(id),
     template_id uuid NOT NULL REFERENCES vasu_template(id),
     content_id uuid NOT NULL REFERENCES vasu_content(id),
-    modified_at timestamp with time zone NOT NULL,
-    vasu_discussion_date date,
-    evaluation_discussion_date date
+    modified_at timestamp with time zone NOT NULL
 );
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON vasu_document FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();

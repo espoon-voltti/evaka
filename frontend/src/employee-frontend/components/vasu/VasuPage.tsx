@@ -46,6 +46,8 @@ import {
   RadioGroupQuestion,
   TextQuestion
 } from './vasu-content'
+import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
+import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -138,8 +140,18 @@ export default React.memo(function VasuPage({
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
   const { i18n } = useTranslation()
-  const { vasu, content, setContent, status } = useVasu(id)
   const history = useHistory()
+
+  const {
+    vasu,
+    content,
+    setContent,
+    vasuDiscussionContent,
+    setVasuDiscussionContent,
+    evaluationDiscussionContent,
+    setEvaluationDiscussionContent,
+    status
+  } = useVasu(id)
 
   function formatVasuStatus(status: VasuStatus): string | null {
     switch (status.state) {
@@ -345,7 +357,27 @@ export default React.memo(function VasuPage({
               </Fragment>
             )
           })}
-          <VasuEvents document={vasu} />
+          <VasuDiscussionSection
+            content={vasuDiscussionContent}
+            setContent={setVasuDiscussionContent}
+          />
+          <Gap size={'L'} />
+          {vasu.documentState !== 'DRAFT' && (
+            <>
+              <EvaluationDiscussionSection
+                content={evaluationDiscussionContent}
+                setContent={setEvaluationDiscussionContent}
+              />
+              <Gap size={'L'} />
+            </>
+          )}
+          <VasuEvents
+            document={vasu}
+            vasuDiscussionDate={vasuDiscussionContent.discussionDate}
+            evaluationDiscussionDate={
+              evaluationDiscussionContent.discussionDate
+            }
+          />
           <Gap size={'L'} />
         </>
       )}

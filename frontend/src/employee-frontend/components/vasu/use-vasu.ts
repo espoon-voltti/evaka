@@ -14,9 +14,11 @@ import { isAutomatedTest } from '../../../lib-common/utils/helpers'
 import { useDebouncedCallback } from '../../../lib-common/utils/useDebouncedCallback'
 import { useRestApi } from '../../../lib-common/utils/useRestApi'
 import {
+  EvaluationDiscussionContent,
   getVasuDocument,
   putVasuDocument,
   PutVasuDocumentParams,
+  VasuDiscussionContent,
   VasuDocument
 } from './api'
 import { VasuContent } from './vasu-content'
@@ -34,12 +36,21 @@ export interface VasuStatus {
   savedAt?: Date
 }
 
-type VasuMetadata = Omit<VasuDocument, 'content'>
+type VasuMetadata = Omit<
+  VasuDocument,
+  'content' | 'vasuDiscussionContent' | 'evaluationDiscussionContent'
+>
 
 interface Vasu {
   vasu: VasuMetadata | undefined
   content: VasuContent
   setContent: Dispatch<SetStateAction<VasuContent>>
+  vasuDiscussionContent: VasuDiscussionContent
+  setVasuDiscussionContent: Dispatch<SetStateAction<VasuDiscussionContent>>
+  evaluationDiscussionContent: EvaluationDiscussionContent
+  setEvaluationDiscussionContent: Dispatch<
+    SetStateAction<EvaluationDiscussionContent>
+  >
   status: VasuStatus
 }
 
@@ -49,6 +60,23 @@ export function useVasu(id: string): Vasu {
   const [status, setStatus] = useState<VasuStatus>({ state: 'loading' })
   const [vasu, setVasu] = useState<VasuMetadata>()
   const [content, setContent] = useState<VasuContent>({ sections: [] })
+  const [
+    vasuDiscussionContent,
+    setVasuDiscussionContent
+  ] = useState<VasuDiscussionContent>({
+    discussionDate: null,
+    participants: '',
+    guardianViewsAndCollaboration: ''
+  })
+  const [
+    evaluationDiscussionContent,
+    setEvaluationDiscussionContent
+  ] = useState<EvaluationDiscussionContent>({
+    discussionDate: null,
+    participants: '',
+    guardianViewsAndCollaboration: '',
+    evaluation: ''
+  })
 
   useEffect(
     function loadVasuDocument() {
@@ -57,10 +85,17 @@ export function useVasu(id: string): Vasu {
         res.mapAll({
           loading: () => null,
           failure: () => setStatus({ state: 'loading-error' }),
-          success: ({ content, ...meta }) => {
+          success: ({
+            content,
+            vasuDiscussionContent,
+            evaluationDiscussionContent,
+            ...meta
+          }) => {
             setStatus({ state: 'clean' })
             setVasu(meta)
             setContent(content)
+            setVasuDiscussionContent(vasuDiscussionContent)
+            setEvaluationDiscussionContent(evaluationDiscussionContent)
           }
         })
       )
@@ -90,10 +125,22 @@ export function useVasu(id: string): Vasu {
   useEffect(
     function saveDirtyContent() {
       if (status.state === 'dirty') {
-        debouncedSave({ documentId: id, content })
+        debouncedSave({
+          documentId: id,
+          content,
+          vasuDiscussionContent,
+          evaluationDiscussionContent
+        })
       }
     },
-    [debouncedSave, status.state, content, id]
+    [
+      debouncedSave,
+      status.state,
+      content,
+      vasuDiscussionContent,
+      evaluationDiscussionContent,
+      id
+    ]
   )
 
   const setContentCallback = useCallback(
@@ -104,5 +151,30 @@ export function useVasu(id: string): Vasu {
     []
   )
 
-  return { vasu, content, setContent: setContentCallback, status }
+  const setVasuDiscussionContentCallback = useCallback(
+    (draft: SetStateAction<VasuDiscussionContent>) => {
+      setVasuDiscussionContent(draft)
+      setStatus((status) => ({ ...status, state: 'dirty' }))
+    },
+    []
+  )
+
+  const setEvaluationDiscussionContentCallback = useCallback(
+    (draft: SetStateAction<EvaluationDiscussionContent>) => {
+      setEvaluationDiscussionContent(draft)
+      setStatus((status) => ({ ...status, state: 'dirty' }))
+    },
+    []
+  )
+
+  return {
+    vasu,
+    content,
+    setContent: setContentCallback,
+    vasuDiscussionContent,
+    setVasuDiscussionContent: setVasuDiscussionContentCallback,
+    evaluationDiscussionContent,
+    setEvaluationDiscussionContent: setEvaluationDiscussionContentCallback,
+    status
+  }
 }

@@ -52,8 +52,10 @@ data class VasuDocument(
     val templateName: String,
     @Json
     val content: VasuContent,
-    val vasuDiscussionDate: LocalDate? = null,
-    val evaluationDiscussionDate: LocalDate? = null,
+    @Json
+    val vasuDiscussionContent: VasuDiscussionContent,
+    @Json
+    val evaluationDiscussionContent: EvaluationDiscussionContent
 ) {
     fun getState(): VasuDocumentState = events.fold(VasuDocumentState.DRAFT) { acc, event ->
         when (event.eventType) {
@@ -141,3 +143,18 @@ enum class VasuQuestionType {
     RADIO_GROUP,
     MULTISELECT
 }
+
+@Json
+data class VasuDiscussionContent(
+    val discussionDate: LocalDate? = null,
+    val participants: String = "",
+    val guardianViewsAndCollaboration: String = ""
+)
+
+@Json
+data class EvaluationDiscussionContent(
+    val discussionDate: LocalDate? = null,
+    val participants: String = "",
+    val guardianViewsAndCollaboration: String = "",
+    val evaluation: String = ""
+)

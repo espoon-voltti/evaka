@@ -4,7 +4,6 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { formatDate } from '../../../../lib-common/date'
 import HorizontalLine from '../../../../lib-components/atoms/HorizontalLine'
 import { ContentArea } from '../../../../lib-components/layout/Container'
 import ListGrid from '../../../../lib-components/layout/ListGrid'
@@ -14,6 +13,7 @@ import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { VasuDocument } from '../api'
 import { getLastPublished } from '../vasu-events'
+import LocalDate from '../../../../lib-common/local-date'
 
 const labelWidth = '320px'
 
@@ -28,14 +28,14 @@ const ChipContainer = styled.div`
   display: inline-flex;
 `
 
-function EventRow({ label, date }: { label: string; date?: Date }) {
+function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
   const { i18n } = useTranslation()
-  const eventDate = formatDate(date)
+
   return (
     <>
       <Label>{label}</Label>
-      {eventDate.length > 0 ? (
-        <span>{eventDate}</span>
+      {date ? (
+        <span>{date.format()}</span>
       ) : (
         <Dimmed>{i18n.vasu.noRecord}</Dimmed>
       )}
@@ -44,24 +44,15 @@ function EventRow({ label, date }: { label: string; date?: Date }) {
 }
 
 interface Props {
-  document: Pick<
-    VasuDocument,
-    | 'documentState'
-    | 'evaluationDiscussionDate'
-    | 'events'
-    | 'modifiedAt'
-    | 'vasuDiscussionDate'
-  >
+  document: Pick<VasuDocument, 'documentState' | 'events' | 'modifiedAt'>
+  vasuDiscussionDate: LocalDate | null
+  evaluationDiscussionDate: LocalDate | null
 }
 
 export function VasuEvents({
-  document: {
-    documentState,
-    evaluationDiscussionDate,
-    events,
-    modifiedAt,
-    vasuDiscussionDate
-  }
+  document: { documentState, events, modifiedAt },
+  vasuDiscussionDate,
+  evaluationDiscussionDate
 }: Props) {
   const { i18n } = useTranslation()
   const lastPublished = getLastPublished(events)
@@ -74,8 +65,16 @@ export function VasuEvents({
         <ChipContainer>
           <VasuStateChip state={documentState} labels={i18n.vasu.states} />
         </ChipContainer>
-        <EventRow label={i18n.vasu.lastModified} date={modifiedAt} />
-        <EventRow label={i18n.vasu.lastPublished} date={lastPublished} />
+        <EventRow
+          label={i18n.vasu.lastModified}
+          date={LocalDate.fromSystemTzDate(modifiedAt)}
+        />
+        <EventRow
+          label={i18n.vasu.lastPublished}
+          date={
+            lastPublished ? LocalDate.fromSystemTzDate(lastPublished) : null
+          }
+        />
         <EventRow label={i18n.vasu.vasuDiscussion} date={vasuDiscussionDate} />
         <EventRow
           label={i18n.vasu.evaluationDiscussion}
@@ -90,7 +89,7 @@ export function VasuEvents({
               <EventRow
                 key={id}
                 label={i18n.vasu.eventTypes[eventType]}
-                date={created}
+                date={LocalDate.fromSystemTzDate(created)}
               />
             ))}
           </ListGrid>
