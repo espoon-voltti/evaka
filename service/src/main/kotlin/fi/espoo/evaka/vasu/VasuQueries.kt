@@ -26,7 +26,7 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
         .one()
 }
 
-fun Database.Read.getVasuDocumentResponse(id: UUID): VasuDocument? {
+fun Database.Read.getVasuDocument(id: UUID): VasuDocument? {
     // language=sql
     val sql = """
         SELECT
@@ -124,4 +124,19 @@ fun Database.Read.getVasuDocumentSummaries(childId: UUID): List<VasuDocumentSumm
                 }.sortedBy { it.created }
             )
         }
+}
+
+fun Database.Transaction.insertVasuDocumentEvent(documentId: UUID, eventType: VasuDocumentEventType, employeeId: UUID): VasuDocumentEvent {
+    val sql = """
+        INSERT INTO vasu_document_event (vasu_document_id, employee_id, event_type)
+        VALUES (:documentId, :employeeId, :eventType)
+        RETURNING id, created, event_type
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("documentId", documentId)
+        .bind("employeeId", employeeId)
+        .bind("eventType", eventType)
+        .mapTo<VasuDocumentEvent>()
+        .one()
 }

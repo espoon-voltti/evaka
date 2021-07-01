@@ -6,6 +6,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.web.bind.annotation.GetMapping
@@ -59,7 +60,7 @@ class VasuController(
         )
 
         return db.read { tx ->
-            tx.getVasuDocumentResponse(id) ?: throw NotFound("template $id not found")
+            tx.getVasuDocument(id) ?: throw NotFound("template $id not found")
         }
     }
 
@@ -93,5 +94,53 @@ class VasuController(
         )
 
         return db.read { tx -> tx.getVasuDocumentSummaries(childId) }
+    }
+
+    data class ChangeDocumentStateRequest(
+        val eventType: VasuDocumentEventType
+    )
+
+    @PostMapping("/vasu/{id}/update-state")
+    fun updateDocumentState(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody body: ChangeDocumentStateRequest
+    ) {
+        Audit.VasuDocumentEventCreate.log(id)
+        acl.getRolesForVasuDocument(user, id).requireOneOfRoles(
+            UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
+        )
+
+        // TODO this is just a placeholder, upcoming publishing logic should handle the event insertion
+        val extraEventPlaceholder = when (body.eventType) {
+            VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentEventType.PUBLISHED
+            VasuDocumentEventType.MOVED_TO_REVIEWED -> VasuDocumentEventType.PUBLISHED
+            else -> null
+        }
+
+        db.transaction { tx ->
+            val currentState = tx.getVasuDocument(id)?.getState() ?: throw NotFound("Vasu was not found")
+            validateStateTransition(eventType = body.eventType, currentState = currentState, user = user)
+
+            listOfNotNull(extraEventPlaceholder, body.eventType).map {
+                tx.insertVasuDocumentEvent(
+                    documentId = id,
+                    eventType = it,
+                    employeeId = user.id
+                )
+            }
+        }
+    }
+
+    private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState, user: AuthenticatedUser) {
+        when (eventType) {
+            VasuDocumentEventType.PUBLISHED -> currentState !== VasuDocumentState.CLOSED
+            VasuDocumentEventType.MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
+            VasuDocumentEventType.RETURNED_TO_READY -> user.isAdmin
+            VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
+            VasuDocumentEventType.RETURNED_TO_REVIEWED -> user.isAdmin
+            VasuDocumentEventType.MOVED_TO_CLOSED -> user.isAdmin
+        }.let { valid -> if (!valid) throw Conflict("Invalid or unauthorized state transition") }
     }
 }

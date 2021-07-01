@@ -17,6 +17,13 @@ enum class VasuDocumentEventType {
     MOVED_TO_CLOSED
 }
 
+enum class VasuDocumentState {
+    DRAFT,
+    READY,
+    REVIEWED,
+    CLOSED
+}
+
 data class VasuDocumentEvent(
     val id: UUID,
     val created: HelsinkiDateTime,
@@ -47,7 +54,19 @@ data class VasuDocument(
     val content: VasuContent,
     val vasuDiscussionDate: LocalDate? = null,
     val evaluationDiscussionDate: LocalDate? = null,
-)
+) {
+    fun getState(): VasuDocumentState = events.fold(VasuDocumentState.DRAFT) { acc, event ->
+        when (event.eventType) {
+            VasuDocumentEventType.PUBLISHED -> acc
+            VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentState.READY
+            VasuDocumentEventType.RETURNED_TO_READY -> VasuDocumentState.READY
+            VasuDocumentEventType.MOVED_TO_REVIEWED -> VasuDocumentState.REVIEWED
+            VasuDocumentEventType.RETURNED_TO_REVIEWED -> VasuDocumentState.REVIEWED
+            VasuDocumentEventType.MOVED_TO_CLOSED -> VasuDocumentState.CLOSED
+        }
+    }
+}
+
 data class VasuDocumentChild(
     val id: UUID,
     val firstName: String,
