@@ -7,13 +7,14 @@
 set -euo pipefail
 
 BASEDIR=$(dirname "$0")
+TARGETDIR="${BASEDIR}/diagrams/png"
 PLANTUML_VERSION=1.2021.8
 
-mkdir -p "$BASEDIR"/diagrams/svg
-rm -rf "$BASEDIR"/svg/*
+rm -rf "${TARGETDIR}"
+mkdir -p "${TARGETDIR}"
 
-for FILE in "$BASEDIR"/diagrams/src/*.puml; do
-  FILE_SVG="$BASEDIR"/diagrams/svg/"$(basename "$FILE" | sed 's/puml/svg/')"
-  echo Converting "${FILE} -> ${FILE_SVG}"
-  docker run --rm -i dstockhammer/plantuml:"$PLANTUML_VERSION" -pipe -tsvg > "$FILE_SVG" < "$FILE"
+for SRCFILE in "${BASEDIR}"/diagrams/src/*.puml; do
+  TARGETFILE="${TARGETDIR}"/$(basename "${SRCFILE}" | sed 's/puml/png/')
+  echo Converting "${SRCFILE} -> ${TARGETFILE}"
+  docker run --rm -i dstockhammer/plantuml:"${PLANTUML_VERSION}" -pipe > "${TARGETFILE}" < "${SRCFILE}"
 done
