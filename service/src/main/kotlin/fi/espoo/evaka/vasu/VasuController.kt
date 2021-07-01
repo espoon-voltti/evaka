@@ -65,7 +65,9 @@ class VasuController(
     }
 
     data class UpdateDocumentRequest(
-        val content: VasuContent
+        val content: VasuContent,
+        val vasuDiscussionContent: VasuDiscussionContent,
+        val evaluationDiscussionContent: EvaluationDiscussionContent
     )
     @PutMapping("/vasu/{id}")
     fun putDocument(
@@ -79,7 +81,7 @@ class VasuController(
             UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
         )
 
-        db.transaction { tx -> tx.updateVasuDocument(id, body.content) }
+        db.transaction { tx -> tx.updateVasuDocument(id, body.content, body.vasuDiscussionContent, body.evaluationDiscussionContent) }
     }
 
     @GetMapping("/children/{childId}/vasu-summaries")

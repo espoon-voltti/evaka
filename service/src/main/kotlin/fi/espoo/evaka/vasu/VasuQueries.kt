@@ -10,8 +10,8 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
     // language=sql
     val sql = """
         WITH content AS (
-            INSERT INTO vasu_content (content) 
-            SELECT vt.content FROM vasu_template vt WHERE vt.id = :templateId
+            INSERT INTO vasu_content (content, vasu_discussion_content, evaluation_discussion_content) 
+            SELECT vt.content, :discussion, :evaluation FROM vasu_template vt WHERE vt.id = :templateId
             RETURNING id
         )
         INSERT INTO vasu_document (child_id, template_id, content_id, modified_at) 
@@ -22,6 +22,8 @@ fun Database.Transaction.insertVasuDocument(childId: UUID, templateId: UUID): UU
     return createQuery(sql)
         .bind("childId", childId)
         .bind("templateId", templateId)
+        .bind("discussion", VasuDiscussionContent())
+        .bind("evaluation", EvaluationDiscussionContent())
         .mapTo<UUID>()
         .one()
 }
@@ -33,12 +35,12 @@ fun Database.Read.getVasuDocument(id: UUID): VasuDocument? {
             vd.id,
             vd.child_id,
             vd.modified_at,
-            vd.vasu_discussion_date,
-            vd.evaluation_discussion_date,
             p.first_name AS child_first_name,
             p.last_name AS child_last_name,
             vt.name AS template_name,
             vc.content,
+            vc.vasu_discussion_content,
+            vc.evaluation_discussion_content,
             (SELECT jsonb_agg(json_build_object(
                    'id', event.id,
                    'created', event.created,
@@ -60,17 +62,27 @@ fun Database.Read.getVasuDocument(id: UUID): VasuDocument? {
         .firstOrNull()
 }
 
-fun Database.Transaction.updateVasuDocument(id: UUID, content: VasuContent) {
+fun Database.Transaction.updateVasuDocument(
+    id: UUID,
+    content: VasuContent,
+    vasuDiscussionContent: VasuDiscussionContent,
+    evaluationDiscussionContent: EvaluationDiscussionContent
+) {
     // language=sql
     val updateContentSql = """
         UPDATE vasu_content
-        SET content = :content
+        SET 
+            content = :content, 
+            vasu_discussion_content = :vasuDiscussionContent, 
+            evaluation_discussion_content = :evaluationDiscussionContent
         WHERE id IN (SELECT vd.content_id FROM vasu_document vd WHERE vd.id = :id)
     """.trimIndent()
 
     createUpdate(updateContentSql)
         .bind("id", id)
         .bind("content", content)
+        .bind("vasuDiscussionContent", vasuDiscussionContent)
+        .bind("evaluationDiscussionContent", evaluationDiscussionContent)
         .updateExactlyOne()
 
     createUpdate("UPDATE vasu_document SET modified_at = NOW() WHERE id = :id")

@@ -867,6 +867,27 @@ export const fi = {
       publishToGuardians: 'Julkaise suunnitelma',
       vasuIsPublishedToGuardians: 'Suunnitelma julkaistaan huoltajille'
     },
+    staticSections: {
+      vasuDiscussion: {
+        title: 'Lapsen varhaiskasvatussuunnitelmakeskustelu',
+        title2:
+          'Varhaiskasvatussuunnitelma on käyty läpi yhteistyössä huoltajien kanssa',
+        discussionDate: 'Varhaiskasvatuskeskustelun päivämäärä',
+        participants: 'Keskusteluun osallistuneet huoltajat',
+        guardianViewsAndCollaboration:
+          'Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä'
+      },
+      evaluationDiscussion: {
+        title: 'Toteutumisen arviointi',
+        title2:
+          'Varhaiskasvatussuunnitelman arviointikeskustelu huoltajien kanssa',
+        discussionDate: 'Arviointikeskustelun päivämäärä',
+        participants: 'Arviointikeskusteluun osallistuneet huoltajat',
+        guardianViewsAndCollaboration:
+          'Huoltajan/huoltajien kanssa tehty yhteistyö sekä näkemys varhaiskasvatussuunnitelman sisällöstä',
+        evaluation: 'Tavoitteiden ja toimenpiteiden toteutumisen arviointi'
+      }
+    },
     confidential: 'Salassapidettävä',
     confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
     state: 'Suunnitelman tila',

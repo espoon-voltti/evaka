@@ -8,6 +8,7 @@ import { JsonOf } from 'lib-common/json'
 import { client } from '../../api/client'
 import { getDocumentState } from './vasu-events'
 import { VasuContent } from './vasu-content'
+import LocalDate from '../../../lib-common/local-date'
 
 export type VasuDocumentState = 'DRAFT' | 'READY' | 'REVIEWED' | 'CLOSED'
 export type VasuDocumentEventType =
@@ -37,12 +38,25 @@ export interface VasuDocumentSummary extends VasuDocumentSummaryResponse {
   documentState: VasuDocumentState
 }
 
+export interface VasuDiscussionContent {
+  discussionDate: LocalDate | null
+  participants: string
+  guardianViewsAndCollaboration: string
+}
+
+export interface EvaluationDiscussionContent {
+  discussionDate: LocalDate | null
+  participants: string
+  guardianViewsAndCollaboration: string
+  evaluation: string
+}
+
 interface VasuDocumentResponse {
   id: UUID
   events: VasuDocumentEvent[]
   modifiedAt: Date
-  vasuDiscussionDate?: Date
-  evaluationDiscussionDate?: Date
+  vasuDiscussionContent: VasuDiscussionContent
+  evaluationDiscussionContent: EvaluationDiscussionContent
   child: {
     id: UUID
     firstName: string
@@ -57,22 +71,28 @@ export interface VasuDocument extends VasuDocumentResponse {
 }
 
 const mapVasuDocumentResponse = ({
-  evaluationDiscussionDate,
   events,
   modifiedAt,
-  vasuDiscussionDate,
+  vasuDiscussionContent,
+  evaluationDiscussionContent,
   ...rest
 }: JsonOf<VasuDocumentResponse>): VasuDocument => ({
   ...rest,
   events: events.map(mapVasuDocumentEvent),
   documentState: getDocumentState(events),
   modifiedAt: new Date(modifiedAt),
-  evaluationDiscussionDate: evaluationDiscussionDate
-    ? new Date(evaluationDiscussionDate)
-    : undefined,
-  vasuDiscussionDate: vasuDiscussionDate
-    ? new Date(vasuDiscussionDate)
-    : undefined
+  vasuDiscussionContent: {
+    ...vasuDiscussionContent,
+    discussionDate: LocalDate.parseNullableIso(
+      vasuDiscussionContent.discussionDate
+    )
+  },
+  evaluationDiscussionContent: {
+    ...evaluationDiscussionContent,
+    discussionDate: LocalDate.parseNullableIso(
+      evaluationDiscussionContent.discussionDate
+    )
+  }
 })
 
 export async function createVasuDocument(
@@ -115,14 +135,22 @@ export async function getVasuDocument(id: UUID): Promise<Result<VasuDocument>> {
 export interface PutVasuDocumentParams {
   documentId: UUID
   content: VasuContent
+  vasuDiscussionContent: VasuDiscussionContent
+  evaluationDiscussionContent: EvaluationDiscussionContent
 }
 
 export async function putVasuDocument({
   documentId,
-  content
+  content,
+  vasuDiscussionContent,
+  evaluationDiscussionContent
 }: PutVasuDocumentParams): Promise<Result<null>> {
   return client
-    .put(`/vasu/${documentId}`, { content })
+    .put(`/vasu/${documentId}`, {
+      content,
+      vasuDiscussionContent,
+      evaluationDiscussionContent
+    })
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
