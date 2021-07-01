@@ -126,3 +126,17 @@ export async function putVasuDocument({
     .then(() => Success.of(null))
     .catch((e) => Failure.fromError(e))
 }
+
+interface UpdateDocumentStateParams {
+  documentId: UUID
+  eventType: VasuDocumentEventType
+}
+export async function updateDocumentState({
+  documentId,
+  eventType
+}: UpdateDocumentStateParams): Promise<Result<VasuDocumentEvent>> {
+  return client
+    .post<VasuDocumentEvent>(`/vasu/${documentId}/update-state`, { eventType })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

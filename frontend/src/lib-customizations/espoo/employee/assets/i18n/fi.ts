@@ -859,6 +859,14 @@ export const fi = {
       REVIEWED: 'Arvioitu',
       CLOSED: 'Päättynyt'
     },
+    transitions: {
+      publishAsReady: 'Julkaise Laadittu-tilassa',
+      publishAsReviewed: 'Julkaise Arvioitu-tilassa',
+      markClosed: 'Merkitse päättyneeksi',
+      returnToReady: 'Palauta laadituksi',
+      publishToGuardians: 'Julkaise suunnitelma',
+      vasuIsPublishedToGuardians: 'Suunnitelma julkaistaan huoltajille'
+    },
     confidential: 'Salassapidettävä',
     confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
     state: 'Suunnitelman tila',
