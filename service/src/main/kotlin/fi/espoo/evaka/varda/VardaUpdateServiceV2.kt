@@ -103,28 +103,32 @@ fun updateAllVardaData(
        update all service need related data to varda
  */
 fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime) {
-    retryUnsuccessfulServiceNeedVardaUpdates(db, client)
-
+    val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client).toMutableSet()
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
     val feeAndVoucherDiffsByServiceNeed = db.read { it.getServiceNeedFeeData(startingFrom, null) }.groupBy { it.serviceNeedId }
-    val processedServiceNeedIds = mutableSetOf<UUID>()
 
     logger.info("VardaUpdate: found ${serviceNeedDiffsByChild.entries.size} children with changed service need data")
 
     serviceNeedDiffsByChild.entries.forEach { serviceNeedDiffByChild ->
         serviceNeedDiffByChild.value.deletes.forEach { deletedServiceNeedId ->
-            processedServiceNeedIds.add(deletedServiceNeedId)
-            handleDeletedEvakaServiceNeed(db, client, deletedServiceNeedId)
+            if (!processedServiceNeedIds.contains(deletedServiceNeedId)) {
+                processedServiceNeedIds.add(deletedServiceNeedId)
+                handleDeletedEvakaServiceNeed(db, client, deletedServiceNeedId)
+            }
         }
 
         serviceNeedDiffByChild.value.updates.forEach { updatedServiceNeedId ->
-            processedServiceNeedIds.add(updatedServiceNeedId)
-            handleUpdatedEvakaServiceNeed(db, client, updatedServiceNeedId)
+            if (!processedServiceNeedIds.contains(updatedServiceNeedId)) {
+                processedServiceNeedIds.add(updatedServiceNeedId)
+                handleUpdatedEvakaServiceNeed(db, client, updatedServiceNeedId)
+            }
         }
 
         serviceNeedDiffByChild.value.additions.forEach { addedServiceNeedId ->
-            processedServiceNeedIds.add(addedServiceNeedId)
-            handleNewEvakaServiceNeed(db, client, addedServiceNeedId)
+            if (!processedServiceNeedIds.contains(addedServiceNeedId)) {
+                processedServiceNeedIds.add(addedServiceNeedId)
+                handleNewEvakaServiceNeed(db, client, addedServiceNeedId)
+            }
         }
     }
 
@@ -135,6 +139,7 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
 
     unprocessedChangedFeeData.entries.forEach {
         val serviceNeedId = it.key
+        processedServiceNeedIds.add(serviceNeedId)
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
         if (vardaServiceNeed != null) {
             handleUpdatedEvakaServiceNeed(db, client, serviceNeedId)
@@ -142,6 +147,8 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
             handleNewEvakaServiceNeed(db, client, serviceNeedId)
         }
     }
+
+    logger.info("VardaUpdate: processed ${processedServiceNeedIds.size} service needs")
 }
 
 fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: UUID) {
@@ -175,12 +182,8 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
             val addErrors = addServiceNeedDataToVarda(db, client, evakaServiceNeed, vardaServiceNeed)
             if (addErrors.isNotEmpty()) {
                 logger.error(addErrors.joinToString(","))
-                db.transaction {
-                    it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, addErrors)
-                }
-            } else {
-                db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed.copy(updateFailed = false, errors = mutableListOf())) }
             }
+            db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed.copy(updateFailed = addErrors.isNotEmpty(), errors = addErrors.toMutableList())) }
         }
     } catch (e: Exception) {
         logger.error("VardaUpdate: manual check needed: something went wrong while trying to add varda service need $evakaServiceNeedId data: ${e.localizedMessage}")
@@ -205,13 +208,13 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
     }
 }
 
-fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient) {
+fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient): List<UUID> {
     val unsuccessfullyUploadedServiceNeeds = db.read { it.getUnsuccessfullyUploadVardaServiceNeeds() }
 
     if (unsuccessfullyUploadedServiceNeeds.size > 0)
         logger.info("VardaUpdate: retrying failed varda uploads: ${unsuccessfullyUploadedServiceNeeds.size}")
 
-    unsuccessfullyUploadedServiceNeeds.forEach {
+    return unsuccessfullyUploadedServiceNeeds.map {
         try {
             if (it.existsInEvaka && it.childId != null)
                 handleUpdatedEvakaServiceNeed(db, vardaClient, it.evakaServiceNeedId)
@@ -220,6 +223,7 @@ fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClien
         } catch (e: Exception) {
             logger.error("VardaUpdate: got an error while trying to redo a failed service need varda update: ${e.localizedMessage}")
         }
+        it.evakaServiceNeedId
     }
 }
 

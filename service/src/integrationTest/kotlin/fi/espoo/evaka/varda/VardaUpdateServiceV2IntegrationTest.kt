@@ -478,14 +478,16 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         val serviceNeedPeriod = DateRange(since.minusDays(100).toLocalDate(), since.toLocalDate())
         val feeDecisionPeriod = DateRange(serviceNeedPeriod.start, serviceNeedPeriod.start.plusDays(10))
         val voucherDecisionPeriod = DateRange(feeDecisionPeriod.end!!.plusDays(1), null)
-        createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
+        val snId = createServiceNeedAndFeeData(testChild_1, testAdult_1, since, serviceNeedPeriod, feeDecisionPeriod, voucherDecisionPeriod)
 
         mockEndpoint.failNextVardaCall(400, MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA)
         updateChildData(db, vardaClient, since)
         assertVardaElementCounts(1, 1, 0)
+        assertVardaServiceNeedIds(snId, 1, 1)
 
         updateChildData(db, vardaClient, since)
         assertVardaElementCounts(1, 1, 2)
+        assertVardaServiceNeedIds(snId, 2, 2)
 
         val vardaDecision = mockEndpoint.decisions.values.elementAt(0)
         assertVardaDecision(vardaDecision, serviceNeedPeriod.start, serviceNeedPeriod.end!!, serviceNeedPeriod.start, 1, snDefaultDaycare.daycareHoursPerWeek.toDouble())
@@ -520,6 +522,12 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
 
         // There should be no failed uploads after the retry
         assertEquals(0, db.read { it.createQuery("SELECT update_failed FROM varda_service_need WHERE update_failed = true").mapTo<Boolean>().list() }.size)
+    }
+
+    private fun assertVardaServiceNeedIds(evakaServiceNeedId: UUID, expectedVardaDecisionId: Long, expectedVardaPlacementId: Long) {
+        val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
+        assertEquals(expectedVardaDecisionId, vardaServiceNeed!!.vardaDecisionId)
+        assertEquals(expectedVardaPlacementId, vardaServiceNeed!!.vardaPlacementId)
     }
 
     private fun createServiceNeedAndFeeData(
