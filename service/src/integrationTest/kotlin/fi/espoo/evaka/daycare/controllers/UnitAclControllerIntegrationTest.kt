@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
@@ -32,7 +33,7 @@ import java.util.UUID
 
 class UnitAclControllerIntegrationTest : FullApplicationTest() {
     private val employee = DaycareAclRowEmployee(
-        id = UUID.randomUUID(),
+        id = EmployeeId(UUID.randomUUID()),
         firstName = "First",
         lastName = "Last",
         email = "test@example.com"
@@ -53,7 +54,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
             employee.also {
                 tx.insertTestEmployee(
                     DevEmployee(
-                        id = it.id,
+                        id = it.id.raw,
                         firstName = it.firstName,
                         lastName = it.lastName,
                         email = it.email
