@@ -121,7 +121,7 @@ export default React.memo(function MessageEditor({
             text={i18n.messages.messageEditor.send}
             disabled={!sendEnabled}
             onClick={() => onSend(message)}
-            onSuccess={() => undefined}
+            onSuccess={() => onClose()}
             data-qa="send-message-btn"
           />
         </BottomRow>
