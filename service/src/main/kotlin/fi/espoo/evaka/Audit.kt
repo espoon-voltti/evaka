@@ -140,6 +140,8 @@ enum class Audit(
     MessagingUpdateDraft("messaging.messages.update-draft.write"),
     MessagingDeleteDraft("messaging.messages.drafts.delete"),
     MessagingReplyToMessageWrite("messaging.messages.reply-to-message.write"),
+    MessagingCitizenFetchReceiversForAccount("messaging.messages.fetch-receivers-for-citizen-account"),
+    MessagingCitizenSendMessage("messaging.messages.citizen-send-message"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
     MissingServiceNeedReportRead("evaka.missing-service-need-report.read"),
     MobileDevicesList("evaka.mobile-devices.list"),

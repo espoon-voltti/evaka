@@ -91,8 +91,8 @@ class MessageControllerCitizen(
         db: Database.Connection,
         user: AuthenticatedUser,
     ): List<MessageAccount> {
-        Audit.MessagingSentMessagesRead.log()
         val accountId = requireMessageAccountAccess(db, user)
+        Audit.MessagingCitizenFetchReceiversForAccount.log(targetId = accountId)
         return db.read { it.getCitizenReceivers(accountId) }
     }
 
@@ -124,6 +124,7 @@ class MessageControllerCitizen(
         @RequestBody body: CitizenMessageBody,
     ): List<UUID> {
         val accountId = requireMessageAccountAccess(db, user)
+        Audit.MessagingCitizenSendMessage.log()
         return db.transaction { tx ->
             val contentId = tx.insertMessageContent(body.content, accountId)
             val sentAt = HelsinkiDateTime.now()

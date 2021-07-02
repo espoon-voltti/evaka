@@ -147,7 +147,8 @@ const sv: Translations = {
       deleteDraft: 'Ta bort utkast',
       send: 'Skicka',
       search: 'Sök',
-      noResults: 'Inga resultat'
+      noResults: 'Inga resultat',
+      messageSendError: 'Misslyckades med att skicka meddelande'
     }
   },
   applications: {

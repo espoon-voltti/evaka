@@ -147,7 +147,8 @@ const en: Translations = {
       deleteDraft: 'Delete draft',
       send: 'Send',
       search: 'Search',
-      noResults: 'No results'
+      noResults: 'No results',
+      messageSendError: 'Failed to send the message'
     }
   },
   applications: {

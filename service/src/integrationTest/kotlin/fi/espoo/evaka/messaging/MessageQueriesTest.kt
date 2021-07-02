@@ -348,7 +348,7 @@ class MessageQueriesTest : PureJdbiTest() {
     }
 
     @Test
-    fun `asdasdasd`() {
+    fun `query citizen receivers`() {
         val placementId: UUID = UUID.randomUUID()
         val group1Id: UUID = UUID.randomUUID()
         val group2Id: UUID = UUID.randomUUID()
@@ -396,7 +396,7 @@ class MessageQueriesTest : PureJdbiTest() {
         }
         val supervisorPersonalAccount = db.read {
             it.getEmployeeMessageAccounts(employee1Id)
-        }.filter { it != group1Account && it != group2Account }.first()
+        }.first { it != group1Account && it != group2Account }
 
         // when we get the receivers for the citizen person1
         val receivers = db.read {

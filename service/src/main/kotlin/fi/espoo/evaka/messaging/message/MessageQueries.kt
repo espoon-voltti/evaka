@@ -280,49 +280,59 @@ fun Database.Read.getCitizenReceivers(accountId: UUID): List<MessageAccount> {
 
     // language=SQL
     val sql = """
-        WITH placement_ids
-             AS (SELECT pl.id AS id
-                 FROM   guardian g
-                        INNER JOIN placement pl
-                                ON g.child_id = pl.child_id
-                 WHERE  guardian_id = (SELECT person_id AS id
-                                       FROM   message_account
-                                       WHERE id = :accountId)
-                        AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date),
-             supervisors
-             AS (SELECT e.id AS id
-                 FROM   placement_ids
-                        INNER JOIN placement plt
-                                ON placement_ids.id = plt.id
-                        INNER JOIN daycare d
-                                ON plt.unit_id = d.id
-                        INNER JOIN daycare_acl_view acl
-                                ON acl.daycare_id = d.id
-                        INNER JOIN employee e
-                                ON acl.employee_id = e.id
-                 WHERE  acl.role = 'UNIT_SUPERVISOR'),
-             groups
-             AS (SELECT gplt.daycare_group_id AS id
-                 FROM   placement_ids
-                        INNER JOIN daycare_group_placement gplt
-                                ON placement_ids.id = gplt.daycare_placement_id) SELECT
-        msg.id                                 AS id,
-        msg_name.account_name AS name
-        FROM   supervisors
-               INNER JOIN employee e
-                       ON e.id = supervisors.id
-               INNER JOIN message_account msg
-                       ON e.id = msg.employee_id
-               INNER JOIN message_account_name_view msg_name
-                       ON msg.id = msg_name.id
-        UNION
-        SELECT msg.id AS id,
-               g.name AS name
-        FROM   groups
-               INNER JOIN daycare_group g
-                       ON groups.id = g.id
-               INNER JOIN message_account msg
-                       ON g.id = msg.daycare_group_id
+WITH placement_ids AS (
+    SELECT pl.id AS id
+    FROM guardian g
+    JOIN placement pl
+    ON g.child_id = pl.child_id
+    WHERE guardian_id = (
+        SELECT person_id AS id
+        FROM message_account
+        WHERE id = :accountId
+    )
+    AND Daterange(pl.start_date, pl.end_date, '[]') @> current_date
+),
+supervisors AS (
+    SELECT e.id AS id
+    FROM placement_ids
+    JOIN placement plt
+    ON placement_ids.id = plt.id
+    JOIN daycare d
+    ON plt.unit_id = d.id
+    JOIN daycare_acl_view acl
+    ON acl.daycare_id = d.id
+    JOIN employee e
+    ON acl.employee_id = e.id
+    WHERE acl.role = 'UNIT_SUPERVISOR'
+),
+groups AS (
+    SELECT gplt.daycare_group_id AS id
+    FROM placement_ids
+    JOIN daycare_group_placement gplt
+    ON placement_ids.id = gplt.daycare_placement_id
+)
+
+SELECT
+    msg.id AS id,
+    msg_name.account_name AS name
+FROM supervisors
+JOIN employee e
+ON e.id = supervisors.id
+JOIN message_account msg
+ON e.id = msg.employee_id
+JOIN message_account_name_view msg_name
+ON msg.id = msg_name.id
+
+UNION
+
+SELECT
+    msg.id AS id,
+    g.name AS name
+FROM groups
+JOIN daycare_group g
+ON groups.id = g.id
+JOIN message_account msg
+ON g.id = msg.daycare_group_id
     """.trimIndent()
 
     return this.createQuery(sql)

@@ -146,7 +146,8 @@ export default {
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       search: 'Haku',
-      noResults: 'Ei tuloksia'
+      noResults: 'Ei tuloksia',
+      messageSendError: 'Viestin lähetys epäonnistui'
     }
   },
   applications: {
