@@ -4,6 +4,8 @@
 
 package fi.espoo.evaka.shared
 
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.KeyDeserializer
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.util.StdConverter
@@ -23,7 +25,7 @@ typealias GroupId = Id<DatabaseTable.Group>
 typealias PersonId = Id<DatabaseTable.Person>
 
 @JsonSerialize(converter = Id.ToJson::class)
-@JsonDeserialize(converter = Id.FromJson::class)
+@JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)
 data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
     override fun toString(): String = raw.toString()
     override fun hashCode(): Int = raw.hashCode()
@@ -35,5 +37,10 @@ data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
 
     class ToJson : StdConverter<Id<*>, UUID>() {
         override fun convert(value: Id<*>): UUID = value.raw
+    }
+
+    class KeyFromJson : KeyDeserializer() {
+        override fun deserializeKey(key: String, ctxt: DeserializationContext): Any =
+            Id<DatabaseTable>(UUID.fromString(key))
     }
 }
