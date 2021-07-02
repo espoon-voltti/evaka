@@ -83,6 +83,7 @@ sudo su - "$REPO_USERNAME" <<EOF
   # Preserve these variables from the initial environment
   export DEBUG="$DEBUG"
   export CI="$CI"
+  export FORCE_COLOR=1
 
   if [ "${DEBUG:-X}" = "true" ]; then
     set -x
