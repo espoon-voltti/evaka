@@ -10,9 +10,9 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.daily.DailyJob
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.job.ScheduledJob
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
@@ -40,7 +40,7 @@ enum class AsyncJobType {
     VARDA_UPDATE_V2,
     SEND_PENDING_DECISION_EMAIL,
     SEND_UNREAD_MESSAGE_NOTIFICATION,
-    RUN_DAILY_JOB,
+    RUN_SCHEDULED_JOB,
     FEE_THRESHOLDS_UPDATED,
     GENERATE_FINANCE_DECISIONS
 }
@@ -176,8 +176,8 @@ class VardaUpdateV2 : AsyncJobPayload {
     override val user: AuthenticatedUser? = null
 }
 
-data class RunDailyJob(val dailyJob: DailyJob) : AsyncJobPayload {
-    override val asyncJobType = AsyncJobType.RUN_DAILY_JOB
+data class RunScheduledJob(val job: ScheduledJob) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.RUN_SCHEDULED_JOB
     override val user: AuthenticatedUser? = null
 }
 

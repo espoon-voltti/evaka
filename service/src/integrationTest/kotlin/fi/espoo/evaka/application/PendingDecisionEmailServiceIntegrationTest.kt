@@ -13,12 +13,11 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
+import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
@@ -36,6 +35,9 @@ import java.util.UUID
 class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner
+
+    @Autowired
+    lateinit var scheduledJobs: ScheduledJobs
 
     private val applicationId = UUID.randomUUID()
     private val childId = testChild_1.id
@@ -171,11 +173,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     }
 
     private fun runPendingDecisionEmailAsyncJobs(): Int {
-        val (_, res, _) = http.post("/scheduled/send-pending-decision-reminder-emails")
-            .asUser(AuthenticatedUser.SystemInternalUser)
-            .response()
-
-        Assertions.assertEquals(204, res.statusCode)
+        scheduledJobs.sendPendingDecisionReminderEmails(db)
         val jobCount = asyncJobRunner.getPendingJobCount()
         asyncJobRunner.runPendingJobsSync()
 

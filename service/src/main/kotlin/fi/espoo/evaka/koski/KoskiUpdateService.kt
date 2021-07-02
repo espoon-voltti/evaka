@@ -29,7 +29,10 @@ class KoskiUpdateService(
         asyncJobRunner.scheduleKoskiUploads = { db, msg -> scheduleKoskiUploads(db, msg.params) }
     }
 
-    fun scheduleKoskiUploads(db: Database, params: KoskiSearchParams) {
+    fun scheduleKoskiUploads(db: Database, params: KoskiSearchParams) = db.connect {
+        scheduleKoskiUploads(it, params)
+    }
+    fun scheduleKoskiUploads(db: Database.Connection, params: KoskiSearchParams) {
         val isEnabled: Boolean = env.getRequiredProperty("fi.espoo.integration.koski.enabled", Boolean::class.java)
         if (isEnabled) {
             db.transaction { tx ->

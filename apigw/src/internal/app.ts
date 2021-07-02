@@ -56,15 +56,8 @@ setupLoggingMiddleware(app)
 
 app.use('/api/csp', csp)
 
-function scheduledApiRouter() {
-  const router = Router()
-  router.all('*', (_, res) => res.sendStatus(404))
-  return router
-}
-
 function internalApiRouter() {
   const router = Router()
-  router.use('/scheduled', scheduledApiRouter())
   router.all('/system/*', (_, res) => res.sendStatus(404))
 
   router.all('/auth/*', (req: express.Request, res, next) => {

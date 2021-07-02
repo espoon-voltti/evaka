@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
@@ -44,6 +45,9 @@ import java.util.UUID
 class GetApplicationIntegrationTests : FullApplicationTest() {
     @Autowired
     lateinit var stateService: ApplicationStateService
+
+    @Autowired
+    lateinit var scheduledJobs: ScheduledJobs
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
@@ -221,11 +225,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
             assertEquals(3, data.size)
         }
 
-        val (_, res, _) = http.post("/scheduled/application/clear-old-drafts")
-            .asUser(serviceWorker)
-            .responseObject<ApplicationResponse>(objectMapper)
-
-        assertEquals(204, res.statusCode)
+        scheduledJobs.removeOldDraftApplications(db)
 
         db.transaction { tx ->
             val data =
