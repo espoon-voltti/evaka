@@ -69,7 +69,7 @@ class VardaUpdateServiceV2(
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
 
         resetChildIds.forEach { childId ->
-            if (resetAllChildVardaData(childId)) {
+            if (deleteChildDataFromVardaAndDb(db, client, childId)) {
                 val childServiceNeeds = db.read { it.getServiceNeedsByChild(childId) }
                 try {
                     childServiceNeeds.forEach { serviceNeed ->
@@ -105,10 +105,75 @@ class VardaUpdateServiceV2(
     }
 }
 
-fun resetAllChildVardaData(evakaChildId: UUID): Boolean {
-    // TODO return whether succeeded or not
-    logger.info("VardaUpdate: TODO resetting all varda data for evaka child $evakaChildId")
-    return true
+fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaClient, evakaChildId: UUID): Boolean {
+    logger.info("VardaUpdate: resetting all varda data for evaka child $evakaChildId")
+
+    val vardaChildIds = getVardaChildIdsByUUID(db, evakaChildId)
+
+    val successfulDeletes: List<Boolean> = vardaChildIds.map { vardaChildId ->
+        try {
+            val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
+            logger.info { "VardaUpdate: found decision ids for child $vardaChildId: $decisionIds" }
+
+            val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
+            logger.info { "VardaUpdate: found placement ids for child $vardaChildId: $placementIds" }
+
+            val feeIds = placementIds.flatMap { vardaClient.getFeeDataByChild(it) }
+            logger.info { "VardaUpdate: found fee data ids for child $vardaChildId: $feeIds" }
+
+            logger.info { "VardaUpdate: Deleting ${feeIds.size} fee data records" }
+            feeIds.forEach { vardaId ->
+                if (vardaClient.deleteFeeDataV2(vardaId)) {
+                    logger.info { "VardaUpdate: Deleting fee data from db by id $vardaId" }
+                    db.transaction { deleteVardaFeeData(it, vardaId) }
+                }
+            }
+
+            logger.info { "VardaUpdate: Deleting ${placementIds.size} placement records" }
+            placementIds.forEach { vardaId ->
+                if (vardaClient.deletePlacementV2(vardaId)) {
+                    logger.info { "VardaUpdate: Deleting placement data from db by id $vardaId" }
+                    db.transaction { deletePlacement(it, vardaId) }
+                }
+            }
+
+            logger.info { "VardaUpdate: Deleting ${decisionIds.size} decision records" }
+            decisionIds.forEach { vardaId ->
+                if (vardaClient.deleteDecisionV2(vardaId)) {
+                    logger.info { "VardaUpdate: Deleting decision data from db by id $vardaId" }
+                    db.transaction { deleteDecision(it, vardaId) }
+                }
+            }
+
+            db.transaction {
+                it.deleteVardaServiceNeedByEvakaChildId(evakaChildId)
+            }
+
+            return true
+        } catch (e: Exception) {
+            logger.info("VardaUpdate: couldn't reset varda child: ${e.localizedMessage}")
+            return false
+        }
+    }
+
+    return successfulDeletes.all { it }
+}
+
+fun getVardaChildIdsByUUID(db: Database.Connection, evakaChildId: UUID): List<Long> {
+    return db.read {
+        it.createQuery(
+            """
+            select varda_child_id from varda_service_need where evaka_child_id = :evakaChildId
+            union distinct 
+            select varda_child_id from varda_organizer_child where evaka_person_id = :evakaChildId
+            union distinct 
+            select varda_child_id from varda_child where person_id = :evakaChildId
+            """.trimIndent()
+        )
+            .bind("evakaChildId", evakaChildId)
+            .mapTo<Long>()
+            .toList()
+    }
 }
 
 fun updateAllVardaData(
@@ -558,6 +623,14 @@ DELETE FROM varda_service_need
 WHERE evaka_service_need_id = :serviceNeedId    
         """
 ).bind("serviceNeedId", serviceNeedId)
+    .execute()
+
+fun Database.Transaction.deleteVardaServiceNeedByEvakaChildId(evakaChildId: UUID) = createUpdate(
+    """
+DELETE FROM varda_service_need
+WHERE evaka_child_id = :evakaChildId
+        """
+).bind("evakaChildId", evakaChildId)
     .execute()
 
 fun Database.Transaction.markVardaServiceNeedUpdateFailed(serviceNeedId: UUID, errors: List<String>) = createUpdate(
