@@ -139,10 +139,10 @@ class VasuController(
         when (eventType) {
             VasuDocumentEventType.PUBLISHED -> currentState !== VasuDocumentState.CLOSED
             VasuDocumentEventType.MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
-            VasuDocumentEventType.RETURNED_TO_READY -> user.isAdmin
+            VasuDocumentEventType.RETURNED_TO_READY -> user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
             VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
-            VasuDocumentEventType.RETURNED_TO_REVIEWED -> user.isAdmin
-            VasuDocumentEventType.MOVED_TO_CLOSED -> user.isAdmin
+            VasuDocumentEventType.RETURNED_TO_REVIEWED -> user.hasOneOfRoles(UserRole.ADMIN)
+            VasuDocumentEventType.MOVED_TO_CLOSED -> user.hasOneOfRoles(UserRole.ADMIN)
         }.let { valid -> if (!valid) throw Conflict("Invalid or unauthorized state transition") }
     }
 }

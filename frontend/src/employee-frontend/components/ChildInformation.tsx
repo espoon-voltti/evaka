@@ -129,18 +129,27 @@ const layouts: Layouts<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'family-contacts', open: false },
-    { component: 'backup-pickup', open: false }
+    { component: 'backup-pickup', open: false },
+    ...(featureFlags.vasu
+      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : [])
   ],
   ['STAFF']: [
     { component: 'family-contacts', open: true },
     { component: 'backup-pickup', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false }
+    { component: 'daily-service-times', open: false },
+    ...(featureFlags.vasu
+      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : [])
   ],
   ['SPECIAL_EDUCATION_TEACHER']: [
     { component: 'family-contacts', open: true },
     { component: 'placements', open: false },
+    ...(featureFlags.vasu
+      ? [{ component: 'vasuAndLeops' as keyof typeof components, open: false }]
+      : []),
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false }
