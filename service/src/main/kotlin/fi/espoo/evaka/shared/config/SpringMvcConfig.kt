@@ -5,12 +5,14 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
-import fi.espoo.evaka.shared.utils.convertFromString
+import fi.espoo.evaka.shared.utils.convertFrom
 import fi.espoo.evaka.shared.utils.runAfterCompletion
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Configuration
@@ -22,6 +24,7 @@ import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.util.UUID
 import javax.servlet.http.HttpServletRequest
 
 /**
@@ -31,6 +34,7 @@ import javax.servlet.http.HttpServletRequest
  * - `Database.Connection`: a request-scoped database connection, closed automatically at request completion (regardless of success or failure)
  * - `AuthenticatedUser`: user performing the request
  * - `ExternalId`: an external id, is automatically parsed from a string value (e.g. path variable / query parameter, depending on annotations)
+ * - `Id<*>`: a type-safe identifier, which is serialized/deserialized as UUID (= string)
  */
 @Configuration
 class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
@@ -50,7 +54,8 @@ class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
     }
 
     override fun addFormatters(registry: FormatterRegistry) {
-        registry.addConverter(convertFromString { ExternalId.parse(it) })
+        registry.addConverter(convertFrom<String, ExternalId> { ExternalId.parse(it) })
+        registry.addConverter(convertFrom<String, Id<*>> { Id<DatabaseTable>(UUID.fromString(it)) })
     }
 
     private fun WebRequest.getOrOpenConnection(): Database.Connection = getConnection()
