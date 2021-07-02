@@ -664,7 +664,6 @@ commands:
               -var evaka-srv_version="${CIRCLE_SHA1}" \
               -var message-srv_version="${CIRCLE_SHA1}" \
               -var proxy_version="${CIRCLE_SHA1}" \
-              -var scheduled-api-calls_version="${CIRCLE_SHA1}" \
               -var ses-notification-processor_version="${CIRCLE_SHA1}"
 
   # Must be the last step in a job
