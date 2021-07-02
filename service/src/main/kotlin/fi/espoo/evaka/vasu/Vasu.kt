@@ -53,6 +53,8 @@ data class VasuDocument(
     @Json
     val content: VasuContent,
     @Json
+    val authorsContent: AuthorsContent,
+    @Json
     val vasuDiscussionContent: VasuDiscussionContent,
     @Json
     val evaluationDiscussionContent: EvaluationDiscussionContent
@@ -143,6 +145,18 @@ enum class VasuQuestionType {
     RADIO_GROUP,
     MULTISELECT
 }
+
+@Json
+data class AuthorsContent(
+    val primaryAuthor: AuthorInfo,
+    val otherAuthors: List<AuthorInfo>
+)
+
+data class AuthorInfo(
+    val name: String = "",
+    val title: String = "",
+    val phone: String = ""
+)
 
 @Json
 data class VasuDiscussionContent(

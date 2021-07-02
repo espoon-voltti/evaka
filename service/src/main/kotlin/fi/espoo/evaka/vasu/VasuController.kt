@@ -66,6 +66,7 @@ class VasuController(
 
     data class UpdateDocumentRequest(
         val content: VasuContent,
+        val authorsContent: AuthorsContent,
         val vasuDiscussionContent: VasuDiscussionContent,
         val evaluationDiscussionContent: EvaluationDiscussionContent
     )
@@ -81,7 +82,15 @@ class VasuController(
             UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
         )
 
-        db.transaction { tx -> tx.updateVasuDocument(id, body.content, body.vasuDiscussionContent, body.evaluationDiscussionContent) }
+        db.transaction { tx ->
+            tx.updateVasuDocument(
+                id,
+                body.content,
+                body.authorsContent,
+                body.vasuDiscussionContent,
+                body.evaluationDiscussionContent
+            )
+        }
     }
 
     @GetMapping("/children/{childId}/vasu-summaries")

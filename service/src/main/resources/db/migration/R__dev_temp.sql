@@ -24,6 +24,7 @@ CREATE TABLE vasu_content(
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     content jsonb NOT NULL,
+    authors_content jsonb NOT NULL,
     vasu_discussion_content jsonb NOT NULL,
     evaluation_discussion_content jsonb NOT NULL
 );

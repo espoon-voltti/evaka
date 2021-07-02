@@ -38,6 +38,17 @@ export interface VasuDocumentSummary extends VasuDocumentSummaryResponse {
   documentState: VasuDocumentState
 }
 
+export interface AuthorsContent {
+  primaryAuthor: AuthorInfo
+  otherAuthors: AuthorInfo[]
+}
+
+export interface AuthorInfo {
+  name: string
+  title: string
+  phone: string
+}
+
 export interface VasuDiscussionContent {
   discussionDate: LocalDate | null
   participants: string
@@ -55,8 +66,6 @@ interface VasuDocumentResponse {
   id: UUID
   events: VasuDocumentEvent[]
   modifiedAt: Date
-  vasuDiscussionContent: VasuDiscussionContent
-  evaluationDiscussionContent: EvaluationDiscussionContent
   child: {
     id: UUID
     firstName: string
@@ -64,6 +73,9 @@ interface VasuDocumentResponse {
   }
   templateName: string
   content: VasuContent
+  authorsContent: AuthorsContent
+  vasuDiscussionContent: VasuDiscussionContent
+  evaluationDiscussionContent: EvaluationDiscussionContent
 }
 
 export interface VasuDocument extends VasuDocumentResponse {
@@ -135,6 +147,7 @@ export async function getVasuDocument(id: UUID): Promise<Result<VasuDocument>> {
 export interface PutVasuDocumentParams {
   documentId: UUID
   content: VasuContent
+  authorsContent: AuthorsContent
   vasuDiscussionContent: VasuDiscussionContent
   evaluationDiscussionContent: EvaluationDiscussionContent
 }
@@ -142,12 +155,14 @@ export interface PutVasuDocumentParams {
 export async function putVasuDocument({
   documentId,
   content,
+  authorsContent,
   vasuDiscussionContent,
   evaluationDiscussionContent
 }: PutVasuDocumentParams): Promise<Result<null>> {
   return client
     .put(`/vasu/${documentId}`, {
       content,
+      authorsContent,
       vasuDiscussionContent,
       evaluationDiscussionContent
     })
