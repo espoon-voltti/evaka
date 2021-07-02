@@ -1,4 +1,4 @@
-import { waitUntilEqual } from 'e2e-playwright/utils'
+import { waitUntilTrue } from 'e2e-playwright/utils'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'
 
@@ -46,7 +46,7 @@ export default class CitizenMessagesPage {
 
   async sendNewMessage(title: string, content: string, receivers: string[]) {
     await this.#newMessageButton.click()
-    await waitUntilEqual(() => this.isEditorVisible(), true)
+    await waitUntilTrue(() => this.isEditorVisible())
     await this.#inputTitle.fill(title)
     await this.#inputContent.fill(content)
     await this.#receiverSelection.click()
@@ -54,9 +54,6 @@ export default class CitizenMessagesPage {
       await this.page.click(`text="${receiver}"`)
     }
     await this.#sendMessageButton.click()
-    await waitUntilEqual(
-      () => this.getThreadCount().then((count) => count > 0),
-      true
-    )
+    await waitUntilTrue(() => this.getThreadCount().then((count) => count > 0))
   }
 }

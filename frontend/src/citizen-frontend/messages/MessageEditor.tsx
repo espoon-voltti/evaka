@@ -4,7 +4,7 @@
 
 import { SendMessageParams } from 'citizen-frontend/messages/api'
 import { MessageAccount } from 'lib-common/api-types/messaging/message'
-import Button from 'lib-components/atoms/buttons/Button'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -28,16 +28,18 @@ const areRequiredFieldsFilledForMessage = (msg: SendMessageParams): boolean =>
 
 interface Props {
   receiverOptions: MessageAccount[]
-  onSend: (messageBody: SendMessageParams) => void
+  onSend: (messageBody: SendMessageParams) => Promise<void>
   onClose: () => void
   onDiscard: () => void
+  displaySendError: boolean
 }
 
 export default React.memo(function MessageEditor({
   receiverOptions,
   onSend,
   onDiscard,
-  onClose
+  onClose,
+  displaySendError
 }: Props) {
   const i18n = useTranslation()
 
@@ -102,6 +104,11 @@ export default React.memo(function MessageEditor({
           data-qa={'input-content'}
         />
         <Gap size={'s'} />
+        {displaySendError && (
+          <ErrorMessage>
+            {i18n.messages.messageEditor.messageSendError}
+          </ErrorMessage>
+        )}
         <BottomRow>
           <InlineButton
             onClick={() => onDiscard()}
@@ -109,11 +116,12 @@ export default React.memo(function MessageEditor({
             icon={faTrash}
             data-qa="discard-draft-btn"
           />
-          <Button
-            text={i18n.messages.messageEditor.send}
+          <AsyncButton
             primary
+            text={i18n.messages.messageEditor.send}
             disabled={!sendEnabled}
             onClick={() => onSend(message)}
+            onSuccess={() => undefined}
             data-qa="send-message-btn"
           />
         </BottomRow>
@@ -135,6 +143,10 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${colors.greyscale.white};
+`
+
+const ErrorMessage = styled.div`
+  color: ${colors.accents.red};
 `
 
 const TopBar = styled.div`

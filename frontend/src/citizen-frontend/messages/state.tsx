@@ -122,7 +122,7 @@ export const MessageContextProvider = React.memo(
 
     const loadMessages = useRestApi(getReceivedMessages, setMessagesResult)
     const refreshThreads = useCallback(() => {
-      setThreads({ ...initialThreadState, currentPage: 0 })
+      setThreads({ ...initialThreadState })
       setThreads((threads) => ({ ...threads, currentPage: 1 }))
     }, [])
 

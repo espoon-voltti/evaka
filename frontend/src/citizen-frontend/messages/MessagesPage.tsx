@@ -47,6 +47,7 @@ export default React.memo(function MessagesPage() {
     }
   }, [accountId, loadAccount])
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
+  const [displaySendError, setDisplaySendError] = useState<boolean>(false)
   const [receivers, setReceivers] = useState<Result<MessageAccount[]>>(
     Loading.of()
   )
@@ -85,13 +86,17 @@ export default React.memo(function MessagesPage() {
         <MessageEditor
           receiverOptions={receivers.value}
           onSend={(message: SendMessageParams) =>
-            sendMessage(message).then(() => {
-              setEditorVisible(false)
-              refreshThreads()
-            })
+            sendMessage(message)
+              .then(() => {
+                setEditorVisible(false)
+                setDisplaySendError(false)
+                refreshThreads()
+              })
+              .catch(() => setDisplaySendError(true))
           }
           onClose={() => setEditorVisible(false)}
           onDiscard={() => setEditorVisible(false)}
+          displaySendError={displaySendError}
         />
       )}
     </FullHeightContainer>
