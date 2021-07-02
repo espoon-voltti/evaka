@@ -4,11 +4,12 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
+fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): UUID {
     val sql = """
 SELECT acc.id FROM message_account acc
 WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
@@ -89,7 +90,7 @@ fun Database.Read.getAccountNames(accountIds: Set<UUID>): List<String> {
         .list()
 }
 
-fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: UUID): UUID {
+fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupId): UUID {
     // language=SQL
     val sql = """
         INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
@@ -101,7 +102,7 @@ fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: UUID):
         .one()
 }
 
-fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: UUID) {
+fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
     // language=SQL
     val sql = """
         DELETE FROM message_account WHERE daycare_group_id = :daycareGroupId

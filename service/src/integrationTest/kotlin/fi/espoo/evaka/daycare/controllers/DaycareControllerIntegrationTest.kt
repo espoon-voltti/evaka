@@ -16,6 +16,7 @@ import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.insertMessageContent
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -229,7 +230,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         return body.get()
     }
 
-    private fun deleteDaycareGroup(daycareId: UUID, groupId: UUID, expectedStatus: Int = 204) {
+    private fun deleteDaycareGroup(daycareId: UUID, groupId: GroupId, expectedStatus: Int = 204) {
         val (_, res) = http.delete("/daycares/$daycareId/groups/$groupId")
             .asUser(supervisor)
             .response()
@@ -237,7 +238,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun groupHasMessageAccount(groupId: UUID): Boolean {
+    private fun groupHasMessageAccount(groupId: GroupId): Boolean {
         // language=SQL
         val sql = """
             SELECT EXISTS(

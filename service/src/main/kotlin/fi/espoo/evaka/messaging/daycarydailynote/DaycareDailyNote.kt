@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.daycarydailynote
 
+import fi.espoo.evaka.shared.GroupId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -11,7 +12,7 @@ import java.util.UUID
 data class DaycareDailyNote(
     val id: UUID?,
     val childId: UUID?,
-    val groupId: UUID?,
+    val groupId: GroupId?,
     val date: LocalDate,
     val note: String?,
     val feedingNote: DaycareDailyNoteLevelInfo?,

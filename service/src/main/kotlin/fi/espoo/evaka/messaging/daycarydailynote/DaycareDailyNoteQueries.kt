@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.daycarydailynote
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
@@ -59,14 +60,14 @@ WHERE
         .list()
 }
 
-fun Database.Read.getGroupDaycareDailyNotes(groupId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getGroupDaycareDailyNotes(groupId: GroupId): List<DaycareDailyNote> {
     return createQuery("SELECT * FROM daycare_daily_note WHERE group_id = :id")
         .bind("id", groupId)
         .mapTo<DaycareDailyNote>()
         .list()
 }
 
-fun Database.Read.getDaycareDailyNotesForChildrenInGroup(groupId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getDaycareDailyNotesForChildrenInGroup(groupId: GroupId): List<DaycareDailyNote> {
     return createQuery(
         """
 SELECT * FROM daycare_daily_note 

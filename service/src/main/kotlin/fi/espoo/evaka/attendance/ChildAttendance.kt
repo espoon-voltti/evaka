@@ -8,6 +8,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.GroupId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -59,7 +60,7 @@ data class UnitInfo(
 )
 
 data class GroupInfo(
-    val id: UUID,
+    val id: GroupId,
     val name: String,
     val dailyNote: DaycareDailyNote?
 )
@@ -72,7 +73,7 @@ data class ChildBasics(
     val dateOfBirth: LocalDate,
     val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
-    val groupId: UUID,
+    val groupId: GroupId,
     val backup: Boolean,
     val imageUrl: String?
 )
@@ -83,7 +84,7 @@ data class Child(
     val lastName: String,
     val preferredName: String?,
     val placementType: PlacementType,
-    val groupId: UUID,
+    val groupId: GroupId,
     val backup: Boolean,
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,

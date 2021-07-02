@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -265,12 +266,12 @@ data class PlacementUpdateRequestBody(
 )
 
 data class GroupPlacementRequestBody(
-    val groupId: UUID,
+    val groupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
 
 data class GroupTransferRequestBody(
-    val groupId: UUID,
+    val groupId: GroupId,
     val startDate: LocalDate
 )

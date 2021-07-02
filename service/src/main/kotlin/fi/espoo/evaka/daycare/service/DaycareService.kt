@@ -14,6 +14,7 @@ import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.deleteDaycareGroupMessageAccount
 import fi.espoo.evaka.placement.hasGroupPlacements
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.Conflict
@@ -50,7 +51,7 @@ class DaycareService {
         tx.createDaycareGroupMessageAccount(it.id)
     }
 
-    fun deleteGroup(tx: Database.Transaction, groupId: UUID) = try {
+    fun deleteGroup(tx: Database.Transaction, groupId: GroupId) = try {
         if (tx.hasGroupPlacements(groupId)) throw Conflict("Cannot delete group which has children placed in it")
 
         tx.deleteDaycareGroupMessageAccount(groupId)
@@ -75,7 +76,7 @@ data class DaycareManager(
 )
 
 data class DaycareGroup(
-    val id: UUID,
+    val id: GroupId,
     val daycareId: UUID,
     val name: String,
     val startDate: LocalDate,
@@ -85,7 +86,7 @@ data class DaycareGroup(
 
 data class DaycareCapacityStats(
     val unitTotalCaretakers: Stats,
-    val groupCaretakers: Map<UUID, Stats>
+    val groupCaretakers: Map<GroupId, Stats>
 )
 
 data class Stats(

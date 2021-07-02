@@ -7,6 +7,7 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
@@ -43,10 +44,10 @@ data class UnitKey(
 data class UnitGroupKey(
     override val unitId: UUID,
     val unitName: String,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String
 ) : OccupancyGroupingKey {
-    override val groupingId = groupId
+    override val groupingId = groupId.raw
 }
 
 data class DailyOccupancyValues<K : OccupancyGroupingKey>(
@@ -74,7 +75,7 @@ data class OccupancyPeriod(
 )
 
 data class OccupancyPeriodGroupLevel(
-    val groupId: UUID,
+    val groupId: GroupId,
     val period: FiniteDateRange,
     val sum: Double,
     val headcount: Int,

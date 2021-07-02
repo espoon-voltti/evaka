@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.controllers.PublicUnit
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -62,7 +63,7 @@ data class DaycareFields(
     }
 }
 
-data class DaycareGroupSummary(val id: UUID, val name: String)
+data class DaycareGroupSummary(val id: GroupId, val name: String)
 
 private fun Database.Read.getDaycaresQuery() = createQuery(
     // language=SQL

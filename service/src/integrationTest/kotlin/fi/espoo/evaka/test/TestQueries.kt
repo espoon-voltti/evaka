@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
@@ -101,7 +102,7 @@ data class BackupCareTableRow(
     val id: UUID,
     val childId: UUID,
     val unitId: UUID,
-    val groupId: UUID?,
+    val groupId: GroupId?,
     val startDate: LocalDate,
     val endDate: LocalDate
 ) {

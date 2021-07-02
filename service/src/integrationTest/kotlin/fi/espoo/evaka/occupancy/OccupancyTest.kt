@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -41,12 +42,12 @@ class OccupancyTest : PureJdbiTest() {
     val careArea2: UUID = UUID.randomUUID()
 
     val daycareInArea1: UUID = UUID.randomUUID()
-    val daycareGroup1: UUID = UUID.randomUUID()
-    val daycareGroup2: UUID = UUID.randomUUID()
+    val daycareGroup1: GroupId = GroupId(UUID.randomUUID())
+    val daycareGroup2: GroupId = GroupId(UUID.randomUUID())
 
     val familyUnitInArea2: UUID = UUID.randomUUID()
-    val familyGroup1: UUID = UUID.randomUUID()
-    val familyGroup2: UUID = UUID.randomUUID()
+    val familyGroup1: GroupId = GroupId(UUID.randomUUID())
+    val familyGroup2: GroupId = GroupId(UUID.randomUUID())
 
     val employeeId: UUID = UUID.randomUUID()
 
@@ -583,7 +584,7 @@ class OccupancyTest : PureJdbiTest() {
     private fun getAndAssertOccupancyInGroup(
         tx: Database.Read,
         unitId: UUID,
-        groupId: UUID,
+        groupId: GroupId,
         type: OccupancyType,
         date: LocalDate,
         expectedSum: Double
@@ -591,7 +592,7 @@ class OccupancyTest : PureJdbiTest() {
         assertOccupancySum(
             expectedSum = expectedSum,
             date = date,
-            groupingId = groupId,
+            groupingId = groupId.raw,
             occupancyValues = tx.calculateDailyGroupOccupancyValues(
                 today = today,
                 queryPeriod = FiniteDateRange(date, date),

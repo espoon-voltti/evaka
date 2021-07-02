@@ -5,6 +5,7 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -102,5 +103,5 @@ class BackupCareController(private val acl: AccessControlList) {
 
 data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCare>)
 data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
-data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: UUID?)
+data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
 data class BackupCareCreateResponse(val id: UUID)

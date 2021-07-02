@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.Jdbi
@@ -82,7 +83,7 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
         }
     )
 
-    fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: GroupId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL

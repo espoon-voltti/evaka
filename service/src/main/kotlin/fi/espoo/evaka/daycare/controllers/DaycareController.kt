@@ -25,6 +25,7 @@ import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -121,7 +122,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
-        @PathVariable("groupId") groupId: UUID,
+        @PathVariable("groupId") groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
@@ -138,7 +139,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
-        @PathVariable("groupId") groupId: UUID
+        @PathVariable("groupId") groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsDelete.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -153,7 +154,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
-        @PathVariable("groupId") groupId: UUID
+        @PathVariable("groupId") groupId: GroupId
     ): ResponseEntity<CaretakersResponse> {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -176,7 +177,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
-        @PathVariable("groupId") groupId: UUID,
+        @PathVariable("groupId") groupId: GroupId,
         @RequestBody body: CaretakerRequest
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
@@ -200,7 +201,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
-        @PathVariable("groupId") groupId: UUID,
+        @PathVariable("groupId") groupId: GroupId,
         @PathVariable("id") id: UUID,
         @RequestBody body: CaretakerRequest
     ): ResponseEntity<Unit> {
@@ -226,7 +227,7 @@ class DaycareController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
-        @PathVariable("groupId") groupId: UUID,
+        @PathVariable("groupId") groupId: GroupId,
         @PathVariable("id") id: UUID
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
