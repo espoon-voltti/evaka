@@ -35,11 +35,11 @@ fun runAfterCompletion(f: (request: WebRequest, ex: Exception?) -> Unit): WebReq
         override fun afterCompletion(request: WebRequest, ex: Exception?) = f(request, ex)
     }
 
-inline fun <reified T> convertFromString(crossinline f: (source: String) -> T): GenericConverter =
+inline fun <reified I, reified O> convertFrom(crossinline f: (source: I) -> O): GenericConverter =
     object : GenericConverter {
         override fun getConvertibleTypes(): Set<GenericConverter.ConvertiblePair> =
-            setOf(GenericConverter.ConvertiblePair(String::class.java, T::class.java))
+            setOf(GenericConverter.ConvertiblePair(I::class.java, O::class.java))
 
         override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? =
-            source?.let { f(source as String) }
+            (source as? I)?.let(f)
     }

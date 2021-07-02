@@ -20,6 +20,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -72,6 +74,8 @@ val identityArgumentFactory = customArgumentFactory<ExternalIdentifier>(Types.VA
 
 val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
+val idArgumentFactory = customArgumentFactory<Id<DatabaseTable>>(Types.OTHER) { CustomObjectArgument(it.raw) }
+
 val helsinkiDateTimeArgumentFactory = customArgumentFactory<HelsinkiDateTime>(Types.TIMESTAMP_WITH_TIMEZONE) {
     CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
 }
@@ -107,6 +111,8 @@ val coordinateColumnMapper = PgObjectColumnMapper {
 
 val externalIdColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getString(columnNumber)?.let { ExternalId.parse(it) } }
+
+val idColumnMapper = ColumnMapper<Id<*>> { r, columnNumber, _ -> r.getObject(columnNumber, UUID::class.java)?.let { Id<DatabaseTable>(it) } }
 
 val helsinkiDateTimeColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getObject(columnNumber, OffsetDateTime::class.java)?.let { HelsinkiDateTime.from(it.toInstant()) } }
