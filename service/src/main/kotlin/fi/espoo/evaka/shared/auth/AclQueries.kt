@@ -4,6 +4,9 @@
 
 package fi.espoo.evaka.shared.auth
 
+import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
@@ -13,12 +16,12 @@ data class DaycareAclRow(
     @Nested
     val employee: DaycareAclRowEmployee,
     val role: UserRole,
-    val groupIds: List<UUID>
+    val groupIds: List<GroupId>
 )
 
-data class DaycareAclRowEmployee(val id: UUID, val firstName: String, val lastName: String, val email: String?)
+data class DaycareAclRowEmployee(val id: EmployeeId, val firstName: String, val lastName: String, val email: String?)
 
-fun Database.Read.getDaycareAclRows(daycareId: UUID): List<DaycareAclRow> = createQuery(
+fun Database.Read.getDaycareAclRows(daycareId: DaycareId): List<DaycareAclRow> = createQuery(
     // language=SQL
     """
 SELECT id, first_name, last_name, email, role, coalesce(group_ids, array[]::uuid[]) AS group_ids
@@ -37,7 +40,7 @@ WHERE daycare_id = :daycareId
     .mapTo<DaycareAclRow>()
     .toList()
 
-fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: UUID, role: UserRole): Boolean = createQuery(
+fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: EmployeeId, role: UserRole): Boolean = createQuery(
     """
         SELECT EXISTS(
             SELECT * FROM daycare_acl
@@ -68,8 +71,8 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role
     .execute()
 
 fun Database.Transaction.deleteDaycareAclRow(
-    daycareId: UUID,
-    employeeId: UUID,
+    daycareId: DaycareId,
+    employeeId: EmployeeId,
     role: UserRole
 ) = createUpdate(
     // language=SQL
@@ -85,7 +88,7 @@ AND role = :role
     .bind("role", role)
     .execute()
 
-fun Database.Transaction.clearDaycareGroupAcl(daycareId: UUID, employeeId: UUID) = createUpdate(
+fun Database.Transaction.clearDaycareGroupAcl(daycareId: DaycareId, employeeId: EmployeeId) = createUpdate(
     """
 DELETE FROM daycare_group_acl
 WHERE employee_id = :employeeId
@@ -96,7 +99,7 @@ AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = :daycar
     .bind("employeeId", employeeId)
     .execute()
 
-fun Database.Transaction.insertDaycareGroupAcl(daycareId: UUID, employeeId: UUID, groupIds: List<UUID>) = prepareBatch(
+fun Database.Transaction.insertDaycareGroupAcl(daycareId: DaycareId, employeeId: EmployeeId, groupIds: List<GroupId>) = prepareBatch(
     """
 INSERT INTO daycare_group_acl
 SELECT id, :employeeId

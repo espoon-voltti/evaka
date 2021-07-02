@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.auth
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import org.jdbi.v3.core.Jdbi
@@ -38,7 +39,8 @@ class AccessControlList(private val jdbi: Jdbi) {
             AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user, roles) })
         }
 
-    fun getRolesForUnit(user: AuthenticatedUser, daycareId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForUnit(user: AuthenticatedUser, daycareId: UUID): AclAppliedRoles = getRolesForUnit(user, DaycareId(daycareId))
+    fun getRolesForUnit(user: AuthenticatedUser, daycareId: DaycareId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
