@@ -17,6 +17,7 @@ import org.jdbi.v3.json.Json
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -36,6 +37,8 @@ private inline fun <reified T : Any> Database.Read.checkMatch(@Language("sql") s
     .single()
 
 class JdbiExtensionsTest : PureJdbiTest() {
+    private val utc: ZoneId = ZoneId.of("UTC")
+
     @Test
     fun testCoordinate() {
         val input = Coordinate(lat = 11.0, lon = 22.0)
@@ -160,7 +163,7 @@ class JdbiExtensionsTest : PureJdbiTest() {
         val result = db.read {
             it.createQuery("SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb").mapTo<QueryResult>().single()
         }
-        val expected = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), europeHelsinki))
-        assertEquals(expected, result.jsonb.value)
+        val expected = ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(10, 59), utc)
+        assertEquals(expected, result.jsonb.value.toZonedDateTime().withZoneSameInstant(utc))
     }
 }
