@@ -860,12 +860,54 @@ export const fi = {
       CLOSED: 'Päättynyt'
     },
     transitions: {
-      publishAsReady: 'Julkaise Laadittu-tilassa',
-      publishAsReviewed: 'Julkaise Arvioitu-tilassa',
-      markClosed: 'Merkitse päättyneeksi',
-      returnToReady: 'Palauta laadituksi',
-      publishToGuardians: 'Julkaise suunnitelma',
-      vasuIsPublishedToGuardians: 'Suunnitelma julkaistaan huoltajille'
+      guardiansWillBeNotified:
+        'Huoltajalle/huoltajille lähetetään sähköpostiin viesti, että eVakaan on julkaistu uusi dokumentti.',
+      vasuIsPublishedToGuardians: 'Suunnitelma julkaistaan huoltajille',
+      PUBLISHED: {
+        buttonText: 'Julkaise suunnitelma',
+        confirmTitle: 'Haluatko julkaista suunnitelman vaihtamatta tilaa?',
+        confirmAction: 'Julkaise',
+        successTitle: 'Suunnitelma on julkaistu huoltajalle!',
+        successText:
+          'Mikäli muokkaat suunnitelmaa myöhemmin, voit julkaista sen uudelleen. Tällöin vanha versio päivittyy automaattisesti ja huoltajalle/huoltajille lähetetään uusi viesti.'
+      },
+      MOVED_TO_READY: {
+        buttonText: 'Julkaise Laadittu-tilassa',
+        confirmTitle: 'Haluatko julkaista laaditun suunnitelman?',
+        confirmAction: 'Julkaise suunnitelma',
+        successTitle: 'Laadittu suunnitelma on julkaistu huoltajalle!',
+        successText:
+          'Mikäli muokkaat laadittua suunnitelmaa myöhemmin, voit julkaista sen uudelleen. Tällöin vanha versio päivittyy automaattisesti ja huoltajalle/huoltajille lähetetään uusi viesti.'
+      },
+      MOVED_TO_REVIEWED: {
+        buttonText: 'Julkaise Arvioitu-tilassa',
+        confirmTitle: 'Haluatko julkaista arvioinnin?',
+        confirmAction: 'Julkaise arviointi',
+        successTitle: 'Arviointi on julkaistu huoltajalle!',
+        successText:
+          'Mikäli muokkaat arvioitua suunnitelmaa myöhemmin, voit julkaista sen uudelleen. Tällöin vanha versio päivittyy automaattisesti ja huoltajalle/huoltajille lähetetään uusi viesti.'
+      },
+      MOVED_TO_CLOSED: {
+        buttonText: 'Merkitse päättyneeksi',
+        confirmTitle: 'Haluatko siirtää suunnitelman Päättynyt-tilaan?',
+        confirmAction: 'Siirrä',
+        successTitle: 'Suunnitelma on merkitty päättyneeksi.',
+        successText: ''
+      },
+      RETURNED_TO_READY: {
+        buttonText: 'Palauta laadituksi',
+        confirmTitle: 'Haluatko palauttaa suunnitelman Laadittu-tilaan?',
+        confirmAction: 'Siirrä',
+        successTitle: 'Suunnitelma on palautettu Laadittu-tilaan',
+        successText: ''
+      },
+      RETURNED_TO_REVIEWED: {
+        buttonText: 'Palauta arvioiduksi',
+        confirmTitle: 'Haluatko palauttaa suunnitelman Arvioitu-tilaan?',
+        confirmAction: 'Siirrä',
+        successTitle: 'Suunnitelma on palautettu Arvioitu-tilaan',
+        successText: ''
+      }
     },
     staticSections: {
       vasuDiscussion: {

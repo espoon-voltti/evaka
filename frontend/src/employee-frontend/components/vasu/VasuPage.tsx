@@ -4,18 +4,14 @@
 
 import { cloneDeep } from 'lodash'
 import React, { Fragment } from 'react'
-import { useHistory } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from '../../../lib-common/date'
 import { UUID } from '../../../lib-common/types'
-import Button from '../../../lib-components/atoms/buttons/Button'
 import Checkbox from '../../../lib-components/atoms/form/Checkbox'
 import Radio from '../../../lib-components/atoms/form/Radio'
 import TextArea from '../../../lib-components/atoms/form/TextArea'
-import RoundIcon from '../../../lib-components/atoms/RoundIcon'
 import Spinner from '../../../lib-components/atoms/state/Spinner'
-import ButtonContainer from '../../../lib-components/layout/ButtonContainer'
 import '../../../lib-components/layout/ButtonContainer'
 import {
   Container,
@@ -25,14 +21,9 @@ import { FixedSpaceColumn } from '../../../lib-components/layout/flex-helpers'
 import StickyFooter from '../../../lib-components/layout/StickyFooter'
 import { Dimmed, Label } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
-import colors from '../../../lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
-import { RequireRole } from '../../utils/roles'
-import {
-  updateDocumentState,
-  VasuDocumentEventType,
-  VasuDocumentState
-} from './api'
+import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
+import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
@@ -46,8 +37,7 @@ import {
   RadioGroupQuestion,
   TextQuestion
 } from './vasu-content'
-import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
-import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
+import { VasuStateTransitionButtons } from './VasuStateTransitionButtons'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -68,79 +58,11 @@ const StatusContainer = styled.div`
   }
 `
 
-const PublishingDisclaimer = styled.div`
-  text-align: right;
-  padding-top: ${defaultMargins.s};
-`
-
-function VasuStateTransitionButtons({
-  state,
-  updateState
-}: {
-  state: VasuDocumentState
-  updateState: (type: VasuDocumentEventType) => void
-}) {
-  const {
-    i18n: {
-      vasu: { transitions: t }
-    }
-  } = useTranslation()
-  return (
-    <div>
-      <ButtonContainer>
-        {state === 'DRAFT' && (
-          <Button
-            text={t.publishAsReady}
-            onClick={() => updateState('MOVED_TO_READY')}
-            primary
-          />
-        )}
-        {state === 'READY' && (
-          <Button
-            text={t.publishAsReviewed}
-            onClick={() => updateState('MOVED_TO_REVIEWED')}
-            primary
-          />
-        )}
-        {state === 'REVIEWED' && (
-          <RequireRole oneOf={['ADMIN']}>
-            <Button
-              text={t.markClosed}
-              onClick={() => updateState('MOVED_TO_CLOSED')}
-              primary
-            />
-          </RequireRole>
-        )}
-        {state === 'CLOSED' ? (
-          <RequireRole oneOf={['ADMIN']}>
-            <Button
-              text={t.returnToReady}
-              onClick={() => updateState('RETURNED_TO_READY')}
-            />
-          </RequireRole>
-        ) : (
-          <Button
-            text={t.publishToGuardians}
-            onClick={() => updateState('PUBLISHED')}
-          />
-        )}
-      </ButtonContainer>
-      {(state === 'DRAFT' || state === 'READY') && (
-        <PublishingDisclaimer>
-          <RoundIcon content="!" color={colors.primary} size="s" />{' '}
-          {t.vasuIsPublishedToGuardians}
-        </PublishingDisclaimer>
-      )}
-    </div>
-  )
-}
-
 export default React.memo(function VasuPage({
   match
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
   const { i18n } = useTranslation()
-  const history = useHistory()
 
   const {
     vasu,
@@ -304,12 +226,6 @@ export default React.memo(function VasuPage({
     )
   }
 
-  const updateState = (eventType: VasuDocumentEventType) => {
-    void updateDocumentState({ documentId: id, eventType }).then(() =>
-      history.go(0)
-    )
-  }
-
   return (
     <Container>
       <Gap size={'L'} />
@@ -389,8 +305,9 @@ export default React.memo(function VasuPage({
           </StatusContainer>
           {vasu && (
             <VasuStateTransitionButtons
+              childId={vasu.child.id}
+              documentId={vasu.id}
               state={vasu.documentState}
-              updateState={updateState}
             />
           )}
         </FooterContainer>
