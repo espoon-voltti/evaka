@@ -18,6 +18,7 @@ import fi.espoo.evaka.messaging.message.getEmployeeMessageAccounts
 import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -66,7 +67,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             tx.insertGeneralTestFixtures()
 
-            val groupId = UUID.randomUUID()
+            val groupId = GroupId(UUID.randomUUID())
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = groupId,

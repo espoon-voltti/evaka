@@ -5,6 +5,7 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -84,7 +85,7 @@ class OccupancyController(private val acl: AccessControlList) {
 }
 
 data class OccupancyResponseGroupLevel(
-    val groupId: UUID,
+    val groupId: GroupId,
     val occupancies: OccupancyResponse
 )
 

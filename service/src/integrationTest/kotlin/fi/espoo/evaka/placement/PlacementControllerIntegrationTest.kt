@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -313,7 +314,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart,
                 placementEnd
             )
@@ -341,7 +342,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart.minusDays(1),
                 placementEnd
             )
@@ -355,7 +356,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         val (_, res, _) = createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
-                UUID.randomUUID(),
+                GroupId(UUID.randomUUID()),
                 placementStart,
                 placementEnd.plusDays(1)
             )

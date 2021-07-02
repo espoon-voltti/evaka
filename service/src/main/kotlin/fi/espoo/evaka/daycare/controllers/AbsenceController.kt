@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.service.AbsenceDelete
 import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
 import fi.espoo.evaka.daycare.service.batchDeleteAbsences
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -35,7 +36,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Wrapper<AbsenceGroup>> {
         Audit.AbsenceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -49,7 +50,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
@@ -67,7 +68,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody deletions: List<AbsenceDelete>,
-        @PathVariable groupId: UUID
+        @PathVariable groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)

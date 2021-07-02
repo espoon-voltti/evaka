@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
@@ -12,7 +13,7 @@ import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Transaction.initCaretakers(groupId: UUID, startDate: LocalDate, amount: Double) {
+fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     // language=SQL
     val sql = "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (:groupId, :startDate, :amount)"
 
@@ -53,7 +54,7 @@ fun Database.Read.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: Loca
         .first()
 }
 
-fun Database.Read.getGroupStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Map<UUID, Stats> {
+fun Database.Read.getGroupStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Map<GroupId, Stats> {
     // language=SQL
     val sql =
         """
@@ -79,6 +80,6 @@ fun Database.Read.getGroupStats(unitId: UUID, startDate: LocalDate, endDate: Loc
 }
 
 private data class GroupStats(
-    val groupId: UUID,
+    val groupId: GroupId,
     @Nested val stats: Stats
 )

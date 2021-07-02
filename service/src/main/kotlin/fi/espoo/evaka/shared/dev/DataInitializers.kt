@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -586,11 +587,11 @@ fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) = insert
 INSERT INTO daycare_group (id, daycare_id, name, start_date)
 VALUES (:id, :daycareId, :name, :startDate)
 """
-)
+).let(::GroupId)
 
 fun Database.Transaction.insertTestDaycareGroupPlacement(
     daycarePlacementId: UUID = UUID.randomUUID(),
-    groupId: UUID = UUID.randomUUID(),
+    groupId: GroupId = GroupId(UUID.randomUUID()),
     id: UUID = UUID.randomUUID(),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
@@ -699,7 +700,7 @@ RETURNING id
 }
 
 fun Database.Transaction.insertTestCaretakers(
-    groupId: UUID,
+    groupId: GroupId,
     id: UUID = UUID.randomUUID(),
     amount: Double = 3.0,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
@@ -725,7 +726,7 @@ fun Database.Transaction.insertTestCaretakers(
 
 fun Database.Transaction.insertTestStaffAttendance(
     id: UUID = UUID.randomUUID(),
-    groupId: UUID,
+    groupId: GroupId,
     date: LocalDate,
     count: Double
 ) {
@@ -806,7 +807,7 @@ fun Database.Transaction.insertTestBackUpCare(
     unitId: UUID,
     startDate: LocalDate,
     endDate: LocalDate,
-    groupId: UUID? = null,
+    groupId: GroupId? = null,
     id: UUID = UUID.randomUUID()
 ) {
     //language=sql

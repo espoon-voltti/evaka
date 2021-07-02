@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
@@ -201,14 +202,14 @@ class FixtureBuilder(
         private var from: LocalDate = today
         private var to: LocalDate = today
         private var unitId: UUID? = null
-        private var groupId: UUID? = null
+        private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: UUID) = this.apply { this.unitId = id }
-        fun toGroup(id: UUID) = this.apply { this.groupId = id }
+        fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): ChildFixture {
             tx.insertTestBackUpCare(
@@ -287,13 +288,13 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate? = null
         private var to: LocalDate? = null
-        private var groupId: UUID? = null
+        private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
-        fun toGroup(id: UUID) = this.apply { this.groupId = id }
+        fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): PlacementFixture {
             tx.insertTestDaycareGroupPlacement(

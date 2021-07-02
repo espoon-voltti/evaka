@@ -9,6 +9,7 @@ import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.OccupancyValues
 import fi.espoo.evaka.occupancy.calculateDailyGroupOccupancyValues
 import fi.espoo.evaka.occupancy.calculateDailyUnitOccupancyValues
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -85,7 +86,7 @@ data class OccupancyUnitReportResultRow(
 data class OccupancyGroupReportResultRow(
     val unitId: UUID,
     val unitName: String,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val occupancies: Map<LocalDate, OccupancyValues>
 )

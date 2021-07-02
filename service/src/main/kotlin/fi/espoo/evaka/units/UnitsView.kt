@@ -27,6 +27,7 @@ import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -119,7 +120,7 @@ data class UnitDataResponse(
 
 data class Caretakers(
     val unitCaretakers: Stats,
-    val groupCaretakers: Map<UUID, Stats>
+    val groupCaretakers: Map<GroupId, Stats>
 )
 
 data class UnitOccupancies(
@@ -149,8 +150,8 @@ private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyR
 }
 
 data class GroupOccupancies(
-    val confirmed: Map<UUID, OccupancyResponse>,
-    val realized: Map<UUID, OccupancyResponse>
+    val confirmed: Map<GroupId, OccupancyResponse>,
+    val realized: Map<GroupId, OccupancyResponse>
 )
 
 private fun getGroupOccupancies(
@@ -176,7 +177,7 @@ private fun getGroupOccupancies(
     )
 }
 
-private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<UUID, OccupancyResponse> {
+private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<GroupId, OccupancyResponse> {
     return occupancies
         .groupBy { it.groupId }
         .mapValues { (_, value) ->

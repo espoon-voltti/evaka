@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -86,7 +87,7 @@ RETURNING id
     .mapTo<UUID>()
     .one()
 
-fun Database.Transaction.updateBackupCare(id: UUID, period: FiniteDateRange, groupId: UUID?) = createUpdate(
+fun Database.Transaction.updateBackupCare(id: UUID, period: FiniteDateRange, groupId: GroupId?) = createUpdate(
     // language=SQL
     """
 UPDATE backup_care

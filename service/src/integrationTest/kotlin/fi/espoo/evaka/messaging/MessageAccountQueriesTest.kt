@@ -23,7 +23,6 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
@@ -79,7 +78,7 @@ class MessageAccountQueriesTest : PureJdbiTest() {
             it.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
 
             it.insertDaycareAclRow(daycareId, employee1Id, UserRole.STAFF)
-            it.insertDaycareGroupAcl(DaycareId(daycareId), EmployeeId(employee1Id), listOf(GroupId(groupId)))
+            it.insertDaycareGroupAcl(DaycareId(daycareId), EmployeeId(employee1Id), listOf(groupId))
 
             // employee2 has no groups
             it.insertDaycareAclRow(daycareId, employee2Id, UserRole.STAFF)

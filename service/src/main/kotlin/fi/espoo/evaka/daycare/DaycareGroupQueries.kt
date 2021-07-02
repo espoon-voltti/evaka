@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
@@ -15,7 +16,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-private fun Database.Read.createDaycareGroupQuery(groupId: UUID?, daycareId: UUID?, period: FiniteDateRange?) = createQuery(
+private fun Database.Read.createDaycareGroupQuery(groupId: GroupId?, daycareId: UUID?, period: FiniteDateRange?) = createQuery(
     // language=SQL
     """
 SELECT
@@ -47,7 +48,7 @@ RETURNING id, daycare_id, name, start_date, NULL::date AS end_date, true AS dele
     .asSequence()
     .first()
 
-fun Database.Transaction.updateGroup(groupId: UUID, name: String, startDate: LocalDate, endDate: LocalDate?) {
+fun Database.Transaction.updateGroup(groupId: GroupId, name: String, startDate: LocalDate, endDate: LocalDate?) {
     // language=SQL
     val sql = "UPDATE daycare_group SET name = :name, start_date = :startDate, end_date = COALESCE(:endDate, 'infinity') WHERE id = :id"
     this.createUpdate(sql)
@@ -59,7 +60,7 @@ fun Database.Transaction.updateGroup(groupId: UUID, name: String, startDate: Loc
         .let { if (it != 1) throw NotFound("Group $groupId not found") }
 }
 
-fun Database.Read.getDaycareGroup(groupId: UUID): DaycareGroup? =
+fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
     createDaycareGroupQuery(groupId = groupId, daycareId = null, period = null)
         .mapTo<DaycareGroup>()
         .asSequence()
@@ -75,7 +76,7 @@ fun Database.Read.getDaycareGroups(daycareId: UUID, startDate: LocalDate?, endDa
         .asSequence()
         .toList()
 
-fun Database.Transaction.deleteDaycareGroup(groupId: UUID) = createUpdate(
+fun Database.Transaction.deleteDaycareGroup(groupId: GroupId) = createUpdate(
     // language=SQL
     """
 DELETE FROM daycare_daily_note WHERE group_id = :groupId;        

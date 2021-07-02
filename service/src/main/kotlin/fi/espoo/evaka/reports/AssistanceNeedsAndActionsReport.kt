@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -98,7 +99,7 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
                 careAreaName = rs.getString("care_area_name"),
                 unitId = rs.getUUID("unit_id"),
                 unitName = rs.getString("unit_name"),
-                groupId = rs.getUUID("group_id"),
+                groupId = GroupId(rs.getUUID("group_id")),
                 groupName = rs.getString("group_name"),
                 unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
                 unitProviderType = rs.getString("unit_provider_type"),
@@ -135,7 +136,7 @@ data class AssistanceNeedsAndActionsReportRow(
     val careAreaName: String,
     val unitId: UUID,
     val unitName: String,
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val unitType: UnitType?,
     val unitProviderType: String,

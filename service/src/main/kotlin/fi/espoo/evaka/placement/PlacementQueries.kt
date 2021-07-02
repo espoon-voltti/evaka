@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
@@ -322,7 +323,7 @@ fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
 
 fun Database.Read.getIdenticalPrecedingGroupPlacement(
     daycarePlacementId: UUID,
-    groupId: UUID,
+    groupId: GroupId,
     startDate: LocalDate
 ): DaycareGroupPlacement? {
     // language=SQL
@@ -350,7 +351,7 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
 
 fun Database.Read.getIdenticalPostcedingGroupPlacement(
     daycarePlacementId: UUID,
-    groupId: UUID,
+    groupId: GroupId,
     endDate: LocalDate
 ): DaycareGroupPlacement? {
     // language=SQL
@@ -380,7 +381,7 @@ fun Database.Read.getDaycareGroupPlacements(
     daycareId: UUID,
     startDate: LocalDate?,
     endDate: LocalDate?,
-    groupId: UUID? = null
+    groupId: GroupId? = null
 ): List<DaycareGroupPlacement> {
     // language=SQL
     val sql =
@@ -439,7 +440,7 @@ fun Database.Read.getChildGroupPlacements(
 
 fun Database.Transaction.createGroupPlacement(
     placementId: UUID,
-    groupId: UUID,
+    groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
 ): UUID {

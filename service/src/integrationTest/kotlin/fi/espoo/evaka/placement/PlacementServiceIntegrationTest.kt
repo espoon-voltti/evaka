@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -40,8 +41,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     val placementEnd = LocalDate.of(year, month, 20)
 
     lateinit var oldPlacement: Placement
-    lateinit var groupId1: UUID
-    lateinit var groupId2: UUID
+    lateinit var groupId1: GroupId
+    lateinit var groupId2: GroupId
     lateinit var daycarePlacementId: UUID
     lateinit var groupPlacementId: UUID
 

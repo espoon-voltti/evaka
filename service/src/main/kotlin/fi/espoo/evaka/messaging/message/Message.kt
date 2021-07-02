@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -46,7 +47,7 @@ enum class MessageType {
 }
 
 data class MessageReceiversResponse(
-    val groupId: UUID,
+    val groupId: GroupId,
     val groupName: String,
     val receivers: List<MessageReceiver>
 )

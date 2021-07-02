@@ -55,6 +55,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -189,7 +190,7 @@ class DevApi(
     }
 
     data class Caretaker(
-        val groupId: UUID,
+        val groupId: GroupId,
         val amount: Double,
         val startDate: LocalDate,
         val endDate: LocalDate?
@@ -767,7 +768,7 @@ data class DevBackupCare(
     val id: UUID? = null,
     val childId: UUID,
     val unitId: UUID,
-    val groupId: UUID?,
+    val groupId: GroupId?,
     val period: FiniteDateRange
 )
 
@@ -828,7 +829,7 @@ data class DevDaycare(
 )
 
 data class DevDaycareGroup(
-    val id: UUID = UUID.randomUUID(),
+    val id: GroupId = GroupId(UUID.randomUUID()),
     val daycareId: UUID,
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1)
@@ -837,7 +838,7 @@ data class DevDaycareGroup(
 data class DevDaycareGroupPlacement(
     val id: UUID = UUID.randomUUID(),
     val daycarePlacementId: UUID,
-    val daycareGroupId: UUID,
+    val daycareGroupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )
@@ -987,4 +988,4 @@ data class ApplicationForm(
     val updated: OffsetDateTime? = OffsetDateTime.now()
 )
 
-data class DevDaycareGroupAcl(val groupId: UUID, val employeeId: UUID)
+data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: UUID)

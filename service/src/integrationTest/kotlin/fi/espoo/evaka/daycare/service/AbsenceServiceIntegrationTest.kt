@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -41,7 +42,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
     val testUserId = UUID.randomUUID()
     val daycareId = testDaycare.id
     val daycareName = testDaycare.name
-    val groupId = UUID.randomUUID()
+    val groupId = GroupId(UUID.randomUUID())
     val groupName = "Testiryhmä"
     val placementStart = LocalDate.of(2019, 8, 1)
     val placementEnd = LocalDate.of(2019, 12, 31)

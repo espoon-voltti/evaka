@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -129,12 +130,12 @@ ORDER BY p.id, t
                 careArea = rs.getString("care_area"),
                 unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
                 unitProviderType = rs.getString("unit_provider_type"),
-                daycareGroupId = rs.getNullableUUID("daycare_group_id"),
+                daycareGroupId = rs.getNullableUUID("daycare_group_id")?.let(::GroupId),
                 groupName = rs.getString("group_name"),
                 caretakersPlanned = rs.getBigDecimal("caretakers_planned")?.toDouble(),
                 caretakersRealized = rs.getBigDecimal("caretakers_realized")?.toDouble(),
                 backupUnitId = rs.getNullableUUID("backup_unit_id"),
-                backupGroupId = rs.getNullableUUID("backup_group_id"),
+                backupGroupId = rs.getNullableUUID("backup_group_id")?.let(::GroupId),
                 hasServiceNeed = rs.getBoolean("has_service_need"),
                 partDay = rs.getBoolean("part_day"),
                 partWeek = rs.getBoolean("part_week"),
@@ -163,12 +164,12 @@ data class RawReportRow(
     val careArea: String,
     val unitType: UnitType?,
     val unitProviderType: String,
-    val daycareGroupId: UUID?,
+    val daycareGroupId: GroupId?,
     val groupName: String?,
     val caretakersPlanned: Double?,
     val caretakersRealized: Double?,
     val backupUnitId: UUID?,
-    val backupGroupId: UUID?,
+    val backupGroupId: GroupId?,
     val hasServiceNeed: Boolean,
     val partDay: Boolean?,
     val partWeek: Boolean?,
