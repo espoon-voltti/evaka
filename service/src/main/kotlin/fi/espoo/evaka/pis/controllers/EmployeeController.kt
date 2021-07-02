@@ -80,7 +80,7 @@ class EmployeeController {
         @PathVariable(value = "id") id: UUID,
         @RequestBody body: EmployeeUpdate
     ): ResponseEntity<Unit> {
-        Audit.EmployeeUpdate.log(targetId = id)
+        Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
         user.requireOneOfRoles(UserRole.ADMIN)
 
         db.transaction {
