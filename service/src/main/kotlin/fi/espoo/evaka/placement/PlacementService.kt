@@ -101,9 +101,6 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     if (endDate.isBefore(startDate))
         throw BadRequest("Must not end before even starting")
 
-    if (getDaycareGroupPlacements(daycarePlacementId, startDate, endDate, groupId).isNotEmpty())
-        throw BadRequest("Group placement must not overlap with existing group placement")
-
     val daycarePlacement = getDaycarePlacement(daycarePlacementId)
         ?: throw NotFound("Placement $daycarePlacementId does not exist")
 
