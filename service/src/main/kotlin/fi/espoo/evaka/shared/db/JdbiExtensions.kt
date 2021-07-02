@@ -30,6 +30,7 @@ import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.argument.NullArgument
 import org.jdbi.v3.core.config.ConfigRegistry
+import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.statement.StatementContext
@@ -74,7 +75,7 @@ val identityArgumentFactory = customArgumentFactory<ExternalIdentifier>(Types.VA
 
 val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
-val idArgumentFactory = customArgumentFactory<Id<DatabaseTable>>(Types.OTHER) { CustomObjectArgument(it.raw) }
+val idArgumentFactory = customArgumentFactory<Id<*>>(Types.OTHER) { CustomObjectArgument(it.raw) }
 
 val helsinkiDateTimeArgumentFactory = customArgumentFactory<HelsinkiDateTime>(Types.TIMESTAMP_WITH_TIMEZONE) {
     CustomObjectArgument(it.toZonedDateTime().toOffsetDateTime())
@@ -119,7 +120,7 @@ val helsinkiDateTimeColumnMapper =
 
 class CustomArgumentFactory<T>(private val clazz: Class<T>, private val sqlType: Int, private inline val f: (T) -> Argument?) : ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = Optional.ofNullable(
-        if (type == clazz) {
+        if (clazz.isAssignableFrom(GenericTypes.getErasedType(type))) {
             Function { nullableValue -> clazz.cast(nullableValue)?.let(f) ?: NullArgument(sqlType) }
         } else {
             null
