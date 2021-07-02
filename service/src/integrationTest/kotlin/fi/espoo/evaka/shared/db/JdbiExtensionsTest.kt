@@ -61,6 +61,16 @@ class JdbiExtensionsTest : PureJdbiTest() {
     }
 
     @Test
+    fun testCoordinateListResult() {
+        data class QueryResult(val values: List<Coordinate>)
+
+        val result = db.read {
+            it.createQuery("SELECT array[point(22.0, 11.0), point(44.0, 33.0)]::point[] AS values").mapTo<QueryResult>().single()
+        }
+        assertEquals(listOf(Coordinate(lat = 11.0, lon = 22.0), Coordinate(lat = 33.0, lon = 44.0)), result.values)
+    }
+
+    @Test
     fun testDateRange() {
         val input = DateRange(LocalDate.of(2020, 1, 2), LocalDate.of(2020, 3, 4))
 
@@ -93,6 +103,16 @@ class JdbiExtensionsTest : PureJdbiTest() {
     }
 
     @Test
+    fun testDateRangeListResult() {
+        data class QueryResult(val values: List<DateRange>)
+
+        val result = db.read {
+            it.createQuery("SELECT array[daterange('2020-06-07', NULL, '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values").mapTo<QueryResult>().single()
+        }
+        assertEquals(listOf(DateRange(LocalDate.of(2020, 6, 7), null), DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2))), result.values)
+    }
+
+    @Test
     fun testFiniteDateRange() {
         val input = FiniteDateRange(LocalDate.of(2020, 9, 10), LocalDate.of(2020, 11, 12))
 
@@ -111,6 +131,16 @@ class JdbiExtensionsTest : PureJdbiTest() {
             it.createQuery("SELECT NULL::daterange AS value").mapTo<QueryResult>().single()
         }
         assertNull(result.value)
+    }
+
+    @Test
+    fun testFiniteDateRangeListResult() {
+        data class QueryResult(val values: List<FiniteDateRange>)
+
+        val result = db.read {
+            it.createQuery("SELECT array[daterange('2020-06-07', '2021-01-01', '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values").mapTo<QueryResult>().single()
+        }
+        assertEquals(listOf(FiniteDateRange(LocalDate.of(2020, 6, 7), LocalDate.of(2021, 1, 1)), FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2))), result.values)
     }
 
     @Test
@@ -135,6 +165,16 @@ class JdbiExtensionsTest : PureJdbiTest() {
     }
 
     @Test
+    fun testExternalIdListResult() {
+        data class QueryResult(val values: List<ExternalId>)
+
+        val result = db.read {
+            it.createQuery("SELECT array['test:123456', 'more:42']::text[] AS values").mapTo<QueryResult>().single()
+        }
+        assertEquals(listOf(ExternalId.of(namespace = "test", value = "123456"), ExternalId.of(namespace = "more", value = "42")), result.values)
+    }
+
+    @Test
     fun testHelsinkiDateTime() {
         val input = HelsinkiDateTime.from(ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), europeHelsinki))
 
@@ -153,6 +193,23 @@ class JdbiExtensionsTest : PureJdbiTest() {
             it.createQuery("SELECT NULL::timestamptz AS value").mapTo<QueryResult>().single()
         }
         assertNull(result.value)
+    }
+
+    @Test
+    fun testHelsinkiDateTimeListResult() {
+        data class QueryResult(val values: List<HelsinkiDateTime>)
+
+        val result = db.read {
+            it.createQuery("SELECT array['2020-05-07T10:59Z', '2021-01-10T06:42Z']::timestamptz[] AS values").mapTo<QueryResult>().single()
+        }
+        val values = result.values.map { it.toZonedDateTime().withZoneSameInstant(utc) }
+        assertEquals(
+            listOf(
+                ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(10, 59), utc),
+                ZonedDateTime.of(LocalDate.of(2021, 1, 10), LocalTime.of(6, 42), utc)
+            ),
+            values
+        )
     }
 
     @Test
