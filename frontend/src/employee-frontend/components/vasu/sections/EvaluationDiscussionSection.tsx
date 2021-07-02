@@ -12,17 +12,26 @@ import { DatePickerClearableDeprecated } from '../../../../lib-components/molecu
 import { useTranslation } from '../../../state/i18n'
 
 interface Props {
+  sectionIndex: number
   content: EvaluationDiscussionContent
   setContent: Dispatch<SetStateAction<EvaluationDiscussionContent>>
 }
-export function EvaluationDiscussionSection({ content, setContent }: Props) {
+export function EvaluationDiscussionSection({
+  sectionIndex,
+  content,
+  setContent
+}: Props) {
   const { i18n } = useTranslation()
   const t = i18n.vasu.staticSections.evaluationDiscussion
   return (
     <ContentArea opaque>
-      <H2>{t.title}</H2>
+      <H2>
+        {sectionIndex + 1}. {t.title}
+      </H2>
 
-      <Label>{t.evaluation}</Label>
+      <Label>
+        {sectionIndex + 1}.1 {t.evaluation}
+      </Label>
       <TextArea
         value={content.evaluation}
         onChange={(e) =>
@@ -35,7 +44,9 @@ export function EvaluationDiscussionSection({ content, setContent }: Props) {
 
       <H3>{t.title2}</H3>
 
-      <Label>{t.discussionDate}</Label>
+      <Label>
+        {sectionIndex + 1}.2 {t.discussionDate}
+      </Label>
       <DatePickerClearableDeprecated
         date={content.discussionDate ?? undefined}
         onChange={(date) =>
@@ -55,7 +66,9 @@ export function EvaluationDiscussionSection({ content, setContent }: Props) {
 
       <Gap />
 
-      <Label>{t.participants}</Label>
+      <Label>
+        {sectionIndex + 1}.3 {t.participants}
+      </Label>
       <TextArea
         value={content.participants}
         onChange={(e) =>
@@ -68,7 +81,9 @@ export function EvaluationDiscussionSection({ content, setContent }: Props) {
 
       <Gap />
 
-      <Label>{t.guardianViewsAndCollaboration}</Label>
+      <Label>
+        {sectionIndex + 1}.4 {t.guardianViewsAndCollaboration}
+      </Label>
       <TextArea
         value={content.guardianViewsAndCollaboration}
         onChange={(e) =>

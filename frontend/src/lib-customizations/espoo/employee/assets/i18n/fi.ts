@@ -910,6 +910,16 @@ export const fi = {
       }
     },
     staticSections: {
+      authors: {
+        title: 'Lapsen varhaiskasvatussuunnitelman laatijat',
+        primaryAuthor: 'Laatimisesta vastaava henkilö',
+        otherAuthors: 'Muu laatimiseen osallistunut henkilöstö/asiantuntijat',
+        authorInfo: {
+          name: 'Nimi',
+          title: 'Nimike',
+          phone: 'Puhelinnumero'
+        }
+      },
       vasuDiscussion: {
         title: 'Lapsen varhaiskasvatussuunnitelmakeskustelu',
         title2:
