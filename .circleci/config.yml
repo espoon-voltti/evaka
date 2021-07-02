@@ -99,6 +99,7 @@ executors:
     machine:
       image: *ubuntu_machine_image
       resource_class: large
+      docker_layer_caching: true
   service_executor:
     <<: *jvm_config
     docker:
