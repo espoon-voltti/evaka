@@ -410,52 +410,9 @@ commands:
       - restore_frontend_deps
       - restore_frontend_comm_deps
       - run:
-          name: Split test fixtures by timings
-          working_directory: *workspace_frontend
-          command: |
-            # Get list of test files that should run on this node.
-            if [ "<< parameters.test_runner >>" = "playwright" ]; then
-              FILENAMES=($(circleci tests glob \
-                  'src/e2e-playwright/specs/**/*.spec.ts' \
-                  | sort -h \
-                  | circleci tests split --split-by=timings --timings-type=filename))
-              echo -e "Spec files selected for node:\n$(echo "${FILENAMES[@]}" | tr ' ' '\n')"
-              echo "${FILENAMES[@]}" > playwright-filenames.txt
-            elif [ "<< parameters.test_runner >>" = "testcafe" ]; then
-              # NOTE: Currently testcafe-reporter-junit doesn't provide
-              # filenames in its output so they can't be used for splitting
-              # -> use fixture names instead.
-              FIXTURE_NAMES=$(git grep '^\w*fixture(' -- src/e2e-test/specs/ \
-                | awk -F "'" '{print $2}' \
-                | sort -h | uniq \
-                | circleci tests split --split-by=timings --timings-type classname)
-              echo -e "Fixtures selected for node:\n${FIXTURE_NAMES[@]}"
-              # NOTE: This is extremely brittle but necessary as Testcafe
-              # doesn't support multiple --fixture arguments (+ the above
-              # report issue) -> everything must be a single regex.
-              TESTCAFE_FIXTURE_REGEX=$(echo "$FIXTURE_NAMES" | sed 's/[^-A-Za-z0-9_]/\\&/g' | awk '{print "^"$0"$"}' | tr '\n' '|')
-              # Strip the last "|"
-              TESTCAFE_FIXTURE_REGEX=${TESTCAFE_FIXTURE_REGEX%?}
-              echo "Prepared arguments for yarn: ${TESTCAFE_FIXTURE_REGEX}"
-              echo "$TESTCAFE_FIXTURE_REGEX" > testcafe-fixture-regex.txt
-
-            else
-              echo 'ERROR: Invalid test_runner: "<< parameters.test_runner >>"'
-              exit 1
-            fi
-      - run:
           name: Run E2E tests against compose inside a Docker container
           working_directory: << pipeline.parameters.workspace_root >>
-          command: |
-            docker run --rm -it \
-              --volume "${PWD}/bin/circleci-e2e-run.sh":/tmp/circleci-e2e-run.sh:ro \
-              --volume "${PWD}":/repo:rw \
-              --network=compose_default \
-              --env REPO_UID="$UID" \
-              --env CI="$CI" \
-              --entrypoint=/bin/bash \
-              << pipeline.parameters.nodejs_image >>-browsers \
-              /tmp/circleci-e2e-run.sh "<< parameters.test_runner >>"
+          command: ./bin/circleci-e2e.sh "<< parameters.test_runner >>"
       - run:
           name: Collect docker-compose logs
           working_directory: *workspace_compose

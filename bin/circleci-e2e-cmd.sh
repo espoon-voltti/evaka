@@ -6,15 +6,19 @@
 
 # Usage (run in repoitory root):
 #
+# ./bin/circleci-e2e.sh
+#
+# OR:
+#
 # docker run --rm -it \
-#   --volume "${PWD}/bin/circleci-e2e-run.sh":/tmp/circleci-e2e-run.sh:ro \
+#   --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
 #   --volume "${PWD}":/repo:rw \
 #   --network=compose_default \
 #   --env REPO_UID="$UID" \
 #   --env CI="$CI" \
 #   --entrypoint=/bin/bash \
 #   cimg/node:14.15-browsers \
-#   /tmp/circleci-e2e-run.sh <testcafe|playwright>
+#   /tmp/cmd.sh <testcafe|playwright>
 
 set -euo pipefail
 
@@ -23,7 +27,7 @@ if [ "${DEBUG:-X}" = "true" ]; then
 fi
 
 if [ "${1:-X}" = "X" ]; then
-  echo "Usage: $0 <testcafe|playwright> [test-suite]"
+  echo "Usage: $0 <testcafe|playwright>"
   exit 1
 fi
 
@@ -77,6 +81,7 @@ sudo su - "$REPO_USERNAME" <<EOF
   set -euo pipefail
 
   # Preserve these variables from the initial environment
+  export DEBUG="$DEBUG"
   export CI="$CI"
 
   if [ "${DEBUG:-X}" = "true" ]; then
@@ -99,7 +104,7 @@ sudo su - "$REPO_USERNAME" <<EOF
   ./wait-for-dev-api.sh 'http://evaka-proxy:8080'
 
   if [ "$TEST_RUNNER" = "playwright" ]; then
-    FILENAMES=(\$(cat playwright-filenames.txt))
+    mapfile -t FILENAMES < playwright-filenames.txt
     yarn e2e-ci-playwright "\${FILENAMES[@]}"
   elif [ "$TEST_RUNNER" = "testcafe" ]; then
     yarn e2e-ci-testcafe --fixture-grep "\$(cat testcafe-fixture-regex.txt)" -- src/e2e-test/specs/
