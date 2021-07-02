@@ -12,10 +12,14 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
+import fi.espoo.evaka.shared.Id
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.generic.GenericType
+import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.core.mapper.ColumnMapper
+import org.jdbi.v3.core.mapper.ColumnMapperFactory
+import org.jdbi.v3.core.mapper.RowMapperFactory
 import org.jdbi.v3.core.mapper.SingleColumnMapper
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
@@ -25,14 +29,42 @@ import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
+import java.lang.reflect.Type
 import java.sql.ResultSet
+import java.util.Optional
 import java.util.UUID
 
-private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) {
-    registerColumnMapper(T::class.java, columnMapper)
+/**
+ * Registers the given JDBI column mapper, which will be used to map data from database to values of type T.
+ *
+ * This works fine for simple types where there are no extra shenanigans (inheritance, type parameters).
+ */
+private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) =
+    register(columnMapper) { type -> type == T::class.java }
+
+/**
+ * Registers the given JDBI column mapper, using the given function to decide when the mapper will be used.
+ *
+ * By accepting a custom `isSupported` function, we can support cases where the target type (function parameter `type`)
+ * and T have a complex relationship.
+ */
+private inline fun <reified T> Jdbi.register(
+    columnMapper: ColumnMapper<T>,
+    crossinline isSupported: (Type) -> Boolean
+) {
+    registerColumnMapper(
+        ColumnMapperFactory { type, _ ->
+            Optional.ofNullable(columnMapper.takeIf { isSupported(type) })
+        }
+    )
     // Support mapping a single column result.
     // We need an explicit row mapper for T, or JDBI KotlinMapper will try to map it field-by-field, even in the single column case
-    registerRowMapper(T::class.java, SingleColumnMapper(columnMapper))
+    val rowMapper = SingleColumnMapper(columnMapper)
+    registerRowMapper(
+        RowMapperFactory { type, _ ->
+            Optional.ofNullable(rowMapper.takeIf { isSupported(type) })
+        }
+    )
 }
 
 fun configureJdbi(jdbi: Jdbi): Jdbi {
@@ -50,11 +82,19 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)
     jdbi.registerArgument(externalIdArgumentFactory)
+    jdbi.registerArgument(idArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
     jdbi.register(finiteDateRangeColumnMapper)
     jdbi.register(dateRangeColumnMapper)
     jdbi.register(coordinateColumnMapper)
     jdbi.register(externalIdColumnMapper)
+    jdbi.register(idColumnMapper) { type ->
+        // Since Id<T: DatabaseTable> has a type parameter, we can't rely on simple equals check. The parameter 'type' passed to this
+        // function will not be a JVM Class but a JVM ParameterizedType. We erase the type parameters and get the raw class
+        // before doing an assignability check. This means that our "universal" mapper for Id<*> types will be used for
+        // all concrete types like Id<Something> or Id<SomethingElse>
+        Id::class.java.isAssignableFrom(GenericTypes.getErasedType(type))
+    }
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     jdbi.registerRowMapper(FeeDecision::class.java, feeDecisionRowMapper(objectMapper))

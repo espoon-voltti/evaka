@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -22,6 +23,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.UUID
 
 private inline fun <reified T : Any> Database.Read.passThrough(input: T) = createQuery(
     // language=SQL
@@ -172,6 +174,49 @@ class JdbiExtensionsTest : PureJdbiTest() {
             it.createQuery("SELECT array['test:123456', 'more:42']::text[] AS values").mapTo<QueryResult>().single()
         }
         assertEquals(listOf(ExternalId.of(namespace = "test", value = "123456"), ExternalId.of(namespace = "more", value = "42")), result.values)
+    }
+
+    @Test
+    fun testId() {
+        val input = PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962"))
+
+        val match = db.read { it.checkMatch("SELECT :input = '5ea2618c-3e9d-4fd3-8094-8d2f35311962'", input) }
+        assertTrue(match)
+
+        val output = db.read { it.passThrough(input) }
+        assertEquals(input, output)
+    }
+
+    @Test
+    fun testNullId() {
+        data class QueryResult(val value: PersonId?)
+
+        val result = db.read {
+            it.createQuery("SELECT NULL::uuid AS value").mapTo<QueryResult>().single()
+        }
+        assertNull(result.value)
+    }
+
+    @Test
+    fun testIdListResult() {
+        data class QueryResult(val values: List<PersonId>)
+
+        val result = db.read {
+            it.createQuery("SELECT array['5ea2618c-3e9d-4fd3-8094-8d2f35311962', '2db6c1c7-402f-4d86-a308-a7f1b19bb313']::uuid[] AS values").mapTo<QueryResult>().single()
+        }
+        assertEquals(listOf(PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962")), PersonId(UUID.fromString("2db6c1c7-402f-4d86-a308-a7f1b19bb313"))), result.values)
+    }
+
+    @Test
+    fun testIdInJsonb() {
+        data class JsonbObject(val value: PersonId)
+        data class QueryResult(@Json val jsonb: JsonbObject)
+
+        val result = db.read {
+            it.createQuery("SELECT jsonb_build_object('value', '5ea2618c-3e9d-4fd3-8094-8d2f35311962'::uuid) AS jsonb").mapTo<QueryResult>().single()
+        }
+        val expected = PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962"))
+        assertEquals(expected, result.jsonb.value)
     }
 
     @Test
