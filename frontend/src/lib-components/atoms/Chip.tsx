@@ -24,7 +24,7 @@ export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   background-color: ${(p) => p.color};
   color: ${({ theme: { colors }, ...p }) =>
     p.textColor ??
-    readableColor(p.color, colors.greyscale.darkest, colors.greyscale.white)};
+    readableColor(p.color, colors.greyscale.white, colors.greyscale.darkest)};
   padding: ${defaultMargins.xxs}
     calc(${defaultMargins.xs} + ${defaultMargins.xxs});
 

@@ -22,9 +22,5 @@ interface StateChipProps {
 }
 
 export function VasuStateChip({ labels, state }: StateChipProps) {
-  return (
-    <StaticChip color={vasuStateChip[state]} textColor={colors.greyscale.white}>
-      {labels[state]}
-    </StaticChip>
-  )
+  return <StaticChip color={vasuStateChip[state]}>{labels[state]}</StaticChip>
 }
