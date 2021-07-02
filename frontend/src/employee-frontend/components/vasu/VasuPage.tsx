@@ -17,9 +17,7 @@ import {
   Container,
   ContentArea
 } from '../../../lib-components/layout/Container'
-import {
-  FixedSpaceColumn
-} from '../../../lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from '../../../lib-components/layout/flex-helpers'
 import StickyFooter from '../../../lib-components/layout/StickyFooter'
 import { Dimmed, H2, Label } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
@@ -102,6 +100,10 @@ export default React.memo(function VasuPage({
   const showSpinner = status.state === 'saving'
 
   const dynamicSectionsOffset = 1
+  const getDynamicQuestionNumber = (
+    sectionIndex: number,
+    questionIndex: number
+  ) => `${sectionIndex + 1 + dynamicSectionsOffset}.${questionIndex + 1}`
 
   // TODO: move these to their own components when the spec is more stable
   function renderTextQuestion(
@@ -112,7 +114,7 @@ export default React.memo(function VasuPage({
     return (
       <>
         <Label>
-          {sectionIndex + 1 + dynamicSectionsOffset}.{questionIndex + 1}{' '}
+          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
           {question.name}
         </Label>
         <TextArea
@@ -141,9 +143,9 @@ export default React.memo(function VasuPage({
       <>
         <Checkbox
           checked={question.value}
-          label={`${sectionIndex + 1 + dynamicSectionsOffset}.${
-            questionIndex + 1
-          } ${question.name}`}
+          label={`${getDynamicQuestionNumber(sectionIndex, questionIndex)} ${
+            question.name
+          }`}
           onChange={(checked) =>
             setContent((prev) => {
               const clone = cloneDeep(prev)
@@ -167,7 +169,7 @@ export default React.memo(function VasuPage({
     return (
       <>
         <Label>
-          {sectionIndex + 1 + dynamicSectionsOffset}.{questionIndex + 1}{' '}
+          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
           {question.name}
         </Label>
         <Gap size={'m'} />
@@ -207,7 +209,7 @@ export default React.memo(function VasuPage({
     return (
       <>
         <Label>
-          {sectionIndex + 1 + dynamicSectionsOffset}.{questionIndex + 1}{' '}
+          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
           {question.name}
         </Label>
         <Gap size={'m'} />
@@ -262,7 +264,7 @@ export default React.memo(function VasuPage({
               <Fragment key={section.name}>
                 <ContentArea opaque>
                   <H2>
-                    {sectionIndex + 2}. {section.name}
+                    {sectionIndex + 1 + dynamicSectionsOffset}. {section.name}
                   </H2>
                   {section.questions.map((question, questionIndex) => (
                     <Fragment key={question.name}>

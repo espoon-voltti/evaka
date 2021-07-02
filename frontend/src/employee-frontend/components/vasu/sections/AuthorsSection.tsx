@@ -45,7 +45,31 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
         return { ...prev, otherAuthors }
       })
     }
-  }, [content, setContent])
+  }, [content.otherAuthors, setContent])
+
+  const onChangePrimaryAuthor = (key: keyof AuthorInfo) => (value: string) =>
+    setContent((prev) => ({
+      ...prev,
+      primaryAuthor: {
+        ...prev.primaryAuthor,
+        [key]: value
+      }
+    }))
+
+  const onChangeOtherAuthor = (key: keyof AuthorInfo, i: number) => (
+    value: string
+  ) =>
+    setContent((prev) => ({
+      ...prev,
+      otherAuthors: [
+        ...prev.otherAuthors.slice(0, i),
+        {
+          ...prev.otherAuthors[i],
+          [key]: value
+        },
+        ...prev.otherAuthors.slice(i + 1)
+      ]
+    }))
 
   return (
     <ContentArea opaque>
@@ -62,15 +86,7 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
           <Label>{t.authorInfo.name}</Label>
           <InputField
             value={content.primaryAuthor.name}
-            onChange={(value) =>
-              setContent((prev) => ({
-                ...prev,
-                primaryAuthor: {
-                  ...prev.primaryAuthor,
-                  name: value
-                }
-              }))
-            }
+            onChange={onChangePrimaryAuthor('name')}
           />
         </FixedSpaceColumn>
 
@@ -78,15 +94,7 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
           <Label>{t.authorInfo.title}</Label>
           <InputField
             value={content.primaryAuthor.title}
-            onChange={(value) =>
-              setContent((prev) => ({
-                ...prev,
-                primaryAuthor: {
-                  ...prev.primaryAuthor,
-                  title: value
-                }
-              }))
-            }
+            onChange={onChangePrimaryAuthor('title')}
           />
         </FixedSpaceColumn>
 
@@ -94,15 +102,7 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
           <Label>{t.authorInfo.phone}</Label>
           <InputField
             value={content.primaryAuthor.phone}
-            onChange={(value) =>
-              setContent((prev) => ({
-                ...prev,
-                primaryAuthor: {
-                  ...prev.primaryAuthor,
-                  phone: value
-                }
-              }))
-            }
+            onChange={onChangePrimaryAuthor('phone')}
           />
         </FixedSpaceColumn>
       </FixedSpaceRow>
@@ -121,19 +121,7 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
               <Label>{t.authorInfo.name}</Label>
               <InputField
                 value={author.name}
-                onChange={(value) =>
-                  setContent((prev) => ({
-                    ...prev,
-                    otherAuthors: [
-                      ...prev.otherAuthors.slice(0, i),
-                      {
-                        ...prev.otherAuthors[i],
-                        name: value
-                      },
-                      ...prev.otherAuthors.slice(i + 1)
-                    ]
-                  }))
-                }
+                onChange={onChangeOtherAuthor('name', i)}
               />
             </FixedSpaceColumn>
 
@@ -141,19 +129,7 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
               <Label>{t.authorInfo.title}</Label>
               <InputField
                 value={author.title}
-                onChange={(value) =>
-                  setContent((prev) => ({
-                    ...prev,
-                    otherAuthors: [
-                      ...prev.otherAuthors.slice(0, i),
-                      {
-                        ...prev.otherAuthors[i],
-                        title: value
-                      },
-                      ...prev.otherAuthors.slice(i + 1)
-                    ]
-                  }))
-                }
+                onChange={onChangeOtherAuthor('title', i)}
               />
             </FixedSpaceColumn>
 
@@ -161,19 +137,7 @@ export function AuthorsSection({ sectionIndex, content, setContent }: Props) {
               <Label>{t.authorInfo.phone}</Label>
               <InputField
                 value={author.phone}
-                onChange={(value) =>
-                  setContent((prev) => ({
-                    ...prev,
-                    otherAuthors: [
-                      ...prev.otherAuthors.slice(0, i),
-                      {
-                        ...prev.otherAuthors[i],
-                        phone: value
-                      },
-                      ...prev.otherAuthors.slice(i + 1)
-                    ]
-                  }))
-                }
+                onChange={onChangeOtherAuthor('phone', i)}
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>

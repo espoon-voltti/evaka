@@ -24,7 +24,7 @@ import {
   VasuDocumentEventType,
   VasuDocumentState
 } from './api'
-import {FixedSpaceRow} from "../../../lib-components/layout/flex-helpers";
+import { FixedSpaceRow } from '../../../lib-components/layout/flex-helpers'
 
 const PublishingDisclaimer = styled(FixedSpaceRow)`
   justify-content: flex-end;
@@ -130,10 +130,9 @@ export function VasuStateTransitionButtons({
         )}
       </ButtonContainer>
       {(state === 'DRAFT' || state === 'READY') && (
-        <PublishingDisclaimer alignItems='center' spacing='xs' >
+        <PublishingDisclaimer alignItems="center" spacing="xs">
           <RoundIcon content="!" color={colors.primary} size="m" />
           <span>{i18n.vasu.transitions.vasuIsPublishedToGuardians}</span>
-
         </PublishingDisclaimer>
       )}
     </div>
