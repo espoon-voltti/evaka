@@ -91,16 +91,18 @@ describe('Sending and receiving messages', () => {
     const title = 'Otsikko'
     const content = 'Testiviestin sisältö'
     const reply = 'Testivastaus testiviestiin'
+
     await employeeLogin(page, 'UNIT_SUPERVISOR')
     await page.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(page)
     await messagesPage.sendNewMessage(title, content)
+
     await enduserLogin(page)
     await page.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(page)
     await citizenMessagesPage.replyToFirstThread(reply)
     await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
-    await employeeLogin(page, 'UNIT_SUPERVISOR')
+
     await page.goto(`${config.employeeUrl}/messages`)
     await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
   })
