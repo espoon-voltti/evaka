@@ -84,7 +84,10 @@ export function VasuStateTransitionButtons({
             label: i18n.vasu.transitions[selectedEventType].confirmAction
           }}
           reject={{
-            action: () => setSelectedEventType(undefined),
+            action: () => {
+              setUpdateResult(undefined)
+              setSelectedEventType(undefined)
+            },
             label: i18n.common.goBack
           }}
         >
