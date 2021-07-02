@@ -111,13 +111,18 @@ export function VasuStateTransitionButtons({
         {state === 'DRAFT' && getStateTransitionButton('MOVED_TO_READY')}
         {state === 'READY' && getStateTransitionButton('MOVED_TO_REVIEWED')}
         {state === 'REVIEWED' && (
-          <RequireRole oneOf={['ADMIN']}>
-            {getStateTransitionButton('MOVED_TO_CLOSED')}
-          </RequireRole>
+          <>
+            <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+              {getStateTransitionButton('RETURNED_TO_READY')}
+              <RequireRole oneOf={['ADMIN']}>
+                {getStateTransitionButton('MOVED_TO_CLOSED')}
+              </RequireRole>
+            </RequireRole>
+          </>
         )}
         {state === 'CLOSED' ? (
           <RequireRole oneOf={['ADMIN']}>
-            {getStateTransitionButton('RETURNED_TO_READY', false)}
+            {getStateTransitionButton('RETURNED_TO_REVIEWED', false)}
           </RequireRole>
         ) : (
           getStateTransitionButton('PUBLISHED', false)
