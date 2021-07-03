@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.pis.service.PartnershipService
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -77,7 +78,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
     fun getPartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: UUID
+        @PathVariable(value = "id") partnershipId: PartnershipId
     ): ResponseEntity<Partnership> {
         Audit.PartnerShipsRead.log(targetId = partnershipId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
@@ -91,7 +92,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
     fun updatePartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: UUID,
+        @PathVariable(value = "id") partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
     ): ResponseEntity<Partnership> {
         Audit.PartnerShipsUpdate.log(targetId = partnershipId)
@@ -119,7 +120,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
     fun retryPartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: UUID
+        @PathVariable(value = "id") partnershipId: PartnershipId
     ): ResponseEntity<Unit> {
         Audit.PartnerShipsRetry.log(targetId = partnershipId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
@@ -142,7 +143,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
     fun deletePartnership(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "id") partnershipId: UUID
+        @PathVariable(value = "id") partnershipId: PartnershipId
     ): ResponseEntity<Unit> {
         Audit.PartnerShipsDelete.log(targetId = partnershipId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)

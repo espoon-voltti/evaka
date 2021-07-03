@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -958,7 +959,7 @@ RETURNING id
 )
 
 data class DevFridgePartner(
-    val partnershipId: UUID,
+    val partnershipId: PartnershipId,
     val indx: Int,
     val personId: UUID,
     val startDate: LocalDate,
@@ -972,7 +973,7 @@ INSERT INTO fridge_partner (partnership_id, indx, person_id, start_date, end_dat
 VALUES (:partnershipId, :indx, :personId, :startDate, :endDate)
 RETURNING partnership_id
 """
-)
+).let(::PartnershipId)
 
 data class DevEmployeePin(
     val id: UUID,

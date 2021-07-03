@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.deletePartnership
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.retryPartnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.NotFound
@@ -35,7 +36,7 @@ class PartnershipService {
 
     fun updatePartnershipDuration(
         tx: Database.Transaction,
-        partnershipId: UUID,
+        partnershipId: PartnershipId,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
@@ -51,7 +52,7 @@ class PartnershipService {
         return partnership.copy(startDate = startDate, endDate = endDate)
     }
 
-    fun retryPartnership(tx: Database.Transaction, partnershipId: UUID): Partnership? {
+    fun retryPartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
         return try {
             tx.getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
@@ -61,7 +62,7 @@ class PartnershipService {
         }
     }
 
-    fun deletePartnership(tx: Database.Transaction, partnershipId: UUID): Partnership? {
+    fun deletePartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
         return tx.getPartnership(partnershipId)?.also {
             tx.deletePartnership(partnershipId)
         }
@@ -69,7 +70,7 @@ class PartnershipService {
 }
 
 data class Partnership(
-    val id: UUID,
+    val id: PartnershipId,
     val partners: Set<PersonJSON>,
     val startDate: LocalDate,
     val endDate: LocalDate?,
@@ -77,7 +78,7 @@ data class Partnership(
 )
 
 data class Partner(
-    val partnershipId: UUID,
+    val partnershipId: PartnershipId,
     val person: PersonJSON,
     val startDate: LocalDate,
     val endDate: LocalDate?,
