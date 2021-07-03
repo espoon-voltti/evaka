@@ -29,6 +29,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.time.Instant
@@ -98,7 +99,7 @@ val testFeeThresholds = FeeThresholds(
 val testDecisionChild1 =
     FeeDecisionChild(
         child = testChild1,
-        placement = FeeDecisionPlacement(UnitData.JustId(UUID.randomUUID()), PlacementType.DAYCARE),
+        placement = FeeDecisionPlacement(UnitData.JustId(DaycareId(UUID.randomUUID())), PlacementType.DAYCARE),
         serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -109,7 +110,7 @@ val testDecisionChild1 =
 val testDecisionChild2 =
     FeeDecisionChild(
         child = testChild2,
-        placement = FeeDecisionPlacement(UnitData.JustId(UUID.randomUUID()), PlacementType.DAYCARE),
+        placement = FeeDecisionPlacement(UnitData.JustId(DaycareId(UUID.randomUUID())), PlacementType.DAYCARE),
         serviceNeed = FeeDecisionServiceNeed(BigDecimal("1.00"), "palveluntarve", "vårdbehövet", false),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -187,7 +188,7 @@ fun createFeeDecisionAlterationFixture(
 fun createFeeDecisionChildFixture(
     childId: UUID,
     dateOfBirth: LocalDate,
-    placementUnitId: UUID,
+    placementUnitId: DaycareId,
     placementType: PlacementType,
     serviceNeed: FeeDecisionServiceNeed,
     baseFee: Int = 28900,
@@ -234,7 +235,7 @@ fun createVoucherValueDecisionFixture(
     headOfFamilyId: UUID,
     childId: UUID,
     dateOfBirth: LocalDate,
-    unitId: UUID,
+    unitId: DaycareId,
     familySize: Int = 2,
     placementType: PlacementType,
     serviceNeed: VoucherValueDecisionServiceNeed,

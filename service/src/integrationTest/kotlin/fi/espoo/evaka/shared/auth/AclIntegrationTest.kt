@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -39,7 +40,7 @@ import java.util.UUID
 
 class AclIntegrationTest : PureJdbiTest() {
     private lateinit var employeeId: UUID
-    private lateinit var daycareId: UUID
+    private lateinit var daycareId: DaycareId
     private lateinit var groupId: GroupId
     private lateinit var childId: UUID
     private lateinit var applicationId: UUID

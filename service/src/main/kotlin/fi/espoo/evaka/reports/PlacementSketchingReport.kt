@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -102,7 +103,7 @@ ORDER BY
 
 data class PlacementSketchingReportRow(
     val areaName: String,
-    val requestedUnitId: UUID,
+    val requestedUnitId: DaycareId,
     val requestedUnitName: String,
     val childId: UUID,
     val childFirstName: String?,
@@ -111,7 +112,7 @@ data class PlacementSketchingReportRow(
     val childStreetAddr: String?,
     val applicationId: UUID?,
     val currentUnitName: String?,
-    val currentUnitId: UUID?,
+    val currentUnitId: DaycareId?,
     val assistanceNeeded: Boolean?,
     val preparatoryEducation: Boolean?,
     val siblingBasis: Boolean?,

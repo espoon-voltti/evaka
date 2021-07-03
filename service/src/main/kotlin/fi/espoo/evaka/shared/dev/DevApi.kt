@@ -55,6 +55,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -149,7 +150,7 @@ class DevApi(
     @PutMapping("/daycares/{daycareId}/acl")
     fun addAclRoleForDaycare(
         db: Database,
-        @PathVariable daycareId: UUID,
+        @PathVariable daycareId: DaycareId,
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -232,7 +233,7 @@ class DevApi(
         val id: UUID,
         val employeeId: UUID,
         val applicationId: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val type: DecisionType,
         val startDate: LocalDate,
         val endDate: LocalDate
@@ -611,7 +612,7 @@ RETURNING id
 
     data class MobileDeviceReq(
         val id: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val name: String,
         val deleted: Boolean,
         val longTermToken: UUID
@@ -768,7 +769,7 @@ data class DevCareArea(
 data class DevBackupCare(
     val id: UUID? = null,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val groupId: GroupId?,
     val period: FiniteDateRange
 )
@@ -783,7 +784,7 @@ data class DevChild(
 )
 
 data class DevDaycare(
-    val id: UUID? = UUID.randomUUID(),
+    val id: DaycareId? = DaycareId(UUID.randomUUID()),
     val name: String = "Test Daycare",
     val openingDate: LocalDate? = null,
     val closingDate: LocalDate? = null,
@@ -831,7 +832,7 @@ data class DevDaycare(
 
 data class DevDaycareGroup(
     val id: GroupId = GroupId(UUID.randomUUID()),
-    val daycareId: UUID,
+    val daycareId: DaycareId,
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1)
 )
@@ -871,7 +872,7 @@ data class DevPlacement(
     val id: PlacementId = PlacementId(UUID.randomUUID()),
     val type: PlacementType = PlacementType.DAYCARE,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31)
 )
@@ -944,7 +945,7 @@ data class DevEmployee(
 
 data class DevMobileDevice(
     val id: UUID = UUID.randomUUID(),
-    val unitId: UUID,
+    val unitId: DaycareId,
     val name: String = "Laite",
     val deleted: Boolean = false,
     val longTermToken: UUID? = null
@@ -956,7 +957,7 @@ data class DaycareAclInsert(
 )
 
 data class PlacementPlan(
-    val unitId: UUID,
+    val unitId: DaycareId,
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val preschoolDaycarePeriodStart: LocalDate?,

@@ -5,13 +5,13 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
-import java.util.UUID
 
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     // language=SQL
@@ -24,7 +24,7 @@ fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, 
         .execute()
 }
 
-fun Database.Read.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Stats {
+fun Database.Read.getUnitStats(unitId: DaycareId, startDate: LocalDate, endDate: LocalDate): Stats {
     if (startDate.isBefore(endDate.minusYears(5))) {
         throw BadRequest("Too long time range")
     }
@@ -54,7 +54,7 @@ fun Database.Read.getUnitStats(unitId: UUID, startDate: LocalDate, endDate: Loca
         .first()
 }
 
-fun Database.Read.getGroupStats(unitId: UUID, startDate: LocalDate, endDate: LocalDate): Map<GroupId, Stats> {
+fun Database.Read.getGroupStats(unitId: DaycareId, startDate: LocalDate, endDate: LocalDate): Map<GroupId, Stats> {
     // language=SQL
     val sql =
         """

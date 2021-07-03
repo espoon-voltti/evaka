@@ -24,7 +24,7 @@ fun getDaycareAclRows(db: Database.Connection, daycareId: DaycareId): List<Dayca
 fun addUnitSupervisor(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
     db.transaction {
         it.clearDaycareGroupAcl(daycareId, employeeId)
-        it.insertDaycareAclRow(daycareId.raw, employeeId.raw, UserRole.UNIT_SUPERVISOR)
+        it.insertDaycareAclRow(daycareId, employeeId.raw, UserRole.UNIT_SUPERVISOR)
         it.upsertEmployeeMessageAccount(employeeId.raw)
     }
 }
@@ -42,7 +42,7 @@ fun removeUnitSupervisor(db: Database.Connection, daycareId: DaycareId, employee
 fun addSpecialEducationTeacher(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
     db.transaction {
         it.clearDaycareGroupAcl(daycareId, employeeId)
-        it.insertDaycareAclRow(daycareId.raw, employeeId.raw, UserRole.SPECIAL_EDUCATION_TEACHER)
+        it.insertDaycareAclRow(daycareId, employeeId.raw, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 }
 
@@ -51,7 +51,7 @@ fun removeSpecialEducationTeacher(db: Database.Connection, daycareId: DaycareId,
 }
 
 fun addStaffMember(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
-    db.transaction { it.insertDaycareAclRow(daycareId.raw, employeeId.raw, UserRole.STAFF) }
+    db.transaction { it.insertDaycareAclRow(daycareId, employeeId.raw, UserRole.STAFF) }
 }
 
 fun removeStaffMember(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {

@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -557,7 +558,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             .response()
     }
 
-    private fun getGroupPlacements(childId: UUID, daycareId: UUID): List<DaycareGroupPlacement> {
+    private fun getGroupPlacements(childId: UUID, daycareId: DaycareId): List<DaycareGroupPlacement> {
         return http.get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(objectMapper)

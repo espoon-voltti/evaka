@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
@@ -17,7 +18,7 @@ private val logger = KotlinLogging.logger { }
 
 data class KoskiSearchParams(
     val personIds: List<UUID> = listOf(),
-    val daycareIds: List<UUID> = listOf()
+    val daycareIds: List<DaycareId> = listOf()
 )
 
 @Service

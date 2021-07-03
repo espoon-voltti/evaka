@@ -18,6 +18,7 @@ import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -39,7 +40,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.util.UUID
 
 class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -246,7 +246,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
     private fun createPlacement(
         startDate: LocalDate,
         endDate: LocalDate,
-        unitId: UUID = testVoucherDaycare.id
+        unitId: DaycareId = testVoucherDaycare.id
     ): PlacementId {
         val body = PlacementCreateRequestBody(
             type = PlacementType.DAYCARE,

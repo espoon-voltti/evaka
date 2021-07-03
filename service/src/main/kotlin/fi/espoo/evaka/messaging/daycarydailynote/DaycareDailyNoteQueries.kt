@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.daycarydailynote
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
@@ -17,7 +18,7 @@ fun Database.Read.getChildDaycareDailyNotes(childId: UUID): List<DaycareDailyNot
         .list()
 }
 
-fun Database.Read.getDaycareDailyNotesForChildrenPlacedInUnit(unitId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getDaycareDailyNotesForChildrenPlacedInUnit(unitId: DaycareId): List<DaycareDailyNote> {
     return createQuery(
         """
 SELECT note.* 
@@ -44,7 +45,7 @@ WHERE
         .list()
 }
 
-fun Database.Read.getDaycareDailyNotesForDaycareGroups(unitId: UUID): List<DaycareDailyNote> {
+fun Database.Read.getDaycareDailyNotesForDaycareGroups(unitId: DaycareId): List<DaycareDailyNote> {
     return createQuery(
         """
 SELECT note.* 

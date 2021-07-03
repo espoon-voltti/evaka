@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import java.time.LocalDate
 import java.util.UUID
@@ -12,7 +13,7 @@ data class Placement(
     val id: PlacementId,
     val type: PlacementType,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )

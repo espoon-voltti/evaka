@@ -20,6 +20,7 @@ import fi.espoo.evaka.messaging.message.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -73,7 +74,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         tx: Database.Transaction,
         childId: UUID,
         guardianId: UUID,
-        unitId: UUID
+        unitId: DaycareId
     ): PlacementId {
         tx.insertGuardian(guardianId, childId)
         return tx.insertTestPlacement(
@@ -91,7 +92,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         childId: UUID,
         guardianId: UUID,
         groupId: GroupId,
-        unitId: UUID
+        unitId: DaycareId
     ) {
         val daycarePlacementId = insertChildToUnit(tx, childId, guardianId, unitId)
         tx.insertTestDaycareGroupPlacement(

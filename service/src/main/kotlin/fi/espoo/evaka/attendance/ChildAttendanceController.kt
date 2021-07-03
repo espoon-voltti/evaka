@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -122,7 +123,7 @@ class ChildAttendanceController(
     fun getAttendances(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID
+        @PathVariable unitId: DaycareId
     ): ResponseEntity<AttendanceResponse> {
         Audit.ChildAttendancesRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
@@ -139,7 +140,7 @@ class ChildAttendanceController(
     fun postArrival(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: ArrivalRequest
     ): ResponseEntity<AttendanceResponse> {
@@ -172,7 +173,7 @@ class ChildAttendanceController(
     fun returnToComing(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
     ): ResponseEntity<AttendanceResponse> {
         Audit.ChildAttendancesReturnToComing.log(targetId = childId)
@@ -206,7 +207,7 @@ class ChildAttendanceController(
     fun getChildDeparture(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
     ): ResponseEntity<DepartureInfoResponse> {
@@ -241,7 +242,7 @@ class ChildAttendanceController(
     fun postDeparture(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: DepartureRequest
     ): ResponseEntity<AttendanceResponse> {
@@ -296,7 +297,7 @@ class ChildAttendanceController(
     fun returnToPresent(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID
     ): ResponseEntity<AttendanceResponse> {
         Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
@@ -329,7 +330,7 @@ class ChildAttendanceController(
     fun postFullDayAbsence(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: FullDayAbsenceRequest
     ): ResponseEntity<AttendanceResponse> {
@@ -365,7 +366,7 @@ class ChildAttendanceController(
     fun postAbsenceRange(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @PathVariable childId: UUID,
         @RequestBody body: AbsenceRangeRequest
     ): ResponseEntity<AttendanceResponse> {
@@ -410,7 +411,7 @@ data class ChildPlacementBasics(
     val placementType: PlacementType,
     val dateOfBirth: LocalDate
 )
-private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: UUID): ChildPlacementBasics {
+private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: DaycareId): ChildPlacementBasics {
     // language=sql
     val sql =
         """
@@ -435,7 +436,7 @@ data class PlacementTypeDate(
     val date: LocalDate,
     val placementType: PlacementType
 )
-private fun Database.Read.fetchChildPlacementTypeDates(childId: UUID, unitId: UUID, startDate: LocalDate, endDate: LocalDate): List<PlacementTypeDate> {
+private fun Database.Read.fetchChildPlacementTypeDates(childId: UUID, unitId: DaycareId, startDate: LocalDate, endDate: LocalDate): List<PlacementTypeDate> {
 
     // language=sql
     val sql = """
@@ -456,7 +457,7 @@ private fun Database.Read.fetchChildPlacementTypeDates(childId: UUID, unitId: UU
         .list()
 }
 
-private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceResponse {
+private fun Database.Read.getAttendancesResponse(unitId: DaycareId): AttendanceResponse {
     val unitInfo = fetchUnitInfo(unitId)
     val childrenBasics = fetchChildrenBasics(unitId)
     val childrenAttendances = fetchChildrenAttendances(unitId)

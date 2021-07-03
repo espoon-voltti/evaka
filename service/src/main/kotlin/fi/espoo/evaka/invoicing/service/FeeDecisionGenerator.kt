@@ -30,6 +30,7 @@ import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -97,7 +98,7 @@ private fun generateFeeDecisions2(
     prices: List<FeeThresholds>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
-    invoicedUnits: List<UUID>
+    invoicedUnits: List<DaycareId>
 ): List<FeeDecision> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.validDuring } +
@@ -196,9 +197,9 @@ private fun generateFeeDecisions2(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun Database.Read.getUnitsThatAreInvoiced(): List<UUID> {
+private fun Database.Read.getUnitsThatAreInvoiced(): List<DaycareId> {
     return createQuery("SELECT id FROM daycare WHERE invoiced_by_municipality")
-        .mapTo<UUID>()
+        .mapTo<DaycareId>()
         .toList()
 }
 

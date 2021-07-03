@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
@@ -160,7 +161,7 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var unitId: UUID? = null
+        private var unitId: DaycareId? = null
         private var type: PlacementType? = null
         private var deleted = false
         private var preschoolDaycareDates: FiniteDateRange? = null
@@ -169,7 +170,7 @@ class FixtureBuilder(
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
+        fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
         fun asDeleted() = this.apply { this.deleted = true }
         fun withPreschoolDaycareDates(range: FiniteDateRange) = this.apply { this.preschoolDaycareDates = range }
@@ -202,14 +203,14 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var unitId: UUID? = null
+        private var unitId: DaycareId? = null
         private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
+        fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): ChildFixture {
@@ -231,14 +232,14 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate = today
         private var to: LocalDate = today
-        private var unitId: UUID? = null
+        private var unitId: DaycareId? = null
         private var type: PlacementType? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toUnit(id: UUID) = this.apply { this.unitId = id }
+        fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
 
         fun save(): ChildFixture {

@@ -24,6 +24,7 @@ import fi.espoo.evaka.placement.PlacementPlanDraft
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -404,7 +405,7 @@ class ApplicationControllerV2(
     fun acceptPlacementProposal(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "unitId") unitId: UUID
+        @PathVariable(value = "unitId") unitId: DaycareId
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.acceptPlacementProposal(it, user, unitId) }
         return ResponseEntity.noContent().build()
@@ -548,7 +549,7 @@ data class PlacementProposalConfirmationUpdate(
 )
 
 data class DaycarePlacementPlan(
-    val unitId: UUID,
+    val unitId: DaycareId,
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange? = null
 )

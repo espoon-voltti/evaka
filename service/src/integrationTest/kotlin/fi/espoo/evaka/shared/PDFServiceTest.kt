@@ -56,7 +56,7 @@ private val clubDecision = createValidDecision(applicationId = application.id, t
 private val voucherDecision = daycareDecision.copy(
     endDate = LocalDate.of(2019, 7, 31),
     unit = DecisionUnit(
-        UUID.randomUUID(),
+        DaycareId(UUID.randomUUID()),
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkodin esiopetus",
@@ -182,7 +182,7 @@ fun createValidDecision(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     unit: DecisionUnit = DecisionUnit(
-        UUID.randomUUID(),
+        DaycareId(UUID.randomUUID()),
         "Kuusenkerkän päiväkoti",
         "Kuusenkerkän päiväkoti",
         "Kuusenkerkän päiväkodin esiopetus",

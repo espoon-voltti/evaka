@@ -27,6 +27,7 @@ import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -41,7 +42,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import java.time.LocalDate
-import java.util.UUID
 
 val basicDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 val detailedDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -53,7 +53,7 @@ class UnitsView(private val acl: AccessControlList) {
     fun getUnitViewData(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam(
             value = "to",
@@ -131,7 +131,7 @@ data class UnitOccupancies(
 
 private fun getUnitOccupancies(
     tx: Database.Read,
-    unitId: UUID,
+    unitId: DaycareId,
     period: FiniteDateRange
 ): UnitOccupancies {
     return UnitOccupancies(
@@ -156,7 +156,7 @@ data class GroupOccupancies(
 
 private fun getGroupOccupancies(
     tx: Database.Read,
-    unitId: UUID,
+    unitId: DaycareId,
     period: FiniteDateRange
 ): GroupOccupancies {
     return GroupOccupancies(

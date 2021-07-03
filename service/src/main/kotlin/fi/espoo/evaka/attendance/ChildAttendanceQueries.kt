@@ -14,6 +14,7 @@ import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareG
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.getPlacementsForChild
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -25,7 +26,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Transaction.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
+fun Database.Transaction.insertAttendance(childId: UUID, unitId: DaycareId, arrived: Instant, departed: Instant? = null): ChildAttendance {
     // language=sql
     val sql =
         """
@@ -62,7 +63,7 @@ fun Database.Transaction.insertAbsence(user: AuthenticatedUser, childId: UUID, d
         .first()
 }
 
-fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: DaycareId): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -82,7 +83,7 @@ fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): Chi
         .firstOrNull()
 }
 
-fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: DaycareId): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -98,7 +99,7 @@ fun Database.Read.getChildOngoingAttendance(childId: UUID, unitId: UUID): ChildA
         .firstOrNull()
 }
 
-fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
+fun Database.Read.fetchUnitInfo(unitId: DaycareId): UnitInfo {
     data class UnitBasics(
         val id: UUID,
         val name: String
@@ -165,7 +166,7 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
         }
 }
 
-fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
+fun Database.Read.fetchChildrenBasics(unitId: DaycareId): List<ChildBasics> {
     // language=sql
     val sql =
         """
@@ -271,7 +272,7 @@ private val placedChildrenSql =
     WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :today    
     """.trimIndent()
 
-fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
+fun Database.Read.fetchChildrenAttendances(unitId: DaycareId): List<ChildAttendance> {
     // language=sql
     val sql =
         """
@@ -292,7 +293,7 @@ fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> 
         .list()
 }
 
-fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
+fun Database.Read.fetchChildrenAbsences(unitId: DaycareId): List<ChildAbsence> {
     // language=sql
     val sql =
         """

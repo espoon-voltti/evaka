@@ -8,9 +8,11 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
@@ -83,7 +85,7 @@ class DecisionDraftService {
 
     data class DecisionDraftUpdate(
         val id: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val startDate: LocalDate,
         val endDate: LocalDate,
         val planned: Boolean
@@ -100,7 +102,7 @@ class DecisionDraftService {
             .toList()
     }
 
-    fun getDecisionUnit(tx: Database.Read, unitId: UUID): DecisionUnit {
+    fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
         // language=SQL
         val sql =
             """
@@ -198,7 +200,7 @@ LEFT JOIN unit_manager m ON u.unit_manager_id = m.id
 
 private val toDecisionUnit = { rs: ResultSet ->
     DecisionUnit(
-        id = UUID.fromString(rs.getString("id")),
+        id = DaycareId(rs.getUUID("id")),
         name = rs.getString("name"),
         manager = rs.getString("manager"),
         streetAddress = rs.getString("street_address"),

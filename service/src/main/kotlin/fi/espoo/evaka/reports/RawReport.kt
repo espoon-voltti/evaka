@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.youngChildOccupancyCoefficient
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -125,7 +126,7 @@ ORDER BY p.id, t
                 language = rs.getString("language"),
                 postOffice = rs.getString("post_office"),
                 placementType = rs.getEnum("placement_type"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 careArea = rs.getString("care_area"),
                 unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
@@ -134,7 +135,7 @@ ORDER BY p.id, t
                 groupName = rs.getString("group_name"),
                 caretakersPlanned = rs.getBigDecimal("caretakers_planned")?.toDouble(),
                 caretakersRealized = rs.getBigDecimal("caretakers_realized")?.toDouble(),
-                backupUnitId = rs.getNullableUUID("backup_unit_id"),
+                backupUnitId = rs.getNullableUUID("backup_unit_id")?.let(::DaycareId),
                 backupGroupId = rs.getNullableUUID("backup_group_id")?.let(::GroupId),
                 hasServiceNeed = rs.getBoolean("has_service_need"),
                 partDay = rs.getBoolean("part_day"),
@@ -159,7 +160,7 @@ data class RawReportRow(
     val age: Int,
     val language: String?,
     val placementType: PlacementType,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val careArea: String,
     val unitType: UnitType?,
@@ -168,7 +169,7 @@ data class RawReportRow(
     val groupName: String?,
     val caretakersPlanned: Double?,
     val caretakersRealized: Double?,
-    val backupUnitId: UUID?,
+    val backupUnitId: DaycareId?,
     val backupGroupId: GroupId?,
     val hasServiceNeed: Boolean,
     val partDay: Boolean?,

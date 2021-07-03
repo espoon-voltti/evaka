@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -354,7 +355,7 @@ fun Database.Read.fetchApplicationSummaries(
                     startDate = row.mapColumn("preferredStartDate"),
                     preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
                         PreferredUnit(
-                            id = UUID.fromString(it),
+                            id = DaycareId(UUID.fromString(it)),
                             name = "" // filled afterwards
                         )
                     },
@@ -381,7 +382,7 @@ fun Database.Read.fetchApplicationSummaries(
                             )
                         },
                     placementProposalUnitName = row.mapColumn("unit_name"),
-                    currentPlacementUnit = row.mapColumn<UUID?>("current_placement_unit_id")?.let {
+                    currentPlacementUnit = row.mapColumn<DaycareId?>("current_placement_unit_id")?.let {
                         PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
                     }
                 )
@@ -399,7 +400,7 @@ fun Database.Read.fetchApplicationSummaries(
     val unitIds = applicationSummaries.data.flatMap { summary -> summary.preferredUnits.map { unit -> unit.id } }
     val unitMap = createQuery(unitSql)
         .bind("unitIds", unitIds.toTypedArray())
-        .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
+        .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
         .toMap()
 
     return applicationSummaries.copy(
@@ -519,7 +520,7 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
         applicationId = rs.getUUID("id"),
         childId = rs.getUUID("childId"),
         guardianId = rs.getUUID("guardianId"),
-        preferredUnitId = rs.getUUID("preferredUnit"),
+        preferredUnitId = DaycareId(rs.getUUID("preferredUnit")),
         preferredUnitName = rs.getString("daycareName"),
         childName = rs.getString("childName"),
         childSsn = rs.getString("childSsn"),
@@ -623,7 +624,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAtt
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         val unitMap = createQuery(unitSql)
             .bind("unitIds", unitIds.toTypedArray())
-            .map { row -> row.mapColumn<UUID>("id") to row.mapColumn<String>("name") }
+            .map { row -> row.mapColumn<DaycareId>("id") to row.mapColumn<String>("name") }
             .toMap()
 
         return application.copy(
@@ -641,7 +642,7 @@ fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAtt
     } else return null
 }
 
-fun Database.Read.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummary> {
+fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<ApplicationUnitSummary> {
     //language=sql
     val sql =
         """

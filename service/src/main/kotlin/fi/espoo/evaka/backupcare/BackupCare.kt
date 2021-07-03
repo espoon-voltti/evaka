@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.mapper.Nested
@@ -35,7 +36,7 @@ data class GroupBackupCare(
 )
 
 data class BackupCareChild(val id: UUID, val firstName: String, val lastName: String, val birthDate: LocalDate)
-data class BackupCareUnit(val id: UUID, val name: String)
+data class BackupCareUnit(val id: DaycareId, val name: String)
 @PropagateNull("group_id")
 data class BackupCareGroup(val id: GroupId, val name: String)
-data class NewBackupCare(val unitId: UUID, val groupId: GroupId?, val period: FiniteDateRange)
+data class NewBackupCare(val unitId: DaycareId, val groupId: GroupId?, val period: FiniteDateRange)

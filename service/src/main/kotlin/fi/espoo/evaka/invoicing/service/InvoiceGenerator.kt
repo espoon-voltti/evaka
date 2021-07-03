@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
@@ -82,7 +83,7 @@ internal fun generateDraftInvoices(
     decisions: Map<UUID, List<FeeDecision>>,
     placements: Map<UUID, List<Placements>>,
     period: DateRange,
-    daycareCodes: Map<UUID, DaycareCodes>,
+    daycareCodes: Map<DaycareId, DaycareCodes>,
     operationalDays: OperationalDays,
     absences: List<AbsenceStub> = listOf(),
     freeChildren: List<UUID> = listOf()
@@ -111,7 +112,7 @@ internal fun generateDraftInvoice(
     decisions: List<FeeDecision>,
     placements: List<Placements>,
     invoicePeriod: DateRange,
-    daycareCodes: Map<UUID, DaycareCodes>,
+    daycareCodes: Map<DaycareId, DaycareCodes>,
     operationalDays: OperationalDays,
     absences: List<AbsenceStub>,
     freeChildren: List<UUID>
@@ -548,9 +549,9 @@ fun Database.Read.getAbsenceStubs(spanningPeriod: DateRange, careTypes: List<Car
         .toList()
 }
 
-sealed class PlacementStub(open val unit: UUID) {
-    data class Temporary(override val unit: UUID, val partDay: Boolean) : PlacementStub(unit)
-    data class Permanent(override val unit: UUID) : PlacementStub(unit)
+sealed class PlacementStub(open val unit: DaycareId) {
+    data class Temporary(override val unit: DaycareId, val partDay: Boolean) : PlacementStub(unit)
+    data class Permanent(override val unit: DaycareId) : PlacementStub(unit)
 }
 
 data class Placements(
@@ -579,7 +580,7 @@ internal fun Database.Read.getInvoiceablePlacements(
                         rs.getObject("start_date", LocalDate::class.java),
                         rs.getObject("end_date", LocalDate::class.java)
                     ),
-                    rs.getUUID("unit_id"),
+                    DaycareId(rs.getUUID("unit_id")),
                     rs.getEnum<PlacementType>("type")
                 )
             )
@@ -698,7 +699,7 @@ fun Database.Read.getChildrenWithHeadOfFamilies(
         .list()
 }
 
-fun Database.Read.getDaycareCodes(): Map<UUID, DaycareCodes> {
+fun Database.Read.getDaycareCodes(): Map<DaycareId, DaycareCodes> {
     val sql =
         """
         SELECT daycare.id, daycare.cost_center, area.area_code, area.sub_cost_center
@@ -706,7 +707,7 @@ fun Database.Read.getDaycareCodes(): Map<UUID, DaycareCodes> {
     """
     return createQuery(sql)
         .map { rs, _ ->
-            UUID.fromString(rs.getString("id")) to DaycareCodes(
+            DaycareId(rs.getUUID("id")) to DaycareCodes(
                 areaCode = rs.getObject("area_code") as Int?,
                 costCenter = rs.getString("cost_center"),
                 subCostCenter = rs.getString("sub_cost_center")

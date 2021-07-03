@@ -12,6 +12,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -29,7 +30,7 @@ fun createPlacement(
     tx: Database.Transaction,
     type: PlacementType,
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
     useFiveYearsOldDaycare: Boolean
@@ -247,7 +248,7 @@ private fun checkAclAuth(aclAuth: AclAuthorization, placement: Placement) {
 }
 
 fun Database.Read.getDetailedDaycarePlacements(
-    daycareId: UUID?,
+    daycareId: DaycareId?,
     childId: UUID?,
     startDate: LocalDate?,
     endDate: LocalDate?
@@ -354,7 +355,7 @@ private fun handleFiveYearOldDaycare(tx: Database.Transaction, childId: UUID, ty
 
 fun getMissingGroupPlacements(
     tx: Database.Read,
-    unitId: UUID
+    unitId: DaycareId
 ): List<MissingGroupPlacement> {
     data class GroupPlacementGap(
         val backup: Boolean,
@@ -513,7 +514,7 @@ data class ChildBasics(
 )
 
 data class DaycareBasics(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val area: String,
     val providerType: ProviderType

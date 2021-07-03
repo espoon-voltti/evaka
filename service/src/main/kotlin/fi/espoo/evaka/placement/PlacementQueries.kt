@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
@@ -37,7 +38,7 @@ fun Database.Read.getPlacementDraftPlacements(childId: UUID): List<PlacementDraf
         val id: UUID,
         val type: PlacementType,
         val childId: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val unitName: String,
         val startDate: LocalDate,
         val endDate: LocalDate
@@ -87,7 +88,7 @@ fun Database.Read.getPlacementsForChildDuring(childId: UUID, start: LocalDate, e
 fun Database.Transaction.insertPlacement(
     type: PlacementType,
     childId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate
 ): Placement {
@@ -230,7 +231,7 @@ fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, da
 }
 
 fun Database.Read.getDaycarePlacements(
-    daycareId: UUID?,
+    daycareId: DaycareId?,
     childId: UUID?,
     startDate: LocalDate?,
     endDate: LocalDate?
@@ -379,7 +380,7 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
 }
 
 fun Database.Read.getDaycareGroupPlacements(
-    daycareId: UUID,
+    daycareId: DaycareId,
     startDate: LocalDate?,
     endDate: LocalDate?,
     groupId: GroupId? = null
@@ -505,7 +506,7 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
             dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
         ),
         daycare = DaycareBasics(
-            id = rs.getUUID("unit_id"),
+            id = DaycareId(rs.getUUID("unit_id")),
             name = rs.getString("unit_name"),
             area = rs.getString("area_name"),
             providerType = rs.getEnum("provider_type")
@@ -527,7 +528,7 @@ private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycareP
             dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
         ),
         daycare = DaycareBasics(
-            id = rs.getUUID("unit_id"),
+            id = DaycareId(rs.getUUID("unit_id")),
             name = rs.getString("daycare_name"),
             area = rs.getString("area_name"),
             providerType = rs.getEnum("provider_type")

@@ -9,6 +9,7 @@ import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -281,7 +282,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun insertTestVardaUnit(db: Database.Connection, id: UUID) = db.transaction {
+private fun insertTestVardaUnit(db: Database.Connection, id: DaycareId) = db.transaction {
     // language=sql
     val sql =
         """

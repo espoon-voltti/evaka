@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.updateExactlyOne
 import fi.espoo.evaka.shared.domain.NotFound
@@ -24,7 +25,7 @@ fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQu
 ).bind("token", token).mapTo<MobileDeviceIdentity>().singleOrNull()
     ?: throw NotFound("Device not found with token $token")
 
-fun Database.Read.listDevices(unitId: UUID): List<MobileDevice> {
+fun Database.Read.listDevices(unitId: DaycareId): List<MobileDevice> {
     // language=sql
     val sql = "SELECT * FROM mobile_device WHERE unit_id = :unitId AND deleted = false"
     return createQuery(sql)

@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -62,7 +63,7 @@ data class PersonApplicationSummary(
     val applicationId: UUID,
     val childId: UUID,
     val guardianId: UUID,
-    val preferredUnitId: UUID?,
+    val preferredUnitId: DaycareId?,
     val preferredUnitName: String?,
     val childName: String?,
     val childSsn: String?,
@@ -142,7 +143,7 @@ enum class ApplicationOrigin {
 }
 
 data class PreferredUnit(
-    val id: UUID,
+    val id: DaycareId,
     val name: String
 )
 

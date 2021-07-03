@@ -15,8 +15,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.shared.Id
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.array.SqlArrayType
-import org.jdbi.v3.core.array.SqlArrayTypeFactory
-import org.jdbi.v3.core.config.ConfigRegistry
 import org.jdbi.v3.core.generic.GenericType
 import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.kotlin.KotlinPlugin
@@ -101,8 +99,10 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     jdbi.registerArrayType { elementType, _ ->
-        Optional.ofNullable(SqlArrayType.of<Id<*>>("uuid") { it.raw }
-            .takeIf { Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType)) })
+        Optional.ofNullable(
+            SqlArrayType.of<Id<*>>("uuid") { it.raw }
+                .takeIf { Id::class.java.isAssignableFrom(GenericTypes.getErasedType(elementType)) }
+        )
     }
     jdbi.registerRowMapper(FeeDecision::class.java, feeDecisionRowMapper(objectMapper))
     jdbi.registerRowMapper(FeeDecisionDetailed::class.java, feeDecisionDetailedRowMapper(objectMapper))

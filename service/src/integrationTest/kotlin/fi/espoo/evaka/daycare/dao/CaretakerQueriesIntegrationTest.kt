@@ -8,6 +8,7 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.junit.jupiter.api.AfterEach
@@ -21,8 +22,8 @@ import java.util.UUID
 
 class CaretakerQueriesIntegrationTest : PureJdbiTest() {
     val careAreaId = UUID.randomUUID()
-    val daycareId = UUID.randomUUID()
-    val daycareId2 = UUID.randomUUID()
+    val daycareId = DaycareId(UUID.randomUUID())
+    val daycareId2 = DaycareId(UUID.randomUUID())
     val groupId1 = GroupId(UUID.randomUUID())
     val groupId2 = GroupId(UUID.randomUUID())
     val groupId3 = GroupId(UUID.randomUUID())

@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -68,7 +69,7 @@ VALUES (
 fun Database.Read.getPlacementPlan(applicationId: UUID): PlacementPlan? {
     data class QueryResult(
         val id: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val applicationId: UUID,
         val type: PlacementType,
         val startDate: LocalDate,
@@ -116,10 +117,10 @@ WHERE application_id = :applicationId AND deleted = false
         .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
 }
 
-fun Database.Read.getPlacementPlans(unitId: UUID, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
+fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
     data class QueryResult(
         val id: UUID,
-        val unitId: UUID,
+        val unitId: DaycareId,
         val applicationId: UUID,
         val type: PlacementType,
         val startDate: LocalDate,

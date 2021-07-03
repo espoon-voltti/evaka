@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.message
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
@@ -69,7 +70,7 @@ data class Group(
     @PropagateNull
     val id: UUID,
     val name: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
 )
 

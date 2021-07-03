@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -52,7 +53,7 @@ class PlacementController(
     fun getPlacements(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(value = "daycareId", required = false) daycareId: UUID? = null,
+        @RequestParam(value = "daycareId", required = false) daycareId: DaycareId? = null,
         @RequestParam(value = "childId", required = false) childId: UUID? = null,
         @RequestParam(
             value = "from",
@@ -87,7 +88,7 @@ class PlacementController(
     fun getPlacementPlans(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(value = "daycareId", required = true) daycareId: UUID,
+        @RequestParam(value = "daycareId", required = true) daycareId: DaycareId,
         @RequestParam(
             value = "from",
             required = false
@@ -256,7 +257,7 @@ class PlacementController(
 data class PlacementCreateRequestBody(
     val type: PlacementType,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate
 )

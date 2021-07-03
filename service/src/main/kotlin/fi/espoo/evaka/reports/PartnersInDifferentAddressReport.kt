@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -74,7 +75,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
         .map { rs, _ ->
             PartnersInDifferentAddressReportRow(
                 careAreaName = rs.getString("care_area_name"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 personId1 = rs.getUUID("person_id_1"),
                 firstName1 = rs.getString("first_name_1"),
@@ -91,7 +92,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
 
 data class PartnersInDifferentAddressReportRow(
     val careAreaName: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val personId1: UUID,
     val firstName1: String?,
