@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
@@ -125,7 +126,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: UUID): UUID {
+    private fun insertPlacement(childId: UUID, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: UUID): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,

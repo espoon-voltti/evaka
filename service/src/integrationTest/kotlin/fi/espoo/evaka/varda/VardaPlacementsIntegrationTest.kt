@@ -10,6 +10,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -436,7 +437,7 @@ VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
     }
 }
 
-internal fun insertTestVardaDecision(db: Database.Connection, decisionId: UUID? = null, placementId: UUID? = null): UUID {
+internal fun insertTestVardaDecision(db: Database.Connection, decisionId: UUID? = null, placementId: PlacementId? = null): UUID {
     val id = UUID.randomUUID()
     db.transaction {
         insertVardaDecision(
@@ -460,7 +461,7 @@ internal fun insertPlacement(
     period: FiniteDateRange,
     type: PlacementType = DAYCARE,
     unitId: UUID = testDaycare.id
-): UUID {
+): PlacementId {
     return db.transaction {
         it.insertTestPlacement(
             childId = childId,
@@ -472,7 +473,7 @@ internal fun insertPlacement(
     }
 }
 
-internal fun updatePlacement(db: Database.Connection, id: UUID, updatedAt: Instant) {
+internal fun updatePlacement(db: Database.Connection, id: PlacementId, updatedAt: Instant) {
     db.transaction {
         it.createUpdate("UPDATE placement SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)

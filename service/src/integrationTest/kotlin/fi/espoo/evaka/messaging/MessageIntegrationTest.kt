@@ -80,10 +80,8 @@ class MessageIntegrationTest : FullApplicationTest() {
         tx.insertTestPerson(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
         tx.insertTestChild(DevChild(id = child.id))
 
-        val placementId = UUID.randomUUID()
-        tx.insertTestPlacement(
+        val placementId = tx.insertTestPlacement(
             DevPlacement(
-                id = placementId,
                 childId = child.id,
                 unitId = testDaycare.id,
                 startDate = placementStart,

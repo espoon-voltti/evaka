@@ -10,6 +10,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -33,7 +34,7 @@ import java.util.UUID
 class ServiceNeedIntegrationTest : FullApplicationTest() {
     private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
 
-    lateinit var placementId: UUID
+    lateinit var placementId: PlacementId
 
     @BeforeEach
     private fun beforeEach() {
@@ -291,7 +292,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun testDate(day: Int) = LocalDate.now().plusDays(day.toLong())
 
-    private fun givenServiceNeed(start: Int, end: Int, placementId: UUID, optionId: UUID = snDefaultDaycare.id): UUID {
+    private fun givenServiceNeed(start: Int, end: Int, placementId: PlacementId, optionId: UUID = snDefaultDaycare.id): UUID {
         return db.transaction { tx ->
             tx.insertTestServiceNeed(
                 confirmedBy = unitSupervisor.id,
@@ -311,7 +312,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun getServiceNeeds(childId: UUID, placementId: UUID): List<ServiceNeed> {
+    private fun getServiceNeeds(childId: UUID, placementId: PlacementId): List<ServiceNeed> {
         val (_, res, result) = http.get("/placements?childId=$childId")
             .asUser(unitSupervisor)
             .responseObject<List<DaycarePlacementWithDetails>>(objectMapper)

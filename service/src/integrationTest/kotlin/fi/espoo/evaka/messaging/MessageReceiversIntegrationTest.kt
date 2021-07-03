@@ -21,6 +21,7 @@ import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -73,7 +74,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
         childId: UUID,
         guardianId: UUID,
         unitId: UUID
-    ): UUID {
+    ): PlacementId {
         tx.insertGuardian(guardianId, childId)
         return tx.insertTestPlacement(
             DevPlacement(

@@ -6,6 +6,7 @@ package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,7 +33,7 @@ class ServiceNeedController(
 ) {
 
     data class ServiceNeedCreateRequest(
-        val placementId: UUID,
+        val placementId: PlacementId,
         val startDate: LocalDate,
         val endDate: LocalDate,
         val optionId: UUID,

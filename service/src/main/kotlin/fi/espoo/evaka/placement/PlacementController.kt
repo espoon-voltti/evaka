@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -145,7 +146,7 @@ class PlacementController(
     fun updatePlacementById(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("placementId") placementId: UUID,
+        @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
     ): ResponseEntity<Unit> {
         Audit.PlacementUpdate.log(targetId = placementId)
@@ -177,7 +178,7 @@ class PlacementController(
     fun deletePlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("placementId") placementId: UUID
+        @PathVariable("placementId") placementId: PlacementId
     ): ResponseEntity<Unit> {
         Audit.PlacementCancel.log(targetId = placementId)
         acl.getRolesForPlacement(user, placementId)
@@ -199,7 +200,7 @@ class PlacementController(
     fun createGroupPlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("placementId") placementId: UUID,
+        @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
     ): ResponseEntity<UUID> {
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
@@ -222,7 +223,7 @@ class PlacementController(
     fun deleteGroupPlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
+        @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
         @PathVariable("groupPlacementId") groupPlacementId: UUID
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
@@ -238,7 +239,7 @@ class PlacementController(
     fun transferGroupPlacement(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
+        @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
         @PathVariable("groupPlacementId") groupPlacementId: UUID,
         @RequestBody body: GroupTransferRequestBody
     ): ResponseEntity<Unit> {

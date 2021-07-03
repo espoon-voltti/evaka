@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -419,16 +420,16 @@ INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
 VALUES (:id, :type, :childId, :unitId, :startDate, :endDate)
 RETURNING id
 """
-)
+).let(::PlacementId)
 
 fun Database.Transaction.insertTestPlacement(
-    id: UUID = UUID.randomUUID(),
+    id: PlacementId = PlacementId(UUID.randomUUID()),
     childId: UUID = UUID.randomUUID(),
     unitId: UUID = UUID.randomUUID(),
     type: PlacementType = PlacementType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): PlacementId {
     createUpdate(
         """
             INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date)
@@ -451,7 +452,7 @@ fun Database.Transaction.insertTestPlacement(
 
 fun Database.Transaction.insertTestServiceNeed(
     confirmedBy: UUID,
-    placementId: UUID,
+    placementId: PlacementId,
     period: FiniteDateRange,
     optionId: UUID,
     shiftCare: Boolean = false,
@@ -590,7 +591,7 @@ VALUES (:id, :daycareId, :name, :startDate)
 ).let(::GroupId)
 
 fun Database.Transaction.insertTestDaycareGroupPlacement(
-    daycarePlacementId: UUID = UUID.randomUUID(),
+    daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),
     groupId: GroupId = GroupId(UUID.randomUUID()),
     id: UUID = UUID.randomUUID(),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),

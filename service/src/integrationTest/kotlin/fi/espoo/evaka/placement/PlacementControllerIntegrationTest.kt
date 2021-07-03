@@ -11,6 +11,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -547,7 +548,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     }
 
     private fun createGroupPlacement(
-        placementId: UUID,
+        placementId: PlacementId,
         groupPlacement: GroupPlacementRequestBody
     ): ResponseResultOf<ByteArray> {
         return http.post("/placements/$placementId/group-placements")

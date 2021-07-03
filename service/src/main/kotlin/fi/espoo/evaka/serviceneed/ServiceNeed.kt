@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -21,7 +22,7 @@ import java.util.UUID
 
 data class ServiceNeed(
     val id: UUID,
-    val placementId: UUID,
+    val placementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate,
     @Nested("option")
@@ -76,7 +77,7 @@ data class ServiceNeedOption(
 
 fun validateServiceNeed(
     db: Database.Read,
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID
@@ -117,7 +118,7 @@ fun validateServiceNeed(
 fun createServiceNeed(
     tx: Database.Transaction,
     user: AuthenticatedUser,
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID,
@@ -167,7 +168,7 @@ fun updateServiceNeed(
     )
 }
 
-fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: UUID, periodToClear: FiniteDateRange, excluding: UUID? = null) {
+fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: PlacementId, periodToClear: FiniteDateRange, excluding: UUID? = null) {
     tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding).forEach { old ->
         val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
         when {

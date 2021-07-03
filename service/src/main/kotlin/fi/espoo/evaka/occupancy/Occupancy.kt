@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
@@ -541,7 +542,7 @@ private data class Caretakers<K : OccupancyGroupingKey>(
 
 private data class Placement(
     val groupingId: UUID,
-    val placementId: UUID,
+    val placementId: PlacementId,
     val childId: UUID,
     val unitId: UUID,
     val type: PlacementType,
@@ -562,7 +563,7 @@ private data class Child(
 )
 
 private data class ServiceNeed(
-    val placementId: UUID,
+    val placementId: PlacementId,
     val occupancyCoefficient: BigDecimal,
     val period: FiniteDateRange
 )

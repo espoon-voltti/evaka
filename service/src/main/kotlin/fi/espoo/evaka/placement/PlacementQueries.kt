@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
@@ -24,7 +25,7 @@ private val placementSelector =
         FROM placement p
     """.trimIndent()
 
-fun Database.Read.getPlacement(id: UUID): Placement? {
+fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery("$placementSelector WHERE p.id = :id")
         .bind("id", id)
         .mapTo<Placement>()
@@ -107,7 +108,7 @@ fun Database.Transaction.insertPlacement(
         .first()
 }
 
-fun Database.Transaction.updatePlacementStartDate(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.updatePlacementStartDate(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -119,7 +120,7 @@ fun Database.Transaction.updatePlacementStartDate(placementId: UUID, date: Local
         .execute()
 }
 
-fun Database.Transaction.updatePlacementEndDate(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.updatePlacementEndDate(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -131,7 +132,7 @@ fun Database.Transaction.updatePlacementEndDate(placementId: UUID, date: LocalDa
         .execute()
 }
 
-fun Database.Transaction.updatePlacementStartAndEndDate(placementId: UUID, startDate: LocalDate, endDate: LocalDate) {
+fun Database.Transaction.updatePlacementStartAndEndDate(placementId: PlacementId, startDate: LocalDate, endDate: LocalDate) {
     createUpdate("UPDATE placement SET start_date = :start, end_date = :end WHERE id = :id")
         .bind("id", placementId)
         .bind("start", startDate)
@@ -139,7 +140,7 @@ fun Database.Transaction.updatePlacementStartAndEndDate(placementId: UUID, start
         .execute()
 }
 
-fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, LocalDate> {
+fun Database.Transaction.cancelPlacement(id: PlacementId): Triple<UUID, LocalDate, LocalDate> {
     data class QueryResult(
         val childId: UUID,
         val startDate: LocalDate,
@@ -180,7 +181,7 @@ fun Database.Transaction.cancelPlacement(id: UUID): Triple<UUID, LocalDate, Loca
         }
 }
 
-fun Database.Transaction.clearGroupPlacementsAfter(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -204,7 +205,7 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: UUID, date: Loca
         .execute()
 }
 
-fun Database.Transaction.clearGroupPlacementsBefore(placementId: UUID, date: LocalDate) {
+fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, date: LocalDate) {
     createUpdate(
         //language=SQL
         """
@@ -268,7 +269,7 @@ fun Database.Read.getDaycarePlacements(
         .toList()
 }
 
-fun Database.Read.getDaycarePlacement(id: UUID): DaycarePlacement? {
+fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
     // language=SQL
     val sql =
         """
@@ -322,7 +323,7 @@ fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
 }
 
 fun Database.Read.getIdenticalPrecedingGroupPlacement(
-    daycarePlacementId: UUID,
+    daycarePlacementId: PlacementId,
     groupId: GroupId,
     startDate: LocalDate
 ): DaycareGroupPlacement? {
@@ -350,7 +351,7 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
 }
 
 fun Database.Read.getIdenticalPostcedingGroupPlacement(
-    daycarePlacementId: UUID,
+    daycarePlacementId: PlacementId,
     groupId: GroupId,
     endDate: LocalDate
 ): DaycareGroupPlacement? {
@@ -439,7 +440,7 @@ fun Database.Read.getChildGroupPlacements(
 }
 
 fun Database.Transaction.createGroupPlacement(
-    placementId: UUID,
+    placementId: PlacementId,
     groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
@@ -495,7 +496,7 @@ fun Database.Transaction.deleteGroupPlacement(id: UUID): Boolean {
 
 private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacement = { rs, _ ->
     DaycarePlacement(
-        id = rs.getUUID("placement_id"),
+        id = PlacementId(rs.getUUID("placement_id")),
         child = ChildBasics(
             id = rs.getUUID("child_id"),
             socialSecurityNumber = rs.getString("child_ssn"),
@@ -517,7 +518,7 @@ private val toDaycarePlacement: (ResultSet, StatementContext) -> DaycarePlacemen
 
 private val toDaycarePlacementDetails: (ResultSet, StatementContext) -> DaycarePlacementDetails = { rs, _ ->
     DaycarePlacementDetails(
-        id = rs.getUUID("id"),
+        id = PlacementId(rs.getUUID("id")),
         child = ChildBasics(
             id = rs.getUUID("child_id"),
             socialSecurityNumber = rs.getString("social_security_number"),

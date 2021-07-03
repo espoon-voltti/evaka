@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -43,7 +44,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     lateinit var oldPlacement: Placement
     lateinit var groupId1: GroupId
     lateinit var groupId2: GroupId
-    lateinit var daycarePlacementId: UUID
+    lateinit var daycarePlacementId: PlacementId
     lateinit var groupPlacementId: UUID
 
     @BeforeEach
@@ -727,7 +728,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `if no group placements then getDaycarePlacements shows full range without groupId`() {
-        val daycarePlacementId = UUID.randomUUID()
+        val daycarePlacementId = PlacementId(UUID.randomUUID())
         val daycarePlacementStartDate = placementStart
         val daycarePlacementEndDate = placementStart.plusDays(5)
         val daycarePlacementType = PlacementType.DAYCARE
@@ -782,7 +783,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     fun `if there are group placements then getDaycarePlacements also shows gaps without groupId`() {
         val date = { day: Int -> LocalDate.of(year, month, day) }
 
-        val daycarePlacementId = UUID.randomUUID()
+        val daycarePlacementId = PlacementId(UUID.randomUUID())
         val daycarePlacementStartDate = date(1)
         val daycarePlacementEndDate = date(20)
         val daycarePlacementType = PlacementType.DAYCARE
