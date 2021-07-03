@@ -18,6 +18,7 @@ sealed interface DatabaseTable {
     sealed class Daycare : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class Group : DatabaseTable
+    sealed class Partnership : DatabaseTable
     sealed class Person : DatabaseTable
     sealed class Placement : DatabaseTable
 }
@@ -29,6 +30,7 @@ typealias ChildId = Id<DatabaseTable.Person>
 typealias DaycareId = Id<DatabaseTable.Daycare>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 typealias GroupId = Id<DatabaseTable.Group>
+typealias PartnershipId = Id<DatabaseTable.Partnership>
 typealias PersonId = Id<DatabaseTable.Person>
 typealias PlacementId = Id<DatabaseTable.Placement>
 
@@ -39,7 +41,7 @@ data class Id<out T : DatabaseTable>(val raw: UUID) : Comparable<Id<*>> {
     override fun hashCode(): Int = raw.hashCode()
     override fun compareTo(other: Id<*>): Int = this.raw.compareTo(other.raw)
 
-    class FromJson : StdConverter<UUID, Id<*>>() {
+    class FromJson<T> : StdConverter<UUID, Id<*>>() {
         override fun convert(value: UUID): Id<DatabaseTable> = Id(value)
     }
 

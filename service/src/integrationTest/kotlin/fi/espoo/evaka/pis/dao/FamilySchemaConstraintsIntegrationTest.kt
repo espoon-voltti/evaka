@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.shared.PartnershipId
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -22,7 +23,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
-        val partnershipId = UUID.randomUUID()
+        val partnershipId = PartnershipId(UUID.randomUUID())
         createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
         createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
     }
@@ -33,14 +34,14 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(200)
-        UUID.randomUUID().let { partnershipId ->
+        PartnershipId(UUID.randomUUID()).let { partnershipId ->
             createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate1)
             createPartnerRecord(partnershipId, 2, person2.id, startDate1, endDate1)
         }
 
         val startDate2 = endDate1.plusDays(1)
         val endDate2 = startDate2.plusDays(200)
-        UUID.randomUUID().let { partnershipId ->
+        PartnershipId(UUID.randomUUID()).let { partnershipId ->
             createPartnerRecord(partnershipId, 1, person1.id, startDate2, endDate2)
             createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate2)
         }
@@ -52,7 +53,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val person2 = testPerson2()
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(200)
-        UUID.randomUUID().let { partnershipId ->
+        PartnershipId(UUID.randomUUID()).let { partnershipId ->
             createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate1)
             createPartnerRecord(partnershipId, 2, person2.id, startDate1, endDate1)
         }
@@ -61,7 +62,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate2 = startDate2.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate2, endDate2)
             createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate2)
         }
@@ -76,7 +77,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
             createPartnerRecord(partnershipId, 3, person3.id, startDate, endDate)
@@ -92,7 +93,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 0, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 1, person2.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person3.id, startDate, endDate)
@@ -108,7 +109,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person3.id, startDate, endDate)
@@ -122,7 +123,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person1.id, startDate, endDate)
         }
@@ -137,7 +138,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate1.plusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate1, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate2, endDate)
         }
@@ -152,7 +153,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate2 = endDate1.plusDays(1)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate1)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate2)
         }
@@ -166,7 +167,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         val endDate = startDate.minusDays(200)
 
         assertThatThrownBy {
-            val partnershipId = UUID.randomUUID()
+            val partnershipId = PartnershipId(UUID.randomUUID())
             createPartnerRecord(partnershipId, 1, person1.id, startDate, endDate)
             createPartnerRecord(partnershipId, 2, person2.id, startDate, endDate)
         }
@@ -226,7 +227,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPartnerRecord(
-        partnershipId: UUID,
+        partnershipId: PartnershipId,
         indx: Int,
         personId: UUID,
         startDate: LocalDate,
