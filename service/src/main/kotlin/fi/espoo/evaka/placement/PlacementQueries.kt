@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
@@ -302,7 +303,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
         .firstOrNull()
 }
 
-fun Database.Read.getDaycareGroupPlacement(id: UUID): DaycareGroupPlacement? {
+fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     // language=SQL
     val sql =
         """
@@ -445,7 +446,7 @@ fun Database.Transaction.createGroupPlacement(
     groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
-): UUID {
+): GroupPlacementId {
     // language=SQL
     val sql =
         """
@@ -459,11 +460,11 @@ fun Database.Transaction.createGroupPlacement(
         .bind("groupId", groupId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .one()
 }
 
-fun Database.Transaction.updateGroupPlacementStartDate(id: UUID, startDate: LocalDate): Boolean {
+fun Database.Transaction.updateGroupPlacementStartDate(id: GroupPlacementId, startDate: LocalDate): Boolean {
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET start_date = :startDate WHERE id = :id RETURNING id"
 
@@ -474,24 +475,24 @@ fun Database.Transaction.updateGroupPlacementStartDate(id: UUID, startDate: Loca
         .firstOrNull() != null
 }
 
-fun Database.Transaction.updateGroupPlacementEndDate(id: UUID, endDate: LocalDate): Boolean {
+fun Database.Transaction.updateGroupPlacementEndDate(id: GroupPlacementId, endDate: LocalDate): Boolean {
     // language=SQL
     val sql = "UPDATE daycare_group_placement SET end_date = :endDate WHERE id = :id RETURNING id"
 
     return createQuery(sql)
         .bind("id", id)
         .bind("endDate", endDate)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .firstOrNull() != null
 }
 
-fun Database.Transaction.deleteGroupPlacement(id: UUID): Boolean {
+fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
     // language=SQL
     val sql = "DELETE FROM daycare_group_placement WHERE id = :id RETURNING id"
 
     return createQuery(sql)
         .bind("id", id)
-        .mapTo<UUID>()
+        .mapTo<GroupPlacementId>()
         .firstOrNull() != null
 }
 
