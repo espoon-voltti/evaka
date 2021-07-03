@@ -55,6 +55,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
@@ -759,7 +760,7 @@ INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4
 }
 
 data class DevCareArea(
-    val id: UUID = UUID.randomUUID(),
+    val id: AreaId = AreaId(UUID.randomUUID()),
     val name: String = "Test Care Area",
     val shortName: String = "test_area",
     val areaCode: Int? = 200,
@@ -788,7 +789,7 @@ data class DevDaycare(
     val name: String = "Test Daycare",
     val openingDate: LocalDate? = null,
     val closingDate: LocalDate? = null,
-    val areaId: UUID,
+    val areaId: AreaId,
     val type: Set<CareType> = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
     val daycareApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
     val preschoolApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),

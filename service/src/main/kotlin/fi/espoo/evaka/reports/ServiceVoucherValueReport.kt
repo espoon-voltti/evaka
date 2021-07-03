@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -40,7 +41,7 @@ class ServiceVoucherValueReportController(private val acl: AccessControlList) {
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @RequestParam(required = false) areaId: UUID?
+        @RequestParam(required = false) areaId: AreaId?
     ): ResponseEntity<ServiceVoucherReport> {
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
@@ -146,7 +147,7 @@ data class ServiceVoucherValueUnitAggregate(
     data class UnitData(
         val id: DaycareId,
         val name: String,
-        val areaId: UUID,
+        val areaId: AreaId,
         val areaName: String
     )
 }
@@ -165,7 +166,7 @@ data class ServiceVoucherValueRow(
     val childGroupName: String?,
     val unitId: DaycareId,
     val unitName: String,
-    val areaId: UUID,
+    val areaId: AreaId,
     val areaName: String,
     val serviceVoucherDecisionId: UUID,
     val serviceVoucherValue: Int,
@@ -182,7 +183,7 @@ data class ServiceVoucherValueRow(
 private fun Database.Read.getServiceVoucherValues(
     year: Int,
     month: Int,
-    areaId: UUID? = null,
+    areaId: AreaId? = null,
     unitIds: Set<DaycareId>? = null
 ): List<ServiceVoucherValueRow> {
     // language=sql
@@ -335,7 +336,7 @@ private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
 private fun Database.Read.getSnapshotVoucherValues(
     year: Int,
     month: Int,
-    areaId: UUID? = null,
+    areaId: AreaId? = null,
     unitIds: Set<DaycareId>? = null
 ): List<ServiceVoucherValueRow> {
     // language=sql

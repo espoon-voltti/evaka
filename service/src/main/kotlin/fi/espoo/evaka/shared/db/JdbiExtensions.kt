@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Id
@@ -263,7 +264,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
                         id = DaycareId(rs.getUUID("placement_unit_id")),
                         name = rs.getString("placement_unit_name"),
                         language = rs.getString("placement_unit_lang"),
-                        areaId = UUID.fromString(rs.getString("placement_unit_area_id")),
+                        areaId = AreaId(rs.getUUID("placement_unit_area_id")),
                         areaName = rs.getString("placement_unit_area_name")
                     ),
                     serviceNeedFeeCoefficient = rs.getBigDecimal("service_need_fee_coefficient"),

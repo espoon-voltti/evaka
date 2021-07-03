@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import java.math.BigDecimal
 import java.util.UUID
@@ -27,7 +28,7 @@ sealed class UnitData {
     data class InvoicedByMunicipality(val id: DaycareId, val invoicedByMunicipality: Boolean) : UnitData()
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class Detailed(val id: DaycareId, val name: String, val areaId: UUID, val areaName: String, val language: String) : UnitData()
+    data class Detailed(val id: DaycareId, val name: String, val areaId: AreaId, val areaName: String, val language: String) : UnitData()
 }
 
 data class PlacementWithServiceNeed(

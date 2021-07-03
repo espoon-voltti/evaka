@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.controllers.PublicUnit
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
@@ -27,7 +28,7 @@ data class DaycareFields(
     val name: String,
     val openingDate: LocalDate?,
     val closingDate: LocalDate?,
-    val areaId: UUID,
+    val areaId: AreaId,
     val type: Set<CareType>,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
@@ -133,7 +134,7 @@ WHERE id = :daycareId
     .asSequence()
     .firstOrNull()
 
-fun Database.Transaction.createDaycare(areaId: UUID, name: String): DaycareId = createUpdate(
+fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId = createUpdate(
     // language=SQL
     """
 WITH insert_manager AS (

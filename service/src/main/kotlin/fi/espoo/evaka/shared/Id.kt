@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.util.StdConverter
 import java.util.UUID
 
 sealed interface DatabaseTable {
+    sealed class Area : DatabaseTable
     sealed class Daycare : DatabaseTable
     sealed class Employee : DatabaseTable
     sealed class Group : DatabaseTable
@@ -19,6 +20,7 @@ sealed interface DatabaseTable {
     sealed class Placement : DatabaseTable
 }
 
+typealias AreaId = Id<DatabaseTable.Area>
 typealias ChildId = Id<DatabaseTable.Person>
 typealias DaycareId = Id<DatabaseTable.Daycare>
 typealias EmployeeId = Id<DatabaseTable.Employee>
