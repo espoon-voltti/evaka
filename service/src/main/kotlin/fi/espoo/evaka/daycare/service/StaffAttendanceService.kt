@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
@@ -13,11 +14,10 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
-import java.util.UUID
 
 @Service
 class StaffAttendanceService {
-    fun getUnitAttendancesForDate(db: Database.Connection, unitId: UUID, date: LocalDate): UnitStaffAttendance {
+    fun getUnitAttendancesForDate(db: Database.Connection, unitId: DaycareId, date: LocalDate): UnitStaffAttendance {
         return db.read { tx ->
             tx.getUnitStaffAttendanceForDate(unitId, date)
         }
@@ -166,7 +166,7 @@ fun Database.Read.getStaffAttendanceByRange(
         .list()
 }
 
-fun Database.Read.getUnitStaffAttendanceForDate(unitId: UUID, date: LocalDate): UnitStaffAttendance {
+fun Database.Read.getUnitStaffAttendanceForDate(unitId: DaycareId, date: LocalDate): UnitStaffAttendance {
     //language=SQL
     val sql =
         """

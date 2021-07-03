@@ -5,6 +5,7 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -89,7 +90,7 @@ class BackupCareController(private val acl: AccessControlList) {
     fun getForDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): ResponseEntity<UnitBackupCaresResponse> {

@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
@@ -33,7 +34,7 @@ data class DecisionTableRow(
     val number: Int,
     val createdBy: UUID,
     val sentDate: LocalDate,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val applicationId: UUID,
     val type: DecisionType,
     val startDate: LocalDate,
@@ -61,7 +62,7 @@ data class PlacementTableRow(
     val id: PlacementId,
     val type: PlacementType,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate
 ) {
@@ -76,7 +77,7 @@ fun Database.Read.getPlacementRowsByChild(childId: UUID) = createQuery(
 data class PlacementPlanTableRow(
     val id: UUID,
     val type: PlacementType,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val applicationId: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -102,7 +103,7 @@ fun Database.Read.getPlacementPlanRowByApplication(applicationId: UUID) = create
 data class BackupCareTableRow(
     val id: UUID,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val groupId: GroupId?,
     val startDate: LocalDate,
     val endDate: LocalDate

@@ -52,6 +52,7 @@ import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
@@ -311,7 +312,7 @@ class ApplicationStateService(
         }
     }
 
-    fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: UUID) {
+    fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: DaycareId) {
         Audit.PlacementProposalAccept.log(targetId = unitId)
         if (!acl.getAuthorizedUnits(user).isAuthorized(unitId))
             throw Forbidden("Not authorized to accept placement proposal for unit $unitId")

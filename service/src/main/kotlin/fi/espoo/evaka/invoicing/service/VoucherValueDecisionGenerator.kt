@@ -29,8 +29,8 @@ import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -101,7 +101,7 @@ private fun generateNewValueDecisions(
     voucherValues: List<Pair<DateRange, Int>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
-    serviceVoucherUnits: List<UUID>
+    serviceVoucherUnits: List<DaycareId>
 ): List<VoucherValueDecision> {
     val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.validDuring } +
@@ -204,10 +204,10 @@ private fun generateNewValueDecisions(
         .map { (period, decision) -> decision.withValidity(period) }
 }
 
-private fun Database.Read.getServiceVoucherUnits(): List<UUID> {
+private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
     // language=sql
     return createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")
-        .map { rs, _ -> rs.getUUID("id") }
+        .mapTo<DaycareId>()
         .toList()
 }
 

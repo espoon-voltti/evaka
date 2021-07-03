@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -27,7 +28,7 @@ class MobileDevicesController(
     fun getMobileDevices(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam unitId: UUID
+        @RequestParam unitId: DaycareId
     ): ResponseEntity<List<MobileDevice>> {
         Audit.MobileDevicesList.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)

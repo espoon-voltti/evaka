@@ -10,6 +10,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -414,7 +415,7 @@ internal fun getVardaPlacements(db: Database.Connection) = db.read {
         .toList()
 }
 
-internal fun insertVardaUnit(db: Database.Connection, unitId: UUID = testDaycare.id, unitOid: String? = "1.2.3") {
+internal fun insertVardaUnit(db: Database.Connection, unitId: DaycareId = testDaycare.id, unitOid: String? = "1.2.3") {
     db.transaction {
         it
             .createUpdate(
@@ -460,7 +461,7 @@ internal fun insertPlacement(
     childId: UUID,
     period: FiniteDateRange,
     type: PlacementType = DAYCARE,
-    unitId: UUID = testDaycare.id
+    unitId: DaycareId = testDaycare.id
 ): PlacementId {
     return db.transaction {
         it.insertTestPlacement(

@@ -8,6 +8,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import java.time.Instant
 import java.time.LocalDate
@@ -53,7 +54,7 @@ data class AttendanceResponse(
 )
 
 data class UnitInfo(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val groups: List<GroupInfo>,
     val staff: List<Staff>
@@ -101,7 +102,7 @@ enum class AttendanceStatus {
 data class ChildAttendance(
     val id: UUID,
     val childId: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val arrived: Instant,
     val departed: Instant?
 )

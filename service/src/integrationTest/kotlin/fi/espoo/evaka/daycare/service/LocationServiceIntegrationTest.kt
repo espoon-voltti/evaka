@@ -23,6 +23,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType.MUNICIPAL
 import fi.espoo.evaka.daycare.domain.ProviderType.MUNICIPAL_SCHOOL
 import fi.espoo.evaka.daycare.domain.ProviderType.PRIVATE
 import fi.espoo.evaka.daycare.updateDaycare
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import org.assertj.core.api.Assertions.assertThat
@@ -97,7 +98,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         }
     }
 
-    private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): UUID = db.transaction { tx ->
+    private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): DaycareId = db.transaction { tx ->
         val id = tx.createDaycare(location.care_area_id, location.name)
         tx.updateDaycare(
             id,
@@ -148,7 +149,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         type: Set<fi.espoo.evaka.daycare.CareType> = setOf(CENTRE),
         providerType: ProviderType = MUNICIPAL
     ) = Location(
-        id = UUID.randomUUID(),
+        id = DaycareId(UUID.randomUUID()),
         name = "Test ${UUID.randomUUID()}",
         care_area_id = areaId,
         type = type,

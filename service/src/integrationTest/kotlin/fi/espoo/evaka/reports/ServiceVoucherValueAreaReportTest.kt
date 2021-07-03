@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -112,7 +113,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
         febReportNewArea.assertContainsSum(testDaycare2.id, 2 * 58200)
     }
 
-    private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(unitId: UUID, sum: Int) {
+    private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(unitId: DaycareId, sum: Int) {
         val row = this.find { it.unit.id == unitId }
         assertNotNull(row)
         assertEquals(sum, row!!.monthlyPaymentSum)
@@ -146,7 +147,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
-        unitId: UUID,
+        unitId: DaycareId,
         value: Int,
         coPayment: Int,
         adultId: UUID,

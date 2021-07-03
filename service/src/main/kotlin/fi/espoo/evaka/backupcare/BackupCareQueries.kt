@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -33,7 +34,7 @@ WHERE child_id = :childId
     .mapTo<ChildBackupCare>()
     .list()
 
-fun Database.Read.getBackupCaresForDaycare(daycareId: UUID, period: FiniteDateRange): List<UnitBackupCare> = createQuery(
+fun Database.Read.getBackupCaresForDaycare(daycareId: DaycareId, period: FiniteDateRange): List<UnitBackupCare> = createQuery(
     // language=SQL
     """
 SELECT

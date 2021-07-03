@@ -4,12 +4,13 @@
 
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.util.UUID
 
 data class Pairing(
     val id: UUID,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val challengeKey: String,
     val responseKey: String?,
     val expires: HelsinkiDateTime,
@@ -24,7 +25,7 @@ enum class PairingStatus {
 data class MobileDevice(
     val id: UUID,
     val name: String,
-    val unitId: UUID
+    val unitId: DaycareId
 )
 
 data class MobileDeviceIdentity(val id: UUID, val longTermToken: UUID)

@@ -15,16 +15,16 @@ import java.util.UUID
 
 data class AclAppliedRoles(override val roles: Set<UserRole>) : RoleContainer
 sealed class AclAuthorization {
-    abstract fun isAuthorized(id: UUID): Boolean
-    abstract val ids: Set<UUID>?
+    abstract fun isAuthorized(id: DaycareId): Boolean
+    abstract val ids: Set<DaycareId>?
 
     object All : AclAuthorization() {
-        override fun isAuthorized(id: UUID): Boolean = true
-        override val ids: Set<UUID>? = null
+        override fun isAuthorized(id: DaycareId): Boolean = true
+        override val ids: Set<DaycareId>? = null
     }
 
-    data class Subset(override val ids: Set<UUID>) : AclAuthorization() {
-        override fun isAuthorized(id: UUID): Boolean = ids.contains(id)
+    data class Subset(override val ids: Set<DaycareId>) : AclAuthorization() {
+        override fun isAuthorized(id: DaycareId): Boolean = ids.contains(id)
     }
 }
 
@@ -41,7 +41,6 @@ class AccessControlList(private val jdbi: Jdbi) {
             AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user, roles) })
         }
 
-    fun getRolesForUnit(user: AuthenticatedUser, daycareId: UUID): AclAppliedRoles = getRolesForUnit(user, DaycareId(daycareId))
     fun getRolesForUnit(user: AuthenticatedUser, daycareId: DaycareId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
@@ -264,11 +263,11 @@ WHERE employee_id = :userId AND vasu_document.id = :documentId
     )
 }
 
-private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<UUID> =
+private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> =
     createQuery(
         "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
     )
         .bind("userId", user.id)
         .bindNullable("roles", roles?.toTypedArray())
-        .mapTo<UUID>()
+        .mapTo<DaycareId>()
         .toSet()

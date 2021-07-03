@@ -54,7 +54,7 @@ fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: EmployeeId, role: UserR
     .one()
 
 fun Database.Transaction.insertDaycareAclRow(
-    daycareId: UUID,
+    daycareId: DaycareId,
     employeeId: UUID,
     role: UserRole
 ) = createUpdate(

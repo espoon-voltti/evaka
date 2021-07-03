@@ -11,8 +11,8 @@ import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.DatabaseForm
+import fi.espoo.evaka.shared.DaycareId
 import java.time.LocalDate
-import java.util.UUID
 
 const val DEFAULT_CHILD_NATIONALITY = "FI"
 const val DEFAULT_CHILD_LANGUAGE = "fi"
@@ -227,7 +227,7 @@ data class DaycareAdditionalDetails(
 )
 
 data class Apply(
-    val preferredUnits: List<UUID> = emptyList(),
+    val preferredUnits: List<DaycareId> = emptyList(),
     val siblingBasis: Boolean = false,
     val siblingName: String = "",
     val siblingSsn: String = ""

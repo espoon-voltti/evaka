@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -14,7 +15,7 @@ import java.util.UUID
 const val maxAttempts = 100 // additional brute-force protection
 const val expiresInMinutes = 60L
 
-fun Database.Transaction.initPairing(unitId: UUID): Pairing {
+fun Database.Transaction.initPairing(unitId: DaycareId): Pairing {
     // language=sql
     val sql =
         """

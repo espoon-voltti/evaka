@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -179,7 +180,7 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapp
                         dateOfBirth = rs.getDate("child_date_of_birth").toLocalDate()
                     ),
                     placement = FeeDecisionPlacement(
-                        unit = UnitData.JustId(rs.getUUID("placement_unit_id")),
+                        unit = UnitData.JustId(DaycareId(rs.getUUID("placement_unit_id"))),
                         type = rs.getEnum("placement_type"),
                     ),
                     serviceNeed = FeeDecisionServiceNeed(
@@ -259,7 +260,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
                     ),
                     placementType = rs.getEnum("placement_type"),
                     placementUnit = UnitData.Detailed(
-                        id = UUID.fromString(rs.getString("placement_unit_id")),
+                        id = DaycareId(rs.getUUID("placement_unit_id")),
                         name = rs.getString("placement_unit_name"),
                         language = rs.getString("placement_unit_lang"),
                         areaId = UUID.fromString(rs.getString("placement_unit_area_id")),

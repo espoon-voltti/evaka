@@ -5,6 +5,7 @@
 package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
@@ -45,7 +46,7 @@ data class Decision(
 }
 
 data class DecisionUnit(
-    val id: UUID,
+    val id: DaycareId,
     val name: String,
     val daycareDecisionName: String,
     val preschoolDecisionName: String,

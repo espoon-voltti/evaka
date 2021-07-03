@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getActivePreschoolTermAt
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
@@ -201,7 +202,7 @@ class PlacementPlanService(
         }
     }
 
-    fun isSvebiUnit(tx: Database.Read, unitId: UUID): Boolean {
+    fun isSvebiUnit(tx: Database.Read, unitId: DaycareId): Boolean {
         return tx.createQuery(
             """
             SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi

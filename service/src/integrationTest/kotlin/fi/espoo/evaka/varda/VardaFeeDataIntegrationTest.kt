@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -671,7 +672,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     private fun createDecisionsAndPlacements(
         period: FiniteDateRange,
         child: PersonData.Detailed = testChild_1,
-        daycareId: UUID = testDaycare.id
+        daycareId: DaycareId = testDaycare.id
     ) {
         insertDecisionWithApplication(db, child, period, unitId = daycareId)
         db.transaction {
@@ -712,7 +713,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
-        daycareId: UUID = testVoucherDaycare.id,
+        daycareId: DaycareId = testVoucherDaycare.id,
         guardian: UUID = testAdult_1.id
     ): FeeDecision = db.transaction {
         val feeDecision = createFeeDecisionFixture(
@@ -739,7 +740,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         children: List<PersonData.Detailed>,
         period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
-        unitId: UUID = testDaycare.id,
+        unitId: DaycareId = testDaycare.id,
         guardian: UUID = testAdult_1.id
     ): List<VoucherValueDecision> = db.transaction {
         val voucherValueDecisions = children.map { child ->

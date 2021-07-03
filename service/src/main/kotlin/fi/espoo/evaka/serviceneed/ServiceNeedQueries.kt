@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
@@ -38,7 +39,7 @@ fun Database.Read.getServiceNeedsByChild(
 }
 
 fun Database.Read.getServiceNeedsByUnit(
-    unitId: UUID,
+    unitId: DaycareId,
     startDate: LocalDate?,
     endDate: LocalDate?
 ): List<ServiceNeed> {

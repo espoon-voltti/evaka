@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertTestVardaOrganizer
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -109,7 +109,7 @@ fun getVardaUnits(db: Database.Connection): List<VardaUnitRow> = db.read {
 }
 
 data class VardaUnitRow(
-    val evakaDaycareId: UUID,
+    val evakaDaycareId: DaycareId,
     val vardaUnitId: Long,
     val uploadedAt: Instant,
     val createdAt: Instant

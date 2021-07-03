@@ -8,6 +8,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.DaycareAclRow
@@ -112,14 +113,14 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
         return body.get().rows
     }
 
-    private fun insertSupervisor(daycareId: UUID) {
+    private fun insertSupervisor(daycareId: DaycareId) {
         val (_, res, _) = http.put("/daycares/$daycareId/supervisors/${employee.id}")
             .asUser(admin)
             .response()
         assertTrue(res.isSuccessful)
     }
 
-    private fun deleteSupervisor(daycareId: UUID) {
+    private fun deleteSupervisor(daycareId: DaycareId) {
         val (_, res, _) = http.delete("/daycares/$daycareId/supervisors/${employee.id}")
             .asUser(admin)
             .response()

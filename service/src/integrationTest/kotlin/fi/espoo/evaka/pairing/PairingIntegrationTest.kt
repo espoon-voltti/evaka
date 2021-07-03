@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -408,7 +409,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun postPairingAssertOk(unitId: UUID): Pairing {
+    private fun postPairingAssertOk(unitId: DaycareId): Pairing {
         val (_, res, result) = http.post("/pairings")
             .jsonBody(
                 objectMapper.writeValueAsString(

@@ -6,10 +6,12 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.DecisionSummary
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -52,7 +54,7 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
     requestedStartDate = rs.getDate("requested_start_date")?.toLocalDate(),
     resolved = rs.getDate("resolved")?.toLocalDate(),
     unit = DecisionUnit(
-        id = UUID.fromString(rs.getString("unit_id")),
+        id = DaycareId(rs.getUUID("unit_id")),
         name = rs.getString("name"),
         daycareDecisionName = rs.getString("decision_daycare_name"),
         preschoolDecisionName = rs.getString("decision_preschool_name"),
@@ -186,7 +188,7 @@ fun Database.Transaction.insertDecision(
     userId: UUID,
     sentDate: LocalDate,
     applicationId: UUID,
-    unitId: UUID,
+    unitId: DaycareId,
     decisionType: String,
     startDate: LocalDate,
     endDate: LocalDate

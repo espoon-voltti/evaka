@@ -8,6 +8,7 @@ import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -329,7 +330,7 @@ fun Database.Read.getGroupName(groupId: GroupId): String? {
         .firstOrNull()
 }
 
-fun Database.Read.getDaycareIdByGroup(groupId: GroupId): UUID {
+fun Database.Read.getDaycareIdByGroup(groupId: GroupId): DaycareId {
     //language=SQL
     val sql =
         """
@@ -341,7 +342,7 @@ fun Database.Read.getDaycareIdByGroup(groupId: GroupId): UUID {
 
     return createQuery(sql)
         .bind("groupId", groupId)
-        .mapTo<UUID>()
+        .mapTo<DaycareId>()
         .first()
 }
 

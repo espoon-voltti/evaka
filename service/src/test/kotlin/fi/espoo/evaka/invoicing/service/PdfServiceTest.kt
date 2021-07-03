@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -81,7 +82,7 @@ class PdfServiceTest {
                 ),
                 placementType = it.placement.type,
                 placementUnit = UnitData.Detailed(
-                    id = UUID.randomUUID(),
+                    id = DaycareId(UUID.randomUUID()),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                     language = "fi",
                     areaId = UUID.randomUUID(),
@@ -152,7 +153,7 @@ class PdfServiceTest {
         childAge = 3,
         placement = VoucherValueDecisionPlacementDetailed(
             UnitData.Detailed(
-                id = UUID.randomUUID(),
+                id = DaycareId(UUID.randomUUID()),
                 name = "Test Daycare",
                 language = "fi",
                 areaId = UUID.randomUUID(),

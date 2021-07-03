@@ -11,6 +11,7 @@ import fi.espoo.evaka.application.utils.currentDateInFinland
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -291,7 +292,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
         assertEquals(2, endUserResult.get().attachments.size)
     }
 
-    private fun createPlacementProposalWithAttachments(unitId: UUID): UUID {
+    private fun createPlacementProposalWithAttachments(unitId: DaycareId): UUID {
         val applicationId = db.transaction { tx ->
             val applicationId = tx.insertTestApplication(
                 childId = testChild_1.id,

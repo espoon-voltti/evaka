@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PGConstants
@@ -14,9 +15,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
-import java.util.UUID
 
-private fun Database.Read.createDaycareGroupQuery(groupId: GroupId?, daycareId: UUID?, period: FiniteDateRange?) = createQuery(
+private fun Database.Read.createDaycareGroupQuery(groupId: GroupId?, daycareId: DaycareId?, period: FiniteDateRange?) = createQuery(
     // language=SQL
     """
 SELECT
@@ -33,7 +33,7 @@ AND (:period::daterange IS NULL OR daterange(start_date, end_date, '[]') && :per
     .bindNullable("daycareId", daycareId)
     .bindNullable("period", period)
 
-fun Database.Transaction.createDaycareGroup(daycareId: UUID, name: String, startDate: LocalDate): DaycareGroup = createUpdate(
+fun Database.Transaction.createDaycareGroup(daycareId: DaycareId, name: String, startDate: LocalDate): DaycareGroup = createUpdate(
     // language=SQL
     """
 INSERT INTO daycare_group (daycare_id, name, start_date)
@@ -66,7 +66,7 @@ fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
         .asSequence()
         .firstOrNull()
 
-fun Database.Read.getDaycareGroups(daycareId: UUID, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> =
+fun Database.Read.getDaycareGroups(daycareId: DaycareId, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> =
     createDaycareGroupQuery(
         groupId = null,
         daycareId = daycareId,

@@ -23,6 +23,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -656,7 +657,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         db: Database.Connection,
         validFrom: LocalDate,
         validTo: LocalDate?,
-        unitId: UUID,
+        unitId: DaycareId,
         value: Int,
         coPayment: Int,
         adultId: UUID,

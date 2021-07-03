@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -34,7 +35,7 @@ class PairingsController(
      * Pairing status is WAITING_CHALLENGE.
      */
     data class PostPairingReq(
-        val unitId: UUID
+        val unitId: DaycareId
     )
     @PostMapping("/pairings")
     fun postPairing(

@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList) {
@@ -97,7 +97,7 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
         .map { rs, _ ->
             AssistanceNeedsAndActionsReportRow(
                 careAreaName = rs.getString("care_area_name"),
-                unitId = rs.getUUID("unit_id"),
+                unitId = DaycareId(rs.getUUID("unit_id")),
                 unitName = rs.getString("unit_name"),
                 groupId = GroupId(rs.getUUID("group_id")),
                 groupName = rs.getString("group_name"),
@@ -134,7 +134,7 @@ fun Database.Read.getAssistanceNeedsAndActionsReportRows(date: LocalDate, author
 
 data class AssistanceNeedsAndActionsReportRow(
     val careAreaName: String,
-    val unitId: UUID,
+    val unitId: DaycareId,
     val unitName: String,
     val groupId: GroupId,
     val groupName: String,

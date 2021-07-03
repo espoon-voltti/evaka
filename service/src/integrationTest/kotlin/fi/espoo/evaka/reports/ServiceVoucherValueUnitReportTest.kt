@@ -18,6 +18,7 @@ import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -38,7 +39,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -279,7 +279,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
 
     private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
-    private fun getUnitReport(unitId: UUID, year: Int, month: Int): List<ServiceVoucherValueRow> {
+    private fun getUnitReport(unitId: DaycareId, year: Int, month: Int): List<ServiceVoucherValueRow> {
         val (_, response, data) = http.get(
             "/reports/service-voucher-value/units/$unitId",
             listOf("year" to year, "month" to month)
@@ -295,7 +295,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest() {
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
-        unitId: UUID,
+        unitId: DaycareId,
         value: Int,
         coPayment: Int,
         approvedAt: Instant = ZonedDateTime.of(validFrom, LocalTime.of(15, 0), europeHelsinki).toInstant()

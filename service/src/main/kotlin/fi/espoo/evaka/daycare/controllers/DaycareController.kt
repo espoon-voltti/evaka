@@ -25,6 +25,7 @@ import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -63,7 +64,7 @@ class DaycareController(
     fun getDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID
+        @PathVariable("daycareId") daycareId: DaycareId
     ): ResponseEntity<DaycareResponse> {
         Audit.UnitRead.log(targetId = daycareId)
         val currentUserRoles = acl.getRolesForUnit(user, daycareId)
@@ -80,7 +81,7 @@ class DaycareController(
     fun getGroups(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam(
             value = "from",
             required = false
@@ -101,7 +102,7 @@ class DaycareController(
     fun createGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
     ): ResponseEntity<DaycareGroup> {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
@@ -121,7 +122,7 @@ class DaycareController(
     fun updateGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
     ): ResponseEntity<Unit> {
@@ -138,7 +139,7 @@ class DaycareController(
     fun deleteGroup(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsDelete.log(targetId = groupId)
@@ -153,7 +154,7 @@ class DaycareController(
     fun getCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId
     ): ResponseEntity<CaretakersResponse> {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
@@ -176,7 +177,7 @@ class DaycareController(
     fun createCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @RequestBody body: CaretakerRequest
     ): ResponseEntity<Unit> {
@@ -200,7 +201,7 @@ class DaycareController(
     fun updateCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @PathVariable("id") id: UUID,
         @RequestBody body: CaretakerRequest
@@ -226,7 +227,7 @@ class DaycareController(
     fun removeCaretakers(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @PathVariable("groupId") groupId: GroupId,
         @PathVariable("id") id: UUID
     ): ResponseEntity<Unit> {
@@ -248,7 +249,7 @@ class DaycareController(
     fun getStats(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @RequestParam(
             value = "from",
             required = true
@@ -266,7 +267,7 @@ class DaycareController(
     fun updateDaycare(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("daycareId") daycareId: DaycareId,
         @RequestBody fields: DaycareFields
     ): ResponseEntity<Daycare> {
         Audit.UnitUpdate.log(targetId = daycareId)
@@ -302,7 +303,7 @@ class DaycareController(
         )
     }
 
-    data class CreateDaycareResponse(val id: UUID)
+    data class CreateDaycareResponse(val id: DaycareId)
 
     data class CreateGroupRequest(
         val name: String,
