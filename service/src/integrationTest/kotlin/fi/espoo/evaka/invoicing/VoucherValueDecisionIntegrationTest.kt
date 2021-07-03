@@ -19,6 +19,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -246,7 +247,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         startDate: LocalDate,
         endDate: LocalDate,
         unitId: UUID = testVoucherDaycare.id
-    ): UUID {
+    ): PlacementId {
         val body = PlacementCreateRequestBody(
             type = PlacementType.DAYCARE,
             childId = testChild_1.id,
@@ -272,7 +273,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest() {
         return data.get().first().id
     }
 
-    private fun updatePlacement(id: UUID, startDate: LocalDate, endDate: LocalDate) {
+    private fun updatePlacement(id: PlacementId, startDate: LocalDate, endDate: LocalDate) {
         val body = PlacementUpdateRequestBody(
             startDate = startDate,
             endDate = endDate

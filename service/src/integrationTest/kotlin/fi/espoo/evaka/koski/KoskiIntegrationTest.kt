@@ -16,6 +16,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
@@ -752,7 +753,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         daycareId: UUID = testDaycare.id,
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL
-    ): UUID = db.transaction {
+    ): PlacementId = db.transaction {
         it.insertTestPlacement(
             DevPlacement(
                 childId = child.id,

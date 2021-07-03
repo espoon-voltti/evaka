@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -121,7 +122,7 @@ JOIN sent_decision d
     AND daterange(p.start_date, p.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     """.trimIndent()
 
-fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String, sourceSystem: String): List<Triple<UUID, UUID, VardaPlacement>> {
+fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String, sourceSystem: String): List<Triple<UUID, PlacementId, VardaPlacement>> {
     val sql =
         """
 $placementBaseQuery
@@ -236,7 +237,7 @@ data class VardaPlacementResponse(
 data class VardaPlacementTableRow(
     val id: UUID,
     val vardaPlacementId: Long,
-    val evakaPlacementId: UUID,
+    val evakaPlacementId: PlacementId,
     val decisionId: UUID,
     val createdAt: Instant,
     val uploadedAt: Instant
@@ -245,11 +246,11 @@ data class VardaPlacementTableRow(
 private fun toVardaPlacementWithDecisionAndPlacementId(
     getDecisionUrl: (Long) -> String,
     sourceSystem: String
-): (ResultSet, StatementContext) -> Triple<UUID, UUID, VardaPlacement> =
+): (ResultSet, StatementContext) -> Triple<UUID, PlacementId, VardaPlacement> =
     { rs, _ ->
         Triple(
             rs.getUUID("decision_id"),
-            rs.getUUID("placement_id"),
+            PlacementId(rs.getUUID("placement_id")),
             toVardaPlacement(rs, getDecisionUrl, sourceSystem)
         )
     }
@@ -282,7 +283,7 @@ val toVardaPlacementRow: (ResultSet, StatementContext) -> VardaPlacementTableRow
     VardaPlacementTableRow(
         id = rs.getUUID("id"),
         vardaPlacementId = rs.getLong("varda_placement_id"),
-        evakaPlacementId = rs.getUUID("evaka_placement_id"),
+        evakaPlacementId = PlacementId(rs.getUUID("evaka_placement_id")),
         decisionId = rs.getUUID("decision_id"),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         uploadedAt = rs.getTimestamp("uploaded_at").toInstant()

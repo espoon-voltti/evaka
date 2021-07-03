@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
@@ -273,7 +274,7 @@ class FixtureBuilder(
     class PlacementFixture(
         private val tx: Database.Transaction,
         private val today: LocalDate,
-        val placementId: UUID,
+        val placementId: PlacementId,
         val placementPeriod: FiniteDateRange
     ) {
         fun addGroupPlacement() = GroupPlacementBuilder(tx, today, this)

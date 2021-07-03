@@ -56,6 +56,7 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -837,7 +838,7 @@ data class DevDaycareGroup(
 
 data class DevDaycareGroupPlacement(
     val id: UUID = UUID.randomUUID(),
-    val daycarePlacementId: UUID,
+    val daycarePlacementId: PlacementId,
     val daycareGroupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate
@@ -867,7 +868,7 @@ data class DevAssistanceAction(
 )
 
 data class DevPlacement(
-    val id: UUID = UUID.randomUUID(),
+    val id: PlacementId = PlacementId(UUID.randomUUID()),
     val type: PlacementType = PlacementType.DAYCARE,
     val childId: UUID,
     val unitId: UUID,

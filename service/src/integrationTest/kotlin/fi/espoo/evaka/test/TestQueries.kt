@@ -9,6 +9,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
@@ -57,7 +58,7 @@ fun Database.Read.getDecisionRowById(id: UUID) = createQuery(
 ).bind("id", id).mapTo<DecisionTableRow>()
 
 data class PlacementTableRow(
-    val id: UUID,
+    val id: PlacementId,
     val type: PlacementType,
     val childId: UUID,
     val unitId: UUID,

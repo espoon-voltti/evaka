@@ -16,6 +16,7 @@ sealed interface DatabaseTable {
     sealed class Employee : DatabaseTable
     sealed class Group : DatabaseTable
     sealed class Person : DatabaseTable
+    sealed class Placement : DatabaseTable
 }
 
 typealias ChildId = Id<DatabaseTable.Person>
@@ -23,6 +24,7 @@ typealias DaycareId = Id<DatabaseTable.Daycare>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 typealias GroupId = Id<DatabaseTable.Group>
 typealias PersonId = Id<DatabaseTable.Person>
+typealias PlacementId = Id<DatabaseTable.Placement>
 
 @JsonSerialize(converter = Id.ToJson::class)
 @JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)

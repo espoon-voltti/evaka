@@ -5,6 +5,7 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -98,7 +99,7 @@ fun Database.Read.getServiceNeedChildRange(id: UUID): ServiceNeedChildRange {
 }
 
 fun Database.Transaction.insertServiceNeed(
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: UUID,
@@ -160,7 +161,7 @@ fun Database.Transaction.deleteServiceNeed(
 }
 
 fun Database.Read.getOverlappingServiceNeeds(
-    placementId: UUID,
+    placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
     excluding: UUID?

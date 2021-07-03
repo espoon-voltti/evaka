@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
@@ -22,7 +23,7 @@ data class PlacementDraftChild(val id: UUID, val firstName: String, val lastName
 data class PlacementDraftUnit(val id: UUID, val name: String)
 
 data class PlacementDraftPlacement(
-    val id: UUID,
+    val id: PlacementId,
     val type: PlacementType,
     val childId: UUID,
     val unit: PlacementDraftUnit,

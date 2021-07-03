@@ -76,10 +76,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            val placementId = UUID.randomUUID()
-            tx.insertTestPlacement(
+            val placementId = tx.insertTestPlacement(
                 DevPlacement(
-                    id = placementId,
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementStart,
