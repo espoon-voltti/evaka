@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.deleteApplication
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.testAdult_5
 import org.junit.jupiter.api.AfterEach
@@ -21,7 +22,7 @@ import java.util.UUID
 class AttachmentsControllerIntegrationTest : FullApplicationTest() {
 
     private lateinit var user: AuthenticatedUser
-    private val applicationId = UUID.randomUUID()
+    private val applicationId = ApplicationId(UUID.randomUUID())
 
     @BeforeEach
     protected fun beforeEach() {

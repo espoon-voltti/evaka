@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -327,7 +328,7 @@ fun Database.Transaction.insertTestPartnership(
 }
 
 fun Database.Transaction.insertTestApplication(
-    id: UUID = UUID.randomUUID(),
+    id: ApplicationId = ApplicationId(UUID.randomUUID()),
     sentDate: LocalDate? = LocalDate.of(2019, 1, 1),
     dueDate: LocalDate? = LocalDate.of(2019, 5, 1),
     status: ApplicationStatus = ApplicationStatus.SENT,
@@ -336,7 +337,7 @@ fun Database.Transaction.insertTestApplication(
     otherGuardianId: UUID? = null,
     hideFromGuardian: Boolean = false,
     transferApplication: Boolean = false
-): UUID {
+): ApplicationId {
     createUpdate(
         """
             INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
@@ -360,7 +361,7 @@ fun Database.Transaction.insertTestApplication(
     return id
 }
 
-fun Database.Transaction.insertTestApplicationForm(applicationId: UUID, document: DaycareFormV0, revision: Int = 1) {
+fun Database.Transaction.insertTestApplicationForm(applicationId: ApplicationId, document: DaycareFormV0, revision: Int = 1) {
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE
@@ -382,7 +383,7 @@ VALUES (:applicationId, :revision, :document, TRUE)
         .execute()
 }
 
-fun Database.Transaction.insertTestClubApplicationForm(applicationId: UUID, document: ClubFormV0, revision: Int = 1) {
+fun Database.Transaction.insertTestClubApplicationForm(applicationId: ApplicationId, document: ClubFormV0, revision: Int = 1) {
     createUpdate(
         """
 UPDATE application_form SET latest = FALSE
@@ -619,7 +620,7 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
 }
 
 fun Database.Transaction.insertTestPlacementPlan(
-    applicationId: UUID,
+    applicationId: ApplicationId,
     unitId: DaycareId,
     id: UUID = UUID.randomUUID(),
     type: PlacementType = PlacementType.DAYCARE,
@@ -658,7 +659,7 @@ data class TestDecision(
     val createdBy: UUID,
     val sentDate: LocalDate = LocalDate.now(),
     val unitId: DaycareId,
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -850,8 +851,8 @@ VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
     .bind("endDate", backupCare.period.end)
     .execute()
 
-fun Database.Transaction.insertApplication(application: ApplicationWithForm): UUID {
-    val id = application.id ?: UUID.randomUUID()
+fun Database.Transaction.insertApplication(application: ApplicationWithForm): ApplicationId {
+    val id = application.id ?: ApplicationId(UUID.randomUUID())
 
     //language=sql
     val sql =

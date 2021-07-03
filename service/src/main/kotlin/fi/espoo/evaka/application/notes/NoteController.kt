@@ -7,6 +7,7 @@ package fi.espoo.evaka.application.notes
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -49,7 +50,7 @@ class NoteController(private val acl: AccessControlList) {
     fun createNote(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") applicationId: UUID,
+        @PathVariable("id") applicationId: ApplicationId,
         @RequestBody note: NoteRequest
     ): ResponseEntity<NoteJSON> {
         Audit.NoteCreate.log(targetId = applicationId)
@@ -132,7 +133,7 @@ private fun userIsAllowedToEditNote(tx: Database.Read, user: AuthenticatedUser, 
 }
 
 data class NoteSearchDTO(
-    val applicationIds: Set<UUID> = emptySet()
+    val applicationIds: Set<ApplicationId> = emptySet()
 ) {
     companion object {
         val All = NoteSearchDTO()
@@ -148,7 +149,7 @@ data class NotesWrapperJSON(
 )
 
 data class NoteJSON(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val id: UUID,
     val text: String,
     val created: LocalDateTime,

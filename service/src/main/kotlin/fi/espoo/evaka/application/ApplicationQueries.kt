@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
@@ -70,7 +71,7 @@ fun Database.Transaction.insertApplication(
     origin: ApplicationOrigin,
     hideFromGuardian: Boolean = false,
     sentDate: LocalDate? = null
-): UUID {
+): ApplicationId {
     // language=sql
     val sql =
         """
@@ -86,7 +87,7 @@ fun Database.Transaction.insertApplication(
         .bind("hideFromGuardian", hideFromGuardian)
         .bind("sentDate", sentDate)
         .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
+        .mapTo<ApplicationId>()
         .first()
 }
 
@@ -517,7 +518,7 @@ fun Database.Read.getCitizenChildren(citizenId: UUID): List<CitizenChildren> {
 
 private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonApplicationSummary = { rs, _ ->
     PersonApplicationSummary(
-        applicationId = rs.getUUID("id"),
+        applicationId = ApplicationId(rs.getUUID("id")),
         childId = rs.getUUID("childId"),
         guardianId = rs.getUUID("guardianId"),
         preferredUnitId = DaycareId(rs.getUUID("preferredUnit")),
@@ -534,7 +535,7 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
     )
 }
 
-fun Database.Read.fetchApplicationDetails(applicationId: UUID, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
+fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeCitizenAttachmentsOnly: Boolean = false): ApplicationDetails? {
     val attachmentWhereClause = if (includeCitizenAttachmentsOnly) "WHERE uploaded_by_person IS NOT NULL" else ""
     //language=sql
     val sql =
@@ -735,7 +736,7 @@ fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
     }
 
 fun Database.Transaction.updateForm(
-    id: UUID,
+    id: ApplicationId,
     form: ApplicationForm,
     formType: ApplicationType,
     childRestricted: Boolean,
@@ -769,7 +770,7 @@ VALUES (:applicationId, :document, (SELECT coalesce(max(revision) + 1, 1) FROM o
         .execute()
 }
 
-fun Database.Transaction.setCheckedByAdminToDefault(id: UUID, form: ApplicationForm) {
+fun Database.Transaction.setCheckedByAdminToDefault(id: ApplicationId, form: ApplicationForm) {
     // language=SQL
     val sql = "UPDATE application SET checkedbyadmin = :checked WHERE id = :applicationId"
 
@@ -784,7 +785,7 @@ fun Database.Transaction.setCheckedByAdminToDefault(id: UUID, form: ApplicationF
         .execute()
 }
 
-fun Database.Transaction.updateApplicationStatus(id: UUID, status: ApplicationStatus) {
+fun Database.Transaction.updateApplicationStatus(id: ApplicationId, status: ApplicationStatus) {
     // language=SQL
     val sql = "UPDATE application SET status = :status WHERE id = :id"
 
@@ -794,7 +795,7 @@ fun Database.Transaction.updateApplicationStatus(id: UUID, status: ApplicationSt
         .execute()
 }
 
-fun Database.Transaction.updateApplicationDates(id: UUID, sentDate: LocalDate, dueDate: LocalDate?) {
+fun Database.Transaction.updateApplicationDates(id: ApplicationId, sentDate: LocalDate, dueDate: LocalDate?) {
     // language=SQL
     val sql = "UPDATE application SET sentdate = :sentDate, duedate = :dueDate WHERE id = :id"
 
@@ -805,7 +806,7 @@ fun Database.Transaction.updateApplicationDates(id: UUID, sentDate: LocalDate, d
         .execute()
 }
 
-fun Database.Transaction.updateApplicationFlags(id: UUID, applicationFlags: ApplicationFlags) {
+fun Database.Transaction.updateApplicationFlags(id: ApplicationId, applicationFlags: ApplicationFlags) {
     // language=SQL
     val sql =
         "UPDATE application SET transferapplication = :transferApplication, additionaldaycareapplication = :additionalDaycareApplication WHERE id = :id"
@@ -817,7 +818,7 @@ fun Database.Transaction.updateApplicationFlags(id: UUID, applicationFlags: Appl
         .execute()
 }
 
-fun Database.Transaction.updateApplicationOtherGuardian(applicationId: UUID, otherGuardianId: UUID?) {
+fun Database.Transaction.updateApplicationOtherGuardian(applicationId: ApplicationId, otherGuardianId: UUID?) {
     // language=SQL
     val sql = "UPDATE application SET other_guardian_id = :otherGuardianId WHERE id = :applicationId"
 
@@ -827,7 +828,7 @@ fun Database.Transaction.updateApplicationOtherGuardian(applicationId: UUID, oth
         .execute()
 }
 
-fun Database.Transaction.setApplicationVerified(id: UUID, verified: Boolean) {
+fun Database.Transaction.setApplicationVerified(id: ApplicationId, verified: Boolean) {
     // language=SQL
     val sql = "UPDATE application SET checkedByAdmin = :verified WHERE id = :id"
 
@@ -837,7 +838,7 @@ fun Database.Transaction.setApplicationVerified(id: UUID, verified: Boolean) {
         .execute()
 }
 
-fun Database.Transaction.deleteApplication(id: UUID) {
+fun Database.Transaction.deleteApplication(id: ApplicationId) {
     // language=SQL
     val sql =
         """
@@ -892,7 +893,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
     }
 }
 
-fun Database.Transaction.cancelOutdatedTransferApplications(): List<UUID> = createUpdate(
+fun Database.Transaction.cancelOutdatedTransferApplications(): List<ApplicationId> = createUpdate(
     // only include applications that don't have decisions
     """
 UPDATE application SET status = :cancelled
@@ -920,16 +921,16 @@ RETURNING id
     .bind("cancelled", ApplicationStatus.CANCELLED)
     .bind("now", LocalDate.now())
     .executeAndReturnGeneratedKeys()
-    .mapTo<UUID>()
+    .mapTo<ApplicationId>()
     .toList()
 
-fun Database.Read.getApplicationAttachments(applicationId: UUID): List<Attachment> =
+fun Database.Read.getApplicationAttachments(applicationId: ApplicationId): List<Attachment> =
     createQuery("SELECT id, name, content_type, updated, received_at, type, uploaded_by_employee, uploaded_by_person FROM attachment WHERE application_id = :applicationId")
         .bind("applicationId", applicationId)
         .mapTo<Attachment>()
         .toList()
 
-fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: UUID): List<Attachment> =
+fun Database.Read.getApplicationAttachmentsForUnitSupervisor(applicationId: ApplicationId): List<Attachment> =
     createQuery(
         """
 SELECT attachment.id, attachment.name, attachment.content_type, attachment.updated, attachment.received_at, attachment.type, attachment.uploaded_by_employee, attachment.uploaded_by_person

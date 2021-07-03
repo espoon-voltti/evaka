@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
+import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
@@ -171,6 +173,6 @@ fun toIncome(objectMapper: ObjectMapper) = { rs: ResultSet, _: StatementContext 
         notes = rs.getString("notes"),
         updatedAt = rs.getTimestamp("updated_at").toInstant(),
         updatedBy = (rs.getString("updated_by_employee")),
-        applicationId = rs.getString("application_id")?.let { UUID.fromString(it) },
+        applicationId = rs.getNullableUUID("application_id")?.let(::ApplicationId),
     )
 }

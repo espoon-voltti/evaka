@@ -17,6 +17,7 @@ import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -54,7 +55,7 @@ class DecisionService(
     fun finalizeDecisions(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         sendAsMessage: Boolean
     ): List<UUID> {
         val decisionIds = tx.finalizeDecisions(applicationId)

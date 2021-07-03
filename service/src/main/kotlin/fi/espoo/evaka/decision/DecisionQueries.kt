@@ -6,6 +6,7 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.DecisionSummary
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -67,7 +68,7 @@ private fun decisionFromResultSet(rs: ResultSet): Decision = Decision(
         decisionHandlerAddress = rs.getString("decision_handler_address"),
         providerType = rs.getEnum("provider_type")
     ),
-    applicationId = UUID.fromString(rs.getString("application_id")),
+    applicationId = ApplicationId(rs.getUUID("application_id")),
     childId = UUID.fromString(rs.getString("child_id")),
     childName = "${rs.getString("child_first_name")} ${rs.getString("child_last_name")}"
 )
@@ -85,7 +86,7 @@ fun Database.Read.getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthori
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
 }
 
-fun Database.Read.getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
         "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id IN (<units>)" } ?: ""}"
@@ -105,7 +106,7 @@ fun Database.Read.getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclA
 }
 
 data class ApplicationDecisionRow(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val childName: String,
     val id: UUID,
     val type: DecisionType,
@@ -140,7 +141,7 @@ fun Database.Read.getOwnDecisions(guardianId: UUID): List<ApplicationDecisions> 
         }
 }
 
-fun Database.Read.fetchDecisionDrafts(applicationId: UUID): List<DecisionDraft> {
+fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> {
     // language=sql
     val sql =
         """
@@ -156,7 +157,7 @@ fun Database.Read.fetchDecisionDrafts(applicationId: UUID): List<DecisionDraft> 
 }
 
 fun Database.Transaction.finalizeDecisions(
-    applicationId: UUID
+    applicationId: ApplicationId
 ): List<UUID> {
     // discard unplanned drafts
     createUpdate(
@@ -187,7 +188,7 @@ fun Database.Transaction.insertDecision(
     decisionId: UUID,
     userId: UUID,
     sentDate: LocalDate,
-    applicationId: UUID,
+    applicationId: ApplicationId,
     unitId: DaycareId,
     decisionType: String,
     startDate: LocalDate,

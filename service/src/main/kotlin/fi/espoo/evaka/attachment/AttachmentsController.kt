@@ -10,6 +10,7 @@ import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.s3.checkFileContentType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -46,7 +47,7 @@ class AttachmentsController(
     fun uploadApplicationAttachmentEmployee(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
@@ -61,7 +62,7 @@ class AttachmentsController(
     fun uploadApplicationAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
@@ -78,7 +79,7 @@ class AttachmentsController(
     private fun handleFileUpload(
         db: Database,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         file: MultipartFile,
         type: AttachmentType
     ): UUID {
@@ -175,7 +176,7 @@ private fun Database.authorizeAttachmentDownload(user: AuthenticatedUser, attach
     throw NotFound("Attachment $attachmentId not found")
 }
 
-fun Database.Read.isOwnApplication(applicationId: UUID, user: AuthenticatedUser): Boolean {
+fun Database.Read.isOwnApplication(applicationId: ApplicationId, user: AuthenticatedUser): Boolean {
     return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
         .bind("id", applicationId)
         .bind("userId", user.id)

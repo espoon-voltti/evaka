@@ -16,6 +16,7 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -227,7 +228,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `email is sent after sending preschool application`() {
-        val applicationId = UUID.randomUUID()
+        val applicationId = ApplicationId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insertApplication(
                 guardian = guardian,
@@ -423,7 +424,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         assert(email.textBody.contains(expectedTextPart, true))
     }
 
-    private fun assertApplicationIsSent(applicationId: UUID) {
+    private fun assertApplicationIsSent(applicationId: ApplicationId) {
         db.read {
             assertEquals(ApplicationStatus.SENT, it.fetchApplicationDetails(applicationId)!!.status)
         }

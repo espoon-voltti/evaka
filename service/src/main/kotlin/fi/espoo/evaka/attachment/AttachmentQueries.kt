@@ -6,6 +6,7 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.application.Attachment
 import fi.espoo.evaka.application.AttachmentType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
@@ -15,7 +16,7 @@ fun Database.Transaction.insertAttachment(
     id: UUID,
     name: String,
     contentType: String,
-    applicationId: UUID,
+    applicationId: ApplicationId,
     uploadedByEnduser: UUID?,
     uploadedByEmployee: UUID?,
     type: AttachmentType
@@ -81,7 +82,7 @@ fun Database.Transaction.deleteAttachment(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: UUID, type: AttachmentType, userId: UUID): List<UUID> {
+fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: ApplicationId, type: AttachmentType, userId: UUID): List<UUID> {
     return this.createQuery(
         """
             DELETE FROM attachment 

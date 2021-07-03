@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.ApplicationId
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -25,7 +26,7 @@ data class Income(
     val notes: String,
     val updatedAt: Instant? = null,
     val updatedBy: String? = null,
-    val applicationId: UUID? = null
+    val applicationId: ApplicationId? = null
 ) {
     @JsonProperty("totalIncome")
     fun totalIncome(): Int =

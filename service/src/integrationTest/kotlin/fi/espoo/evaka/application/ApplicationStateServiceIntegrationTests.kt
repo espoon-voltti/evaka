@@ -30,6 +30,7 @@ import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -82,7 +83,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    private val applicationId = UUID.randomUUID()
+    private val applicationId = ApplicationId(UUID.randomUUID())
     private val mainPeriod = preschoolTerm2020
     private val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
 
@@ -145,7 +146,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         }
     }
 
-    private fun assertDueDate(applicationId: UUID, expected: Instant?) {
+    private fun assertDueDate(applicationId: ApplicationId, expected: Instant?) {
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
             if (expected != null) {
