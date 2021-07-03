@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -597,10 +598,10 @@ VALUES (:id, :daycareId, :name, :startDate)
 fun Database.Transaction.insertTestDaycareGroupPlacement(
     daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),
     groupId: GroupId = GroupId(UUID.randomUUID()),
-    id: UUID = UUID.randomUUID(),
+    id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): GroupPlacementId {
     createUpdate(
         """
                 INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)

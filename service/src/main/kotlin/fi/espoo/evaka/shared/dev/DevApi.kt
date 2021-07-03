@@ -59,6 +59,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -840,7 +841,7 @@ data class DevDaycareGroup(
 )
 
 data class DevDaycareGroupPlacement(
-    val id: UUID = UUID.randomUUID(),
+    val id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
     val daycarePlacementId: PlacementId,
     val daycareGroupId: GroupId,
     val startDate: LocalDate,

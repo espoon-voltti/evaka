@@ -14,6 +14,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
@@ -100,7 +101,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate
-): UUID {
+): GroupPlacementId {
     if (endDate.isBefore(startDate))
         throw BadRequest("Must not end before even starting")
 
@@ -141,7 +142,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     }
 }
 
-fun Database.Transaction.transferGroup(daycarePlacementId: PlacementId, groupPlacementId: UUID, groupId: GroupId, startDate: LocalDate) {
+fun Database.Transaction.transferGroup(daycarePlacementId: PlacementId, groupPlacementId: GroupPlacementId, groupId: GroupId, startDate: LocalDate) {
     val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
 
@@ -485,7 +486,7 @@ data class DaycarePlacementWithDetails(
 )
 
 data class DaycareGroupPlacement(
-    val id: UUID?,
+    val id: GroupPlacementId?,
     val groupId: GroupId?,
     val groupName: String?,
     val daycarePlacementId: PlacementId,

@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
@@ -203,7 +204,7 @@ class PlacementController(
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<GroupPlacementId> {
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         acl.getRolesForPlacement(user, placementId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
@@ -225,7 +226,7 @@ class PlacementController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
-        @PathVariable("groupPlacementId") groupPlacementId: UUID
+        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
         acl.getRolesForPlacement(user, daycarePlacementId)
@@ -241,7 +242,7 @@ class PlacementController(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycarePlacementId") daycarePlacementId: PlacementId,
-        @PathVariable("groupPlacementId") groupPlacementId: UUID,
+        @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
