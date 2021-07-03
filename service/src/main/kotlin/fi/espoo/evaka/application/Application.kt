@@ -9,6 +9,7 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -149,7 +150,7 @@ data class PreferredUnit(
 )
 
 data class ApplicationNote(
-    val id: UUID,
+    val id: ApplicationNoteId,
     val applicationId: ApplicationId,
     val content: String,
     val createdBy: UUID,

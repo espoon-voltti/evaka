@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -87,7 +88,7 @@ class NoteController(private val acl: AccessControlList) {
     fun updateNote(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("noteId") noteId: UUID,
+        @PathVariable("noteId") noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest
     ): ResponseEntity<Unit> {
         Audit.NoteUpdate.log(targetId = noteId)
@@ -107,7 +108,7 @@ class NoteController(private val acl: AccessControlList) {
     fun deleteNote(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("noteId") noteId: UUID
+        @PathVariable("noteId") noteId: ApplicationNoteId
     ): ResponseEntity<Unit> {
         Audit.NoteDelete.log(targetId = noteId)
         db.transaction { tx ->
@@ -119,7 +120,7 @@ class NoteController(private val acl: AccessControlList) {
     }
 }
 
-private fun userIsAllowedToEditNote(tx: Database.Read, user: AuthenticatedUser, noteId: UUID): Boolean {
+private fun userIsAllowedToEditNote(tx: Database.Read, user: AuthenticatedUser, noteId: ApplicationNoteId): Boolean {
     return if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)) {
         true
     } else {
@@ -150,7 +151,7 @@ data class NotesWrapperJSON(
 
 data class NoteJSON(
     val applicationId: ApplicationId,
-    val id: UUID,
+    val id: ApplicationNoteId,
     val text: String,
     val created: LocalDateTime,
     val createdBy: UUID,
