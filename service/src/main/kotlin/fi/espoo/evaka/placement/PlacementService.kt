@@ -105,9 +105,6 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     val daycarePlacement = getDaycarePlacement(daycarePlacementId)
         ?: throw NotFound("Placement $daycarePlacementId does not exist")
 
-    if (getDaycareGroupPlacements(daycarePlacement.daycare.id, startDate, endDate, groupId).isNotEmpty())
-        throw BadRequest("Group placement must not overlap with existing group placement")
-
     if (startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate))
         throw BadRequest("Group placement must be within the daycare placement")
 
