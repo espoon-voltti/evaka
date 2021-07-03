@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
@@ -28,7 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SystemIdentityControllerTest : FullApplicationTest() {
-    private lateinit var areaId: UUID
+    private lateinit var areaId: AreaId
     private lateinit var unitId: DaycareId
 
     @BeforeEach

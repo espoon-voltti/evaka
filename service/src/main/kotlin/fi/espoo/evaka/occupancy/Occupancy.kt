@@ -7,6 +7,7 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.daycare.service.getAbsenceCareTypes
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
@@ -90,7 +91,7 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    areaId: UUID? = null,
+    areaId: AreaId? = null,
     unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitKey>> {
     if (areaId == null && unitId == null) error("Must provide areaId or unitId")
@@ -120,7 +121,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    areaId: UUID? = null,
+    areaId: AreaId? = null,
     unitId: DaycareId? = null
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (areaId == null && unitId == null) error("Must provide areaId or unitId")
@@ -195,7 +196,7 @@ private fun getAndValidatePeriod(
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretakers(
     type: OccupancyType,
     period: FiniteDateRange,
-    areaId: UUID?,
+    areaId: AreaId?,
     unitId: DaycareId?,
     noinline mapper: (RowView) -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {

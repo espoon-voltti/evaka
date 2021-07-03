@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
@@ -85,7 +86,7 @@ class PdfServiceTest {
                     id = DaycareId(UUID.randomUUID()),
                     name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                     language = "fi",
-                    areaId = UUID.randomUUID(),
+                    areaId = AreaId(UUID.randomUUID()),
                     areaName = "Test Area"
                 ),
                 serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
@@ -156,7 +157,7 @@ class PdfServiceTest {
                 id = DaycareId(UUID.randomUUID()),
                 name = "Test Daycare",
                 language = "fi",
-                areaId = UUID.randomUUID(),
+                areaId = AreaId(UUID.randomUUID()),
                 areaName = "Test Area"
             ),
             PlacementType.DAYCARE

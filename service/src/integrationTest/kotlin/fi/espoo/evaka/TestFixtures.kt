@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -55,11 +56,11 @@ import java.util.UUID
  Queries and data classes for initializing integration tests with person and unit data
  */
 
-val testAreaId = UUID.randomUUID()
+val testAreaId = AreaId(UUID.randomUUID())
 val testAreaCode = 200
-val testArea2Id = UUID.randomUUID()
+val testArea2Id = AreaId(UUID.randomUUID())
 val testArea2Code = 300
-val svebiTestId = UUID.randomUUID()
+val svebiTestId = AreaId(UUID.randomUUID())
 val svebiTestCode = 400
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"

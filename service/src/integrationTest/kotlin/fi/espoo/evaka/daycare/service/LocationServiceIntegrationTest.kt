@@ -23,6 +23,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType.MUNICIPAL
 import fi.espoo.evaka.daycare.domain.ProviderType.MUNICIPAL_SCHOOL
 import fi.espoo.evaka.daycare.domain.ProviderType.PRIVATE
 import fi.espoo.evaka.daycare.updateDaycare
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -34,7 +35,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class LocationServiceIntegrationTest : PureJdbiTest() {
-    private val areaId = UUID.randomUUID()
+    private val areaId = AreaId(UUID.randomUUID())
 
     @BeforeEach
     internal fun setUp() {
@@ -145,7 +146,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
     }
 
     private fun createGenericUnit(
-        areaId: UUID,
+        areaId: AreaId,
         type: Set<fi.espoo.evaka.daycare.CareType> = setOf(CENTRE),
         providerType: ProviderType = MUNICIPAL
     ) = Location(

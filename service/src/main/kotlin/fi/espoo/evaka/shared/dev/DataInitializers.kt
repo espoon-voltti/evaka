@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
@@ -139,14 +140,14 @@ private fun Database.Transaction.insertTestDataRow(row: Any, @Language("sql") sq
     .asSequence()
     .single()
 
-fun Database.Transaction.insertTestCareArea(area: DevCareArea): UUID = insertTestDataRow(
+fun Database.Transaction.insertTestCareArea(area: DevCareArea): AreaId = insertTestDataRow(
     area,
     """
 INSERT INTO care_area (id, name, short_name, area_code, sub_cost_center)
 VALUES (:id, :name, :shortName, :areaCode, :subCostCenter)
 RETURNING id
 """
-)
+).let(::AreaId)
 
 fun Database.Transaction.insertTestDaycare(daycare: DevDaycare): DaycareId = insertTestDataRow(
     daycare,

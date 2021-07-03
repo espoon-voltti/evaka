@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -121,7 +122,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest() {
 
     private val adminUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.ADMIN))
 
-    private fun getAreaReport(areaId: UUID, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
+    private fun getAreaReport(areaId: AreaId, year: Int, month: Int): List<ServiceVoucherValueUnitAggregate> {
         val (_, response, data) = http.get(
             "/reports/service-voucher-value/units",
             listOf("areaId" to areaId, "year" to year, "month" to month)

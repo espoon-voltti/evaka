@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
@@ -40,8 +41,8 @@ import fi.espoo.evaka.daycare.service.CareType as AbsenceCareType
 class OccupancyTest : PureJdbiTest() {
     val today = LocalDate.of(2020, 1, 16) // Thursday
 
-    val careArea1: UUID = UUID.randomUUID()
-    val careArea2: UUID = UUID.randomUUID()
+    val careArea1: AreaId = AreaId(UUID.randomUUID())
+    val careArea2: AreaId = AreaId(UUID.randomUUID())
 
     val daycareInArea1: DaycareId = DaycareId(UUID.randomUUID())
     val daycareGroup1: GroupId = GroupId(UUID.randomUUID())

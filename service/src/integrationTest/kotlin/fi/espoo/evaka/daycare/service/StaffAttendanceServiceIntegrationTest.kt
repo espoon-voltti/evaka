@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -29,7 +30,7 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var staffAttendanceService: StaffAttendanceService
 
-    val areaId: UUID = UUID.randomUUID()
+    val areaId: AreaId = AreaId(UUID.randomUUID())
     val daycareId: DaycareId = DaycareId(UUID.randomUUID())
     val groupId: GroupId = GroupId(UUID.randomUUID())
     val groupName = "Testiryhmä"
