@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.application.AttachmentType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
@@ -30,7 +31,6 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.core.env.Environment
 import java.io.File
 import java.time.LocalDate
-import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -84,7 +84,7 @@ abstract class FullApplicationTest {
         db.close()
     }
 
-    fun uploadAttachment(applicationId: UUID, user: AuthenticatedUser, type: AttachmentType = AttachmentType.URGENCY): Boolean {
+    fun uploadAttachment(applicationId: ApplicationId, user: AuthenticatedUser, type: AttachmentType = AttachmentType.URGENCY): Boolean {
         val path = if (user.isEndUser) "/attachments/citizen/applications/$applicationId" else "/attachments/applications/$applicationId"
         val (_, res, _) = http.upload(path, parameters = listOf("type" to type))
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))

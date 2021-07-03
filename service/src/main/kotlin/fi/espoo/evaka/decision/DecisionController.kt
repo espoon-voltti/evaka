@@ -7,6 +7,7 @@ package fi.espoo.evaka.decision
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -59,7 +60,7 @@ class DecisionController(
     fun getDecisionsByApplication(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam("id") applicationId: UUID
+        @RequestParam("id") applicationId: ApplicationId
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)

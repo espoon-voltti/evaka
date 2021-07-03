@@ -55,6 +55,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -233,7 +234,7 @@ class DevApi(
     data class DecisionRequest(
         val id: UUID,
         val employeeId: UUID,
-        val applicationId: UUID,
+        val applicationId: ApplicationId,
         val unitId: DaycareId,
         val type: DecisionType,
         val startDate: LocalDate,
@@ -268,7 +269,7 @@ class DevApi(
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
         db: Database.Connection,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<ApplicationDetails> {
         return db.read { tx ->
             tx.fetchApplicationDetails(applicationId)
@@ -278,7 +279,7 @@ class DevApi(
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
         db: Database.Connection,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<List<Decision>> {
         return db.read { tx ->
             tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
@@ -426,7 +427,7 @@ RETURNING id
     fun createApplications(
         db: Database,
         @RequestBody applications: List<ApplicationWithForm>
-    ): ResponseEntity<List<UUID>> {
+    ): ResponseEntity<List<ApplicationId>> {
         val uuids =
             db.transaction { tx ->
                 applications.map { application ->
@@ -454,7 +455,7 @@ RETURNING id
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
         db: Database,
-        @PathVariable("application-id") applicationId: UUID,
+        @PathVariable("application-id") applicationId: ApplicationId,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -521,7 +522,7 @@ RETURNING id
     @PostMapping("/applications/{applicationId}/actions/{action}")
     fun simpleAction(
         db: Database,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ): ResponseEntity<Unit> {
         val simpleActions = mapOf(
@@ -545,7 +546,7 @@ RETURNING id
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
         db: Database,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
@@ -558,7 +559,7 @@ RETURNING id
     @PostMapping("/applications/{applicationId}/actions/create-default-placement-plan")
     fun createDefaultPlacementPlan(
         db: Database,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
             tx.ensureFakeAdminExists()
@@ -966,7 +967,7 @@ data class PlacementPlan(
 )
 
 data class ApplicationWithForm(
-    val id: UUID?,
+    val id: ApplicationId?,
     val createdDate: OffsetDateTime?,
     val modifiedDate: OffsetDateTime?,
     var sentDate: LocalDate?,
@@ -984,7 +985,7 @@ data class ApplicationWithForm(
 
 data class ApplicationForm(
     val id: UUID? = UUID.randomUUID(),
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val createdDate: OffsetDateTime? = OffsetDateTime.now(),
     val revision: Int,
     val document: DaycareFormV0,

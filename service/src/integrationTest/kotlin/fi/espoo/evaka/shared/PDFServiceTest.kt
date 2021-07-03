@@ -195,7 +195,7 @@ fun createValidDecision(
         "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.MUNICIPAL
     ),
-    applicationId: UUID = UUID.randomUUID(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: UUID = UUID.randomUUID(),
     documentKey: String? = null,
     otherGuardianDocumentKey: String? = null,

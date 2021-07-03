@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.auth
 
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
@@ -54,7 +55,7 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
         }
     )
 
-    fun getRolesForApplication(user: AuthenticatedUser, applicationId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForApplication(user: AuthenticatedUser, applicationId: ApplicationId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read { it ->
             val assistanceNeeded = it.createQuery(
                 // language=SQL

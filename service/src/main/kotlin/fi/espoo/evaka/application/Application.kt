@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -60,7 +61,7 @@ data class PlacementProposalStatus(
 )
 
 data class PersonApplicationSummary(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val childId: UUID,
     val guardianId: UUID,
     val preferredUnitId: DaycareId?,
@@ -77,7 +78,7 @@ data class PersonApplicationSummary(
 )
 
 data class ApplicationDetails(
-    val id: UUID,
+    val id: ApplicationId,
     val type: ApplicationType,
     val form: ApplicationForm,
     val status: ApplicationStatus,
@@ -149,7 +150,7 @@ data class PreferredUnit(
 
 data class ApplicationNote(
     val id: UUID,
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val content: String,
     val createdBy: UUID,
     val createdByName: String,
@@ -160,7 +161,7 @@ data class ApplicationNote(
 )
 
 data class ApplicationUnitSummary(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
@@ -176,7 +177,7 @@ data class ApplicationUnitSummary(
 )
 
 data class CitizenApplicationSummary(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val type: String,
     val childId: UUID,
     val childName: String?,
@@ -194,7 +195,7 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     user: AuthenticatedUser,
     tx: Database.Transaction,
     personService: PersonService,
-    applicationId: UUID
+    applicationId: ApplicationId
 ): ApplicationDetails? = tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)
     ?.let { application ->
         application.copy(

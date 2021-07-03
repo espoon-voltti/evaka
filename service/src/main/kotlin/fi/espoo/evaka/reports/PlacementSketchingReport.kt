@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -110,7 +111,7 @@ data class PlacementSketchingReportRow(
     val childLastName: String?,
     val childDob: String?,
     val childStreetAddr: String?,
-    val applicationId: UUID?,
+    val applicationId: ApplicationId?,
     val currentUnitName: String?,
     val currentUnitId: DaycareId?,
     val assistanceNeeded: Boolean?,

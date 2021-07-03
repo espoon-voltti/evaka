@@ -24,6 +24,7 @@ import fi.espoo.evaka.placement.PlacementPlanDraft
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -118,7 +119,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PaperApplicationCreateRequest
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<ApplicationId> {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
 
@@ -252,7 +253,7 @@ class ApplicationControllerV2(
     fun getApplicationDetails(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID
+        @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<ApplicationResponse> {
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
@@ -289,7 +290,7 @@ class ApplicationControllerV2(
     fun updateApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
     ): ResponseEntity<Unit> {
         Audit.ApplicationUpdate.log(targetId = applicationId)
@@ -312,7 +313,7 @@ class ApplicationControllerV2(
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID
+        @PathVariable applicationId: ApplicationId
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.sendApplication(it, user, applicationId, currentDateInFinland()) }
         return ResponseEntity.noContent().build()
@@ -322,7 +323,7 @@ class ApplicationControllerV2(
     fun getPlacementPlanDraft(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID
+        @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
@@ -334,7 +335,7 @@ class ApplicationControllerV2(
     fun getDecisionDrafts(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID
+        @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ResponseEntity<DecisionDraftJSON> {
         Audit.DecisionDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
@@ -391,7 +392,7 @@ class ApplicationControllerV2(
     fun updateDecisionDrafts(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable(value = "applicationId") applicationId: UUID,
+        @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ): ResponseEntity<Unit> {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
@@ -440,7 +441,7 @@ class ApplicationControllerV2(
     fun createPlacementPlan(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
@@ -454,7 +455,7 @@ class ApplicationControllerV2(
     fun respondToPlacementProposal(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate
     ): ResponseEntity<Unit> {
         db.transaction {
@@ -474,7 +475,7 @@ class ApplicationControllerV2(
     fun acceptDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
         db.transaction {
@@ -487,7 +488,7 @@ class ApplicationControllerV2(
     fun rejectDecision(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
         db.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) }
@@ -498,7 +499,7 @@ class ApplicationControllerV2(
     fun simpleAction(
         db: Database,
         user: AuthenticatedUser,
-        @PathVariable applicationId: UUID,
+        @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ): ResponseEntity<Unit> {
         val simpleActions = mapOf(
@@ -539,7 +540,7 @@ data class ApplicationResponse(
 )
 
 data class SimpleBatchRequest(
-    val applicationIds: Set<UUID>
+    val applicationIds: Set<ApplicationId>
 )
 
 data class PlacementProposalConfirmationUpdate(

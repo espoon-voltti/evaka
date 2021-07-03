@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -56,7 +57,7 @@ class DecisionDraftService {
         batch.execute()
     }
 
-    fun updateDecisionDrafts(tx: Database.Transaction, applicationId: UUID, updates: List<DecisionDraftUpdate>) {
+    fun updateDecisionDrafts(tx: Database.Transaction, applicationId: ApplicationId, updates: List<DecisionDraftUpdate>) {
         // language=sql
         val sql =
             """
@@ -171,7 +172,7 @@ class DecisionDraftService {
     }
 }
 
-fun Database.Transaction.clearDecisionDrafts(applicationIds: List<UUID>) {
+fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {
     // language=sql
     val sql =
         """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent()

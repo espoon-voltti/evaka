@@ -18,6 +18,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -56,7 +57,7 @@ data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept
 class DecisionResolutionIntegrationTest : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val endUser = AuthenticatedUser.Citizen(testAdult_1.id)
-    private val applicationId = UUID.randomUUID()
+    private val applicationId = ApplicationId(UUID.randomUUID())
 
     @BeforeEach
     private fun beforeEach() {
@@ -320,7 +321,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate) {
+    private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID, requestedStartDate: LocalDate) {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) = http.post(path)
@@ -339,7 +340,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: UUID, decisionId: UUID) {
+    private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID) {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) = http.post(path)
@@ -436,7 +437,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
 }
 
 private data class DataIdentifiers(
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val primaryId: UUID?,
     val preschoolDaycareId: UUID?
 )

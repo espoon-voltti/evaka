@@ -26,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -678,7 +679,7 @@ fun Database.Transaction.insertApplication(
     hasAdditionalInfo: Boolean = false,
     maxFeeAccepted: Boolean = false,
     preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
-    applicationId: UUID = UUID.randomUUID(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     status: ApplicationStatus = ApplicationStatus.CREATED,
     guardianEmail: String = "abc@espoo.fi"
 ): ApplicationDetails {

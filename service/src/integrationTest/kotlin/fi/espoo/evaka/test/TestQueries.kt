@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
@@ -18,7 +19,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getApplicationStatus(applicationId: UUID): ApplicationStatus = createQuery(
+fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus = createQuery(
     // language=SQL
     """
 SELECT status
@@ -35,7 +36,7 @@ data class DecisionTableRow(
     val createdBy: UUID,
     val sentDate: LocalDate,
     val unitId: DaycareId,
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -48,7 +49,7 @@ data class DecisionTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getDecisionRowsByApplication(applicationId: UUID) = createQuery(
+fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) = createQuery(
     // language=SQL
     "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
 ).bind("applicationId", applicationId).mapTo<DecisionTableRow>()
@@ -78,7 +79,7 @@ data class PlacementPlanTableRow(
     val id: UUID,
     val type: PlacementType,
     val unitId: DaycareId,
-    val applicationId: UUID,
+    val applicationId: ApplicationId,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val preschoolDaycareStartDate: LocalDate?,
@@ -95,7 +96,7 @@ data class PlacementPlanTableRow(
         ) else null
 }
 
-fun Database.Read.getPlacementPlanRowByApplication(applicationId: UUID) = createQuery(
+fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) = createQuery(
     // language=SQL
     "SELECT * FROM placement_plan WHERE application_id = :applicationId"
 ).bind("applicationId", applicationId).mapTo<PlacementPlanTableRow>()

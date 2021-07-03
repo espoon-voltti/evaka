@@ -52,6 +52,7 @@ import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.s3.DocumentService
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
@@ -94,7 +95,7 @@ class ApplicationStateService(
     fun sendApplication(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         currentDate: LocalDate,
         isEnduser: Boolean = false,
     ) {
@@ -158,7 +159,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, SENT)
     }
 
-    fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationVerify.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -193,7 +194,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
-    fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToSent.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -202,7 +203,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, SENT)
     }
 
-    fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationCancel.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -211,7 +212,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, CANCELLED)
     }
 
-    fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -220,7 +221,7 @@ class ApplicationStateService(
         tx.setApplicationVerified(applicationId, true)
     }
 
-    fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -229,7 +230,7 @@ class ApplicationStateService(
         tx.setApplicationVerified(applicationId, false)
     }
 
-    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, placementPlan: DaycarePlacementPlan) {
+    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, placementPlan: DaycarePlacementPlan) {
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
@@ -248,7 +249,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
     }
 
-    fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -259,7 +260,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
     }
 
-    fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.DecisionCreate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -268,7 +269,7 @@ class ApplicationStateService(
         finalizeDecisions(tx, user, application)
     }
 
-    fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.PlacementProposalCreate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -277,7 +278,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
     }
 
-    fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -289,7 +290,7 @@ class ApplicationStateService(
     fun respondToPlacementProposal(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         status: PlacementPlanConfirmationStatus,
         rejectReason: PlacementPlanRejectReason? = null,
         rejectOtherReason: String? = null
@@ -328,7 +329,7 @@ class ApplicationStateService(
         val applicationStates = tx.createQuery(sql)
             .bind("unitId", unitId)
             .map { row ->
-                Pair<UUID, PlacementPlanConfirmationStatus>(
+                Pair<ApplicationId, PlacementPlanConfirmationStatus>(
                     row.mapColumn("application_id"),
                     row.mapColumn("unit_confirmation_status")
                 )
@@ -343,7 +344,7 @@ class ApplicationStateService(
             .forEach { finalizeDecisions(tx, user, it) }
     }
 
-    fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
+    fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId) {
         Audit.DecisionConfirmMailed.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
@@ -352,7 +353,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
     }
 
-    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
+    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
         Audit.DecisionAccept.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
@@ -409,7 +410,7 @@ class ApplicationStateService(
         }
     }
 
-    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, isEnduser: Boolean = false) {
+    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID, isEnduser: Boolean = false) {
         Audit.DecisionReject.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
@@ -449,7 +450,7 @@ class ApplicationStateService(
     fun updateOwnApplicationContentsCitizen(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         update: ApplicationFormUpdate,
         currentDate: LocalDate,
         asDraft: Boolean = false
@@ -493,7 +494,7 @@ class ApplicationStateService(
     fun updateApplicationContentsServiceWorker(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        applicationId: UUID,
+        applicationId: ApplicationId,
         update: ApplicationUpdate,
         userId: UUID,
         currentDate: LocalDate
@@ -538,7 +539,7 @@ class ApplicationStateService(
         }
     }
 
-    private fun Database.Transaction.updateManuallySetDueDate(applicationId: UUID, manuallySetDueDate: LocalDate) {
+    private fun Database.Transaction.updateManuallySetDueDate(applicationId: ApplicationId, manuallySetDueDate: LocalDate) {
         createUpdate("UPDATE application SET duedate = :dueDate, duedate_set_manually_at = :dueDateSetManuallyAt WHERE id = :id")
             .bind("id", applicationId)
             .bind("dueDate", manuallySetDueDate)
@@ -562,7 +563,7 @@ class ApplicationStateService(
             .execute()
     }
 
-    fun reCalculateDueDate(tx: Database.Transaction, applicationId: UUID) {
+    fun reCalculateDueDate(tx: Database.Transaction, applicationId: ApplicationId) {
         val application = tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId was not found")
         tx.calculateAndUpdateDueDate(application, application.form.preferences.urgent)
@@ -570,7 +571,7 @@ class ApplicationStateService(
 
     // HELPERS
 
-    private fun getApplication(tx: Database.Read, applicationId: UUID): ApplicationDetails {
+    private fun getApplication(tx: Database.Read, applicationId: ApplicationId): ApplicationDetails {
         return tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
     }

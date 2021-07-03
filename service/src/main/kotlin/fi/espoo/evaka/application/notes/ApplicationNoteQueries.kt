@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application.notes
 
 import fi.espoo.evaka.application.ApplicationNote
+import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
@@ -19,7 +20,7 @@ fun Database.Read.getApplicationNoteCreatedBy(id: UUID): UUID {
         .first()
 }
 
-fun Database.Read.getApplicationNotes(applicationId: UUID): List<ApplicationNote> {
+fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<ApplicationNote> {
     // language=SQL
     val sql =
         """
@@ -40,7 +41,7 @@ ORDER BY n.created
         .toList()
 }
 
-fun Database.Transaction.createApplicationNote(applicationId: UUID, content: String, createdBy: UUID): ApplicationNote {
+fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, content: String, createdBy: UUID): ApplicationNote {
     // language=SQL
     val sql =
         """
