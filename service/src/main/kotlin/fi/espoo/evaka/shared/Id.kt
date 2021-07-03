@@ -28,7 +28,7 @@ typealias PlacementId = Id<DatabaseTable.Placement>
 
 @JsonSerialize(converter = Id.ToJson::class)
 @JsonDeserialize(converter = Id.FromJson::class, keyUsing = Id.KeyFromJson::class)
-data class Id<T : DatabaseTable>(val raw: UUID) {
+data class Id<out T : DatabaseTable>(val raw: UUID) {
     override fun toString(): String = raw.toString()
 
     class FromJson : StdConverter<UUID, Id<*>>() {
