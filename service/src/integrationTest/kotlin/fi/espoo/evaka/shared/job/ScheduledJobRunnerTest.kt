@@ -10,14 +10,14 @@ import fi.espoo.evaka.application.utils.helsinkiZone
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.config.getTestDataSource
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class ScheduledJobRunnerTest : PureJdbiTest() {
     private lateinit var asyncJobRunner: AsyncJobRunner

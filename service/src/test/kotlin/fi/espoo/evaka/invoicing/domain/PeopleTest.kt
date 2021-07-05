@@ -6,10 +6,10 @@ package fi.espoo.evaka.invoicing.domain
 
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class PeopleTest {
     private val testPerson = PersonData.Detailed(

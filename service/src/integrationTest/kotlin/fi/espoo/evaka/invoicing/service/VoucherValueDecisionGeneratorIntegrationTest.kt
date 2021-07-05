@@ -30,13 +30,13 @@ import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired

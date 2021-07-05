@@ -8,10 +8,10 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getParentships
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired

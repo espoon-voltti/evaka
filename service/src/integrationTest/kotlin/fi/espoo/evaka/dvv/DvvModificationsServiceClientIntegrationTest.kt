@@ -6,9 +6,9 @@ package fi.espoo.evaka.dvv
 
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.verify
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceIntegrationTestBase() {
 

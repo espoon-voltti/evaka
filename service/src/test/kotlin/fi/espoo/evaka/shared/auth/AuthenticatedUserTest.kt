@@ -5,9 +5,9 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.config.defaultObjectMapper
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class AuthenticatedUserTest {
     private val id = UUID.fromString("e4d7a125-2b2c-465c-994f-38c2915534a6")

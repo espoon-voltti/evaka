@@ -10,11 +10,12 @@ import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.dev.resetDatabase
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class PersonIntegrationTest : PureJdbiTest() {
     @BeforeEach
@@ -27,7 +28,7 @@ class PersonIntegrationTest : PureJdbiTest() {
     @Test
     fun `creating an empty person creates a message account`() {
         val person = db.transaction { createEmptyPerson(it) }
-        Assertions.assertTrue(personHasMessageAccount(person.id))
+        assertTrue(personHasMessageAccount(person.id))
     }
 
     @Test
@@ -42,7 +43,7 @@ class PersonIntegrationTest : PureJdbiTest() {
         )
         val person = db.transaction { createPerson(it, req) }
 
-        Assertions.assertTrue(personHasMessageAccount(person.id))
+        assertTrue(personHasMessageAccount(person.id))
     }
 
     @Test
@@ -59,7 +60,7 @@ class PersonIntegrationTest : PureJdbiTest() {
         )
         val personId = db.transaction { createPerson(it, body) }
 
-        Assertions.assertTrue(personHasMessageAccount(personId))
+        assertTrue(personHasMessageAccount(personId))
     }
 
     /**
@@ -78,8 +79,8 @@ class PersonIntegrationTest : PureJdbiTest() {
     @Test
     fun `getTransferablePersonReferences returns references to person and child tables`() {
         val references = db.read { it.getTransferablePersonReferences() }
-        Assertions.assertEquals(35, references.size)
-        Assertions.assertEquals(
+        assertEquals(35, references.size)
+        assertEquals(
             listOf(
                 PersonReference("absence", "child_id"),
                 PersonReference("application", "child_id"),

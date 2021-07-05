@@ -23,7 +23,6 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.voltti.pdfgen.PDFService
 import mu.KotlinLogging
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -33,6 +32,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertNotNull
 
 val logger = KotlinLogging.logger { }
 

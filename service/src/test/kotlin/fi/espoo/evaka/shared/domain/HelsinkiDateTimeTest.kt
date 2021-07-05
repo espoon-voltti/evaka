@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.domain
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.utils.europeHelsinki
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.Clock
@@ -15,6 +14,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import kotlin.test.assertEquals
 
 class HelsinkiDateTimeTest {
     private val objectMapper = defaultObjectMapper()

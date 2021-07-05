@@ -35,13 +35,13 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class MergeServiceIntegrationTest : PureJdbiTest() {
     lateinit var mergeService: MergeService

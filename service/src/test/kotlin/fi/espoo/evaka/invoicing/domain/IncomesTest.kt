@@ -7,15 +7,15 @@ package fi.espoo.evaka.invoicing.domain
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient.YEARLY
 import fi.espoo.evaka.invoicing.testIncome
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 class IncomesTest {
     @Test
     fun `Income total with empty data`() {
         val income = testIncome.copy(data = mapOf())
 
-        Assertions.assertEquals(0, income.total())
+        assertEquals(0, income.total())
     }
 
     @Test
@@ -23,7 +23,7 @@ class IncomesTest {
         val income =
             testIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to IncomeValue(50000, MONTHLY_NO_HOLIDAY_BONUS)))
 
-        Assertions.assertEquals(50000, income.total())
+        assertEquals(50000, income.total())
     }
 
     @Test
@@ -36,7 +36,7 @@ class IncomesTest {
             )
         )
 
-        Assertions.assertEquals(170000, income.total())
+        assertEquals(170000, income.total())
     }
 
     @Test
@@ -44,7 +44,7 @@ class IncomesTest {
         val income =
             testIncome.copy(data = mapOf(IncomeType.ALL_EXPENSES to IncomeValue(10000, MONTHLY_NO_HOLIDAY_BONUS)))
 
-        Assertions.assertEquals(-10000, income.total())
+        assertEquals(-10000, income.total())
     }
 
     @Test
@@ -56,7 +56,7 @@ class IncomesTest {
             )
         )
 
-        Assertions.assertEquals(450000, income.total())
+        assertEquals(450000, income.total())
     }
 
     @Test
@@ -64,6 +64,6 @@ class IncomesTest {
         val income =
             testIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to IncomeValue(100000, YEARLY)))
 
-        Assertions.assertEquals(8330, income.total())
+        assertEquals(8330, income.total())
     }
 }

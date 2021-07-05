@@ -10,9 +10,9 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertTrue
 
 class MockPersonDetailsServiceTest {
     private val mockDetailsService = MockPersonDetailsService()
