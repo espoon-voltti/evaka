@@ -2653,6 +2653,7 @@ export const fi = {
     addNewTemplate: 'Lisää uusi vasu-pohja',
     templateModal: {
       createTitle: 'Uusi vasu-pohja',
+      editTitle: 'Muokkaa vasu-pohjaa',
       copyTitle: 'Kopioi vasu-pohja',
       validStart: 'Toimintavuosi alkaa',
       validEnd: 'Toimintavuosi päättyy'
@@ -2674,6 +2675,15 @@ export const fi = {
       CHECKBOX: 'Rasti',
       RADIO_GROUP: 'Valitse yksi',
       MULTISELECT: 'Monivalinta'
+    },
+    errorCodes: {
+      EXPIRED_START: 'Päättyneen pohjan alkupäivää ei voi muuttaa',
+      EXPIRED_END: 'Päättyneen pohjan loppupäivää ei voi aikaistaa',
+      FUTURE_START:
+        'Tulevaisuuden pohjan alkupäivää ei voi siirtää menneisyyteen',
+      CURRENT_START: 'Voimassa olevan pohjan alkupäivää ei voi vaihtaa',
+      CURRENT_END:
+        'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen'
     }
   },
   roles: {

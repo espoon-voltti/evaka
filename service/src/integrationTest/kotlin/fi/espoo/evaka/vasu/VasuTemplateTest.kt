@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.vasu
 
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -32,13 +32,13 @@ class VasuTemplateTest {
     fun `start date of a currently valid template cannot be changed`() {
         val today = HelsinkiDateTime.now().toLocalDate()
         val template = currentlyValidTemplate()
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(today.minusDays(1), today))
             )
         }
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(today.plusDays(1), today.plusDays(2)))
@@ -56,7 +56,7 @@ class VasuTemplateTest {
     fun `end date of a currently valid template cannot be before yesterday`() {
         val today = HelsinkiDateTime.now().toLocalDate()
         val template = currentlyValidTemplate()
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(template.valid.start, today.minusDays(2)))
@@ -74,7 +74,7 @@ class VasuTemplateTest {
     fun `start date of a template valid in the future cannot be changed to the past`() {
         val today = HelsinkiDateTime.now().toLocalDate()
         val template = currentlyValidTemplate().copy(valid = FiniteDateRange(today.plusMonths(1), today.plusMonths(2)))
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(today.minusDays(1), template.valid.end))
@@ -93,13 +93,13 @@ class VasuTemplateTest {
         val today = HelsinkiDateTime.now().toLocalDate()
         val template =
             currentlyValidTemplate().copy(valid = FiniteDateRange(today.minusMonths(2), today.minusMonths(1)))
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(template.valid.start.plusDays(1), template.valid.end))
             )
         }
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(template.valid.start.minusDays(1), template.valid.end))
@@ -118,7 +118,7 @@ class VasuTemplateTest {
         val today = HelsinkiDateTime.now().toLocalDate()
         val template =
             currentlyValidTemplate().copy(valid = FiniteDateRange(today.minusMonths(2), today.minusMonths(1)))
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             validateTemplateUpdate(
                 template = template,
                 body = templateUpdate(FiniteDateRange(template.valid.start, template.valid.end.minusDays(1)))
