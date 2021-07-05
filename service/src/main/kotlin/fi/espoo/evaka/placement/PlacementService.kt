@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
@@ -256,7 +257,7 @@ fun Database.Read.getDetailedDaycarePlacements(
 
     val groupPlacements =
         when {
-            daycareId != null -> getDaycareGroupPlacements(daycareId, minDate, maxDate, null)
+            daycareId != null -> getGroupPlacementsAtDaycare(daycareId, DateRange(minDate, maxDate))
             childId != null -> getChildGroupPlacements(childId)
             else -> listOf()
         }

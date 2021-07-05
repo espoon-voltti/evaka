@@ -123,6 +123,7 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     }
 
     fun asFiniteDateRange(): FiniteDateRange? = end?.let { FiniteDateRange(start, it) }
+    fun asFiniteDateRange(defaultEnd: LocalDate): FiniteDateRange = FiniteDateRange(start, end ?: defaultEnd)
 
     fun contains(other: DateRange) = this.start <= other.start && orMax(other.end) <= orMax(this.end)
     fun contains(other: FiniteDateRange) = contains(other.asDateRange())

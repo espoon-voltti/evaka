@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -383,12 +384,7 @@ fun Database.Read.hasGroupPlacements(groupId: UUID): Boolean = createQuery(
     .mapTo<Boolean>()
     .one()
 
-fun Database.Read.getDaycareGroupPlacements(
-    daycareId: UUID,
-    startDate: LocalDate?,
-    endDate: LocalDate?,
-    groupId: UUID? = null
-): List<DaycareGroupPlacement> {
+fun Database.Read.getGroupPlacementsAtDaycare(daycareId: UUID, placementRange: DateRange): List<DaycareGroupPlacement> {
     // language=SQL
     val sql =
         """
@@ -401,20 +397,17 @@ fun Database.Read.getDaycareGroupPlacements(
             gp.end_date
         FROM daycare_group_placement gp
         JOIN daycare_group dg ON dg.id = gp.daycare_group_id
-        WHERE (:groupId::uuid IS NULL OR daycare_group_id = :groupId)
-        AND EXISTS (
+        WHERE EXISTS (
             SELECT 1 FROM placement p
             WHERE p.id = daycare_placement_id
             AND p.unit_id = :daycareId
-            AND daterange(p.start_date, p.end_date, '[]') && daterange(:startDate, :endDate, '[]')
+            AND daterange(p.start_date, p.end_date, '[]') && :placementRange
         )
         """.trimIndent()
 
     return createQuery(sql)
         .bind("daycareId", daycareId)
-        .bind("startDate", startDate ?: PGConstants.minDate)
-        .bind("endDate", endDate ?: PGConstants.maxDate)
-        .bindNullable("groupId", groupId)
+        .bind("placementRange", placementRange.asFiniteDateRange(defaultEnd = PGConstants.maxDate))
         .mapTo<DaycareGroupPlacement>()
         .toList()
 }
