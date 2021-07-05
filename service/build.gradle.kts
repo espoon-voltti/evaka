@@ -66,6 +66,8 @@ dependencies {
 
     // Kotlin + core
     api(kotlin("stdlib-jdk8"))
+    api(kotlin("test"))
+    api(kotlin("test-junit5"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm")
