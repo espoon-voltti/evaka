@@ -53,7 +53,9 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
       resolve={{
         action: submitForm,
         label: i18n.common.confirm,
-        disabled: data.name.trim().length === 0
+        disabled:
+          data.name.trim().length === 0 ||
+          data.endDate?.isBefore(data.startDate)
       }}
       reject={{
         action: clearUiMode,
