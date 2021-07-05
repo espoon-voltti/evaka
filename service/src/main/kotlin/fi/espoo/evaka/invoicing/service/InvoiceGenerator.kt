@@ -88,15 +88,19 @@ internal fun generateDraftInvoices(
     freeChildren: List<UUID> = listOf()
 ): List<Invoice> {
     return placements.keys.mapNotNull { headOfFamilyId ->
-        generateDraftInvoice(
-            decisions[headOfFamilyId] ?: listOf(),
-            placements[headOfFamilyId] ?: listOf(),
-            period,
-            daycareCodes,
-            operationalDays,
-            absences,
-            freeChildren
-        )
+        try {
+            generateDraftInvoice(
+                decisions[headOfFamilyId] ?: listOf(),
+                placements[headOfFamilyId] ?: listOf(),
+                period,
+                daycareCodes,
+                operationalDays,
+                absences,
+                freeChildren
+            )
+        } catch (e: Exception) {
+            error("Failed to generate invoice for head of family $headOfFamilyId: $e")
+        }
     }
 }
 
