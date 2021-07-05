@@ -40,16 +40,17 @@ fi
 REPO_UID=${REPO_UID:-1001}
 REPO_GID=${REPO_UID:-1001}
 REPO_USERNAME=${REPO_USERNAME:-circleci-repo}
+PROXY_URL=${PROXY_URL:-http://evaka-proxy:8080}
 TEST_RUNNER=$1
 
-# Create user matching mounted repo in order to interact with it
-{
-  sudo groupadd --gid "$REPO_GID" "$REPO_USERNAME" \
-  && sudo useradd --uid "$REPO_UID" --gid "$REPO_USERNAME" --shell /bin/bash --create-home "$REPO_USERNAME" \
-  && sudo sh -c "echo '${REPO_USERNAME} ALL=NOPASSWD: ALL' >> /etc/sudoers.d/100-${REPO_USERNAME}"
-} || true
-
 if [ "$TEST_RUNNER" = "testcafe" ]; then
+  # Create user matching mounted repo in order to interact with it
+  {
+    sudo groupadd --gid "$REPO_GID" "$REPO_USERNAME" \
+    && sudo useradd --uid "$REPO_UID" --gid "$REPO_USERNAME" --shell /bin/bash --create-home "$REPO_USERNAME" \
+    && sudo sh -c "echo '${REPO_USERNAME} ALL=NOPASSWD: ALL' >> /etc/sudoers.d/100-${REPO_USERNAME}"
+  } || true
+
   # Install Testcafe dependencies
   sudo apt-get update && sudo apt-get --yes install --no-install-recommends ffmpeg
 
@@ -73,43 +74,41 @@ if [ "$TEST_RUNNER" = "testcafe" ]; then
   sudo mv chromedriver /usr/local/bin/chromedriver
   sudo chmod +x /usr/local/bin/chromedriver
   chromedriver --version
-fi
 
-# In order to allow yarn and test runners to write to mounted repository,
-# execute yarn install and tests as a user with the same UID.
-sudo su - "$REPO_USERNAME" <<EOF
-  set -euo pipefail
+  # In order to allow yarn and test runners to write to mounted repository,
+  # execute yarn install and tests as a user with the same UID.
+  sudo su - "$REPO_USERNAME" <<EOF
+    set -euo pipefail
 
-  # Preserve these variables from the initial environment
-  export DEBUG="$DEBUG"
-  export CI="$CI"
+    # Preserve these variables from the initial environment
+    export DEBUG="$DEBUG"
+    export CI="$CI"
+    # Misc configs
+    export FORCE_COLOR=1
+
+    if [ "${DEBUG:-X}" = "true" ]; then
+      set -x
+    fi
+
+    cd /repo/frontend
+
+    echo 'INFO: Waiting for compose stack to be up...'
+    ./wait-for-dev-api.sh '$PROXY_URL'
+
+    yarn e2e-ci-testcafe --fixture-grep "\$(cat testcafe-fixture-regex.txt)" -- src/e2e-test/specs/
+EOF
+elif [ "$TEST_RUNNER" = "playwright" ]; then
+  # Misc configs
   export FORCE_COLOR=1
 
-  if [ "${DEBUG:-X}" = "true" ]; then
-    set -x
-  fi
-
   cd /repo/frontend
-  yarn install --immutable --immutable-cache
-
-  # TODO: Is there any better way than this?
-  if [ "$TEST_RUNNER" = "playwright" ]; then
-    # Make Playwright download browsers to node_modules/playwright instead of $HOME/.cache/ms-playwright
-    export PLAYWRIGHT_BROWSERS_PATH=0
-    # and force yarn to re-download playwright to ensure its postinstall script
-    # is actually triggered and the browsers downloaded.
-    yarn rebuild playwright
-  fi
 
   echo 'INFO: Waiting for compose stack to be up...'
-  ./wait-for-dev-api.sh 'http://evaka-proxy:8080'
+  ./wait-for-dev-api.sh "$PROXY_URL"
 
-  if [ "$TEST_RUNNER" = "playwright" ]; then
-    mapfile -t FILENAMES < playwright-filenames.txt
-    yarn e2e-ci-playwright "\${FILENAMES[@]}"
-  elif [ "$TEST_RUNNER" = "testcafe" ]; then
-    yarn e2e-ci-testcafe --fixture-grep "\$(cat testcafe-fixture-regex.txt)" -- src/e2e-test/specs/
-  else
-    echo 'ERROR: Invalid test runner: $TEST_RUNNER'
-  fi
-EOF
+  mapfile -t FILENAMES < playwright-filenames.txt
+  yarn e2e-ci-playwright "${FILENAMES[@]}"
+else
+  echo "ERROR: Invalid test_runner: $TEST_RUNNER"
+  exit 1
+fi

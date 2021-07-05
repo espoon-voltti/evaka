@@ -24,6 +24,7 @@ fi
 
 COMPOSE_NETWORK=${COMPOSE_NETWORK:-compose_default}
 SKIP_SPLIT=${SKIP_SPLIT:-false}
+PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION:-v1.12.3}
 TEST_RUNNER=$1
 
 # Ensure we are in repository root
@@ -65,13 +66,26 @@ if [ "$SKIP_SPLIT" != 'true' ]; then
 fi
 
 # Make "docker run" the main process to ensure it handles all signals correctly
-exec docker run --rm -it \
-  --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
-  --volume "${PWD}":/repo:rw \
-  --network="$COMPOSE_NETWORK" \
-  --env REPO_UID="$UID" \
-  --env CI="$CI" \
-  --env DEBUG="${DEBUG-}" \
-  --entrypoint=/bin/bash \
-  cimg/node:14.15-browsers \
-  /tmp/cmd.sh "$TEST_RUNNER"
+if [ "$TEST_RUNNER" = "playwright" ]; then
+  exec docker run --rm -it \
+    --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
+    --volume "${PWD}":/repo:rw \
+    --ipc=host \
+    --network="$COMPOSE_NETWORK" \
+    --env CI="$CI" \
+    --env DEBUG="${DEBUG-}" \
+    --entrypoint=/bin/bash \
+    "mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION}-focal" \
+    /tmp/cmd.sh "$TEST_RUNNER"
+else
+  exec docker run --rm -it \
+    --volume "${PWD}/bin/circleci-e2e-cmd.sh":/tmp/cmd.sh:ro \
+    --volume "${PWD}":/repo:rw \
+    --network="$COMPOSE_NETWORK" \
+    --env REPO_UID="$UID" \
+    --env CI="$CI" \
+    --env DEBUG="${DEBUG-}" \
+    --entrypoint=/bin/bash \
+    cimg/node:14.15-browsers \
+    /tmp/cmd.sh "$TEST_RUNNER"
+fi
