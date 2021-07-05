@@ -38,7 +38,8 @@ CREATE TABLE vasu_content(
     created timestamp with time zone DEFAULT now() NOT NULL,
     updated timestamp with time zone DEFAULT now() NOT NULL,
     document_id uuid NOT NULL REFERENCES vasu_document(id),
-    published_revision bigint DEFAULT NULL,
+    published_at timestamp with time zone DEFAULT NULL,
+    master bool GENERATED ALWAYS AS (published_at IS NULL) STORED,
     content jsonb NOT NULL,
     authors_content jsonb NOT NULL,
     vasu_discussion_content jsonb NOT NULL,
@@ -47,8 +48,8 @@ CREATE TABLE vasu_content(
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON vasu_content FOR EACH ROW EXECUTE PROCEDURE trigger_refresh_updated();
 
-CREATE UNIQUE INDEX uniq$vasu_content_document_id_master ON vasu_content(document_id) WHERE published_revision IS NULL;
-CREATE UNIQUE INDEX uniq$vasu_content_document_id_published ON vasu_content(document_id, published_revision) WHERE published_revision IS NOT NULL;
+CREATE UNIQUE INDEX uniq$vasu_content_document_id_published_at ON vasu_content(document_id, published_at);
+CREATE UNIQUE INDEX uniq$vasu_content_document_id_master ON vasu_content(document_id) WHERE master = TRUE;
 
 CREATE TYPE vasu_document_event_type AS ENUM (
     'PUBLISHED',

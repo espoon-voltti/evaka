@@ -60,7 +60,7 @@ fun Database.Read.getVasuDocumentMaster(id: UUID): VasuDocument? {
                WHERE event.vasu_document_id = :id
            ) AS events
         FROM vasu_document vd
-        JOIN vasu_content vc ON vc.document_id = vd.id AND vc.published_revision IS NULL
+        JOIN vasu_content vc ON vc.document_id = vd.id AND vc.master
         JOIN vasu_template vt ON vd.template_id = vt.id
         JOIN person p ON p.id = vd.child_id
         WHERE vd.id =:id
@@ -98,8 +98,8 @@ fun Database.Read.getLatestPublishedVasuDocument(id: UUID): VasuDocument? {
         JOIN LATERAL (
             SELECT vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
             FROM vasu_content vc
-            WHERE vc.published_revision IS NOT NULL AND vc.document_id = vd.id
-            ORDER BY vc.published_revision DESC
+            WHERE vc.published_at IS NOT NULL AND vc.document_id = vd.id
+            ORDER BY vc.published_at DESC
             LIMIT 1
         ) vc ON TRUE
         JOIN vasu_template vt ON vd.template_id = vt.id
@@ -128,7 +128,7 @@ fun Database.Transaction.updateVasuDocumentMaster(
             authors_content = :authorsContent,
             vasu_discussion_content = :vasuDiscussionContent, 
             evaluation_discussion_content = :evaluationDiscussionContent
-        WHERE document_id = :id AND published_revision IS NULL
+        WHERE document_id = :id AND master
     """.trimIndent()
 
     createUpdate(updateContentSql)
@@ -147,12 +147,10 @@ fun Database.Transaction.updateVasuDocumentMaster(
 fun Database.Transaction.publishVasuDocument(id: UUID) {
     // language=sql
     val insertContentSql = """
-        INSERT INTO vasu_content (document_id, published_revision, content, authors_content, vasu_discussion_content, evaluation_discussion_content)
-        SELECT vc.document_id, coalesce(vc.published_revision + 1, 1), vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
+        INSERT INTO vasu_content (document_id, published_at, content, authors_content, vasu_discussion_content, evaluation_discussion_content)
+        SELECT vc.document_id, now(), vc.content, vc.authors_content, vc.vasu_discussion_content, vc.evaluation_discussion_content
         FROM vasu_content vc
-        WHERE 
-            vc.document_id = :id AND 
-            vc.published_revision = (SELECT max(vc2.published_revision) FROM vasu_content vc2 WHERE vc2.document_id = :id)
+        WHERE vc.document_id = :id AND master
     """.trimIndent()
 
     createUpdate(insertContentSql)
