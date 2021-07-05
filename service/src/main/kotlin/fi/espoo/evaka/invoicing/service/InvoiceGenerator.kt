@@ -88,15 +88,19 @@ internal fun generateDraftInvoices(
     freeChildren: List<UUID> = listOf()
 ): List<Invoice> {
     return placements.keys.mapNotNull { headOfFamilyId ->
-        generateDraftInvoice(
-            decisions[headOfFamilyId] ?: listOf(),
-            placements[headOfFamilyId] ?: listOf(),
-            period,
-            daycareCodes,
-            operationalDays,
-            absences,
-            freeChildren
-        )
+        try {
+            generateDraftInvoice(
+                decisions[headOfFamilyId] ?: listOf(),
+                placements[headOfFamilyId] ?: listOf(),
+                period,
+                daycareCodes,
+                operationalDays,
+                absences,
+                freeChildren
+            )
+        } catch (e: Exception) {
+            error("Failed to generate invoice for head of family $headOfFamilyId: $e")
+        }
     }
 }
 
@@ -562,15 +566,18 @@ data class Placements(
 internal fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: DateRange
 ): List<Placements> {
+    val invoiceableTypes = PlacementType.values().filter { it.isInvoiceable() }
     val placements = createQuery(
         // language=sql
         """
             SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
+            AND p.type = ANY(:invoiceableTypes::placement_type[])
         """.trimIndent()
     )
         .bind("period", spanningPeriod)
+        .bind("invoiceableTypes", invoiceableTypes.toTypedArray())
         .map { rs, _ ->
             Pair(
                 rs.getUUID("child_id"),
