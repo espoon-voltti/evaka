@@ -4,6 +4,10 @@
 
 package fi.espoo.evaka.vtjclient.service.persondetails
 
+import fi.espoo.evaka.daycare.controllers.AdditionalInformation
+import fi.espoo.evaka.daycare.controllers.Child
+import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.lockPersonBySSN
@@ -29,6 +33,7 @@ class PersonStorageService {
             childId = child.id,
             guardianIds = child.guardians.map { guardian -> guardian.id }
         )
+        initChildIfNotExists(tx, listOf(child.id))
         return child
     }
 
@@ -40,7 +45,15 @@ class PersonStorageService {
             guardianId = guardian.id,
             childIds = guardian.children.map { child -> child.id }
         )
+        initChildIfNotExists(tx, guardian.children.map { child -> child.id })
         return guardian
+    }
+
+    private fun initChildIfNotExists(tx: Database.Transaction, childIds: List<UUID>) {
+        childIds.forEach { childId ->
+            if (tx.getChild(childId) == null)
+                tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
+        }
     }
 
     private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: UUID, childIds: List<UUID>) {
