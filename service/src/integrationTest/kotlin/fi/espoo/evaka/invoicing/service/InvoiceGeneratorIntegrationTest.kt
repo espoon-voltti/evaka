@@ -45,6 +45,7 @@ import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -2199,6 +2200,75 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `plain preschool is not invoiced`() {
+        assertFalse(PlacementType.PRESCHOOL.isInvoiceable())
+
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.PRESCHOOL)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `plain preparatory is not invoiced`() {
+        assertFalse(PlacementType.PREPARATORY.isInvoiceable())
+
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.PREPARATORY)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `plain club is not invoiced`() {
+        assertFalse(PlacementType.CLUB.isInvoiceable())
+
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        initByPeriodAndPlacementType(period, PlacementType.CLUB)
+
+        db.transaction { it.createAllDraftInvoices(period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(0, result.size)
+    }
+
+    private fun initByPeriodAndPlacementType(period: DateRange, placementType: PlacementType) {
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = placementType,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 28900
+                )
+            )
+        )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
+                decision.copy(id = UUID.randomUUID(), validDuring = decision.validDuring.copy(start = period.start.plusDays(8)))
+            )
+        )
     }
 
     private fun initFreeJulyTestData(invoicingPeriod: DateRange, placementPeriods: List<DateRange>, placementType: PlacementType = PlacementType.DAYCARE) {
