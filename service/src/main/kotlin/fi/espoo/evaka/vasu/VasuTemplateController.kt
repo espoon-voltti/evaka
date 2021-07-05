@@ -25,6 +25,7 @@ class VasuTemplateController {
         val valid: FiniteDateRange,
         val language: VasuLanguage
     )
+
     @PostMapping
     fun postTemplate(
         db: Database.Connection,
@@ -44,10 +45,28 @@ class VasuTemplateController {
         }
     }
 
+    @PutMapping("/{id}")
+    fun editTemplate(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID,
+        @RequestBody body: VasuTemplateUpdate
+    ) {
+        Audit.VasuTemplateEdit.log()
+        user.requireOneOfRoles(UserRole.ADMIN)
+
+        db.transaction { tx ->
+            val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
+            validateTemplateUpdate(template, body)
+            tx.updateVasuTemplate(id, body)
+        }
+    }
+
     data class CopyTemplateRequest(
         val name: String,
         val valid: FiniteDateRange
     )
+
     @PostMapping("/{id}/copy")
     fun copyTemplate(
         db: Database.Connection,
@@ -76,7 +95,12 @@ class VasuTemplateController {
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
         Audit.VasuTemplateRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.STAFF)
+        user.requireOneOfRoles(
+            UserRole.ADMIN,
+            UserRole.UNIT_SUPERVISOR,
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            UserRole.STAFF
+        )
 
         return db.read { tx -> tx.getVasuTemplates(validOnly) }
     }

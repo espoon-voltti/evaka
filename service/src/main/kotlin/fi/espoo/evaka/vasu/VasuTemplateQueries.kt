@@ -73,6 +73,41 @@ fun Database.Transaction.updateVasuTemplateContent(id: UUID, content: VasuConten
         .updateExactlyOne()
 }
 
+fun Database.Read.getVasuTemplateForUpdate(id: UUID): VasuTemplateSummary? {
+    // language=sql
+    val sql = """
+        SELECT *,
+               (SELECT COUNT(*) FROM vasu_document vd WHERE vd.template_id = vt.id) AS document_count
+        FROM vasu_template vt
+        WHERE id = :id
+        FOR UPDATE
+    """.trimIndent()
+
+    return createQuery(sql)
+        .bind("id", id)
+        .mapTo<VasuTemplateSummary>()
+        .firstOrNull()
+}
+
+fun Database.Transaction.updateVasuTemplate(
+    id: UUID,
+    params: VasuTemplateUpdate
+) {
+    // language=sql
+    val sql = """
+        UPDATE vasu_template
+        SET name = :name, valid = :valid, language = :language
+        WHERE id = :id
+    """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("name", params.name)
+        .bind("valid", params.valid)
+        .bind("language", params.language)
+        .updateExactlyOne()
+}
+
 fun Database.Transaction.deleteUnusedVasuTemplate(id: UUID) {
     // language=sql
     val sql = """
