@@ -568,6 +568,7 @@ internal fun Database.Read.getInvoiceablePlacements(
             SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
+            AND p.type NOT IN ('PRESCHOOL'::placement_type, 'PREPARATORY'::placement_type, 'CLUB'::placement_type)
         """.trimIndent()
     )
         .bind("period", spanningPeriod)
