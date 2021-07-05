@@ -4,17 +4,16 @@
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
-import React, { useState } from 'react'
-import { Failure } from '../../../../lib-common/api'
+import React, { useContext, useState } from 'react'
 import FiniteDateRange from '../../../../lib-common/finite-date-range'
 import LocalDate from '../../../../lib-common/local-date'
 import { UUID } from '../../../../lib-common/types'
 import Combobox from '../../../../lib-components/atoms/form/Combobox'
 import InputField from '../../../../lib-components/atoms/form/InputField'
-import ErrorSegment from '../../../../lib-components/atoms/state/ErrorSegment'
 import { DatePickerDeprecated } from '../../../../lib-components/molecules/DatePickerDeprecated'
 import FormModal from '../../../../lib-components/molecules/modals/FormModal'
 import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import {
   createVasuTemplate,
   editVasuTemplate,
@@ -36,6 +35,7 @@ export default React.memo(function CreateOrEditTemplateModal({
   template: templateToEdit
 }: Props) {
   const { i18n } = useTranslation()
+  const { setErrorMessage } = useContext(UIContext)
   const t = i18n.vasuTemplates
   const [name, setName] = useState(templateToEdit?.name ?? '')
   const [startDate, setStartDate] = useState(
@@ -48,7 +48,6 @@ export default React.memo(function CreateOrEditTemplateModal({
     templateToEdit?.language ?? 'FI'
   )
   const [submitting, setSubmitting] = useState(false)
-  const [failure, setFailure] = useState<Failure<UUID>>()
 
   const apiCall = templateToEdit
     ? (params: VasuTemplateParams) =>
@@ -62,7 +61,6 @@ export default React.memo(function CreateOrEditTemplateModal({
       }
       resolve={{
         action: () => {
-          setFailure(undefined)
           setSubmitting(true)
           void apiCall({
             name,
@@ -73,7 +71,13 @@ export default React.memo(function CreateOrEditTemplateModal({
             if (res.isSuccess) {
               onSuccess(res.value)
             } else if (res.isFailure) {
-              setFailure(res)
+              setErrorMessage({
+                resolveLabel: i18n.common.ok,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                text: (res?.errorCode && t.errorCodes[res.errorCode]) || '',
+                title: i18n.common.error.saveFailed,
+                type: 'error'
+              })
             }
           })
         },
@@ -116,17 +120,6 @@ export default React.memo(function CreateOrEditTemplateModal({
           <DatePickerDeprecated date={endDate} onChange={setEndDate} />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
-      {failure && (
-        <ErrorSegment
-          title={i18n.common.checkDates}
-          info={
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            (failure.errorCode &&
-              i18n.vasuTemplates.errorCodes[failure.errorCode]) ||
-            ''
-          }
-        />
-      )}
     </FormModal>
   )
 })
