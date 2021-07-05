@@ -332,6 +332,7 @@ function AssistanceNeedForm(props: Props) {
                     `${basis}_INFO`
                   ] ? (
                     <ExpandingInfo
+                      key={basis}
                       info={String(
                         i18n.childInformation.assistanceNeed.fields.basisTypes[
                           `${basis}_INFO`

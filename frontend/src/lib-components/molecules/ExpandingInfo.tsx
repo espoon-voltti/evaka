@@ -61,7 +61,7 @@ type ExpandingInfoProps = {
   fullWidth?: boolean
 }
 
-export default function ExpandingInfo2({
+export default function ExpandingInfo({
   children,
   info,
   ariaLabel,

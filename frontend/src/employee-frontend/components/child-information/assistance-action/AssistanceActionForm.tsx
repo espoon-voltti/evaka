@@ -304,6 +304,7 @@ function AssistanceActionForm(props: Props) {
                     `${measure}_INFO`
                   ] ? (
                     <ExpandingInfo
+                      key={measure}
                       info={String(
                         i18n.childInformation.assistanceAction.fields
                           .measureTypes[`${measure}_INFO`]
