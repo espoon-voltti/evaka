@@ -35,7 +35,12 @@ import javax.servlet.http.HttpServletRequest
 @Configuration
 class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-        resolvers.add(asArgumentResolver(::resolveAuthenticatedUser))
+        resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
+        resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
+        resolvers.add(asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser))
+        resolvers.add(asArgumentResolver<AuthenticatedUser.SystemInternalUser?>(::resolveAuthenticatedUser))
+        resolvers.add(asArgumentResolver<AuthenticatedUser.WeakCitizen?>(::resolveAuthenticatedUser))
+        resolvers.add(asArgumentResolver<AuthenticatedUser?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getDatabaseInstance() })
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getOrOpenConnection() })
     }
@@ -54,8 +59,8 @@ class SpringMvcConfig(private val jdbi: Jdbi) : WebMvcConfigurer {
     private fun WebRequest.getDatabaseInstance(): Database = getDatabase()
         ?: Database(jdbi).also(::setDatabase)
 
-    private fun resolveAuthenticatedUser(parameter: MethodParameter, webRequest: NativeWebRequest): AuthenticatedUser? {
-        val user = webRequest.getNativeRequest(HttpServletRequest::class.java)?.getAuthenticatedUser()
+    private inline fun <reified T : AuthenticatedUser> resolveAuthenticatedUser(parameter: MethodParameter, webRequest: NativeWebRequest): T? {
+        val user = webRequest.getNativeRequest(HttpServletRequest::class.java)?.getAuthenticatedUser() as? T
         if (user == null && !parameter.isOptional) {
             throw Unauthorized("Unauthorized request (${webRequest.getDescription(false)})")
         }
