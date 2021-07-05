@@ -12,7 +12,11 @@ import { defaultMargins, SpacingSize } from '../white-space'
 import { tabletMin } from '../breakpoints'
 import IconButton from '../atoms/buttons/IconButton'
 
-const InfoBoxContainer = styled(Container)`
+const InfoBoxContainer = styled(Container)<{
+  fullWidth?: boolean
+}>`
+  ${({ fullWidth }) => fullWidth && `width: 100%;`}
+
   @keyframes open {
     from {
       max-height: 0;
@@ -22,9 +26,12 @@ const InfoBoxContainer = styled(Container)`
     }
   }
 
-  background-color: ${({ theme: { colors } }) => colors.main.lighter};
+  background-color: ${({ theme: { colors } }) => colors.brand.secondaryLight};
   overflow: hidden;
-  margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};
+  ${({ fullWidth }) =>
+    fullWidth
+      ? `margin: ${defaultMargins.s} 0px ${defaultMargins.s} 0px;`
+      : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
 
   @media (min-width: ${tabletMin}) {
     animation-name: open;
@@ -39,33 +46,34 @@ const InfoBoxContentArea = styled(ContentArea)`
 
 const InfoContainer = styled.div`
   flex-grow: 1;
-  color: ${({ theme: { colors } }) => colors.main.dark};
+  color: ${({ theme: { colors } }) => colors.greyscale.darkest};
   padding: 0 ${defaultMargins.s};
 `
 
 const RoundIconWithMargin = styled(RoundIcon)<{ margin: SpacingSize }>`
   margin-top: ${({ margin }) => defaultMargins[margin]};
 `
-
 type ExpandingInfoProps = {
   children: React.ReactNode
   info: ReactNode
   ariaLabel: string
   margin?: SpacingSize
+  fullWidth?: boolean
 }
 
 export default function ExpandingInfo({
   children,
   info,
   ariaLabel,
-  margin
+  margin,
+  fullWidth
 }: ExpandingInfoProps) {
   const { colors } = useTheme()
   const [expanded, setExpanded] = useState<boolean>(false)
 
   return (
     <span aria-live="polite">
-      <FixedSpaceRow spacing="xs">
+      <FixedSpaceRow spacing="xs" alignItems={'center'}>
         <div>{children}</div>
         <RoundIconWithMargin
           margin={margin ?? 'zero'}
@@ -79,7 +87,7 @@ export default function ExpandingInfo({
         />
       </FixedSpaceRow>
       {expanded && (
-        <InfoBoxContainer>
+        <InfoBoxContainer fullWidth={fullWidth}>
           <InfoBoxContentArea opaque={false}>
             <RoundIcon
               content={fasInfo}

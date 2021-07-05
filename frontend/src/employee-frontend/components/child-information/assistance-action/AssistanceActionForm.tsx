@@ -11,7 +11,6 @@ import { UIContext } from '../../../state/ui'
 import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
-import InfoBall from '../../../components/common/InfoBall'
 import {
   AssistanceAction,
   AssistanceActionOption,
@@ -37,6 +36,7 @@ import {
   updateAssistanceAction
 } from '../../../api/child/assistance-actions'
 import { assistanceMeasures, featureFlags } from 'lib-customizations/employee'
+import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -299,33 +299,53 @@ function AssistanceActionForm(props: Props) {
             label: i18n.childInformation.assistanceAction.fields.measures,
             value: (
               <div>
-                {assistanceMeasures.map((measure) => (
-                  <CheckboxRow key={measure}>
-                    <Checkbox
-                      label={
+                {assistanceMeasures.map((measure) =>
+                  i18n.childInformation.assistanceAction.fields.measureTypes[
+                    `${measure}_INFO`
+                  ] ? (
+                    <ExpandingInfo
+                      key={measure}
+                      info={String(
                         i18n.childInformation.assistanceAction.fields
-                          .measureTypes[measure]
-                      }
-                      checked={form.measures.has(measure)}
-                      onChange={(value) => {
-                        const measures = new Set([...form.measures])
-                        if (value) measures.add(measure)
-                        else measures.delete(measure)
-                        updateFormState({ measures: measures })
-                      }}
-                    />
-                    {i18n.childInformation.assistanceAction.fields.measureTypes[
-                      `${measure}_INFO`
-                    ] && (
-                      <InfoBall
-                        text={String(
+                          .measureTypes[`${measure}_INFO`]
+                      )}
+                      ariaLabel={''}
+                      fullWidth={true}
+                    >
+                      <CheckboxRow key={measure}>
+                        <Checkbox
+                          label={
+                            i18n.childInformation.assistanceAction.fields
+                              .measureTypes[measure]
+                          }
+                          checked={form.measures.has(measure)}
+                          onChange={(value) => {
+                            const measures = new Set([...form.measures])
+                            if (value) measures.add(measure)
+                            else measures.delete(measure)
+                            updateFormState({ measures: measures })
+                          }}
+                        />
+                      </CheckboxRow>
+                    </ExpandingInfo>
+                  ) : (
+                    <CheckboxRow key={measure}>
+                      <Checkbox
+                        label={
                           i18n.childInformation.assistanceAction.fields
-                            .measureTypes[`${measure}_INFO`]
-                        )}
+                            .measureTypes[measure]
+                        }
+                        checked={form.measures.has(measure)}
+                        onChange={(value) => {
+                          const measures = new Set([...form.measures])
+                          if (value) measures.add(measure)
+                          else measures.delete(measure)
+                          updateFormState({ measures: measures })
+                        }}
                       />
-                    )}
-                  </CheckboxRow>
-                ))}
+                    </CheckboxRow>
+                  )
+                )}
               </div>
             )
           }

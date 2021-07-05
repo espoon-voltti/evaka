@@ -12,7 +12,6 @@ import { Gap } from 'lib-components/white-space'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import TextArea from '../../../../lib-components/atoms/form/TextArea'
-import InfoBall from '../../../components/common/InfoBall'
 import { AssistanceBasis, AssistanceNeed } from '../../../types/child'
 import { UUID } from '../../../types'
 import { formatDecimal } from 'lib-common/utils/number'
@@ -36,6 +35,7 @@ import {
   createAssistanceNeed,
   updateAssistanceNeed
 } from '../../../api/child/assistance-needs'
+import ExpandingInfo from '../../../../lib-components/molecules/ExpandingInfo'
 
 const CheckboxRow = styled.div`
   display: flex;
@@ -268,36 +268,41 @@ function AssistanceNeedForm(props: Props) {
             label: i18n.childInformation.assistanceNeed.fields.capacityFactor,
             value: (
               <>
-                <CoefficientInputContainer>
-                  <InputField
-                    value={form.capacityFactor.toString()}
-                    onChange={(value) =>
-                      updateFormState({
-                        capacityFactor: value
-                      })
-                    }
-                    info={
-                      formErrors.coefficient
-                        ? { text: 'Virheellinen arvo', status: 'warning' }
-                        : undefined
-                    }
-                    data-qa="input-assistance-need-multiplier"
-                  />
-                  <InfoBall
-                    text={
-                      i18n.childInformation.assistanceNeed.fields
-                        .capacityFactorInfo
-                    }
-                  />
-                </CoefficientInputContainer>
-                {formErrors.coefficient && (
-                  <span className="error">
-                    {
-                      i18n.childInformation.assistanceNeed.errors
-                        .invalidCoefficient
-                    }
-                  </span>
-                )}
+                <ExpandingInfo
+                  info={
+                    i18n.childInformation.assistanceNeed.fields
+                      .capacityFactorInfo
+                  }
+                  ariaLabel={
+                    i18n.childInformation.assistanceNeed.fields.capacityFactor
+                  }
+                  fullWidth={true}
+                >
+                  <CoefficientInputContainer>
+                    <InputField
+                      value={form.capacityFactor.toString()}
+                      onChange={(value) =>
+                        updateFormState({
+                          capacityFactor: value
+                        })
+                      }
+                      info={
+                        formErrors.coefficient
+                          ? { text: 'Virheellinen arvo', status: 'warning' }
+                          : undefined
+                      }
+                      data-qa="input-assistance-need-multiplier"
+                    />
+                  </CoefficientInputContainer>
+                  {formErrors.coefficient && (
+                    <span className="error">
+                      {
+                        i18n.childInformation.assistanceNeed.errors
+                          .invalidCoefficient
+                      }
+                    </span>
+                  )}
+                </ExpandingInfo>
               </>
             )
           },
@@ -322,34 +327,54 @@ function AssistanceNeedForm(props: Props) {
             label: i18n.childInformation.assistanceNeed.fields.bases,
             value: (
               <div>
-                {ASSISTANCE_BASIS_LIST.map((basis) => (
-                  <CheckboxRow key={basis}>
-                    <Checkbox
-                      label={
+                {ASSISTANCE_BASIS_LIST.map((basis) =>
+                  i18n.childInformation.assistanceNeed.fields.basisTypes[
+                    `${basis}_INFO`
+                  ] ? (
+                    <ExpandingInfo
+                      key={basis}
+                      info={String(
                         i18n.childInformation.assistanceNeed.fields.basisTypes[
-                          basis
+                          `${basis}_INFO`
                         ]
-                      }
-                      checked={form.bases.has(basis)}
-                      onChange={(value) => {
-                        const bases = new Set([...form.bases])
-                        if (value) bases.add(basis)
-                        else bases.delete(basis)
-                        updateFormState({ bases: bases })
-                      }}
-                    />
-                    {i18n.childInformation.assistanceNeed.fields.basisTypes[
-                      `${basis}_INFO`
-                    ] && (
-                      <InfoBall
-                        text={String(
+                      )}
+                      ariaLabel={''}
+                      fullWidth={true}
+                    >
+                      <CheckboxRow key={basis}>
+                        <Checkbox
+                          label={
+                            i18n.childInformation.assistanceNeed.fields
+                              .basisTypes[basis]
+                          }
+                          checked={form.bases.has(basis)}
+                          onChange={(value) => {
+                            const bases = new Set([...form.bases])
+                            if (value) bases.add(basis)
+                            else bases.delete(basis)
+                            updateFormState({ bases: bases })
+                          }}
+                        />
+                      </CheckboxRow>
+                    </ExpandingInfo>
+                  ) : (
+                    <CheckboxRow key={basis}>
+                      <Checkbox
+                        label={
                           i18n.childInformation.assistanceNeed.fields
-                            .basisTypes[`${basis}_INFO`]
-                        )}
+                            .basisTypes[basis]
+                        }
+                        checked={form.bases.has(basis)}
+                        onChange={(value) => {
+                          const bases = new Set([...form.bases])
+                          if (value) bases.add(basis)
+                          else bases.delete(basis)
+                          updateFormState({ bases: bases })
+                        }}
                       />
-                    )}
-                  </CheckboxRow>
-                ))}
+                    </CheckboxRow>
+                  )
+                )}
                 {form.bases.has('OTHER') && (
                   <div style={{ width: '100%' }}>
                     <InputField
