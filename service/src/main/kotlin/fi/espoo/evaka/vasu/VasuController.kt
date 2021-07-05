@@ -9,6 +9,12 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_CLOSED
+import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_READY
+import fi.espoo.evaka.vasu.VasuDocumentEventType.MOVED_TO_REVIEWED
+import fi.espoo.evaka.vasu.VasuDocumentEventType.PUBLISHED
+import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_READY
+import fi.espoo.evaka.vasu.VasuDocumentEventType.RETURNED_TO_REVIEWED
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -60,7 +66,7 @@ class VasuController(
         )
 
         return db.read { tx ->
-            tx.getVasuDocument(id) ?: throw NotFound("template $id not found")
+            tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
         }
     }
 
@@ -83,7 +89,7 @@ class VasuController(
         )
 
         db.transaction { tx ->
-            tx.updateVasuDocument(
+            tx.updateVasuDocumentMaster(
                 id,
                 body.content,
                 body.authorsContent,
@@ -123,21 +129,24 @@ class VasuController(
             UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.GROUP_STAFF
         )
 
-        // TODO this is just a placeholder, upcoming publishing logic should handle the event insertion
-        val extraEventPlaceholder = when (body.eventType) {
-            VasuDocumentEventType.MOVED_TO_READY -> VasuDocumentEventType.PUBLISHED
-            VasuDocumentEventType.MOVED_TO_REVIEWED -> VasuDocumentEventType.PUBLISHED
-            else -> null
+        val events = if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
+            listOf(PUBLISHED, body.eventType)
+        } else {
+            listOf(body.eventType)
         }
 
         db.transaction { tx ->
-            val currentState = tx.getVasuDocument(id)?.getState() ?: throw NotFound("Vasu was not found")
+            val currentState = tx.getVasuDocumentMaster(id)?.getState() ?: throw NotFound("Vasu was not found")
             validateStateTransition(eventType = body.eventType, currentState = currentState, user = user)
 
-            listOfNotNull(extraEventPlaceholder, body.eventType).map {
+            if (events.contains(PUBLISHED)) {
+                tx.publishVasuDocument(id)
+            }
+
+            events.forEach { eventType ->
                 tx.insertVasuDocumentEvent(
                     documentId = id,
-                    eventType = it,
+                    eventType = eventType,
                     employeeId = user.id
                 )
             }
@@ -146,12 +155,12 @@ class VasuController(
 
     private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState, user: AuthenticatedUser) {
         when (eventType) {
-            VasuDocumentEventType.PUBLISHED -> currentState !== VasuDocumentState.CLOSED
-            VasuDocumentEventType.MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
-            VasuDocumentEventType.RETURNED_TO_READY -> user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
-            VasuDocumentEventType.MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
-            VasuDocumentEventType.RETURNED_TO_REVIEWED -> user.hasOneOfRoles(UserRole.ADMIN)
-            VasuDocumentEventType.MOVED_TO_CLOSED -> user.hasOneOfRoles(UserRole.ADMIN)
+            PUBLISHED -> currentState !== VasuDocumentState.CLOSED
+            MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
+            RETURNED_TO_READY -> user.hasOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+            MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
+            RETURNED_TO_REVIEWED -> user.hasOneOfRoles(UserRole.ADMIN)
+            MOVED_TO_CLOSED -> user.hasOneOfRoles(UserRole.ADMIN)
         }.let { valid -> if (!valid) throw Conflict("Invalid or unauthorized state transition") }
     }
 }
