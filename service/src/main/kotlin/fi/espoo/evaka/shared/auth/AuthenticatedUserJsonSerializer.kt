@@ -7,30 +7,30 @@ package fi.espoo.evaka.shared.auth
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
+import fi.espoo.evaka.application.utils.exhaust
 
 // Custom serializer to avoid Jackson serializing "fields" that are actually helper functions (e.g. isAdmin)
 class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
     override fun serialize(value: AuthenticatedUser, gen: JsonGenerator, serializers: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeObjectField("type", value.type.toString())
         when (value) {
             is AuthenticatedUser.Citizen -> {
-                gen.writeObjectField("type", "citizen")
+                gen.writeObjectField("id", value.id.toString())
+            }
+            is AuthenticatedUser.WeakCitizen -> {
                 gen.writeObjectField("id", value.id.toString())
             }
             is AuthenticatedUser.Employee -> {
-                gen.writeObjectField("type", "employee")
                 gen.writeObjectField("id", value.id.toString())
                 gen.writeObjectField("globalRoles", value.globalRoles)
                 gen.writeObjectField("allScopedRoles", value.allScopedRoles)
             }
             is AuthenticatedUser.MobileDevice -> {
-                gen.writeObjectField("type", "mobile")
                 gen.writeObjectField("id", value.id.toString())
             }
-            is AuthenticatedUser.SystemInternalUser -> {
-                gen.writeObjectField("type", "system")
-            }
-        }
+            is AuthenticatedUser.SystemInternalUser -> {}
+        }.exhaust()
         gen.writeEndObject()
     }
 }
