@@ -376,6 +376,13 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
         .firstOrNull()
 }
 
+fun Database.Read.hasGroupPlacements(groupId: UUID): Boolean = createQuery(
+    "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = :groupId)"
+)
+    .bind("groupId", groupId)
+    .mapTo<Boolean>()
+    .one()
+
 fun Database.Read.getDaycareGroupPlacements(
     daycareId: UUID,
     startDate: LocalDate?,

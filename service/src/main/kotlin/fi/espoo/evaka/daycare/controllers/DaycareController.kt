@@ -144,7 +144,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { daycareService.deleteGroup(it, daycareId, groupId) }
+        db.transaction { daycareService.deleteGroup(it, groupId) }
         return noContent()
     }
 
