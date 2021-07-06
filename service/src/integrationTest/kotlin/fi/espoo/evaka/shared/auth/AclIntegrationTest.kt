@@ -9,6 +9,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.messaging.daycarydailynote.DaycareDailyNote
 import fi.espoo.evaka.messaging.daycarydailynote.createDaycareDailyNote
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -50,7 +51,7 @@ class AclIntegrationTest : PureJdbiTest() {
     private lateinit var decisionId: DecisionId
     private lateinit var placementId: PlacementId
     private lateinit var mobileId: MobileDeviceId
-    private lateinit var noteId: UUID
+    private lateinit var noteId: DaycareDailyNoteId
 
     private lateinit var acl: AccessControlList
 

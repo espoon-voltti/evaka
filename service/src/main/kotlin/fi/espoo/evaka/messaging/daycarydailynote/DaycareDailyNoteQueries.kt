@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging.daycarydailynote
 
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
@@ -90,7 +91,7 @@ WHERE child_id IN (
         .list()
 }
 
-fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): UUID {
+fun Database.Transaction.createDaycareDailyNote(note: DaycareDailyNote): DaycareDailyNoteId {
     return createUpdate(
         """
 INSERT INTO daycare_daily_note (id, child_id, group_id, date, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note, modified_by, modified_at)
@@ -98,7 +99,7 @@ VALUES(:id, :childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :slee
 RETURNING id
         """.trimIndent()
     )
-        .bind("id", note.id ?: UUID.randomUUID())
+        .bind("id", note.id ?: DaycareDailyNoteId(UUID.randomUUID()))
         .bind("childId", note.childId)
         .bind("groupId", note.groupId)
         .bind("date", note.date)
@@ -111,7 +112,7 @@ RETURNING id
         .bind("modifiedBy", note.modifiedBy)
         .bind("modifiedAt", note.modifiedAt)
         .executeAndReturnGeneratedKeys()
-        .mapTo<UUID>()
+        .mapTo<DaycareDailyNoteId>()
         .first()
 }
 
@@ -150,7 +151,7 @@ RETURNING *
         .first()
 }
 
-fun Database.Transaction.deleteDaycareDailyNote(noteId: UUID) {
+fun Database.Transaction.deleteDaycareDailyNote(noteId: DaycareDailyNoteId) {
     createUpdate("DELETE from daycare_daily_note WHERE id = :noteId")
         .bind("noteId", noteId)
         .execute()

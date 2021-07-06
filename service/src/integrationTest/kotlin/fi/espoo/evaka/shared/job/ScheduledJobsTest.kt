@@ -21,6 +21,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -321,8 +322,8 @@ class ScheduledJobsTest : FullApplicationTest() {
     fun removeDaycareDailyNotes() {
         val now = Instant.now()
         val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
-        val expiredNoteId = UUID.randomUUID()
-        val validNoteId = UUID.randomUUID()
+        val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
+        val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
         db.transaction {
             it.createDaycareDailyNote(
                 DaycareDailyNote(
@@ -379,8 +380,8 @@ class ScheduledJobsTest : FullApplicationTest() {
     fun removeOldBackupCareDaycareDailyNotes() {
         val now = Instant.now()
         val twelveHoursAgo = now.minusSeconds(60 * 60 * 12)
-        val expiredNoteId = UUID.randomUUID()
-        val validNoteId = UUID.randomUUID()
+        val expiredNoteId = DaycareDailyNoteId(UUID.randomUUID())
+        val validNoteId = DaycareDailyNoteId(UUID.randomUUID())
         db.transaction {
             it.createDaycareDailyNote(
                 DaycareDailyNote(

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging.daycarydailynote
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -61,7 +62,7 @@ class DaycareDailyNoteController(
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<DaycareDailyNoteId> {
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForChild(user, childId)
@@ -91,7 +92,7 @@ class DaycareDailyNoteController(
         user: AuthenticatedUser,
         @PathVariable groupId: GroupId,
         @RequestBody body: DaycareDailyNote
-    ): ResponseEntity<UUID> {
+    ): ResponseEntity<DaycareDailyNoteId> {
         Audit.DaycareDailyNoteCreate.log(user.id)
 
         acl.getRolesForUnitGroup(user, groupId)
@@ -119,7 +120,7 @@ class DaycareDailyNoteController(
     fun deleteDailyNote(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable noteId: UUID
+        @PathVariable noteId: DaycareDailyNoteId
     ) {
         Audit.DaycareDailyNoteDelete.log(user.id)
 

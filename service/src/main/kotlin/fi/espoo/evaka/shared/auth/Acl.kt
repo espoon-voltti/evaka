@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.BackupCareId
+import fi.espoo.evaka.shared.DaycareDailyNoteId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -231,7 +232,7 @@ WHERE employee_id = :userId AND d.id = :deviceId
         }
     )
 
-    fun getRolesForDailyNote(user: AuthenticatedUser, noteId: UUID): AclAppliedRoles = AclAppliedRoles(
+    fun getRolesForDailyNote(user: AuthenticatedUser, noteId: DaycareDailyNoteId): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 """
