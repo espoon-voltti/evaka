@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.assistanceaction
 
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -30,7 +31,7 @@ class AssistanceActionService {
         return db.read { it.getAssistanceActionsByChild(childId) }
     }
 
-    fun updateAssistanceAction(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {
+    fun updateAssistanceAction(db: Database.Connection, user: AuthenticatedUser, id: AssistanceActionId, data: AssistanceActionRequest): AssistanceAction {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })
@@ -41,7 +42,7 @@ class AssistanceActionService {
         }
     }
 
-    fun deleteAssistanceAction(db: Database.Connection, id: UUID) {
+    fun deleteAssistanceAction(db: Database.Connection, id: AssistanceActionId) {
         db.transaction { it.deleteAssistanceAction(id) }
     }
 

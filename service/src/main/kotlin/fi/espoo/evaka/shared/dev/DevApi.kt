@@ -57,6 +57,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -865,7 +866,7 @@ data class DevAssistanceNeed(
 )
 
 data class DevAssistanceAction(
-    val id: UUID = UUID.randomUUID(),
+    val id: AssistanceActionId = AssistanceActionId(UUID.randomUUID()),
     val childId: UUID,
     val updatedBy: UUID,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),

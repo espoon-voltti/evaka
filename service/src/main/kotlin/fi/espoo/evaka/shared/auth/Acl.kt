@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -156,7 +157,7 @@ WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
         }
     )
 
-    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: UUID): AclAppliedRoles =
+    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: AssistanceActionId): AclAppliedRoles =
         AclAppliedRoles(
             (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
                 it.createQuery(

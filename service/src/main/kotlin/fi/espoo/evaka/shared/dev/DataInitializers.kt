@@ -25,6 +25,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -695,7 +696,7 @@ RETURNING id
 """
 )
 
-fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction): UUID {
+fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction): AssistanceActionId {
     val id = insertTestDataRow(
         assistanceAction,
         """
@@ -703,7 +704,7 @@ INSERT INTO assistance_action (id, updated_by, child_id, start_date, end_date, o
 VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :otherAction, :measures::assistance_measure[])
 RETURNING id
 """
-    )
+    ).let(::AssistanceActionId)
     val counts = insertAssistanceActionOptionRefs(id, assistanceAction.actions)
     assert(counts.size == assistanceAction.actions.size)
     return id

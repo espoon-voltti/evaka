@@ -4,9 +4,11 @@
 
 package fi.espoo.evaka.assistanceaction
 
+import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
@@ -40,7 +42,7 @@ fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId
         .bind("updatedBy", user.id)
         .bind("otherAction", data.otherAction)
         .bind("measures", data.measures.map { it.toString() }.toTypedArray())
-        .mapTo(UUID::class.java)
+        .mapTo<AssistanceActionId>()
         .first()
 
     insertAssistanceActionOptionRefs(id, data.actions)
@@ -48,7 +50,7 @@ fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId
     return getAssistanceActionById(id)
 }
 
-fun Database.Transaction.insertAssistanceActionOptionRefs(actionId: UUID, options: Set<String>): IntArray {
+fun Database.Transaction.insertAssistanceActionOptionRefs(actionId: AssistanceActionId, options: Set<String>): IntArray {
     //language=sql
     val sql =
         """
@@ -61,7 +63,7 @@ fun Database.Transaction.insertAssistanceActionOptionRefs(actionId: UUID, option
     return batch.execute()
 }
 
-fun Database.Read.getAssistanceActionById(id: UUID): AssistanceAction {
+fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction {
     //language=sql
     val sql =
         """
@@ -93,7 +95,7 @@ fun Database.Read.getAssistanceActionsByChild(childId: UUID): List<AssistanceAct
         .list()
 }
 
-fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {
+fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: AssistanceActionId, data: AssistanceActionRequest): AssistanceAction {
     //language=sql
     val sql =
         """
@@ -141,14 +143,14 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedU
         .execute()
 }
 
-fun Database.Transaction.deleteAssistanceAction(id: UUID) {
+fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {
     //language=sql
     val sql = "DELETE FROM assistance_action WHERE id = :id"
     val deleted = createUpdate(sql).bind("id", id).execute()
     if (deleted == 0) throw NotFound("Assistance action $id not found")
 }
 
-fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(actionId: UUID, excluded: Set<String>): Int {
+fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(actionId: AssistanceActionId, excluded: Set<String>): Int {
     //language=sql
     val sql =
         """
