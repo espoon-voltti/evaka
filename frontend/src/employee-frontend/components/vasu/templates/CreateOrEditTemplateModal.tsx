@@ -54,6 +54,9 @@ export default React.memo(function CreateOrEditTemplateModal({
         editVasuTemplate(templateToEdit.id, params)
     : createVasuTemplate
 
+  const isEditableNameAndLang =
+    !templateToEdit || templateToEdit.documentCount == 0
+
   return (
     <FormModal
       title={
@@ -95,19 +98,27 @@ export default React.memo(function CreateOrEditTemplateModal({
       <FixedSpaceColumn>
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.name}</Label>
-          <InputField value={name} onChange={setName} />
+          {isEditableNameAndLang ? (
+            <InputField value={name} onChange={setName} />
+          ) : (
+            <span>{name}</span>
+          )}
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">
           <Label>{t.language}</Label>
-          <Combobox
-            items={[...vasuLanguages]}
-            selectedItem={language}
-            onChange={(value) => {
-              if (value) setLanguage(value)
-            }}
-            getItemLabel={(option) => t.languages[option]}
-          />
+          {isEditableNameAndLang ? (
+            <Combobox
+              items={[...vasuLanguages]}
+              selectedItem={language}
+              onChange={(value) => {
+                if (value) setLanguage(value)
+              }}
+              getItemLabel={(option) => t.languages[option]}
+            />
+          ) : (
+            <span>{t.languages[language]}</span>
+          )}
         </FixedSpaceColumn>
 
         <FixedSpaceColumn spacing="xxs">

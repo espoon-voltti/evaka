@@ -36,6 +36,10 @@ fun validateTemplateUpdate(
     if (template.documentCount == 0) {
         return
     }
+
+    if (body.name != template.name) throw BadRequest("Name of a used template cannot be changed", "TEMPLATE_NAME")
+    if (body.language != template.language) throw BadRequest("Language of a used template cannot be changed", "TEMPLATE_LANGUAGE")
+
     val now = HelsinkiDateTime.now().toLocalDate()
     if (now.isAfter(template.valid.end)) {
         if (body.valid.start != template.valid.start) throw BadRequest("Start date of an expired valid template cannot be changed", "EXPIRED_START")

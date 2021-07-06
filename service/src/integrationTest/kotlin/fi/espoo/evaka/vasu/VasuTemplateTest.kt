@@ -131,4 +131,26 @@ class VasuTemplateTest {
             )
         }
     }
+
+    @Test
+    fun `name of a used template cannot be changed`() {
+        val template = currentlyValidTemplate()
+        assertThrows<BadRequest>("Name of a used template cannot be changed") {
+            validateTemplateUpdate(
+                template = template,
+                body = templateUpdate(template.valid).copy(name = "bar")
+            )
+        }
+    }
+
+    @Test
+    fun `language of a used template cannot be changed`() {
+        val template = currentlyValidTemplate()
+        assertThrows<BadRequest>("Language of a used template cannot be changed") {
+            validateTemplateUpdate(
+                template = template,
+                body = templateUpdate(template.valid).copy(language = VasuLanguage.SV)
+            )
+        }
+    }
 }

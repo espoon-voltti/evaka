@@ -2683,7 +2683,9 @@ export const fi = {
         'Tulevaisuuden pohjan alkupäivää ei voi siirtää menneisyyteen',
       CURRENT_START: 'Voimassa olevan pohjan alkupäivää ei voi vaihtaa',
       CURRENT_END:
-        'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen'
+        'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen',
+      TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa',
+      TEMPLATE_LANGUAGE: 'Käytössä olevan pohjan kieltä ei voi vaihtaa'
     }
   },
   roles: {
