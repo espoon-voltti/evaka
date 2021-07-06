@@ -42,7 +42,7 @@ class JwtTokenDecoderTest {
 
         val decoded = req.getDecodedJwt()
         assertNotNull(decoded)
-        assertEquals(issuer, decoded?.issuer)
+        assertEquals(issuer, decoded.issuer)
     }
 
     @Test
