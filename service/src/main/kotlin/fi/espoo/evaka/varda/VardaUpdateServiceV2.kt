@@ -146,7 +146,7 @@ fun deleteChildDataFromVardaAndDb(db: Database.Connection, vardaClient: VardaCli
             }
 
             db.transaction {
-                it.deleteVardaServiceNeedByEvakaChildId(evakaChildId)
+                it.deleteVardaServiceNeedByVardaChildId(vardaChildId)
             }
 
             return true
@@ -625,12 +625,12 @@ WHERE evaka_service_need_id = :serviceNeedId
 ).bind("serviceNeedId", serviceNeedId)
     .execute()
 
-fun Database.Transaction.deleteVardaServiceNeedByEvakaChildId(evakaChildId: UUID) = createUpdate(
+fun Database.Transaction.deleteVardaServiceNeedByVardaChildId(vardaChildId: Long) = createUpdate(
     """
 DELETE FROM varda_service_need
-WHERE evaka_child_id = :evakaChildId
+WHERE varda_child_id = :vardaChildId
         """
-).bind("evakaChildId", evakaChildId)
+).bind("vardaChildId", vardaChildId)
     .execute()
 
 fun Database.Transaction.markVardaServiceNeedUpdateFailed(serviceNeedId: UUID, errors: List<String>) = createUpdate(
@@ -889,11 +889,11 @@ fun Database.Read.getVardaChildrenToReset(): List<UUID> =
         .mapTo<UUID>()
         .list()
 
-fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: UUID, resetTimeStamp: Instant) = createUpdate(
+fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: UUID, resetTimestamp: Instant) = createUpdate(
     """
 UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
 WHERE evaka_child_id = :evakaChildId
         """
 ).bind("evakaChildId", evakaChildId)
-    .bind("resetTimeStamp", resetTimeStamp)
+    .bind("resetTimestamp", resetTimestamp)
     .execute()
