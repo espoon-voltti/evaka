@@ -32,9 +32,9 @@ data class VasuTemplateUpdate(
 fun validateTemplateUpdate(
     template: VasuTemplateSummary,
     body: VasuTemplateUpdate,
-) {
+): Boolean {
     if (template.documentCount == 0) {
-        return
+        return true
     }
 
     if (body.name != template.name) throw BadRequest("Name of a used template cannot be changed", "TEMPLATE_NAME")
@@ -50,4 +50,5 @@ fun validateTemplateUpdate(
         if (body.valid.start != template.valid.start) throw BadRequest("Start date of a currently valid template cannot be changed", "CURRENT_START")
         if (body.valid.end.isBefore(now.minusDays(1))) throw BadRequest("End date of a currently valid template cannot be before yesterday", "CURRENT_END")
     }
+    return true
 }
