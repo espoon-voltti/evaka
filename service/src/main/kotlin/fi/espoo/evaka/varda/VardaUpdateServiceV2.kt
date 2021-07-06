@@ -889,11 +889,11 @@ fun Database.Read.getVardaChildrenToReset(): List<UUID> =
         .mapTo<UUID>()
         .list()
 
-fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: UUID, resetTimeStamp: Instant) = createUpdate(
+fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: UUID, resetTimestamp: Instant) = createUpdate(
     """
 UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
 WHERE evaka_child_id = :evakaChildId
         """
 ).bind("evakaChildId", evakaChildId)
-    .bind("resetTimeStamp", resetTimeStamp)
+    .bind("resetTimestamp", resetTimestamp)
     .execute()
