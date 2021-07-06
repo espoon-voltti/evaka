@@ -233,6 +233,22 @@ class VardaClient(
         }
     }
 
+    fun deleteFeeDataV2(vardaId: Long): Boolean {
+        logger.info { "VardaUpdate: Deleting fee data $vardaId from Varda" }
+        val (request, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: Deleting fee data $vardaId from Varda succeeded" }
+                true
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                throw error(result.error)
+            }
+        }
+    }
+
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Creating a new decision to Varda (body: $newDecision)" }
         val (request, _, result) = fuel.post(decisionUrl)
@@ -280,6 +296,23 @@ class VardaClient(
             is Result.Failure -> {
                 logRequestError(request, result.error)
                 false
+            }
+        }
+    }
+
+    fun deleteDecisionV2(vardaDecisionId: Long): Boolean {
+        logger.info { "VardaUpdate: Deleting decision from Varda (id: $vardaDecisionId)" }
+        val (request, _, result) = fuel.delete(getDecisionUrl(vardaDecisionId))
+            .authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: Deleting decision from Varda succeeded (id: $vardaDecisionId)" }
+                true
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                throw error(result.error)
             }
         }
     }
@@ -336,6 +369,23 @@ class VardaClient(
             is Result.Failure -> {
                 logRequestError(request, result.error)
                 false
+            }
+        }
+    }
+
+    fun deletePlacementV2(vardaPlacementId: Long): Boolean {
+        logger.info { "VardaUpdate: Deleting placement from Varda (id: $vardaPlacementId)" }
+        val (request, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId))
+            .authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "VardaUpdate: Deleting placement from Varda succeeded (id: $vardaPlacementId)" }
+                true
+            }
+            is Result.Failure -> {
+                logRequestError(request, result.error)
+                throw error(result.error)
             }
         }
     }

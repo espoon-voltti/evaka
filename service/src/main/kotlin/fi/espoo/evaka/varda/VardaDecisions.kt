@@ -500,7 +500,7 @@ WHERE vd.uploaded_at < greatest(sn.updated, p.updated)
         .toList()
 }
 
-private fun deleteDecision(tx: Database.Transaction, vardaDecisionId: Long) {
+fun deleteDecision(tx: Database.Transaction, vardaDecisionId: Long) {
     tx.createUpdate("DELETE FROM varda_decision WHERE varda_decision_id = :id")
         .bind("id", vardaDecisionId)
         .execute()

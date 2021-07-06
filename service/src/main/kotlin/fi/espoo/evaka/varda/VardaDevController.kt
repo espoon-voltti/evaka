@@ -70,4 +70,13 @@ class VardaDevController(
             }
         }
     }
+
+    @PostMapping("/reset-children")
+    fun resetChildren(
+        db: Database.Connection
+    ) {
+        if (listOf("dev", "test", "staging").contains(System.getenv("VOLTTI_ENV"))) {
+            vardaUpdateServiceV2.resetChildren(db)
+        }
+    }
 }
