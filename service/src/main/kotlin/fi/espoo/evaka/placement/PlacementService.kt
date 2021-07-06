@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
@@ -100,9 +101,6 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
 ): UUID {
     if (endDate.isBefore(startDate))
         throw BadRequest("Must not end before even starting")
-
-    if (getDaycareGroupPlacements(daycarePlacementId, startDate, endDate, groupId).isNotEmpty())
-        throw BadRequest("Group placement must not overlap with existing group placement")
 
     val daycarePlacement = getDaycarePlacement(daycarePlacementId)
         ?: throw NotFound("Placement $daycarePlacementId does not exist")
@@ -259,7 +257,7 @@ fun Database.Read.getDetailedDaycarePlacements(
 
     val groupPlacements =
         when {
-            daycareId != null -> getDaycareGroupPlacements(daycareId, minDate, maxDate, null)
+            daycareId != null -> getGroupPlacementsAtDaycare(daycareId, DateRange(minDate, maxDate))
             childId != null -> getChildGroupPlacements(childId)
             else -> listOf()
         }

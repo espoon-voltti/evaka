@@ -13,7 +13,7 @@ import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.messaging.message.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.message.deleteDaycareGroupMessageAccount
-import fi.espoo.evaka.placement.getDaycareGroupPlacements
+import fi.espoo.evaka.placement.hasGroupPlacements
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.Conflict
@@ -50,15 +50,8 @@ class DaycareService {
         tx.createDaycareGroupMessageAccount(it.id)
     }
 
-    fun deleteGroup(tx: Database.Transaction, daycareId: UUID, groupId: UUID) = try {
-        val isEmpty = tx.getDaycareGroupPlacements(
-            daycareId = daycareId,
-            groupId = groupId,
-            startDate = null,
-            endDate = null
-        ).isEmpty()
-
-        if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
+    fun deleteGroup(tx: Database.Transaction, groupId: UUID) = try {
+        if (tx.hasGroupPlacements(groupId)) throw Conflict("Cannot delete group which has children placed in it")
 
         tx.deleteDaycareGroupMessageAccount(groupId)
         tx.deleteDaycareGroup(groupId)
