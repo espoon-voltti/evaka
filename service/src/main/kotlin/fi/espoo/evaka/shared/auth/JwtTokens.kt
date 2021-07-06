@@ -40,7 +40,11 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
 fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = jwt
     .withSubject(id.toString())
     .withClaim("evaka_type", this.type.toString())
-    .withClaim("scope", roles.joinToString(" "))
+    .also {
+        if (this is AuthenticatedUser.Employee) {
+            it.withClaim("scope", roles.joinToString(" "))
+        }
+    }
 
 fun encodeSignedJwtToken(
     algorithm: Algorithm,
