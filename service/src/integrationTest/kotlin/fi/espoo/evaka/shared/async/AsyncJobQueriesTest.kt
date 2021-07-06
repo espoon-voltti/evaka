@@ -6,10 +6,8 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.BeforeEach
@@ -103,22 +101,6 @@ class AsyncJobQueriesTest : PureJdbiTest() {
                 h.createQuery("SELECT count(*) FROM async_job WHERE completed_at IS NOT NULL").mapTo<Int>().one()
             }
         assertEquals(2, completedCount)
-    }
-
-    @Test
-    fun testLegacyUserRoleDeserialization() {
-        val user = db.read {
-            it.createQuery(
-                "SELECT jsonb_build_object('id', '44e1ff31-fce4-4ca1-922a-a385fb21c69e', 'roles', jsonb_build_array('FINANCE_ADMIN')) AS user"
-            ).map { row -> row.mapJsonColumn<AuthenticatedUser>("user") }.first()
-        }
-        assertEquals(
-            AuthenticatedUser.Employee(
-                UUID.fromString("44e1ff31-fce4-4ca1-922a-a385fb21c69e"),
-                setOf(UserRole.FINANCE_ADMIN)
-            ),
-            user
-        )
     }
 
     @Test
