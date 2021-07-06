@@ -12,12 +12,14 @@ import com.fasterxml.jackson.databind.util.StdConverter
 import java.util.UUID
 
 sealed interface DatabaseTable {
+    sealed class Absence : DatabaseTable
     sealed class Application : DatabaseTable
     sealed class ApplicationNote : DatabaseTable
     sealed class Area : DatabaseTable
     sealed class AssistanceAction : DatabaseTable
     sealed class AssistanceNeed : DatabaseTable
     sealed class Attachment : DatabaseTable
+    sealed class Attendance : DatabaseTable
     sealed class BackupCare : DatabaseTable
     sealed class Daycare : DatabaseTable
     sealed class Decision : DatabaseTable
@@ -40,12 +42,14 @@ sealed interface DatabaseTable {
     sealed class VoucherValueDecision : DatabaseTable
 }
 
+typealias AbsenceId = Id<DatabaseTable.Absence>
 typealias ApplicationId = Id<DatabaseTable.Application>
 typealias ApplicationNoteId = Id<DatabaseTable.ApplicationNote>
 typealias AreaId = Id<DatabaseTable.Area>
 typealias AssistanceActionId = Id<DatabaseTable.AssistanceAction>
 typealias AssistanceNeedId = Id<DatabaseTable.AssistanceNeed>
 typealias AttachmentId = Id<DatabaseTable.Attachment>
+typealias AttendanceId = Id<DatabaseTable.Attendance>
 typealias BackupCareId = Id<DatabaseTable.BackupCare>
 typealias ChildId = Id<DatabaseTable.Person>
 typealias DaycareId = Id<DatabaseTable.Daycare>

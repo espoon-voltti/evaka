@@ -14,6 +14,7 @@ import fi.espoo.evaka.messaging.daycarydailynote.getDaycareDailyNotesForDaycareG
 import fi.espoo.evaka.pis.controllers.fetchFamilyContacts
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.getPlacementsForChild
+import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -312,7 +313,7 @@ fun Database.Read.fetchChildrenAbsences(unitId: DaycareId): List<ChildAbsence> {
         .list()
 }
 
-fun Database.Transaction.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
+fun Database.Transaction.updateAttendance(attendanceId: AttendanceId, arrived: Instant, departed: Instant?) {
     // language=sql
     val sql =
         """
@@ -328,7 +329,7 @@ fun Database.Transaction.updateAttendance(attendanceId: UUID, arrived: Instant, 
         .execute()
 }
 
-fun Database.Transaction.updateAttendanceEnd(attendanceId: UUID, departed: Instant?) {
+fun Database.Transaction.updateAttendanceEnd(attendanceId: AttendanceId, departed: Instant?) {
     // language=sql
     val sql =
         """
@@ -343,7 +344,7 @@ fun Database.Transaction.updateAttendanceEnd(attendanceId: UUID, departed: Insta
         .execute()
 }
 
-fun Database.Transaction.deleteAttendance(id: UUID) {
+fun Database.Transaction.deleteAttendance(id: AttendanceId) {
     // language=sql
     val sql =
         """
