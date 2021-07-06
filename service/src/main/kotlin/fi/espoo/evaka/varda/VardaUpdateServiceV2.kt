@@ -7,8 +7,11 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
@@ -200,7 +203,7 @@ fun updateAllVardaData(
 fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: HelsinkiDateTime) {
     val processedServiceNeedIds = retryUnsuccessfulServiceNeedVardaUpdates(db, client).toMutableSet()
     val serviceNeedDiffsByChild = calculateEvakaVsVardaServiceNeedChangesByChild(db, startingFrom)
-    val feeAndVoucherDiffsByServiceNeed = db.read { it.getServiceNeedFeeData(startingFrom, null) }.groupBy { it.serviceNeedId }
+    val feeAndVoucherDiffsByServiceNeed = db.read { it.getAllChangedServiceNeedFeeDataSince(startingFrom) }.groupBy { it.serviceNeedId }
 
     logger.info("VardaUpdate: found ${serviceNeedDiffsByChild.entries.size} children with changed service need data")
 
@@ -339,21 +342,15 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
 
     try {
         // Todo: "nettopalvelu"-unit children do not have fee data
-        val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(null, evakaServiceNeed.id) }.firstOrNull()
+        val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }.firstOrNull()
         if (serviceNeedFeeData != null && (serviceNeedFeeData.feeDecisionIds.isNotEmpty() || serviceNeedFeeData.voucherValueDecisionIds.isNotEmpty())) {
             if (evakaServiceNeed.ophOrganizerOid.isNullOrEmpty()) throw Exception("VardaUpdate: service need ${evakaServiceNeed.id} related oph_organizer_oid is null or empty")
             if (db.read { it.personHasSsn(evakaServiceNeed.childId) }.not()) throw Exception("VardaUpdate: cannot create service need ${evakaServiceNeed.id} for child ${evakaServiceNeed.childId} because child has no ssn")
 
             newVardaServiceNeed.vardaChildId = getOrCreateVardaChildByOrganizer(db, vardaClient, evakaServiceNeed.childId, evakaServiceNeed.ophOrganizerOid, vardaClient.sourceSystem)
-            newVardaServiceNeed.vardaDecisionId = createDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
-            newVardaServiceNeed.vardaPlacementId = createPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
-            newVardaServiceNeed.vardaFeeDataIds = serviceNeedFeeData.feeDecisionIds.mapNotNull { fdId ->
-                createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, fdId)
-            }.plus(
-                serviceNeedFeeData.voucherValueDecisionIds.map { vvdId ->
-                    createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, vvdId)
-                }
-            )
+            newVardaServiceNeed.vardaDecisionId = sendDecisionToVarda(vardaClient, newVardaServiceNeed.vardaChildId, evakaServiceNeed)
+            newVardaServiceNeed.vardaPlacementId = sendPlacementToVarda(vardaClient, newVardaServiceNeed.vardaDecisionId!!, evakaServiceNeed)
+            newVardaServiceNeed.vardaFeeDataIds = sendFeeDataToVarda(vardaClient, db, newVardaServiceNeed, evakaServiceNeed, serviceNeedFeeData)
         }
     } catch (e: Exception) {
         errors.add("VardaUpdate: error creating a new varda decision for service need ${evakaServiceNeed.id}: ${e.message}")
@@ -364,7 +361,7 @@ fun addServiceNeedDataToVarda(db: Database.Connection, vardaClient: VardaClient,
     return errors
 }
 
-fun createDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
+fun sendDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
     if (vardaChildId == null) throw Exception("VardaUpdate: cannot create decision for ${evakaServiceNeedInfoForVarda.id}: child varda id missing")
     val res: VardaDecisionResponse?
     try {
@@ -377,7 +374,7 @@ fun createDecisionToVarda(client: VardaClient, vardaChildId: Long?, evakaService
     return res.vardaDecisionId
 }
 
-fun createPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
+fun sendPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda): Long {
     val res: VardaPlacementResponse?
     try {
         res = client.createPlacement(evakaServiceNeedInfoForVarda.toVardaPlacement(client.getDecisionUrl(vardaDecisionId), client.sourceSystem))
@@ -387,6 +384,22 @@ fun createPlacementToVarda(client: VardaClient, vardaDecisionId: Long, evakaServ
 
     if (res == null) throw Exception("VardaUpdate: cannot create placement for ${evakaServiceNeedInfoForVarda.id}: create varda placement response is null")
     return res.vardaPlacementId
+}
+
+fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection, newVardaServiceNeed: VardaServiceNeed, evakaServiceNeed: EvakaServiceNeedInfoForVarda, feeDataByServiceNeed: FeeDataByServiceNeed): List<Long> {
+    return feeDataByServiceNeed.feeDecisionIds.filter { fdId ->
+        val feeDecision = db.read { it.getFeeDecision(fdId) } ?: throw Exception("VardaUpdate: could not find fee decision $fdId for service need ${evakaServiceNeed.id}")
+        feeDecision.status == FeeDecisionStatus.SENT
+    }.mapNotNull { fdId ->
+        createFeeDataToVardaFromFeeDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, fdId)
+    }.plus(
+        feeDataByServiceNeed.voucherValueDecisionIds.filter { vvdID ->
+            val vvDecision = db.read { it.getVoucherValueDecision(vvdID) ?: throw Exception("VardaUpdate: could not find voucher value decision $vvdID for service need ${evakaServiceNeed.id}") }
+            vvDecision.status == VoucherValueDecisionStatus.SENT
+        }.map { vvdId ->
+            createFeeDataToVardaFromVoucherValueDecision(db, vardaClient, newVardaServiceNeed.vardaChildId!!, evakaServiceNeed, vvdId)
+        }
+    )
 }
 
 fun createFeeDataToVardaFromFeeDecision(
@@ -718,7 +731,15 @@ WHERE evaka_service_need_id = :eVakaServiceNeedId
         .mapTo<VardaServiceNeed>()
         .firstOrNull()
 
-fun Database.Read.getServiceNeedFeeData(startingFrom: HelsinkiDateTime?, serviceNeedId: UUID?): List<FeeDataByServiceNeed> =
+fun Database.Read.getAllChangedServiceNeedFeeDataSince(startingFrom: HelsinkiDateTime?): List<FeeDataByServiceNeed> {
+    return getServiceNeedFeeDataQuery(startingFrom, null, null, null)
+}
+
+fun Database.Read.getServiceNeedFeeData(serviceNeedId: UUID?, feeDecisionStatus: FeeDecisionStatus, voucherValueDecisionStatus: VoucherValueDecisionStatus): List<FeeDataByServiceNeed> {
+    return getServiceNeedFeeDataQuery(null, serviceNeedId, feeDecisionStatus, voucherValueDecisionStatus)
+}
+
+private fun Database.Read.getServiceNeedFeeDataQuery(startingFrom: HelsinkiDateTime?, serviceNeedId: UUID?, feeDecisionStatus: FeeDecisionStatus?, voucherValueDecisionStatus: VoucherValueDecisionStatus?): List<FeeDataByServiceNeed> =
     createQuery(
         """
 WITH child_fees AS (
@@ -727,7 +748,8 @@ WITH child_fees AS (
     fdc.child_id,
     fd.valid_during
   FROM fee_decision fd JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id 
-  ${if (startingFrom != null) " WHERE fd.sent_at >= :startingFrom" else ""}  
+  ${if (startingFrom != null) " WHERE fd.sent_at >= :startingFrom" else ""}
+  ${if (feeDecisionStatus != null) " WHERE fd.status = :feeDecisionStatus" else ""}  
 ), service_need_fees AS (
   SELECT
     sn.id AS service_need_id,
@@ -746,6 +768,7 @@ FROM service_need sn JOIN placement p ON p.id = sn.placement_id
   JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id 
     AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
 ${if (startingFrom != null) " WHERE vvd.sent_at >= :startingFrom" else ""}      
+${if (voucherValueDecisionStatus != null) " WHERE vvd.status = :voucherValueDecisionStatus" else ""}  
 GROUP BY service_need_id, p.child_id
 )
 SELECT
@@ -761,6 +784,8 @@ ${ if (serviceNeedId != null) "WHERE COALESCE(service_need_fees.service_need_id,
     )
         .bind("startingFrom", startingFrom)
         .bind("serviceNeedId", serviceNeedId)
+        .bind("feeDecisionStatus", feeDecisionStatus)
+        .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
         .mapTo<FeeDataByServiceNeed>()
         .list()
 
