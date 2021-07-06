@@ -17,6 +17,7 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.WithCount
@@ -850,7 +851,7 @@ fun Database.Transaction.deleteApplication(id: ApplicationId) {
     createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transaction, id: UUID) -> Unit) {
+fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transaction, id: AttachmentId) -> Unit) {
     val thresholdDays = 31
 
     // language=SQL
@@ -878,7 +879,7 @@ fun Database.Transaction.removeOldDrafts(deleteAttachment: (db: Database.Transac
                 createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
                     .bind("id", applicationId)
                     .executeAndReturnGeneratedKeys()
-                    .mapTo<UUID>()
+                    .mapTo<AttachmentId>()
                     .toList()
 
             attachmentIds.forEach { attachmentId ->

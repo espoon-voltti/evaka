@@ -7,13 +7,14 @@ package fi.espoo.evaka.attachment
 import fi.espoo.evaka.application.Attachment
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 fun Database.Transaction.insertAttachment(
-    id: UUID,
+    id: AttachmentId,
     name: String,
     contentType: String,
     applicationId: ApplicationId,
@@ -39,12 +40,12 @@ fun Database.Transaction.insertAttachment(
         .execute()
 }
 
-fun Database.Read.getAttachment(id: UUID): Attachment? = this
+fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
     .createQuery("SELECT * FROM attachment WHERE id = :id")
     .bind("id", id).mapTo<Attachment>()
     .first()
 
-fun Database.Read.isOwnAttachment(attachmentId: UUID, user: AuthenticatedUser): Boolean {
+fun Database.Read.isOwnAttachment(attachmentId: AttachmentId, user: AuthenticatedUser): Boolean {
     val sql =
         """
         SELECT EXISTS 
@@ -60,7 +61,7 @@ fun Database.Read.isOwnAttachment(attachmentId: UUID, user: AuthenticatedUser): 
         .first()
 }
 
-fun Database.Read.isSelfUploadedAttachment(attachmentId: UUID, user: AuthenticatedUser): Boolean {
+fun Database.Read.isSelfUploadedAttachment(attachmentId: AttachmentId, user: AuthenticatedUser): Boolean {
     val sql =
         """
         SELECT EXISTS
@@ -76,13 +77,13 @@ fun Database.Read.isSelfUploadedAttachment(attachmentId: UUID, user: Authenticat
         .first()
 }
 
-fun Database.Transaction.deleteAttachment(id: UUID) {
+fun Database.Transaction.deleteAttachment(id: AttachmentId) {
     this.createUpdate("DELETE FROM attachment WHERE id = :id")
         .bind("id", id)
         .execute()
 }
 
-fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: ApplicationId, type: AttachmentType, userId: UUID): List<UUID> {
+fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: ApplicationId, type: AttachmentType, userId: UUID): List<AttachmentId> {
     return this.createQuery(
         """
             DELETE FROM attachment 
@@ -95,6 +96,6 @@ fun Database.Transaction.deleteAttachmentsByApplicationAndType(applicationId: Ap
         .bind("applicationId", applicationId)
         .bind("type", type)
         .bind("userId", userId)
-        .mapTo<UUID>()
+        .mapTo<AttachmentId>()
         .toList()
 }
