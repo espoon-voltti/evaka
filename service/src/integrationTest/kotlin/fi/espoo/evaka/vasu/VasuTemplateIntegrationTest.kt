@@ -88,7 +88,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
                             value = false
                         ),
                         VasuQuestion.RadioGroupQuestion(
-                            name = "kysymys 1",
+                            name = "kysymys 3",
                             options = listOf(
                                 QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
                                 QuestionOption("vaihtoehto 2", "vaihtoehto 2")
@@ -96,7 +96,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest() {
                             value = "vaihtoehto 1"
                         ),
                         VasuQuestion.MultiSelectQuestion(
-                            name = "kysymys 1",
+                            name = "kysymys 4",
                             options = listOf(
                                 QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
                                 QuestionOption("vaihtoehto 2", "vaihtoehto 2")
