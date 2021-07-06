@@ -22,6 +22,7 @@ import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -905,7 +906,7 @@ internal fun insertServiceNeed(
     db: Database.Connection,
     placementId: PlacementId,
     period: FiniteDateRange,
-    optionId: UUID
+    optionId: ServiceNeedOptionId
 ): ServiceNeedId {
     return db.transaction {
         it.insertTestServiceNeed(

@@ -8,6 +8,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -104,7 +105,7 @@ fun Database.Transaction.insertServiceNeed(
     placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedBy: UUID,
     confirmedAt: HelsinkiDateTime
@@ -131,7 +132,7 @@ fun Database.Transaction.updateServiceNeed(
     id: ServiceNeedId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedBy: UUID,
     confirmedAt: HelsinkiDateTime

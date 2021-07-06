@@ -7,6 +7,7 @@ package fi.espoo.evaka.serviceneed
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -40,7 +41,7 @@ data class ServiceNeedChildRange(
 )
 
 data class ServiceNeedOptionSummary(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val name: String,
     val updated: Instant
 )
@@ -53,13 +54,13 @@ data class ServiceNeedConfirmation(
 )
 
 data class ServiceNeedOptionPublicInfo(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val name: String,
     val validPlacementType: PlacementType
 )
 
 data class ServiceNeedOption(
-    val id: UUID,
+    val id: ServiceNeedOptionId,
     val name: String,
     val validPlacementType: PlacementType,
     val defaultOption: Boolean,
@@ -81,7 +82,7 @@ fun validateServiceNeed(
     placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID
+    optionId: ServiceNeedOptionId
 ) {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Start date cannot be before end date.")
@@ -122,7 +123,7 @@ fun createServiceNeed(
     placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedAt: HelsinkiDateTime
 ): ServiceNeedId {
@@ -145,7 +146,7 @@ fun updateServiceNeed(
     id: ServiceNeedId,
     startDate: LocalDate,
     endDate: LocalDate,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean,
     confirmedAt: HelsinkiDateTime
 ) {

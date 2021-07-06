@@ -12,6 +12,7 @@ import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -293,7 +294,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun testDate(day: Int) = LocalDate.now().plusDays(day.toLong())
 
-    private fun givenServiceNeed(start: Int, end: Int, placementId: PlacementId, optionId: UUID = snDefaultDaycare.id): ServiceNeedId {
+    private fun givenServiceNeed(start: Int, end: Int, placementId: PlacementId, optionId: ServiceNeedOptionId = snDefaultDaycare.id): ServiceNeedId {
         return db.transaction { tx ->
             tx.insertTestServiceNeed(
                 confirmedBy = unitSupervisor.id,

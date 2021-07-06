@@ -33,6 +33,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
 import fi.espoo.evaka.shared.dev.insertTestIncome
@@ -1772,7 +1773,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     private fun insertServiceNeed(
         placementId: PlacementId,
         period: FiniteDateRange,
-        optionId: UUID
+        optionId: ServiceNeedOptionId
     ) {
         db.transaction { tx ->
             tx.insertTestServiceNeed(

@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -461,7 +462,7 @@ fun Database.Transaction.insertTestServiceNeed(
     confirmedBy: UUID,
     placementId: PlacementId,
     period: FiniteDateRange,
-    optionId: UUID,
+    optionId: ServiceNeedOptionId,
     shiftCare: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),

@@ -12,6 +12,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
@@ -294,7 +295,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest() {
     private fun insertServiceNeed(
         placementId: PlacementId,
         period: FiniteDateRange,
-        optionId: UUID
+        optionId: ServiceNeedOptionId
     ) {
         db.transaction { tx ->
             tx.insertTestServiceNeed(

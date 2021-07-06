@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
@@ -317,7 +318,7 @@ class FixtureBuilder(
     ) {
         private var from: LocalDate? = null
         private var to: LocalDate? = null
-        private var optionId: UUID? = null
+        private var optionId: ServiceNeedOptionId? = null
         private var serviceNeedOption: ServiceNeedOption? = null
         private var employeeId: UUID? = null
         private var updated: HelsinkiDateTime = HelsinkiDateTime.now()
@@ -327,7 +328,7 @@ class FixtureBuilder(
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
-        fun withOption(id: UUID) = this.apply { this.optionId = id }
+        fun withOption(id: ServiceNeedOptionId) = this.apply { this.optionId = id }
         fun withOption(serviceNeedOption: ServiceNeedOption) = this.apply { this.serviceNeedOption = serviceNeedOption }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
         fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }

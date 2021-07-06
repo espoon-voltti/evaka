@@ -16,6 +16,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaUpdateV2
 import fi.espoo.evaka.shared.db.Database
@@ -680,7 +681,7 @@ GROUP BY evaka_child_id"""
 data class VardaServiceNeed(
     val evakaChildId: UUID,
     val evakaServiceNeedId: ServiceNeedId,
-    val evakaServiceNeedOptionId: UUID,
+    val evakaServiceNeedOptionId: ServiceNeedOptionId,
     val evakaServiceNeedUpdated: HelsinkiDateTime,
     val evakaServiceNeedOptionUpdated: HelsinkiDateTime,
     var vardaChildId: Long? = null,
@@ -812,7 +813,7 @@ private fun evakaServiceNeedToVardaServiceNeed(childId: UUID, evakaServiceNeed: 
 
 data class EvakaServiceNeedInfoForVarda(
     val id: ServiceNeedId,
-    val optionId: UUID,
+    val optionId: ServiceNeedOptionId,
     val serviceNeedUpdated: Instant,
     val serviceNeedOptionUpdated: Instant,
     val childId: UUID,
