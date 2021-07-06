@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.assistanceneed
 
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -28,7 +29,7 @@ class AssistanceNeedService {
         return db.transaction { it.getAssistanceNeedsByChild(childId) }
     }
 
-    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, id: AssistanceNeedId, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction { it.updateAssistanceNeed(user, id, data) }
         } catch (e: JdbiException) {
@@ -36,7 +37,7 @@ class AssistanceNeedService {
         }
     }
 
-    fun deleteAssistanceNeed(db: Database.Connection, id: UUID) {
+    fun deleteAssistanceNeed(db: Database.Connection, id: AssistanceNeedId) {
         db.transaction { it.deleteAssistanceNeed(id) }
     }
 }

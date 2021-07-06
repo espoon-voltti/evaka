@@ -4,11 +4,12 @@
 
 package fi.espoo.evaka.assistanceneed
 
+import fi.espoo.evaka.shared.AssistanceNeedId
 import java.time.LocalDate
 import java.util.UUID
 
 data class AssistanceNeed(
-    val id: UUID,
+    val id: AssistanceNeedId,
     val childId: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate,

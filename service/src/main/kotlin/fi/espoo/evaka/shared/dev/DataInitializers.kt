@@ -26,6 +26,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AssistanceActionId
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -694,7 +695,7 @@ INSERT INTO assistance_need (id, updated_by, child_id, start_date, end_date, cap
 VALUES (:id, :updatedBy, :childId, :startDate, :endDate, :capacityFactor, :description, :bases::assistance_basis[], :otherBasis)
 RETURNING id
 """
-)
+).let(::AssistanceNeedId)
 
 fun Database.Transaction.insertTestAssistanceAction(assistanceAction: DevAssistanceAction): AssistanceActionId {
     val id = insertTestDataRow(

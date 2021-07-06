@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.assistanceneed
 
+import fi.espoo.evaka.shared.AssistanceNeedId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
@@ -59,7 +60,7 @@ fun Database.Read.getAssistanceNeedsByChild(childId: UUID): List<AssistanceNeed>
         .list()
 }
 
-fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+fun Database.Transaction.updateAssistanceNeed(user: AuthenticatedUser, id: AssistanceNeedId, data: AssistanceNeedRequest): AssistanceNeed {
     //language=sql
     val sql =
         """
@@ -106,7 +107,7 @@ fun Database.Transaction.shortenOverlappingAssistanceNeed(user: AuthenticatedUse
         .execute()
 }
 
-fun Database.Transaction.deleteAssistanceNeed(id: UUID) {
+fun Database.Transaction.deleteAssistanceNeed(id: AssistanceNeedId) {
     //language=sql
     val sql = "DELETE FROM assistance_need WHERE id = :id"
     val deleted = createUpdate(sql).bind("id", id).execute()
