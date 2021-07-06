@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -53,7 +54,7 @@ class IncomeController(
     }
 
     @PostMapping
-    fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
+    fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<IncomeId> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val period = try {
@@ -65,7 +66,7 @@ class IncomeController(
         }
 
         val id = db.transaction { tx ->
-            val id = UUID.randomUUID()
+            val id = IncomeId(UUID.randomUUID())
             val validIncome = income.copy(id = id).let(::validateIncome)
             tx.splitEarlierIncome(validIncome.personId, period)
             tx.upsertIncome(mapper, validIncome, user.id)
@@ -81,15 +82,15 @@ class IncomeController(
     fun updateIncome(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable incomeId: String,
+        @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
     ): ResponseEntity<Unit> {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
-            val existing = tx.getIncome(mapper, parseUUID(incomeId))
-            val validIncome = income.copy(id = parseUUID(incomeId), applicationId = null).let(::validateIncome)
+            val existing = tx.getIncome(mapper, incomeId)
+            val validIncome = income.copy(id = incomeId, applicationId = null).let(::validateIncome)
             tx.upsertIncome(mapper, validIncome, user.id)
 
             val expandedPeriod = existing?.let {
@@ -104,16 +105,16 @@ class IncomeController(
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: String): ResponseEntity<Unit> {
+    fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: IncomeId): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
-            val existing = tx.getIncome(mapper, parseUUID(incomeId))
+            val existing = tx.getIncome(mapper, incomeId)
                 ?: throw BadRequest("Income not found")
             val period = DateRange(existing.validFrom, existing.validTo)
 
-            tx.deleteIncome(parseUUID(incomeId))
+            tx.deleteIncome(incomeId)
 
             asyncJobRunner.plan(tx, listOf(GenerateFinanceDecisions.forAdult(existing.personId, period)))
         }

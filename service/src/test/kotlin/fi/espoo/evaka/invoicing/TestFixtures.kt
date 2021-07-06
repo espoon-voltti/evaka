@@ -31,6 +31,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
@@ -162,7 +163,7 @@ val testInvoice = Invoice(
 val testPisFridgeParentId = UUID.randomUUID()
 
 val testIncome = Income(
-    id = UUID.randomUUID(),
+    id = IncomeId(UUID.randomUUID()),
     personId = UUID.randomUUID(),
     validFrom = LocalDate.of(2000, 1, 1),
     validTo = null,

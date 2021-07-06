@@ -55,6 +55,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
@@ -701,7 +702,7 @@ class ApplicationStateService(
         } else {
             val period = DateRange(start = validFrom, end = null)
             val validIncome = Income(
-                id = UUID.randomUUID(),
+                id = IncomeId(UUID.randomUUID()),
                 data = mapOf(),
                 effect = IncomeEffect.MAX_FEE_ACCEPTED,
                 notes = "created automatically from application",

@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing.domain
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.IncomeId
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -15,7 +16,7 @@ import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Income(
-    val id: UUID? = null,
+    val id: IncomeId? = null,
     val personId: UUID,
     val effect: IncomeEffect,
     val data: Map<IncomeType, IncomeValue>,

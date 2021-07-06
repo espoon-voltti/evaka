@@ -9,9 +9,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getNullableUUID
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
@@ -84,7 +86,7 @@ fun Database.Transaction.upsertIncome(mapper: ObjectMapper, income: Income, upda
     handlingExceptions { update.execute() }
 }
 
-fun Database.Read.getIncome(mapper: ObjectMapper, id: UUID): Income? {
+fun Database.Read.getIncome(mapper: ObjectMapper, id: IncomeId): Income? {
     return createQuery(
         """
         SELECT income.*, employee.first_name || ' ' || employee.last_name AS updated_by_employee
@@ -134,7 +136,7 @@ fun Database.Read.getIncomesFrom(mapper: ObjectMapper, personIds: List<UUID>, fr
         .toList()
 }
 
-fun Database.Transaction.deleteIncome(incomeId: UUID) {
+fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
     val update = createUpdate("DELETE FROM income WHERE id = :id")
         .bind("id", incomeId)
 
@@ -162,7 +164,7 @@ fun Database.Transaction.splitEarlierIncome(personId: UUID, period: DateRange) {
 
 fun toIncome(objectMapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
     Income(
-        id = UUID.fromString(rs.getString("id")),
+        id = IncomeId(rs.getUUID("id")),
         personId = UUID.fromString(rs.getString("person_id")),
         effect = IncomeEffect.valueOf(rs.getString("effect")),
         data = objectMapper.readValue(rs.getString("data")),
