@@ -11,12 +11,12 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.Deta
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @ExtendWith(MockitoExtension::class)
 class MockDataServiceTest {

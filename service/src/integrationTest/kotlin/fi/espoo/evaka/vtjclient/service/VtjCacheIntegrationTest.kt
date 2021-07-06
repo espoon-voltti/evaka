@@ -7,12 +7,12 @@ package fi.espoo.evaka.vtjclient.service
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import kotlin.test.assertEquals
 
 @ExtendWith(SpringExtension::class)
 @Import(VtjCacheIntegrationTestConfig::class, SharedIntegrationTestConfig::class)

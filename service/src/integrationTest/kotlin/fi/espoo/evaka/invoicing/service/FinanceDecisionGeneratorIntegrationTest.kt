@@ -26,13 +26,13 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired

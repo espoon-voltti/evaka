@@ -30,13 +30,13 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -415,7 +415,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     }
 
     private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String, expectedHtmlPart: String, expectedTextPart: String) {
-        Assertions.assertNotNull(email)
+        assertNotNull(email)
         assertEquals(expectedToAddress, email?.toAddress)
         assertEquals(expectedFromAddress, email?.fromAddress)
         assertEquals(expectedSubject, email?.subject)

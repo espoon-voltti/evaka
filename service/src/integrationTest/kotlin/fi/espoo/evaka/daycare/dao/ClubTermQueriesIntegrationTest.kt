@@ -9,10 +9,11 @@ import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class ClubTermQueriesIntegrationTest : PureJdbiTest() {
 
@@ -36,8 +37,8 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest() {
     @Test
     fun `get club terms`() {
         val data = db.read { it.getClubTerms() }
-        Assertions.assertEquals(2, data.size)
-        Assertions.assertEquals(
+        assertEquals(2, data.size)
+        assertEquals(
             FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
             data[0].term
         )
@@ -51,7 +52,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest() {
         db.read { dbRead ->
             listOf(dateAtStartOfTerm, dateWithinTerm, dateAtEndOfTerm).forEach { date ->
                 val clubTerm = dbRead.getActiveClubTermAt(date)
-                Assertions.assertEquals(
+                assertEquals(
                     FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
                     clubTerm?.term
                 )
@@ -59,6 +60,6 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest() {
         }
 
         val dateOutsideTerm = LocalDate.of(2020, 8, 5)
-        db.read { Assertions.assertNull(it.getActiveClubTermAt(dateOutsideTerm)) }
+        db.read { assertNull(it.getActiveClubTermAt(dateOutsideTerm)) }
     }
 }

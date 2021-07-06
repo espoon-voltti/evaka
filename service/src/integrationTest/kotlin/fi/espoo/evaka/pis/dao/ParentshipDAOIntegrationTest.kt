@@ -13,10 +13,10 @@ import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
     @Test

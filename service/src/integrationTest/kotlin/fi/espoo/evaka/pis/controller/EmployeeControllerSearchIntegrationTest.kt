@@ -13,13 +13,13 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class EmployeeControllerSearchIntegrationTest : AbstractIntegrationTest() {
 

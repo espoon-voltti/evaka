@@ -20,13 +20,13 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class VardaUnitIntegrationTest : FullApplicationTest() {
     @Autowired

@@ -13,10 +13,11 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.testAdult_5
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class AttachmentsControllerIntegrationTest : FullApplicationTest() {
 
@@ -46,8 +47,8 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
             it.insertApplication(applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
         }
         for (i in 1..maxAttachments) {
-            Assertions.assertTrue(uploadAttachment(applicationId, user))
+            assertTrue(uploadAttachment(applicationId, user))
         }
-        Assertions.assertFalse(uploadAttachment(applicationId, user))
+        assertFalse(uploadAttachment(applicationId, user))
     }
 }

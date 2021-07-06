@@ -26,12 +26,12 @@ import fi.espoo.evaka.testAreaCode
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class DaycareEditIntegrationTest : FullApplicationTest() {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
@@ -101,7 +101,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(fields))
             .asUser(admin)
             .responseObject<DaycareController.CreateDaycareResponse>()
-        Assertions.assertTrue(res.isSuccessful)
+        assertTrue(res.isSuccessful)
 
         getAndAssertDaycareFields(body.get().id, fields)
     }
@@ -112,7 +112,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
             .jsonBody(objectMapper.writeValueAsString(fields))
             .asUser(admin)
             .response()
-        Assertions.assertTrue(res.isSuccessful)
+        assertTrue(res.isSuccessful)
 
         getAndAssertDaycareFields(testDaycare.id, fields)
     }

@@ -14,13 +14,13 @@ import fi.espoo.evaka.shared.utils.europeHelsinki
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.json.Json
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 private inline fun <reified T : Any> Database.Read.passThrough(input: T) = createQuery(
     // language=SQL

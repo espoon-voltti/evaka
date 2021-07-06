@@ -5,10 +5,10 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.placement.PlacementType
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalTime
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class AttendanceTests {
     @Test

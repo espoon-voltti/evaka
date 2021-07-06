@@ -43,11 +43,11 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import org.jdbi.v3.core.kotlin.mapTo
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class MessageReceiversIntegrationTest : FullApplicationTest() {
 
@@ -152,17 +152,17 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             .asUser(supervisor1)
             .responseObject<List<MessageReceiversResponse>>(objectMapper)
 
-        Assertions.assertEquals(200, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         val receivers = result.get()
 
-        Assertions.assertEquals(1, receivers.size)
+        assertEquals(1, receivers.size)
 
         val groupTestaajat = receivers.find { it.groupName == groupName }!!
-        Assertions.assertEquals(1, groupTestaajat.receivers.size)
+        assertEquals(1, groupTestaajat.receivers.size)
 
         val receiverChild = groupTestaajat.receivers[0]
-        Assertions.assertEquals(childId, receiverChild.childId)
+        assertEquals(childId, receiverChild.childId)
     }
 
     @Test
@@ -171,20 +171,20 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             .asUser(supervisor2)
             .responseObject<List<MessageReceiversResponse>>(objectMapper)
 
-        Assertions.assertEquals(200, res.statusCode)
+        assertEquals(200, res.statusCode)
 
         val receivers = result.get()
 
-        Assertions.assertEquals(1, receivers.size)
+        assertEquals(1, receivers.size)
 
         val groupKoekaniinit = receivers.find { it.groupName == secondGroupName }!!
-        Assertions.assertEquals(2, groupKoekaniinit.receivers.size)
-        Assertions.assertEquals(
+        assertEquals(2, groupKoekaniinit.receivers.size)
+        assertEquals(
             setOf(testChild_3.id, testChild_4.id),
             groupKoekaniinit.receivers.map { it.childId }.toSet()
         )
         val childWithTwoReceiverPersons = groupKoekaniinit.receivers.find { it.childId == testChild_3.id }!!
-        Assertions.assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
+        assertEquals(2, childWithTwoReceiverPersons.receiverPersons.size)
     }
 
     @Test
@@ -201,7 +201,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             user = supervisor1
         )
 
-        Assertions.assertEquals(200, response.statusCode)
+        assertEquals(200, response.statusCode)
     }
 
     @Test
@@ -218,7 +218,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             user = supervisor1
         )
 
-        Assertions.assertEquals(403, response.statusCode)
+        assertEquals(403, response.statusCode)
     }
 
     @Test
@@ -235,7 +235,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             user = supervisor1
         )
 
-        Assertions.assertEquals(403, response.statusCode)
+        assertEquals(403, response.statusCode)
     }
 
     @Test
@@ -252,7 +252,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest() {
             user = supervisor1
         )
 
-        Assertions.assertEquals(403, response.statusCode)
+        assertEquals(403, response.statusCode)
     }
 
     private fun postNewThread(

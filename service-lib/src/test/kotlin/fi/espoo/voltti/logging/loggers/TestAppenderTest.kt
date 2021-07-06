@@ -12,10 +12,10 @@ import mu.KLogger
 import mu.KotlinLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 private val logger = KotlinLogging.logger { }.also(KLogger::setupTestAppender)
 

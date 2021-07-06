@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class InvoicesTest {
     @Test

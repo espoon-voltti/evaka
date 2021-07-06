@@ -23,6 +23,8 @@ dependencies {
 
     // Kotlin + core
     implementation(kotlin("stdlib-jdk8"))
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit5"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm")

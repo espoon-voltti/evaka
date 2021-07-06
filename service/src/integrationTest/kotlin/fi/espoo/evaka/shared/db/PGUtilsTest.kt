@@ -5,10 +5,10 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.postgresql.util.PSQLState
+import kotlin.test.assertEquals
 
 class PGUtilsTest : PureJdbiTest() {
     @Test

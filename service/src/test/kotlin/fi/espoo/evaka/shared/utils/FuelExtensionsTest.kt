@@ -19,13 +19,13 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.`when`
 import java.io.ByteArrayInputStream
 import java.net.URL
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class FuelExtensionsTest {
     private val basicRetryResponse = createRetryResponse("0")

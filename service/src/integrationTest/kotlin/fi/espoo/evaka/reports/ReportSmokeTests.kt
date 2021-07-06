@@ -14,10 +14,10 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class ReportSmokeTests : FullApplicationTest() {
     private val testUser = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.ADMIN))

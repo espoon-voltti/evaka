@@ -10,13 +10,12 @@ import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class CaretakerQueriesIntegrationTest : PureJdbiTest() {
     val careAreaId = UUID.randomUUID()
@@ -133,7 +132,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `test getUnitStats with long time range`() = db.transaction { tx ->
-        assertDoesNotThrow { tx.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
+        tx.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1))
     }
 
     @Test

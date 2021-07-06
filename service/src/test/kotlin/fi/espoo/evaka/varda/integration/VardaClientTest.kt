@@ -16,7 +16,6 @@ import com.nhaarman.mockito_kotlin.argThat
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -25,6 +24,7 @@ import org.mockito.Mockito.`when`
 import org.springframework.core.env.Environment
 import java.io.ByteArrayInputStream
 import java.net.URL
+import kotlin.test.assertTrue
 
 class MockVardaTokenProvider : VardaTokenProvider {
     override fun <T> withToken(action: (token: String, refresh: () -> String) -> T): T =

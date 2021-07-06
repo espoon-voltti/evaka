@@ -15,12 +15,12 @@ import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.domain.Forbidden
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import java.util.UUID
+import kotlin.test.assertEquals
 
 class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
