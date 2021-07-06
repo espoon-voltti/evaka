@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.testFeeThresholds
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.config.PDFConfig
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -107,7 +108,7 @@ class PdfServiceTest {
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
 
     private val normalVoucherValueDecision = VoucherValueDecisionDetailed(
-        id = testDecision1.id,
+        id = VoucherValueDecisionId(testDecision1.id.raw),
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
         approvedBy = PersonData.WithName(
             UUID.randomUUID(),

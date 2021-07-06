@@ -31,6 +31,7 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
@@ -180,7 +181,7 @@ private fun generateFeeDecisions2(
             }
 
             period to FeeDecision(
-                id = UUID.randomUUID(),
+                id = FeeDecisionId(UUID.randomUUID()),
                 validDuring = period,
                 status = FeeDecisionStatus.DRAFT,
                 decisionType = FeeDecisionType.NORMAL,

@@ -58,6 +58,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.ParentshipId
@@ -234,7 +235,7 @@ class DevApi(
     }
 
     data class DecisionRequest(
-        val id: UUID,
+        val id: DecisionId,
         val employeeId: UUID,
         val applicationId: ApplicationId,
         val unitId: DaycareId,
@@ -263,7 +264,7 @@ class DevApi(
     }
 
     @PostMapping("/decisions/{id}/actions/create-pdf")
-    fun createDecisionPdf(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+    fun createDecisionPdf(db: Database, @PathVariable id: DecisionId): ResponseEntity<Unit> {
         db.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
         return ResponseEntity.noContent().build()
     }

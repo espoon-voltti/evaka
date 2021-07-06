@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -168,7 +169,7 @@ data class ServiceVoucherValueRow(
     val unitName: String,
     val areaId: AreaId,
     val areaName: String,
-    val serviceVoucherDecisionId: UUID,
+    val serviceVoucherDecisionId: VoucherValueDecisionId,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
     val serviceNeedDescription: String,

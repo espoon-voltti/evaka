@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -98,7 +99,7 @@ class VoucherValueDecisionController(
     fun getDecision(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: VoucherValueDecisionId
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -108,7 +109,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/send")
-    fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction {
@@ -125,7 +126,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<UUID>): ResponseEntity<Unit> {
+    fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<VoucherValueDecisionId>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
@@ -138,7 +139,7 @@ class VoucherValueDecisionController(
     }
 
     @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: VoucherValueDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }
@@ -155,7 +156,7 @@ fun sendVoucherValueDecisions(
     asyncJobRunner: AsyncJobRunner,
     user: AuthenticatedUser,
     now: Instant,
-    ids: List<UUID>
+    ids: List<VoucherValueDecisionId>
 ) {
     tx.lockValueDecisions(ids)
     val decisions = tx.getValueDecisionsByIds(ids)

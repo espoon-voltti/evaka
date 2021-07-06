@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -161,7 +162,7 @@ class PgObjectColumnMapper<T>(private inline val deserializer: (PGobject) -> T?)
 
 fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapper { rs, ctx ->
     FeeDecision(
-        id = UUID.fromString(rs.getString("id")),
+        id = FeeDecisionId(rs.getUUID("id")),
         status = FeeDecisionStatus.valueOf(rs.getString("status")),
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         decisionType = rs.getEnum("decision_type"),
@@ -209,7 +210,7 @@ fun feeDecisionRowMapper(mapper: ObjectMapper): RowMapper<FeeDecision> = RowMapp
 
 fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDetailed> = RowMapper { rs, ctx ->
     FeeDecisionDetailed(
-        id = UUID.fromString(rs.getString("id")),
+        id = FeeDecisionId(rs.getUUID("id")),
         status = FeeDecisionStatus.valueOf(rs.getString("status")),
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         decisionType = FeeDecisionType.valueOf(rs.getString("decision_type")),
@@ -297,7 +298,7 @@ fun feeDecisionDetailedRowMapper(mapper: ObjectMapper): RowMapper<FeeDecisionDet
 
 val feeDecisionSummaryRowMapper: RowMapper<FeeDecisionSummary> = RowMapper { rs, ctx ->
     FeeDecisionSummary(
-        id = rs.getUUID("id"),
+        id = FeeDecisionId(rs.getUUID("id")),
         status = rs.getEnum("status"),
         decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
         validDuring = ctx.mapColumn(rs, "valid_during"),

@@ -15,8 +15,10 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaUpdateV2
 import fi.espoo.evaka.shared.db.Database
@@ -413,7 +415,7 @@ fun createFeeDataToVardaFromFeeDecision(
     client: VardaClient,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    decisionId: UUID
+    decisionId: FeeDecisionId
 ): Long? {
     val decision = db.read { it.getFeeDecisionsByIds(listOf(decisionId)) }.first()
     val childPart = decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
@@ -486,7 +488,7 @@ fun createFeeDataToVardaFromVoucherValueDecision(
     client: VardaClient,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    id: UUID
+    id: VoucherValueDecisionId
 ): Long {
     val decision = db.read { it.getVoucherValueDecision(id) }
         ?: throw Exception("VardaUpdate: cannot create voucher fee data: voucher $id not found")
@@ -798,8 +800,8 @@ ${ if (serviceNeedId != null) "WHERE COALESCE(service_need_fees.service_need_id,
 data class FeeDataByServiceNeed(
     val evakaChildId: UUID,
     val serviceNeedId: ServiceNeedId,
-    val feeDecisionIds: List<UUID> = emptyList(),
-    val voucherValueDecisionIds: List<UUID> = emptyList()
+    val feeDecisionIds: List<FeeDecisionId> = emptyList(),
+    val voucherValueDecisionIds: List<VoucherValueDecisionId> = emptyList()
 )
 
 private fun evakaServiceNeedToVardaServiceNeed(childId: UUID, evakaServiceNeed: EvakaServiceNeedInfoForVarda): VardaServiceNeed =

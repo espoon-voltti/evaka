@@ -11,7 +11,9 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.VardaDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -438,8 +440,8 @@ VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
     }
 }
 
-internal fun insertTestVardaDecision(db: Database.Connection, decisionId: UUID? = null, placementId: PlacementId? = null): UUID {
-    val id = UUID.randomUUID()
+internal fun insertTestVardaDecision(db: Database.Connection, decisionId: DecisionId? = null, placementId: PlacementId? = null): VardaDecisionId {
+    val id = VardaDecisionId(UUID.randomUUID())
     db.transaction {
         insertVardaDecision(
             it,

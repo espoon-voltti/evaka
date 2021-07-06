@@ -26,6 +26,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.ParentshipId
@@ -683,7 +684,7 @@ INSERT INTO decision (created_by, sent_date, unit_id, application_id, type, star
 VALUES (:createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy, :pendingDecisionEmailsSentCount, :pendingDecisionEmailSent)
 RETURNING id
 """
-)
+).let(::DecisionId)
 
 fun Database.Transaction.insertTestAssistanceNeed(assistanceNeed: DevAssistanceNeed) = insertTestDataRow(
     assistanceNeed,

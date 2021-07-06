@@ -176,7 +176,7 @@ class PDFServiceTest {
 }
 
 fun createValidDecision(
-    id: UUID = UUID.randomUUID(),
+    id: DecisionId = DecisionId(UUID.randomUUID()),
     createdBy: String = "John Doe",
     type: DecisionType = DecisionType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),

@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -321,7 +322,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID, requestedStartDate: LocalDate) {
+    private fun acceptDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate) {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) = http.post(path)
@@ -340,7 +341,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID) {
+    private fun rejectDecisionAndAssert(user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId) {
         val path = "${if (user.roles.contains(UserRole.END_USER)) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) = http.post(path)
@@ -438,6 +439,6 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
 
 private data class DataIdentifiers(
     val applicationId: ApplicationId,
-    val primaryId: UUID?,
-    val preschoolDaycareId: UUID?
+    val primaryId: DecisionId?,
+    val preschoolDaycareId: DecisionId?
 )

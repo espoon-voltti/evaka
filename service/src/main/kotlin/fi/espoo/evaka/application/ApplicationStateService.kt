@@ -54,6 +54,7 @@ import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
@@ -353,7 +354,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
     }
 
-    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
+    fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
         Audit.DecisionAccept.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {
@@ -410,7 +411,7 @@ class ApplicationStateService(
         }
     }
 
-    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: UUID, isEnduser: Boolean = false) {
+    fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, decisionId: DecisionId, isEnduser: Boolean = false) {
         Audit.DecisionReject.log(targetId = decisionId)
         val application = getApplication(tx, applicationId)
         if (isEnduser) {

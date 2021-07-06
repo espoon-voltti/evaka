@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.invoicing.service.FinanceDecisionGenerator
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
@@ -113,7 +114,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
@@ -125,7 +126,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<FeeDecisionId>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { service.setSent(it, feeDecisionIds) }
@@ -133,7 +134,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/pdf/{uuid}")
-    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val headers = HttpHeaders()
@@ -144,7 +145,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
+    fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: FeeDecisionId): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read { it.getFeeDecision(uuid) }
@@ -187,7 +188,7 @@ class FeeDecisionController(
     fun setType(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable uuid: UUID,
+        @PathVariable uuid: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)

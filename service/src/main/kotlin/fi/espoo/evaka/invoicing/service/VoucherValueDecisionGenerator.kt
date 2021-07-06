@@ -30,6 +30,7 @@ import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
@@ -169,7 +170,7 @@ private fun generateNewValueDecisions(
                     val value = calculateVoucherValue(baseValue, ageCoefficient, placement.serviceNeed.voucherValueCoefficient)
 
                     period to VoucherValueDecision(
-                        id = UUID.randomUUID(),
+                        id = VoucherValueDecisionId(UUID.randomUUID()),
                         status = VoucherValueDecisionStatus.DRAFT,
                         headOfFamily = headOfFamily,
                         partner = partner,

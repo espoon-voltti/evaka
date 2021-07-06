@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -31,7 +32,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testCompleteHappyCase() {
-        val id = UUID.randomUUID()
+        val id = DecisionId(UUID.randomUUID())
         db.transaction {
             it.insertJob(
                 JobParams(
@@ -66,7 +67,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testParallelClaimContention() {
-        val payloads = (0..1).map { NotifyDecisionCreated(UUID.randomUUID(), user, sendAsMessage = false) }
+        val payloads = (0..1).map { NotifyDecisionCreated(DecisionId(UUID.randomUUID()), user, sendAsMessage = false) }
         db.transaction { tx ->
             payloads.map { tx.insertJob(JobParams(it, 999, Duration.ZERO, HelsinkiDateTime.now())) }
         }

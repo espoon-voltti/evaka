@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -947,7 +948,7 @@ fun insertDecisionWithApplication(
     decisionType: DecisionType = DecisionType.DAYCARE,
     sentDate: LocalDate = LocalDate.of(2019, 1, 1),
     decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED
-): UUID = db.transaction {
+): DecisionId = db.transaction {
     val applicationId = it.insertTestApplication(childId = child.id, guardianId = testAdult_1.id, sentDate = sentDate)
     it.insertTestApplicationForm(
         applicationId,
@@ -979,7 +980,7 @@ fun insertDecisionWithApplication(
     it.insertTestDecision(acceptedDecision)
 }
 
-fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: DaycareId, period: FiniteDateRange): Pair<UUID, PlacementId> {
+fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: DaycareId, period: FiniteDateRange): Pair<DecisionId, PlacementId> {
     val decisionId = insertDecisionWithApplication(db, child = child, period = period, unitId = unitId)
     return db.transaction {
         val placementId = it.insertTestPlacement(

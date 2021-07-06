@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
@@ -16,7 +17,7 @@ import java.time.ZoneId
 import java.util.UUID
 
 data class VoucherValueDecision(
-    override val id: UUID,
+    override val id: VoucherValueDecisionId,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
     @Nested("head_of_family")
@@ -54,7 +55,7 @@ data class VoucherValueDecision(
     val sentAt: Instant? = null,
     val created: Instant = Instant.now()
 ) : FinanceDecision<VoucherValueDecision> {
-    override fun withRandomId() = this.copy(id = UUID.randomUUID())
+    override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
         return this.headOfFamily == decision.headOfFamily &&
@@ -97,7 +98,7 @@ enum class VoucherValueDecisionStatus {
 }
 
 data class VoucherValueDecisionDetailed(
-    val id: UUID,
+    val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
@@ -167,7 +168,7 @@ data class VoucherValueDecisionDetailed(
 }
 
 data class VoucherValueDecisionSummary(
-    val id: UUID,
+    val id: VoucherValueDecisionId,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,

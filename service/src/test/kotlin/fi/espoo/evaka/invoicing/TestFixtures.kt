@@ -30,6 +30,8 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.time.Instant
@@ -120,7 +122,7 @@ val testDecisionChild2 =
     )
 
 val testDecision1 = FeeDecision(
-    id = uuid1,
+    id = FeeDecisionId(uuid1),
     status = FeeDecisionStatus.DRAFT,
     decisionNumber = 1010101010L,
     decisionType = FeeDecisionType.NORMAL,
@@ -215,7 +217,7 @@ fun createFeeDecisionFixture(
     feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
-    id = UUID.randomUUID(),
+    id = FeeDecisionId(UUID.randomUUID()),
     status = status,
     decisionType = decisionType,
     validDuring = period,
@@ -247,7 +249,7 @@ fun createVoucherValueDecisionFixture(
     coPayment: Int = 28900,
     feeAlterations: List<FeeAlterationWithEffect> = listOf()
 ) = VoucherValueDecision(
-    id = UUID.randomUUID(),
+    id = VoucherValueDecisionId(UUID.randomUUID()),
     status = status,
     validFrom = validFrom,
     validTo = validTo,

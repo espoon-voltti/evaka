@@ -18,6 +18,7 @@ import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -36,7 +37,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 import java.util.Locale
-import java.util.UUID
 
 val logger = KotlinLogging.logger { }
 
@@ -57,7 +57,7 @@ class DecisionService(
         user: AuthenticatedUser,
         applicationId: ApplicationId,
         sendAsMessage: Boolean
-    ): List<UUID> {
+    ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId)
         asyncJobRunner.plan(tx, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
         return decisionIds
@@ -66,7 +66,7 @@ class DecisionService(
     fun createDecisionPdfs(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        decisionId: UUID
+        decisionId: DecisionId
     ) {
         val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val decisionLanguage = determineDecisionLanguage(decision, tx)
@@ -170,7 +170,7 @@ class DecisionService(
             logger.debug { "PDF (object name: $key) uploaded to S3 with $it." }
         }
 
-    fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: UUID) {
+    fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: DecisionId) {
         val decision = tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
@@ -243,7 +243,7 @@ class DecisionService(
         evakaMessageClient.send(message)
     }
 
-    fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Document {
+    fun getDecisionPdf(tx: Database.Read, decisionId: DecisionId): Document {
         val decision = tx.getDecision(decisionId)
             ?: throw NotFound("No decision $decisionId found")
         val lang = tx.getDecisionLanguage(decisionId)

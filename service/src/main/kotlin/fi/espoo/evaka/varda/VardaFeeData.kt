@@ -10,6 +10,8 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
@@ -112,8 +114,8 @@ fun getMarkedFeeData(tx: Database.Read): List<Long> {
 private fun insertFeeDataUpload(
     tx: Database.Transaction,
     vardaId: Long,
-    feeDecisionId: UUID?,
-    voucherValueDecisionId: UUID?,
+    feeDecisionId: FeeDecisionId?,
+    voucherValueDecisionId: VoucherValueDecisionId?,
     vardaDecisionId: Long,
     vardaChildId: Long
 ) {
@@ -335,8 +337,8 @@ data class VardaGuardian(
 )
 
 data class VardaFeeDataBase(
-    val feeDecisionId: UUID?,
-    val voucherValueDecisionId: UUID?,
+    val feeDecisionId: FeeDecisionId?,
+    val voucherValueDecisionId: VoucherValueDecisionId?,
     val vardaChildId: Long,
     val vardaId: Long?,
     val startDate: LocalDate,

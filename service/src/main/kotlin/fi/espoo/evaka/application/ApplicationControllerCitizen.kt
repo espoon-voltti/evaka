@@ -17,6 +17,7 @@ import fi.espoo.evaka.decision.getOwnDecisions
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -333,7 +334,7 @@ class ApplicationControllerCitizen(
     fun downloadDecisionPdf(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable id: DecisionId
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = id)
         user.requireOneOfRoles(UserRole.END_USER)
@@ -372,7 +373,7 @@ data class ApplicationDecisions(
 )
 
 data class DecisionSummary(
-    val decisionId: UUID,
+    val decisionId: DecisionId,
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,

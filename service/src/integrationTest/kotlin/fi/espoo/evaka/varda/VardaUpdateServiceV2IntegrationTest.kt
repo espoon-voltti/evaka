@@ -24,7 +24,9 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -630,7 +632,7 @@ class VardaUpdateServiceV2IntegrationTest : FullApplicationTest() {
         return serviceNeedId
     }
 
-    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT): UUID {
+    private fun createFeeDecision(db: Database.Connection, child: PersonData.Detailed, headOfFamilyId: UUID, period: DateRange, sentAt: Instant, status: FeeDecisionStatus = FeeDecisionStatus.SENT): FeeDecisionId {
         val fd = createFeeDecisionFixture(
             status,
             FeeDecisionType.NORMAL,
@@ -710,7 +712,7 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() = FeeDecisionServiceNee
     missing = false
 )
 
-private fun Database.Transaction.setFeeDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
+private fun Database.Transaction.setFeeDecisionSentAt(id: FeeDecisionId, sentAt: Instant) = createUpdate(
     """
 UPDATE fee_decision SET sent_at = :sentAt
 WHERE id = :id 
@@ -719,7 +721,7 @@ WHERE id = :id
     .bind("sentAt", sentAt)
     .execute()
 
-private fun Database.Transaction.setVoucherValueDecisionSentAt(id: UUID, sentAt: Instant) = createUpdate(
+private fun Database.Transaction.setVoucherValueDecisionSentAt(id: VoucherValueDecisionId, sentAt: Instant) = createUpdate(
     """
 UPDATE voucher_value_decision SET sent_at = :sentAt
 WHERE id = :id 

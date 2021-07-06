@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
-import java.util.UUID
 
 interface FinanceDecision<Decision : FinanceDecision<Decision>> {
-    val id: UUID
+    val id: Id<*>
     val validFrom: LocalDate
     val validTo: LocalDate?
     val headOfFamily: PersonData.JustId

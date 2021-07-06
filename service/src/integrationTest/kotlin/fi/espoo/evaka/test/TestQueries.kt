@@ -10,6 +10,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
@@ -31,7 +32,7 @@ WHERE id = :applicationId
     .one()
 
 data class DecisionTableRow(
-    val id: UUID,
+    val id: DecisionId,
     val number: Int,
     val createdBy: UUID,
     val sentDate: LocalDate,
@@ -54,7 +55,7 @@ fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) = c
     "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
 ).bind("applicationId", applicationId).mapTo<DecisionTableRow>()
 
-fun Database.Read.getDecisionRowById(id: UUID) = createQuery(
+fun Database.Read.getDecisionRowById(id: DecisionId) = createQuery(
     // language=SQL
     "SELECT * FROM decision WHERE id = :id"
 ).bind("id", id).mapTo<DecisionTableRow>()

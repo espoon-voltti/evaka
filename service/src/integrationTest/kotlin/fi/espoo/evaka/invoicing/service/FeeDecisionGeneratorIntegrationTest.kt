@@ -32,6 +32,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -1729,14 +1730,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
 
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = Instant.now()
-        UUID.randomUUID().let { uuid ->
+        FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(expected.copy(id = uuid, created = createdAt), actual.copy(id = uuid, created = createdAt))
         }
     }
 
     private fun assertEqualEnoughDecisions(expected: List<FeeDecision>, actual: List<FeeDecision>) {
         val createdAt = Instant.now()
-        UUID.randomUUID().let { uuid ->
+        FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
                 expected.map { it.copy(id = uuid, created = createdAt) },
                 actual.map { it.copy(id = uuid, created = createdAt) }

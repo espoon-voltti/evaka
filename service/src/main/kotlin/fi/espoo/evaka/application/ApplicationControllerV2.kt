@@ -26,6 +26,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -556,12 +557,12 @@ data class DaycarePlacementPlan(
 )
 
 data class AcceptDecisionRequest(
-    val decisionId: UUID,
+    val decisionId: DecisionId,
     val requestedStartDate: LocalDate
 )
 
 data class RejectDecisionRequest(
-    val decisionId: UUID
+    val decisionId: DecisionId
 )
 
 data class DecisionDraftJSON(

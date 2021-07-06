@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -28,7 +29,6 @@ import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
 
 @Component
 class VoucherValueDecisionService(
@@ -40,7 +40,7 @@ class VoucherValueDecisionService(
 ) {
     private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.vouchervaluedecision")
 
-    fun createDecisionPdf(tx: Database.Transaction, decisionId: UUID) {
+    fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)
         check(decision.documentKey.isNullOrBlank()) { "Voucher value decision $decisionId has document key already!" }
 
@@ -49,13 +49,13 @@ class VoucherValueDecisionService(
         tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
 
-    fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Pair<String, ByteArray> {
+    fun getDecisionPdf(tx: Database.Read, decisionId: VoucherValueDecisionId): Pair<String, ByteArray> {
         val key = tx.getVoucherValueDecisionDocumentKey(decisionId)
             ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
         return key to s3Client.getPdf(bucket, key)
     }
 
-    fun sendDecision(tx: Database.Transaction, decisionId: UUID) {
+    fun sendDecision(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
@@ -114,7 +114,7 @@ WHERE decision.status = 'SENT'::voucher_value_decision_status
 AND daterange(decision.valid_from, decision.valid_to, '[]') != placements.combined_range
 AND placements.combined_range << daterange(:now, null)
 """
-        ).bind("now", now).mapTo<UUID>().toList()
+        ).bind("now", now).mapTo<VoucherValueDecisionId>().toList()
 
         tx.lockValueDecisions(decisionIds)
 
@@ -156,12 +156,12 @@ ORDER BY start_date ASC
             }
     }
 
-    private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =
+    private fun getDecision(tx: Database.Read, decisionId: VoucherValueDecisionId): VoucherValueDecisionDetailed =
         tx.getVoucherValueDecision(decisionId)
             ?: error("No voucher value decision found with ID ($decisionId)")
 
-    private val key = { id: UUID -> "value_decision_$id.pdf" }
-    private fun uploadPdf(decisionId: UUID, file: ByteArray): String {
+    private val key = { id: VoucherValueDecisionId -> "value_decision_$id.pdf" }
+    private fun uploadPdf(decisionId: VoucherValueDecisionId, file: ByteArray): String {
         val key = key(decisionId)
         s3Client.uploadPdfToS3(bucket, key, file)
         return key
