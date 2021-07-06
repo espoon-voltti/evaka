@@ -117,3 +117,4 @@ V116__staff_attendance_created_updated.sql
 V117__placement_reject_reason_3.sql
 V118__school_shift_care_placement_type.sql
 V119__daycare_group_start_before_end.sql
+V120__varda_reset_child.sql

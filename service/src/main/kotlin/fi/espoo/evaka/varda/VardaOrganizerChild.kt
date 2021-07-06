@@ -208,4 +208,3 @@ fun insertVardaOrganizerChild(
         .bind("organizerOid", organizerOid)
         .execute()
 }
-
