@@ -12,11 +12,14 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Duration
+import java.time.Instant
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class SpringMvcTest : FullApplicationTest() {
     private val employee = AuthenticatedUser.Employee(UUID.randomUUID(), emptySet())
@@ -33,9 +36,7 @@ class SpringMvcTest : FullApplicationTest() {
         val (_, res, _) = http.get("/integration-test/db-connection-pass").asUser(AuthenticatedUser.SystemInternalUser)
             .response()
         assertTrue(res.isSuccessful)
-        val connection = controller.lastDbConnection.get()
-        assertNotNull(connection)
-        assertFalse(connection!!.isConnected())
+        waitForDbClose()
     }
 
     @Test
@@ -43,9 +44,7 @@ class SpringMvcTest : FullApplicationTest() {
         val (_, res, _) = http.get("/integration-test/db-connection-fail").asUser(AuthenticatedUser.SystemInternalUser)
             .response()
         assertEquals(500, res.statusCode)
-        val connection = controller.lastDbConnection.get()
-        assertNotNull(connection)
-        assertFalse(connection!!.isConnected())
+        waitForDbClose()
     }
 
     @Test
@@ -63,5 +62,16 @@ class SpringMvcTest : FullApplicationTest() {
         http.get("/integration-test/require-auth-employee").asUser(employee)
             .response()
             .let { (_, res, _) -> assertTrue(res.isSuccessful) }
+    }
+
+    private fun waitForDbClose(timeout: Duration = Duration.ofSeconds(10)) {
+        val connection = controller.lastDbConnection.get()
+        assertNotNull(connection)
+        val start = Instant.now()
+        do {
+            if (!connection.isConnected()) return
+            TimeUnit.MILLISECONDS.sleep(100)
+        } while (Duration.between(start, Instant.now()).abs() < timeout)
+        fail("Timed out waiting for database connection to close")
     }
 }
