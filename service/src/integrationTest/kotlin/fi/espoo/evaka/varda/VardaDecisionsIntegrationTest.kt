@@ -21,6 +21,7 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -888,7 +889,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             .toList()
     }
 
-    private fun updateServiceNeed(id: UUID, updatedAt: Instant) = db.transaction {
+    private fun updateServiceNeed(id: ServiceNeedId, updatedAt: Instant) = db.transaction {
         it.createUpdate("UPDATE service_need SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)
             .bind("updatedAt", updatedAt)
@@ -905,7 +906,7 @@ internal fun insertServiceNeed(
     placementId: PlacementId,
     period: FiniteDateRange,
     optionId: UUID
-): UUID {
+): ServiceNeedId {
     return db.transaction {
         it.insertTestServiceNeed(
             confirmedBy = testDecisionMaker_1.id,

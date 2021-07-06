@@ -15,9 +15,11 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaUpdateV2
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -252,7 +254,7 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
     logger.info("VardaUpdate: processed ${processedServiceNeedIds.size} service needs")
 }
 
-fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: UUID) {
+fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId) {
     try {
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
         if (vardaServiceNeed != null) {
@@ -269,7 +271,7 @@ fun handleDeletedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
     }
 }
 
-fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: UUID) {
+fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, evakaServiceNeedId: ServiceNeedId) {
     try {
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) } ?: throw Exception("VardaUpdate: cannot update service need $evakaServiceNeedId: varda service need missing")
         val deleteErrors = deleteServiceNeedDataFromVarda(client, vardaServiceNeed)
@@ -291,7 +293,7 @@ fun handleUpdatedEvakaServiceNeed(db: Database.Connection, client: VardaClient, 
     }
 }
 
-fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: UUID) {
+fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serviceNeedId: ServiceNeedId) {
     try {
         val evakaServiceNeed = db.read { it.getEvakaServiceNeedInfoForVarda(serviceNeedId) }
         val newVardaServiceNeed = evakaServiceNeedToVardaServiceNeed(evakaServiceNeed.childId, evakaServiceNeed)
@@ -309,7 +311,7 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
     }
 }
 
-fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient): List<UUID> {
+fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient): List<ServiceNeedId> {
     val unsuccessfullyUploadedServiceNeeds = db.read { it.getUnsuccessfullyUploadVardaServiceNeeds() }
 
     if (unsuccessfullyUploadedServiceNeeds.isNotEmpty())
@@ -559,13 +561,13 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(db: Database.Connection, star
 
 data class VardaChildCalculatedServiceNeedChanges(
     val childId: UUID,
-    val additions: List<UUID>,
-    val updates: List<UUID>,
-    val deletes: List<UUID>
+    val additions: List<ServiceNeedId>,
+    val updates: List<ServiceNeedId>,
+    val deletes: List<ServiceNeedId>
 )
 
 // Find out new varhaiskasvatuspaatos to be added for a child: any new service needs not found from child's full varda history
-private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaChildServiceNeeds: List<VardaServiceNeed>): List<UUID> {
+private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaChildServiceNeeds: List<VardaServiceNeed>): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild.filter { newServiceNeedChange ->
         vardaChildServiceNeeds.none { vardaChildServiceNeedChange ->
             vardaChildServiceNeedChange.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId
@@ -576,7 +578,7 @@ private fun calculateNewChildServiceNeeds(evakaServiceNeedChangesForChild: List<
 }
 
 // Find out changed varhaiskasvatuspaatos for a child: any new service need with a different update timestamp in history
-private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<UUID> {
+private fun calculateUpdatedChildServiceNeeds(evakaServiceNeedChangesForChild: List<VardaServiceNeed>, vardaServiceNeedsForChild: List<VardaServiceNeed>): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild.filter { newServiceNeedChange ->
         val match = vardaServiceNeedsForChild.find { it.evakaServiceNeedId == newServiceNeedChange.evakaServiceNeedId }
         match != null && (
@@ -633,7 +635,7 @@ ON CONFLICT (evaka_service_need_id) DO UPDATE
 ).bindKotlin(vardaServiceNeed)
     .execute()
 
-fun Database.Transaction.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId: UUID) = createUpdate(
+fun Database.Transaction.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId: ServiceNeedId) = createUpdate(
     """
 DELETE FROM varda_service_need
 WHERE evaka_service_need_id = :serviceNeedId    
@@ -649,7 +651,7 @@ WHERE varda_child_id = :vardaChildId
 ).bind("vardaChildId", vardaChildId)
     .execute()
 
-fun Database.Transaction.markVardaServiceNeedUpdateFailed(serviceNeedId: UUID, errors: List<String>) = createUpdate(
+fun Database.Transaction.markVardaServiceNeedUpdateFailed(serviceNeedId: ServiceNeedId, errors: List<String>) = createUpdate(
     """
 UPDATE varda_service_need
 SET update_failed = true, errors = :errors
@@ -659,7 +661,7 @@ WHERE evaka_service_need_id = :serviceNeedId
     .bind("errors", errors.toTypedArray())
     .execute()
 
-private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<UUID>> {
+private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<ServiceNeedId>> {
     return db.read { it ->
         it.createQuery(
             """
@@ -670,14 +672,14 @@ WHERE evaka_service_need_id NOT IN (
 )
 GROUP BY evaka_child_id"""
         )
-            .map { rs, _ -> rs.getObject("child_id", UUID::class.java) to (rs.getArray("service_need_ids").array as Array<*>).map { UUID.fromString(it.toString()) } }
+            .map { row -> row.mapColumn<UUID>("child_id") to row.mapColumn<Array<ServiceNeedId>>("service_need_ids").toList() }
             .toMap()
     }
 }
 
 data class VardaServiceNeed(
     val evakaChildId: UUID,
-    val evakaServiceNeedId: UUID,
+    val evakaServiceNeedId: ServiceNeedId,
     val evakaServiceNeedOptionId: UUID,
     val evakaServiceNeedUpdated: HelsinkiDateTime,
     val evakaServiceNeedOptionUpdated: HelsinkiDateTime,
@@ -722,7 +724,7 @@ WHERE evaka_child_id = :evakaChildId
         .mapTo<VardaServiceNeed>()
         .list()
 
-fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(eVakaServiceNeedId: UUID): VardaServiceNeed? =
+fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(eVakaServiceNeedId: ServiceNeedId): VardaServiceNeed? =
     createQuery(
         """
 SELECT *
@@ -738,11 +740,11 @@ fun Database.Read.getAllChangedServiceNeedFeeDataSince(startingFrom: HelsinkiDat
     return getServiceNeedFeeDataQuery(startingFrom, null, null, null)
 }
 
-fun Database.Read.getServiceNeedFeeData(serviceNeedId: UUID?, feeDecisionStatus: FeeDecisionStatus, voucherValueDecisionStatus: VoucherValueDecisionStatus): List<FeeDataByServiceNeed> {
+fun Database.Read.getServiceNeedFeeData(serviceNeedId: ServiceNeedId?, feeDecisionStatus: FeeDecisionStatus, voucherValueDecisionStatus: VoucherValueDecisionStatus): List<FeeDataByServiceNeed> {
     return getServiceNeedFeeDataQuery(null, serviceNeedId, feeDecisionStatus, voucherValueDecisionStatus)
 }
 
-private fun Database.Read.getServiceNeedFeeDataQuery(startingFrom: HelsinkiDateTime?, serviceNeedId: UUID?, feeDecisionStatus: FeeDecisionStatus?, voucherValueDecisionStatus: VoucherValueDecisionStatus?): List<FeeDataByServiceNeed> =
+private fun Database.Read.getServiceNeedFeeDataQuery(startingFrom: HelsinkiDateTime?, serviceNeedId: ServiceNeedId?, feeDecisionStatus: FeeDecisionStatus?, voucherValueDecisionStatus: VoucherValueDecisionStatus?): List<FeeDataByServiceNeed> =
     createQuery(
         """
 WITH child_fees AS (
@@ -794,7 +796,7 @@ ${ if (serviceNeedId != null) "WHERE COALESCE(service_need_fees.service_need_id,
 
 data class FeeDataByServiceNeed(
     val evakaChildId: UUID,
-    val serviceNeedId: UUID,
+    val serviceNeedId: ServiceNeedId,
     val feeDecisionIds: List<UUID> = emptyList(),
     val voucherValueDecisionIds: List<UUID> = emptyList()
 )
@@ -809,7 +811,7 @@ private fun evakaServiceNeedToVardaServiceNeed(childId: UUID, evakaServiceNeed: 
     )
 
 data class EvakaServiceNeedInfoForVarda(
-    val id: UUID,
+    val id: ServiceNeedId,
     val optionId: UUID,
     val serviceNeedUpdated: Instant,
     val serviceNeedOptionUpdated: Instant,
@@ -853,7 +855,7 @@ data class EvakaServiceNeedInfoForVarda(
     )
 }
 
-fun Database.Read.getEvakaServiceNeedInfoForVarda(id: UUID): EvakaServiceNeedInfoForVarda {
+fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
     // language=sql
     val sql = """
         SELECT
@@ -887,7 +889,7 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: UUID): EvakaServiceNeedInf
 }
 
 data class UnsuccessfullyUploadedServiceNeed(
-    val evakaServiceNeedId: UUID,
+    val evakaServiceNeedId: ServiceNeedId,
     val existsInEvaka: Boolean,
     val childId: UUID?
 )

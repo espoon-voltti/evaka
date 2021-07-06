@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -462,9 +463,9 @@ fun Database.Transaction.insertTestServiceNeed(
     optionId: UUID,
     shiftCare: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    id: UUID = UUID.randomUUID(),
+    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
     updated: HelsinkiDateTime = HelsinkiDateTime.now()
-): UUID {
+): ServiceNeedId {
     createUpdate(
         """
 ALTER TABLE service_need DISABLE TRIGGER set_timestamp;

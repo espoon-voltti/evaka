@@ -13,6 +13,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevChild
@@ -320,7 +321,7 @@ class FixtureBuilder(
         private var serviceNeedOption: ServiceNeedOption? = null
         private var employeeId: UUID? = null
         private var updated: HelsinkiDateTime = HelsinkiDateTime.now()
-        private var id: UUID? = null
+        private var id: ServiceNeedId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
         fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
@@ -330,7 +331,7 @@ class FixtureBuilder(
         fun withOption(serviceNeedOption: ServiceNeedOption) = this.apply { this.serviceNeedOption = serviceNeedOption }
         fun createdBy(employeeId: UUID) = this.apply { this.employeeId = employeeId }
         fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }
-        fun withId(id: UUID) = this.apply { this.id = id }
+        fun withId(id: ServiceNeedId) = this.apply { this.id = id }
 
         fun save(): PlacementFixture {
             if (serviceNeedOption != null) tx.insertServiceNeedOption(serviceNeedOption!!)
@@ -344,7 +345,7 @@ class FixtureBuilder(
                     to ?: placementFixture.placementPeriod.end
                 ),
                 updated = updated,
-                id = id ?: UUID.randomUUID()
+                id = id ?: ServiceNeedId(UUID.randomUUID())
             )
 
             return placementFixture

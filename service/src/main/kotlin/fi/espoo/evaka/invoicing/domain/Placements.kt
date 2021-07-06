@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.ServiceNeedId
 import java.math.BigDecimal
-import java.util.UUID
 
 sealed class Placement(open val unit: DaycareId)
 
@@ -39,7 +39,7 @@ data class PlacementWithServiceNeed(
 )
 
 data class ServiceNeedValue(
-    val id: UUID,
+    val id: ServiceNeedId,
     val feeCoefficient: BigDecimal,
     val voucherValueCoefficient: BigDecimal,
     val feeDescriptionFi: String,
