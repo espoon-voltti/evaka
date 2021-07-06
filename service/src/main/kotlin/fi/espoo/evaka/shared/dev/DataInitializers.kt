@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedId
@@ -253,10 +254,10 @@ RETURNING id
 fun Database.Transaction.insertTestParentship(
     headOfChild: UUID,
     childId: UUID,
-    id: UUID = UUID.randomUUID(),
+    id: ParentshipId = ParentshipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
+): ParentshipId {
     createUpdate(
         """
             INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
@@ -277,7 +278,7 @@ fun Database.Transaction.insertTestParentship(
 }
 
 fun Database.Transaction.insertTestParentship(parentship: DevParentship): DevParentship {
-    val withId = if (parentship.id == null) parentship.copy(id = UUID.randomUUID()) else parentship
+    val withId = if (parentship.id == null) parentship.copy(id = ParentshipId(UUID.randomUUID())) else parentship
     // language=sql
     val sql =
         """
@@ -944,7 +945,7 @@ RETURNING id
 )
 
 data class DevFridgeChild(
-    val id: UUID,
+    val id: ParentshipId,
     val childId: UUID,
     val headOfChild: UUID,
     val startDate: LocalDate,

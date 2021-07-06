@@ -19,6 +19,7 @@ sealed interface DatabaseTable {
     sealed class Employee : DatabaseTable
     sealed class Group : DatabaseTable
     sealed class GroupPlacement : DatabaseTable
+    sealed class Parentship : DatabaseTable
     sealed class Partnership : DatabaseTable
     sealed class Person : DatabaseTable
     sealed class Placement : DatabaseTable
@@ -33,6 +34,7 @@ typealias DaycareId = Id<DatabaseTable.Daycare>
 typealias EmployeeId = Id<DatabaseTable.Employee>
 typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
+typealias ParentshipId = Id<DatabaseTable.Parentship>
 typealias PartnershipId = Id<DatabaseTable.Partnership>
 typealias PersonId = Id<DatabaseTable.Person>
 typealias PlacementId = Id<DatabaseTable.Placement>

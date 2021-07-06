@@ -60,6 +60,7 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -930,7 +931,7 @@ data class DevPerson(
 }
 
 data class DevParentship(
-    val id: UUID?,
+    val id: ParentshipId?,
     val childId: UUID,
     val headOfChildId: UUID,
     val startDate: LocalDate,

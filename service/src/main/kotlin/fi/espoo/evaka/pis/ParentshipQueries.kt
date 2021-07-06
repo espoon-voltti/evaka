@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
@@ -17,7 +18,7 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-fun Database.Read.getParentship(id: UUID): Parentship? {
+fun Database.Read.getParentship(id: ParentshipId): Parentship? {
     // language=SQL
     val sql =
         """
@@ -105,7 +106,7 @@ fun Database.Transaction.createParentship(
         .first()
 }
 
-fun Database.Transaction.updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate): Boolean {
+fun Database.Transaction.updateParentshipDuration(id: ParentshipId, startDate: LocalDate, endDate: LocalDate): Boolean {
     // language=sql
     val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
 
@@ -116,7 +117,7 @@ fun Database.Transaction.updateParentshipDuration(id: UUID, startDate: LocalDate
         .execute() > 0
 }
 
-fun Database.Transaction.retryParentship(id: UUID) {
+fun Database.Transaction.retryParentship(id: ParentshipId) {
     // language=SQL
     val sql = "UPDATE fridge_child SET conflict = false WHERE id = :id"
     createUpdate(sql)
@@ -124,7 +125,7 @@ fun Database.Transaction.retryParentship(id: UUID) {
         .execute()
 }
 
-fun Database.Transaction.deleteParentship(id: UUID): Boolean {
+fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
 
@@ -164,7 +165,7 @@ private val personColumns = listOf(
 private val toParentship: (String, String) -> (ResultSet, StatementContext) -> Parentship = { childAlias, headAlias ->
     { rs, _ ->
         Parentship(
-            id = rs.getUUID("id"),
+            id = ParentshipId(rs.getUUID("id")),
             childId = rs.getUUID("child_id"),
             child = toPersonJSON(childAlias, rs),
             headOfChildId = rs.getUUID("head_of_child"),
