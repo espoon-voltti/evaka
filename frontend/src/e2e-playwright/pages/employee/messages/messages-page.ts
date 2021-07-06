@@ -44,6 +44,8 @@ export default class MessagesPage {
     await this.#receiverSelection.click()
     await this.page.keyboard.press('Enter')
     await this.#sendMessageButton.click()
+    await waitUntilEqual(() => this.isEditorVisible(), false)
+
     await this.#sentMessagesBoxRow.click()
     await waitUntilEqual(() => this.existsSentMessage(), true)
   }
