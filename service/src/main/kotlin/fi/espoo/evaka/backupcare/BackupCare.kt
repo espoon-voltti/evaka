@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.backupcare
 
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -13,7 +14,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class ChildBackupCare(
-    val id: UUID,
+    val id: BackupCareId,
     @Nested("unit_") val unit: BackupCareUnit,
     @Nested("group_")
     val group: BackupCareGroup?,
@@ -21,7 +22,7 @@ data class ChildBackupCare(
 )
 
 data class UnitBackupCare(
-    val id: UUID,
+    val id: BackupCareId,
     @Nested("child_") val child: BackupCareChild,
     @Nested("group_")
     val group: BackupCareGroup?,
@@ -30,7 +31,7 @@ data class UnitBackupCare(
 )
 
 data class GroupBackupCare(
-    val id: UUID,
+    val id: BackupCareId,
     val childId: UUID,
     val period: FiniteDateRange
 )

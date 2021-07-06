@@ -9,6 +9,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -104,7 +105,7 @@ fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId)
 ).bind("applicationId", applicationId).mapTo<PlacementPlanTableRow>()
 
 data class BackupCareTableRow(
-    val id: UUID,
+    val id: BackupCareId,
     val childId: UUID,
     val unitId: DaycareId,
     val groupId: GroupId?,
@@ -114,7 +115,7 @@ data class BackupCareTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getBackupCareRowById(id: UUID) = createQuery(
+fun Database.Read.getBackupCareRowById(id: BackupCareId) = createQuery(
     // language=SQL
     "SELECT * FROM backup_care WHERE id = :id"
 ).bind("id", id).mapTo<BackupCareTableRow>()

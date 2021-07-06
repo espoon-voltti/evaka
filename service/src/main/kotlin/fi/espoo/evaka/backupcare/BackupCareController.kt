@@ -5,6 +5,7 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -61,7 +62,7 @@ class BackupCareController(private val acl: AccessControlList) {
     fun update(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") backupCareId: UUID,
+        @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
     ): ResponseEntity<Unit> {
         Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
@@ -78,7 +79,7 @@ class BackupCareController(private val acl: AccessControlList) {
     fun delete(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") backupCareId: UUID
+        @PathVariable("id") backupCareId: BackupCareId
     ): ResponseEntity<Unit> {
         Audit.BackupCareDelete.log(targetId = backupCareId)
         acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
@@ -105,4 +106,4 @@ class BackupCareController(private val acl: AccessControlList) {
 data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCare>)
 data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
 data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
-data class BackupCareCreateResponse(val id: UUID)
+data class BackupCareCreateResponse(val id: BackupCareId)
