@@ -10,6 +10,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -271,7 +272,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().plusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
         postPairingValidationAssertOk(pairing.id, pairing.challengeKey, pairing.responseKey!!)
@@ -286,7 +287,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().plusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(UUID.randomUUID(), pairing.challengeKey, pairing.responseKey!!, 404)
@@ -301,7 +302,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().plusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, "wrong", pairing.responseKey!!, 404)
@@ -316,7 +317,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().plusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, "wrong", 404)
@@ -331,7 +332,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().plusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -346,7 +347,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().plusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing, attempts = 101)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -361,7 +362,7 @@ class PairingIntegrationTest : FullApplicationTest() {
             challengeKey = "foo",
             responseKey = "bar",
             expires = HelsinkiDateTime.now().minusMinutes(1),
-            mobileDeviceId = UUID.randomUUID()
+            mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -538,7 +539,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getMobileDeviceAssertOk(id: UUID): MobileDevice {
+    private fun getMobileDeviceAssertOk(id: MobileDeviceId): MobileDevice {
         val (_, res, result) = http.get("/system/mobile-devices/$id")
             .asUser(AuthenticatedUser.SystemInternalUser)
             .responseObject<MobileDevice>(objectMapper)
@@ -547,7 +548,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getMobileDeviceAssertFail(id: UUID, status: Int) {
+    private fun getMobileDeviceAssertFail(id: MobileDeviceId, status: Int) {
         val (_, res, _) = http.get("/system/mobile-devices/$id")
             .asUser(AuthenticatedUser.SystemInternalUser)
             .response()
@@ -555,7 +556,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun putMobileDeviceNameAssertOk(id: UUID, name: String) {
+    private fun putMobileDeviceNameAssertOk(id: MobileDeviceId, name: String) {
         val (_, res, _) = http.put("/mobile-devices/$id/name")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -570,7 +571,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun deleteMobileDeviceAssertOk(id: UUID) {
+    private fun deleteMobileDeviceAssertOk(id: MobileDeviceId) {
         val (_, res, _) = http.delete("/mobile-devices/$id")
             .asUser(user)
             .response()

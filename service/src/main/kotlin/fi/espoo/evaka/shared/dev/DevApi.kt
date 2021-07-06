@@ -61,6 +61,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -616,7 +617,7 @@ RETURNING id
     }
 
     data class MobileDeviceReq(
-        val id: UUID,
+        val id: MobileDeviceId,
         val unitId: DaycareId,
         val name: String,
         val deleted: Boolean,
@@ -949,7 +950,7 @@ data class DevEmployee(
 )
 
 data class DevMobileDevice(
-    val id: UUID = UUID.randomUUID(),
+    val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
     val unitId: DaycareId,
     val name: String = "Laite",
     val deleted: Boolean = false,

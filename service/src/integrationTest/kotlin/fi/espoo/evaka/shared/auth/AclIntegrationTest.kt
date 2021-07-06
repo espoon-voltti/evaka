@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -48,7 +49,7 @@ class AclIntegrationTest : PureJdbiTest() {
     private lateinit var applicationId: ApplicationId
     private lateinit var decisionId: DecisionId
     private lateinit var placementId: PlacementId
-    private lateinit var mobileId: UUID
+    private lateinit var mobileId: MobileDeviceId
     private lateinit var noteId: UUID
 
     private lateinit var acl: AccessControlList
@@ -75,7 +76,7 @@ class AclIntegrationTest : PureJdbiTest() {
                 )
             )
             placementId = it.insertTestPlacement(childId = childId, unitId = daycareId)
-            mobileId = it.insertTestEmployee(DevEmployee())
+            mobileId = MobileDeviceId(it.insertTestEmployee(DevEmployee()))
             noteId = it.createDaycareDailyNote(
                 DaycareDailyNote(
                     id = null,
@@ -148,7 +149,7 @@ class AclIntegrationTest : PureJdbiTest() {
 
     @Test
     fun testMobileAclRoleAuthorization() {
-        val user = AuthenticatedUser.MobileDevice(mobileId)
+        val user = AuthenticatedUser.MobileDevice(mobileId.raw)
 
         val expectedAclAuth = AclAuthorization.Subset(setOf(daycareId))
         val expectedAclRoles = AclAppliedRoles(setOf(UserRole.MOBILE))

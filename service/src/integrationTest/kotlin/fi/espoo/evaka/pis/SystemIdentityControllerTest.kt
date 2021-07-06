@@ -11,6 +11,7 @@ import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
@@ -60,8 +61,8 @@ class SystemIdentityControllerTest : FullApplicationTest() {
         assertEquals(404, res.statusCode)
     }
 
-    private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): UUID {
-        val id = insertTestEmployee(DevEmployee())
+    private fun Database.Transaction.insertTestDevice(longTermToken: UUID? = null, deleted: Boolean = false): MobileDeviceId {
+        val id = MobileDeviceId(insertTestEmployee(DevEmployee()))
         insertTestMobileDevice(
             DevMobileDevice(
                 id = id,
