@@ -11,6 +11,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -121,7 +122,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingChallenge - happy case`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_CHALLENGE,
             challengeKey = "foo",
@@ -140,7 +141,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingChallenge - pairing expired returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_CHALLENGE,
             challengeKey = "foo",
@@ -154,7 +155,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingChallenge - pairing in wrong status returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -168,7 +169,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingResponse - happy case`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -182,7 +183,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingResponse - wrong id returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -190,13 +191,13 @@ class PairingIntegrationTest : FullApplicationTest() {
             expires = HelsinkiDateTime.now().plusMinutes(1)
         )
         givenPairing(pairing)
-        postPairingResponseAssertFail(UUID.randomUUID(), pairing.challengeKey, pairing.responseKey!!, 404)
+        postPairingResponseAssertFail(PairingId(UUID.randomUUID()), pairing.challengeKey, pairing.responseKey!!, 404)
     }
 
     @Test
     fun `postPairingResponse - wrong challengeKey returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -210,7 +211,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingResponse - wrong responseKey returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -224,7 +225,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingResponse - wrong status returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -238,7 +239,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingResponse - attempts exceeded returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -252,7 +253,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingResponse - pairing expired returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.WAITING_RESPONSE,
             challengeKey = "foo",
@@ -266,7 +267,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingValidation - happy case`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -281,7 +282,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingValidation - wrong id returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -290,13 +291,13 @@ class PairingIntegrationTest : FullApplicationTest() {
             mobileDeviceId = MobileDeviceId(UUID.randomUUID())
         )
         givenPairing(pairing)
-        postPairingValidationAssertFail(UUID.randomUUID(), pairing.challengeKey, pairing.responseKey!!, 404)
+        postPairingValidationAssertFail(PairingId(UUID.randomUUID()), pairing.challengeKey, pairing.responseKey!!, 404)
     }
 
     @Test
     fun `postPairingValidation - wrong challengeKey returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -311,7 +312,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingValidation - wrong responseKey returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -326,7 +327,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingValidation - wrong status returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.PAIRED,
             challengeKey = "foo",
@@ -341,7 +342,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingValidation - attempts exceeded returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -356,7 +357,7 @@ class PairingIntegrationTest : FullApplicationTest() {
     @Test
     fun `postPairingValidation - pairing expired returns 404`() {
         val pairing = Pairing(
-            id = UUID.randomUUID(),
+            id = PairingId(UUID.randomUUID()),
             unitId = testUnitId,
             status = PairingStatus.READY,
             challengeKey = "foo",
@@ -455,7 +456,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun postPairingResponseAssertOk(id: UUID, challengeKey: String, responseKey: String): Pairing {
+    private fun postPairingResponseAssertOk(id: PairingId, challengeKey: String, responseKey: String): Pairing {
         val (_, res, result) = http.post("/pairings/$id/response")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -472,7 +473,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun postPairingResponseAssertFail(id: UUID, challengeKey: String, responseKey: String, status: Int) {
+    private fun postPairingResponseAssertFail(id: PairingId, challengeKey: String, responseKey: String, status: Int) {
         val (_, res, _) = http.post("/pairings/$id/response")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -488,7 +489,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun postPairingValidationAssertOk(id: UUID, challengeKey: String, responseKey: String): MobileDeviceIdentity {
+    private fun postPairingValidationAssertOk(id: PairingId, challengeKey: String, responseKey: String): MobileDeviceIdentity {
         val (_, res, result) = http.post("/system/pairings/$id/validation")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -505,7 +506,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun postPairingValidationAssertFail(id: UUID, challengeKey: String, responseKey: String, status: Int) {
+    private fun postPairingValidationAssertFail(id: PairingId, challengeKey: String, responseKey: String, status: Int) {
         val (_, res, _) = http.post("/system/pairings/$id/validation")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -521,7 +522,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun getPairingStatusAssertOk(id: UUID, authenticated: Boolean): PairingStatus {
+    private fun getPairingStatusAssertOk(id: PairingId, authenticated: Boolean): PairingStatus {
         val (_, res, result) = http.get("/public/pairings/$id/status")
             .let { if (authenticated) it.asUser(user) else it }
             .responseObject<PairingsController.PairingStatusRes>(objectMapper)

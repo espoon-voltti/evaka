@@ -6,6 +6,7 @@ package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 class PairingsController(
@@ -96,7 +96,7 @@ class PairingsController(
     fun postPairingResponse(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
     ): ResponseEntity<Pairing> {
         Audit.PairingResponse.log(targetId = id)
@@ -128,7 +128,7 @@ class PairingsController(
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
         db: Database.Connection,
-        @PathVariable id: UUID,
+        @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
     ): ResponseEntity<MobileDeviceIdentity> {
         Audit.PairingValidation.log(targetId = id)
@@ -151,7 +151,7 @@ class PairingsController(
     @GetMapping("/public/pairings/{id}/status")
     fun getPairingStatus(
         db: Database.Connection,
-        @PathVariable id: UUID
+        @PathVariable id: PairingId
     ): ResponseEntity<PairingStatusRes> {
         Audit.PairingStatusRead.log(targetId = id)
         return db

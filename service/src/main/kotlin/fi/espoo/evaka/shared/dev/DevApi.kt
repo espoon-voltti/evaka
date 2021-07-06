@@ -62,6 +62,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -594,7 +595,7 @@ RETURNING id
     @PostMapping("/mobile/pairings/{id}/response")
     fun postPairingResponse(
         db: Database.Connection,
-        @PathVariable id: UUID,
+        @PathVariable id: PairingId,
         @RequestBody body: PairingsController.PostPairingResponseReq
     ): ResponseEntity<Pairing> {
         db.transaction { it.incrementAttempts(id, body.challengeKey) }

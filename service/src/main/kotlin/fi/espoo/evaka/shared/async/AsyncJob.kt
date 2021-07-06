@@ -12,6 +12,7 @@ import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
@@ -54,7 +55,7 @@ interface AsyncJobPayload {
     val user: AuthenticatedUser?
 }
 
-data class GarbageCollectPairing(val pairingId: UUID) : AsyncJobPayload {
+data class GarbageCollectPairing(val pairingId: PairingId) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.GARBAGE_COLLECT_PAIRING
     override val user: AuthenticatedUser? = null
 }

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -50,7 +51,7 @@ fun Database.Transaction.challengePairing(challengeKey: String): Pairing {
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun Database.Transaction.respondPairingChallengeCreateDevice(id: UUID, challengeKey: String, responseKey: String): Pairing {
+fun Database.Transaction.respondPairingChallengeCreateDevice(id: PairingId, challengeKey: String, responseKey: String): Pairing {
     val defaultDeviceName = "Nimeämätön laite"
 
     // language=sql
@@ -90,7 +91,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: UUID, challenge
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun Database.Transaction.validatePairing(id: UUID, challengeKey: String, responseKey: String): MobileDeviceIdentity {
+fun Database.Transaction.validatePairing(id: PairingId, challengeKey: String, responseKey: String): MobileDeviceIdentity {
     // language=sql
     val sql =
         """
@@ -115,7 +116,7 @@ RETURNING id, long_term_token
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun Database.Read.fetchPairingStatus(id: UUID): PairingStatus {
+fun Database.Read.fetchPairingStatus(id: PairingId): PairingStatus {
     // language=sql
     val sql =
         """
@@ -132,7 +133,7 @@ fun Database.Read.fetchPairingStatus(id: UUID): PairingStatus {
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun Database.Transaction.incrementAttempts(id: UUID, challengeKey: String) {
+fun Database.Transaction.incrementAttempts(id: PairingId, challengeKey: String) {
     // language=sql
     val sql =
         """
