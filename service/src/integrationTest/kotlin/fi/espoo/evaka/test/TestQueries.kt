@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
@@ -77,7 +78,7 @@ fun Database.Read.getPlacementRowsByChild(childId: UUID) = createQuery(
 ).bind("childId", childId).mapTo<PlacementTableRow>()
 
 data class PlacementPlanTableRow(
-    val id: UUID,
+    val id: PlacementPlanId,
     val type: PlacementType,
     val unitId: DaycareId,
     val applicationId: ApplicationId,

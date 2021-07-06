@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -69,7 +70,7 @@ VALUES (
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(
-        val id: UUID,
+        val id: PlacementPlanId,
         val unitId: DaycareId,
         val applicationId: ApplicationId,
         val type: PlacementType,
@@ -120,7 +121,7 @@ WHERE application_id = :applicationId AND deleted = false
 
 fun Database.Read.getPlacementPlans(unitId: DaycareId, from: LocalDate?, to: LocalDate?, statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()): List<PlacementPlanDetails> {
     data class QueryResult(
-        val id: UUID,
+        val id: PlacementPlanId,
         val unitId: DaycareId,
         val applicationId: ApplicationId,
         val type: PlacementType,

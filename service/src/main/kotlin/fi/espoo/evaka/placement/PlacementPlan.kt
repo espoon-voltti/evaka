@@ -6,12 +6,13 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
 
 data class PlacementPlan(
-    val id: UUID,
+    val id: PlacementPlanId,
     val unitId: DaycareId,
     val applicationId: ApplicationId,
     val type: PlacementType,
@@ -20,7 +21,7 @@ data class PlacementPlan(
 )
 
 data class PlacementPlanDetails(
-    val id: UUID,
+    val id: PlacementPlanId,
     val unitId: DaycareId,
     val applicationId: ApplicationId,
     val type: PlacementType,

@@ -28,6 +28,7 @@ sealed interface DatabaseTable {
     sealed class Partnership : DatabaseTable
     sealed class Person : DatabaseTable
     sealed class Placement : DatabaseTable
+    sealed class PlacementPlan : DatabaseTable
     sealed class ServiceNeed : DatabaseTable
     sealed class ServiceNeedOption : DatabaseTable
     sealed class VardaDecision : DatabaseTable
@@ -52,6 +53,7 @@ typealias ParentshipId = Id<DatabaseTable.Parentship>
 typealias PartnershipId = Id<DatabaseTable.Partnership>
 typealias PersonId = Id<DatabaseTable.Person>
 typealias PlacementId = Id<DatabaseTable.Placement>
+typealias PlacementPlanId = Id<DatabaseTable.PlacementPlan>
 typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 typealias ServiceNeedOptionId = Id<DatabaseTable.ServiceNeedOption>
 typealias VardaDecisionId = Id<DatabaseTable.VardaDecision>
