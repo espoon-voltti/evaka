@@ -15,7 +15,8 @@ import StickyFooter from '../../../lib-components/layout/StickyFooter'
 import { H2 } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
 import { CheckboxQuestion } from './components/CheckboxQuestion'
-import { ReadOnlyValue } from './components/ReadOnlyValue'
+import { MultiSelectQuestion as MultiSelectQuestionElem } from './components/MultiSelectQuestion'
+import { RadioGroupQuestion as RadioGroupQuestionElem } from './components/RadioGroupQuestion'
 import { TextQuestion } from './components/TextQuestion'
 import { AuthorsSection } from './sections/AuthorsSection'
 import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
@@ -59,47 +60,6 @@ export default React.memo(function VasuPage({
     questionIndex: number
   ) => `${sectionIndex + 1 + dynamicSectionsOffset}.${questionIndex + 1}`
 
-  function renderRadioGroupQuestion(
-    question: RadioGroupQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
-    const { value: selectedValue } = content.sections[sectionIndex].questions[
-      questionIndex
-    ] as RadioGroupQuestion
-    return (
-      <ReadOnlyValue
-        label={`${getDynamicQuestionNumber(sectionIndex, questionIndex)} ${
-          question.name
-        }`}
-        value={
-          question.options.find((option) => option.key === selectedValue)?.name
-        }
-      />
-    )
-  }
-
-  function renderMultiSelectQuestion(
-    question: MultiSelectQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
-    const { value: selectedValues } = content.sections[sectionIndex].questions[
-      questionIndex
-    ] as MultiSelectQuestion
-    return (
-      <ReadOnlyValue
-        label={`${getDynamicQuestionNumber(sectionIndex, questionIndex)} ${
-          question.name
-        }`}
-        value={question.options
-          .filter((o) => selectedValues.includes(o.key))
-          .map((o) => o.name)
-          .join(', ')}
-      />
-    )
-  }
-
   return (
     <Container>
       <Gap size={'L'} />
@@ -131,17 +91,25 @@ export default React.memo(function VasuPage({
                         questionNumber={questionNumber}
                       />
                     ) : isRadioGroupQuestion(question) ? (
-                      renderRadioGroupQuestion(
-                        question,
-                        sectionIndex,
-                        questionIndex
-                      )
+                      <RadioGroupQuestionElem
+                        question={question}
+                        questionNumber={questionNumber}
+                        selectedValue={
+                          (content.sections[sectionIndex].questions[
+                            questionIndex
+                          ] as RadioGroupQuestion).value
+                        }
+                      />
                     ) : isMultiSelectQuestion(question) ? (
-                      renderMultiSelectQuestion(
-                        question,
-                        sectionIndex,
-                        questionIndex
-                      )
+                      <MultiSelectQuestionElem
+                        question={question}
+                        questionNumber={questionNumber}
+                        selectedValues={
+                          (content.sections[sectionIndex].questions[
+                            questionIndex
+                          ] as MultiSelectQuestion).value
+                        }
+                      />
                     ) : undefined}
                     {questionIndex < section.questions.length - 1 && (
                       <Gap size={'L'} />

@@ -10,19 +10,18 @@ import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from '../../../lib-common/date'
 import { UUID } from '../../../lib-common/types'
-import Checkbox from '../../../lib-components/atoms/form/Checkbox'
-import Radio from '../../../lib-components/atoms/form/Radio'
 import Spinner from '../../../lib-components/atoms/state/Spinner'
 import {
   Container,
   ContentArea
 } from '../../../lib-components/layout/Container'
-import { FixedSpaceColumn } from '../../../lib-components/layout/flex-helpers'
 import StickyFooter from '../../../lib-components/layout/StickyFooter'
-import { Dimmed, H2, Label } from '../../../lib-components/typography'
+import { Dimmed, H2 } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
 import { CheckboxQuestion as CheckboxQuestionElem } from './components/CheckboxQuestion'
+import { MultiSelectQuestion as MultiSelectQuestionElem } from './components/MultiSelectQuestion'
+import { RadioGroupQuestion as RadioGroupQuestionElem } from './components/RadioGroupQuestion'
 import { TextQuestion as TextQuestionElem } from './components/TextQuestion'
 import { EditableAuthorsSection } from './sections/AuthorsSection'
 import { EditableEvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
@@ -37,6 +36,7 @@ import {
   isRadioGroupQuestion,
   isTextQuestion,
   MultiSelectQuestion,
+  QuestionOption,
   RadioGroupQuestion,
   TextQuestion
 } from './vasu-content'
@@ -107,91 +107,6 @@ export default React.memo(function VasuEditPage({
     questionIndex: number
   ) => `${sectionIndex + 1 + dynamicSectionsOffset}.${questionIndex + 1}`
 
-  function renderRadioGroupQuestion(
-    question: RadioGroupQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
-    return (
-      <>
-        <Label>
-          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
-          {question.name}
-        </Label>
-        <Gap size={'m'} />
-        <FixedSpaceColumn>
-          {question.options.map((option) => {
-            const question1 = content.sections[sectionIndex].questions[
-              questionIndex
-            ] as RadioGroupQuestion
-            return (
-              <Radio
-                key={option.key}
-                checked={question1.value === option.key}
-                label={option.name}
-                onChange={() =>
-                  setContent((prev) => {
-                    const clone = cloneDeep(prev)
-                    const question1 = clone.sections[sectionIndex].questions[
-                      questionIndex
-                    ] as RadioGroupQuestion
-                    question1.value = option.key
-                    return clone
-                  })
-                }
-              />
-            )
-          })}
-        </FixedSpaceColumn>
-      </>
-    )
-  }
-
-  function renderMultiSelectQuestion(
-    question: MultiSelectQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
-    return (
-      <>
-        <Label>
-          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
-          {question.name}
-        </Label>
-        <Gap size={'m'} />
-        <FixedSpaceColumn>
-          {question.options.map((option) => {
-            const question1 = content.sections[sectionIndex].questions[
-              questionIndex
-            ] as MultiSelectQuestion
-            return (
-              <Checkbox
-                key={option.key}
-                checked={question1.value.includes(option.key)}
-                label={option.name}
-                onChange={(checked) =>
-                  setContent((prev) => {
-                    const clone = cloneDeep(prev)
-                    const question1 = clone.sections[sectionIndex].questions[
-                      questionIndex
-                    ] as MultiSelectQuestion
-                    if (checked && !question1.value.includes(option.key))
-                      question1.value.push(option.key)
-                    if (!checked)
-                      question1.value = question1.value.filter(
-                        (i) => i !== option.key
-                      )
-                    return clone
-                  })
-                }
-              />
-            )
-          })}
-        </FixedSpaceColumn>
-      </>
-    )
-  }
-
   return (
     <Container>
       <Gap size={'L'} />
@@ -248,17 +163,55 @@ export default React.memo(function VasuEditPage({
                             }
                           />
                         ) : isRadioGroupQuestion(question) ? (
-                          renderRadioGroupQuestion(
-                            question,
-                            sectionIndex,
-                            questionIndex
-                          )
+                          <RadioGroupQuestionElem
+                            questionNumber={questionNumber}
+                            question={question}
+                            selectedValue={
+                              (content.sections[sectionIndex].questions[
+                                questionIndex
+                              ] as RadioGroupQuestion).value
+                            }
+                            onChange={(selectedOption: QuestionOption) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                const question1 = clone.sections[sectionIndex]
+                                  .questions[
+                                  questionIndex
+                                ] as RadioGroupQuestion
+                                question1.value = selectedOption.key
+                                return clone
+                              })
+                            }
+                          />
                         ) : isMultiSelectQuestion(question) ? (
-                          renderMultiSelectQuestion(
-                            question,
-                            sectionIndex,
-                            questionIndex
-                          )
+                          <MultiSelectQuestionElem
+                            question={question}
+                            questionNumber={questionNumber}
+                            selectedValues={
+                              (content.sections[sectionIndex].questions[
+                                questionIndex
+                              ] as MultiSelectQuestion).value
+                            }
+                            onChange={(option, checked) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                const question1 = clone.sections[sectionIndex]
+                                  .questions[
+                                  questionIndex
+                                ] as MultiSelectQuestion
+                                if (
+                                  checked &&
+                                  !question1.value.includes(option.key)
+                                )
+                                  question1.value.push(option.key)
+                                if (!checked)
+                                  question1.value = question1.value.filter(
+                                    (i) => i !== option.key
+                                  )
+                                return clone
+                              })
+                            }
+                          />
                         ) : undefined}
                         <Gap size={'L'} />
                       </Fragment>
