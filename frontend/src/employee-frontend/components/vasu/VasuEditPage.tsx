@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import Button from 'lib-components/atoms/buttons/Button'
 import { cloneDeep } from 'lodash'
 import React, { Fragment } from 'react'
+import { useHistory } from 'react-router'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { DATE_FORMAT_TIME_ONLY, formatDate } from '../../../lib-common/date'
 import { UUID } from '../../../lib-common/types'
 import Checkbox from '../../../lib-components/atoms/form/Checkbox'
 import Radio from '../../../lib-components/atoms/form/Radio'
-import TextArea from '../../../lib-components/atoms/form/TextArea'
 import Spinner from '../../../lib-components/atoms/state/Spinner'
-import '../../../lib-components/layout/ButtonContainer'
 import {
   Container,
   ContentArea
@@ -22,6 +22,11 @@ import StickyFooter from '../../../lib-components/layout/StickyFooter'
 import { Dimmed, H2, Label } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
 import { useTranslation } from '../../state/i18n'
+import { CheckboxQuestion as CheckboxQuestionElem } from './components/CheckboxQuestion'
+import { TextQuestion as TextQuestionElem } from './components/TextQuestion'
+import { EditableAuthorsSection } from './sections/AuthorsSection'
+import { EditableEvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
+import { EditableVasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu, VasuStatus } from './use-vasu'
@@ -35,10 +40,6 @@ import {
   RadioGroupQuestion,
   TextQuestion
 } from './vasu-content'
-import { VasuStateTransitionButtons } from './VasuStateTransitionButtons'
-import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
-import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
-import { AuthorsSection } from './sections/AuthorsSection'
 
 const FooterContainer = styled.div`
   display: flex;
@@ -64,6 +65,7 @@ export default React.memo(function VasuEditPage({
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
   const { i18n } = useTranslation()
+  const history = useHistory()
 
   const {
     vasu,
@@ -104,62 +106,6 @@ export default React.memo(function VasuEditPage({
     sectionIndex: number,
     questionIndex: number
   ) => `${sectionIndex + 1 + dynamicSectionsOffset}.${questionIndex + 1}`
-
-  // TODO: move these to their own components when the spec is more stable
-  function renderTextQuestion(
-    question: TextQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
-    return (
-      <>
-        <Label>
-          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
-          {question.name}
-        </Label>
-        <TextArea
-          value={question.value}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setContent((prev) => {
-              const clone = cloneDeep(prev)
-              const question1 = clone.sections[sectionIndex].questions[
-                questionIndex
-              ] as TextQuestion
-              question1.value = e.target.value
-              return clone
-            })
-          }
-        />
-      </>
-    )
-  }
-
-  function renderCheckboxQuestion(
-    question: CheckboxQuestion,
-    sectionIndex: number,
-    questionIndex: number
-  ) {
-    return (
-      <>
-        <Checkbox
-          checked={question.value}
-          label={`${getDynamicQuestionNumber(sectionIndex, questionIndex)} ${
-            question.name
-          }`}
-          onChange={(checked) =>
-            setContent((prev) => {
-              const clone = cloneDeep(prev)
-              const question1 = clone.sections[sectionIndex].questions[
-                questionIndex
-              ] as CheckboxQuestion
-              question1.value = checked
-              return clone
-            })
-          }
-        />
-      </>
-    )
-  }
 
   function renderRadioGroupQuestion(
     question: RadioGroupQuestion,
@@ -253,7 +199,7 @@ export default React.memo(function VasuEditPage({
         <>
           <VasuHeader document={vasu} />
           <Gap size={'L'} />
-          <AuthorsSection
+          <EditableAuthorsSection
             sectionIndex={0}
             content={authorsContent}
             setContent={setAuthorsContent}
@@ -266,42 +212,64 @@ export default React.memo(function VasuEditPage({
                   <H2>
                     {sectionIndex + 1 + dynamicSectionsOffset}. {section.name}
                   </H2>
-                  {section.questions.map((question, questionIndex) => (
-                    <Fragment key={question.name}>
-                      {isTextQuestion(question)
-                        ? renderTextQuestion(
+                  {section.questions.map((question, questionIndex) => {
+                    const questionNumber = getDynamicQuestionNumber(
+                      sectionIndex,
+                      questionIndex
+                    )
+                    return (
+                      <Fragment key={question.name}>
+                        {isTextQuestion(question) ? (
+                          <TextQuestionElem
+                            question={question}
+                            questionNumber={questionNumber}
+                            onChange={(value) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                const question1 = clone.sections[sectionIndex]
+                                  .questions[questionIndex] as TextQuestion
+                                question1.value = value
+                                return clone
+                              })
+                            }
+                          />
+                        ) : isCheckboxQuestion(question) ? (
+                          <CheckboxQuestionElem
+                            question={question}
+                            questionNumber={questionNumber}
+                            onChange={(checked) =>
+                              setContent((prev) => {
+                                const clone = cloneDeep(prev)
+                                const question1 = clone.sections[sectionIndex]
+                                  .questions[questionIndex] as CheckboxQuestion
+                                question1.value = checked
+                                return clone
+                              })
+                            }
+                          />
+                        ) : isRadioGroupQuestion(question) ? (
+                          renderRadioGroupQuestion(
                             question,
                             sectionIndex,
                             questionIndex
                           )
-                        : isCheckboxQuestion(question)
-                        ? renderCheckboxQuestion(
+                        ) : isMultiSelectQuestion(question) ? (
+                          renderMultiSelectQuestion(
                             question,
                             sectionIndex,
                             questionIndex
                           )
-                        : isRadioGroupQuestion(question)
-                        ? renderRadioGroupQuestion(
-                            question,
-                            sectionIndex,
-                            questionIndex
-                          )
-                        : isMultiSelectQuestion(question)
-                        ? renderMultiSelectQuestion(
-                            question,
-                            sectionIndex,
-                            questionIndex
-                          )
-                        : undefined}
-                      <Gap size={'L'} />
-                    </Fragment>
-                  ))}
+                        ) : undefined}
+                        <Gap size={'L'} />
+                      </Fragment>
+                    )
+                  })}
                 </ContentArea>
                 <Gap size={'L'} />
               </Fragment>
             )
           })}
-          <VasuDiscussionSection
+          <EditableVasuDiscussionSection
             sectionIndex={content.sections.length + dynamicSectionsOffset}
             content={vasuDiscussionContent}
             setContent={setVasuDiscussionContent}
@@ -309,7 +277,7 @@ export default React.memo(function VasuEditPage({
           <Gap size={'L'} />
           {vasu.documentState !== 'DRAFT' && (
             <>
-              <EvaluationDiscussionSection
+              <EditableEvaluationDiscussionSection
                 sectionIndex={
                   content.sections.length + dynamicSectionsOffset + 1
                 }
@@ -336,10 +304,11 @@ export default React.memo(function VasuEditPage({
             {showSpinner && <Spinner />}
           </StatusContainer>
           {vasu && (
-            <VasuStateTransitionButtons
-              childId={vasu.child.id}
-              documentId={vasu.id}
-              state={vasu.documentState}
+            <Button
+              text={i18n.vasu.checkInPreview}
+              disabled={status.state != 'clean'}
+              onClick={() => history.push(`/vasu/${vasu.id}`)}
+              primary
             />
           )}
         </FooterContainer>

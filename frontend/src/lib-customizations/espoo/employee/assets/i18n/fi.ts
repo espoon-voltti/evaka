@@ -944,7 +944,8 @@ export const fi = {
     confidentialSectionOfLaw: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
     state: 'Suunnitelman tila',
     events: 'Varhaiskasvatussuunnitelman tapahtumat',
-    noRecord: 'Ei merkintää'
+    noRecord: 'Ei merkintää',
+    checkInPreview: 'Tarkista esikatselussa'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',

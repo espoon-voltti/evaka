@@ -69,6 +69,7 @@ import MessagesPage from './components/messages/MessagesPage'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
 import WelcomePage from './components/WelcomePage'
 import VasuEditPage from './components/vasu/VasuEditPage'
+import VasuPage from './components/vasu/VasuPage'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
 
@@ -387,7 +388,7 @@ export default function App() {
                 <RouteWithTitle
                   exact
                   path="/vasu/:id"
-                  component={ensureAuthenticated(VasuEditPage)}
+                  component={ensureAuthenticated(VasuPage)}
                   title={i18n.titles.vasuPage}
                 />
                 <RouteWithTitle

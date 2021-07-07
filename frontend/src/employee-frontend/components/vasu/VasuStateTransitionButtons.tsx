@@ -126,7 +126,13 @@ export function VasuStateTransitionButtons({
             {getStateTransitionButton('RETURNED_TO_REVIEWED', false)}
           </RequireRole>
         ) : (
-          getStateTransitionButton('PUBLISHED', false)
+          <>
+            {getStateTransitionButton('PUBLISHED', false)}
+            <Button
+              text={i18n.common.edit}
+              onClick={() => history.push(`/vasu/${documentId}/edit`)}
+            />
+          </>
         )}
       </ButtonContainer>
       {(state === 'DRAFT' || state === 'READY') && (

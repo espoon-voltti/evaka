@@ -214,7 +214,7 @@ const VasuAndLeops = React.memo(function VasuAndLeops({
             </StateCell>
             <Td>
               <InlineButton
-                onClick={() => history.push(`/vasu/${vasu.id}`)}
+                onClick={() => history.push(`/vasu/${vasu.id}/edit`)}
                 text={i18n.common.edit}
               />
             </Td>
