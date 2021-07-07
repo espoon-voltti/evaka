@@ -10,7 +10,7 @@ import { DatePickerClearableDeprecated } from '../../../../lib-components/molecu
 import { H2, H3, Label } from '../../../../lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { VasuDiscussionContent } from '../api'
-import { OrNoRecord } from '../components/OrNoRecord'
+import { ReadOnlyValue } from '../components/ReadOnlyValue'
 
 interface Props {
   sectionIndex: number
@@ -99,24 +99,24 @@ export function VasuDiscussionSection({
 
       <H3>{t.title2}</H3>
 
-      <Label>
-        {sectionIndex + 1}.1 {t.discussionDate}
-      </Label>
-      <OrNoRecord>{content.discussionDate?.format()}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.1 ${t.discussionDate}`}
+        value={content.discussionDate?.format()}
+      />
 
       <Gap />
 
-      <Label>
-        {sectionIndex + 1}.2 {t.participants}
-      </Label>
-      <OrNoRecord>{content.participants}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.2 ${t.participants}`}
+        value={content.participants}
+      />
 
       <Gap />
 
-      <Label>
-        {sectionIndex + 1}.3 {t.guardianViewsAndCollaboration}
-      </Label>
-      <OrNoRecord>{content.guardianViewsAndCollaboration}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.3 ${t.guardianViewsAndCollaboration}`}
+        value={content.guardianViewsAndCollaboration}
+      />
     </ContentArea>
   )
 }

@@ -12,10 +12,10 @@ import {
   ContentArea
 } from '../../../lib-components/layout/Container'
 import StickyFooter from '../../../lib-components/layout/StickyFooter'
-import { H2, Label } from '../../../lib-components/typography'
+import { H2 } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
 import { CheckboxQuestion } from './components/CheckboxQuestion'
-import { OrNoRecord } from './components/OrNoRecord'
+import { ReadOnlyValue } from './components/ReadOnlyValue'
 import { TextQuestion } from './components/TextQuestion'
 import { AuthorsSection } from './sections/AuthorsSection'
 import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
@@ -68,18 +68,14 @@ export default React.memo(function VasuPage({
       questionIndex
     ] as RadioGroupQuestion
     return (
-      <>
-        <Label>
-          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
-          {question.name}
-        </Label>
-        <OrNoRecord>
-          {
-            question.options.find((option) => option.key === selectedValue)
-              ?.name
-          }
-        </OrNoRecord>
-      </>
+      <ReadOnlyValue
+        label={`${getDynamicQuestionNumber(sectionIndex, questionIndex)} ${
+          question.name
+        }`}
+        value={
+          question.options.find((option) => option.key === selectedValue)?.name
+        }
+      />
     )
   }
 
@@ -92,18 +88,15 @@ export default React.memo(function VasuPage({
       questionIndex
     ] as MultiSelectQuestion
     return (
-      <>
-        <Label>
-          {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
-          {question.name}
-        </Label>
-        <OrNoRecord>
-          {question.options
-            .filter((o) => selectedValues.includes(o.key))
-            .map((o) => o.name)
-            .join(', ')}
-        </OrNoRecord>
-      </>
+      <ReadOnlyValue
+        label={`${getDynamicQuestionNumber(sectionIndex, questionIndex)} ${
+          question.name
+        }`}
+        value={question.options
+          .filter((o) => selectedValues.includes(o.key))
+          .map((o) => o.name)
+          .join(', ')}
+      />
     )
   }
 

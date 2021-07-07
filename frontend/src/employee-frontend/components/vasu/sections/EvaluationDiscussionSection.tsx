@@ -10,7 +10,7 @@ import TextArea from '../../../../lib-components/atoms/form/TextArea'
 import { Gap } from 'lib-components/white-space'
 import { DatePickerClearableDeprecated } from '../../../../lib-components/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../../state/i18n'
-import { OrNoRecord } from '../components/OrNoRecord'
+import { ReadOnlyValue } from '../components/ReadOnlyValue'
 
 interface Props {
   sectionIndex: number
@@ -110,31 +110,31 @@ export function EvaluationDiscussionSection({
         {sectionIndex + 1}. {t.title}
       </H2>
 
-      <Label>
-        {sectionIndex + 1}.1 {t.evaluation}
-      </Label>
-      <OrNoRecord>{content.evaluation}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.1 ${t.evaluation}`}
+        value={content.evaluation}
+      />
 
       <H3>{t.title2}</H3>
 
-      <Label>
-        {sectionIndex + 1}.2 {t.discussionDate}
-      </Label>
-      <OrNoRecord>{content.discussionDate?.format()}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.2 ${t.discussionDate}`}
+        value={content.discussionDate?.format()}
+      />
 
       <Gap />
 
-      <Label>
-        {sectionIndex + 1}.3 {t.participants}
-      </Label>
-      <OrNoRecord>{content.participants}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.3 ${t.participants}`}
+        value={content.participants}
+      />
 
       <Gap />
 
-      <Label>
-        {sectionIndex + 1}.4 {t.guardianViewsAndCollaboration}
-      </Label>
-      <OrNoRecord>{content.guardianViewsAndCollaboration}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.4 ${t.guardianViewsAndCollaboration}`}
+        value={content.guardianViewsAndCollaboration}
+      />
     </ContentArea>
   )
 }

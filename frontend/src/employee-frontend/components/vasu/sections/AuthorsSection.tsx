@@ -13,7 +13,7 @@ import { ContentArea } from '../../../../lib-components/layout/Container'
 import { H2, Label } from '../../../../lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 import { AuthorInfo, AuthorsContent } from '../api'
-import { OrNoRecord } from '../components/OrNoRecord'
+import { ReadOnlyValue } from '../components/ReadOnlyValue'
 
 interface Props {
   sectionIndex: number
@@ -174,22 +174,20 @@ export function AuthorsSection({
         {sectionIndex + 1}. {t.title}
       </H2>
 
-      <Label>
-        {sectionIndex + 1}.1 {t.primaryAuthor}
-      </Label>
-      <OrNoRecord>{formatAuthor(content.primaryAuthor)}</OrNoRecord>
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.1 ${t.primaryAuthor}`}
+        value={formatAuthor(content.primaryAuthor)}
+      />
 
       <Gap />
 
-      <Label>
-        {sectionIndex + 1}.2 {t.otherAuthors}
-      </Label>
-      <OrNoRecord>
-        {content.otherAuthors
+      <ReadOnlyValue
+        label={`${sectionIndex + 1}.2 ${t.otherAuthors}`}
+        value={content.otherAuthors
           .filter((a) => !authorIsEmpty(a))
           .map(formatAuthor)
           .join(', ')}
-      </OrNoRecord>
+      />
     </ContentArea>
   )
 }
