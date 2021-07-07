@@ -78,7 +78,7 @@ class FinanceBasicsController(private val asyncJobRunner: AsyncJobRunner) {
         @PathVariable id: UUID,
         @RequestBody thresholds: FeeThresholds
     ) {
-        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
+        Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         validateFeeThresholds(thresholds)
