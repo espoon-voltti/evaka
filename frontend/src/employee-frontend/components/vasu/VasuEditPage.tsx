@@ -59,7 +59,7 @@ const StatusContainer = styled.div`
   }
 `
 
-export default React.memo(function VasuPage({
+export default React.memo(function VasuEditPage({
   match
 }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
