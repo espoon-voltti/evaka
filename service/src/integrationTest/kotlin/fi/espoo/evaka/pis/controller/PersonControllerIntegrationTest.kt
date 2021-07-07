@@ -121,7 +121,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `Search treats obscrube unicode spaces as spaces in search terms`() {
+    fun `Search treats obscure unicode spaces as spaces in search terms`() {
         val user = AuthenticatedUser.Employee(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
