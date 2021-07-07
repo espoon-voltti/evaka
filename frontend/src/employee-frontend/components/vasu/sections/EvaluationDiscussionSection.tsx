@@ -113,36 +113,28 @@ export function EvaluationDiscussionSection({
       <Label>
         {sectionIndex + 1}.1 {t.evaluation}
       </Label>
-      <div>
-        <OrNoRecord>{content.evaluation}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.evaluation}</OrNoRecord>
 
       <H3>{t.title2}</H3>
 
       <Label>
         {sectionIndex + 1}.2 {t.discussionDate}
       </Label>
-      <div>
-        <OrNoRecord>{content.discussionDate?.format()}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.discussionDate?.format()}</OrNoRecord>
 
       <Gap />
 
       <Label>
         {sectionIndex + 1}.3 {t.participants}
       </Label>
-      <div>
-        <OrNoRecord>{content.participants}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.participants}</OrNoRecord>
 
       <Gap />
 
       <Label>
         {sectionIndex + 1}.4 {t.guardianViewsAndCollaboration}
       </Label>
-      <div>
-        <OrNoRecord>{content.guardianViewsAndCollaboration}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.guardianViewsAndCollaboration}</OrNoRecord>
     </ContentArea>
   )
 }

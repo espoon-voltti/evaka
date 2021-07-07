@@ -73,14 +73,12 @@ export default React.memo(function VasuPage({
           {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
           {question.name}
         </Label>
-        <div>
-          <OrNoRecord>
-            {
-              question.options.find((option) => option.key === selectedValue)
-                ?.name
-            }
-          </OrNoRecord>
-        </div>
+        <OrNoRecord>
+          {
+            question.options.find((option) => option.key === selectedValue)
+              ?.name
+          }
+        </OrNoRecord>
       </>
     )
   }
@@ -99,14 +97,12 @@ export default React.memo(function VasuPage({
           {getDynamicQuestionNumber(sectionIndex, questionIndex)}{' '}
           {question.name}
         </Label>
-        <div>
-          <OrNoRecord>
-            {question.options
-              .filter((o) => selectedValues.includes(o.key))
-              .map((o) => o.name)
-              .join(', ')}
-          </OrNoRecord>
-        </div>
+        <OrNoRecord>
+          {question.options
+            .filter((o) => selectedValues.includes(o.key))
+            .map((o) => o.name)
+            .join(', ')}
+        </OrNoRecord>
       </>
     )
   }

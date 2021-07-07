@@ -102,27 +102,21 @@ export function VasuDiscussionSection({
       <Label>
         {sectionIndex + 1}.1 {t.discussionDate}
       </Label>
-      <div>
-        <OrNoRecord>{content.discussionDate?.format()}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.discussionDate?.format()}</OrNoRecord>
 
       <Gap />
 
       <Label>
         {sectionIndex + 1}.2 {t.participants}
       </Label>
-      <div>
-        <OrNoRecord>{content.participants}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.participants}</OrNoRecord>
 
       <Gap />
 
       <Label>
         {sectionIndex + 1}.3 {t.guardianViewsAndCollaboration}
       </Label>
-      <div>
-        <OrNoRecord>{content.guardianViewsAndCollaboration}</OrNoRecord>
-      </div>
+      <OrNoRecord>{content.guardianViewsAndCollaboration}</OrNoRecord>
     </ContentArea>
   )
 }

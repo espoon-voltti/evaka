@@ -26,9 +26,7 @@ export function TextQuestion({
       {onChange ? (
         <TextArea value={value} onChange={(e) => onChange(e.target.value)} />
       ) : (
-        <div>
-          <OrNoRecord>{value}</OrNoRecord>
-        </div>
+        <OrNoRecord>{value}</OrNoRecord>
       )}
     </>
   )

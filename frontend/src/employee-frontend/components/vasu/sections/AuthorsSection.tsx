@@ -177,23 +177,19 @@ export function AuthorsSection({
       <Label>
         {sectionIndex + 1}.1 {t.primaryAuthor}
       </Label>
-      <div>
-        <OrNoRecord>{formatAuthor(content.primaryAuthor)}</OrNoRecord>
-      </div>
+      <OrNoRecord>{formatAuthor(content.primaryAuthor)}</OrNoRecord>
 
       <Gap />
 
       <Label>
         {sectionIndex + 1}.2 {t.otherAuthors}
       </Label>
-      <div>
-        <OrNoRecord>
-          {content.otherAuthors
-            .filter((a) => !authorIsEmpty(a))
-            .map(formatAuthor)
-            .join(', ')}
-        </OrNoRecord>
-      </div>
+      <OrNoRecord>
+        {content.otherAuthors
+          .filter((a) => !authorIsEmpty(a))
+          .map(formatAuthor)
+          .join(', ')}
+      </OrNoRecord>
     </ContentArea>
   )
 }

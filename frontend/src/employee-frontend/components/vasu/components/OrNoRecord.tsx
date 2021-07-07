@@ -6,11 +6,9 @@ import React, { ReactNode } from 'react'
 import { Dimmed } from '../../../../lib-components/typography'
 import { useTranslation } from '../../../state/i18n'
 
-export function OrNoRecord(props: { children: ReactNode }): JSX.Element {
+export function OrNoRecord({ children }: { children: ReactNode }): JSX.Element {
   const { i18n } = useTranslation()
-  return props.children ? (
-    <>{props.children}</>
-  ) : (
-    <Dimmed>{i18n.vasu.noRecord}</Dimmed>
+  return (
+    <div>{children ? children : <Dimmed>{i18n.vasu.noRecord}</Dimmed>}</div>
   )
 }
