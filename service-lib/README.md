@@ -18,5 +18,5 @@ sub-project dependency.
 ## Known issues
 
 - [ ] Multiple Logback `ConsoleAppender`s could theoretically corrupt
-    eachother's JSON logs if more than one of them output at the same time
+    each other's JSON logs if more than one of them output at the same time
     (w/ multiline content)
