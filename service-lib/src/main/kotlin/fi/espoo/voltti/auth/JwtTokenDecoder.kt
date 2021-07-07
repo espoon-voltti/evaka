@@ -16,9 +16,8 @@ import javax.servlet.http.HttpServletResponse
 // RFC6750 - The OAuth 2.0 Authorization Framework: Bearer Token Usage
 // Authorization Request Header Field
 // https://tools.ietf.org/html/rfc6750#section-2.1
-private fun HttpServletRequest.getBearerToken(): String? = getHeader("Authorization")?.let { it ->
-    it.substringAfter("Bearer ", missingDelimiterValue = "")
-}
+private fun HttpServletRequest.getBearerToken(): String? =
+    getHeader("Authorization")?.substringAfter("Bearer ", missingDelimiterValue = "")
 
 private const val ATTR_JWT = "evaka.jwt"
 
