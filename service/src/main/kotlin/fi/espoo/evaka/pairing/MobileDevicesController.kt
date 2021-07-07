@@ -29,7 +29,7 @@ class MobileDevicesController(
         user: AuthenticatedUser,
         @RequestParam unitId: UUID
     ): ResponseEntity<List<MobileDevice>> {
-        Audit.MobileDevicesRead.log(targetId = unitId)
+        Audit.MobileDevicesList.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return db
             .read { it.listDevices(unitId) }
