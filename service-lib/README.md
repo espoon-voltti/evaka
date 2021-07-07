@@ -12,7 +12,7 @@ as a common logger and JWT authentication.
 ## Development
 
 Building and testing is done as a part of the using Kotlin service builds,
-i.e. evaka-service and evaka-message-service, using this project as a
+i.e., evaka-service and evaka-message-service, using this project as a
 sub-project dependency.
 
 ## Known issues
