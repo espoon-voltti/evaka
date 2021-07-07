@@ -30,7 +30,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-val feeDecisionQueryBase =
+const val feeDecisionQueryBase =
     """
 SELECT
     decision.*,
@@ -51,7 +51,7 @@ FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id
 """
 
-val feeDecisionDetailedQueryBase =
+const val feeDecisionDetailedQueryBase =
     """
 SELECT
     decision.*,
@@ -401,7 +401,7 @@ WHERE decision.id = ANY(:ids)
     return createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .mapTo<FeeDecision>()
-        .let { it.merge() }
+        .merge()
 }
 
 fun Database.Read.getDetailedFeeDecisionsByIds(ids: List<UUID>): List<FeeDecisionDetailed> {
@@ -417,7 +417,7 @@ ORDER BY part.child_date_of_birth DESC
     return createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .mapTo<FeeDecisionDetailed>()
-        .let { it.merge() }
+        .merge()
 }
 
 fun Database.Read.getFeeDecision(uuid: UUID): FeeDecisionDetailed? {
@@ -431,7 +431,7 @@ fun Database.Read.getFeeDecision(uuid: UUID): FeeDecisionDetailed? {
     return createQuery(sql)
         .bind("id", uuid)
         .mapTo<FeeDecisionDetailed>()
-        .let { it.merge() }
+        .merge()
         .firstOrNull()
 }
 

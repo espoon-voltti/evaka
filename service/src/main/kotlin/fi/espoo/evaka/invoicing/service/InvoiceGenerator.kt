@@ -470,7 +470,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
                 .map { it.finalFee }
                 .distinct()
 
-            val invoiceRowSum = rows.map { it.price() }.sum()
+            val invoiceRowSum = rows.sumOf { it.price() }
 
             val roundingRow = if (uniqueChildFees.size == 1) {
                 val difference = uniqueChildFees.first() - invoiceRowSum
@@ -502,7 +502,7 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: DateRange): List<FeeDeci
         .bind("dateRange", dateRange)
         .bind("effective", FeeDecisionStatus.effective)
         .mapTo<FeeDecision>()
-        .let { it.merge() }
+        .merge()
 }
 
 fun Database.Read.getInvoicedHeadsOfFamily(period: DateRange): List<UUID> {

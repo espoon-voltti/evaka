@@ -226,8 +226,7 @@ private fun invoiceRow(
         unitPrice = unitP,
         amount = price,
         description = (
-            if (desc.isNotBlank()) desc
-            else localizedProduct(lang, product)
+            desc.ifBlank { localizedProduct(lang, product) }
             ).take(communityDescriptionMaxLength),
         account = acc,
         costCenter = costC,

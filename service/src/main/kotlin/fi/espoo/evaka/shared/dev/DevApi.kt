@@ -723,7 +723,7 @@ fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: Extern
         .bind("externalId", externalId)
         .mapTo<UUID>()
         .findOne()
-    if (employeeId.isPresent()) {
+    if (employeeId.isPresent) {
         deleteAndCascadeEmployee(employeeId.get())
     }
 }
