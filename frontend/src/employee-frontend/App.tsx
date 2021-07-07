@@ -119,12 +119,14 @@ export default function App() {
               component={LoginPage}
               title={i18n.titles.login}
             />
-            <RouteWithTitle
-              exact
-              path="/ai"
-              component={AIPage}
-              title={i18n.titles.ai}
-            />
+            {featureFlags.ai && (
+              <RouteWithTitle
+                exact
+                path="/ai"
+                component={AIPage}
+                title={i18n.titles.ai}
+              />
+            )}
             <RouteWithTitle
               exact
               path="/units"
