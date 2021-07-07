@@ -125,9 +125,7 @@ class ApplicationStateService(
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
         tx.getPersonById(application.guardianId)?.let {
-            val email = if (!application.form.guardian.email.isNullOrBlank()) {
-                application.form.guardian.email
-            } else {
+            val email = application.form.guardian.email.ifBlank {
                 it.email
             }
 
@@ -167,9 +165,7 @@ class ApplicationStateService(
         verifyStatus(application, SENT)
 
         tx.getPersonById(application.guardianId)?.let {
-            val email = if (!application.form.guardian.email.isNullOrBlank()) {
-                application.form.guardian.email
-            } else {
+            val email = application.form.guardian.email.ifBlank {
                 it.email
             }
 

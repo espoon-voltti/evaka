@@ -22,7 +22,7 @@ fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { s
     val type = this.claims["evaka_type"]?.asString()?.let(AuthenticatedUserType::valueOf)
     val roles = (this.claims["scope"]?.asString() ?: "")
         .let {
-            if (it.isNullOrEmpty()) emptyList()
+            if (it.isEmpty()) emptyList()
             else it.split(' ')
         }
         .map { enumValueOf<UserRole>(it.removePrefix("ROLE_")) }

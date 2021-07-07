@@ -361,7 +361,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         val result = db.transaction { tx ->
             absenceService.upsertAbsences(tx, initialAbsenceList, testUserId)
-            absenceService.getAbscencesByChild(tx, childId, absenceDate.year, absenceDate.monthValue)
+            absenceService.getAbsencesByChild(tx, childId, absenceDate.year, absenceDate.monthValue)
         }
 
         val absences = result.absences.getValue(absenceDate)
@@ -385,7 +385,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         val result = db.transaction { tx ->
             absenceService.upsertAbsences(tx, initialAbsenceList, testUserId)
-            absenceService.getAbscencesByChild(tx, childId2, absenceDate.year, absenceDate.monthValue)
+            absenceService.getAbsencesByChild(tx, childId2, absenceDate.year, absenceDate.monthValue)
         }
         val absences = result.absences.getValue(absenceDate)
 
@@ -403,7 +403,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest() {
 
         val result = db.transaction { tx ->
             absenceService.upsertAbsences(tx, initialAbsenceList, testUserId)
-            absenceService.getAbscencesByChild(tx, childId, 2019, 9)
+            absenceService.getAbsencesByChild(tx, childId, 2019, 9)
         }
         val absences = result.absences.getValue(LocalDate.of(2019, 9, 1))
 

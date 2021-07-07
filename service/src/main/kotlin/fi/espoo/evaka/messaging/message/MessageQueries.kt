@@ -435,7 +435,7 @@ fun Database.Read.getReceiversForNewMessage(
                             childFirstName = receivers.first().childFirstName,
                             childLastName = receivers.first().childLastName,
                             childDateOfBirth = receivers.first().childDateOfBirth,
-                            receiverPersons = receivers.map { it ->
+                            receiverPersons = receivers.map {
                                 MessageReceiverPerson(
                                     accountId = it.accountId,
                                     receiverFirstName = it.receiverFirstName,

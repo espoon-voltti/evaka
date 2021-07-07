@@ -83,7 +83,7 @@ class AbsenceService {
         }
     }
 
-    fun getAbscencesByChild(tx: Database.Read, childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
+    fun getAbsencesByChild(tx: Database.Read, childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
         val period = FiniteDateRange(startDate, endDate)
