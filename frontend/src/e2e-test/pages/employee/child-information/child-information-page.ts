@@ -4,7 +4,7 @@
 
 import { ClientFunction, Selector, t } from 'testcafe'
 import { Daycare } from 'e2e-test-common/dev-api/types'
-import { selectFirstOption } from '../../../utils/helpers'
+import { selectFirstComboboxOption } from '../../../utils/helpers'
 
 export default class ChildInformationPage {
   readonly assistanceCollapsible = Selector(
@@ -219,7 +219,7 @@ export default class ChildInformationPage {
       await t.click(this.placementsCollapsible)
     }
     await t.click(this.newPlacementButton)
-    await selectFirstOption(
+    await selectFirstComboboxOption(
       this.placementModal.find('[data-qa="unit-select"]'),
       unitName
     )

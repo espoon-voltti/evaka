@@ -85,3 +85,13 @@ export const selectFirstOption = async (
   await t.typeText(input, searchString)
   await t.click(container.find('[id*="-option-"]'))
 }
+
+export const selectFirstComboboxOption = async (
+  container: Selector,
+  searchString: string
+) => {
+  await t.click(container)
+  const input = container.find('input')
+  await t.typeText(input, searchString)
+  await t.click(container.find('[data-qa="item"]'))
+}
