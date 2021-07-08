@@ -2,36 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
+import React from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import { UUID } from '../../../lib-common/types'
 import '../../../lib-components/layout/ButtonContainer'
-import {
-  Container,
-  ContentArea
-} from '../../../lib-components/layout/Container'
+import { Container } from '../../../lib-components/layout/Container'
 import StickyFooter from '../../../lib-components/layout/StickyFooter'
-import { H2 } from '../../../lib-components/typography'
 import { defaultMargins, Gap } from '../../../lib-components/white-space'
-import { CheckboxQuestion } from './components/CheckboxQuestion'
-import { MultiSelectQuestion as MultiSelectQuestionElem } from './components/MultiSelectQuestion'
-import { RadioGroupQuestion as RadioGroupQuestionElem } from './components/RadioGroupQuestion'
-import { TextQuestion } from './components/TextQuestion'
 import { AuthorsSection } from './sections/AuthorsSection'
+import { DynamicSections } from './sections/DynamicSections'
 import { EvaluationDiscussionSection } from './sections/EvaluationDiscussionSection'
 import { VasuDiscussionSection } from './sections/VasuDiscussionSection'
 import { VasuEvents } from './sections/VasuEvents'
 import { VasuHeader } from './sections/VasuHeader'
 import { useVasu } from './use-vasu'
-import {
-  isCheckboxQuestion,
-  isMultiSelectQuestion,
-  isRadioGroupQuestion,
-  isTextQuestion,
-  MultiSelectQuestion,
-  RadioGroupQuestion
-} from './vasu-content'
 import { VasuStateTransitionButtons } from './VasuStateTransitionButtons'
 
 const FooterContainer = styled.div`
@@ -55,10 +40,6 @@ export default React.memo(function VasuPage({
   } = useVasu(id)
 
   const dynamicSectionsOffset = 1
-  const getDynamicQuestionNumber = (
-    sectionIndex: number,
-    questionIndex: number
-  ) => `${sectionIndex + 1 + dynamicSectionsOffset}.${questionIndex + 1}`
 
   return (
     <Container>
@@ -67,58 +48,10 @@ export default React.memo(function VasuPage({
         <>
           <VasuHeader document={vasu} />
           <AuthorsSection sectionIndex={0} content={authorsContent} />
-
-          {content.sections.map((section, sectionIndex) => (
-            <ContentArea opaque key={section.name}>
-              <H2>
-                {sectionIndex + 1 + dynamicSectionsOffset}. {section.name}
-              </H2>
-              {section.questions.map((question, questionIndex) => {
-                const questionNumber = getDynamicQuestionNumber(
-                  sectionIndex,
-                  questionIndex
-                )
-                return (
-                  <Fragment key={question.name}>
-                    {isTextQuestion(question) ? (
-                      <TextQuestion
-                        question={question}
-                        questionNumber={questionNumber}
-                      />
-                    ) : isCheckboxQuestion(question) ? (
-                      <CheckboxQuestion
-                        question={question}
-                        questionNumber={questionNumber}
-                      />
-                    ) : isRadioGroupQuestion(question) ? (
-                      <RadioGroupQuestionElem
-                        question={question}
-                        questionNumber={questionNumber}
-                        selectedValue={
-                          (content.sections[sectionIndex].questions[
-                            questionIndex
-                          ] as RadioGroupQuestion).value
-                        }
-                      />
-                    ) : isMultiSelectQuestion(question) ? (
-                      <MultiSelectQuestionElem
-                        question={question}
-                        questionNumber={questionNumber}
-                        selectedValues={
-                          (content.sections[sectionIndex].questions[
-                            questionIndex
-                          ] as MultiSelectQuestion).value
-                        }
-                      />
-                    ) : undefined}
-                    {questionIndex < section.questions.length - 1 && (
-                      <Gap size={'L'} />
-                    )}
-                  </Fragment>
-                )
-              })}
-            </ContentArea>
-          ))}
+          <DynamicSections
+            sections={content.sections}
+            sectionIndex={dynamicSectionsOffset}
+          />
           <VasuDiscussionSection
             sectionIndex={content.sections.length + dynamicSectionsOffset}
             content={vasuDiscussionContent}
