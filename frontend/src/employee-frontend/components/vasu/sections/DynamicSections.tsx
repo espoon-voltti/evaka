@@ -41,8 +41,8 @@ export function DynamicSections({
   sectionIndex: sectionOffset,
   setContent
 }: Props) {
+  const renderGapsBetweenSections = !!setContent
   const content = sections.map((section, sectionIndex) => {
-    const renderFinalGap = !!setContent
     return (
       <Fragment key={section.name}>
         <ContentArea opaque>
@@ -55,6 +55,8 @@ export function DynamicSections({
               sectionIndex,
               questionIndex
             )
+            const isLastQuestion =
+              questionIndex === section.questions.length - 1
             return (
               <Fragment key={question.name}>
                 {isTextQuestion(question) ? (
@@ -144,14 +146,12 @@ export function DynamicSections({
                     }
                   />
                 ) : undefined}
-                {questionIndex < section.questions.length - 1 && (
-                  <Gap size={'L'} />
-                )}
+                {!isLastQuestion && <Gap size={'L'} />}
               </Fragment>
             )
           })}
         </ContentArea>
-        {renderFinalGap && <Gap size={'L'} />}
+        {renderGapsBetweenSections && <Gap size={'L'} />}
       </Fragment>
     )
   })

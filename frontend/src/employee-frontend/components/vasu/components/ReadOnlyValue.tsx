@@ -4,13 +4,18 @@
 
 import React from 'react'
 import { Label } from '../../../../lib-components/typography'
-import { OrNoRecord } from './OrNoRecord'
+import { ValueOrNoRecord } from './ValueOrNoRecord'
 
-export function ReadOnlyValue(props: { label: string; value?: string }) {
+interface Props {
+  label: string
+  value?: string
+}
+
+export function ReadOnlyValue({ label, value }: Props) {
   return (
     <>
-      <Label>{props.label}</Label>
-      <OrNoRecord>{props.value}</OrNoRecord>
+      <Label>{label}</Label>
+      <ValueOrNoRecord text={value} />
     </>
   )
 }

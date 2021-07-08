@@ -8,7 +8,7 @@ import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers
 import { Label } from '../../../../lib-components/typography'
 import { Gap } from '../../../../lib-components/white-space'
 import { MultiSelectQuestion, QuestionOption } from '../vasu-content'
-import { OrNoRecord } from './OrNoRecord'
+import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
@@ -44,12 +44,12 @@ export function MultiSelectQuestion({
           </FixedSpaceColumn>
         </>
       ) : (
-        <OrNoRecord>
-          {options
+        <ValueOrNoRecord
+          text={options
             .filter((option) => selectedValues.includes(option.key))
             .map((o) => o.name)
             .join(', ')}
-        </OrNoRecord>
+        />
       )}
     </>
   )

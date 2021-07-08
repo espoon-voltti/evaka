@@ -8,7 +8,7 @@ import { FixedSpaceColumn } from '../../../../lib-components/layout/flex-helpers
 import { Label } from '../../../../lib-components/typography'
 import { Gap } from '../../../../lib-components/white-space'
 import { QuestionOption, RadioGroupQuestion } from '../vasu-content'
-import { OrNoRecord } from './OrNoRecord'
+import { ValueOrNoRecord } from './ValueOrNoRecord'
 
 interface Props {
   questionNumber: string
@@ -43,9 +43,9 @@ export function RadioGroupQuestion({
           </FixedSpaceColumn>
         </>
       ) : (
-        <OrNoRecord>
-          {options.find((option) => option.key === selectedValue)?.name}
-        </OrNoRecord>
+        <ValueOrNoRecord
+          text={options.find((option) => option.key === selectedValue)?.name}
+        />
       )}
     </>
   )
