@@ -137,6 +137,17 @@ export default {
     types: {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
+    },
+    messageEditor: {
+      newMessage: 'Uusi viesti',
+      receivers: 'Vastaanottajat',
+      title: 'Otsikko',
+      message: 'Viesti',
+      deleteDraft: 'Hylkää luonnos',
+      send: 'Lähetä',
+      search: 'Haku',
+      noResults: 'Ei tuloksia',
+      messageSendError: 'Viestin lähetys epäonnistui'
     }
   },
   applications: {

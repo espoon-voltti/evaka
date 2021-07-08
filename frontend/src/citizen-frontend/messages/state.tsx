@@ -45,6 +45,7 @@ export interface MessagePageState {
   accountId: Result<UUID>
   loadAccount: () => void
   threads: MessageThread[]
+  refreshThreads: () => void
   threadLoadingResult: Result<void>
   loadMoreThreads: () => void
   selectedThread: MessageThread | undefined
@@ -61,6 +62,7 @@ const defaultState: MessagePageState = {
   accountId: Loading.of(),
   loadAccount: () => undefined,
   threads: [],
+  refreshThreads: () => undefined,
   threadLoadingResult: Loading.of(),
   loadMoreThreads: () => undefined,
   selectedThread: undefined,
@@ -119,6 +121,11 @@ export const MessageContextProvider = React.memo(
     )
 
     const loadMessages = useRestApi(getReceivedMessages, setMessagesResult)
+    const refreshThreads = useCallback(() => {
+      setThreads({ ...initialThreadState })
+      setThreads((threads) => ({ ...threads, currentPage: 1 }))
+    }, [])
+
     useEffect(() => {
       if (threads.currentPage > 0) {
         setThreads((state) => ({ ...state, loadingResult: Loading.of() }))
@@ -235,6 +242,7 @@ export const MessageContextProvider = React.memo(
         accountId,
         loadAccount,
         threads: threads.threads,
+        refreshThreads,
         threadLoadingResult: threads.loadingResult,
         getReplyContent,
         setReplyContent,
@@ -250,6 +258,7 @@ export const MessageContextProvider = React.memo(
         accountId,
         loadAccount,
         threads.threads,
+        refreshThreads,
         threads.loadingResult,
         getReplyContent,
         setReplyContent,

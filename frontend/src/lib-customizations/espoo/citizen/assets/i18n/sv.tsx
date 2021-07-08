@@ -138,6 +138,17 @@ const sv: Translations = {
     types: {
       MESSAGE: 'Meddelande',
       BULLETIN: 'Bulletin'
+    },
+    messageEditor: {
+      newMessage: 'Nytt Meddelande',
+      receivers: 'Mottagare',
+      title: 'Titel',
+      message: 'Meddelande',
+      deleteDraft: 'Ta bort utkast',
+      send: 'Skicka',
+      search: 'Sök',
+      noResults: 'Inga resultat',
+      messageSendError: 'Misslyckades med att skicka meddelande'
     }
   },
   applications: {
