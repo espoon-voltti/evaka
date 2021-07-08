@@ -107,7 +107,9 @@ function internalApiRouter() {
     authStatus
   )
   router.all('/public/*', createProxy())
-  router.all('/ai/*', createProxy({ url: evakaAIUrl }))
+  if (evakaAIUrl) {
+    router.all('/ai/*', createProxy({ url: evakaAIUrl }))
+  }
   router.use(requireAuthentication)
   router.use(csrf)
   router.post(
