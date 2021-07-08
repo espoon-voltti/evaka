@@ -54,7 +54,7 @@ data class ScheduledJobSettings(val enabled: Boolean, val schedule: Schedule) {
             )
             ScheduledJob.DvvUpdate -> ScheduledJobSettings(
                 enabled = false,
-                schedule = JobSchedule.daily(LocalTime.of(6, 0))
+                schedule = JobSchedule.daily(LocalTime.of(4, 0))
             )
             ScheduledJob.RemoveOldDaycareDailyNotes -> ScheduledJobSettings(
                 enabled = true,
