@@ -286,7 +286,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `search works as expected with non existant area param`() {
+    fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
         val (_, response, result) = http.get("/invoices/search?page=1&pageSize=200&area=non_existent")
@@ -490,7 +490,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `getInvoice returns not found with non-existant invoice`() {
+    fun `getInvoice returns not found with non-existent invoice`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
         val (_, response, _) = http.get("/invoices/00000000-0000-0000-0000-000000000000")
@@ -573,7 +573,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
         val sentInvoices = db.transaction { tx -> tx.getInvoicesByIds(drafts.map { it.id }) }
 
-        assertThat(sentInvoices.all { it.status == InvoiceStatus.SENT }).isTrue()
+        assertThat(sentInvoices.all { it.status == InvoiceStatus.SENT }).isTrue
 
         val maxInvoiceNumber = db.transaction { tx -> tx.getMaxInvoiceNumber() }
         assertEquals(4999999999L + drafts.size, maxInvoiceNumber)
@@ -850,10 +850,10 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             .responseString()
         assertEquals(204, response2.statusCode)
 
-        val sents = db.transaction { tx ->
+        val sent = db.transaction { tx ->
             tx.searchInvoices(listOf(InvoiceStatus.SENT), listOf(), null, listOf())
         }
-        assertThat(sents).isNotEmpty
+        assertThat(sent).isNotEmpty
 
         val (_, response3, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)

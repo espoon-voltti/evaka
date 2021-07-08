@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 # Run shellcheck for scripts
 #
 # Usage: ./run-shellcheck.sh [path_to_shellcheck_binary]

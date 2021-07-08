@@ -260,7 +260,7 @@ fun calculateBaseFee(
     } else {
         val minThreshold = feeThresholds.minIncomeThreshold(familySize)
         val maxThreshold = feeThresholds.maxIncomeThreshold(familySize)
-        val totalIncome = incomes.filterNotNull().map { it.total }.sum()
+        val totalIncome = incomes.filterNotNull().sumOf { it.total }
         val totalSurplus = minOf(maxOf(totalIncome - minThreshold, 0), maxThreshold - minThreshold)
         multiplier * BigDecimal(totalSurplus)
     }

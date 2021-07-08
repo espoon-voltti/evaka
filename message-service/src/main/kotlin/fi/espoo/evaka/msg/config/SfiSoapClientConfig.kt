@@ -7,7 +7,6 @@ package fi.espoo.evaka.msg.config
 import fi.espoo.evaka.msg.config.SoapCryptoConfig.ClientInterceptors
 import fi.espoo.evaka.msg.properties.SfiSoapProperties
 import fi.espoo.evaka.msg.sficlient.soap.ObjectFactory
-import mu.KotlinLogging
 import org.apache.http.conn.ssl.NoopHostnameVerifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -68,8 +67,6 @@ class SfiSoapClientConfig {
         }
 
     class SfiFaultMessageResolver : FaultMessageResolver {
-
-        private val logger = KotlinLogging.logger { }
 
         override fun resolveFault(message: WebServiceMessage) {
             when (message) {

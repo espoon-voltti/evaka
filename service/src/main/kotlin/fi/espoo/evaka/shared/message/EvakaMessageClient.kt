@@ -43,7 +43,7 @@ private val logger = KotlinLogging.logger { }
 class MockEvakaMessageClient : IEvakaMessageClient {
     override fun send(msg: SuomiFiMessage) {
         logger.info("Mock message client got $msg")
-        data.put(msg.messageId, msg)
+        data[msg.messageId] = msg
     }
 
     companion object {

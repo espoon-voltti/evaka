@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { waitUntilEqual } from 'e2e-playwright/utils'
 import { RawElement, RawTextInput } from 'e2e-playwright/utils/element'
 import { Page } from 'playwright'

@@ -173,7 +173,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `one child having two different head of childs not overlapping is ok`() {
+    fun `one child having two different heads of child not overlapping is ok`() {
         val child = testPerson1()
         val parent1 = testPerson2()
         val parent2 = testPerson3()
@@ -214,7 +214,7 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `one child having two head of childs at the same time is NOT ok`() {
+    fun `one child having two heads of child at the same time is NOT ok`() {
         val child = testPerson1()
         val parent1 = testPerson2()
         val parent2 = testPerson3()

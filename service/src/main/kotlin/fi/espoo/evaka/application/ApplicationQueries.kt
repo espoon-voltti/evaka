@@ -186,7 +186,7 @@ fun Database.Read.fetchApplicationSummaries(
     val conditions = listOfNotNull(
         "a.status = ANY(:status::application_status_type[])",
         if (areas.isNotEmpty()) "ca.short_name = ANY(:area)" else null,
-        if (basis.isNotEmpty()) basis.map { applicationBasis ->
+        if (basis.isNotEmpty()) basis.joinToString("\nAND ") { applicationBasis ->
             when (applicationBasis) {
                 ApplicationBasis.ADDITIONAL_INFO -> """(
                             (f.document -> 'additionalDetails' ->> 'dietType') != '' OR 
@@ -202,7 +202,7 @@ fun Database.Read.fetchApplicationSummaries(
                 ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
                 ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
             }
-        }.joinToString("\nAND ") else null,
+        } else null,
         if (type != ApplicationTypeToggle.ALL) "f.document ->> 'type' = :documentType" else null,
         if (type == ApplicationTypeToggle.PRESCHOOL)
             """

@@ -192,7 +192,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `delete does nothing with non existant id`() {
+    fun `delete does nothing with non-existent id`() {
         db.transaction { tx -> tx.upsertFeeAlteration(testFeeAlteration) }
 
         http.delete("/fee-alterations/${UUID.randomUUID()}")

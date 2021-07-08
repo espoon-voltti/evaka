@@ -399,7 +399,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `search works as expected with non existant area param`() {
+    fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, _, result) = http.get(
@@ -434,7 +434,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `search works as expected with a non-existant unit id param`() {
+    fun `search works as expected with a non-existent unit id param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, _, result) = http.get(
@@ -602,7 +602,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `getDecision returns not found with non-existant decision`() {
+    fun `getDecision returns not found with non-existent decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val (_, response, _) = http.get("/decisions/00000000-0000-0000-0000-000000000000")
@@ -988,40 +988,40 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
     @Test
     fun `confirmDrafts updates completely overlapped conflicting decisions to annulled state`() {
         val draft = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
-        val conflict_1 = draft.copy(
+        val conflict1 = draft.copy(
             id = UUID.randomUUID(),
             status = FeeDecisionStatus.SENT,
             validDuring = DateRange(draft.validFrom.plusDays(5), draft.validFrom.plusDays(10))
         )
-        val conflict_2 = draft.copy(
+        val conflict2 = draft.copy(
             id = UUID.randomUUID(),
             status = FeeDecisionStatus.SENT,
             validDuring = DateRange(draft.validFrom.plusDays(11), draft.validFrom.plusDays(20))
         )
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict_1, conflict_2)) }
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict1, conflict2)) }
 
         http.post("/decisions/confirm")
             .asUser(user)
             .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
             .response()
 
-        val (_, _, result_1) = http.get("/decisions/${conflict_1.id}")
+        val (_, _, result_1) = http.get("/decisions/${conflict1.id}")
             .asUser(user)
             .responseString()
 
-        val updatedConflict_1 = conflict_1.copy(status = FeeDecisionStatus.ANNULLED)
+        val updatedConflict1 = conflict1.copy(status = FeeDecisionStatus.ANNULLED)
         assertEqualEnough(
-            updatedConflict_1.let(::toDetailed),
+            updatedConflict1.let(::toDetailed),
             deserializeResult(result_1.get()).data
         )
 
-        val (_, _, result_2) = http.get("/decisions/${conflict_2.id}")
+        val (_, _, result_2) = http.get("/decisions/${conflict2.id}")
             .asUser(user)
             .responseString()
 
-        val updatedConflict_2 = conflict_2.copy(status = FeeDecisionStatus.ANNULLED)
+        val updatedConflict2 = conflict2.copy(status = FeeDecisionStatus.ANNULLED)
         assertEqualEnough(
-            updatedConflict_2.let(::toDetailed),
+            updatedConflict2.let(::toDetailed),
             deserializeResult(result_2.get()).data
         )
     }

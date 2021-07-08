@@ -236,9 +236,9 @@ fun updateChildData(db: Database.Connection, client: VardaClient, startingFrom: 
     // Handle fee data only -changes (no changes in service need). If there was any service need change, all related
     // fee data has already been sent to / deleted from varda, so we filter those service needs out here
     val unprocessedChangedFeeData = feeAndVoucherDiffsByServiceNeed.filterNot { processedServiceNeedIds.contains(it.key) }
-    if (unprocessedChangedFeeData.entries.size > 0) logger.info("VardaUpdate: found ${unprocessedChangedFeeData.entries.size} unprocessed fee data")
+    if (unprocessedChangedFeeData.entries.isNotEmpty()) logger.info("VardaUpdate: found ${unprocessedChangedFeeData.entries.size} unprocessed fee data")
 
-    unprocessedChangedFeeData.entries.forEach {
+    unprocessedChangedFeeData.entries.forEach { it ->
         val serviceNeedId = it.key
         processedServiceNeedIds.add(serviceNeedId)
         val vardaServiceNeed = db.read { it.getVardaServiceNeedByEvakaServiceNeedId(serviceNeedId) }
@@ -312,7 +312,7 @@ fun handleNewEvakaServiceNeed(db: Database.Connection, client: VardaClient, serv
 fun retryUnsuccessfulServiceNeedVardaUpdates(db: Database.Connection, vardaClient: VardaClient): List<UUID> {
     val unsuccessfullyUploadedServiceNeeds = db.read { it.getUnsuccessfullyUploadVardaServiceNeeds() }
 
-    if (unsuccessfullyUploadedServiceNeeds.size > 0)
+    if (unsuccessfullyUploadedServiceNeeds.isNotEmpty())
         logger.info("VardaUpdate: retrying failed varda uploads: ${unsuccessfullyUploadedServiceNeeds.size}")
 
     return unsuccessfullyUploadedServiceNeeds.map {
@@ -660,7 +660,7 @@ WHERE evaka_service_need_id = :serviceNeedId
     .execute()
 
 private fun calculateDeletedChildServiceNeeds(db: Database.Connection): Map<UUID, List<UUID>> {
-    return db.read {
+    return db.read { it ->
         it.createQuery(
             """
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids

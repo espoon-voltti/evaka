@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 This service handles messaging between [evaka-service](../service/README.md) and Suomi.fi Viestit.
 
-This services exposes a REST API for sending Suomi.fi messages to citizens.
+This service exposes a REST API for sending Suomi.fi messages to citizens.
 
 Suomi.fi Viestit WSDL API documentation: <https://palveluhallinta.suomi.fi/fi/tuki/artikkelit/5c71aeaf46e7410049a6d8ad>
 
@@ -190,7 +190,7 @@ Repeat for all environments:
     ```
 
     - To find the old alias, list the keys with: `keytool -list -v -keystore trustStore.jks`
-    - **NOTE:** Only delete when its no longer in use (i.e. you can add a new one beforehand but don't delete the old one until VIA has updated their certificate)
+    - **NOTE:** Only delete when its no longer in use (i.e., you can add a new one beforehand but don't delete the old one until VIA has updated their certificate)
 1. Upload updated trust store
 1. Re-deploy all ECS service tasks:
 
@@ -203,8 +203,8 @@ Repeat for all environments:
 ## OWASP dependency check
 
 Service dependencies are checked for security vulnerabilities with
-the [OWASP dependecy-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
-plugin. Dependencies are checked on every build with the command `./gradlew dependencyCheckAnalyze`. By default even
+the [OWASP dependency-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
+plugin. Dependencies are checked on every build with the command `./gradlew dependencyCheckAnalyze`. By default, even
 minor vulnerabilities break the build, but they can
 be [suppressed](https://jeremylong.github.io/DependencyCheck/general/suppression.html) when needed. The suppression
 rules are configured [here](./owasp-suppressions.xml).

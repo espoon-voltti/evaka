@@ -90,7 +90,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
         Audit.AbsenceRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
-        val absences = db.read { absenceService.getAbscencesByChild(it, childId, year, month) }
+        val absences = db.read { absenceService.getAbsencesByChild(it, childId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
 

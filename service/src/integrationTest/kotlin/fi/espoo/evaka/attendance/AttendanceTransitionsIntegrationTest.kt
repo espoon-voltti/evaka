@@ -365,7 +365,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `post full day absence - happy case when coming to prepaatory_daycare`() {
+    fun `post full day absence - happy case when coming to preparatory_daycare`() {
         givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
         givenChildComing()
 

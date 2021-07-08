@@ -50,8 +50,8 @@ import java.util.UUID
 private val logger = KotlinLogging.logger { }
 
 fun Database.Transaction.runDevScript(devScriptName: String) {
-    val path = "dev-data/" + devScriptName
-    logger.info("Running SQL script: " + path)
+    val path = "dev-data/$devScriptName"
+    logger.info("Running SQL script: $path")
     ClassPathResource(path).inputStream.use {
         it.bufferedReader().readText().let { content ->
             execute(content)

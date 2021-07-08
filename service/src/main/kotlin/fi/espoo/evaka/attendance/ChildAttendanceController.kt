@@ -97,17 +97,17 @@ class ChildAttendanceController(
             return ResponseEntity.ok(ChildResult(status = ChildResultStatus.WRONG_PIN, child = null))
         }
 
-        val result = db.transaction {
-            if (it.employeePinIsCorrect(body.staffId, body.pin)) {
-                it.resetEmployeePinFailureCount(body.staffId)
-                it.getChildSensitiveInfo(childId)?.let {
+        val result = db.transaction { tx ->
+            if (tx.employeePinIsCorrect(body.staffId, body.pin)) {
+                tx.resetEmployeePinFailureCount(body.staffId)
+                tx.getChildSensitiveInfo(childId)?.let {
                     ChildResult(
                         status = ChildResultStatus.SUCCESS,
                         child = it
                     )
                 } ?: ChildResult(status = ChildResultStatus.NOT_FOUND)
             } else {
-                if (it.updateEmployeePinFailureCountAndCheckIfLocked(body.staffId)) {
+                if (tx.updateEmployeePinFailureCountAndCheckIfLocked(body.staffId)) {
                     ChildResult(status = ChildResultStatus.PIN_LOCKED, child = null)
                 } else {
                     ChildResult(status = ChildResultStatus.WRONG_PIN, child = null)

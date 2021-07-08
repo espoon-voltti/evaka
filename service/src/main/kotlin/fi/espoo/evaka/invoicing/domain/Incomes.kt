@@ -31,15 +31,13 @@ data class Income(
     fun totalIncome(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier > 0 }
-            .map { (type, value) -> type.multiplier * value.monthlyAmount() }
-            .sum()
+            .sumOf { (type, value) -> type.multiplier * value.monthlyAmount() }
 
     @JsonProperty("totalExpenses")
     fun totalExpenses(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier < 0 }
-            .map { (type, value) -> -1 * type.multiplier * value.monthlyAmount() }
-            .sum()
+            .sumOf { (type, value) -> -1 * type.multiplier * value.monthlyAmount() }
 
     @JsonProperty("total")
     fun total(): Int = incomeTotal(data)
@@ -67,20 +65,17 @@ data class DecisionIncome(
     fun totalIncome(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier > 0 }
-            .map { (type, value) -> type.multiplier * value }
-            .sum()
+            .sumOf { (type, value) -> type.multiplier * value }
 
     @JsonProperty("totalExpenses")
     fun totalExpenses(): Int =
         data.entries
             .filter { (type, _) -> type.multiplier < 0 }
-            .map { (type, value) -> -1 * type.multiplier * value }
-            .sum()
+            .sumOf { (type, value) -> -1 * type.multiplier * value }
 }
 
 fun incomeTotal(data: Map<IncomeType, IncomeValue>) = data.entries
-    .map { (type, value) -> type.multiplier * value.monthlyAmount() }
-    .sum()
+    .sumOf { (type, value) -> type.multiplier * value.monthlyAmount() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient) {

@@ -65,7 +65,7 @@ class AsyncJobRunnerTest : AbstractIntegrationTest() {
 
     @Test
     fun testCompleteRetry() {
-        val failingFuture = this.setAsyncJobCallback { _ -> throw LetsRollbackException() }
+        val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
         asyncJobRunner.plan(listOf(SendMessage(testMsg)), 20, Duration.ZERO)
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
 
