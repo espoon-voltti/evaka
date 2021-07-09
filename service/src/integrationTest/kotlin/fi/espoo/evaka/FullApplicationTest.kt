@@ -55,6 +55,8 @@ abstract class FullApplicationTest {
 
     @Autowired
     protected lateinit var env: Environment
+    @Autowired
+    protected lateinit var evakaEnv: EvakaEnv
 
     protected lateinit var feeDecisionMinDate: LocalDate
     protected lateinit var vardaOrganizerName: String

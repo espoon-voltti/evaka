@@ -38,6 +38,15 @@ aws:
 
 fee_decision_min_date: "2015-01-01"
 
+evaka:
+  integration:
+    koski:
+      enabled: false
+      secret: ""
+      source_system: TestSystemCode
+      url: ""
+      user: ""
+
 fi:
   espoo:
     evaka:

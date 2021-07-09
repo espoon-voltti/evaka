@@ -5,6 +5,7 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.KoskiEnv
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -56,9 +57,10 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester = KoskiTester(
             jdbi,
             KoskiClient(
+                KoskiEnv.fromEnvironment(env).copy(
+                    url = "http://localhost:${koskiServer.port}",
+                ),
                 fuel = http,
-                env = env,
-                baseUrl = "http://localhost:${koskiServer.port}",
                 asyncJobRunner = null
             )
         )
