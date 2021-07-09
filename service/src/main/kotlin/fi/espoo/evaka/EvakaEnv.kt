@@ -27,6 +27,28 @@ data class EvakaEnv(
     }
 }
 
+data class DatabaseEnv(
+    val url: String,
+    val username: String,
+    val password: Sensitive<String>,
+    val flywayUsername: String,
+    val flywayPassword: Sensitive<String>,
+    val leakDetectionThreshold: Long,
+    val maximumPoolSize: Int
+) {
+    companion object {
+        fun fromEnvironment(env: Environment) = DatabaseEnv(
+            url = env.lookup("evaka.database.url", "spring.datasource.url"),
+            username = env.lookup("evaka.database.username", "spring.datasource.username"),
+            password = Sensitive(env.lookup("evaka.database.password", "spring.datasource.password")),
+            flywayUsername = env.lookup("evaka.database.flyway.username", "flyway.username"),
+            flywayPassword = Sensitive(env.lookup("evaka.database.flyway.password", "flyway.password")),
+            leakDetectionThreshold = env.lookup("evaka.database.leak_detection_threshold", "spring.datasource.hikari.leak-detection-threshold") ?: 0,
+            maximumPoolSize = env.lookup("evaka.database.maximum_pool_size", "spring.datasource.hikari.maximumPoolSize") ?: 10
+        )
+    }
+}
+
 data class EmailEnv(
     val enabled: Boolean,
     val whitelist: List<Regex>?,

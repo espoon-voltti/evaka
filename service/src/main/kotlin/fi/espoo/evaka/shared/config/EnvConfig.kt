@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.KoskiEnv
@@ -34,4 +35,7 @@ class EnvConfig {
 
     @Bean
     fun vardaEnv(env: Environment): VardaEnv = VardaEnv.fromEnvironment(env)
+
+    @Bean
+    fun databaseEnv(env: Environment): DatabaseEnv = DatabaseEnv.fromEnvironment(env)
 }
