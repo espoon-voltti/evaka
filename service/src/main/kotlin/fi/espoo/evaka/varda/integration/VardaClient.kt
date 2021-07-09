@@ -141,8 +141,10 @@ class VardaClient(
         }
     }
 
-    fun getPersonFromVardaByOidOrSSN(ssn: String?, oid: String?): VardaPersonResponse? {
-        check(ssn != null || oid != null)
+    fun getPersonFromVardaBySsnOrOid(ssn: String?, oid: String?): VardaPersonResponse? {
+        check(ssn != null || oid != null) {
+            "Both params ssn and oid shouln't be null"
+        }
 
         logger.info { "Fetching person from Varda" }
         data class PersonSearchRequest(val henkilotunnus: String?, val henkilo_oid: String?)
