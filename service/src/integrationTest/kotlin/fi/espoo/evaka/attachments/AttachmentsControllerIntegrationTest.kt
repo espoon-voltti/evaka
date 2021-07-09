@@ -43,7 +43,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Enduser can upload attachments up to the limit`() {
-        val maxAttachments = env.getProperty("fi.espoo.evaka.maxAttachmentsPerUser")!!.toInt()
+        val maxAttachments = evakaEnv.maxAttachmentsPerUser
         db.transaction {
             it.insertApplication(applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
         }

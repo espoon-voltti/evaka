@@ -5,7 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.BucketEnv
-import org.springframework.beans.factory.annotation.Value
+import fi.espoo.evaka.EvakaEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -47,20 +47,14 @@ class AwsConfig {
 
     @Bean
     @Profile("production")
-    fun amazonS3Prod(
-        @Value("\${aws.region}") region: String,
-        credentialsProvider: AwsCredentialsProvider
-    ): S3Client = S3Client.builder()
-        .region(Region.of(region))
+    fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client = S3Client.builder()
+        .region(env.awsRegion)
         .credentialsProvider(credentialsProvider)
         .build()
 
     @Bean
-    fun amazonSES(
-        @Value("\${aws.region}") region: String,
-        awsCredentialsProvider: AwsCredentialsProvider?
-    ): SesClient = SesClient.builder()
+    fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient = SesClient.builder()
         .credentialsProvider(awsCredentialsProvider)
-        .region(Region.of(region))
+        .region(env.awsRegion)
         .build()
 }

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
@@ -22,14 +23,13 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.util.UUID
 
 @Component
-class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: Environment) {
-    private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
+class FinanceDecisionGenerator(private val objectMapper: ObjectMapper, env: EvakaEnv) {
+    private val feeDecisionMinDate = env.feeDecisionMinDate
 
     fun createRetroactive(tx: Database.Transaction, headOfFamily: UUID, from: LocalDate) {
         val period = DateRange(from, null)
