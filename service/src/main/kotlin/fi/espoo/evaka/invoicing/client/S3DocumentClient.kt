@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.invoicing.client
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.shared.FeeDecisionId
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -18,9 +18,10 @@ private val logger = KotlinLogging.logger {}
 @Service("invoicingS3DocumentClient")
 class S3DocumentClient(
     private val s3Client: S3Client,
-    @Value("\${fi.espoo.voltti.document.bucket.paymentdecision}")
-    private val feeDecisionBucket: String
+    env: BucketEnv
 ) {
+    private val feeDecisionBucket = env.feeDecisions
+
     fun upload(bucketName: String, document: Document, contentType: String) {
         val key = document.key
         val request = PutObjectRequest.builder()

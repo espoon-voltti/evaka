@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.service
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.invoicing.client.S3DocumentClient
 import fi.espoo.evaka.invoicing.data.getValueDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
@@ -25,7 +26,6 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.shared.message.langWithDefault
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
@@ -36,9 +36,9 @@ class VoucherValueDecisionService(
     private val s3Client: S3DocumentClient,
     private val messageProvider: IMessageProvider,
     private val messageClient: IEvakaMessageClient,
-    env: Environment
+    env: BucketEnv
 ) {
-    private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.vouchervaluedecision")
+    private val bucket = env.voucherValueDecisions
 
     fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)

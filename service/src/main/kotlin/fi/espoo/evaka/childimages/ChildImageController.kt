@@ -5,12 +5,12 @@
 package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import org.springframework.core.env.Environment
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -27,9 +27,9 @@ import java.util.UUID
 class ChildImageController(
     private val acl: AccessControlList,
     private val documentClient: DocumentService,
-    env: Environment
+    env: BucketEnv
 ) {
-    private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.data")
+    private val bucket = env.data
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun putImage(

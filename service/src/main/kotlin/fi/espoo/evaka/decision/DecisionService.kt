@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.decision
 
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -33,7 +34,6 @@ import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 import java.util.Locale
@@ -42,16 +42,17 @@ val logger = KotlinLogging.logger { }
 
 @Service
 class DecisionService(
-    @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}")
-    private val decisionBucket: String,
     private val personService: PersonService,
     private val s3Client: DocumentService,
     private val templateProvider: ITemplateProvider,
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
     private val evakaMessageClient: IEvakaMessageClient,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner,
+    env: BucketEnv,
 ) {
+    private val decisionBucket = env.decisions
+
     fun finalizeDecisions(
         tx: Database.Transaction,
         user: AuthenticatedUser,

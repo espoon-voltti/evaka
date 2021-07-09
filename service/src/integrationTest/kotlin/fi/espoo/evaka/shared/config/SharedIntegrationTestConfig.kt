@@ -8,6 +8,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -82,8 +83,6 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
     }
 }
 
-val mockS3Bucket = "test-bucket"
-
 @TestConfiguration
 class SharedIntegrationTestConfig {
     @Bean
@@ -121,7 +120,7 @@ class SharedIntegrationTestConfig {
         }
 
     @Bean
-    fun s3Client(): S3Client {
+    fun s3Client(env: BucketEnv): S3Client {
         val port = when (isCiEnvironment()) {
             true -> S3Container.getInstance().getMappedPort(9090)
             false -> 9876
@@ -135,7 +134,7 @@ class SharedIntegrationTestConfig {
             )
             .build()
 
-        for (bucket in listOf(mockS3Bucket, "evaka-daycaredecisions-it", "evaka-paymentdecisions-it", "evaka-vouchervaluedecisions-it", "evaka-attachments-it", "evaka-data-it")) {
+        for (bucket in env.allBuckets()) {
             val request = CreateBucketRequest.builder().bucket(bucket).build()
             client.createBucket(request)
         }
