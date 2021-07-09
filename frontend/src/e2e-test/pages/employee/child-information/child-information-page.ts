@@ -259,7 +259,7 @@ export default class ChildInformationPage {
     })
 
     await t.expect(selectVtjGuardianSelector.innerText).contains(expectedText)
-    await t.pressKey('enter')
+    await t.click(selectVtjGuardianSelector.find(`[data-qa="person-${ssn}"]`))
   }
 
   public async selectCreateNewPersonAsGuardian(

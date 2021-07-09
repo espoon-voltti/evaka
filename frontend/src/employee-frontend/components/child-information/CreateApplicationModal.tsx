@@ -23,7 +23,6 @@ import {
 } from '../../api/applications'
 import { getEmployeeUrlPrefix } from '../../constants'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import VtjPersonSearch from '../../components/common/VtjPersonSearch'
 import CreatePersonInput from '../../components/common/CreatePersonInput'
 import { CreatePersonBody } from '../../api/person'
 import { ApplicationType } from 'lib-common/api-types/application/enums'
@@ -235,7 +234,9 @@ function CreateApplicationModal({
                 label={i18nView.personTypes.VTJ}
                 onChange={() => setPersonType('VTJ')}
               />
-              <VtjPersonSearch
+              <PersonSearch
+                searchFrom="vtj"
+                data-qa="select-search-from-vtj-guardian"
                 onResult={(res) =>
                   setNewVtjPersonSsn(res?.socialSecurityNumber || undefined)
                 }

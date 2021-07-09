@@ -9,6 +9,7 @@ import { useRestApi } from 'lib-common/utils/useRestApi'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import Combobox from '../../../lib-components/atoms/form/Combobox'
+import { BaseProps } from '../../../lib-components/utils'
 import {
   findByNameOrAddress,
   getOrCreatePersonBySsn,
@@ -25,6 +26,16 @@ const Container = styled.div`
   margin: 10px 0;
 `
 
+const searchFromVtj = async (q: string): Promise<Result<PersonDetails[]>> => {
+  if (isSsnValid(q.toUpperCase())) {
+    return await getOrCreatePersonBySsn(q.toUpperCase(), true).then((res) =>
+      res.map((r) => [r])
+    )
+  }
+
+  return Success.of([])
+}
+
 const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   if (isSsnValid(q.toUpperCase())) {
     return await getOrCreatePersonBySsn(q.toUpperCase(), false).then((res) =>
@@ -39,18 +50,21 @@ const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   return await findByNameOrAddress(q, 'last_name,first_name', 'ASC')
 }
 
-interface Props {
+interface Props extends BaseProps {
   onResult: (result: PersonDetails | undefined) => void
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void
   onlyChildren?: boolean
   onlyAdults?: boolean
+  searchFrom?: 'db' | 'vtj'
 }
 
 function PersonSearch({
   onResult,
   onFocus,
   onlyChildren = false,
-  onlyAdults = false
+  onlyAdults = false,
+  searchFrom = 'db',
+  'data-qa': dataQa
 }: Props) {
   const { i18n } = useTranslation()
   const [query, setQuery] = useState('')
@@ -64,10 +78,13 @@ function PersonSearch({
     onResult(selectedPerson)
   }, [selectedPerson]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const searchPeople = useRestApi(search, setPersons)
+  const searchPeople = useRestApi(
+    searchFrom === 'db' ? search : searchFromVtj,
+    setPersons
+  )
   useEffect(() => {
     searchPeople(debouncedQuery)
-  }, [debouncedQuery]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchPeople, debouncedQuery])
 
   const filterPeople = (people: PersonDetails[]) =>
     people.filter((person) =>
@@ -86,7 +103,7 @@ function PersonSearch({
   )
 
   const formatItemLabel = useCallback(
-    ({ firstName, lastName }: PersonDetails): string =>
+    ({ firstName, lastName }: PersonDetails) =>
       formatName(firstName, lastName, i18n),
     [i18n]
   )
@@ -104,8 +121,24 @@ function PersonSearch({
     [i18n]
   )
 
+  const filterItems = useCallback(
+    (_, items: PersonDetails[]) =>
+      searchFrom === 'vtj'
+        ? items.filter((i) => i.socialSecurityNumber)
+        : items,
+    [searchFrom]
+  )
+  const getItemDataQa = useCallback(
+    ({ id, socialSecurityNumber }: PersonDetails) =>
+      `person-${searchFrom === 'db' ? id : socialSecurityNumber ?? 'null'}`,
+    [searchFrom]
+  )
+  const onChange = useCallback(
+    (option: PersonDetails | null) => setSelectedPerson(option || undefined),
+    []
+  )
   return (
-    <Container>
+    <Container data-qa={dataQa}>
       <Combobox
         placeholder={i18n.common.search}
         clearable
@@ -113,12 +146,12 @@ function PersonSearch({
         items={options}
         getItemLabel={formatItemLabel}
         getMenuItemLabel={formatMenuItemLabel}
-        getItemDataQa={({ id }) => `value-${id}`}
+        getItemDataQa={getItemDataQa}
         onInputChange={setQuery}
-        onChange={(option) => setSelectedPerson(option || undefined)}
+        onChange={onChange}
         isLoading={persons.isLoading || query !== debouncedQuery}
         menuEmptyLabel={i18n.common.noResults}
-        filterItems={(_, items) => items}
+        filterItems={filterItems}
         onFocus={onFocus}
       />
     </Container>
