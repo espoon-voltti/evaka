@@ -48,11 +48,7 @@ aws:
 evaka:
   integration:
     koski:
-      enabled: true
-      secret: ""
-      source_system: EspooVarda
-      url: http://localhost:8888/mock-integration/koski/api
-      user: ""
+      enabled: false
 
 fi:
   espoo:
