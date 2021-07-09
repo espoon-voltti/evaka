@@ -247,11 +247,9 @@ export default function Combobox<T>(props: Props<T>) {
     ({ isOpen, inputValue }: UseComboboxStateChange<T>) => {
       if (isOpen) {
         setCurrentFilter(inputValue ?? '')
+        onInputChange?.(inputValue ?? '')
       } else {
         setCurrentFilter('')
-      }
-      if (onInputChange) {
-        onInputChange(inputValue ?? '')
       }
     },
     [onInputChange, setCurrentFilter]
