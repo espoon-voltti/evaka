@@ -5,12 +5,15 @@
 package fi.espoo.evaka
 
 import org.springframework.core.env.Environment
+import java.net.URI
 import java.util.Locale
 
 /**
  * A type-safe configuration parsed from environment variables / other property sources supported by Spring Boot by default
  */
 data class EvakaEnv(
+    val bucketName: BucketNameEnv,
+    val s3MockUrl: URI,
     val koski: KoskiEnv?
 ) {
     val koskiEnabled: Boolean
@@ -21,9 +24,31 @@ data class EvakaEnv(
             val koskiEnabled = env.lookup("evaka.integration.koski.enabled", "fi.integration.koski.enabled") ?: false
 
             return EvakaEnv(
-                if (koskiEnabled) KoskiEnv.fromEnvironment(env) else null
+                bucketName = BucketNameEnv.fromEnvironment(env),
+                s3MockUrl = env.lookup("evaka.s3mock.url", "fi.espoo.voltti.s3mock.url"),
+                koski = if (koskiEnabled) KoskiEnv.fromEnvironment(env) else null
             )
         }
+    }
+}
+
+data class BucketNameEnv(
+    val data: String,
+    val attachments: String,
+    val decisions: String,
+    val feeDecisions: String,
+    val voucherValueDecisions: String
+) {
+    fun allBuckets() = listOf(data, attachments, decisions, feeDecisions, voucherValueDecisions)
+
+    companion object {
+        fun fromEnvironment(env: Environment) = BucketNameEnv(
+            data = env.lookup("evaka.bucket_name.data", "fi.espoo.voltti.document.bucket.data"),
+            attachments = env.lookup("evaka.bucket_name.attachments", "fi.espoo.voltti.document.bucket.attachments"),
+            decisions = env.lookup("evaka.bucket_name.decisions", "fi.espoo.voltti.document.bucket.daycaredecision"),
+            feeDecisions = env.lookup("evaka.bucket_name.fee_decisions", "fi.espoo.voltti.document.bucket.paymentdecision"),
+            voucherValueDecisions = env.lookup("evaka.bucket_name.voucher_value_decisions", "fi.espoo.voltti.document.bucket.vouchervaluedecision"),
+        )
     }
 }
 
