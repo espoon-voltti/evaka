@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -23,8 +23,8 @@ data class KoskiSearchParams(
 
 @Service
 class KoskiUpdateService(
-    private val env: Environment,
-    private val asyncJobRunner: AsyncJobRunner
+    private val asyncJobRunner: AsyncJobRunner,
+    private val env: EvakaEnv
 ) {
     init {
         asyncJobRunner.scheduleKoskiUploads = { db, msg -> scheduleKoskiUploads(db, msg.params) }
@@ -34,8 +34,7 @@ class KoskiUpdateService(
         scheduleKoskiUploads(it, params)
     }
     fun scheduleKoskiUploads(db: Database.Connection, params: KoskiSearchParams) {
-        val isEnabled: Boolean = env.getRequiredProperty("fi.espoo.integration.koski.enabled", Boolean::class.java)
-        if (isEnabled) {
+        if (env.koskiEnabled) {
             db.transaction { tx ->
                 val requests = tx.getPendingStudyRights(LocalDate.now(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
