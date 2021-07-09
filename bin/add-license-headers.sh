@@ -8,7 +8,7 @@ set -euo pipefail
 
 # Configuration
 DEBUG=${DEBUG:-false}
-REUSE_VERSION=0.12.1
+REUSE_VERSION=0.13.0
 REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
 
 if [ "$DEBUG" = "true" ]; then
@@ -99,13 +99,7 @@ while IFS= read -r file; do
         continue
     fi
 
-    # Explicitly define styles for some common files not yet recognized by a released version of reuse:
-    if [[ "$file" = *svg ]] || [[ "$file" = *json ]]; then
-        cmd_args=('--explicit-license')
-        addheader "$file" "${cmd_args[@]}"
-    else
-        addheader "$file"
-    fi
+    addheader "$file"
 done <<< "$NONCOMPLIANT_FILES"
 
 echo 'All files are REUSE compliant, excluding known compliant files'
