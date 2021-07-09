@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
+import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
@@ -32,7 +33,6 @@ import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -45,10 +45,10 @@ class VardaUpdateServiceV2(
     private val asyncJobRunner: AsyncJobRunner,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
-    private val env: Environment,
     private val mapper: ObjectMapper,
+    private val env: VardaEnv
 ) {
-    private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
+    private val organizer = env.organizer
 
     init {
         asyncJobRunner.vardaUpdateV2 = ::updateAll
@@ -57,7 +57,7 @@ class VardaUpdateServiceV2(
     fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {
         if (runNow) {
             logger.info("VardaUpdate: running varda update immediately")
-            val client = VardaClient(tokenProvider, fuel, env, mapper)
+            val client = VardaClient(tokenProvider, fuel, mapper, env)
             updateAllVardaData(db, client, organizer)
         } else {
             logger.info("VardaUpdate: scheduling varda update")
@@ -66,12 +66,12 @@ class VardaUpdateServiceV2(
     }
 
     fun updateAll(db: Database, msg: VardaUpdateV2) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
         db.connect { updateAllVardaData(it, client, organizer) }
     }
 
     fun resetChildren(db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
 
         val resetChildIds = db.read { it.getVardaChildrenToReset() }
         logger.info("VardaUpdate: will reset ${resetChildIds.size} children")
@@ -98,7 +98,7 @@ class VardaUpdateServiceV2(
     }
 
     fun clearAllExistingVardaChildDataFromVarda(db: Database.Connection, vardaChildId: Long) {
-        val vardaClient = VardaClient(tokenProvider, fuel, env, mapper)
+        val vardaClient = VardaClient(tokenProvider, fuel, mapper, env)
 
         try {
             val feeDataIds = vardaClient.getFeeDataByChild(vardaChildId)

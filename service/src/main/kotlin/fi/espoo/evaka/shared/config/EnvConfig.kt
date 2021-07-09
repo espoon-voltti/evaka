@@ -8,6 +8,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.VardaEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -30,4 +31,7 @@ class EnvConfig {
 
     @Bean
     fun emailEnv(env: Environment): EmailEnv = EmailEnv.fromEnvironment(env)
+
+    @Bean
+    fun vardaEnv(env: Environment): VardaEnv = VardaEnv.fromEnvironment(env)
 }

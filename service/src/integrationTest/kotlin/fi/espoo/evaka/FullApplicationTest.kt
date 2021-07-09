@@ -76,9 +76,10 @@ abstract class FullApplicationTest {
         db.transaction { it.resetDatabase() }
         feeDecisionMinDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
-        vardaTokenProvider = VardaTempTokenProvider(http, env, objectMapper, vardaBaseUrl)
-        vardaClient = VardaClient(vardaTokenProvider, http, env, objectMapper, vardaBaseUrl)
-        vardaOrganizerName = env.getProperty("fi.espoo.varda.organizer", "Espoo")
+        val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
+        vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
+        vardaClient = VardaClient(vardaTokenProvider, http, objectMapper, vardaEnv)
+        vardaOrganizerName = vardaEnv.organizer
     }
 
     @AfterAll
