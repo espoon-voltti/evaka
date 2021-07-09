@@ -139,6 +139,7 @@ interface Props<T> {
   isLoading?: boolean
   menuEmptyLabel?: string
   onFocus?: FocusEventHandler<HTMLInputElement>
+  onInputChange?: (newValue: string) => void
   children?: {
     menuItem?: (props: MenuItemProps<T>) => React.ReactNode
     menuEmptyItem?: (label: string) => React.ReactNode
@@ -183,6 +184,7 @@ export default function Combobox<T>(props: Props<T>) {
     isLoading,
     menuEmptyLabel,
     onFocus,
+    onInputChange,
     children,
     fullWidth,
     'data-qa': dataQa
@@ -245,8 +247,11 @@ export default function Combobox<T>(props: Props<T>) {
       } else {
         setCurrentFilter('')
       }
+      if (onInputChange) {
+        onInputChange(inputValue ?? '')
+      }
     },
-    [setCurrentFilter]
+    [onInputChange, setCurrentFilter]
   )
   const onIsOpenChange = useCallback(
     ({ isOpen }: UseComboboxStateChange<T>) => {
