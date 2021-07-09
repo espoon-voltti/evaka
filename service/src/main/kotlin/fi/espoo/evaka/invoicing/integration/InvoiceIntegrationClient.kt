@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
+import fi.espoo.evaka.EspooInvoiceEnv
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Product
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
@@ -32,19 +32,15 @@ interface InvoiceIntegrationClient {
     }
 
     class Client(
-        env: Environment,
+        private val env: EspooInvoiceEnv,
         private val objectMapper: ObjectMapper
     ) : InvoiceIntegrationClient {
-        private val url: String = env.getRequiredProperty("fi.espoo.integration.invoice.url")
-        private val username: String = env.getRequiredProperty("fi.espoo.integration.invoice.username")
-        private val password: String = env.getRequiredProperty("fi.espoo.integration.invoice.password")
-
         override fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
             val batch = createBatchExports(invoices, agreementType)
             val payload = objectMapper.writeValueAsString(batch)
             logger.debug("Sending invoice batch ${batch.batchNumber} to integration, payload: $payload")
-            val (_, _, result) = Fuel.post("$url/invoice-batches")
-                .authentication().basic(username, password)
+            val (_, _, result) = Fuel.post("${env.url}/invoice-batches")
+                .authentication().basic(env.username, env.password.value)
                 .jsonBody(payload)
                 .responseString()
 
