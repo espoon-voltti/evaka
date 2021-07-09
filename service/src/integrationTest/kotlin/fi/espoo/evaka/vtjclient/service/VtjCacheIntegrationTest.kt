@@ -4,21 +4,28 @@
 
 package fi.espoo.evaka.vtjclient.service
 
-import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Import
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import redis.clients.jedis.JedisPool
 import kotlin.test.assertEquals
 
-@ExtendWith(SpringExtension::class)
-@Import(VtjCacheIntegrationTestConfig::class, SharedIntegrationTestConfig::class)
-class VtjCacheIntegrationTest {
+class VtjCacheIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var service: VtjCache
+
+    @Autowired
+    lateinit var redisPool: JedisPool
+
+    @BeforeEach
+    protected fun beforeEach() {
+        redisPool.resource.use {
+            it.flushDB()
+        }
+    }
 
     @Test
     fun `service save returns the saved value`() {
