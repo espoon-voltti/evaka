@@ -28,7 +28,13 @@ module.exports = {
     args: './gradlew --no-daemon bootRun',
     cwd: path.resolve(__dirname, '../service'),
     ...defaults
-  },
+  }, /*{
+    name: 'ai',
+    script: `${__dirname}/run-after-db.sh`,
+    args: './gradlew --no-daemon bootRun',
+    cwd: path.resolve(__dirname, '../../evaka-ai'),
+    ...defaults
+  },*/
     /*{
     name: 'message-srv',
     script: `${__dirname}/run-after-db.sh`,

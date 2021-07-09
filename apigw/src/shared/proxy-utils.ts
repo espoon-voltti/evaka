@@ -10,10 +10,15 @@ import { createServiceRequestHeaders } from './service-client'
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)
   multipart?: boolean
+  url?: string
 }
 
-export function createProxy({ path, multipart = false }: ProxyOptions = {}) {
-  return expressHttpProxy(evakaServiceUrl, {
+export function createProxy({
+  path,
+  multipart = false,
+  url = evakaServiceUrl
+}: ProxyOptions = {}) {
+  return expressHttpProxy(url, {
     parseReqBody: !multipart,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {

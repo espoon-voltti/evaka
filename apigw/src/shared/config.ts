@@ -99,6 +99,10 @@ export const evakaServiceUrl = required(
   process.env.EVAKA_SERVICE_URL ??
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
 )
+export const evakaAIUrl =
+  process.env.EVAKA_AI_URL ??
+  ifNodeEnv(['local', 'test'], 'http://localhost:8889')
+
 export const cookieSecret = required(
   process.env.COOKIE_SECRET ??
     ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')

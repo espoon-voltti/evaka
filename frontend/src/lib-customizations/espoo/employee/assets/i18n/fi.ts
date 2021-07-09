@@ -6,6 +6,7 @@ export const fi = {
   titles: {
     defaultTitle: 'Varhaiskasvatus',
     login: 'Kirjaudu sisään',
+    ai: 'AI test',
     applications: 'Hakemukset',
     units: 'Yksiköt',
     customers: 'Asiakastiedot',

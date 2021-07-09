@@ -71,6 +71,7 @@ import WelcomePage from './components/WelcomePage'
 import VasuPage from './components/vasu/VasuPage'
 import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
+import AIPage from './components/ai/AIPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -118,6 +119,14 @@ export default function App() {
               component={LoginPage}
               title={i18n.titles.login}
             />
+            {featureFlags.ai && (
+              <RouteWithTitle
+                exact
+                path="/ai"
+                component={AIPage}
+                title={i18n.titles.ai}
+              />
+            )}
             <RouteWithTitle
               exact
               path="/units"
