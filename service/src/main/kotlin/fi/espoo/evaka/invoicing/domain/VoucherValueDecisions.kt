@@ -210,10 +210,10 @@ fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate = when (da
 
 fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): BigDecimal {
     val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
-    val birthdayInMiddleOfPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
+    val periodStartInMiddleOfTargetPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
 
-    check(!birthdayInMiddleOfPeriod) {
-        "Third birthday ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
+    check(!periodStartInMiddleOfTargetPeriod) {
+        "Third birthday period start ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
     }
 
     return when {
