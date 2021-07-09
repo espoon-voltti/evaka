@@ -12,8 +12,8 @@ import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
+import fi.espoo.evaka.DvvModificationsEnv
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -28,13 +28,13 @@ class DvvModificationsServiceClient(
     private val objectMapper: ObjectMapper,
     private val fuel: FuelManager,
     private val customizers: List<DvvModificationRequestCustomizer>,
-    private val env: Environment,
-    private val serviceUrl: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.url")
+    env: DvvModificationsEnv
 ) {
-    private val dvvUserId = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.userId")
-    private val dvvPassword = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.password")
-    private val dvvXroadClientId: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.xRoadClientId")
-    private val dvvProductCode: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.productCode")
+    private val serviceUrl: String = env.url
+    private val dvvUserId = env.userId
+    private val dvvPassword = env.password
+    private val dvvXroadClientId: String = env.xroadClientId
+    private val dvvProductCode: String = env.productCode
 
     // Fetch the first modification token of the given date
     fun getFirstModificationToken(date: LocalDate): DvvModificationServiceModificationTokenResponse? {
@@ -42,7 +42,7 @@ class DvvModificationsServiceClient(
         val (_, _, result) = fuel.get("$serviceUrl/api/v1/kirjausavain/$date")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
-            .header("MUTP-Salasana", dvvPassword)
+            .header("MUTP-Salasana", dvvPassword.value)
             .header("X-Road-Client", dvvXroadClientId)
             .apply { customizers.forEach { it.customize(this) } }
             .responseString()
@@ -68,7 +68,7 @@ class DvvModificationsServiceClient(
         val (_, _, result) = fuel.post("$serviceUrl/api/v1/muutokset")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
-            .header("MUTP-Salasana", dvvPassword)
+            .header("MUTP-Salasana", dvvPassword.value)
             .header("X-Road-Client", dvvXroadClientId)
             .jsonBody(
                 """{

@@ -119,6 +119,18 @@ data class VardaEnv(val organizer: String, val url: String, val sourceSystem: St
     }
 }
 
+data class DvvModificationsEnv(val url: String, val userId: String, val password: Sensitive<String>, val xroadClientId: String, val productCode: String) {
+    companion object {
+        fun fromEnvironment(env: Environment) = DvvModificationsEnv(
+            url = env.lookup("evaka.integration.dvv_modifications.url", "fi.espoo.integration.dvv-modifications-service.url"),
+            userId = env.lookup("evaka.integration.dvv_modifications.user_id", "fi.espoo.integration.dvv-modifications-service.userId"),
+            password = Sensitive(env.lookup("evaka.integration.dvv_modifications.password", "fi.espoo.integration.dvv-modifications-service.password")),
+            xroadClientId = env.lookup("evaka.integration.dvv_modifications.xroad_client_id", "fi.espoo.integration.dvv-modifications-service.xRoadClientId"),
+            productCode = env.lookup("evaka.integration.dvv_modifications.product_code", "fi.espoo.integration.dvv-modifications-service.productCode")
+        )
+    }
+}
+
 data class Sensitive<T>(val value: T) {
     override fun toString(): String = "**REDACTED**"
 }
