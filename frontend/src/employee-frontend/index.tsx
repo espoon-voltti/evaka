@@ -8,6 +8,10 @@ import ReactDOM from 'react-dom'
 import * as Sentry from '@sentry/browser'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import App from './App'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { fontCss } from 'lib-customizations/common'
 import './index.css'
 import { getEnvironment } from 'lib-common/utils/helpers'
 import { config } from './configs'
