@@ -27,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
+import fi.espoo.evaka.invoicing.domain.firstOfMonthAfterThirdBirthday
 import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.shared.DaycareId
@@ -108,8 +109,8 @@ private fun generateNewValueDecisions(
         prices.map { it.validDuring } +
         allPlacements.flatMap { (child, placements) ->
             placements.map { it.first } + listOf(
-                DateRange(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
-                DateRange(child.dateOfBirth.plusYears(3), null)
+                DateRange(child.dateOfBirth, firstOfMonthAfterThirdBirthday(child.dateOfBirth).minusDays(1)),
+                DateRange(firstOfMonthAfterThirdBirthday(child.dateOfBirth), null)
             )
         } +
         feeAlterations.map { DateRange(it.validFrom, it.validTo) }
