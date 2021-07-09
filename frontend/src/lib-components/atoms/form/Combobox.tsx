@@ -16,6 +16,7 @@ import { faChevronDown, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import computeScrollIntoView from 'compute-scroll-into-view'
 import classNames from 'classnames'
+import { SpinnerSegment } from '../state/Spinner'
 
 const borderRadius = '2px'
 
@@ -135,6 +136,7 @@ interface Props<T> {
   filterItems?: (inputValue: string, items: T[]) => T[]
   getItemLabel?: (item: T) => string
   getItemDataQa?: (item: T) => string | undefined
+  isLoading?: boolean
   menuEmptyLabel?: string
   onFocus?: FocusEventHandler<HTMLInputElement>
   children?: {
@@ -178,6 +180,7 @@ export default function Combobox<T>(props: Props<T>) {
     placeholder,
     getItemLabel = defaultGetItemLabel,
     getItemDataQa,
+    isLoading,
     menuEmptyLabel,
     onFocus,
     children,
@@ -340,23 +343,28 @@ export default function Combobox<T>(props: Props<T>) {
         >
           {isOpen && (
             <>
-              {filteredItems.length === 0 && (
+              {isLoading ? (
+                <MenuItemWrapper>
+                  <SpinnerSegment />
+                </MenuItemWrapper>
+              ) : filteredItems.length === 0 ? (
                 <MenuItemWrapper>
                   {renderEmptyResult(menuEmptyLabel ?? '')}
                 </MenuItemWrapper>
+              ) : (
+                filteredItems.map((item, index) => (
+                  <MenuItemWrapper
+                    data-qa="item"
+                    key={index}
+                    {...getItemProps({ item, index })}
+                  >
+                    {renderMenuItem({
+                      item,
+                      highlighted: highlightedIndex === index
+                    })}
+                  </MenuItemWrapper>
+                ))
               )}
-              {filteredItems.map((item, index) => (
-                <MenuItemWrapper
-                  data-qa="item"
-                  key={index}
-                  {...getItemProps({ item, index })}
-                >
-                  {renderMenuItem({
-                    item,
-                    highlighted: highlightedIndex === index
-                  })}
-                </MenuItemWrapper>
-              ))}
             </>
           )}
         </Menu>
