@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
+import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
@@ -15,7 +16,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -45,11 +45,11 @@ class VardaUpdateService(
     private val asyncJobRunner: AsyncJobRunner,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
-    private val env: Environment,
     private val mapper: ObjectMapper,
-    private val personService: PersonService
+    private val personService: PersonService,
+    private val env: VardaEnv,
 ) {
-    private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
+    private val organizer = env.organizer
 
     init {
         asyncJobRunner.vardaUpdate = ::updateAll
@@ -57,7 +57,7 @@ class VardaUpdateService(
 
     fun scheduleVardaUpdate(db: Database.Connection, runNow: Boolean = false) {
         if (runNow) {
-            val client = VardaClient(tokenProvider, fuel, env, mapper)
+            val client = VardaClient(tokenProvider, fuel, mapper, env)
             updateAll(db, client, personService, organizer)
         } else {
             db.transaction { asyncJobRunner.plan(it, listOf(VardaUpdate()), retryCount = 1) }
@@ -65,24 +65,24 @@ class VardaUpdateService(
     }
 
     fun updateAll(db: Database, msg: VardaUpdate) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
         db.connect { updateAll(it, client, personService, organizer) }
     }
 
     fun deleteChild(vardaChildId: Long, db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
         deleteChild(db, client, vardaChildId)
     }
 
     fun deleteFeeDataByChild(vardaChildId: Long, db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
         val feeDataIds = client.getFeeDataByChild(vardaChildId)
 
         deleteFeeData(db, client, feeDataIds)
     }
 
     fun deletePlacementsByChild(vardaChildId: Long, db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
         val decisionIds = client.getDecisionsByChild(vardaChildId)
         val placementIds = decisionIds.flatMap {
             client.getPlacementsByDecision(it)
@@ -92,7 +92,7 @@ class VardaUpdateService(
     }
 
     fun deleteDecisionsByChild(vardaChildId: Long, db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, mapper, env)
         val decisionIds = client.getDecisionsByChild(vardaChildId)
 
         deleteDecisions(db, client, decisionIds)

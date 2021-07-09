@@ -7,8 +7,8 @@ package fi.espoo.evaka.varda.integration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
+import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -33,12 +33,11 @@ interface VardaTokenProvider {
 @Service
 class VardaTempTokenProvider(
     private val fuel: FuelManager,
-    env: Environment,
     private val objectMapper: ObjectMapper,
-    baseUrl: String = env.getRequiredProperty("fi.espoo.integration.varda.url")
+    env: VardaEnv
 ) : VardaTokenProvider {
-    private val basicAuth = "Basic ${env.getProperty("fi.espoo.integration.varda.basic_auth")}"
-    private val apiTokenUrl = "$baseUrl/user/apikey/"
+    private val basicAuth = "Basic ${env.basicAuth.value}"
+    private val apiTokenUrl = "${env.url}/user/apikey/"
 
     // TODO: How to actually enforce that token is mutable only within a single shared mutex?
     private val tokenLock = ReentrantLock()

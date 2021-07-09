@@ -15,6 +15,7 @@ import com.github.kittinunf.fuel.core.ResponseResultOf
 import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
+import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import fi.espoo.evaka.shared.utils.token
 import fi.espoo.evaka.varda.VardaChildPayload
@@ -34,7 +35,6 @@ import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
-import org.springframework.core.env.Environment
 import java.time.LocalDate
 import java.util.UUID
 
@@ -43,24 +43,23 @@ private val logger = KotlinLogging.logger {}
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
-    private val env: Environment,
     private val objectMapper: ObjectMapper,
-    baseUrl: String = env.getRequiredProperty("fi.espoo.integration.varda.url")
+    env: VardaEnv,
 ) {
-    private val organizerUrl = "$baseUrl/v1/vakajarjestajat/"
-    private val unitUrl = "$baseUrl/v1/toimipaikat/"
-    private val personUrl = "$baseUrl/v1/henkilot/"
-    private val personSearchUrl = "$baseUrl/v1/hae-henkilo/"
-    private val childUrl = "$baseUrl/v1/lapset/"
-    private val decisionUrl = "$baseUrl/v1/varhaiskasvatuspaatokset/"
-    private val placementUrl = "$baseUrl/v1/varhaiskasvatussuhteet/"
-    private val feeDataUrl = "$baseUrl/v1/maksutiedot/"
+    private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
+    private val unitUrl = "${env.url}/v1/toimipaikat/"
+    private val personUrl = "${env.url}/v1/henkilot/"
+    private val personSearchUrl = "${env.url}/v1/hae-henkilo/"
+    private val childUrl = "${env.url}/v1/lapset/"
+    private val decisionUrl = "${env.url}/v1/varhaiskasvatuspaatokset/"
+    private val placementUrl = "${env.url}/v1/varhaiskasvatussuhteet/"
+    private val feeDataUrl = "${env.url}/v1/maksutiedot/"
 
     val getPersonUrl = { personId: Long -> "$personUrl$personId/" }
     val getChildUrl = { childId: Long -> "$childUrl$childId/" }
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }
-    val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.varda.source_system")
+    val sourceSystem: String = env.sourceSystem
 
     fun createUnit(unit: VardaUnitRequest): VardaUnitResponse? {
         logger.info { "Creating a new unit ${unit.nimi} to Varda" }

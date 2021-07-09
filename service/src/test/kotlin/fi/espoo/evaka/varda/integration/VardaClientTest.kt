@@ -16,12 +16,12 @@ import com.nhaarman.mockito_kotlin.argThat
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
+import fi.espoo.evaka.Sensitive
+import fi.espoo.evaka.VardaEnv
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.Mockito
 import org.mockito.Mockito.`when`
-import org.springframework.core.env.Environment
 import java.io.ByteArrayInputStream
 import java.net.URL
 import kotlin.test.assertTrue
@@ -33,17 +33,11 @@ class MockVardaTokenProvider : VardaTokenProvider {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VardaClientTest {
-    private val env: Environment = Mockito.mock(Environment::class.java)
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
     private lateinit var mockTokenProvider: VardaTokenProvider
 
     @BeforeAll
     fun beforeAll() {
-        `when`(env.getRequiredProperty("fi.espoo.integration.varda.url"))
-            .thenReturn("https://example.com/mock-integration/varda/api")
-        `when`(env.getRequiredProperty("fi.espoo.integration.varda.source_system"))
-            .thenReturn("SourceSystemVarda")
-
         mockTokenProvider = MockVardaTokenProvider()
     }
 
@@ -65,7 +59,15 @@ class VardaClientTest {
             )
             .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
 
-        val client = VardaClient(mockTokenProvider, fuel, env, objectMapper)
+        val client = VardaClient(
+            mockTokenProvider, fuel, objectMapper,
+            VardaEnv(
+                organizer = "",
+                url = "https://example.com/mock-integration/varda/api",
+                basicAuth = Sensitive(""),
+                sourceSystem = "SourceSystemVarda"
+            )
+        )
 
         assertTrue(client.deleteFeeData(0))
         // NOTE: As the original Request is modified instead of replaced in a retry
