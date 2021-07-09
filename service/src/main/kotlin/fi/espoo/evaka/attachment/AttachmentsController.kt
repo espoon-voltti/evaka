@@ -6,6 +6,7 @@ package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
@@ -20,7 +21,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -40,11 +40,11 @@ import java.util.UUID
 class AttachmentsController(
     private val documentClient: DocumentService,
     private val stateService: ApplicationStateService,
-    env: Environment,
+    evakaEnv: EvakaEnv,
     bucketEnv: BucketEnv
 ) {
     private val filesBucket = bucketEnv.attachments
-    private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
+    private val maxAttachmentsPerUser = evakaEnv.maxAttachmentsPerUser
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachmentEmployee(

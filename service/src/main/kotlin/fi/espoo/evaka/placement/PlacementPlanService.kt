@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.placement
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
@@ -17,7 +18,6 @@ import fi.espoo.evaka.shared.async.GenerateFinanceDecisions
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
@@ -26,9 +26,9 @@ import java.util.UUID
 @Service
 class PlacementPlanService(
     private val asyncJobRunner: AsyncJobRunner,
-    env: Environment
+    env: EvakaEnv
 ) {
-    private val useFiveYearsOldDaycare = env.getProperty("fi.espoo.evaka.five_years_old_daycare.enabled", Boolean::class.java, true)
+    private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
 
     fun getPlacementPlanDraft(tx: Database.Read, applicationId: ApplicationId): PlacementPlanDraft {
         val application = tx.fetchApplicationDetails(applicationId)

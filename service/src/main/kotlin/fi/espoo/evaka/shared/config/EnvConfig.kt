@@ -9,7 +9,10 @@ import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
+import fi.espoo.evaka.JwtEnv
 import fi.espoo.evaka.KoskiEnv
+import fi.espoo.evaka.MessageEnv
+import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.VardaEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -42,4 +45,16 @@ class EnvConfig {
 
     @Bean
     fun dvvModificationsEnv(env: Environment): DvvModificationsEnv = DvvModificationsEnv.fromEnvironment(env)
+
+    @Bean
+    fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
+
+    @Bean
+    fun messageEnv(evakaEnv: EvakaEnv, env: Environment): MessageEnv? = when (evakaEnv.messageEnabled) {
+        true -> MessageEnv.fromEnvironment(env)
+        false -> null
+    }
+
+    @Bean
+    fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv = ScheduledJobsEnv.fromEnvironment(env)
 }

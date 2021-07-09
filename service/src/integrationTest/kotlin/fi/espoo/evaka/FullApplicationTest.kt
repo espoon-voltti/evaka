@@ -74,7 +74,7 @@ abstract class FullApplicationTest {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi).connect()
         db.transaction { it.resetDatabase() }
-        feeDecisionMinDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
+        feeDecisionMinDate = evakaEnv.feeDecisionMinDate
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         val vardaEnv = VardaEnv.fromEnvironment(env).copy(url = vardaBaseUrl)
         vardaTokenProvider = VardaTempTokenProvider(http, objectMapper, vardaEnv)
