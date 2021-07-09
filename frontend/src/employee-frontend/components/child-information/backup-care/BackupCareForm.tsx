@@ -43,7 +43,7 @@ export interface Props {
 }
 
 interface FormState {
-  unit: { label: string; value: string } | undefined
+  unit: Unit | undefined
   startDate: LocalDate
   endDate: LocalDate
 }
@@ -85,10 +85,7 @@ export default function BackupCareForm({
   }, [])
 
   const initialFormState: FormState = {
-    unit: backupCare?.unit && {
-      label: backupCare.unit.name,
-      value: backupCare.unit.id
-    },
+    unit: backupCare?.unit,
     startDate: backupCare?.period.start ?? LocalDate.today(),
     endDate: backupCare?.period.end ?? LocalDate.today()
   }
@@ -137,7 +134,7 @@ export default function BackupCareForm({
     const apiCall: Promise<Result<unknown>> =
       backupCare == undefined
         ? createBackupCare(childId, {
-            unitId: formState.unit.value,
+            unitId: formState.unit.id,
             period: new FiniteDateRange(formState.startDate, formState.endDate)
           })
         : updateBackupCare(backupCare.id, {
@@ -157,10 +154,7 @@ export default function BackupCareForm({
     () =>
       units
         .map((us) =>
-          _.orderBy(us, (x) => x.name).map(({ id, name }) => ({
-            label: name,
-            value: id
-          }))
+          _.orderBy(us, (x) => x.name).map(({ id, name }) => ({ id, name }))
         )
         .getOrElse([]),
     [units]
@@ -182,8 +176,8 @@ export default function BackupCareForm({
                   onChange={(unit) =>
                     updateFormState({ unit: unit || undefined })
                   }
-                  getItemLabel={({ label }) => label}
-                  getItemDataQa={({ value }) => `value-${value}`}
+                  getItemLabel={({ name }) => name}
+                  getItemDataQa={({ id }) => `unit-${id}`}
                 />
               </div>
             )}

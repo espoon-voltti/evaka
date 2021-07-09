@@ -141,7 +141,7 @@ export default class ChildInformationPage {
     await t.click(this.backupCareSelectUnit)
     await t.typeText(this.backupCareSelectUnit.find('input'), daycare.name)
     await t.click(
-      this.backupCareSelectUnit.find(`[data-qa="value-${daycare.id}"]`)
+      this.backupCareSelectUnit.find(`[data-qa="unit-${daycare.id}"]`)
     )
     const startDateInput = this.backupCareForm
       .find('[data-qa="dates"] input')
