@@ -5,7 +5,10 @@
 import { Selector, t } from 'testcafe'
 import { format } from 'date-fns'
 import { OtherGuardianAgreementStatus } from 'e2e-test-common/dev-api/types'
-import { scrollThenClick, selectFirstOption } from '../../../utils/helpers'
+import {
+  scrollThenClick,
+  selectFirstComboboxOption
+} from '../../../utils/helpers'
 
 export default class ApplicationEditView {
   readonly readView = Selector('[data-qa="application-read-view"]')
@@ -104,7 +107,7 @@ export default class ApplicationEditView {
   }
 
   async pickUnit(unitName: string) {
-    await selectFirstOption(this.preferredUnit, unitName)
+    await selectFirstComboboxOption(this.preferredUnit, unitName)
   }
 
   async fillApplicantPhoneAndEmail(phone: string, email: string) {
