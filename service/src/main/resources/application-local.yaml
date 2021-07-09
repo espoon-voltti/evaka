@@ -45,6 +45,17 @@ application:
 aws:
   region: eu-west-1
 
+evaka:
+  bucket_name:
+    attachments: evaka-attachments-dev
+    data: evaka-data-dev
+    decisions: evaka-decisions-dev
+    fee_decisions: evaka-fee-decisions-dev
+    voucher_value_decisions: evaka-voucher-value-decisions-dev
+  integration:
+    koski:
+      enabled: false
+
 fi:
   espoo:
     evaka:
@@ -59,12 +70,6 @@ fi:
         xRoadClientId: ""
       invoice:
         enabled: false
-      koski:
-        enabled: true
-        secret: ""
-        source_system: EspooVarda
-        url: http://localhost:8888/mock-integration/koski/api
-        user: ""
       varda:
         basic_auth: ""
         url: http://localhost:8888/mock-integration/varda/api
@@ -78,13 +83,6 @@ fi:
         jwks:
           default:
             url: classpath:local-development/jwks.json
-      document:
-        bucket:
-          attachments: evaka-attachments-dev
-          daycaredecision: evaka-daycaredecisions-dev
-          paymentdecision: evaka-paymentdecisions-dev
-          vouchervaluedecision: evaka-vouchervaluedecisions-dev
-          data: evaka-data-dev
       vtj:
         client:
           # these are used if you run pis-service in "vtj-dev" profile (against Test VTJ).

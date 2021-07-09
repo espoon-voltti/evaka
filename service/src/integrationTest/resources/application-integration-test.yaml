@@ -38,6 +38,21 @@ aws:
 
 fee_decision_min_date: "2015-01-01"
 
+evaka:
+  bucket_name:
+    attachments: evaka-attachments-it
+    data: evaka-data-it
+    decisions: evaka-decisions-it
+    fee_decisions: evaka-fee-decisions-it
+    voucher_value_decisionss: evaka-voucher-value-decisions-it
+  integration:
+    koski:
+      enabled: false
+      secret: ""
+      source_system: TestSystemCode
+      url: ""
+      user: ""
+
 fi:
   espoo:
     evaka:
@@ -71,13 +86,6 @@ fi:
         jwks:
           default:
             url: classpath:evaka-integration-test/jwks.json
-      document:
-        bucket:
-          attachments: evaka-attachments-it
-          daycaredecision: evaka-daycaredecisions-it
-          paymentdecision: evaka-paymentdecisions-it
-          vouchervaluedecision: evaka-vouchervaluedecisions-it
-          data: evaka-data-it
       vtj:
         client:
           password: ""
