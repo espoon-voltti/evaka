@@ -1,13 +1,16 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2021 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useCombobox, UseComboboxStateChange } from 'downshift'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  FocusEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import { faChevronDown, faTimes } from 'lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -133,6 +136,7 @@ interface Props<T> {
   getItemLabel?: (item: T) => string
   getItemDataQa?: (item: T) => string | undefined
   menuEmptyLabel?: string
+  onFocus?: FocusEventHandler<HTMLInputElement>
   children?: {
     menuItem?: (props: MenuItemProps<T>) => React.ReactNode
     menuEmptyItem?: (label: string) => React.ReactNode
@@ -175,6 +179,7 @@ export default function Combobox<T>(props: Props<T>) {
     getItemLabel = defaultGetItemLabel,
     getItemDataQa,
     menuEmptyLabel,
+    onFocus,
     children,
     fullWidth,
     'data-qa': dataQa
@@ -302,7 +307,8 @@ export default function Combobox<T>(props: Props<T>) {
         <Input
           {...getInputProps({
             disabled,
-            placeholder
+            placeholder,
+            onFocus
           })}
         />
         {clearable && selectedItem && (
